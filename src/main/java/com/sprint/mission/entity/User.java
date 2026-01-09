@@ -11,13 +11,22 @@ public class User {
     public User(String nickName) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
-        this.nickName = nickName;
+        this.nickName = getValidatedTrimmedInput(nickName);
     }
 
     public void updateNickName(String nickName) {
-        if (!nickName.isEmpty()) {
-            this.nickName = nickName;
-            touch();
+        this.nickName = getValidatedTrimmedInput(nickName);
+        touch();
+    }
+
+    private String getValidatedTrimmedInput(String input) {
+        validateContentIsNotBlank(input);
+        return input.trim();
+    }
+
+    private void validateContentIsNotBlank(String input) {
+        if (input == null || input.isBlank()) {
+            throw new IllegalArgumentException("닉네임이 비어있을 수 없습니다.");
         }
     }
 
@@ -35,5 +44,9 @@ public class User {
 
     public Long getUpdatedAt() {
         return updatedAt;
+    }
+
+    public String getNickName() {
+        return nickName;
     }
 }
