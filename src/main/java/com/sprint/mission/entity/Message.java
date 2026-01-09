@@ -11,13 +11,22 @@ public class Message {
     public Message(String content) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
-        this.content = content;
+        this.content = getValidatedTrimmedContent(content);
     }
 
     public void updateContent(String content) {
-        if (!content.isEmpty()) {
-            this.content = content;
-            touch();
+        this.content = getValidatedTrimmedContent(content);
+        touch();
+    }
+
+    private String getValidatedTrimmedContent(String content) {
+        validateContentIsNotNull(content);
+        return content.trim();
+    }
+
+    private void validateContentIsNotNull(String content) {
+        if (content == null || content.isEmpty()) {
+            throw new IllegalArgumentException("메시지 내용은 비어있을 수 없습니다.");
         }
     }
 
