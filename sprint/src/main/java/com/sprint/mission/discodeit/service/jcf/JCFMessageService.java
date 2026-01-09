@@ -43,8 +43,23 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
+    public Iterable<Message> getUserMessages(User user) {
+        UUID userId = user.getId();
+        Iterable<Message> result = () -> data.values().stream()
+                .filter(m -> m.getUser()
+                        .getId()
+                        .equals(userId))
+                .sorted(java.util.Comparator.comparing(Message::getCreatedAt).reversed())
+                .iterator();
+        return result;
+    }
+
+    // Problem: 정렬이 제대로 이루어지지 않음. (HashMap의 특성?)
+    @Override
     public Iterable<Message> getAllMessages() {
-        return data.values();
+        return () -> data.values().stream()
+                .sorted(java.util.Comparator.comparing(Message::getCreatedAt).reversed())
+                .iterator();
     }
 
     @Override
