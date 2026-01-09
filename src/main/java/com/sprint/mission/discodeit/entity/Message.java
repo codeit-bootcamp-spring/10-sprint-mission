@@ -4,9 +4,9 @@ import java.util.UUID;
 
 public class Message extends BaseEntity {
     private String content;
-    // 중요: 객체 자체가 아닌, 객체의 ID(Foreign Key)를 가집니다.
-    private final UUID userId;    // 작성자 (누가?)
-    private final UUID channelId; // 채널 (어디에?)
+    // 중요: 객체 자체가 아닌, 객체의 ID(Foreign Key)를 가짐
+    private final UUID userId;    // 작성자
+    private final UUID channelId; // 채널
 
     public Message(String content, UUID userId, UUID channelId) {
         super(); // ID 생성, 생성시간 기록
@@ -15,12 +15,12 @@ public class Message extends BaseEntity {
         this.channelId = channelId;
     }
 
-    // Getters
+    // Getter
     public String getContent() { return content; }
     public UUID getUserId() { return userId; }
     public UUID getChannelId() { return channelId; }
 
-    // 비즈니스 로직: 메시지 수정
+    // 메시지 수정
     public void updateContent(String newContent) {
         this.content = newContent;
         this.updateTimestamp(); // 수정 시간 갱신

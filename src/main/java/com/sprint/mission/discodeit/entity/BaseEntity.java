@@ -27,7 +27,7 @@ public abstract class BaseEntity {
     public Long getCreatedAt() { return createdAt; }
     public Long getUpdatedAt() { return updatedAt; }
 
-    // update 함수 (Setter 대신 사용)
+    // update
     public void updateTimestamp() {
         this.updatedAt = System.currentTimeMillis();
     }
