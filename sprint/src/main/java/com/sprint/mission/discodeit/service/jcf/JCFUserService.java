@@ -16,7 +16,7 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public UUID addUser(String username, String email) {
+    public UUID createUser(String username, String email) {
         User user = new User(username, email);
         UUID id = user.getId();
         data.put(id, user);
