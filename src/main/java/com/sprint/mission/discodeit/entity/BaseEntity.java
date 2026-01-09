@@ -25,7 +25,7 @@ public abstract class BaseEntity {
     // Getter
     public UUID getId() { return id; }
     public Long getCreatedAt() { return createdAt; }
-    public Long getUpdatedAt() { return updatedAt; }
+    public Long getUpdatedAt() { return updatedAt; }  // 얘는 어디서 쓰일까?
 
     // update
     public void updateTimestamp() {

@@ -1,17 +1,31 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.regex.Pattern;
+
 public class User extends BaseEntity {
-    private String username;
-//    private String password;
-//    private String email;
+    private static final String USERNAME_REGEX = "^[a-zA-Z0-9가-힣_-]+$";
+    private static final Pattern USERNAME_PATTERN = Pattern.compile(USERNAME_REGEX);
+
+    private String username;     // 로그인에 쓰이는 고유 ID (중복 불가능), 시간당 2회 변경 제한
+//  private String email;        // email 또는 phoneNumber로 가입 가능
+//  private String displayName;  //  남들에게 보이는 이름 (중복 허용)
+//  private String password;     //  암호화해서 저장 필요
+//  private String dateOfBrith   //  생년월일 -> Date 클래스 사용이 더 좋을 듯
 
     public User(String username) {
-        super(); // ID 생성, 생성시간 기록
-        // null 이거나 공백 제거하면 empty이면
+        super(); // id, createdAt, updatedAt -> 생성자로 초기화;
+        // username 규칙 (1) - null 안됨. 빈 문자열("") 안됨
         if (username == null || username.trim().isEmpty()) {
             throw new IllegalArgumentException("사용자 이름은 필수");
         }
-        // [ ] 특수문자, 길이제한 등등 추가
+        // username 규칙 (2) - 4자 이상 ~ 20자 이하
+        if (username.length() < 3 || username.length() > 20) {
+            throw new IllegalArgumentException("사용자 이름은 3자 이상 20자 이하여야 합니다.");
+        }
+        // username 규칙 (3) - 영문, 한글, 숫자 (0-9), 밑줄(_), 하이픈(-)만 사용 가능
+        if (!USERNAME_PATTERN.matcher(username).matches()) {
+            throw new IllegalArgumentException("사용자 이름은 영문, 한글, 숫자, _, - 만 사용할 수 있습니다.");
+        }
         this.username = username;
     }
 
@@ -20,6 +34,7 @@ public class User extends BaseEntity {
         return username;
     }
 
+    // update
     public void updateUsername(String newUsername) {
         if (newUsername == null || newUsername.trim().isEmpty()) {
             throw new IllegalArgumentException("변경할 이름이 비어있음");
@@ -34,6 +49,7 @@ public class User extends BaseEntity {
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
                 '}';
     }
 }

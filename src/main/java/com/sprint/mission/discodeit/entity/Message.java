@@ -8,7 +8,8 @@ public class Message extends BaseEntity {
     private final UUID channelId; // 채널
 
     public Message(String content, UUID userId, UUID channelId) {
-        super(); // ID 생성, 생성시간 기록
+        super(); // id, createdAt, updatedAt -> 생성자로 초기화;
+        // 메시지 글자 제한 2,000자, 데스트톱 및 iOS 사용자는 4,000자까지 -> 2,000자로 설정
         this.content = content;
         this.userId = userId;
         this.channelId = channelId;
@@ -19,10 +20,10 @@ public class Message extends BaseEntity {
     public UUID getUserId() { return userId; }
     public UUID getChannelId() { return channelId; }
 
-    // 메시지 수정
+    // update
     public void updateContent(String newContent) {
         this.content = newContent;
-        this.updateTimestamp(); // 수정 시간 갱신
+        this.updateTimestamp();
     }
 
     @Override
@@ -33,6 +34,7 @@ public class Message extends BaseEntity {
                 ", userId=" + userId +
                 ", channelId=" + channelId +
                 ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
                 '}';
     }
 }
