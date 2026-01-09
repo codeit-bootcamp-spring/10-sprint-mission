@@ -14,9 +14,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void create(String name) {
-        String trimmedName = trimmedName(name);
-        validateChannelNameNotExists(trimmedName);
-        Channel channel = new Channel(trimmedName);
+        Channel channel = new Channel(name);
         channels.put(channel.getId(), channel);
     }
 
@@ -33,44 +31,36 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void update(UUID id, String name) {
-        validateUpdateChannelNameNotExist(name);
-        Channel channel = getChannelOrThrow(id);
-        String trimmedName = trimmedName(name);
-        channel.updateName(trimmedName);
+        Channel channel = findById(id);
+        validateUpdateChannelNameNotExist(id, name);
+        channel.updateName(name);
     }
 
     @Override
     public void deleteById(UUID id) {
-        Channel channel = getChannelOrThrow(id);
-        channels.remove(channel.getId());
+        validateChannelExists(id);
+        channels.remove(id);
     }
 
-    private void validateChannelNameNotExists(String name) {
-        boolean existChannelName = channels.values().stream()
-                .anyMatch(channel -> channel.getName().equals(name));
-
-        if (existChannelName) {
-            throw new IllegalArgumentException("이미 존재하는 채널명입니다.");
+    private void validateChannelExists(UUID id) {
+        if (!channels.containsKey(id)) {
+            throw new IllegalArgumentException("채널이 존재하지 않습니다.");
         }
     }
 
     private Channel getChannelOrThrow(UUID id) {
-        if (!channels.containsKey(id)) {
-            throw new IllegalArgumentException("해당 채널이 존재하지 않습니다");
-        }
+        validateChannelExists(id);
         return channels.get(id);
     }
 
-    private void validateUpdateChannelNameNotExist(String name) {
+    private void validateUpdateChannelNameNotExist(UUID id, String name) {
+        String trimmedName = name.trim();
         boolean exist = channels.values().stream()
-                .anyMatch(channel -> channel.getName().equals(name));
+                .anyMatch(channel -> channel.getName().equals(trimmedName) &&
+                        channel.getId().equals(id));
 
         if (exist) {
             throw new IllegalArgumentException("존재하는 채널명입니다. 다른이름을 선택해주세요");
         }
-    }
-
-    private String trimmedName(String name){
-        return name.trim();
     }
 }

@@ -20,11 +20,11 @@ public class Message {
     }
 
     private String getValidatedTrimmedContent(String content) {
-        validateContentIsNotNull(content);
+        validateContentIsNotBlank(content);
         return content.trim();
     }
 
-    private void validateContentIsNotNull(String content) {
+    private void validateContentIsNotBlank(String content) {
         if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("메시지 내용은 비어있을 수 없습니다.");
         }
