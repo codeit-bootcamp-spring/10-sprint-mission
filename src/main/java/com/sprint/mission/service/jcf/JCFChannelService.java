@@ -57,7 +57,7 @@ public class JCFChannelService implements ChannelService {
         String trimmedName = name.trim();
         boolean exist = channels.values().stream()
                 .anyMatch(channel -> channel.getName().equals(trimmedName) &&
-                        channel.getId().equals(id));
+                        !channel.getId().equals(id));
 
         if (exist) {
             throw new IllegalArgumentException("존재하는 채널명입니다. 다른이름을 선택해주세요");

@@ -3,17 +3,14 @@ package com.sprint.mission.service.jcf;
 import com.sprint.mission.entity.Message;
 import com.sprint.mission.service.MessageService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> messages;
 
 
     public JCFMessageService(Map<UUID, Message> messages) {
-        this.messages = messages;
+        this.messages = new HashMap<>();
     }
 
     @Override
