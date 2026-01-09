@@ -25,7 +25,7 @@ public class Message {
     }
 
     private void validateContentIsNotNull(String content) {
-        if (content == null || content.isEmpty()) {
+        if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("메시지 내용은 비어있을 수 없습니다.");
         }
     }
