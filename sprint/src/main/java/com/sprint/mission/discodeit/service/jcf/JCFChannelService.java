@@ -33,6 +33,8 @@ public class JCFChannelService implements ChannelService {
         if (channel == null) {
             throw new NotFoundException("Channel " + id.toString() + "을 찾을 수 없었습니다.");
         }
+        channel.updateTitle(title);
+        channel.updateDescription(description);
     }
 
     @Override
