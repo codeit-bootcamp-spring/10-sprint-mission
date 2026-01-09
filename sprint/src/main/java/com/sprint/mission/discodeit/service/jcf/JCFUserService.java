@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFUserService implements UserService {
@@ -27,6 +28,22 @@ public class JCFUserService implements UserService {
     @Override
     public User getUser(UUID id) {
         return data.get(id);
+    }
+
+    @Override
+    public User getUserByUsername(String username) {
+        Optional<Map.Entry<UUID, User>> result = data.entrySet().stream()
+                .filter(u -> u.getValue().getUsername().equals(username))
+                .findFirst();
+        return result.map(Map.Entry::getValue).orElse(null);
+    }
+
+    @Override
+    public User getUserByEmail(String email) {
+        Optional<Map.Entry<UUID, User>> result = data.entrySet().stream()
+                .filter(u -> u.getValue().getEmail().equals(email))
+                .findFirst();
+        return result.map(Map.Entry::getValue).orElse(null);
     }
 
     @Override

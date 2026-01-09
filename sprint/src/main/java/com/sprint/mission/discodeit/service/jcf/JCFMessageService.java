@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
@@ -29,6 +30,16 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message getMessage(UUID id) {
         return data.get(id);
+    }
+
+    @Override
+    public Message getMessage(String text) {
+        Optional<Map.Entry<UUID, Message>> result = data.entrySet().stream()
+                .filter(entry -> entry.getValue()
+                        .getText()
+                        .contains(text))
+                .findFirst();
+        return result.map(Map.Entry::getValue).orElse(null);
     }
 
     @Override

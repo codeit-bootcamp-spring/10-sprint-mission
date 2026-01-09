@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -46,6 +47,14 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel getChannel(UUID id) {
         return data.get(id);
+    }
+
+    @Override
+    public Channel getChannel(String title) {
+        Optional<Map.Entry<UUID, Channel>> result = data.entrySet().stream()
+                .filter(ch -> ch.getValue().getTitle().equals(title))
+                .findFirst();
+        return result.map(Map.Entry::getValue).orElse(null);
     }
 
     @Override

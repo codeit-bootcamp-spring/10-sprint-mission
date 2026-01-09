@@ -9,6 +9,7 @@ import java.util.UUID;
 public interface MessageService {
     UUID addMessage(User user, Channel channel, String text);
     Message getMessage(UUID id);
+    Message getMessage(String text);
     Iterable<Message> getAllMessages();
     void updateMessage(UUID id, String text);
     void deleteMessage(UUID id);

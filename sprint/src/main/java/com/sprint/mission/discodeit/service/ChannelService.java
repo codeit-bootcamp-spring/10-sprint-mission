@@ -9,5 +9,6 @@ public interface ChannelService {
     void updateChannel(UUID id, String title, String description);
     void deleteChannel(UUID id);
     Channel getChannel(UUID id);
+    Channel getChannel(String title);
     Iterable<Channel> getAllChannels();
 }
