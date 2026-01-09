@@ -5,7 +5,7 @@ import java.util.*;
 public class Channel {
     private UUID id;
     private String title;
-    private long createdAt;
+    private final long createdAt;
     private long updatedAt;
     private String description;
     private boolean isDeleted;

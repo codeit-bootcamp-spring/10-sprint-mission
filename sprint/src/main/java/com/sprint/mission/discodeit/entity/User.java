@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public class User {
     private UUID id;
-    private long createdAt;
+    private final long createdAt;
     private long updatedAt;
     private String username;
     private String email;
