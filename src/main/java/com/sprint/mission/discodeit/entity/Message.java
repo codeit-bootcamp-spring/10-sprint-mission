@@ -4,7 +4,6 @@ import java.util.UUID;
 
 public class Message extends BaseEntity {
     private String content;
-    // 중요: 객체 자체가 아닌, 객체의 ID(Foreign Key)를 가짐
     private final UUID userId;    // 작성자
     private final UUID channelId; // 채널
 
