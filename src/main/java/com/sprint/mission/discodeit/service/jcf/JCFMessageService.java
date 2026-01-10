@@ -9,8 +9,8 @@ public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> messages = new HashMap<>();
 
     @Override
-    public void sendMessage(UUID userId, String content) {
-        Message message = new Message(userId, content);
+    public void sendMessage(UUID userId, UUID channelId, String content) {
+        Message message = new Message(userId, channelId, content);
         // 메시지 생성 및 리스트에 추가
         messages.put(message.getId(), message);
     }
@@ -20,6 +20,7 @@ public class JCFMessageService implements MessageService {
         return messages.values().stream().toList();
     }
 
+    // 유저 아이디에 따라 메시지 리스트 반환
     @Override
     public List<Message> getMessageListByUser(UUID userId) {
         return messages.values().stream()
@@ -27,8 +28,17 @@ public class JCFMessageService implements MessageService {
                 .toList();
     }
 
+    // 채널 아이디에 따라 메시지 리스트 반환
     @Override
-    public Optional<Message> getMessageById(UUID messageId) {
+    public List<Message> getMessageListByChannel(UUID channelId) {
+        return messages.values().stream()
+                .filter(id -> id.getSentChannelId().equals(channelId))
+                .toList();
+    }
+
+    // 메시지 아이디에 따라 해당 메시지 반환
+    @Override
+    public Optional<Message> getMessageByMessageId(UUID messageId) {
         return messages.values().stream()
                 .filter(id -> id.getId().equals(messageId))
                 .findFirst();
@@ -48,5 +58,12 @@ public class JCFMessageService implements MessageService {
                 .filter(id -> id.getId().equals(messageId))
                 .findFirst()
                 .ifPresent(msg -> messages.remove(messageId));
+    }
+
+    @Override
+    public void clearMessage(UUID channelId) {
+        messages.values().removeIf(
+                message -> message.getSentChannelId().equals(channelId)
+        );
     }
 }

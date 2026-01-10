@@ -11,8 +11,10 @@ public class Message {
     private String content;
     // 유저 정보
     private UUID sentUserId;
+    // 채널 정보
+    private UUID sentChannelId;
 
-    public Message(UUID sentUserId, String content) {
+    public Message(UUID sentUserId, UUID sentChannelId, String content) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
@@ -20,6 +22,8 @@ public class Message {
         this.content = content;
         // sentUserId 초기화는 메시지 전송 시점에 설정
         this.sentUserId = sentUserId;
+        // sentChannelId 초기화는 메시지 전송 시점에 설정
+        this.sentChannelId = sentChannelId;
     }
 
     public UUID getId() {
@@ -28,6 +32,10 @@ public class Message {
 
     public UUID getSentUserId() {
         return sentUserId;
+    }
+
+    public UUID getSentChannelId() {
+        return sentChannelId;
     }
 
     public String getContent() {
