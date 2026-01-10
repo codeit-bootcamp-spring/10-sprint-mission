@@ -12,20 +12,34 @@ public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> data;
 
     private static JCFMessageService instance = null;
+    private final JCFUserService userService;
+    private final JCFChannelService channelService;
 
-    public JCFMessageService() {
+    public JCFMessageService(JCFUserService userService, JCFChannelService channelService) {
         data = new HashMap<>();
+        this.userService = userService;
+        this.channelService = channelService;
     }
 
-    public static JCFMessageService getInstance() {
+    public static JCFMessageService getInstance(JCFUserService userService, JCFChannelService channelService) {
         if (instance == null) {
-            instance = new JCFMessageService();
+            instance = new JCFMessageService(userService, channelService);
         }
         return instance;
     }
 
     @Override
     public UUID addMessage(User user, Channel channel, String text) {
+        // Validation
+        User u = userService.getUser(user.getId());
+        if (u == null) {
+            throw new NotFoundException("사용자 " + user.getId() + "를 찾을 수 없었습니다.");
+        }
+        Channel ch = channelService.getChannel(channel.getId());
+        if (ch == null) {
+            throw new NotFoundException("채널 " + channel.getId() + "를 찾을 수 없었습니다.");
+        }
+
         Message message = new Message(user, channel, text);
         UUID id = message.getId();
         data.put(id, message);
