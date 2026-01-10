@@ -28,13 +28,13 @@ public interface ChannelService {
 
     // U. 수정
     // 채널 channelName 수정
-    void updateChannelName(UUID channelId, String channelName);
+    Channel updateChannelName(UUID channelId, String channelName);
     // 채널 isPrivate 수정
-    void updateChannelIsPrivate(UUID channelId, Boolean isPrivate);
+    Channel updateChannelIsPrivate(UUID channelId, Boolean isPrivate);
     // 채널 owner 수정
-    void updateChannelOwner(UUID channelId, User owner);
+    Channel updateChannelOwner(UUID channelId, User owner);
     // 채널 description 수정
-    void updateChannelDescription(UUID channelId, String channelDescription);
+    Channel updateChannelDescription(UUID channelId, String channelDescription);
 
     // D. 삭제
     void deleteChannel(UUID channelId);

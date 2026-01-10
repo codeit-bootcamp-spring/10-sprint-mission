@@ -28,11 +28,11 @@ public interface UserService {
     List<User> searchAllUsersByPartialUserName(String partialUserName);
 
     // U. 수정
-    void updateEmail(UUID userId, String email); // 이메일 수정
-    void updatePassword(UUID userId, String password); // 비밀번호 수정
-    void updateNickName(UUID userId, String nickName); // 별명 수정
-    void updateUserName(UUID userId, String userName); // 사용자 이름 수정
-    void updateBirthday(UUID userId, String birthday); // 생년월일 수정
+    User updateEmail(UUID userId, String email); // 이메일 수정
+    User updatePassword(UUID userId, String password); // 비밀번호 수정
+    User updateNickName(UUID userId, String nickName); // 별명 수정
+    User updateUserName(UUID userId, String userName); // 사용자 이름 수정
+    User updateBirthday(UUID userId, String birthday); // 생년월일 수정
 
     // D. 삭제
     void deleteUser(UUID userId);
