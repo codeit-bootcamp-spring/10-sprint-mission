@@ -15,9 +15,9 @@ public class User {
     private String userName;
     private String password;
     private String birthday;
-    // 어느 채널에 소속되어 있는지
+    // 해당 유저가 참여 중인 채널 목록
     private final List<Channel> channelList;
-    // 보낸 메시지들?
+    // 해당 유저가 보낸 메시지 목록
     private final List<Message> messageList;
 
     // 생성자

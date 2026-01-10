@@ -12,7 +12,10 @@ public class Channel {
     private Boolean isPrivate; // True = Private, False = Public
     private String channelName;
     private String channelDescription;
+
+    // 해당 채널에 참여 중인 유저 목록
     private final Set<User> channelMembers; // 유저 중복 참가 불가
+    // 해당 채널에 존재하는 메시지 목록
     private final List<Message> channelMessages; // 채팅창 안의 메시지들
 
     // 생성자
