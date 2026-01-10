@@ -97,9 +97,16 @@ public class JavaApplication {
         // 메시지
         ch =  channelService.getChannel(geographyChannelId);
         User user3 = userService.getUserByUsername("Gabriel");
-        messageService.addMessage(qUser, ch, "혹시 패러독스 빅토리아 3 게임 해 보신 분 있나요?");
-        messageService.addMessage(user3, ch, "해보진 않았어. 대신 유로파를 좋아해.");
-        messageService.addMessage(qUser, ch, "나도 좋아하는데 유로파, 근데 너무 어려움 ㅇㅇ");
+        try {
+            messageService.addMessage(qUser, ch, "혹시 패러독스 빅토리아 3 게임 해 보신 분 있나요?");
+            Thread.sleep(10);
+            messageService.addMessage(user3, ch, "해보진 않았어. 대신 유로파를 좋아해.");
+            Thread.sleep(10);
+            messageService.addMessage(qUser, ch, "나도 좋아하는데 유로파, 근데 너무 어려움 ㅇㅇ");
+        } catch (InterruptedException e) {
+            System.err.println(e.getMessage());
+        }
+
 
         // 메시지 조회
         Iterable<Message> messages = messageService.getUserMessages(qUser);
