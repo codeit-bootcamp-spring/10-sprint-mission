@@ -23,7 +23,7 @@ public class JavaApplication {
 
         // 유저 등록
         userService.createUser("Raphael", "contact@example.com");
-        userService.createUser("Luce", "contact2@example.com");
+        UUID b = userService.createUser("Luce", "contact2@example.com");
         userService.createUser("Gabriel", "contact3@example.com");
 
         // 유저 조회
@@ -31,6 +31,10 @@ public class JavaApplication {
         User qUser = userService.getUserByUsername("Raphael");
         System.out.println("Username: " + qUser.getUsername()); // Raphael
         System.out.println("Email: " + qUser.getEmail());
+
+        User qUser2 = userService.getUser(b);
+        System.out.println("Username: " + qUser2.getUsername()); // Raphael
+        System.out.println("Email: " + qUser2.getEmail());
 
         // 모든 유저 조회
         Iterable<User> users = userService.getAllUsers();
