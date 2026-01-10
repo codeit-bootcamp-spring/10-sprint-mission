@@ -17,9 +17,9 @@ public class JavaApplication {
 
     public static void main(String[] args) {
         // 서비스 초기화
-        UserService userService = new JCFUserService();
-        MessageService messageService = new JCFMessageService();
-        ChannelService channelService = new JCFChannelService();
+        UserService userService = JCFUserService.getInstance();
+        MessageService messageService = JCFMessageService.getInstance();
+        ChannelService channelService = JCFChannelService.getInstance();
 
         // 유저 등록
         userService.createUser("Raphael", "contact@example.com");

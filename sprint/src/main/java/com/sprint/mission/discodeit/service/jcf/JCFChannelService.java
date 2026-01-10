@@ -11,11 +11,19 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public class JCFChannelService implements ChannelService {
-
     private final Map<UUID, Channel> data;
+
+    private static JCFChannelService instance = null;
 
     public JCFChannelService() {
         data = new HashMap<>();
+    }
+
+    public static JCFChannelService getInstance() {
+        if (instance == null) {
+            instance = new JCFChannelService();
+        }
+        return instance;
     }
 
     @Override

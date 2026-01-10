@@ -11,8 +11,17 @@ import java.util.*;
 public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> data;
 
+    private static JCFMessageService instance = null;
+
     public JCFMessageService() {
         data = new HashMap<>();
+    }
+
+    public static JCFMessageService getInstance() {
+        if (instance == null) {
+            instance = new JCFMessageService();
+        }
+        return instance;
     }
 
     @Override

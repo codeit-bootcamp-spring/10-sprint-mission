@@ -12,8 +12,17 @@ import java.util.UUID;
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data;
 
+    private static JCFUserService instance = null;
+
     public JCFUserService() {
         data = new HashMap<>();
+    }
+
+    public static JCFUserService getInstance() {
+        if (instance == null) {
+            instance = new JCFUserService();
+        }
+        return instance;
     }
 
     @Override
