@@ -12,9 +12,11 @@ public class JCFUserService implements UserService {
     private final List<User> users = new ArrayList<>();
 
     @Override
-    public void createUser(User newUser) {
+    public User createUser(User newUser) {
         this.user = newUser;
         users.add(newUser);
+
+        return user;
     }
 
     @Override
