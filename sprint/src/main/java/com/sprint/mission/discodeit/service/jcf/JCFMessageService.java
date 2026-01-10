@@ -6,10 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.NotFoundException;
 import com.sprint.mission.discodeit.service.MessageService;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> data;
@@ -44,12 +41,9 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Iterable<Message> getUserMessages(User user) {
-        UUID userId = user.getId();
         Iterable<Message> result = () -> data.values().stream()
-                .filter(m -> m.getUser()
-                        .getId()
-                        .equals(userId))
-                .sorted(java.util.Comparator.comparing(Message::getCreatedAt).reversed())
+                .filter(m -> m.getUser().equals(user))
+                .sorted(Comparator.comparingLong(Message::getCreatedAt))
                 .iterator();
         return result;
     }
@@ -58,7 +52,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public Iterable<Message> getAllMessages() {
         return () -> data.values().stream()
-                .sorted(java.util.Comparator.comparing(Message::getCreatedAt).reversed())
+                .sorted(Comparator.comparingLong(Message::getCreatedAt))
                 .iterator();
     }
 
