@@ -5,16 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class User {
-    private final UUID id; // 객체 식별을 위한 id
-    private final Long createdAt; // 객체 생성 시간(유닉스 타임스탬프)
-    private Long updatedAt; // 객체 수정 시간(유닉스 타임스탬프)
-
+public class User extends BaseEntity {
     private String email;
     private String nickName;
     private String userName;
     private String password;
     private String birthday;
+
+    // 연관
     // 해당 유저가 참여 중인 채널 목록
     private final List<Channel> channelList;
     // 해당 유저가 보낸 메시지 목록
@@ -22,12 +20,6 @@ public class User {
 
     // 생성자
     public User(String email, String nickName, String userName, String password, String birthday) {
-        // `id` 초기화
-        this.id = UUID.randomUUID();
-        // `createdAt` 초기화
-        this.createdAt = Instant.now().toEpochMilli();
-        this.updatedAt = this.createdAt;
-
         this.email = email;
         this.nickName = nickName;
         this.userName = userName;
@@ -41,9 +33,9 @@ public class User {
     @Override
     public String toString() {
         return "User{" +
-                "id = " + id + ", " +
-                "createdAt = " + createdAt + ", " +
-                "updatedAt = " + updatedAt + ", " +
+                "userId = " + getId() + ", " +
+                "createdAt = " + getCreatedAt() + ", " +
+                "updatedAt = " + getUpdatedAt() + ", " +
                 "email = " + email + ", " +
                 "nickName = " + nickName + ", " +
                 "userName = " + userName + ", " +
@@ -53,18 +45,6 @@ public class User {
     }
 
     // Getter
-    public UUID getId() {
-        return id;
-    }
-    
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -91,11 +71,6 @@ public class User {
 
     public List<Message> getMessageList() {
         return messageList;
-    }
-
-    // update 시간 메소드
-    public void updateTime() {
-        this.updatedAt = Instant.now().toEpochMilli();
     }
 
     // update
