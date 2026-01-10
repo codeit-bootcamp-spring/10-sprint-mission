@@ -35,10 +35,10 @@ public class JavaApplication {
         // 모든 유저 조회
         Iterable<User> users = userService.getAllUsers();
         System.out.println("\n== 모든 유저 ==");
-        for (User user : users) {
+        users.forEach((user) -> {
             System.out.println("Username: " + user.getUsername());
             System.out.println("Email: " + user.getEmail() + '\n');
-        }
+        });
 
         // 유저 정보 업데이트
         userService.updateUser(qUser.getId(), "Raphael", "raphael@example.com");
@@ -68,10 +68,10 @@ public class JavaApplication {
         // 모든 채널 조회
         Iterable<Channel> chs = channelService.getAllChannels();
         System.out.println("\n== 모든 채널 ==");
-        for (Channel channel : chs) {
+        chs.forEach((channel) -> {
             System.out.println("Channel: " + channel.getTitle());
             System.out.println("Description: " + channel.getDescription() + '\n');
-        }
+        });
 
         // 채널 정보 업데이트
         channelService.updateChannel(computerChannelId, "LinuxNFreeBSD", "리눅스와 FreeBSD 모임 채널");
@@ -100,15 +100,15 @@ public class JavaApplication {
         // 메시지 조회
         Iterable<Message> messages = messageService.getUserMessages(qUser);
         System.out.println("\n=== 메시지 ===");
-        for (Message msg : messages) {
-            System.out.println(msg.getUser().getUsername() + ": " + msg.getText());
-        }
+        messages.forEach((msg) -> {
+            System.out.println(msg.getUser().getUsername() + ": " + msg.getText() + " [" + msg.getCreatedAt() + "]");
+        });
 
         messages = messageService.getAllMessages();
         System.out.println("\n== 모든 메시지 ==");
-        for (Message msg : messages) {
-            System.out.println(msg.getUser().getUsername() + ": " + msg.getText());
-        }
+        messages.forEach((msg) -> {
+            System.out.println(msg.getUser().getUsername() + ": " + msg.getText() + " [" + msg.getCreatedAt() + "]");
+        });
 
         // 메시지 수정
         UUID targetMessageId = messageService.addMessage(qUser, ch, "DLS 뭐 사야 하지?");
