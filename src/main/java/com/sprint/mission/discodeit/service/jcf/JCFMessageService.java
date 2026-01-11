@@ -23,7 +23,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message send(UUID senderId, UUID channelId, String content) {
         validateContent(content);
-        Message message = new Message(userService.getUserById(senderId), channelService.getChannelByIdAndMemberId(channelId,senderId), content);;
+        Message message = new Message(userService.getUserById(senderId), channelService.getChannelByIdAndMemberId(channelId,senderId), content);
         data.put(message.getId(), message);
         return message;
     }
