@@ -59,6 +59,9 @@ public class JavaApplication {
         } catch (NotFoundException e) {
             System.err.println(e.getMessage());
         }
+        if (userService.getUser(targetId) == null) {
+            System.out.println("사용자 " + targetId + "를 찾을 수 없었습니다.");
+        }
 
         // 채널 개설
         UUID geographyChannelId = channelService.createChannel("Victoria", "세계지리, 세계사와 관련 게임을 좋아하는 사람들의 채널");
@@ -91,6 +94,9 @@ public class JavaApplication {
             channelService.deleteChannel(computerChannelId);
         } catch (NotFoundException e) {
             System.err.println(e.getMessage());
+        }
+        if (channelService.getChannel(computerChannelId) == null) {
+            System.out.println("채널 " + computerChannelId + "를 찾을 수 없었습니다.");
         }
 
 
@@ -134,6 +140,9 @@ public class JavaApplication {
             messageService.deleteMessage(targetMessageId);
         } catch (NotFoundException e) {
             System.err.println(e.getMessage());
+        }
+        if (messageService.getMessage(targetMessageId) == null) {
+            System.out.println("메시지 " + targetMessageId + "를 찾을 수 없었습니다.");
         }
     }
 }
