@@ -18,8 +18,8 @@ public class JavaApplication {
     public static void main(String[] args) {
         // 서비스 초기화
         UserService userService = JCFUserService.getInstance();
-        MessageService messageService = JCFMessageService.getInstance();
         ChannelService channelService = JCFChannelService.getInstance();
+        MessageService messageService = JCFMessageService.getInstance(userService, channelService);
 
         // 유저 등록
         userService.createUser("Raphael", "contact@example.com");

@@ -4,7 +4,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.NotFoundException;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
@@ -12,16 +14,16 @@ public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> data;
 
     private static JCFMessageService instance = null;
-    private final JCFUserService userService;
-    private final JCFChannelService channelService;
+    private final UserService userService;
+    private final ChannelService channelService;
 
-    public JCFMessageService(JCFUserService userService, JCFChannelService channelService) {
+    public JCFMessageService(UserService userService, ChannelService channelService) {
         data = new HashMap<>();
         this.userService = userService;
         this.channelService = channelService;
     }
 
-    public static JCFMessageService getInstance(JCFUserService userService, JCFChannelService channelService) {
+    public static JCFMessageService getInstance(UserService userService, ChannelService channelService) {
         if (instance == null) {
             instance = new JCFMessageService(userService, channelService);
         }
