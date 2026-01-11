@@ -1,22 +1,23 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Common;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
-public class JCFMessageService implements MessageService {
-    private final Map<UUID, Message> data;
+public class BasicMessageService implements MessageService {
+    private final MessageRepository messageRepository;
     private final UserService userService;
     private final ChannelService channelService;
 
-    public JCFMessageService(UserService userService, ChannelService channelService) {
-        data = new HashMap<>();
+    public BasicMessageService(MessageRepository messageRepository, UserService userService, ChannelService channelService) {
+        this.messageRepository = messageRepository;
         this.userService = userService;
         this.channelService = channelService;
     }
@@ -32,17 +33,18 @@ public class JCFMessageService implements MessageService {
         }
 
         Message msg = new Message(channel, user, message);
-        data.put(msg.getId(), msg);
+        messageRepository.save(msg);
         channel.addMessage(msg);
+        channelService.updateChannel(channel);
         user.addMessageHistory(msg);
+        userService.updateUser(user);
 
         return msg;
     }
 
     @Override
     public Message getMessage(UUID uuid) {
-        return findAllMessages().stream()
-                .filter(m -> Objects.equals(m.getId(), uuid)).findFirst()
+        return messageRepository.findById(uuid)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지입니다"));
     }
 
@@ -54,7 +56,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> findAllMessages() {
-        return data.values().stream()
+        return messageRepository.findAll().stream()
                 .sorted(Comparator.comparingLong(Common::getCreatedAt))
                 .toList();
     }
@@ -65,23 +67,43 @@ public class JCFMessageService implements MessageService {
 
         Optional.ofNullable(newMessage).ifPresent(msg::updateMessage);
         msg.updateUpdatedAt();
+        messageRepository.save(msg);
+
+        // 다른 객체도 변경
+        userService.findAllUsers().stream()
+                .filter(u -> Objects.equals(u.getId(), msg.getUser().getId()))
+                .findFirst()
+                .ifPresent(u -> {
+                    u.updateMessageHistory(msg);
+                    userService.updateUser(u);
+                });
+        channelService.findAllChannels().stream()
+                .filter(c -> Objects.equals(c.getId(), msg.getChannel().getId()))
+                .findFirst()
+                .ifPresent(c -> {
+                    c.updateMessage(msg);
+                    channelService.updateChannel(c);
+                });
 
         return msg;
     }
 
     @Override
     public Message updateMessage(Message newMessage) {
-        return updateMessage(newMessage.getId(), null);
+        newMessage.updateUpdatedAt();
+        return messageRepository.save(newMessage);
     }
 
     @Override
     public void deleteMessage(UUID uuid) {
         Message msg = getMessage(uuid);
-        Channel channel = msg.getChannel();
-        User user = msg.getUser();
+        Channel channel = channelService.getChannel(msg.getChannel().getId());
+        User user = userService.getUser(msg.getUser().getId());
 
         user.removeMessageHistory(msg);
+        userService.updateUser(user);
         channel.removeMessage(msg);
-        data.remove(uuid);
+        channelService.updateChannel(channel);
+        messageRepository.deleteById(uuid);
     }
 }

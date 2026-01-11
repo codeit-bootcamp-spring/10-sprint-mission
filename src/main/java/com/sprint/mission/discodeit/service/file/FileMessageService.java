@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Common;
@@ -7,16 +7,17 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.extend.FileSerDe;
 
 import java.util.*;
 
-public class JCFMessageService implements MessageService {
-    private final Map<UUID, Message> data;
+public class FileMessageService extends FileSerDe<Message> implements MessageService {
+    private final String MESSAGE_DATA_DIRECTORY = "data/message";
     private final UserService userService;
     private final ChannelService channelService;
 
-    public JCFMessageService(UserService userService, ChannelService channelService) {
-        data = new HashMap<>();
+    public FileMessageService(UserService userService, ChannelService channelService) {
+        super(Message.class);
         this.userService = userService;
         this.channelService = channelService;
     }
@@ -32,9 +33,11 @@ public class JCFMessageService implements MessageService {
         }
 
         Message msg = new Message(channel, user, message);
-        data.put(msg.getId(), msg);
+        this.save(MESSAGE_DATA_DIRECTORY, msg);
         channel.addMessage(msg);
+        channelService.updateChannel(channel);
         user.addMessageHistory(msg);
+        userService.updateUser(user);
 
         return msg;
     }
@@ -54,7 +57,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> findAllMessages() {
-        return data.values().stream()
+        return loadAll(MESSAGE_DATA_DIRECTORY).stream()
                 .sorted(Comparator.comparingLong(Common::getCreatedAt))
                 .toList();
     }
@@ -66,22 +69,26 @@ public class JCFMessageService implements MessageService {
         Optional.ofNullable(newMessage).ifPresent(msg::updateMessage);
         msg.updateUpdatedAt();
 
+        save(MESSAGE_DATA_DIRECTORY, msg);
         return msg;
     }
 
     @Override
     public Message updateMessage(Message newMessage) {
-        return updateMessage(newMessage.getId(), null);
+        newMessage.updateUpdatedAt();
+        return save(MESSAGE_DATA_DIRECTORY, newMessage);
     }
 
     @Override
     public void deleteMessage(UUID uuid) {
         Message msg = getMessage(uuid);
-        Channel channel = msg.getChannel();
-        User user = msg.getUser();
+        Channel channel = channelService.getChannel(msg.getChannel().getId());
+        User user = userService.getUser(msg.getUser().getId());
 
         user.removeMessageHistory(msg);
+        userService.updateUser(user);
         channel.removeMessage(msg);
-        data.remove(uuid);
+        channelService.updateChannel(channel);
+        delete(MESSAGE_DATA_DIRECTORY, uuid);
     }
 }

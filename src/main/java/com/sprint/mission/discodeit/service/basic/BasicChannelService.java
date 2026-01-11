@@ -1,20 +1,24 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
-public class JCFChannelService implements ChannelService {
-    private final Map<UUID, Channel> data;
+public class BasicChannelService implements ChannelService {
+    private final ChannelRepository channelRepository;
     private final UserService userService;
     private MessageService messageService;
 
-    public JCFChannelService(UserService userService) {
-        data = new HashMap<>();
+    public BasicChannelService(ChannelRepository channelRepository, UserService userService) {
+        this.channelRepository = channelRepository;
         this.userService = userService;
     }
 
@@ -22,31 +26,32 @@ public class JCFChannelService implements ChannelService {
         this.messageService = messageService;
     }
 
+
     @Override
     public Channel createChannel(String title, String description) {
         validateDuplicateTitle(title);
 
         Channel channel = new Channel(title, description);
-        data.put(channel.getId(), channel);
+        channelRepository.save(channel);
         return channel;
     }
 
     @Override
     public Channel getChannel(UUID uuid) {
-        return Optional.ofNullable(data.get(uuid))
+        return channelRepository.findById(uuid)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
     }
 
     @Override
     public Optional<Channel> findChannelByTitle(String title) {
-        return data.values().stream()
+        return findAllChannels().stream()
                 .filter(c -> Objects.equals(c.getTitle(), title))
                 .findFirst();
     }
 
     @Override
     public List<Channel> findAllChannels() {
-        return new ArrayList<>(data.values());
+        return this.channelRepository.findAll();
     }
 
     @Override
@@ -59,13 +64,32 @@ public class JCFChannelService implements ChannelService {
         Optional.ofNullable(title).ifPresent(channel::updateTitle);
         Optional.ofNullable(description).ifPresent(channel::updateDescription);
         channel.updateUpdatedAt();
+        channelRepository.save(channel);
+
+        // 다른 객체도 변경
+        userService.findAllUsers().forEach(u -> {
+            u.getJoinedChannels().stream()
+                    .filter(c -> Objects.equals(c.getId(), channel.getId()))
+                    .findFirst()
+                    .ifPresent(c -> {
+                        u.updateJoinedChannel(channel);
+                        userService.updateUser(u);
+                    });
+        });
+        messageService.findAllMessages().stream()
+                .filter(m -> Objects.equals(m.getChannel().getId(), channel.getId()))
+                .forEach(m -> {
+                    m.updateChannelIfSameId(channel);
+                    messageService.updateMessage(m);
+                });
 
         return channel;
     }
 
     @Override
     public Channel updateChannel(Channel newChannel) {
-        return updateChannel(newChannel.getId(), null, null);
+        newChannel.updateUpdatedAt();
+        return channelRepository.save(newChannel);
     }
 
     @Override
@@ -92,9 +116,10 @@ public class JCFChannelService implements ChannelService {
 
         channel.addParticipant(user);
         channel.updateUpdatedAt();
+        channelRepository.save(channel);
 
         user.addJoinedChannels(channel);
-        user.updateUpdatedAt();
+        userService.updateUser(user);
     }
 
     @Override
@@ -109,9 +134,10 @@ public class JCFChannelService implements ChannelService {
 
         channel.removeParticipant(user);
         channel.updateUpdatedAt();
+        channelRepository.save(channel);
 
         user.removeJoinedChannels(channel);
-        user.updateUpdatedAt();
+        userService.updateUser(user);
     }
 
     private void validateDuplicateTitle(String title) {
@@ -121,6 +147,6 @@ public class JCFChannelService implements ChannelService {
     private void deleteProcess(UUID uuid, Channel channel) {
         List.copyOf(channel.getParticipants()).forEach(u -> leaveChannel(uuid, u.getId()));
         List.copyOf(channel.getMessages()).forEach(m -> messageService.deleteMessage(m.getId()));
-        data.remove(channel.getId());
+        channelRepository.deleteById(uuid);
     }
 }

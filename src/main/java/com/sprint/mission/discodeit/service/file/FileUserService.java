@@ -1,19 +1,24 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.extend.FileSerDe;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
-public class JCFUserService implements UserService {
-    private final Map<UUID, User> data;
+
+public class FileUserService extends FileSerDe<User> implements UserService {
+    private final String USER_DATA_DIRECTORY = "data/user";
     private MessageService messageService;
     private ChannelService channelService;
 
-    public JCFUserService() {
-        this.data = new HashMap<>();
+    public FileUserService() {
+        super(User.class);
     }
 
     public void setMessageService(MessageService messageService) {
@@ -32,35 +37,32 @@ public class JCFUserService implements UserService {
         });
 
         User user = new User(accountId, password, name, mail);
-        data.put(user.getId(), user);
-        return user;
+        return save(USER_DATA_DIRECTORY, user);
     }
 
     @Override
     public User getUser(UUID uuid) {
-        return findAllUsers().stream()
-                .filter(u -> Objects.equals(u.getId(), uuid)).findFirst()
+        return load(USER_DATA_DIRECTORY, uuid)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
     }
 
     @Override
     public Optional<User> findUserByAccountId(String accountId) {
-        return findAllUsers().stream()
+        return loadAll(USER_DATA_DIRECTORY).stream()
                 .filter(u -> Objects.equals(u.getAccountId(), accountId)).findFirst();
     }
 
     @Override
     public Optional<User> findUserByMail(String mail) {
-        return findAllUsers().stream()
+        return loadAll(USER_DATA_DIRECTORY).stream()
                 .filter(u -> Objects.equals(u.getMail(), mail)).findFirst();
     }
 
     @Override
     public List<User> findAllUsers() {
-        return new ArrayList<>(data.values());
+        return loadAll(USER_DATA_DIRECTORY);
     }
 
-    // 변경사항이 없는 필드는 null로 받음
     @Override
     public User updateUser(UUID uuid, String accountId, String password, String name, String mail) {
         User user = getUser(uuid);
@@ -75,13 +77,13 @@ public class JCFUserService implements UserService {
         Optional.ofNullable(name).ifPresent(user::updateName);
         Optional.ofNullable(mail).ifPresent(user::updateMail);
         user.updateUpdatedAt();
-
-        return user;
+        return save(USER_DATA_DIRECTORY, user);
     }
 
     @Override
     public User updateUser(User newUser) {
-        return updateUser(newUser.getId(), null, null, null, null);
+        newUser.updateUpdatedAt();
+        return save(USER_DATA_DIRECTORY, newUser);
     }
 
     @Override
@@ -113,6 +115,6 @@ public class JCFUserService implements UserService {
     private void deleteProcess(User user) {
         List.copyOf(user.getJoinedChannels()).forEach(ch -> channelService.leaveChannel(ch.getId(), user.getId()));
         List.copyOf(user.getMessageHistory()).forEach(m -> messageService.deleteMessage(m.getId()));
-        data.remove(user.getId());
+        delete(USER_DATA_DIRECTORY, user.getId());
     }
 }

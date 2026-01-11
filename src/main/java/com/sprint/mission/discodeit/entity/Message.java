@@ -1,34 +1,47 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.UUID;
+import java.util.Objects;
 
-public class Message extends BaseEntity{
-    private String content;
+public class Message extends Common {
+    private static final long serialVersionUID = 1L;
     private Channel channel;
     private User user;
+    private String message;
 
-    public User getUser() {
-        return user;
+    public Message(Channel channel, User user, String message) {
+        super();
+        this.channel = channel;
+        this.user = user;
+        this.message = message;
     }
 
     public Channel getChannel() {
-        return channel;
+        return this.channel;
+    }
+    public void updateChannelIfSameId(Channel channel) {
+        if (Objects.equals(getChannel().getId(), channel.getId())) {
+            this.channel = channel;
+        }
     }
 
-    public String getContent() {
-        return content;
+    public User getUser() {
+        return this.user;
+    }
+    public void updateUserIfSameId(User user) {
+        if (Objects.equals(getUser().getId(), user.getId())) {
+            this.user = user;
+        }
     }
 
-    public void updateContent(String newContent){
-        this.content = newContent;
-        super.setUpdatedAt(System.currentTimeMillis());
+    public String getMessage() {
+        return this.message;
+    }
+    public void updateMessage(String message) {
+        this.message = message;
     }
 
-    public Message(String content, Channel channel, User user) {
-        this.content = content;
-        this.channel = channel;
-        this.user = user;
+    @Override
+    public String toString() {
+        return String.format("'채널명: %s / 유저: %s / 채팅메세지: %s'", getChannel().getTitle(), getUser().getName(), getMessage());
     }
-
-
 }
