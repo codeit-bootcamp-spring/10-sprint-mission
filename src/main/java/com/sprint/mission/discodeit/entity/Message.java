@@ -55,7 +55,7 @@ public class Message {
     public String toString() {
         String updated = this.updatedAt == null ? "수정 이력 없음" : this.updatedAt.toString();
         String message = this.getContent()+"-"
-                        +this.getSender().getEmail()
+                        +this.getSender().getUserName()
                         +"(생성: "+this.getCreatedAt()
                         +" ,수정: "+updated+")";
         return message;

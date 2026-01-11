@@ -28,6 +28,7 @@ public class User {
     public UUID getId() { return id;}
     public String getEmail() { return email;}
     public List<Channel> getChannels() { return channels; }
+    public String getUserName() { return userName;}
     private void setUpdatedAt() {
         this.updatedAt = System.currentTimeMillis();
     }

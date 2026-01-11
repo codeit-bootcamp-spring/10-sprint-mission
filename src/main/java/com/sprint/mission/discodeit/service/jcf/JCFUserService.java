@@ -44,7 +44,7 @@ public class JCFUserService implements UserService {
     public void removeUserById(UUID id) {
         User user = getUserById(id);
         user.removeAllChannels();
-        user.setEmail("[삭제된 사용자]");
+        user.setUserName("[삭제된 사용자]");
         //소유 채널 삭제 필요
         data.remove(id);
     }
