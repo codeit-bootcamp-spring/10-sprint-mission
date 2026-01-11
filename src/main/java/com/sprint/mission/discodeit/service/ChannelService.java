@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
+
 import java.util.*;
 
 public interface ChannelService {
@@ -19,7 +21,7 @@ public interface ChannelService {
      * @param id 찾을 채널의 UUID
      * @return 채널이 존재하면 Optional<Channel>, 없으면 Optional.empty()
      */
-    Optional<Channel> findOne(UUID id);
+    User findUserByUserId(UUID id); // 메서드 네이밍 변경
 
     /**
      * 모든 채널 조회

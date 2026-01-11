@@ -19,7 +19,7 @@ public interface UserService {
      * @param id 조회할 사용자의 UUID
      * @return 존재하면 User 객체, 없으면 빈 Optional
      */
-    Optional<User> findOne(UUID id);
+    User findUserByUserId(UUID id); // 메서드 네이밍 변경
 
     /**
      * 사용자 전체 조회

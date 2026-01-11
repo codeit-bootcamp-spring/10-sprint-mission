@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
+
 import java.util.*;
 
 public interface MessageService {
@@ -20,7 +22,7 @@ public interface MessageService {
      * @param messageId 메시지 ID
      * @return 메시지 객체 (Optional)
      */
-    Optional<Message> findOne(UUID messageId);
+    User findUserByUserId(UUID messageId); // 메서드 네이밍 변경
 
     /**
      * 특정 채널의 메시지 전체 조회

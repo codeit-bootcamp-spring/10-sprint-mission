@@ -23,13 +23,13 @@ public class JavaApplication {
     }
     public static void main(String[] args) {
         User user1 = new User("홍길동");
-        Channel ch1 = new Channel("채팅방", user1.getId());
-        Message message1 = new Message("첫 메시지", user1.getId(), ch1.getId());
+        Channel ch1 = new Channel("채팅방", user1);
+        // Message message1 = new Message("첫 메시지", user1.getId(), ch1);
 
         System.out.println("\n====== [toString() 테스트 시작] ======");
         System.out.println(user1.toString());
         System.out.println(ch1.toString());
-        System.out.println(message1.toString());
+        // System.out.println(message1.toString());
         System.out.println("====== [테스트 종료] ======");
 
         System.out.println("\n====== [User 유효성 검증 테스트 시작] ======");

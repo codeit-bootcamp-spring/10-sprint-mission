@@ -8,6 +8,7 @@ import java.util.*;
 public class JCFUserService implements UserService {
     private final Map<UUID, User> userMap = new HashMap<>();
 
+    // Create
     @Override
     public User createUser(String username) {
         // Map의 values()를 스트림으로 돌려서 같은 이름이 있는지 확인
@@ -25,9 +26,10 @@ public class JCFUserService implements UserService {
         return user;
     }
 
+    // Read
     @Override
-    public Optional<User> findOne(UUID id) {
-        return Optional.ofNullable(userMap.get(id));
+    public User findUserByUserId(UUID id) {
+        return User.ofNullable(userMap.get(id));
     }
 
     @Override
@@ -35,9 +37,10 @@ public class JCFUserService implements UserService {
         return new ArrayList<>(userMap.values());
     }
 
+    // Update
     @Override
     public User updateUser(UUID id, String newUsername) {
-        User user = findOne(id)
+        User user = findUserByUserId(id)
                 .orElseThrow(() -> new IllegalArgumentException("수정할 사용자를 찾을 수 없음"));
 
         boolean isDuplicate = userMap.values().stream()
@@ -52,6 +55,7 @@ public class JCFUserService implements UserService {
         return user;
     }
 
+    // Delete
     @Override
     public void deleteUser(UUID id) {
         if (!userMap.containsKey(id)) {

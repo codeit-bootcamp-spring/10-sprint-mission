@@ -14,7 +14,12 @@ public class User extends BaseEntity {
 
     public User(String username) {
         super(); // id, createdAt, updatedAt -> 생성자로 초기화;
+        validateUsername(username);
+        this.username = username;
+    }
 
+    // 유효성 검증 메서드 분리
+    private void validateUsername(String username) {
         // 규칙이 많고 updateUsername 에서도 로직 똑같이 사용해서 따로 빼야할 듯?
         // 애초에 entity가 아니라 service로 보내버려야 하나?
 
@@ -30,7 +35,6 @@ public class User extends BaseEntity {
         if (!USERNAME_PATTERN.matcher(username).matches()) {
             throw new IllegalArgumentException("사용자 이름은 영문, 한글, 숫자, _, - 만 사용할 수 있습니다.");
         }
-        this.username = username;
     }
 
     // Getter
