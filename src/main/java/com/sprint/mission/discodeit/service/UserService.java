@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserService {
@@ -13,9 +14,9 @@ public interface UserService {
 
     // R. 읽기
     // 이메일+비번(로그인?)
-    User readUserByEmailAndPw(String email, String password);
+    Optional<User> readUserByEmailAndPw(String email, String password);
     // 본인?
-    User readUserById(UUID userId);
+    Optional<User> readUserById(UUID userId);
 
     // R. 모두 읽기
     // 모든 사용자

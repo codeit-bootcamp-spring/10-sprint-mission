@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 
+import javax.swing.text.html.Option;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ChannelService {
@@ -13,8 +15,8 @@ public interface ChannelService {
 
     // R. 읽기
     // 채널 하나
-    Channel readChannelByChannelId(UUID channelId);
-    Channel readChannelByChannelName(String channelName);
+    Optional<Channel> readChannelByChannelId(UUID channelId);
+    Optional<Channel> readChannelByChannelName(String channelName);
 
     // R. 모두 읽기
     // 채널 목록 전체
