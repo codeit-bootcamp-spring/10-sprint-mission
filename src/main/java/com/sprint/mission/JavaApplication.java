@@ -23,6 +23,8 @@ public class JavaApplication {
         User user2 = userService.create("KIM");
         User user3 = userService.create("PARK");
         User user4 = userService.create("Lee");
+
+        // 예외 케이스 테스트용 id (존재하지 않는 UUID)
         UUID id = UUID.randomUUID();
 
         // 채널 생성
@@ -37,7 +39,7 @@ public class JavaApplication {
         channelService.addMember(user2.getId(), ch.getId());
         channelService.addMember(user3.getId(), ch.getId());
         channelService.addMember(user4.getId(), ch.getId());
-            // ch2
+        // ch2 ~ 4
         channelService.addMember(user1.getId(), ch2.getId());
         channelService.addMember(user4.getId(), ch3.getId());
         channelService.addMember(user4.getId(), ch4.getId());
@@ -45,6 +47,7 @@ public class JavaApplication {
         System.out.println("user4 channel list");
         System.out.println(user4.getChannels());
         System.out.println(ch.getMembersSet());
+
         System.out.println("===user4 leaveChannel Test===");
         channelService.removeMember(user4.getId(), ch.getId());
         System.out.println(user4.getChannels());
@@ -55,13 +58,110 @@ public class JavaApplication {
         Message msg2 = messageService.create("Have a nice Day", user2, ch);
         Message msg3 = messageService.create("GOOD", user3, ch);
 
+        // 예외 케이스 테스트
+        System.out.println();
+        System.out.println("===Exception Cases (Not Found)===");
+
+        // User: find / update / delete
+        try{
+            System.out.println("User find" + userService.find(id));
+        } catch (IllegalArgumentException e){
+            System.out.println("User find EX " + e.getMessage());
+        }
+
+        try{
+            userService.update(id, "HAHHA");
+            System.out.println("User update Success");
+        } catch (IllegalArgumentException e){
+            System.out.println("User update EX " + e.getMessage());
+        }
+
+        try{
+            userService.delete(id);
+            System.out.println("User Delete Success");
+        } catch (IllegalArgumentException e){
+            System.out.println("User delete EX " + e.getMessage());
+        }
+
+        // Channel: find / update / delete
+        try{
+            System.out.println("Channel find" + channelService.find(id));
+            System.out.println("Channel find Success");
+        } catch (IllegalArgumentException e){
+            System.out.println("Channel find EX " + e.getMessage());
+        }
+
+        try{
+            channelService.update(id, "OMG");
+            System.out.println("Channel update Success");
+        } catch (IllegalArgumentException e){
+            System.out.println("Channel update EX " + e.getMessage());
+        }
+
+        try{
+            channelService.delete(id);
+            System.out.println("Channel Delete Success");
+        } catch (IllegalArgumentException e){
+            System.out.println("Channel delete EX " + e.getMessage());
+        }
+
+        // Message: find / update / delete
+        try{
+            System.out.println("Message find" + messageService.find(id));
+        } catch (IllegalArgumentException e){
+            System.out.println("Message find EX " + e.getMessage());
+        }
+
+        try{
+            messageService.update(id, "HAHHA");
+            System.out.println("Message update Success");
+        } catch (IllegalArgumentException e){
+            System.out.println("Message update EX " + e.getMessage());
+        }
+
+        try{
+            messageService.delete(id);
+            System.out.println("Message Delete Success");
+        } catch (IllegalArgumentException e){
+            System.out.println("Message delete EX " + e.getMessage());
+        }
+        System.out.println("=======");
+
+        // Member, Channel
+        System.out.println();
+        System.out.println("===Channel Member Exception Test===");
+
+        try {
+            channelService.addMember(id, ch.getId()); // 없는 userId
+        } catch (IllegalArgumentException e) {
+            System.out.println("addMember EX - user " + e.getMessage());
+        }
+
+        try {
+            channelService.addMember(user1.getId(), id); // 없는 channelId
+        } catch (IllegalArgumentException e) {
+            System.out.println("addMember EX - channel " + e.getMessage());
+        }
+
+        try {
+            channelService.removeMember(id, ch.getId()); // 없는 userId
+        } catch (IllegalArgumentException e) {
+            System.out.println("removeMember EX - user " + e.getMessage());
+        }
+
+        try {
+            channelService.removeMember(user1.getId(), id); // 없는 channelId
+        } catch (IllegalArgumentException e) {
+            System.out.println("removeMember EX - channel " + e.getMessage());
+        }
+        System.out.println();
+
         // read & readAll test
         // User 조회
         System.out.println();
         System.out.println("===read test===");
         System.out.println("===user1 read test===");
         System.out.println(userService.find(user1.getId()));
-        System.out.println(userService.find(id));
         System.out.println("===user readall test===");
         System.out.println(userService.readAll());
 
@@ -122,21 +222,23 @@ public class JavaApplication {
         System.out.println(channelService.readAll());
 
         // Message Delete Test
+        System.out.println("===Message Delete Test===");
         User testUser = msg3.getSender();
         Channel testChannel = msg3.getChannel();
 
         System.out.println();
         System.out.println("===Before Delete===");
         System.out.println(messageService.readAll());
-        System.out.println(testChannel.getMessageList());
+        System.out.println("channel messageList(before): "+ testChannel.getMessageList());
+
         System.out.println("===After Delete===");
         messageService.delete(msg3.getId());
         System.out.println(messageService.readAll());
-        System.out.println("===Test User, Channel===");
 
+        System.out.println("===Test User, Channel===");
         System.out.println("user&channel messageList");
-        System.out.println(testUser.getMessageList());
-        System.out.println(testChannel.getMessageList());
+        System.out.println("user messageList: " + testUser.getMessageList());
+        System.out.println("channel messageList: "+ testChannel.getMessageList());
 
 
     }
