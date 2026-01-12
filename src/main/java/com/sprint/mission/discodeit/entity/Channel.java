@@ -7,15 +7,13 @@ public class Channel extends CommonEntity{
     private String channelName;
     private ChannelType channelType;
     private String description;
-    private List<Message> messages;
-    private List<User> users;
+    private final List<Message> messages = new ArrayList<>();
+    private final List<User> users = new ArrayList<>();
 
     public Channel(String channelName, ChannelType channelType, String description) {
         this.channelName = channelName;
         this.channelType = channelType;
         this.description = description;
-        this.messages = new ArrayList<>();
-        this.users = new ArrayList<>();
     }
 
     public String getChannelName() {
@@ -53,13 +51,28 @@ public class Channel extends CommonEntity{
         this.updateAt = System.currentTimeMillis();
     }
 
-    public void updateMessages(List<Message> messages) {
-        this.messages = messages;
+    public void addMessage(Message message) {
+        messages.add(message);
         this.updateAt = System.currentTimeMillis();
     }
 
-    public void updateUsers(List<User> users) {
-        this.users = users;
+    public void removeMessage(Message message) {
+        messages.remove(message);
+        this.updateAt = System.currentTimeMillis();
+    }
+
+    public void addUser(User user) {
+        users.add(user);
+        this.updateAt = System.currentTimeMillis();
+    }
+
+    public void removeUser(User user) {
+        users.remove(user);
+        this.updateAt = System.currentTimeMillis();
+    }
+
+    public void updateUser(User user) {
+        users.set(users.indexOf(user), user);
         this.updateAt = System.currentTimeMillis();
     }
 }

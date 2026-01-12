@@ -7,13 +7,12 @@ public class User extends CommonEntity{
     private String userName;
     private String password;
     private String email;
-    private List<Channel> channels;
+    private final List<Channel> channels = new ArrayList<>();
 
     public User(String userName, String password, String email) {
         this.userName = userName;
         this.password = password;
         this.email = email;
-        this.channels = new ArrayList<>();
     }
 
     public String getUserName() {
@@ -47,8 +46,13 @@ public class User extends CommonEntity{
         this.updateAt = System.currentTimeMillis();
     }
 
-    public void updateChannels(List<Channel> channels) {
-        this.channels = channels;
+    public void addChannel(Channel channel) {
+        channels.add(channel);
+        this.updateAt = System.currentTimeMillis();
+    }
+
+    public void removeChannel(Channel channel) {
+        channels.remove(channel);
         this.updateAt = System.currentTimeMillis();
     }
 }
