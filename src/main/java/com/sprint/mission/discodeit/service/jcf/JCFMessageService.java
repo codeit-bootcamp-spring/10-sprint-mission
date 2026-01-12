@@ -9,83 +9,80 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
-
-    // 1. Memory DB
     private final Map<UUID, Message> messageMap = new HashMap<>();
-
-    // 2. 의존성 (다른 서비스들)
-    // 메시지를 만들 때 유저와 채널의 존재 여부를 확인하기 위해 필요합니다.
+    // 의존성 (다른 서비스들)
+    // 메시지를 만들 때 유저와 채널의 존재 여부를 확인하기 위해 필요
     private final UserService userService;
     private final ChannelService channelService;
 
-    // 3. 생성자 주입 (Constructor Injection)
-    // "JCFMessageService가 작동하려면 UserService와 ChannelService가 반드시 필요해!"라고 선언하는 것
+    // 생성자 주입 (Constructor Injection)
+    //   JCFMessageService가 작동하려면 UserService와 ChannelService가 반드시 필요함
     public JCFMessageService(UserService userService, ChannelService channelService) {
         this.userService = userService;
         this.channelService = channelService;
     }
 
+    private Message findMessageByIdOrThrow(UUID messageId) {
+        if(!messageMap.containsKey(messageId)) {
+            throw new IllegalStateException("해당 ID의 메시지가 존재하지 않음. ID: " + messageId);
+        }
+        return messageMap.get(messageId);
+    }
+
+    // Service Implementation
+    // Create
     @Override
     public Message createMessage(String content, UUID userId, UUID channelId) {
-        // [유효성 검사] 내용 없음
         if (content == null || content.trim().isEmpty()) {
             throw new IllegalArgumentException("메시지 내용을 입력해야 합니다.");
         }
 
-        // [참조 무결성 검사] (Foreign Key Constraint Simulation)
+        // 참조 무결성 검사
         // 1. 존재하는 유저인가?
-        userService.findUserByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-
+        userService.findUserByUserId(userId);
         // 2. 존재하는 채널인가?
-        channelService.findUserByUserId(channelId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+        channelService.findChannelById(channelId);
 
-        // [생성 및 저장]
-        // 검증을 모두 통과했으므로 안전하게 메시지를 생성합니다.
-        Message message = new Message(content, findUserByUserId(userId));
+        Message message = new Message(content, userId, channelId);
         messageMap.put(message.getId(), message);
 
         return message;
     }
 
+    // Read
     @Override
-    public Optional<Message> findOne(UUID id) {
-        return Optional.ofNullable(messageMap.get(id));
+    public Message findMessageById(UUID messageId) {
+        return findMessageByIdOrThrow(messageId);
     }
 
     @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
-        // [Stream API 활용]
-        // SQL: SELECT * FROM message WHERE channel_id = ? ORDER BY created_at ASC
+    public List<Message> findAllMessagesByChannelId(UUID channelId) {
+        // 채널 존재 여부 확인
+        channelService.findChannelById(channelId);
+
+        // 스트림으로 필터링
         return messageMap.values().stream()
-                .filter(msg -> msg.getChannelId().equals(channelId)) // 1. 해당 채널 메시지만 필터링
-                .sorted(Comparator.comparing(Message::getCreatedAt)) // 2. 작성 시간 순으로 정렬 (과거 -> 현재)
-                .collect(Collectors.toList());                       // 3. 리스트로 변환
+                .filter(msg -> msg.getChannelId().equals(channelId)) // 채널 ID로 필터링
+                .sorted(Comparator.comparing(Message::getCreatedAt)) // 작성 시간 순 정렬
+                .collect(Collectors.toList());
     }
 
+    // Update
     @Override
-    public Message updateMessage(UUID id, String newContent) {
-        // 1. 대상 조회
-        Message message = findOne(id)
-                .orElseThrow(() -> new IllegalArgumentException("수정할 메시지를 찾을 수 없습니다."));
+    public Message updateMessage(UUID messageId, String newContent) {
+        Message message = findMessageByIdOrThrow(messageId);
 
-        // 2. 유효성 검사
         if (newContent == null || newContent.trim().isEmpty()) {
             throw new IllegalArgumentException("수정할 내용이 비어있습니다.");
         }
-
-        // 3. 수정 (Entity 메소드 활용)
         message.updateContent(newContent);
-
         return message;
     }
 
+    // Delete
     @Override
-    public void deleteMessage(UUID id) {
-        if (!messageMap.containsKey(id)) {
-            throw new IllegalArgumentException("삭제할 메시지가 존재하지 않습니다.");
-        }
-        messageMap.remove(id);
+    public void deleteMessage(UUID messageId) {
+        findMessageByIdOrThrow(messageId);
+        messageMap.remove(messageId);
     }
 }

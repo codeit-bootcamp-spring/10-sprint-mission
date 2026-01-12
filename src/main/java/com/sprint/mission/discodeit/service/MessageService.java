@@ -22,7 +22,7 @@ public interface MessageService {
      * @param messageId 메시지 ID
      * @return 메시지 객체 (Optional)
      */
-    User findUserByUserId(UUID messageId); // 메서드 네이밍 변경
+    Message findMessageById(UUID messageId); // 메서드 네이밍 변경
 
     /**
      * 특정 채널의 메시지 전체 조회
@@ -30,9 +30,9 @@ public interface MessageService {
      * @param channelId 조회할 채널의 ID
      * @return 해당 채널의 메시지 리스트 (시간순 정렬 권장)
      */
-    List<Message> findAllByChannelId(UUID channelId);
+    List<Message> findAllMessagesByChannelId(UUID channelId);
 
-    //
+    // Update
     /**
      * 메시지 수정
      * @param id 수정할 메시지 ID
@@ -41,6 +41,7 @@ public interface MessageService {
      */
     Message updateMessage(UUID id, String newContent);
 
+    // Delete
     /**
      * 메시지 삭제
      * @param messageId 삭제할 메시지 ID
