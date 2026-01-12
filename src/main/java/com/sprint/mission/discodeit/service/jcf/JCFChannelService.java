@@ -1,68 +1,71 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
     private final UserService userService;
-    private final List<Channel> data;
+    private final Map<UUID, Channel> data;
 
     public JCFChannelService(UserService userService) {
         this.userService = userService;
-        this.data = new ArrayList<>();
+        this.data = new HashMap<>();
     }
 
     @Override
-    public Channel create(String name, User owner) {
+    public Channel createChannel(String name, UUID owner) {
+        userService.findUserById(owner);
         Channel channel = new Channel(name, owner);
-        data.add(channel);
+
+        data.put(channel.getId(), channel);
+        userService.joinChannel(channel.getId(), owner);
         return channel;
     }
 
     @Override
-    public Channel read(UUID channelId) {
-        return data.stream()
-                .filter(ch -> ch.getId().equals(channelId))
-                .findFirst()
-                .orElseThrow(RuntimeException::new);
-    }
+    public Channel findChannelById(UUID channelId) {
+        Channel channel = data.get(channelId);
+        if (channel == null) {
+            throw new RuntimeException("존재하지 않는 채널입니다.");
+        }
 
-    @Override
-    public List<Channel> readAll() {
-        return new ArrayList<>(data);
-    }
-
-    @Override
-    public Channel update(UUID channelId, String newName) {
-        Channel channel = read(channelId);
-        channel.update(newName);
         return channel;
     }
 
     @Override
-    public void delete(UUID channelId) {
-        data.removeIf(ch -> ch.getId().equals(channelId));
+    public List<Channel> findAll() {
+        return new ArrayList<>(data.values());
     }
 
     @Override
-    public List<User> readUsers(UUID channelId) {
-        Channel channel = read(channelId);
-        return channel.getUsers()
-                .stream()
-                .map(userService::read)
-                .toList();
+    public Channel updateChannelName(UUID channelId, String newName) {
+        Channel channel = findChannelById(channelId);
+        channel.updateChannelName(newName);
+        return channel;
     }
 
     @Override
-    public void join(UUID channelId, UUID userId) {
-        Channel channel = read(channelId);
-        userService.read(userId);
-        channel.join(userId);
+    public void deleteChannel(UUID channelId) {
+        userService.leaveChannel(channelId);
+        data.remove(channelId);
+    }
+
+    @Override
+    public void joinChannel(UUID channelId, UUID userId) {
+        findChannelById(channelId);
+        userService.joinChannel(channelId, userId);
+    }
+
+    @Override
+    public void leaveChannel(UUID channelId, UUID userId) {
+        findChannelById(channelId);
+        userService.leaveChannel(channelId, userId);
     }
 }
