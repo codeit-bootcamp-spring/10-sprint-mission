@@ -10,15 +10,14 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.io.*;
 import java.util.*;
 
-public class FileMessageService implements MessageService,  ClearMemory {
+public class FileMessageService extends AbstractFileService implements MessageService,  ClearMemory {
 
-    private final File file;    // 클래스가 사용할 파일 저장소 객체 - 경로를 생성자에서 주입해 저장/불러오기 사용
     private final UserService userService;
     private final ChannelService channelService;
 
     // path : 파일이름 - 메인에서 저장 위치 지정
     public FileMessageService(String path, UserService userService, ChannelService channelService) {
-        this.file = new File(path);
+        super(path);
         this.userService = userService;
         this.channelService = channelService;
     }
@@ -39,19 +38,7 @@ public class FileMessageService implements MessageService,  ClearMemory {
         writeToFile(data);
     }
 
-    // 파일에서 로드(없으면 빈 Map) - 역직렬화
-    @SuppressWarnings("unchecked")  // Object형을 Map으로 형변환할 때 뜨는 경고 억제
-    private Map<UUID, Message> load() {
-        if (!file.exists()) {
-            return new HashMap<>(); // 파일 없으면 빈 저장소
-        }
 
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, Message>) ois.readObject();   // 파일 읽고 변환, 바이트를 메모리 객체로 복원
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @Override
     public Message create(Message message) {
@@ -77,7 +64,8 @@ public class FileMessageService implements MessageService,  ClearMemory {
 
     @Override
     public List<Message> readAll() {
-        return List.copyOf(load().values());    // 값들만 뽑아서 불변 리스트로 반환, 조회용이라 불변
+        Map<UUID,Message> data = load();
+        return List.copyOf(data.values());    // 값들만 뽑아서 불변 리스트로 반환, 조회용이라 불변
     }
 
     @Override
@@ -108,11 +96,4 @@ public class FileMessageService implements MessageService,  ClearMemory {
         writeToFile(new HashMap<UUID, Message>());
     }
 
-    private void writeToFile(Map<UUID, Message> data) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-            oos.writeObject(data);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.*;
 //import com.sprint.mission.discodeit.jcf.JCFChannelService;
 //import com.sprint.mission.discodeit.jcf.JCFMessageService;
 //import com.sprint.mission.discodeit.jcf.JCFUserService;
@@ -24,9 +21,9 @@ public class JavaApplication {
         //JCFChannelService channelService = new JCFChannelService();
         FileChannelService channelService = new FileChannelService("channel.ser");
         channelService.clear();
-        Channel channel1 = new Channel("달선이 채널", false);
-        Channel channel2 = new Channel("달룡이 채널", false);
-        Channel channel3 = new Channel("달례 채널", false);
+        Channel channel1 = new Channel("달선이 채널", IsPrivate.PUBLIC);
+        Channel channel2 = new Channel("달룡이 채널", IsPrivate.PUBLIC);
+        Channel channel3 = new Channel("달례 채널", IsPrivate.PUBLIC);
         channelService.create(channel1);
         channelService.create(channel2);
         channelService.create(channel3);
@@ -88,7 +85,7 @@ public class JavaApplication {
         // 수정
         System.out.println("\n채널 수정 후");
         channel1.updateName("달선이의 롤 채널");
-        channel1.updatePrivate(true);
+        channel1.updatePrivate(IsPrivate.PRIVATE);
         channelService.update(channel1);
         System.out.println(channelService.readAll());
 //        channelService.delete(channel2.getId()); // 채널 예외 발생

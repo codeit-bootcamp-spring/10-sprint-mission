@@ -9,11 +9,10 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.io.*;
 import java.util.*;
 
-public class FileUserService implements UserService, ClearMemory {
-    private final File file;
+public class FileUserService extends AbstractFileService implements UserService, ClearMemory {
 
     public FileUserService(String path) {
-        file = new File(path);
+        super(path);
     }
 
     private void save(User user) {
@@ -32,17 +31,6 @@ public class FileUserService implements UserService, ClearMemory {
         writeToFile(data);
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<UUID, User> load(){
-        if (!file.exists()) {
-            return new HashMap<>();
-        }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, User>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
     @Override
     public User create(User user) {
         save(user);
@@ -60,7 +48,8 @@ public class FileUserService implements UserService, ClearMemory {
 
     @Override
     public List<User> readAll() {
-        return List.copyOf(load().values());
+        Map<UUID, User> data = load();
+        return List.copyOf(data.values());
     }
 
     @Override
@@ -89,13 +78,5 @@ public class FileUserService implements UserService, ClearMemory {
     @Override
     public void clear() {
         writeToFile(new HashMap<UUID, User>());
-    }
-
-    private void writeToFile(Map<UUID, User> data) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-            oos.writeObject(data);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }

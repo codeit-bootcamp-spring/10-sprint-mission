@@ -9,12 +9,11 @@ import com.sprint.mission.discodeit.service.ClearMemory;
 import java.io.*;
 import java.util.*;
 
-public class FileChannelService implements ChannelService, ClearMemory {
+public class FileChannelService extends AbstractFileService implements ChannelService, ClearMemory {
 
-    private final File file;
 
     public FileChannelService(String path) {
-        this.file = new File(path);
+        super(path);
     }
 
     private void save(Channel channel) {
@@ -33,21 +32,6 @@ public class FileChannelService implements ChannelService, ClearMemory {
         writeToFile(data);
     }
 
-
-    @SuppressWarnings("unchecked")
-    private Map<UUID, Channel> load(){
-        if (!file.exists()) {
-            return new HashMap<>();
-        }
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, Channel>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
     @Override
     public Channel create(Channel channel) {
         save(channel);
@@ -65,7 +49,8 @@ public class FileChannelService implements ChannelService, ClearMemory {
 
     @Override
     public List<Channel> readAll() {
-        return List.copyOf(load().values());
+        Map<UUID, Channel> data = load();
+        return List.copyOf(data.values());
     }
 
     @Override
@@ -94,13 +79,5 @@ public class FileChannelService implements ChannelService, ClearMemory {
     @Override
     public void clear() {
         writeToFile(new HashMap<UUID, Channel>());
-    }
-
-    private void writeToFile(Map<UUID, Channel> data) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-            oos.writeObject(data);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
