@@ -51,13 +51,13 @@ public class JavaApplication {
         channeldata.readAll().stream().forEach(System.out::println);
 
         //삭제하기, 조회
-        messagedata.delete(mes2);
+        messagedata.delete(mes2.getId());
         messagedata.readAll().stream().forEach(System.out::println);
 
-        userdata.delete(user2);
+        userdata.delete(user2.getId());
         userdata.readAll().stream().forEach(System.out::println);
 
-        channeldata.delete(ch2);
+        channeldata.delete(ch2.getId());
         channeldata.readAll().stream().forEach(System.out::println);
 
 

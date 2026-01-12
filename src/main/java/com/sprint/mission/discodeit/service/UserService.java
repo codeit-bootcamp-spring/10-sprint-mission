@@ -9,6 +9,6 @@ public interface UserService {
     public User read(UUID id);
     public HashSet<User> readAll();
     public User create(User user);
-    public void delete(User user);
+    public void delete(UUID id);
     public void update(UUID id, String str);
 }

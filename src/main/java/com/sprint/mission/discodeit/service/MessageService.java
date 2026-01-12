@@ -9,6 +9,6 @@ public interface MessageService {
     public Message read(UUID id);
     public HashSet<Message> readAll();
     public Message create(Message message);
-    public void delete(Message message);
+    public void delete(UUID id);
     public void update(UUID id, String str);
 }

@@ -9,6 +9,6 @@ public interface ChannelService {
     public Channel read(UUID id);
     public HashSet<Channel> readAll();
     public Channel create(String channelName, String channelDescription);
-    public void delete(Channel channel);
+    public void delete(UUID id);
     public void update(UUID id, String str, boolean isChangingName);
 }

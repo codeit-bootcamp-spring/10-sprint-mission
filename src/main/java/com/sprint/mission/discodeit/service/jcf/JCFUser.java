@@ -38,8 +38,12 @@ public class JCFUser implements UserService {
     }
 
     @Override
-    public void delete(User user) {
-        users.remove(user);
+    public void delete(UUID id) {
+        users.remove(users.stream()
+                .filter(user -> user.getId().equals(id))
+                .findFirst()
+                .orElse(null)
+        );
     }
 
     @Override

@@ -40,8 +40,12 @@ public class JCFChannel implements ChannelService {
     }
 
     @Override
-    public void delete(Channel channel) {
-        channels.remove(channel);
+    public void delete(UUID id) {
+        channels.remove(channels.stream()
+                .filter(channel -> channel.getId().equals(id))
+                .findFirst()
+                .orElse(null)
+                );
     }
 
     @Override

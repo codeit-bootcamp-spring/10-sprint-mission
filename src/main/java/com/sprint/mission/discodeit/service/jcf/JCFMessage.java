@@ -38,8 +38,12 @@ public class JCFMessage implements MessageService {
     }
 
     @Override
-    public void delete(Message message) {
-        messages.remove(message);
+    public void delete(UUID id) {
+        messages.remove(messages.stream()
+                .filter(message -> message.getId().equals(id))
+                .findFirst()
+                .orElse(null)
+        );
     }
 
     @Override
