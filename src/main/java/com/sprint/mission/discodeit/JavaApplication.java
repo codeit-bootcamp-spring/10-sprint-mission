@@ -101,29 +101,26 @@ public class JavaApplication {
 
         //---------------------------------3. message---------------------------------
         // 3-1. message 등록 및 조회
-        Message message1 = new Message(channel1, "봉구", "멍멍!"); // 수정 필요: user와 엮기
+        Message message1 = new Message(channel1, user1, "멍멍!");
         messageService.create(message1);
-        System.out.println("3-1. 메시지 등록 완료: [" + message1.getSender() + "] " + message1.getText());
+        System.out.println("3-1. 메시지 등록 완료: [" + user1.getName() + "] " + message1.getText());
 
-        Message message2 = new Message(channel1, "샤미", "냐옹~"); // 수정 필요: user와 엮기
+        Message message2 = new Message(channel1, user2, "냐옹~");
         messageService.create(message2);
-        System.out.println("3-1. 메시지 등록 완료: [" + message2.getSender() + "] " + message2.getText());
+        System.out.println("3-1. 메시지 등록 완료: [" + user2.getName() + "] " + message2.getText());
 
-        Message message3 = new Message(channel1, "인간", "안녕하십니까."); // 수정 필요: user와 엮기
-        messageService.create(message3);
-        System.out.println("3-1. 메시지 등록 완료: [" + message3.getSender() + "] " + message3.getText());
 
         // 3-2. message 다건 조회
         System.out.println("3-2. 메세지 다건 조회: " + "총" + messageService.readAll().size() + "개");
 
         // 3-3. message 수정 및 조회
         messageService.update(message2.getId(), "안녕하세요.");
-        System.out.println("3-3. 메세지 내용 수정 완료: [" + message2.getSender() + "] " + messageService.read(message2.getId()).getText());
+        System.out.println("3-3. 메세지 내용 수정 완료: [" + user2.getName() + "] " + messageService.read(message2.getId()).getText());
         System.out.println("수정 시각: " + messageService.read(message2.getId()).getUpdatedAt());
 
         // 3-4. message 삭제 및 확인
-        messageService.delete(message3.getId());
-        if (messageService.read(message3.getId()) == null) {
+        messageService.delete(message1.getId());
+        if (messageService.read(message1.getId()) == null) {
             System.out.println("3-4. 메시지 내용 삭제 완료");
         }
 

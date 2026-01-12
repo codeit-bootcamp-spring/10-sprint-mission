@@ -7,10 +7,10 @@ public class Message {
     private final UUID channelId;
     private final Long createdAt;
     private Long updatedAt;
-    private String sender;
+    private User sender;
     private String text;
 
-    public Message(Channel channel, String sender, String text) {
+    public Message(Channel channel, User sender, String text) {
         this.id = UUID.randomUUID();
         this.channelId = channel.getId();
         this.sender = sender;
@@ -24,7 +24,7 @@ public class Message {
     public UUID getChannelId() { return channelId; }
     public Long getCreatedAt() { return createdAt; }
     public Long getUpdatedAt() { return updatedAt; }
-    public String getSender() { return sender; }
+    public User getSender() { return sender; }
     public String getText() { return text; }
 
 
