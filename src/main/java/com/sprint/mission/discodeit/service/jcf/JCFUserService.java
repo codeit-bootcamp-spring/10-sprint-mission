@@ -8,7 +8,7 @@ import java.util.*;
 public class JCFUserService implements UserService {
     private final Map<UUID, User> userMap = new HashMap<>();
 
-    // 검증 및 조회 로직 분리
+    // 중복 로직 분리
     private User findUserByIdOrThrow(UUID id) {
         if (!userMap.containsKey(id)) {
             throw new IllegalArgumentException("해당 ID의 사용자가 존재하지 않습니다. ID: " + id);
@@ -41,7 +41,7 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public List<User> findAll() {
+    public List<User> findAllUsers() {
         return new ArrayList<User>(userMap.values());
     }
 
@@ -52,7 +52,7 @@ public class JCFUserService implements UserService {
 
         // 중복 이름 체크 (자기 자신은 제외하고 체크)
         boolean isDuplicate = userMap.values().stream()
-                .anyMatch(u -> (!u.getId().equals(id)) && (u.getUsername().equals(newUsername)) );
+                .anyMatch(u -> !u.getId().equals(id) && u.getUsername().equals(newUsername) );
 
         if (isDuplicate) {
             throw new IllegalArgumentException("이미 존재하는 이름입니다.");

@@ -26,7 +26,7 @@ public interface UserService {
      * 사용자 전체 조회
      * @return 전체 사용자 목록
      */
-    List<User> findAll();
+    List<User> findAllUsers();
 
     // Update
     /**

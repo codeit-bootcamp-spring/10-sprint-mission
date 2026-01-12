@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
+
 
 import java.util.*;
 
@@ -13,30 +13,30 @@ public interface ChannelService {
      * @param channelName 채널 이름 (필수)
      * @return 생성된 채널 객체
      */
-    Channel createChannel(String channelName);
+    Channel createChannel(String channelName, UUID ownerId);
 
     // Read
     /**
      * 채널 단건 조회
-     * @param id 찾을 채널의 UUID
-     * @return 채널이 존재하면 Optional<Channel>, 없으면 Optional.empty()
+     * @param channelId 찾을 채널의 UUID
+     * @return 채널이 존재하면 Channel
      */
-    User findUserByUserId(UUID id); // 메서드 네이밍 변경
+    Channel findChannelById(UUID channelId); // 메서드 네이밍 변경
 
     /**
      * 모든 채널 조회
      * @return 채널 리스트 (없으면 빈 리스트)
      */
-    List<Channel> findAll();
+    List<Channel> findAllChannels();
 
     // Update
     /**
      * 채널 이름 수정
      * @param channelId 대상 채널 ID
-     * @param newName 변경할 새 이름
+     * @param newChannelName 변경할 새 이름
      * @return 수정된 채널 객체
      */
-    Channel updateChannel(UUID channelId, String newName);
+    Channel updateChannel(UUID channelId, String newChannelName);
 
     // Delete
     /**

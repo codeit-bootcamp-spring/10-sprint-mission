@@ -22,7 +22,7 @@ public class JavaApplication {
     }
     public static void main(String[] args) {
         User user1 = new User("홍길동");
-        Channel ch1 = new Channel("채팅방", user1);
+        Channel ch1 = new Channel("채팅방", user1.getId());
         Message message1 = new Message("첫 메시지", user1, ch1);
 
         System.out.println("\n====== [User, Channel, Message - Getter 테스트 시작] ======");
