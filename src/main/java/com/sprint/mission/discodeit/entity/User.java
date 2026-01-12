@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class User extends BaseEntity {
     // field
+    private final List<UUID> channelIds = new ArrayList<>(); // 유저가 속한 채널 목록
     private String name;
     private String email;
     private String profileImageUrl;
@@ -19,6 +22,7 @@ public class User extends BaseEntity {
     }
 
     // Getter, update
+    public List<UUID> getChannelIds() {return List.copyOf(this.channelIds);}
     public String getName() {return this.name;}
     public String getEmail() {return this.email;}
     public String getProfileImageUrl() {return this.profileImageUrl;}
@@ -30,5 +34,17 @@ public class User extends BaseEntity {
         this.email = email;
         this.profileImageUrl = profileImageUrl;
         this.status = status;
+    }
+
+    // channelId
+    public void joinChannel(UUID channelId) {
+        if (channelId == null)
+            return;
+        if (!this.channelIds.contains(channelId))
+            this.channelIds.add(channelId);
+    }
+
+    public void leaveChannel(UUID channelId) {
+        this.channelIds.remove(channelId);
     }
 }
