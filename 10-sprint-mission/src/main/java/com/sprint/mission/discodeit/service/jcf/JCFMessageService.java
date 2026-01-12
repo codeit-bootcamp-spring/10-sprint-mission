@@ -21,7 +21,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message create(Message message){
-        if(userService.findById(message.getSenderId()) == null){
+        if(userService.findById(message.getUserId()) == null){
             throw new IllegalArgumentException("존재하지 않는 사용자 입니다.");
         }
         if(channelService.findById(message.getChannelId()) == null){

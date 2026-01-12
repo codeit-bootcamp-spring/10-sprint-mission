@@ -34,7 +34,7 @@ public class Message {
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public UUID getSenderId() {
+    public UUID getUserId() {
         return userId;
     }
 
