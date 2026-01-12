@@ -15,4 +15,6 @@ public interface UserService {
     void updateUser(UUID id, String name, String email);
 
     void deleteUser(UUID id);
+
+    void validateUser(User user);
 }

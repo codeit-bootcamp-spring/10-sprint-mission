@@ -27,15 +27,9 @@ public class JCFMessageService implements MessageService {
         return message;
     }
 
-    private void validateMessage(Channel channel, User author, String content) {
-        if(channel == null || channel.getId() == null) throw new IllegalArgumentException("채널 정보가 없습니다");
-        if(author == null || author.getId() == null) throw new IllegalArgumentException("유저 정보가 없습니다");
-        if(content == null || content.isBlank()) throw new IllegalArgumentException("내용을 다시 입력해주세요");
-        if(channelService.getChannel(channel.getId()) == null) throw new IllegalArgumentException("존재하지 않는 채널입니다.");
-        if(userService.getUser(author.getId()) == null) throw new IllegalArgumentException("존재하지 않는 유저입니다.");
-    }
     @Override
     public Message getMessage(UUID id) {
+        validateMessageId(id);
         return data.get(id);
     }
 
@@ -46,12 +40,26 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void updateMessage(String content, UUID id) {
+        validateMessageId(id);
+        if(content == null || content.isBlank()) throw new IllegalArgumentException("수정할 내용을 입력하세요.");
         Message message = data.get(id);
         message.update(content);
     }
 
     @Override
     public void deleteMessage(UUID id) {
+        validateMessageId(id);
         data.remove(id);
+    }
+
+    private void validateMessage(Channel channel, User author, String content) {
+        channelService.validateChannel(channel);
+        userService.validateUser(author);
+        if(content == null || content.isBlank()) throw new IllegalArgumentException("내용을 다시 입력해주세요");
+    }
+
+    private void validateMessageId(UUID id){
+        if(id == null) throw new IllegalArgumentException("메시지 ID가 없습니다.");
+        if(!data.containsKey(id)) throw new IllegalArgumentException("존재하지 않는 메시지입니다.");
     }
 }

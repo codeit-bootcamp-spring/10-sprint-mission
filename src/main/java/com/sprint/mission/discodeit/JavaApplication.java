@@ -12,8 +12,12 @@ public class JavaApplication {
         JCFUserService userService = new JCFUserService();
         JCFChannelService channelService = new JCFChannelService();
         JCFMessageService messageService = new JCFMessageService(userService, channelService);
+
+        System.out.println("=== 정상 흐름 테스트 ===");
         runTest(userService, channelService, messageService);
 
+        System.out.println("\n=== 유효성 검증 실패 테스트 ===");
+        runValidationTest(userService, channelService, messageService);
     }
     private static void runTest(JCFUserService userService, JCFChannelService channelService, JCFMessageService messageService){
         System.out.println("데이터 등록");
@@ -53,5 +57,48 @@ public class JavaApplication {
         System.out.println(channelService.getAllChannels());
         System.out.println(messageService.getAllMessages());
 
+    }
+
+    private static void runValidationTest(JCFUserService userService, JCFChannelService channelService, JCFMessageService messageService) {
+        try {
+            System.out.print("[테스트 1] 이름 없이 유저 생성: ");
+            userService.createUser("", "test@test.com");
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (" + e.getMessage() + ")");
+        }
+
+        try {
+            System.out.print("[테스트 2] 존재하지 않는 ID로 채널 조회: ");
+            channelService.getChannel(java.util.UUID.randomUUID());
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (" + e.getMessage() + ")");
+        }
+
+        try {
+            System.out.print("[테스트 3] 저장되지 않은 유저 객체로 메시지 생성: ");
+            Channel channel = channelService.createChannel("테스트채널", "chat");
+            User ghostUser = new User("유령", "ghost@test.com");
+            messageService.createMessage(channel, ghostUser, "안녕");
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (" + e.getMessage() + ")");
+        }
+
+        try {
+            System.out.print("[테스트 4] 빈 메시지 내용으로 생성: ");
+            User user = userService.createUser("테스터", "tester@test.com");
+            Channel channel = channelService.getAllChannels().get(0);
+            messageService.createMessage(channel, user, "  ");
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (" + e.getMessage() + ")");
+        }
+
+        try {
+            System.out.print("[테스트 5] 삭제된 유저 수정 시도: ");
+            User user = userService.createUser("삭제될사람", "delete@test.com");
+            userService.deleteUser(user.getId());
+            userService.updateUser(user.getId(), "새이름", null);
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (" + e.getMessage() + ")");
+        }
     }
 }
