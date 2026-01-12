@@ -2,23 +2,22 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.UUID;
 
+import static com.sprint.mission.discodeit.Main.userService;
+import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateField;
+
 public class JCFChannelService implements ChannelService {
-    private final ArrayList<Channel> channels = new ArrayList<>();        // user 한 명당 가지는 채널
-    // private final UserService userService;
+    public final ArrayList<Channel> channels = new ArrayList<>();        // 사용자 한 명당 가지는 채널
 
     // 채널 생성
     @Override
-    public Channel createChannel(String channelName, UUID ownerId, ChannelType channelType) {
-        // 1. 유효성 검증 필요
-
-        // 2. 채널 생성
-        Channel newChannel = new Channel(channelName, ownerId, channelType);
+    public Channel createChannel(String channelName, User user, ChannelType channelType) {
+        Channel newChannel = new Channel(channelName, user, channelType);
         channels.add(newChannel);
         return newChannel;
     }
@@ -26,49 +25,34 @@ public class JCFChannelService implements ChannelService {
     // 채널 단건 조회
     @Override
     public Channel searchChannel(UUID targetChannelId) {
-        // 1. 채널 탐색
         for (Channel channel : channels) {
-            // 있으면 해당 채널 반환
             if (channel.getId().equals(targetChannelId)) {
                 return channel;
             }
         }
-        // 없으면 널 반환
-        System.out.println("해당 채널이 존재하지 않습니다.");
-        return null;
+        throw new IllegalArgumentException("해당 채널이 존재하지 않습니다.");
     }
 
     // 채널 다건 조회
     @Override
-    public ArrayList<Channel> searchChannelAll() {
-        return channels;
-    }
+    public ArrayList<Channel> searchChannelAll() {      return channels;        }
 
     // 채널 정보 수정
     @Override
     public void updateChannel(UUID targetChannelId, String newChannelName) {
-        // 1. 채널 탐색
         Channel targetChannel = searchChannel(targetChannelId);
 
-        // 2. 채널 정보 수정
-        if ((targetChannel != null && newChannelName != null) || newChannelName.isBlank()) {
-            targetChannel.updateChannelName(newChannelName);
-        }
-        else  {
-            System.out.println("잘못된 채널 이름입니다.");
-        }
+        validateField(newChannelName, "[채널명 변경 실패] 올바른 채널명이 아닙니다.");
+
+        targetChannel.updateChannelName(newChannelName);
     }
 
     // 채널 삭제
     @Override
     public void deleteChannel(UUID targetChannelId) {
-        // 1. 채널 탐색
         Channel targetChannel = searchChannel(targetChannelId);
 
-        // 2. 채널 삭제
-        if (targetChannel != null) {
-            channels.remove(targetChannel);
-        }
+        channels.remove(targetChannel);
     }
 
     // 채널 참가자 초대

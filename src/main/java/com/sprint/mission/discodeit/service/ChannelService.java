@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 public interface ChannelService {
-    public Channel createChannel(String channelName, UUID ownerId, ChannelType channelType);
+    public Channel createChannel(String channelName, User user, ChannelType channelType);
     public Channel searchChannel(UUID targetChannelId);
     public ArrayList<Channel> searchChannelAll();
     public void updateChannel(UUID targetChannelId, String newChannelName);
