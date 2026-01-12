@@ -5,15 +5,20 @@ import com.sprint.mission.descodeit.entity.Message;
 import com.sprint.mission.descodeit.entity.User;
 import com.sprint.mission.descodeit.service.ChannelService;
 import com.sprint.mission.descodeit.service.MessageService;
+import com.sprint.mission.descodeit.service.UserService;
 
 import java.util.*;
 
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
+    private final UserService userService;
+    private final MessageService messageService;
 
-    public JCFChannelService(){
+    public JCFChannelService(UserService userService, MessageService messageService){
         this.data = new HashMap<>();
+        this.userService = userService;
+        this.messageService = messageService;
     }
 
     @Override
@@ -24,65 +29,51 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel joinUsers(Channel channel, User... users) {
-        if(channel == null){
-            throw new NoSuchElementException();
-        }
+    public Channel joinUsers(UUID channelID, UUID ... userID) {
+        Channel channel = findChannel(channelID);
 
         // 유저 추가
-        for(User user : users){
-            channel.addUsers(user);
-            user.addChannel(channel);
+        for(UUID id : userID){
+            channel.addUsers(userService.findUser(id));
+            userService.findUser(id).addChannel(channel);
         }
         return channel;
     }
 
     @Override
-    public Channel findCannel(UUID channelID) {
-        Channel channel = data.get(channelID);
-        if(channel == null){
-            throw new NoSuchElementException();
-        }
-        System.out.println(channel);
+    public Channel findChannel(UUID channelID) {
+        Channel channel = Optional.ofNullable(data.get(channelID))
+                .orElseThrow(()->new NoSuchElementException("해당 채널을 찾을 수 없습니다"));
         return channel;
     }
 
     @Override
     public List<Channel> findAllChannel() {
         System.out.println("[채널 전체 조회]");
-        if(data.isEmpty()){
-            System.out.println("조회할 채널이 없습니다");
-            return new ArrayList<>();
-        }
-
         for(UUID id : data.keySet()){
             System.out.println(data.get(id));
         }
+        System.out.println();
         return new ArrayList<>(data.values());
     }
 
     @Override
     public Channel update(UUID channelID, String newName) {
-        Channel channel = data.get(channelID);
-        if(channel == null){
-            throw new NoSuchElementException();
-        }
+        Channel channel = findChannel(channelID);
         channel.updateChannel(newName);
         return channel;
     }
 
     @Override
     public boolean delete(UUID channelID) {
-        Channel channel = data.get(channelID);
+        Channel channel = findChannel(channelID);
 
-        if(channel == null){
-            throw new NoSuchElementException();
+        // 채널이 삭제될때 이 채널이 속해있는 유저의 채널리스트에서 채널 삭제
+        for(User user : channel.getUserList()){
+            userService.findUser(user.getId()).getChannelList().remove(channel);
         }
-
-        MessageService messageService = new JCFMessageService();
-
         // 채널이 삭제될때 채널에 속해있던 메시지들 전부 삭제
-        for(Message message : channel.getMessageList()){
+        for(Message message : new ArrayList<>(channel.getMessageList())){
             messageService.delete(message.getId());
         }
         data.remove(channelID);

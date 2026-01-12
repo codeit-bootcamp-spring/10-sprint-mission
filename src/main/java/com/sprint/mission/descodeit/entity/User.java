@@ -6,8 +6,8 @@ import java.util.UUID;
 
 public class User extends BaseEntity{
     private String name;
-    private List<Message> messageList;
-    private List<Channel> channelList;
+    private final List<Message> messageList;
+    private final List<Channel> channelList;
 
     public User(String name){
         this.name = name;

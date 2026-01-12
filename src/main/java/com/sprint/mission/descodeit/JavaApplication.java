@@ -10,76 +10,78 @@ import com.sprint.mission.descodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.descodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.descodeit.service.jcf.JCFUserService;
 
+import java.util.UUID;
+
 public class JavaApplication {
     public static void main(String[] args){
-        UserService userService = new JCFUserService();
         MessageService messageService = new JCFMessageService();
-        ChannelService channelService = new JCFChannelService();
+        UserService userService = new JCFUserService(messageService);
+        ChannelService channelService = new JCFChannelService(userService,messageService);
 
         // 유저 생성
         User user1 = userService.create("김현재");
 
         //채널 생성
         Channel channel1 = channelService.create("스프린트");
+        Channel channel2 = channelService.create("코드잇");
 
         // 메시지 생성
         Message message1 = messageService.create(user1, "안녕하세요", channel1);
         Message message2 = messageService.create(user1, "안녕히 계세요", channel1);
 
-
-        try{
-            // 조회
-            System.out.println("---유저 조회---");
-            userService.findUser(user1.getId());
-            userService.findAllUsers();
-
-            System.out.println("---채널 조회---");
-            channelService.findCannel(channel1.getId());
-            channelService.findAllChannel();
-
-            System.out.println("---메시지 조회---");
-            messageService.findMessages(message1.getId());
-            messageService.findMessages(message2.getId());
-            messageService.findAllMessages();
-
-            System.out.println("");
-
-            // 수정 & 조회
-            System.out.println("---유저 수정&조회---");
-            userService.update(user1.getId(), "현재");
-            userService.findUser(user1.getId());
-
-            System.out.println("---채널 수정&조회---");
-            channelService.update(channel1.getId(), "코드잇");
-            channelService.findCannel(channel1.getId());
-
-            System.out.println("---메시지 수정&조회---");
-            messageService.update(message1.getId(), "Hello");
-            messageService.findAllMessages();
-
-            System.out.println("");
-
-            //삭제 & 조회
-            System.out.println("---유저 삭제&조회---");
-            userService.delete(user1.getId());
-            userService.findUser(user1.getId());
-
-            System.out.println("---채널 삭제&조회---");
-            channelService.delete(channel1.getId());
-            channelService.findCannel(channel1.getId());
-
-            System.out.println("---메시지 삭제&조회---");
-            messageService.delete(message1.getId());
-            messageService.findMessages(message1.getId());
-        } catch (Exception e) {
-            System.out.println("조회할 데이터가 없습니다");
-        }
+        System.out.println("--- 조회 ---");
+        // 조회
+        test(() -> userService.findUser(user1.getId()));
+        userService.findAllUsers();
 
 
+        test(() -> channelService.findChannel(channel1.getId()));
+        test(() -> channelService.findChannel(channel2.getId()));
+        channelService.findAllChannel();
+
+        test(() -> messageService.findMessage(message1.getId()));
+        test(() -> messageService.findMessage(message2.getId()));
+        messageService.findAllMessages();
+
+        System.out.println("");
+
+        System.out.println("--- 수정&조회 ---");
+        // 수정 & 조회
+        userService.update(user1.getId(), "현재");
+        test(() -> userService.findUser(user1.getId()));
+
+        channelService.update(channel1.getId(), "코드잇");
+        test(() -> channelService.findChannel(channel1.getId()));
 
 
+        messageService.update(message1.getId(), "Hello");
+        test(() -> messageService.findMessage(message1.getId()));
+        userService.findAllUsers();
+        messageService.findAllMessages();
+        channelService.findAllChannel();
 
+        System.out.println("");
+
+        System.out.println("--- 삭제&조회 ---");
+        //삭제 & 조회
+        userService.delete(user1.getId());
+        test(() -> userService.findUser(user1.getId()));
+
+        messageService.delete(message1.getId());
+        test(() -> messageService.findMessage(message1.getId()));
+
+        channelService.delete(channel1.getId());
+        test(() -> channelService.findChannel(channel1.getId()));
     }
+
+    private static void test(Runnable action){
+        try{
+            action.run();
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    };
 
 
 }

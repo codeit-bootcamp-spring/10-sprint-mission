@@ -3,7 +3,7 @@ package com.sprint.mission.descodeit.service.jcf;
 import com.sprint.mission.descodeit.entity.Channel;
 import com.sprint.mission.descodeit.entity.Message;
 import com.sprint.mission.descodeit.entity.User;
-import com.sprint.mission.descodeit.service.ChannelService;
+
 import com.sprint.mission.descodeit.service.MessageService;
 import com.sprint.mission.descodeit.service.UserService;
 
@@ -11,9 +11,11 @@ import java.util.*;
 
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data;
+    private final MessageService messageService;
 
-    public JCFUserService(){
+    public JCFUserService(MessageService messageService){
         this.data = new HashMap<>();
+        this.messageService = messageService;
     }
 
     @Override
@@ -25,44 +27,31 @@ public class JCFUserService implements UserService {
 
     @Override
     public User findUser(UUID userID) {
-        User user = data.get(userID);
-        if(user == null){
-            throw new NoSuchElementException();
-        }
-        System.out.println(user);
+        User user = Optional.ofNullable(data.get(userID))
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자를 찾을 수 없습니다"));
         return user;
     }
 
     @Override
     public List<User> findAllUsers() {
         System.out.println("[유저 전체 조회]");
-        if(data.isEmpty()){
-            System.out.println("조회할 유저가 없습니다");
-            return new ArrayList<>();
-        }
-
         for(UUID id : data.keySet()){
             System.out.println(data.get(id).getName());
         }
+        System.out.println();
         return new ArrayList<>(data.values());
     }
 
     @Override
     public User update(UUID userID,String newName) {
-        User user = data.get(userID);
-        if(user == null){
-            throw new NoSuchElementException();
-        }
+        User user = findUser(userID);
         user.updateUser(newName);
         return user;
     }
 
     @Override
     public boolean delete(UUID userID) {
-        User user = data.get(userID);
-        if(user == null){
-            throw new NoSuchElementException();
-        }
+        User user = findUser(userID);
 
         // 유저 삭제시 유저가 속한 채널의 유저 리스트에서 삭제
         List<Channel> channelList = user.getChannelList();
@@ -71,8 +60,7 @@ public class JCFUserService implements UserService {
         }
 
         // 유저가 가지고 있던 메시지 삭제
-        MessageService messageService = new JCFMessageService();
-        for(Message message : user.getMessageList()){
+        for(Message message : new ArrayList<>(user.getMessageList())){
             messageService.delete(message.getId());
         }
 
