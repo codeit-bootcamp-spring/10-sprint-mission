@@ -24,4 +24,14 @@ public class Channel {
         this.name = name;
         this.updatedAt = System.currentTimeMillis();
     }
+
+    @Override
+    public String toString() {
+        return "Channel{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }
