@@ -11,11 +11,11 @@ public interface ChannelService {
 
     List<Channel> getChannelList();
 
-    void updateChannelName(UUID channelId, String newChannelName);
+    Channel updateChannelName(UUID channelId, String newChannelName);
 
-    void joinChannel(UUID channelId, User user);
+    void joinChannel(UUID channelId, UUID userId);
 
-    void leaveChannel(UUID channelId, User user);
+    void leaveChannel(UUID channelId, UUID userId);
 
     void deleteChannel(UUID channelId);
 }
