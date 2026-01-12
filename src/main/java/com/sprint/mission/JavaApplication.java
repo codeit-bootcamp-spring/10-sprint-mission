@@ -13,7 +13,7 @@ public class JavaApplication {
 
         JCFUserService jcfUserService = new JCFUserService();
         JCFMessageService jcfMessageService = new JCFMessageService();
-        JCFChannelService jcfChannelService = new JCFChannelService(jcfMessageService);
+        JCFChannelService jcfChannelService = new JCFChannelService(jcfMessageService, jcfUserService);
 
         System.out.println("------------------- 유저 서비스 테스트 -------------------");
         System.out.println();
@@ -42,8 +42,8 @@ public class JavaApplication {
         Channel chatChannel = jcfChannelService.createChannel("Chat Channel");
         System.out.println("채널 생성 후: " + jcfChannelService.getChannelList());
         // 채널에 유저 추가
-        jcfChannelService.joinChannel(testChannel.getId(), charlie);
-        jcfChannelService.joinChannel(testChannel.getId(), david);
+        jcfChannelService.joinChannel(testChannel.getId(), charlie.getId());
+        jcfChannelService.joinChannel(testChannel.getId(), david.getId());
         System.out.println("채널에 유저 추가 후: " + jcfChannelService.getChannelList());
         // 채널 이름 변경
         jcfChannelService.updateChannelName(testChannel.getId(), "NMIXX Channel");
@@ -74,7 +74,7 @@ public class JavaApplication {
         System.out.println("메시지 삭제 후: " + jcfMessageService.getAllMessages());
 
         // 채널에서 유저 제거
-        jcfChannelService.leaveChannel(testChannel.getId(), charlie);
+        jcfChannelService.leaveChannel(testChannel.getId(), charlie.getId());
         System.out.println("채널에서 유저 제거 후: " + jcfChannelService.getChannelList());
 
         // 채널 삭제
