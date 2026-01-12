@@ -37,7 +37,7 @@ public class JCFMessageService implements MessageService {
         User user = userService.findById(userId);
 
         if (user.getChannelList().stream()
-            .anyMatch(ch -> ch.getId().equals(channelId))) {
+            .noneMatch(ch -> ch.getId().equals(channelId))) {
             throw new IllegalArgumentException(
                 user.getUserName() + "님은 " + channel.getName() + " 채널에 속해있지 않아 메시지를 보낼 수 없습니다."
             );
