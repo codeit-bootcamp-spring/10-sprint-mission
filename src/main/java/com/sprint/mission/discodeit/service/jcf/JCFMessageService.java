@@ -50,26 +50,17 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void updateMessage(UUID messageId, String newContent) {
-        Objects.requireNonNull(messageId, "messageId는 null일 수 없습니다.");
-
-        Message message = messages.get(messageId);
-        if (message == null) {
-            throw new NoSuchElementException("해당 id를 가진 메시지가 존재하지 않습니다.");
-        }
+    public Message updateMessage(UUID messageId, String newContent) {
+        Message message = checkNoSuchElementException(messageId);
 
         message.updateContent(newContent);
+        return message;
     }
 
     @Override
     public void deleteMessage(UUID messageId) {
-        Objects.requireNonNull(messageId, "messageId는 null일 수 없습니다.");
-
         Message message = messages.remove(messageId);
-
-        if (message == null) {
-            throw new NoSuchElementException("해당 id를 가진 메시지가 존재하지 않습니다.");
-        }
+        checkNoSuchElementException(messageId);
 
         message.getSentUser().removeSentMessage(message);
     }
@@ -86,5 +77,17 @@ public class JCFMessageService implements MessageService {
         }
 
         messageId.forEach(messages::remove);
+    }
+
+    private Message checkNoSuchElementException(UUID messageId) {
+        Objects.requireNonNull(messageId, "messageId는 null일 수 없습니다.");
+
+        Message message = messages.get(messageId);
+
+        if (message == null) {
+            throw new NoSuchElementException("해당 id를 가진 메시지가 존재하지 않습니다.");
+        }
+
+        return message;
     }
 }

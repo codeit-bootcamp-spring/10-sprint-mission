@@ -19,7 +19,7 @@ public interface MessageService {
 
     Optional<Message> getMessageByMessageId(UUID messageId);
 
-    void updateMessage(UUID messageId, String newContent);
+    Message updateMessage(UUID messageId, String newContent);
 
     void deleteMessage(UUID messageId);
 
