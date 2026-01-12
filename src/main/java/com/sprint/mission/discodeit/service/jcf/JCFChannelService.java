@@ -32,4 +32,11 @@ public class JCFChannelService implements ChannelService {
     public List<Channel> readAllChannel() {
         return list;
     }
+
+    @Override
+    public void updateChannel(UUID id, ChannelType type, String channelName, String channelDescription) {
+        readChannel(id).updateChannelType(type);
+        readChannel(id).updateChannelName(channelName);
+        readChannel(id).updateChannelDescription(channelDescription);
+    }
 }

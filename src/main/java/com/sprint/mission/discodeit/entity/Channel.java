@@ -34,6 +34,18 @@ public class Channel {
         return updatedAt;
     }
 
+    public void updateChannelType(ChannelType type) {
+        this.type = type;
+    }
+
+    public void updateChannelName(String channelName) {
+        this.channelName = channelName;
+    }
+
+    public void updateChannelDescription(String channelDescription) {
+        this.channelDescription = channelDescription;
+    }
+
     public String getChannelStatus() {
         return "채널 타입: " + type + ", 채널 이름: " + channelName + ", 채널 설명: " + channelDescription;
     }
