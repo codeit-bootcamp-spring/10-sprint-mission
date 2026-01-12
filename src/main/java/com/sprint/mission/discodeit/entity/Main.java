@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 public class Main extends Basic {
     public static void main(String[] args) {
-        User user1 = new User("최종인", "jongin98@naver.com", "Jongin");
+        User user1 = new User("최종인", "Jongin");
 
 //        System.out.println(user1.getUserName());
 //        System.out.println(user1.getUpdatedAt());
@@ -29,7 +29,7 @@ public class Main extends Basic {
         System.out.println("=== Channel ↔ Message 연결 테스트 ===");
 
         // 1️⃣ 유저와 채널 생성
-        User user = new User("홍길동", "hong@example.com", "길동이");
+        User user = new User("홍길동", "길동이");
         Channel channel = new Channel("자유채널");
 
         // 2️⃣ 메시지 생성 (Message 생성자에서 setSender, setChannel 자동 연결)

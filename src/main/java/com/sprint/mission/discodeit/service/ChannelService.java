@@ -11,10 +11,14 @@ public interface ChannelService {
     //생성은 나중에 new생성지가 하기 때문에 착각 금지. -> 그래서 반환 타입 void
 
     Channel getChannelById (UUID uuid);//channel 조회 -> id로...(클래스끼리)
-    List<Channel> geyChannelAll();// channel 조회 -> 채널 목록 전부!
+    List<Channel> getChannelAll();// channel 조회 -> 채널 목록 전부!
     void updateChannel(Channel channel);// channel 정보 변경
     void deleteChannel(UUID uuid);// channel 삭제
 
 
     Channel getChannelByName(String channelName); // channel 조회 (사용자)
+
+    // 특정 채널의 메세지 목록 조회?
+    List<Message> getMessageInChannel(UUID uuid);
+
 }

@@ -6,7 +6,6 @@ import java.util.UUID;
 
 public class User extends Basic {
     private String userName;
-    private String userEmail;
 
 
     //내가 작성한 메세지 리스트.....추가!!!?? 유지가 메세지를 작성하면.... -> 메세지에 리스트항목에도 동시에 추가되어야한다...
@@ -16,10 +15,9 @@ public class User extends Basic {
 
 
 // user 생성자
-    public User(String userName, String userEmail, String alias){
+    public User(String userName, String alias){
         super(); // user 만드는 메소드 ... -> ID 와 CreatedAt 할당.
         this.userName = userName;
-        this.userEmail = userEmail;
         this.alias = alias;
     }
 
@@ -27,18 +25,14 @@ public class User extends Basic {
     public String getUserName(){
         return userName;
     }
-    public String getUserEmail(){
-        return userEmail;
-    }
     public String getAlias(){
         return alias;
     }
     public List<Message> getMessage() {return messages;}
 
     // User 정보 변경 그대로인건 null 로 채우기.
-    public void update(String username, String email, String alias) {
+    public void update(String username, String alias) {
         if (username != null) this.userName = username;
-        if (email != null) this.userEmail = email;
         if (alias != null) this.alias = alias;
         update();
     }

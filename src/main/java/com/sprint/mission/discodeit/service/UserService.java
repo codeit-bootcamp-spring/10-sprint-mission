@@ -22,4 +22,6 @@ public interface UserService {
     // 유저끼리 유저를 조회..
     User getUserByName (String userName);
     User getUserByAlias (String alias);
+
+    List<Message> getMessageByUser(UUID uuid); // 특정 user가 쓴 메세지 리스트 조회..?
 }

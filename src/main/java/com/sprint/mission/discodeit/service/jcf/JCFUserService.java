@@ -1,4 +1,5 @@
 package com.sprint.mission.discodeit.service.jcf;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -68,8 +69,16 @@ public class JCFUserService implements UserService {
     // 파라미터 id 로
     @Override
     public void updateUser(User user) {
-
+        User existing = data.get(user.getId());
+        if(existing != null){
+            existing.update(user.getUserName(), user.getAlias());
+        }
     }
 
+    public List<Message> getMessageByUser(UUID uuid){
+        User user = data.get(uuid);
+        if(user == null) return Collections.emptyList();
+        return user.getMessages();
+    }
 
 }
