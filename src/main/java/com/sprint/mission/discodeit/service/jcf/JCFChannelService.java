@@ -36,7 +36,13 @@ public class JCFChannelService implements ChannelService {
         channels.entrySet().stream()
                 .filter(entry -> entry.getKey().equals(channelId))
                 .findFirst()
-                .ifPresent(entry -> entry.getValue().updateChannelName(newChannelName));
+                .ifPresent(entry -> {
+                    if (!Objects.equals(entry.getValue().getChannelName(), newChannelName)) {
+                        entry.getValue().updateChannelName(newChannelName);
+                    } else {
+                        System.out.println("같은 이름으로 변경할 수 없습니다!");
+                    }
+                });
     }
 
     @Override
