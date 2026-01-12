@@ -31,8 +31,6 @@ public class JavaApplication {
 
         //불러오기
 
-        System.out.println(channeldata.find(user1.getId()));
-
         System.out.println(messagedata.find(mes1.getId()));
         messagedata.findAll().stream().forEach(System.out::println);
 
@@ -62,5 +60,7 @@ public class JavaApplication {
         channeldata.delete(ch2.getId());
         channeldata.findAll().stream().forEach(System.out::println);
 
+        //예외처리테스트
+        System.out.println(channeldata.find(UUID.randomUUID()));
     }
 }
