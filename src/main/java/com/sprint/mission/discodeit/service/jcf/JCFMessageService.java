@@ -44,7 +44,7 @@ public class JCFMessageService implements MessageService {
         return messages.entrySet().stream()
                 .filter(message -> message.getKey().equals(messageId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("해당 id에 해당하는 메시지가 존재하지 않습니다."))
+                .orElseThrow(() -> new IllegalArgumentException("해당 id를 가진 메시지가 존재하지 않습니다."))
                 .getValue();
     }
 
