@@ -13,7 +13,7 @@ public interface MessageService {
 
     List<Message> getAllMessages();
 
-    void updateMessage(String content, UUID id);
+    Message updateMessage(String content, UUID id);
 
     void deleteMessage(UUID id);
 }

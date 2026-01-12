@@ -29,7 +29,7 @@ public class JCFUserService implements UserService {
         return new ArrayList<>(data.values());
     }
     @Override
-    public void updateUser(UUID id, String name, String email) {
+    public User updateUser(UUID id, String name, String email) {
         validateUserId(id);
         User user = data.get(id);
         if(user != null){
@@ -40,6 +40,7 @@ public class JCFUserService implements UserService {
                 user.updateEmail(email);
             }
         }
+        return user;
     }
     @Override
     public void deleteUser(UUID id) {
@@ -52,9 +53,7 @@ public class JCFUserService implements UserService {
         if (user == null || user.getId() == null) {
             throw new IllegalArgumentException("유저 정보가 없습니다.");
         }
-        if (data.get(user.getId()) == null) {
-            throw new IllegalArgumentException("존재하지 않는 유저입니다.");
-        }
+        validateUserId(user.getId());
     }
     private void validateUserId(UUID id) {
         if (id == null) throw new IllegalArgumentException("유저 ID가 없습니다.");

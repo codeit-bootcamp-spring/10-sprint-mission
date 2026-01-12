@@ -39,11 +39,12 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void updateMessage(String content, UUID id) {
+    public Message updateMessage(String content, UUID id) {
         validateMessageId(id);
         if(content == null || content.isBlank()) throw new IllegalArgumentException("수정할 내용을 입력하세요.");
         Message message = data.get(id);
         message.update(content);
+        return message;
     }
 
     @Override

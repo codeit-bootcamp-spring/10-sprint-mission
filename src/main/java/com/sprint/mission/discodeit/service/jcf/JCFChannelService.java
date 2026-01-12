@@ -33,17 +33,12 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void updateChannel(UUID id, String name, String type) {
+    public Channel updateChannel(UUID id, String name, String type) {
         validateChannelId(id);
         Channel channel = data.get(id);
-        if (channel != null) {
-            if (name != null) {
-                channel.updateName(name);
-            }
-            if (type != null) {
-                channel.updateType(type);
-            }
-        }
+        Optional.ofNullable(name).ifPresent(channel::updateName);
+        Optional.ofNullable(type).ifPresent(channel::updateType);
+        return channel;
     }
 
     @Override

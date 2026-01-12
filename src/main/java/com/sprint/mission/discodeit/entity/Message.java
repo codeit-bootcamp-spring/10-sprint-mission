@@ -13,13 +13,9 @@ public class Message extends BaseEntity{
         this.author = author;
         this.channel = channel;
     }
-    public String getContent() {
-        return content;
-    }
-    public UUID getUserId() {
-        return author.getId();
-    }
-    public UUID getChannelId() { return channel.getId(); }
+    public String getContent() { return content; }
+    public User getUser() { return author; }
+    public Channel getChannel() { return channel; }
     public void update(String content) {
         this.content = content;
         updateTimestamps();
