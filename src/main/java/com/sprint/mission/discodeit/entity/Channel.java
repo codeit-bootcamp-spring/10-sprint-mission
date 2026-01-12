@@ -3,29 +3,14 @@ package com.sprint.mission.discodeit.entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
-public class Channel extends Commonness {
+public class Channel extends Base {
     private String name;
     private List<User> userList;
 
     public Channel(String name) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
         this.name = name;
         this.userList = new ArrayList<User>();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
     }
 
     public String getName() {
@@ -36,12 +21,12 @@ public class Channel extends Commonness {
         return userList;
     }
 
-    public void updateUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
     public void updateName(String name) {
         this.name = name;
+    }
+
+    public void addUser(User user) {
+        this.userList.add(user);
     }
 
 
