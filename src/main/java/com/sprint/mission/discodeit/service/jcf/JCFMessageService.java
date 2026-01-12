@@ -1,4 +1,59 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-public class JCFMessageService {
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.service.MessageService;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+public class JCFMessageService implements MessageService {
+    private final List<Message> data;
+
+    public JCFMessageService() {
+        this.data = new ArrayList<>();
+    }
+    @Override
+    public void create(Message message) {
+        data.add(message);
+    }
+
+    @Override
+    public Message read(UUID id) {
+        return data.stream()
+                .filter(message -> message.getId().equals(id))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
+    public List<Message> readAll() {
+        return new ArrayList<>(data);
+    }
+
+    @Override
+    public List<Message> readByChannel(UUID channelId) {
+        return data.stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void update(UUID id, String text) {
+        Message message = read(id);
+        if(message != null && text != null) {
+            message.update(text);
+        }
+    }
+
+    @Override
+    public void delete(UUID id) {
+        data.removeIf(message -> message.getId().equals(id));
+    }
+
 }
+
+
+
+
