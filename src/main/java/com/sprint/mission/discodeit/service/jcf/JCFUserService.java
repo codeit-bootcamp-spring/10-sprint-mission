@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class JCFUserService implements UserService {
 
-    final Map<UUID, User> data;
+    private final Map<UUID, User> data;
     //set, map, list 모두 가능하지만, 해당 요소를 빨리 찾기 위해서는 맵이 가장 적절하다고 판단
     public JCFUserService() { data = new HashMap<>();}
 

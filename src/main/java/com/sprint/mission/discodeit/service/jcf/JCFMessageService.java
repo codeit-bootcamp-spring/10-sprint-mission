@@ -9,9 +9,9 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
-    final Map<UUID, Message> data;
-    final UserService userService;
-    final ChannelService channelService;
+    private final Map<UUID, Message> data;
+    private final UserService userService;
+    private final ChannelService channelService;
 
     public JCFMessageService(UserService userService, ChannelService channelService) {
         data = new HashMap<>();
