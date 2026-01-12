@@ -39,5 +39,8 @@ public class JCFUserService implements UserService {
         readUser(id).updateUserPassword(userPassword);
     }
 
-
+    @Override
+    public void deleteUser(UUID id) {
+        list.remove(readUser(id));
+    }
 }
