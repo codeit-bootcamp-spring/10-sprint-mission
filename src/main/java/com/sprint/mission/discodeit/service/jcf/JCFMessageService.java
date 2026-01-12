@@ -43,7 +43,7 @@ public class JCFMessageService implements MessageService {
 
         // [생성 및 저장]
         // 검증을 모두 통과했으므로 안전하게 메시지를 생성합니다.
-        Message message = new Message(content, userId, findUserByUserId(userId));
+        Message message = new Message(content, findUserByUserId(userId));
         messageMap.put(message.getId(), message);
 
         return message;

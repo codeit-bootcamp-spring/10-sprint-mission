@@ -9,12 +9,11 @@ public class JavaApplication {
     private static void testCreateUser(String testName, String input) {
         System.out.print("TEST [" + testName + "] input: '" + input + "' -> ");
         try {
-            new User(input); // 여기서 에러가 나야 정상!
-            // 여기까지 왔다는 건 에러가 안 났다는 뜻 (테스트 실패)
+            new User(input); // 여기서 에러가 나야 정상
+            // 에러가 안 났다는 뜻 (테스트 실패)
             System.out.println("❌ 실패 (예외가 발생했어야 함)");
 
         } catch (IllegalArgumentException e) {
-            // 에러를 잡았으니 프로그램은 안 죽음.
             // 우리가 원하던 에러인지 확인하고 성공 메시지 출력
             System.out.println("✅ 통과 (예외 메시지: " + e.getMessage() + ")");
         } catch (Exception e) {
@@ -24,12 +23,21 @@ public class JavaApplication {
     public static void main(String[] args) {
         User user1 = new User("홍길동");
         Channel ch1 = new Channel("채팅방", user1);
-        // Message message1 = new Message("첫 메시지", user1.getId(), ch1);
+        Message message1 = new Message("첫 메시지", user1, ch1);
 
-        System.out.println("\n====== [toString() 테스트 시작] ======");
-        System.out.println(user1.toString());
-        System.out.println(ch1.toString());
-        // System.out.println(message1.toString());
+        System.out.println("\n====== [User, Channel, Message - Getter 테스트 시작] ======");
+        System.out.println("====== [테스트 종료] ======");
+
+        System.out.println("\n====== [User, Channel, Message - update 테스트 시작] ======");
+        System.out.println("====== [테스트 종료] ======");
+
+        System.out.println("\n====== [User CRUD 테스트 시작] ======");
+        System.out.println("====== [테스트 종료] ======");
+
+        System.out.println("\n====== [Channel CRUD 테스트 시작] ======");
+        System.out.println("====== [테스트 종료] ======");
+
+        System.out.println("\n====== [Message CRUD 테스트 시작] ======");
         System.out.println("====== [테스트 종료] ======");
 
         System.out.println("\n====== [User 유효성 검증 테스트 시작] ======");

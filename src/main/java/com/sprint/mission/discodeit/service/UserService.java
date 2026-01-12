@@ -17,7 +17,8 @@ public interface UserService {
     /**
      * 사용자 단건 조회
      * @param id 조회할 사용자의 UUID
-     * @return 존재하면 User 객체, 없으면 빈 Optional
+     * @return 조회된 User 객체 (존재하지 않을 경우 예외 발생)
+     * @throws IllegalArgumentException 해당 ID의 사용자가 없을 경우
      */
     User findUserByUserId(UUID id); // 메서드 네이밍 변경
 

@@ -6,19 +6,15 @@ public class User extends BaseEntity {
     private static final String USERNAME_REGEX = "^[a-zA-Z0-9가-힣_-]+$";
     private static final Pattern USERNAME_PATTERN = Pattern.compile(USERNAME_REGEX);
 
+    // id, createdAt, updatedAt 상속 받음
     private String username;     // 로그인에 쓰이는 고유 ID (중복 불가능), 시간당 2회 변경 제한
 //  private String email;        // email 또는 phoneNumber로 가입 가능
 //  private String displayName;  // 남들에게 보이는 이름 (중복 허용)
 //  private String password;     // 암호화해서 저장 필요
 //  private String dateOfBrith   // 생년월일 -> Date 클래스 사용이 더 좋을 듯
 
-    public User(String username) {
-        super(); // id, createdAt, updatedAt -> 생성자로 초기화;
-        validateUsername(username);
-        this.username = username;
-    }
-
     // 유효성 검증 메서드 분리
+    // JCFUserService.java에 해당 로직을 넣지 않는 이유는, 생성자 때에도 같은 로직을 사용해야하기 때문에
     private void validateUsername(String username) {
         // 규칙이 많고 updateUsername 에서도 로직 똑같이 사용해서 따로 빼야할 듯?
         // 애초에 entity가 아니라 service로 보내버려야 하나?
@@ -37,27 +33,35 @@ public class User extends BaseEntity {
         }
     }
 
+    // BaseEntity() 상속 받음
+    public User(String username) {
+        super(); // id, createdAt, updatedAt -> 생성자로 초기화;
+        validateUsername(username);
+        this.username = username;
+    }
+
     // Getter
     public String getUsername() {
         return username;
     }
+    // getId(), getCreatedAt(), getUpdatedAt()은 상속 받음
 
     // update
     public void updateUsername(String newUsername) {
-        if (newUsername == null || newUsername.trim().isEmpty()) {
-            throw new IllegalArgumentException("변경할 이름이 비어있음");
-        }
+        validateUsername(newUsername);
         this.username = newUsername;
         this.updateTimestamp();
     }
+    // updateTimestamp()는 상속받음
 
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "User{" +
+//                "id=" + id +
+//                ", createdAt=" + createdAt +
+//                ", updatedAt=" + updatedAt +
+//
+//                ", username='" + username +
+//                '}';
+//    }
 }
