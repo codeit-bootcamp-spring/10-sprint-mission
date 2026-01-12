@@ -7,9 +7,10 @@ import com.sprint.mission.descodeit.entity.User;
 import java.util.*;
 
 public interface ChannelService {
-    void create(Channel channel);
+    Channel create(String name);
+    Channel joinUsers(Channel channel,User ...users);
     Channel findCannel(UUID channelID);
-    Set<UUID> findAllChannel();
-    void update(UUID channelID, String newName);
-    void delete(UUID channelID);
+    List<Channel> findAllChannel();
+    Channel update(UUID channelID, String newName);
+    boolean delete(UUID channelID);
 }

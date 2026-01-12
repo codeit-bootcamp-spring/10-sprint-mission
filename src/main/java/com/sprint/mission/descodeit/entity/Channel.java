@@ -3,33 +3,16 @@ import java.util.*;
 import java.util.UUID;
 import com.sprint.mission.descodeit.entity.User;
 
-public class Channel {
-    private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
+public class Channel extends BaseEntity {
     private String channelName;
     private List<User> userList;
     private List<Message> messageList;
 
     public Channel(String channelName) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = this.createdAt;
+        super();
         this.channelName = channelName;
         this.userList = new ArrayList<>();
         this.messageList = new ArrayList<>();
-    }
-
-    public UUID getId(){
-        return id;
-    }
-
-    public Long getCreatedAt(){
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
     }
 
     public String getChannelName(){
@@ -60,7 +43,7 @@ public class Channel {
 
     public void updateChannel(String newChannelName){
         this.channelName = newChannelName;
-        this.updatedAt = System.currentTimeMillis();
+        updateTimeStamp();
     }
 
     @Override
