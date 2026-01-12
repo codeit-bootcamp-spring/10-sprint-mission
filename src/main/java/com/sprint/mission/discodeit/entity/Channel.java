@@ -3,55 +3,30 @@ package com.sprint.mission.discodeit.entity;
 import java.io.Serializable;
 import java.util.UUID;
 
-public class Channel implements Serializable {
+public class Channel extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
-
     private String name;
-    private boolean isPrivate;
+    private IsPrivate isPrivate;
 
-    public Channel(String name, boolean isPrivate) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = this.createdAt;
-
+    public Channel(String name, IsPrivate isPrivate) {
+        super(UUID.randomUUID(), System.currentTimeMillis());
         this.name = name;
         this.isPrivate = isPrivate;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
     }
 
     public String getName() {
         return name;
     }
-
-    public boolean getIsPrivate() {
+    public IsPrivate getIsPrivate() {
         return isPrivate;
-    }
-
-    public void updateUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     public void updateName(String name) {
         this.name = name;
     }
-
-    public void updatePrivate(boolean aPrivate) {
-        isPrivate = aPrivate;
+    public void updatePrivate(IsPrivate isPrivate) {
+        isPrivate = isPrivate;
     }
 
     @Override

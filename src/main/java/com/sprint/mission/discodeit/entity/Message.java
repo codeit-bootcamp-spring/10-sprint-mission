@@ -3,23 +3,16 @@ package com.sprint.mission.discodeit.entity;
 import java.io.Serializable;
 import java.util.UUID;
 
-public class Message implements Serializable {
+public class Message extends BaseEntity implements  Serializable {
     private static final long serialVersionUID = 1L;
 
-    private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
-
     private User sender;
-    private UUID channelId;
+    private Channel channel;
     private String content;
 
-    public Message(User user, UUID channelId, String content) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = this.createdAt;
-
-        this.channelId = channelId;
+    public Message(User user, Channel channel, String content) {
+        super(UUID.randomUUID(), System.currentTimeMillis());
+        this.channel = channel;
         this.content = content;
         this.addUser(user);
     }
@@ -31,32 +24,16 @@ public class Message implements Serializable {
         }
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
     public User getSender() {
         return sender;
     }
 
     public UUID getChannelId() {
-        return channelId;
+        return channel.getId();
     }
 
     public String getContent() {
         return content;
-    }
-
-    public void updateUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     public void updateContent(String content) {
@@ -65,6 +42,6 @@ public class Message implements Serializable {
 
     @Override
     public String toString() {
-        return "보낸 사람 : " + sender.getName() + ", 내용 : " + content;
+        return "보낸 사람 : " + sender.getName() + ", 내용 : " + content + ", 수정 시간 : " + updatedAt;
     }
 }

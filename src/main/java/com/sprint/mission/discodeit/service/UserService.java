@@ -22,6 +22,4 @@ public interface UserService {
     // Delete
     void delete(UUID id);
 
-    // Clear
-    void clear();
 }

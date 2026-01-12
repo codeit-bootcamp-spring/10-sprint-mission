@@ -51,9 +51,9 @@ public class JavaApplication {
         // 메시지 등록
         FileMessageService messageService = new FileMessageService("message.ser", userService, channelService);
         messageService.clear();
-        Message message1 = new Message(user1, channel1.getId(), "언니 보고싶어");
-        Message message2 = new Message(user2, channel2.getId(), "얘들아 배고파");
-        Message message3 = new Message(user3, channel3.getId(), "엄마 보고싶어");
+        Message message1 = new Message(user1, channel1, "언니 보고싶어");
+        Message message2 = new Message(user2, channel2, "얘들아 배고파");
+        Message message3 = new Message(user3, channel3, "엄마 보고싶어");
         messageService.create(message1);
         messageService.create(message2);
         messageService.create(message3);
@@ -77,9 +77,16 @@ public class JavaApplication {
         System.out.println(messageService.read(message3.getId()));
         System.out.println(messageService.readAll());
 
+        System.out.println("\n메시지 수정");
+        System.out.println("전");
+        System.out.println(messageService.read(message3.getId()));
+        System.out.println("후");
+        message3.updateContent("엄마 나랑 놀쟈 !");
+        messageService.update(message3);
+        System.out.println(messageService.read(message3.getId()));
 
         // 수정
-        System.out.println("채널 수정 후");
+        System.out.println("\n채널 수정 후");
         channel1.updateName("달선이의 롤 채널");
         channel1.updatePrivate(true);
         channelService.update(channel1);
@@ -95,8 +102,8 @@ public class JavaApplication {
 
         // 심화 요구 사항
         System.out.println("심화 요구 사항");
-        Message message4 = new Message(user3, channel2.getId(), "오빠 놀쟈!");
-        Message message5 = new Message(user3, channel2.getId(), "언니 놀쟈!");
+        Message message4 = new Message(user3, channel2, "오빠 놀쟈!");
+        Message message5 = new Message(user3, channel2, "언니 놀쟈!");
         messageService.create(message4);
         messageService.create(message5);
         System.out.println("보낸 사람 : " + userService.read(message4.getSender().getId()));

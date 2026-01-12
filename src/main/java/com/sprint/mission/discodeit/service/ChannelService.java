@@ -22,6 +22,5 @@ public interface ChannelService {
     // Delete
     void delete(UUID id);
 
-    // Clear
-    void clear();
+
 }

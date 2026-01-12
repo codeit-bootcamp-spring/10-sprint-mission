@@ -1,17 +1,16 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.ClearMemory;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
-public class FileMessageService implements MessageService {
+public class FileMessageService implements MessageService,  ClearMemory {
 
     private final File file;    // 클래스가 사용할 파일 저장소 객체 - 경로를 생성자에서 주입해 저장/불러오기 사용
     private final UserService userService;
@@ -36,7 +35,6 @@ public class FileMessageService implements MessageService {
         }
         else{
             data.put(message.getId(), message);
-
         }
         writeToFile(data);
     }
@@ -71,6 +69,9 @@ public class FileMessageService implements MessageService {
     @Override
     public Message read(UUID id) {
         Map<UUID, Message> data = load();
+        if(!data.containsKey(id)){
+            throw new NoSuchElementException("조회 실패 : 해당 ID의 메시지를 찾을 수 없습니다.");
+        }
         return data.get(id);
     }
 
@@ -95,10 +96,11 @@ public class FileMessageService implements MessageService {
 
     private void remove(UUID id) {
         Map<UUID, Message> data = load();
-        if (data.containsKey(id)) {
-            data.remove(id);
-            writeToFile(data);
+        if (!data.containsKey(id)) {
+            throw new NoSuchElementException("삭제 실패 : 존재하지 않는 메시지 ID입니다.");
         }
+        data.remove(id);
+        writeToFile(data);
     }
 
     @Override
@@ -106,7 +108,7 @@ public class FileMessageService implements MessageService {
         writeToFile(new HashMap<UUID, Message>());
     }
 
-    public void writeToFile(Map<UUID, Message> data) {
+    private void writeToFile(Map<UUID, Message> data) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
             oos.writeObject(data);
         } catch (IOException e) {
