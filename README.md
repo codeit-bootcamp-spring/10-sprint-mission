@@ -1,224 +1,67 @@
-# 기록용
-
-## 메인 질문
-
-> 이런 아키텍처를 생각할 때, 어떤 관점으로 접근해야 할까?
-
----
-
-## 기본 개념: CRUD
-
-* **Create**
-* **Read**
-* **Update**
-* **Delete**
-
-모든 도메인 객체는 기본적으로 CRUD를 가진다.
-
----
-
-## 접근 방법
-
-### 1. 기능부터 생각하기
-
-* 디스코드의 핵심 기능은?
-
-    * 채널 생성
-    * 유저 초대
-    * 메시지 송수신
-* DM, 기타 기능은 일단 제외
-* **가장 핵심적인 기능부터 구현 후 확장**
-
----
-
-## 도메인 추상화
-
-### 핵심 엔티티
-
-* **User**
-* **Message**
-* **Channel**
-
-> 가정
->
-> * 유저가 존재한다
-> * 유저는 채널 내에서 메시지를 주고받는다
-
----
-
-## 엔티티 간 관계 정리
-
-### User
-
-* 유저 자체 정보 보유
-* 메시지, 채널에서 참조되는 대상
-
-### Message
-
-* 보내는 유저 정보
-* 메시지 내용
-* 채널 정보
-* 생성 / 수정 시간
-
-### Channel
-
-* 채널에 속한 유저 목록
-* 채널에 속한 메시지 목록
-* 채널 이름
-
-고민 포인트
-
-* 메시지와 채널 클래스를 완전히 분리할 수 있을까?
-* 객체 필드 기준으로 설계할지, **메서드 시그니처(입력/출력)** 기준으로 설계할지?
-
----
-
-## 공통 필드 (모든 객체 공통)
-
-* `id`
-* `createdAt`
-* `updatedAt`
-
----
-
-## User 설계
-
-### 필드
-
-* id (UIDD)
-* createdAt
-* updatedAt
-
-### CRUD
-
-#### 유저 생성 (Create)
-
-* 입력: 초기값
-* 출력: `boolean` (성공 / 실패 이유)
-
-#### 유저 조회 (Read)
-
-* 입력: 없음
-* 출력:
-
-    * id
-    * createdAt
-    * updatedAt
-    * 유저가 속한 채널 목록
-    * 유저가 작성한 메시지 목록
-
-#### 유저 수정 (Update)
-
-* 입력: 변경할 id
-* 출력: 성공 여부
-
-#### 유저 삭제 (Delete)
-
-* 입력: 삭제할 id
-* 출력: 성공 여부
-
----
-
-## Message 설계
-
-### 필드
-
-* id (UIDD)
-* createdAt
-* updatedAt
-* content
-
-### CRUD
-
-#### 메시지 생성 (Create)
-
-* 입력:
-
-    * 유저 정보
-    * 메시지 내용
-    * 채널 정보
-* 검증:
-
-    * 유저 존재 여부
-    * 채널 존재 여부
-    * 메시지 길이 제한
-* 출력: 성공 여부
-
-#### 메시지 조회 (Read)
-
-* 입력: 없음
-* 출력:
-
-    * 유저 정보
-    * 메시지 내용
-    * 생성 시간
-    * 수정 시간
-    * 채널 정보
-
-#### 메시지 수정 (Update)
-
-* 입력:
-
-    * 기존 메시지 정보
-    * 수정할 내용
-* 출력: 성공 여부
-
-#### 메시지 삭제 (Delete)
-
-* 입력: 삭제할 메시지 정보
-* 출력: 성공 여부
-
----
-
-## Channel 설계
-
-### 필드
-
-* id (UIDD)
-* createdAt
-* updatedAt
-* channelName
-
-### CRUD
-
-#### 채널 생성 (Create)
-
-* 입력:
-
-    * 채널명
-    * 초대할 유저 id
-* 출력: 성공 여부
-
-#### 채널 조회 (Read)
-
-* 출력:
-
-    * 채널명
-    * 생성 시간
-    * 수정 시간
-    * 채널 내 메시지 목록
-    * 채널 내 유저 목록
-
-#### 채널 수정 (Update)
-
-* 입력: 채널 정보 수정
-* 출력: 성공 여부
-
-#### 채널 삭제 (Delete)
-
-* 출력: 성공 여부
-
----
-
-## 현재 느낀 문제점
-
-* User / Message / Channel 사이에
-
-    * **겹치는 필드**
-    * **겹치는 메서드**
-      가 많아 보인다
-* 공통 로직을 어떻게 분리할지 고민 필요
-
-    * BaseEntity?
-    * 공통 인터페이스?
-    * Service 레이어 분리?
+📱DiscodeIt (Java Console App)  
+DiscodeIt은 Discord의 핵심 기능을 모방하여 구현한 Java 기반의 백엔드 학습 프로젝트입니다.
+
+데이터베이스 없이 Java Collection Framework(Map)를 활용하여 인메모리(In-Memory) 저장소를 구현하였으며,   
+객체 지향 원칙(OOP)과 레이어드 아키텍처(Layered Architecture)를 기반으로 설계되었습니다.
+
+🛠️ Tech Stack  
+Language: Java 17+  
+Storage: JCF (HashMap) - Memory DB Simulation
+
+Architecture: Layered Architecture (Controller -> Service -> Repository/Memory)
+
+📂 Project Structure
+
+com.sprint.mission.discodeit  
+├── entity            # 도메인 객체 (데이터 정의 및 기본 유효성 검사)  
+│   ├── BaseEntity.java  (ID, 생성일시, 수정일시 공통 관리)  
+│   ├── User.java  
+│   ├── Channel.java  
+│   └── Message.java  
+├── service           # 비즈니스 로직 인터페이스  
+│   ├── UserService.java  
+│   ├── ChannelService.java  
+│   └── MessageService.java  
+├── service.jcf       # JCF(Map) 기반 서비스 구현체  
+│   ├── JCFUserService.java  
+│   ├── JCFChannelService.java  
+│   └── JCFMessageService.java   
+└── JavaApplication.java         # 애플리케이션 진입점 및 통합 테스트 시나리오  
+
+✨ Key Features (핵심 기능)  
+1. User (사용자)  
+   사용자 등록 (ID 자동 생성 - UUID)  
+사용자명 유효성 검사 (영문/한글/숫자, 2~20자 제한)  
+사용자 정보 조회, 수정, 삭제
+2. Channel (채널)  
+   채널 생성 (생성 시 방장(Owner) 지정 필수)
+채널명 중복 방지 로직  
+채널 정보 수정 및 삭제
+3. Message (메시지)  
+   특정 채널에 메시지 전송
+참조 무결성(Referential Integrity) 시뮬레이션:   
+메시지 전송 시, 실제 존재하는 유저(User)와 채널(Channel)인지 검증
+채널별 메시지 목록 조회 (작성 시간순 정렬)  
+
+💡 Key Design Decisions (설계 의사결정)  
+이 프로젝트를 진행하면서 고민했던 주요 설계 포인트입니다.
+1. ID 참조 vs 객체 참조
+   초기 설계: Channel 엔티티가 User 객체를 직접 필드로 가짐 (private User owner)
+2. BaseEntity를 통한 중복 제거
+   모든 엔티티가 공통으로 가지는 UUID id, createdAt, updatedAt 필드를 BaseEntity 추상 클래스로 분리하여 상속받도록 설계했습니다.   
+   이를 통해 코드 중복을 줄이고 일관성을 확보했습니다.  
+3. 인터페이스(Interface) 기반 설계  
+   UserService 등의 로직을 인터페이스로 먼저 정의하고, 구현체(JCFUserService)를 따로 만들었습니다.
+
+이유: 나중에 인메모리(Map) 방식이 아니라 실제 DB(MySQL 등)를 사용하는 구현체로 갈아끼울 때, 기존 코드를 수정하지 않고 확장하기 위함입니다.
+
+✅ Test Scenarios  
+Main.java를 통해 다음과 같은 통합 테스트 시나리오를 수행합니다.  
+User: 정상 생성 확인, 이름 유효성 검사 실패 확인 (경계값 테스트)  
+Channel: 유저 ID를 이용한 채널 생성, 채널명 수정 확인  
+Message: 유저와 채널 ID를 이용한 메시지 전송, 존재하지 않는 유저로 전송 시 예외 발생 확인(방어 로직)  
+Flow: 등록 -> 조회 -> 수정 -> 삭제 -> 삭제 확인 (Exception 발생)  
+
+📝 TODO / Future Improvements   
+[ ] ChannelMember 엔티티 분리를 통한 N:M 관계(참여자 목록) 구현  
+[ ] 예외 처리(Exception) 커스텀 클래스 정의  
