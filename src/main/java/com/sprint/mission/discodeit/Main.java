@@ -1,17 +1,117 @@
-package org.example;
+package com.sprint.mission.discodeit;
 
-//TIP 코드를 <b>실행</b>하려면 <shortcut actionId="Run"/>을(를) 누르거나
-// 에디터 여백에 있는 <icon src="AllIcons.Actions.Execute"/> 아이콘을 클릭하세요.
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
+import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
+import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+
+import java.util.ArrayList;
+
 public class Main {
     public static void main(String[] args) {
-        //TIP 캐럿을 강조 표시된 텍스트에 놓고 <shortcut actionId="ShowIntentionActions"/>을(를) 누르면
-        // IntelliJ IDEA이(가) 수정을 제안하는 것을 확인할 수 있습니다.
-        System.out.printf("Hello and welcome!");
+        // 사용자 테스트
+        JCFUserService userService = new JCFUserService();
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP <shortcut actionId="Debug"/>을(를) 눌러 코드 디버그를 시작하세요. 1개의 <icon src="AllIcons.Debugger.Db_set_breakpoint"/> 중단점을 설정해 드렸습니다
-            // 언제든 <shortcut actionId="ToggleLineBreakpoint"/>을(를) 눌러 중단점을 더 추가할 수 있습니다.
-            System.out.println("i = " + i);
+        User user1 = userService.createUser("dlekthf0906@codeit.com",
+                                           "1234567890",
+                                           "LeeDyol");
+
+        System.out.println("단건 조회 테스트: "
+                + userService.searchUser(user1.getId()).getNickname());    // 예상 출력: LeeDyol
+
+        User user2 = userService.createUser("Yushi0405@codeit.com",
+                                        "1234567890",
+                                        "tokuno");
+
+        ArrayList<User> users = userService.searchUserAll();
+
+        System.out.println("다건 조회 테스트");                                // 에상 출력: Lee Dyol, tokuno
+        for (User user : users) {
+            System.out.println(user.getNickname());
+        }
+
+        userService.updateUser(user2.getId(), "", "sakuya");
+
+        System.out.println("수정 테스트: "
+                + userService.searchUser(user2.getId()).getNickname());     // 예상 출력: sakuya
+
+        userService.deleteUser(user1.getId());
+
+        System.out.println("삭제 테스트");                                    // 예상 출력: sakuya
+        for (User user : users) {
+            System.out.println(user.getNickname());
+        }
+
+        System.out.println("=========================");
+
+        // 채널 테스트
+        JCFChannelService channelService = new JCFChannelService();
+
+        Channel channel1 = channelService.createChannel("Codeit",
+                                                        user2.getId(),
+                                                        ChannelType.CHAT);
+
+        System.out.println("단건 조회 테스트: "
+                + channelService.searchChannel(channel1.getId()).getChannelName());    // 예상 출력: Codeit
+
+        Channel channel2 = channelService.createChannel("Book Club",
+                                                        user2.getId(),
+                                                        ChannelType.VOICE);
+
+        ArrayList<Channel> channels = channelService.searchChannelAll();
+
+        System.out.println("다건 조회 테스트");                                           // 에상 출력: Codeit, Book Club
+        for (Channel channel : channels) {
+            System.out.println(channel.getChannelName());
+        }
+
+        channelService.updateChannel(channel2.getId(), "Study Club");
+
+        System.out.println("수정 테스트: "
+                + channelService.searchChannel(channel2.getId()).getChannelName());   // 예상 출력: Study Club
+
+        channelService.deleteChannel(channel1.getId());
+
+        System.out.println("삭제 테스트");                                               // 예상 출력: Study Club
+         for (Channel channel : channels) {
+            System.out.println(channel.getChannelName());
+        }
+
+        System.out.println("=========================");
+
+        // 메시지 테스트
+        JCFMessageService messageService = new JCFMessageService();
+
+        Message message1 = messageService.createMessage("안녕하세요",
+                                                        user2.getId(),
+                                                        channel2.getId(),
+                                                        MessageType.CHAT);
+
+        System.out.println("단건 조회 테스트: "
+                + messageService.searchMessage(message1.getId()).getMessage());       // 예상 출력: 안녕하세요
+
+        Message message2 = messageService.createMessage("안녕 못하네요",
+                                                        user2.getId(),
+                                                        channel2.getId(),
+                                                        MessageType.CHAT);
+
+        ArrayList<Message> messages = messageService.searchMessageAll();
+
+        System.out.println("다건 조회 테스트");                                          // 예상 출력: 안녕하세요, 안녕 못하네요
+        for (Message message : messages) {
+            System.out.println(message.getMessage());
+        }
+
+        messageService.updateMessage(message2.getId(), "죄송해요. 안녕합니다");
+
+        System.out.println("수정 테스트: "
+                + messageService.searchMessage(message2.getId()).getMessage());      // 예상 출력: 죄송해요 안녕합니다
+
+        messageService.deleteMessage(message1.getId());
+
+        System.out.println("삭제 테스트");                                              // 예상 출력: 죄송해요 안녕합니다
+        for (Message message : messages) {
+            System.out.println(message.getMessage());
         }
     }
 }
