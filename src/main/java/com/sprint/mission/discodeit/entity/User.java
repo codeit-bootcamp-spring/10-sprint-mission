@@ -36,14 +36,17 @@ public class User {
 
     public void updateUserName(String userName) {
         this.userName = userName;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public void updateUserEmail(String userEmail) {
         this.userEmail = userEmail;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public void updateUserPassword(String userPassword) {
         this.userPassword = userPassword;
+        this.updatedAt = System.currentTimeMillis();
     }
 
 

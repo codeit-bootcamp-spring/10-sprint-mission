@@ -34,6 +34,7 @@ public class Message {
 
     public void updateContent(String content) {
         this.content = content;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public String getMessageStatus() {

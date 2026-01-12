@@ -36,14 +36,17 @@ public class Channel {
 
     public void updateChannelType(ChannelType type) {
         this.type = type;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public void updateChannelDescription(String channelDescription) {
         this.channelDescription = channelDescription;
+        this.updatedAt = System.currentTimeMillis();
     }
 
     public String getChannelStatus() {
