@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    void create(String name);
+    Channel create(String name);
 
     Channel findById(UUID id);
 

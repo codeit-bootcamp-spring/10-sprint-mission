@@ -1,5 +1,6 @@
 package com.sprint.mission;
 
+import com.sprint.mission.entity.Channel;
 import com.sprint.mission.entity.Message;
 import com.sprint.mission.entity.User;
 import com.sprint.mission.service.ChannelService;
@@ -44,23 +45,57 @@ public class JavaApplication {
                 .map(User::getNickName)
                 .collect(Collectors.joining(", ", "[", "]"));
         System.out.println(result2);
+        // ==================================================
 
         System.out.println("=".repeat(20));
 
+        // ==================================================
         // 메시지 서비스 구현 테스트
         // 등록
         Message message = messageService.createMessage("안녕하세요");
+
         // 조회(단건)
         System.out.println(messageService.findById(message.getId()).getContent());
+
         // 수정 및 수정 확인
         messageService.updateMessage(message.getId(), "안녕하세요 !!");
         System.out.println(message.getContent());
+
         // 조회(다건)
         Message message2 = messageService.createMessage("오종혁입니다.");
         List<Message> messages = messageService.findAll();
-        messages.forEach(m -> System.out.println(m.getContent()) );
+        messages.forEach(m -> System.out.println(m.getContent()));
+
         // 삭제 및 삭제확인
         messageService.deleteById(message.getId());
-        messages.forEach(m -> System.out.println(m.getContent()) );
+        messageService.findAll().forEach(m -> System.out.println(m.getContent()));
+
+        // ==================================================
+
+        System.out.println("=".repeat(20));
+
+        // ==================================================
+        // 채널 서비스 구현 테스트
+        // 등록
+        Channel channel = channelService.create("일반");
+
+        // 조회(단건)
+        System.out.println(channelService.findById(channel.getId()).getName());
+
+        // 수정 및 수정 확인
+        channel.updateName("일반2");
+        System.out.println(channel.getName());
+
+        // 조회(다건)
+        Channel channel2 = channelService.create("일반3");
+        List<Channel> channels = channelService.findAll();
+        String channelResult = channels.stream()
+                .map(Channel::getName)
+                .collect(Collectors.joining(", ", "[", "]"));
+        System.out.println(channelResult);
+
+        // 삭제 및 삭제확인
+        channelService.deleteById(channel.getId());
+        channelService.findAll().forEach(c -> System.out.println(c.getName()));
     }
 }
