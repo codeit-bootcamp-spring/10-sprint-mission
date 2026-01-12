@@ -8,7 +8,11 @@ import java.util.List;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
-    final ArrayList<Message> list = new ArrayList<>();
+    final ArrayList<Message> list;
+
+    public JCFMessageService() {
+        this.list = new ArrayList<>();
+    }
 
     @Override
     public Message createMessage(String content, UUID channelId, UUID userId) {
