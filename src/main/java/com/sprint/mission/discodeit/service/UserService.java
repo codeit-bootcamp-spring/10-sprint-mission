@@ -10,7 +10,9 @@ public interface UserService {
 
     List<User> getUserList();
 
-    void updateUserName(UUID userId, String newName);
+    User getUserInfoByUserId(UUID userId);
+
+    User updateUserName(UUID userId, String newName);
 
     void deleteUser(UUID userId);
 }

@@ -23,9 +23,21 @@ public class JCFUserService implements UserService {
                 .toList();
     }
 
+    @Override
+    public User getUserInfoByUserId(UUID userId) {
+        Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
+        User user = users.get(userId);
+
+        if (user == null) {
+            throw new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
+        }
+
+        return user;
+    }
+
     // id 를 기준으로 수정
     @Override
-    public void updateUserName(UUID userId, String newName) {
+    public User updateUserName(UUID userId, String newName) {
         Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
         Objects.requireNonNull(newName, "username은 null일 수 없습니다.");
 
@@ -35,6 +47,7 @@ public class JCFUserService implements UserService {
         }
 
         user.updateUsername(newName);
+        return user;
     }
 
     @Override
