@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import java.util.UUID;
 
 public class Channel {
-    private UUID id;
+    private final UUID id;
     private String name;
     private final Long createdAt;
     private Long updatedAt;
@@ -20,7 +20,7 @@ public class Channel {
     public Long getCreatedAt() { return createdAt; }
     public Long getUpdatedAt() { return updatedAt; }
 
-    public void update(String name, String email) {
+    public void update(String name) {
         this.name = name;
         this.updatedAt = System.currentTimeMillis();
     }
