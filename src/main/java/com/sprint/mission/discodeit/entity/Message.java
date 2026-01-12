@@ -21,12 +21,12 @@ public class Message extends BaseEntity {
         this.sentChannel = sentChannel;
     }
 
-    public UUID getSentUserId() {
-        return sentUser.getId();
+    public User getSentUser() {
+        return sentUser;
     }
 
-    public UUID getSentChannelId() {
-        return sentChannel.getId();
+    public Channel getSentChannel() {
+        return sentChannel;
     }
 
     public String getContent() {
@@ -45,8 +45,8 @@ public class Message extends BaseEntity {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", content='" + content + '\'' +
-                ", sentUserId='" + sentUser + '\'' +
-                ", sentChannelId='" + sentChannel + '\'' +
+                ", sentUser='" + sentUser + '\'' +
+                ", sentChannel='" + sentChannel + '\'' +
                 '}';
     }
 }

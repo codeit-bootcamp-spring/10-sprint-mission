@@ -21,7 +21,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel createChannel(String channelName) {
         Channel channel = new Channel(channelName);
-        channels.put(channel.getChannelId(), channel);
+        channels.put(channel.getId(), channel);
 
         return channel;
     }
@@ -55,6 +55,7 @@ public class JCFChannelService implements ChannelService {
             throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
         }
 
+        channel.addUser(user);
         user.updateJoinedChannels(channel);
     }
 
@@ -62,7 +63,7 @@ public class JCFChannelService implements ChannelService {
     public void leaveChannel(UUID channelId, User user) {
         Channel channel = channels.get(channelId);
         try {
-            channel.removeUser(user.getUserId());
+            channel.removeUser(user.getId());
             user.removeChannel(channel);
         } catch (NullPointerException e) {
             System.out.println("해당 채널이 존재하지 않습니다.");

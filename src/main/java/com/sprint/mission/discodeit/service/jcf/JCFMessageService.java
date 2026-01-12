@@ -15,6 +15,7 @@ public class JCFMessageService implements MessageService {
         Message message = new Message(user, channel, content);
         // 메시지 생성 및 리스트에 추가
         messages.put(message.getId(), message);
+        user.updateSentMessages(message);
     }
 
     @Override
@@ -26,7 +27,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> getMessageListByUser(UUID userId) {
         return messages.values().stream()
-                .filter(id -> id.getSentUserId().equals(userId))
+                .filter(id -> id.getSentUser().getId().equals(userId))
                 .toList();
     }
 
@@ -34,7 +35,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> getMessageListByChannel(UUID channelId) {
         return messages.values().stream()
-                .filter(id -> id.getSentChannelId().equals(channelId))
+                .filter(id -> id.getSentChannel().getId().equals(channelId))
                 .toList();
     }
 
@@ -64,8 +65,15 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void deleteMessage(UUID messageId) {
-        Objects.requireNonNull(messageId, "messageId는 null일 수 없습니다");
-        messages.remove(messageId);
+        Objects.requireNonNull(messageId, "messageId는 null일 수 없습니다.");
+
+        Message message = messages.remove(messageId);
+
+        if (message == null) {
+            throw new NoSuchElementException("해당 id를 가진 메시지가 존재하지 않습니다.");
+        }
+
+        message.getSentUser().removeSentMessage(message);
     }
 
     @Override
@@ -73,7 +81,12 @@ public class JCFMessageService implements MessageService {
         Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
 
         messages.values().removeIf(
-                message -> channelId.equals(message.getSentChannelId())
-        );
+                message -> {
+                    if (channelId.equals(message.getSentChannel().getId())) {
+                        message.getSentUser().removeSentMessage(message);
+                        return true;
+                    }
+                    return false;
+                });
     }
 }

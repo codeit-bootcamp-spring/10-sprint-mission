@@ -12,7 +12,7 @@ public class JCFUserService implements UserService {
     @Override
     public User createUser(User newUser) {
         this.user = newUser;
-        users.put(newUser.getUserId(), newUser);
+        users.put(newUser.getId(), newUser);
 
         return user;
     }

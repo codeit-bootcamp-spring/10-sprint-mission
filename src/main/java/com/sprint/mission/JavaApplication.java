@@ -39,6 +39,7 @@ public class JavaApplication {
         User david = jcfUserService.createUser(new User("David"));
         // ChannelService 테스트
         Channel testChannel = jcfChannelService.createChannel("Test Channel");
+        Channel chatChannel = jcfChannelService.createChannel("Chat Channel");
         System.out.println("채널 생성 후: " + jcfChannelService.getChannelList());
         // 채널에 유저 추가
         jcfChannelService.joinChannel(testChannel.getId(), charlie);
@@ -61,7 +62,10 @@ public class JavaApplication {
         for (var user : jcfUserService.getUserList()) {
             System.out.println(user.getUsername() + "의 메시지 조회: " + jcfMessageService.getMessageListByUser(user.getId()));
         }
-        System.out.println("채널별 메시지 조회: " + jcfMessageService.getMessageListByChannel(testChannel.getId()));
+
+        for (var channel : jcfChannelService.getChannelList()) {
+            System.out.println(channel.getChannelName() + " 채널의 메시지 조회: " + jcfMessageService.getMessageListByChannel(channel.getId()));
+        }
 
         UUID messageId = jcfMessageService.getMessageListByUser(charlie.getId()).get(0).getId();
         jcfMessageService.editMessage(messageId, "NMIXX Change Up!");
