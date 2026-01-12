@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    void createUser(String nickName);
+    User createUser(String nickName);
 
     User findById(UUID id);
 

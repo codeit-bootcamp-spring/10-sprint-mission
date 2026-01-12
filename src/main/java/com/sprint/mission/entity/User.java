@@ -3,10 +3,10 @@ package com.sprint.mission.entity;
 import java.util.UUID;
 
 public class User {
-    UUID id;
-    String nickName;
-    Long createdAt;
-    Long updatedAt;
+    private final UUID id;
+    private final Long createdAt;
+    private String nickName;
+    private Long updatedAt;
 
     public User(String nickName) {
         this.id = UUID.randomUUID();
