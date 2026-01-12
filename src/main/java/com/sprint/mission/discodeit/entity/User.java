@@ -15,10 +15,17 @@ public class User extends BaseEntity{
     public String getEmail() {
         return email;
     }
-    public void update(String name, String email) {
-        this.name = name;
-        this.email = email;
-        updateTimestamps();
+    public void updateName(String name) {
+            if(name != null && !name.isBlank()) {
+                this.name = name;
+                updateTimestamps();
+            }
+    }
+    public void updateEmail(String email) {
+        if (email != null && !email.isBlank()) {
+            this.email = email;
+            updateTimestamps();
+        }
     }
     @Override
     public String toString() {

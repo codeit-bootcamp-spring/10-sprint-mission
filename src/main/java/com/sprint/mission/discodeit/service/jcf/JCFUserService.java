@@ -28,7 +28,14 @@ public class JCFUserService implements UserService {
     @Override
     public void updateUser(UUID id, String name, String email) {
         User user = data.get(id);
-        user.update(name, email);
+        if(user != null){
+            if(name != null){
+                user.updateName(name);
+            }
+            if(email != null){
+                user.updateEmail(email);
+            }
+        }
     }
     @Override
     public void deleteUser(UUID id) {

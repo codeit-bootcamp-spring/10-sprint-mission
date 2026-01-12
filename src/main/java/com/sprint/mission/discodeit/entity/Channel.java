@@ -15,8 +15,11 @@ public class Channel extends BaseEntity{
     public String getType() {
         return type;
     }
-    public void update(String name, String type) {
+    public void updateName(String name) {
         this.name = name;
+        updateTimestamps();
+    }
+    public void updateType(String type) {
         this.type = type;
         updateTimestamps();
     }
