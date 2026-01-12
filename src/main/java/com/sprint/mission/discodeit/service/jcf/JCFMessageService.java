@@ -13,12 +13,22 @@ public class JCFMessageService implements MessageService {
     }
     @Override
     public void createMessage(Message message) {
+        if (message == null) {
+            throw new IllegalArgumentException("생성하고자 하는 메시지가 null일 수 없음");
+        }
         messages.put(message.getId(), message);
     }
 
     @Override
     public Message findById(UUID id) {
-        return messages.get(id);
+        if (id == null) {
+            throw new IllegalArgumentException("찾고자 하는 메시지의 id가 null일 수 없음");
+        }
+        Message message = messages.get(id);
+        if (message == null) {
+            throw new IllegalStateException("해당 id의 메시지를 찾을 수 없음");
+        }
+        return message;
     }
 
     @Override
@@ -29,13 +39,16 @@ public class JCFMessageService implements MessageService {
     @Override
     public void updateById(UUID id, String content) {
         Message targetMessage = findById(id);
+        if (content == null) {
+            throw new IllegalArgumentException("업데이트하려는 메시지 내용이 null일 수 없음");
+        }
         targetMessage.updateContent(content);
     }
 
     @Override
     public void deleteById(UUID id) {
+        findById(id);
         messages.remove(id);
-
     }
 
     @Override

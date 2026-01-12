@@ -2,11 +2,8 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.*;
 
-public class Channel {
-    private final UUID id;
+public class Channel extends BaseEntity {
     private String channelName;
-    private final long createdAt;
-    private long updatedAt;
 
     // 서버에 참여중인 user들
     private List<User> joinedUsers;
@@ -14,10 +11,8 @@ public class Channel {
     private List<Message> messageList;
 
     public Channel(String channelName) {
-        this.id = UUID.randomUUID();
+        super();
         this.channelName = channelName;
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = createdAt;
         this.joinedUsers = new ArrayList<User>();
         this.messageList = new ArrayList<Message>();
     }
@@ -43,20 +38,9 @@ public class Channel {
     }
 
     // 각 필드 반환하는 getter 함수
-    public UUID getId() {
-        return id;
-    }
 
     public String getChannelName() {
         return channelName;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
     }
 
     public List<User> getJoinedUsers() {
@@ -72,19 +56,15 @@ public class Channel {
         setUpdatedAt();
     }
 
-    public void setUpdatedAt() {
-        this.updatedAt = System.currentTimeMillis();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Channel channel)) return false;
-        return Objects.equals(id, channel.id);
+        return Objects.equals(this.getId(), channel.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hashCode(this.getId());
     }
 
     @Override

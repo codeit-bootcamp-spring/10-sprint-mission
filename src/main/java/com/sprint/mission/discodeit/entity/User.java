@@ -5,23 +5,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-public class User {
-    // id는 변경될 수 없음(final)
-    private final UUID id;
+public class User extends BaseEntity {
     private String userName;
-    // 생성시기는 변경될 수 없음(final)
-    private final long createdAt;
-    private long updatedAt;
     // 참여 중인 채널
     private List<Channel> channels;
     // 작성한 메시지
     private List<Message> messages;
 
     public User(String userName) {
-        this.id = UUID.randomUUID();
+        super();
         this.userName = userName;
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = createdAt;
         this.channels = new ArrayList<Channel>();
         this.messages = new ArrayList<Message>();
     }
@@ -59,20 +52,8 @@ public class User {
 
 
     // 각 필드 반환하는 getter 함수 정의
-    public UUID getId() {
-        return id;
-    }
-
     public String getUserName() {
         return userName;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
     }
 
     public List<Channel> getChannels() {
@@ -88,19 +69,16 @@ public class User {
         this.userName = userName;
         setUpdatedAt();
     }
-    public void setUpdatedAt() {
-        this.updatedAt = System.currentTimeMillis();
-    }
 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof User user)) return false;
-        return Objects.equals(id, user.id);
+        return Objects.equals(this.getId(), user.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hashCode(this.getId());
     }
 
     @Override
