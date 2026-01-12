@@ -62,15 +62,22 @@ public class JavaApplication {
             User activeUser = userService.findAll().get(0);
             Channel activeChannel = channelService.findAll().get(0);
 
-            Message message1 = new Message(activeUser.getId(), activeChannel.getId(), "안녕하세요!");
-            messageService.create(message1);
-
-            runTest("메시지 내용 빈값", "\" \"", () -> new Message(activeUser.getId(), activeChannel.getId(), "  "));
+            System.out.println("[메세지 생성 시도]");
+            messageService.create(activeUser.getId(), activeChannel.getId(), "인녕하세요!");
 
             UUID unknownId = UUID.randomUUID();
             runTest("존재하지 않는 유저 참조", unknownId.toString(), () -> {
-                messageService.create(new Message(unknownId, activeChannel.getId(), "누구세요?"));
+                messageService.create(unknownId, activeChannel.getId(), "누구세요?");
             });
+
+            runTest("메시지 내용 빈값", "공백", () -> {
+                new Message(activeUser, activeChannel, "  ");
+            });
+
+            System.out.println("[출력] 메시지 목록: " + messageService.findAll());
+
+            Message savedMsg = messageService.findAll().get(0);
+            System.out.println("[출력] 첫 번째 메시지 작성자: " + savedMsg.getUser().getUserName());
 
             System.out.println("[출력] 메시지 목록: " + messageService.findAll());
         } catch (Exception e) {

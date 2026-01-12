@@ -5,7 +5,6 @@ public class User extends BaseEntity {
     private String userEmail;
 
     public User(String userName, String userEmail) {
-        super();
         validateUser(userName, userEmail);
         this.userName = userName;
         this.userEmail = userEmail;

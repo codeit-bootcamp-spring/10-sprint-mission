@@ -1,18 +1,18 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.UUID;
-
 public class Message extends BaseEntity {
+    private final User user;
+    private final Channel channel;
     private String content;
-    private final UUID userId;
-    private final UUID channelId;
 
-    public Message(UUID userId, UUID channelId, String content) {
-        super();
-        validateMessage();
-        this.userId = userId;
-        this.channelId = channelId;
+    public Message(User user, Channel channel, String content) {
+        if (user == null) throw new IllegalArgumentException("유저 정보가 유효하지 않습니다.");
+        if (channel == null) throw new IllegalArgumentException("채널 정보가 유효하지 않습니다.");
+
+        this.user = user;
+        this.channel = channel;
         this.content = content;
+        validateMessage();
     }
 
     public void updateMessage(String content) {
@@ -35,18 +35,18 @@ public class Message extends BaseEntity {
     @Override
     public String toString() {
         return String.format("Message[내용: %s, 작성자: %s, 채널: %s, Message ID: %s]",
-                content, userId, channelId, getId());
+                content, user, channel, getId());
     }
 
     public String getContent() {
         return content;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public Channel getChannel() {
+        return channel;
     }
 
-    public UUID getChannelId() {
-        return channelId;
+    public User getUser() {
+        return user;
     }
 }

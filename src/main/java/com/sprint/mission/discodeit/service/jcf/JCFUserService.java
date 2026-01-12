@@ -3,25 +3,60 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
-public class JCFUserService extends JCFBaseService<User> implements UserService {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
+public class JCFUserService implements UserService {
+    private final List<User> users =  new ArrayList<>();
     // 이메일 중복 시 예외를 던져 가입 중단 (Fail-Fast)
     @Override
     public void create(User user) {
         validateDuplicateEmail(user.getUserEmail());
-        super.create(user);
+        users.add(user);
+    }
+
+    @Override
+    public User findById(UUID uuid) {
+        return users.stream()
+                .filter(u -> u.getId().equals(uuid))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. ID: " + uuid));
+    }
+
+    @Override
+    public List<User> findAll() {
+        return new ArrayList<>(users);
+    }
+
+    @Override
+    public void update(UUID uuid, User entity) {
+        User existing = findById(uuid);
+
+        for (int i = 0; i < users.size(); i++) {
+            if (users.get(i).getId().equals(uuid)) {
+                users.set(i, entity);
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void delete(UUID uuid) {
+        User user = findById(uuid);
+        users.remove(user);
     }
 
 
     // 이메일 중복 시 예외를 던져 가입 중단 (Fail-Fast)
     private void validateDuplicateEmail(String email) {
 
-        boolean exists = data.values().stream()
+        boolean exists = users.stream()
                 .anyMatch(existingUser ->
                         existingUser.getUserEmail()
                                 .equals(email));
         if (exists) {
-            throw new IllegalStateException("이미 존재하는 이메일입니다: " + email);
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + email);
         }
     }
 }

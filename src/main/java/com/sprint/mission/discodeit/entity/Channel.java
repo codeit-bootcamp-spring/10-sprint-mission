@@ -4,7 +4,6 @@ public class Channel extends BaseEntity {
     private String channelName;
 
     public Channel(String channelName) {
-        super();
         validateChannel(channelName);
         this.channelName = channelName;
     }

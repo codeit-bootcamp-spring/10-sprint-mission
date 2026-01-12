@@ -1,13 +1,19 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-public class JCFMessageService extends JCFBaseService<Message> implements MessageService {
+public class JCFMessageService implements MessageService {
+    private final List<Message> messages =  new ArrayList<>();
+
     private final UserService userService;
     private final ChannelService channelService;
 
@@ -17,16 +23,40 @@ public class JCFMessageService extends JCFBaseService<Message> implements Messag
     }
 
     @Override
-    public void create(Message entity) {
-        super.create(entity);
+    public void create(UUID userId, UUID channelId, String content) {
+        User user = userService.findById(userId);
+        Channel channel = channelService.findById(channelId);
+
+        Message message = new Message(user, channel, content);
+        messages.add(message);
     }
 
-    // 메세지 저장 시 참조 무결성 확인 (Fail-Fast)
-    // 작성자 및 채널 존재 여부 확인
-    private void validateReference(UUID userId, UUID channelId) {
-        if (userService.findById(userId) == null)
-            throw new IllegalArgumentException("존재하지 않는 유저입니다. (ID: " + userId + ")");
-        if (channelService.findById(channelId) == null)
-            throw new IllegalArgumentException("존재하지 않는 채널입니다. (ID: " + channelId + ")");
+    @Override
+    public void create(Message entity) {
+        throw new UnsupportedOperationException("Message는 유저와 채널 ID를 통한 생성을 권장합니다.");
+    }
+
+    @Override
+    public Message findById(UUID uuid) {
+        return messages.stream()
+                .filter(m -> m.getId().equals(uuid))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메세지 입니다. ID: " + uuid));
+    }
+
+    @Override
+    public List<Message> findAll() {
+        return new ArrayList<>(messages);
+    }
+
+    @Override
+    public void update(UUID uuid, Message entity) {
+        Message message = findById(uuid);
+    }
+
+    @Override
+    public void delete(UUID uuid) {
+        Message message = findById(uuid);
+        messages.remove(message);
     }
 }
