@@ -7,7 +7,7 @@ import java.util.*;
 
 public class JCFUserService implements UserService {
 
-    List<User> data = new ArrayList<>();
+    public List<User> data = new ArrayList<>();
 
     @Override
     public User createUser(String name, String email, String userId) {
@@ -27,16 +27,26 @@ public class JCFUserService implements UserService {
 
     @Override
     public User readUser(String userId) {
-        return data.stream().filter(user -> userId.equals(user.getUserId()))
+        User user = data.stream()
+                .filter(u -> userId.equals(u.getUserId()))
                 .findFirst()
                 .orElse(null);
+        System.out.println(user);
+        return user;
     }
 
     public User readUser(UUID id){
-        return data.stream().filter(user -> id.equals(user.getId()))
+        User user = data.stream()
+                .filter(u -> id.equals(u.getId()))
                 .findFirst()
                 .orElse(null);
+
+        System.out.println(user);
+
+        return user;
     }
+
+
 
     @Override
     public boolean updateUser(String userId, String name, String email) {
@@ -61,8 +71,8 @@ public class JCFUserService implements UserService {
     
 
     @Override
-    public boolean deleteUser(String userId) {
-        Optional<User> target = data.stream().filter(user -> userId.equals(user.getUserId()))
+    public boolean deleteUser(UUID uuId) {
+        Optional<User> target = data.stream().filter(user -> uuId.equals(user.getId()))
                 .findFirst();
 
         if(target.isEmpty()){
@@ -73,9 +83,23 @@ public class JCFUserService implements UserService {
         return true;
     }
 
+    public boolean deleteUser(String userId){
+        Optional<User> target = data.stream()
+                .filter(user -> userId.equals(user.getUserId()))
+                .findFirst();
+
+        if(target.isEmpty()){
+            return false;
+        }
+        data.remove(target.get());
+        return true;
+    }
+
     @Override
     public ArrayList<User> readAllUsers() {
+        System.out.println("-".repeat(20) + " 전체 조회 " + "-".repeat(20) );
         data.forEach(System.out::println);
+        System.out.println("-".repeat(50) );
         return (ArrayList<User>) data;
 
     }

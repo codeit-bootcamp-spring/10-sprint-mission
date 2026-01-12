@@ -10,8 +10,8 @@ public interface UserService {
     public User createUser(String name, String email, String userId); // 생성
     public User readUser(String userId); // 조회
     public User readUser(UUID id);
-
     public boolean updateUser(String userId, String name, String email);
-    public boolean deleteUser(String userId);
+    public boolean deleteUser(UUID uuId);
+    public boolean deleteUser(String userName);
     public ArrayList<User> readAllUsers();
 }

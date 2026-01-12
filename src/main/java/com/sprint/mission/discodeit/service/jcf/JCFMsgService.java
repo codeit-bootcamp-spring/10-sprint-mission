@@ -28,11 +28,28 @@ public class JCFMsgService implements MsgService {
         return message;
     }
 
+//    public Message createMessage(String context, String channelName, String userName){
+//        if(context == null || channelName == null || userName == null){
+//            return null;
+//        }
+//
+//        JCFUserService userService = new JCFUserService();
+//        JCFChannelService channelService = new JCFChannelService();
+//
+//
+//
+//        return
+//    }
+
     @Override
     public List<Message> readMessageByChannel(Channel channel) {
         List<Message> msgList = new ArrayList<Message>();
         // TODO : 채널에 축적된 메세지를 List<Message> 형태로 가공 후 리턴해야 함.
-        data.stream().filter(msg -> channel.equals(msg.getChannel())).forEach(msgList::add);
+        data.stream()
+                .filter(msg -> channel.equals(msg.getChannel()))
+                .forEach(msgList::add);
+
+        System.out.println(msgList);
         return msgList;
     }
 
@@ -43,6 +60,8 @@ public class JCFMsgService implements MsgService {
         data.stream()
                 .filter(msg->user.equals(msg.getUser()))
                 .forEach(msgList::add);
+
+        System.out.println(msgList);
         return msgList;
     }
 
@@ -68,7 +87,12 @@ public class JCFMsgService implements MsgService {
                 .filter(msg -> msgID.equals(msg.getId()))
                 .findFirst();
 
-        target.ifPresent(message -> data.remove(message));
+        target.ifPresent(msg ->
+        {
+            msg.getUser().deleteMsg(msg);
+            data.remove(msg);
+        });
+
         return true;
     }
 

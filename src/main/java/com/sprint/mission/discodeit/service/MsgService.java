@@ -10,6 +10,7 @@ import java.util.UUID;
 
 public interface MsgService {
     public Message createMessage(String context, Channel channel, User user); // 생성
+   // public Message createMessage(String context, String channelName, String userName);
     public List<Message> readMessageByChannel(Channel channel); // 채널 ID를 통해 조회
     public List<Message> readMessageByAuthor(User user); // 작성자를 통해 조회
     public boolean updateMessage(UUID msgID, String context); // 업데이트

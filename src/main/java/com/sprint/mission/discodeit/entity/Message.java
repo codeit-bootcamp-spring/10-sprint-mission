@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-public class Message extends DiscodeEntity {
+public class Message extends DiscordEntity {
 
     private String msgContext;
     private Channel channel;
@@ -10,7 +10,7 @@ public class Message extends DiscodeEntity {
     public Message(String context, Channel channel, User user){
         this.msgContext = context;
         this.channel = channel;
-        this.user = user;
+        this.addAuthor(user);
         updateTime();
     }
 
@@ -23,6 +23,7 @@ public class Message extends DiscodeEntity {
     }
 
     public User getUser(){
+        System.out.printf("%s 메시지의 작성자: %s %n",this.msgContext, this.user);
         return this.user;
     }
 
@@ -36,10 +37,22 @@ public class Message extends DiscodeEntity {
         updateTime();
     }
 
+    public void addAuthor(User user){
+        this.user = user;
+        user.addMsg(this);
+        updateTime();
+    }
+
+
+
+    public User user(){
+       return this.user;
+    }
+
 
 
     public String toString(){
-        return "채널: " + this.channel.getName() + " / 작성자: " + this.user.getUserName() + " / 내용: " + this.msgContext;
+        return String.format("[Message] context: %s | channel: %s | author: %s %n", this.msgContext, this.channel.getName(), this.user.getUserId());
     }
 
 }
