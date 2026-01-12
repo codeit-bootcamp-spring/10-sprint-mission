@@ -9,6 +9,6 @@ public interface UserService {
     User createUser(String userName, String userEmail, String userPassword);
     User readUser(UUID id);
     List<User> readAllUser();
-    User updateUser(UUID id,String userName, String userEmail, String userPassword);
+    void updateUser(UUID id,String userName, String userEmail, String userPassword);
 
 }

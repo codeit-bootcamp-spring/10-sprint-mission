@@ -34,6 +34,19 @@ public class User {
         return updatedAt;
     }
 
+    public void updateUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void updateUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
+    public void updateUserPassword(String userPassword) {
+        this.userPassword = userPassword;
+    }
+
+
     public String getUserStatus() {
         return "이름: " + userName + ", 이메일: " + userEmail + ", 비번: " + userPassword;
     }

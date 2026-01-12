@@ -33,7 +33,11 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User updateUser(UUID id, String userName, String userEmail, String userPassword) {
-
+    public void updateUser(UUID id, String userName, String userEmail, String userPassword) {
+        readUser(id).updateUserName(userName);
+        readUser(id).updateUserEmail(userEmail);
+        readUser(id).updateUserPassword(userPassword);
     }
+
+
 }
