@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.time.Instant;
 import java.util.*;
 
 public class Channel extends BaseEntity {
@@ -11,9 +10,9 @@ public class Channel extends BaseEntity {
 
     // 연관 관계
     // 해당 채널에 참여 중인 유저 목록
-    private final Set<User> channelMembers; // 유저 중복 참가 불가
+    private final Set<User> channelMembersList; // 유저 중복 참가 불가
     // 해당 채널에 존재하는 메시지 목록
-    private final List<Message> channelMessages; // 채팅창 안의 메시지들
+    private final List<Message> channelMessagesList; // 채팅창 안의 메시지들
 
     // 생성자
     public Channel(User owner, Boolean isPrivate, String channelName, String channelDescription) {
@@ -21,21 +20,22 @@ public class Channel extends BaseEntity {
         this.isPrivate = isPrivate;
         this.channelName = channelName;
         this.channelDescription = channelDescription;
-        channelMembers = new HashSet<>();
-        channelMessages = new ArrayList<>();
+        channelMembersList = new HashSet<>();
+        channelMessagesList = new ArrayList<>();
     }
 
     @Override
     public String toString() {
         return "Channel{" +
                 "channelId = " + getId() + ", " +
-                "createdAt = " + getCreatedAt() + ", " +
-                "updatedAt = " + getUpdatedAt() + ", " +
+//                "createdAt = " + getCreatedAt() + ", " +
+//                "updatedAt = " + getUpdatedAt() + ", " +
                 "owner = " + owner + ", " +
                 "isPrivate = " + isPrivate + ", " +
                 "channelName = " + channelName + ", " +
-                "channelDescription = " + channelDescription + ", " +
-                "channelMembers = " + channelMembers +
+//                "channelDescription = " + channelDescription + ", " +
+                "channelMembers = " + channelMembersList + ", " +
+                "channelMessages = " + channelMessagesList +
                 "}";
     }
 
@@ -60,12 +60,12 @@ public class Channel extends BaseEntity {
         return channelDescription;
     }
 
-    public Set<User> getChannelMembers() {
-        return channelMembers;
+    public Set<User> getChannelMembersList() {
+        return channelMembersList;
     }
 
-    public List<Message> getChannelMessages() {
-        return channelMessages;
+    public List<Message> getChannelMessagesList() {
+        return channelMessagesList;
     }
 
     // update
@@ -74,7 +74,7 @@ public class Channel extends BaseEntity {
         updateTime();
     }
 
-    public void updateIsPrivate() {
+    public void updateIsPrivate(Boolean isPrivate) {
         this.isPrivate = !this.isPrivate;
         updateTime();
     }
@@ -89,8 +89,21 @@ public class Channel extends BaseEntity {
         updateTime();
     }
 
-    public void updateChannelMembers(User user) {
-        this.channelMembers.add(user);
+    // 채널 멤버 추가
+    public void addChannelMembers(User user) {
+        this.channelMembersList.add(user);
+        updateTime();
+    }
+
+    // 채널 멤버 삭제
+    public void removeChannelMembers(User user) {
+        this.channelMembersList.remove(user);
+        updateTime();
+    }
+
+    // 메시지 작성
+    public void addChannelMessages(Message message) {
+        this.channelMessagesList.add(message);
         updateTime();
     }
 }
