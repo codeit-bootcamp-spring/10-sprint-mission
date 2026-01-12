@@ -53,7 +53,13 @@ public class JCFMessageService implements MessageService {
         messages.values().stream()
                 .filter(id -> id.getId().equals(messageId))
                 .findFirst()
-                .ifPresent(msg -> msg.updateContent(newContent));
+                .ifPresent(msg -> {
+                    try {
+                        msg.updateContent(newContent);
+                    } catch (IllegalArgumentException e) {
+                        System.out.println("해당 id를 가진 메시지가 존재하지 않습니다.");
+                    }
+                });
     }
 
     @Override
@@ -61,13 +67,24 @@ public class JCFMessageService implements MessageService {
         messages.values().stream()
                 .filter(id -> id.getId().equals(messageId))
                 .findFirst()
-                .ifPresent(msg -> messages.remove(messageId));
+                .ifPresent(msg ->
+                        {
+                            try {
+                                messages.remove(messageId);
+                            } catch (IllegalArgumentException e) {
+                                System.out.println("해당 id를 가진 메시지가 존재하지 않습니다.");
+                            }
+                        });
     }
 
     @Override
     public void clearMessage(UUID channelId) {
-        messages.values().removeIf(
-                message -> message.getSentChannelId().equals(channelId)
-        );
+        try {
+            messages.values().removeIf(
+                    message -> message.getSentChannelId().equals(channelId)
+            );
+        } catch (IllegalArgumentException e) {
+            System.out.println("해당 id를 가진 채널이 존재하지 않습니다.");
+        }
     }
 }
