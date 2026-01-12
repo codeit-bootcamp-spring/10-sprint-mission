@@ -4,40 +4,34 @@ import java.util.UUID;
 
 public class Message {
     private final UUID id;
+    private final UUID channelId;
     private final Long createdAt;
     private Long updatedAt;
-    private String userId;
+    private String sender;
     private String text;
 
-    public Message(String userId, String text) {
-        this.id = UUID.randomUUID(); // 생성자에서 초기화
-        this.createdAt = System.currentTimeMillis(); // 생성자에서 초기화
-        this.updatedAt = this.createdAt; // 생성 시점으로 초기화
-        this.userId = userId;
+    public Message(Channel channel, String sender, String text) {
+        this.id = UUID.randomUUID();
+        this.channelId = channel.getId();
+        this.sender = sender;
         this.text = text;
+        this.createdAt = System.currentTimeMillis();
+        this.updatedAt = this.createdAt;
     }
 
     // Getter 메소드
     public UUID getId() { return id; }
+    public UUID getChannelId() { return channelId; }
     public Long getCreatedAt() { return createdAt; }
     public Long getUpdatedAt() { return updatedAt; }
-    public String getUserId() { return userId; }
+    public String getSender() { return sender; }
     public String getText() { return text; }
 
 
     // update 메소드
-    public void update(String userId, String text) {
-        this.userId = userId;
+    public void update(String text) {
         this.text = text;
-        this.updatedAt = System.currentTimeMillis(); // 업데이트 시각 갱신
-    }
-    public void updateId(String userId) {
-        this.userId = userId;
-        this.updatedAt = System.currentTimeMillis(); // 업데이트 시각 갱신
-    }
-    public void updateText(String text) {
-        this.text = text;
-        this.updatedAt = System.currentTimeMillis(); // 업데이트 시각 갱신
+        this.updatedAt = System.currentTimeMillis();
     }
 
 }

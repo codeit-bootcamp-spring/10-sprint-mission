@@ -35,7 +35,7 @@ public class User {
         this.name = name;
         this.updatedAt = System.currentTimeMillis();
     }
-    public void updateEmail(String email) {
+    public void updateEmail(String email) { // 질문: 이렇게 여러 개로 나누는 게 좋을지, 하나의 메소드로 사용하는 것이 좋을지?
         this.email = email;
         this.updatedAt = System.currentTimeMillis();
     }
