@@ -22,10 +22,10 @@ public class JavaApplication {
         User alice = new User("Alice");
         jcfUserService.createUser(alice);
         System.out.println("Alice 추가 " + jcfUserService.getUserList());
-        jcfUserService.updateUserName(alice.getUserId(), "Bob");
+        jcfUserService.updateUserName(alice.getId(), "Bob");
         System.out.println("Alice -> Bob 변경 " + jcfUserService.getUserList());
 
-        UUID userId = alice.getUserId();
+        UUID userId = alice.getId();
         System.out.println("변경된 Bob의 id: " + userId);
 
         jcfUserService.deleteUser(userId);
@@ -41,11 +41,11 @@ public class JavaApplication {
         Channel testChannel = jcfChannelService.createChannel("Test Channel");
         System.out.println("채널 생성 후: " + jcfChannelService.getChannelList());
         // 채널에 유저 추가
-        jcfChannelService.joinChannel(testChannel.getChannelId(), charlie);
-        jcfChannelService.joinChannel(testChannel.getChannelId(), david);
+        jcfChannelService.joinChannel(testChannel.getId(), charlie);
+        jcfChannelService.joinChannel(testChannel.getId(), david);
         System.out.println("채널에 유저 추가 후: " + jcfChannelService.getChannelList());
         // 채널 이름 변경
-        jcfChannelService.updateChannelName(testChannel.getChannelId(), "NMIXX Channel");
+        jcfChannelService.updateChannelName(testChannel.getId(), "NMIXX Channel");
         System.out.println("채널 이름 변경 후: " + jcfChannelService.getChannelList());
 
         System.out.println();
@@ -59,22 +59,22 @@ public class JavaApplication {
         System.out.println("메시지 전송 후: " + jcfMessageService.getAllMessages());
 
         for (var user : jcfUserService.getUserList()) {
-            System.out.println(user.getUsername() + "의 메시지 조회: " + jcfMessageService.getMessageListByUser(user.getUserId()));
+            System.out.println(user.getUsername() + "의 메시지 조회: " + jcfMessageService.getMessageListByUser(user.getId()));
         }
-        System.out.println("채널별 메시지 조회: " + jcfMessageService.getMessageListByChannel(testChannel.getChannelId()));
+        System.out.println("채널별 메시지 조회: " + jcfMessageService.getMessageListByChannel(testChannel.getId()));
 
-        UUID messageId = jcfMessageService.getMessageListByUser(charlie.getUserId()).get(0).getId();
+        UUID messageId = jcfMessageService.getMessageListByUser(charlie.getId()).get(0).getId();
         jcfMessageService.editMessage(messageId, "NMIXX Change Up!");
         System.out.println("메시지 수정 후: " + jcfMessageService.getAllMessages());
         jcfMessageService.deleteMessage(messageId);
         System.out.println("메시지 삭제 후: " + jcfMessageService.getAllMessages());
 
         // 채널에서 유저 제거
-        jcfChannelService.leaveChannel(testChannel.getChannelId(), charlie);
+        jcfChannelService.leaveChannel(testChannel.getId(), charlie);
         System.out.println("채널에서 유저 제거 후: " + jcfChannelService.getChannelList());
 
         // 채널 삭제
-        jcfChannelService.deleteChannel(testChannel.getChannelId());
+        jcfChannelService.deleteChannel(testChannel.getId());
         System.out.println("채널 삭제 후: " + jcfChannelService.getChannelList());
         System.out.println("채널 삭제 후 메시지 존재 여부 확인: " + jcfMessageService.getAllMessages());
     }

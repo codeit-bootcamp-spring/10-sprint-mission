@@ -4,25 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Channel {
-    private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
-
+public class Channel extends BaseEntity {
     private String channelName;
     private List<User> joinedUsers;
 
     public Channel(String channelName) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = System.currentTimeMillis();
+        super();
         // 필드 초기화
         this.channelName = channelName;
         this.joinedUsers = new ArrayList<>();
-    }
-
-    public UUID getChannelId() {
-        return id;
     }
 
     public String getChannelName() {
@@ -35,7 +25,7 @@ public class Channel {
 
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
-        this.updatedAt = System.currentTimeMillis();
+        setUpdatedAt();
     }
 
     public void addUser(User user) {
@@ -43,7 +33,7 @@ public class Channel {
     }
 
     public void removeUser(UUID userId) {
-        joinedUsers.removeIf(user -> user.getUserId().equals(userId));
+        joinedUsers.removeIf(user -> user.getId().equals(userId));
     }
 
     @Override

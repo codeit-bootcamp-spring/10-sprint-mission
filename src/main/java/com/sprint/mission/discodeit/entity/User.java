@@ -4,11 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class User {
-    private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
-
+public class User extends BaseEntity {
     private String username;
     // 채널 참여 내역과 메시지 전송 내역을 기록하는 필드
     private List<Channel> joinedChannels;
@@ -16,9 +12,7 @@ public class User {
 
     public User(String username) {
         // id 자동생성 및 초기화
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = System.currentTimeMillis();
+        super();
         // username 초기화
         this.username = username;
         // 참여한 채널들과 보낸 메세지들
@@ -33,11 +27,7 @@ public class User {
     // username 수정 메서드
     public void updateUsername(String username) {
         this.username = username;
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public UUID getUserId() {
-        return id;
+        super.setUpdatedAt();
     }
 
     public List<Channel> getJoinedChannels() {
@@ -58,6 +48,10 @@ public class User {
 
     public void updateSentMessages(Message message) {
         sentMessages.add(message);
+    }
+
+    public void removeSentMessage(Message message) {
+        sentMessages.remove(message);
     }
 
     @Override
