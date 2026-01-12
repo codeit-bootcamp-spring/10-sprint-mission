@@ -29,11 +29,11 @@ public class UserPresence {
         this.status = status;
     }
 
-    public void changeMicrophone(boolean isOn) {
+    public void toggleMicrophone(boolean isOn) {
         this.isMicrophoneOn = isOn;
     }
 
-    public void changeHeadset(boolean isOn) {
+    public void toggleHeadset(boolean isOn) {
         this.isHeadsetOn = isOn;
     }
 }

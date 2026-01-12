@@ -76,12 +76,12 @@ public class User extends BaseEntity {
         this.presence.changeStatus(status);
     }
 
-    public void changeMicrophone(boolean isOn) {
-        this.presence.changeMicrophone(isOn);
+    public void toggleMicrophone(boolean isOn) {
+        this.presence.toggleMicrophone(isOn);
     }
 
-    public void changeHeadset(boolean isOn) {
-        this.presence.changeHeadset(isOn);
+    public void toggleHeadset(boolean isOn) {
+        this.presence.toggleHeadset(isOn);
     }
 
 
