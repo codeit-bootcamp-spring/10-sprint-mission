@@ -23,7 +23,7 @@ public class User extends BaseEntity {
         this.email = email;
         this.nickName = nickName;
         this.userName = userName;
-        this.password = password;
+        this.password = password; // 해싱?
         this.birthday = birthday;
 
         channelList = new ArrayList<>();
@@ -74,28 +74,34 @@ public class User extends BaseEntity {
     }
 
     // update
-    public void updateEmail(String email) {
+    public String updateEmail(String email) {
         this.email = email;
         updateTime();
+        return email;
     }
 
-    public void updateNickName(String nickName) {
+    public String updateNickName(String nickName) {
         this.nickName = nickName;
         updateTime();
+        return nickName;
     }
 
-    public void updateUserName(String userName) {
+    public String updateUserName(String userName) {
         this.userName = userName;
         updateTime();
+        return userName;
     }
 
-    public void updatePassword(String password) {
+    // 해시??
+    public String updatePassword(String password) {
         this.password = password;
         updateTime();
+        return password;
     }
 
-    public void updateBirthday(String birthday) {
+    public String updateBirthday(String birthday) {
         this.birthday = birthday;
         updateTime();
+        return birthday;
     }
 }

@@ -22,18 +22,19 @@ public interface UserService {
     // 모든 사용자
     List<User> readAllUsers();
     // 특정 채널에 속한 모든 유저
-    List<User> readAllUsersByChannelId(UUID channelId);
-    // 특정 채널에서 특정 사용자들 찾기
-    List<User> searchUserAtChannelByChannelIdAndPartialUserName(UUID channelId, String partialUserName);
-    // 전체 검색으로 특정 사용자 이름 찾기
-    List<User> searchAllUsersByPartialUserName(String partialUserName);
+//    List<User> readAllUsersByChannelId(UUID channelId);
+    // 특정 채널에서 특정 사용자 찾기
+//    List<User> searchUserAtChannelByChannelIdAndPartialName(UUID channelId, String partialName);
+    // userName 또는 nickName을 이용한 전체 검색으로 특정 사용자 찾기
+    List<User> searchAllUsersByPartialName(String partialName);
+
 
     // U. 수정
-    User updateEmail(UUID userId, String email); // 이메일 수정
-    User updatePassword(UUID userId, String password); // 비밀번호 수정
-    User updateNickName(UUID userId, String nickName); // 별명 수정
-    User updateUserName(UUID userId, String userName); // 사용자 이름 수정
-    User updateBirthday(UUID userId, String birthday); // 생년월일 수정
+    Optional<User> updateEmail(UUID userId, String email); // 이메일 수정
+    Optional<User> updatePassword(UUID userId, String password); // 비밀번호 수정
+    Optional<User> updateNickName(UUID userId, String nickName); // 별명 수정
+    Optional<User> updateUserName(UUID userId, String userName); // 사용자 이름 수정
+    Optional<User> updateBirthday(UUID userId, String birthday); // 생년월일 수정
 
     // D. 삭제
     void deleteUser(UUID userId);
