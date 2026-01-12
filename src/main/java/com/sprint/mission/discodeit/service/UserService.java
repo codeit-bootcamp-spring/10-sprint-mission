@@ -10,5 +10,5 @@ public interface UserService {
     public HashSet<User> findAll();
     public User create(User user);
     public void delete(UUID id);
-    public void update(UUID id, String str);
+    public User update(UUID id, String str);
 }

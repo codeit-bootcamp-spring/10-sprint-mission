@@ -41,28 +41,17 @@ public class JCFChannel implements ChannelService {
 
     @Override
     public void delete(UUID id) {
-        channels.remove(channels.stream()
-                .filter(channel -> channel.getId().equals(id))
-                .findFirst()
-                .orElse(null)
-                );
+        channels.remove(find(id));
     }
 
     @Override
-    public void update(UUID id, String str, boolean isChangingName) {
-        channels.stream()
-                .filter(channel -> channel.getId().equals(id))
-                .findFirst()
-                .ifPresent(channel ->{
-                    if(isChangingName){
-                        channel.updateChannelName(str);
-                    }else{
-                        channel.updateChannelDescription(str);
-                    }
-                });
+    public Channel updateName(UUID id, String name) {
+        this.find(id).updateChannelName(name);
+        return this.find(id);
     }
 
-
-
-
+    public Channel updateDesc(UUID id, String desc) {
+        this.find(id).updateChannelDescription(desc);
+        return this.find(id);
+    }
 }

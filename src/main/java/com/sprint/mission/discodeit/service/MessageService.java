@@ -10,5 +10,5 @@ public interface MessageService {
     public HashSet<Message> findAll();
     public Message create(Message message);
     public void delete(UUID id);
-    public void update(UUID id, String str);
+    public Message update(UUID id, String str);
 }

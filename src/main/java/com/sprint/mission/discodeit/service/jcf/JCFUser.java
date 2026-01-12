@@ -1,4 +1,5 @@
 package com.sprint.mission.discodeit.service.jcf;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -23,7 +24,8 @@ public class JCFUser implements UserService {
         return users.stream()
                 .filter(user -> user.getId() == id)
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Channel not found: id = " + id));
+                .orElseThrow(() -> {throw new RuntimeException("Channel not found: id = " + id);}
+                );
     }
 
     @Override
@@ -39,18 +41,12 @@ public class JCFUser implements UserService {
 
     @Override
     public void delete(UUID id) {
-        users.remove(users.stream()
-                .filter(user -> user.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("User not found: id = " + id))
-        );
+        users.remove(find(id));
     }
 
     @Override
-    public void update(UUID id, String str) {
-        users.stream()
-                .filter(user -> user.getId().equals(id))
-                .findFirst()
-                .ifPresent(user -> user.updateUserName(str));
+    public User update(UUID id, String newUserName) {
+        this.find(id).updateUserName(newUserName);
+        return this.find(id);
     }
 }

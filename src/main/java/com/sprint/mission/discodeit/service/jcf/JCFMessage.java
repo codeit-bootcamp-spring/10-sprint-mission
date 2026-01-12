@@ -39,17 +39,12 @@ public class JCFMessage implements MessageService {
 
     @Override
     public void delete(UUID id) {
-        messages.remove(messages.stream()
-                .filter(message -> message.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Channel not found: id = " + id)));
+        messages.remove(find(id));
     }
 
     @Override
-    public void update(UUID id, String msg) {
-        messages.stream()
-                .filter(message -> message.getId().equals(id))
-                .findFirst()
-                .ifPresent(message -> message.updateMessage(msg));
+    public Message update(UUID id, String msg) {
+        this.find(id).updateMessage(msg);
+        return this.find(id);
     }
 }

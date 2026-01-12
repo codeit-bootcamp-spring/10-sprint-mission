@@ -10,5 +10,6 @@ public interface ChannelService {
     public HashSet<Channel> findAll();
     public Channel create(String channelName, String channelDescription);
     public void delete(UUID id);
-    public void update(UUID id, String str, boolean isChangingName);
+    public Channel updateName(UUID id, String name);
+    public Channel updateDesc(UUID id, String desc);
 }

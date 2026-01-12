@@ -49,7 +49,7 @@ public class JavaApplication {
         userdata.update(user2.getId(), "초코유");
         messagedata.findAll().stream().forEach(System.out::println);
 
-        channeldata.update(ch1.getId(), "코딩 하는 채널", false);
+        channeldata.updateDesc(ch1.getId(), "코딩 하는 채널");
         channeldata.findAll().stream().forEach(System.out::println);
 
         //삭제하기, 조회
