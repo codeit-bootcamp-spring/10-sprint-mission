@@ -49,7 +49,6 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void joinChannel(UUID channelId, UUID userID) {
-        Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
         Objects.requireNonNull(userID, "userId값은 null일 수 없습니다.");
 
         Channel channel = checkNoSuchElementException(channelId);
@@ -61,7 +60,6 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void leaveChannel(UUID channelId, UUID userID) {
-        Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
         Objects.requireNonNull(userID, "userId값은 null일 수 없습니다.");
 
         Channel channel = checkNoSuchElementException(channelId);
@@ -80,6 +78,8 @@ public class JCFChannelService implements ChannelService {
     }
 
     private Channel checkNoSuchElementException(UUID channelId) {
+        Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
+
         Channel channel = channels.get(channelId);
 
         if (channel == null) {
