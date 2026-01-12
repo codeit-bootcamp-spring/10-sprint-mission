@@ -24,7 +24,7 @@ public abstract class Common {
     public long getUpdatedAt() {
         return this.updatedAt;
     }
-    void updateUpdatedAt() {
+    public void updateUpdatedAt() {
         this.updatedAt = System.currentTimeMillis();
     }
 }
