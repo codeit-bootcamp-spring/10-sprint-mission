@@ -9,6 +9,6 @@ public interface UserService {
     User createUser(String userName, String password, String email);
     User getUser(UUID userId);
     List<User> getAllUsers();
-    User updateUser(User user);
-    User deleteUser(User user);
+    User updateUser(UUID userId, String userName, String password, String email);
+    User deleteUser(UUID userId);
 }
