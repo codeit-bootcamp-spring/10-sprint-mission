@@ -37,4 +37,8 @@ public class JCFMessageService implements MessageService {
         readMessage(id).updateContent(content);
     }
 
+    public void deleteMessage(UUID id) {
+        list.remove(readMessage(id));
+    }
+
 }
