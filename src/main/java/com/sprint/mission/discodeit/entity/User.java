@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class User extends BaseEntity {
     private String email;
@@ -14,9 +11,9 @@ public class User extends BaseEntity {
 
     // 연관
     // 해당 유저가 참여 중인 채널 목록
-    private final List<Channel> channelList;
+    private final Set<Channel> joinChannelList;
     // 해당 유저가 보낸 메시지 목록
-    private final List<Message> messageList;
+    private final List<Message> writeMessageList;
 
     // 생성자
     public User(String email, String nickName, String userName, String password, String birthday) {
@@ -26,21 +23,23 @@ public class User extends BaseEntity {
         this.password = password; // 해싱?
         this.birthday = birthday;
 
-        channelList = new ArrayList<>();
-        messageList = new ArrayList<>();
+        joinChannelList = new HashSet<>();
+        writeMessageList = new ArrayList<>();
     }
 
     @Override
     public String toString() {
         return "User{" +
                 "userId = " + getId() + ", " +
-                "createdAt = " + getCreatedAt() + ", " +
-                "updatedAt = " + getUpdatedAt() + ", " +
+//                "createdAt = " + getCreatedAt() + ", " +
+//                "updatedAt = " + getUpdatedAt() + ", " +
                 "email = " + email + ", " +
                 "nickName = " + nickName + ", " +
                 "userName = " + userName + ", " +
-                "password = " + password + ", " +
-                "birthday = " + birthday +
+//                "password = " + password + ", " +
+//                "birthday = " + birthday + ", " +
+//                "joinChannelList = " + joinChannelList + ", " +
+//                "writeMessageList = " + writeMessageList +
                 "}";
     }
 
@@ -65,43 +64,59 @@ public class User extends BaseEntity {
         return birthday;
     }
 
-    public List<Channel> getChannelList() {
-        return channelList;
+    public Set<Channel> getJoinChannelList() {
+        return joinChannelList;
     }
 
-    public List<Message> getMessageList() {
-        return messageList;
+    public List<Message> getWriteMessageList() {
+        return writeMessageList;
     }
 
     // update
-    public String updateEmail(String email) {
+    public void updateEmail(String email) {
         this.email = email;
         updateTime();
-        return email;
     }
 
-    public String updateNickName(String nickName) {
+    public void updateNickName(String nickName) {
         this.nickName = nickName;
         updateTime();
-        return nickName;
     }
 
-    public String updateUserName(String userName) {
+    public void updateUserName(String userName) {
         this.userName = userName;
         updateTime();
-        return userName;
     }
 
     // 해시??
-    public String updatePassword(String password) {
+    public void updatePassword(String password) {
         this.password = password;
         updateTime();
-        return password;
     }
 
-    public String updateBirthday(String birthday) {
+    public void updateBirthday(String birthday) {
         this.birthday = birthday;
         updateTime();
-        return birthday;
+    }
+
+    // 채널 참가
+    public void joinChannel(Channel channel) {
+        this.joinChannelList.add(channel);
+        updateTime();
+        channel.addChannelMembers(this);
+    }
+
+    // 채널 탈퇴
+    public void leaveChannel(Channel channel) {
+        this.joinChannelList.remove(channel);
+        updateTime();
+        channel.removeChannelMembers(this);
+    }
+
+    // 메시지 작성
+    public void writeMessageList(Message message) {
+        this.writeMessageList.add(message);
+        updateTime();
+        message.addUserWriteMessageList(this, message.getContent());
     }
 }
