@@ -52,9 +52,9 @@ public class JavaApplication {
         System.out.println();
 
         // MessageService 테스트
-        jcfMessageService.sendMessage(charlie.getUserId(), testChannel.getChannelId(), "Hello, World!");
-        jcfMessageService.sendMessage(charlie.getUserId(), testChannel.getChannelId(), "This is test");
-        jcfMessageService.sendMessage(charlie.getUserId(), testChannel.getChannelId(), "for testing");
+        jcfMessageService.sendMessage(charlie, testChannel, "Hello, World!");
+        jcfMessageService.sendMessage(charlie, testChannel, "This is test");
+        jcfMessageService.sendMessage(charlie, testChannel, "for testing");
         System.out.println("메시지 전송 후: " + jcfMessageService.getAllMessages());
 
         for (var user : jcfUserService.getUserList()) {

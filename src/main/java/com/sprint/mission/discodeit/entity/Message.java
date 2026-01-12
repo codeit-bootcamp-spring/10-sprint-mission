@@ -10,20 +10,20 @@ public class Message {
     // 메시지 내용
     private String content;
     // 유저 정보
-    private UUID sentUserId;
+    private User sentUser;
     // 채널 정보
-    private UUID sentChannelId;
+    private Channel sentChannel;
 
-    public Message(UUID sentUserId, UUID sentChannelId, String content) {
+    public Message(User sentUser, Channel sentChannel, String content) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
         // content 초기화
         this.content = content;
         // sentUserId 초기화는 메시지 전송 시점에 설정
-        this.sentUserId = sentUserId;
+        this.sentUser = sentUser;
         // sentChannelId 초기화는 메시지 전송 시점에 설정
-        this.sentChannelId = sentChannelId;
+        this.sentChannel = sentChannel;
     }
 
     public UUID getId() {
@@ -31,11 +31,11 @@ public class Message {
     }
 
     public UUID getSentUserId() {
-        return sentUserId;
+        return sentUser.getUserId();
     }
 
     public UUID getSentChannelId() {
-        return sentChannelId;
+        return sentChannel.getChannelId();
     }
 
     public String getContent() {
@@ -53,7 +53,9 @@ public class Message {
                 "id='" + id + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", msg='" + content + '\'' +
+                ", content='" + content + '\'' +
+                ", sentUserId='" + sentUser + '\'' +
+                ", sentChannelId='" + sentChannel + '\'' +
                 '}';
     }
 }
