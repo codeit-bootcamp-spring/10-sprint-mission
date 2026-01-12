@@ -12,6 +12,7 @@ public class Message extends defaultEntity{
         this.message = message;
         this.user = user;
         this.channel = channel;
+        channel.addMessage(this);
     }
 
     public String getMessage() {

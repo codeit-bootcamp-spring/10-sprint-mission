@@ -19,18 +19,18 @@ public class JCFChannel implements ChannelService {
     HashSet<Channel> channels = new HashSet<>();
 
     @Override
-    public void read(UUID id) {
+    public Channel read(UUID id) {
         for(Channel channel : this.channels) {
             if (channel.getId() == id){
-                System.out.println(channel);
-                return;
+                return channel;
             }
         }
+        return null;
     }
 
     @Override
-    public void readAll() {
-        channels.forEach(System.out::println);
+    public HashSet<Channel> readAll() {
+        return channels;
     }
 
     @Override
@@ -47,17 +47,22 @@ public class JCFChannel implements ChannelService {
     }
 
     @Override
-    public void update(Channel originchannel, Channel afterchannel) {
-        if(originchannel == null || originchannel.getId() == null) {
-            return;
-        }
-
-        for(Channel c : channels) {
-            if (c.getId() == originchannel.getId()){
-                c.updateChannelName(afterchannel.getChannelName());
-                c.updateChannelDescription(afterchannel.getChannelDescription());
-
-            }
-        }
+    public void update(UUID id, String str, boolean isChangingName) {
+        channels.stream()
+                .map(s -> s.getId())
+                .forEach(uuid -> {
+                    if(uuid.equals(id)){
+                        if(isChangingName){
+                            this.read(uuid).updateChannelName(str);
+                        }
+                        else{
+                            this.read(uuid).updateChannelDescription(str);
+                        }
+                    }
+                });
     }
+
+
+
+
 }
