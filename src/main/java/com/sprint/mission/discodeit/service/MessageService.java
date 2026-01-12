@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageService {
-    void sendMessage(User user, Channel channel, String content);
+    Message sendMessage(User user, Channel channel, String content);
 
     List<Message> getAllMessages();
 
@@ -17,11 +17,11 @@ public interface MessageService {
 
     List<Message> getMessageListByChannel(UUID channelId);
 
-    Message getMessageByMessageId(UUID messageId);
+    Optional<Message> getMessageByMessageId(UUID messageId);
 
-    void editMessage(UUID messageId, String newContent);
+    void updateMessage(UUID messageId, String newContent);
 
     void deleteMessage(UUID messageId);
 
-    void clearMessage(UUID channelId);
+    void clearChannelMessage(UUID channelId);
 }

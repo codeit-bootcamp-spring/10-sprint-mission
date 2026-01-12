@@ -68,7 +68,7 @@ public class JavaApplication {
         }
 
         UUID messageId = jcfMessageService.getMessageListByUser(charlie.getId()).get(0).getId();
-        jcfMessageService.editMessage(messageId, "NMIXX Change Up!");
+        jcfMessageService.updateMessage(messageId, "NMIXX Change Up!");
         System.out.println("메시지 수정 후: " + jcfMessageService.getAllMessages());
         jcfMessageService.deleteMessage(messageId);
         System.out.println("메시지 삭제 후: " + jcfMessageService.getAllMessages());

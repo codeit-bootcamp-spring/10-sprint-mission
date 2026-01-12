@@ -73,10 +73,12 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID channelId) {
         Channel channel = channels.get(channelId);
-        if (channel != null) {
-            messageService.clearMessage(channelId);
-            // 채널을 지우면 자동으로 내부 리스트도 제거됨
-            channels.remove(channelId);
+
+        if (channel == null) {
+            throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
         }
+
+        messageService.clearChannelMessage(channelId);
+        channels.remove(channelId);
     }
 }
