@@ -1,5 +1,7 @@
 package com.sprint.mission;
 
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -7,6 +9,7 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -103,10 +106,16 @@ public class JavaApplication {
 
         //메세지
         //생성
-        UUID messageId = messageService.send(userId, channelId3, "안녕!!!").getId();
-        UUID messageID2 = messageService.send(userId2, channelId3, "그래, 안녕@").getId();
-        UUID messageID3 = messageService.send(userId3, channelId2, "안녕십니까").getId();
-        UUID messageID4 = messageService.send(userId3, channelId2, "안녕십니wkl").getId();
+        User user1 = userService.getUserById(userId);
+        User user2 = userService.getUserById(userId2);
+        User user3 = userService.getUserById(userId3);
+        Channel channel1 = channelService.getChannelByIdAndMemberId(channelId3,userId);
+        Channel channel2 = channelService.getChannelByIdAndMemberId(channelId3,userId2);
+        Channel channel3 = channelService.getChannelByIdAndMemberId(channelId2,userId3);
+        UUID messageId = messageService.send(user1, channel1, "안녕!!!").getId();
+        UUID messageID2 = messageService.send(user2, channel2, "그래, 안녕@").getId();
+        UUID messageID3 = messageService.send(user3, channel3, "안녕십니까").getId();
+        UUID messageID4 = messageService.send(user3, channel3, "안녕십니wkl").getId();
         System.out.println("------------메세지 조회---------------");
         //메세지 조회
         System.out.println(messageService.getMessagesByChannelIdAndMemberId(channelId3, userId));
