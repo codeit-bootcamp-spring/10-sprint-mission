@@ -10,15 +10,7 @@ public interface UserService {
 
     List<User> getUserList();
 
-    UUID getUserIdByName(String userName);
-
     void updateUserName(UUID userId, String newName);
 
     void deleteUser(UUID userId);
-
-    void joinChannel(UUID userId, UUID channelId, String channelName);
-
-    void listUserChannels(UUID userId);
-
-    void leaveChannel(UUID userId, UUID channelId);
 }

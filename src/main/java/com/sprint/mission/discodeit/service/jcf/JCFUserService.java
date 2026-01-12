@@ -3,64 +3,49 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFUserService implements UserService {
     private User user;
-    private final List<User> users = new ArrayList<>();
+    private final Map<UUID, User> users = new HashMap<>();
 
     @Override
     public User createUser(User newUser) {
         this.user = newUser;
-        users.add(newUser);
+        users.put(newUser.getUserId(), newUser);
 
         return user;
     }
 
     @Override
     public List<User> getUserList() {
-        return users.stream()
+        return users.values().stream()
                 .toList();
-    }
-
-    @Override
-    public UUID getUserIdByName(String userName) {
-        return users.stream()
-                .filter(user -> user.getUsername().equals(userName))
-                .findFirst()
-                // 예외 처리
-                .orElseThrow(() -> new IllegalArgumentException("해당 이름으로 된 유저가 존재하지 않습니다."))
-                .getUserId();
     }
 
     // id 를 기준으로 수정
     @Override
     public void updateUserName(UUID userId, String newName) {
-        users.stream()
-                .filter(user -> user.getUserId().equals(userId))
-                .findFirst()
-                .ifPresent(user -> user.updateUsername(newName));
+        Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
+        Objects.requireNonNull(newName, "username은 null일 수 없습니다.");
+
+        User user = users.get(userId);
+        if (user == null) {
+            throw new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다");
+        }
+
+        user.updateUsername(newName);
     }
 
     @Override
     public void deleteUser(UUID userId) {
-        users.removeIf(user -> user.getUserId().equals(userId));
-    }
+        Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
 
-    @Override
-    public void joinChannel(UUID userId, UUID channelId, String channelName) {
+        User user = users.get(userId);
+        if (user == null) {
+            throw new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
+        }
 
-    }
-
-    @Override
-    public void listUserChannels(UUID userId) {
-
-    }
-
-    @Override
-    public void leaveChannel(UUID userId, UUID channelId) {
-
+        users.remove(userId);
     }
 }

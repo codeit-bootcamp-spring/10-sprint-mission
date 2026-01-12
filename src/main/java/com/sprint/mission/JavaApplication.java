@@ -19,12 +19,13 @@ public class JavaApplication {
         System.out.println();
 
         // UserService 테스트
-        jcfUserService.createUser(new User("Alice"));
+        User alice = new User("Alice");
+        jcfUserService.createUser(alice);
         System.out.println("Alice 추가 " + jcfUserService.getUserList());
-        jcfUserService.updateUserName(jcfUserService.getUserIdByName("Alice"), "Bob");
+        jcfUserService.updateUserName(alice.getUserId(), "Bob");
         System.out.println("Alice -> Bob 변경 " + jcfUserService.getUserList());
 
-        UUID userId = jcfUserService.getUserIdByName("Bob");
+        UUID userId = alice.getUserId();
         System.out.println("변경된 Bob의 id: " + userId);
 
         jcfUserService.deleteUser(userId);
@@ -62,7 +63,7 @@ public class JavaApplication {
         }
         System.out.println("채널별 메시지 조회: " + jcfMessageService.getMessageListByChannel(testChannel.getChannelId()));
 
-        UUID messageId = jcfMessageService.getMessageListByUser(jcfUserService.getUserIdByName("Charlie")).get(0).getId();
+        UUID messageId = jcfMessageService.getMessageListByUser(charlie.getUserId()).get(0).getId();
         jcfMessageService.editMessage(messageId, "NMIXX Change Up!");
         System.out.println("메시지 수정 후: " + jcfMessageService.getAllMessages());
         jcfMessageService.deleteMessage(messageId);
