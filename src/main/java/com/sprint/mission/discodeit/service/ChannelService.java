@@ -10,6 +10,8 @@ public interface ChannelService {
     Channel createChannel(String channelName, ChannelType channelType, String description);
     Channel getChannel(UUID channelId);
     List<Channel> getAllChannels();
-    Channel updateChannel(Channel channel);
-    Channel deleteChannel(Channel channel);
+    Channel updateChannel(UUID channelId, String channelName, ChannelType channelType, String description);
+    Channel deleteChannel(UUID channelId);
+    void joinChannel(UUID channelId, UUID userId);
+    void leaveChannel(UUID channelId, UUID userId);
 }
