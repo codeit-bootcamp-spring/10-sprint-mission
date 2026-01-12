@@ -41,50 +41,39 @@ public class JCFMessageService implements MessageService {
     // 메시지 아이디에 따라 해당 메시지 반환
     @Override
     public Message getMessageByMessageId(UUID messageId) {
-        return messages.entrySet().stream()
-                .filter(message -> message.getKey().equals(messageId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("해당 id를 가진 메시지가 존재하지 않습니다."))
-                .getValue();
+        Objects.requireNonNull(messageId, "messageId는 null일 수 없습니다");
+
+        Message message = messages.get(messageId);
+        if (message == null) {
+            throw new NoSuchElementException("해당 id를 가진 메시지가 존재하지 않습니다.");
+        }
+        return message;
     }
 
     @Override
     public void editMessage(UUID messageId, String newContent) {
-        messages.values().stream()
-                .filter(id -> id.getId().equals(messageId))
-                .findFirst()
-                .ifPresent(msg -> {
-                    try {
-                        msg.updateContent(newContent);
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("해당 id를 가진 메시지가 존재하지 않습니다.");
-                    }
-                });
+        Objects.requireNonNull(messageId, "messageId는 null일 수 없습니다.");
+
+        Message message = messages.get(messageId);
+        if (message == null) {
+            throw new NoSuchElementException("해당 id를 가진 메시지가 존재하지 않습니다.");
+        }
+
+        message.updateContent(newContent);
     }
 
     @Override
     public void deleteMessage(UUID messageId) {
-        messages.values().stream()
-                .filter(id -> id.getId().equals(messageId))
-                .findFirst()
-                .ifPresent(msg ->
-                        {
-                            try {
-                                messages.remove(messageId);
-                            } catch (IllegalArgumentException e) {
-                                System.out.println("해당 id를 가진 메시지가 존재하지 않습니다.");
-                            }
-                        });
+        Objects.requireNonNull(messageId, "messageId는 null일 수 없습니다");
+        messages.remove(messageId);
     }
 
     @Override
     public void clearMessage(UUID channelId) {
-        try {
-            messages.values().removeIf(
-                    message -> message.getSentChannelId().equals(channelId)
-            );
-        } catch (IllegalArgumentException e) {
-            System.out.println("해당 id를 가진 채널이 존재하지 않습니다.");
-        }
+        Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
+
+        messages.values().removeIf(
+                message -> channelId.equals(message.getSentChannelId())
+        );
     }
 }
