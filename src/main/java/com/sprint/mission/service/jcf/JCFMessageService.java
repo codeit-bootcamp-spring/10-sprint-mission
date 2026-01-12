@@ -9,7 +9,7 @@ public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> messages;
 
 
-    public JCFMessageService(Map<UUID, Message> messages) {
+    public JCFMessageService() {
         this.messages = new HashMap<>();
     }
 
