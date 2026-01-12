@@ -15,7 +15,7 @@ public class Factory {
 
     public Factory() {
         this.userService = new JCFUserService();
-        this.channelService = new JCFChannelService();
+        this.channelService = new JCFChannelService(userService);
         this.messageService = new JCFMessageService();
     }
 

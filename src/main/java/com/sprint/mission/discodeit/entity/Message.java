@@ -1,33 +1,34 @@
 package com.sprint.mission.discodeit.entity;
 
 
-import java.util.UUID;
-
 public class Message extends Base {
     private String contents;
-    UUID senderID;
-    UUID channelID;
+    private final User sender;
+    private final Channel channel;
 
-    public Message(String contents, UUID senderID, UUID channelID) {
+    public Message(String contents, User sender, Channel channel) {
         super();
         this.contents = contents;
-        this.senderID = senderID;
-        this.channelID = channelID;
+        this.sender = sender;
+        this.channel = channel;
     }
 
+    // Getter
     public String getContents() {
         return contents;
     }
 
-    public UUID getSenderID() {
-        return senderID;
+    public User getSender() {
+        return sender;
     }
 
-    public UUID getChannelID() {
-        return channelID;
+    public Channel getChannel() {
+        return channel;
     }
 
+    // Setter
     public void updateContents(String contents) {
         this.contents = contents;
+        update();
     }
 }

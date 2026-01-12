@@ -9,8 +9,10 @@ import java.util.List;
 import java.util.UUID;
 
 public class JCFUserService implements UserService {
+    // field
     private final List<User> userData;
 
+    // constructor
     public JCFUserService() {
         this.userData = new ArrayList<>();
     }
@@ -26,10 +28,14 @@ public class JCFUserService implements UserService {
     // 단건 조회
     @Override
     public User read(UUID id){
+        if (id == null) {
+            throw new IllegalArgumentException("id must not be null");
+        }
+
         return userData.stream()
                 .filter(user -> user.getId().equals(id))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
     }
 
     // 다건 조회
@@ -41,6 +47,10 @@ public class JCFUserService implements UserService {
     // User 수정
     @Override
     public void update(UUID id, String name){
+        if (id == null) {
+            throw new IllegalArgumentException("id must not be null");
+        }
+
         User user = read(id);
         user.updateName(name);
     }
@@ -48,6 +58,10 @@ public class JCFUserService implements UserService {
     // User 삭제
     @Override
     public void delete(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("id must not be null");
+        }
+
         User delUser = read(id);
         userData.remove(delUser);
     }

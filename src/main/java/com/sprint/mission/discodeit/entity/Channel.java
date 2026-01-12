@@ -1,37 +1,51 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class Channel extends Base {
     private String name;
-    private final Set<UUID> membersIDs;
+    private final Set<User> membersSet;
+    private List<Message> messageList;
 
     public Channel(String name) {
         super();
         this.name = name;
-        this.membersIDs = new HashSet<UUID>();
+        this.membersSet = new HashSet<>();
+        this.messageList = new ArrayList<Message>();
     }
 
+    // getter
     public String getName() {
         return name;
     }
 
+    public Set<User> getMembersSet() {
+        return membersSet;
+    }
+
+    public List<Message> getMessageList(){
+        return messageList;
+    }
+
+    // setter
     public void updateName(String name) {
         this.name = name;
     }
 
-
-    public Set<UUID> getMembersIDs() {
-        return membersIDs;
+    // other
+    public void addMember(User member){
+        membersSet.add(member);
     }
 
-    public void addMember(UUID memberID){
-        membersIDs.add(memberID);
+    public void removeMembersIDs(User member) {
+        membersSet.remove(member);
     }
 
-    public void removeMembersIDs(UUID memberID) {
-        membersIDs.remove(memberID);
+    public void addMessage(Message msg){
+        messageList.add(msg);
+    }
+
+    public void removeMessage(Message msg){
+        messageList.remove(msg);
     }
 }
