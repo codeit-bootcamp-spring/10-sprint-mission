@@ -1,62 +1,46 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 
-public class User extends BaseEntity {
-    private String username;
+public class User extends Common {
+    private String accountId;
     private String password;
-    private String email;
-    private List<Channel> myChannels = new ArrayList<>();
-    private List<Message> myMessages = new ArrayList<>();
+    private String name;
+    private String mail;
 
-    public String getUsername() {
-        return username;
+    public User(String accountId, String password, String name, String mail) {
+        super();
+        this.accountId = accountId;
+        this.password = password;
+        this.name = name;
+        this.mail = mail;
+    }
+
+    public String getAccountId() {
+        return this.accountId;
+    }
+    void updateAccountId(String userId) {
+        this.accountId = userId;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+    void updateName(String name) {
+        this.name = name;
     }
 
     public String getPassword() {
-        return password;
+        return this.password;
     }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void updateUsername(String newUsername){
-        this.username = newUsername;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public void updateEmail(String newEmail){
-        this.email = newEmail;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public void updatePassword(String newPassword){
-        this.password = newPassword;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public List<Message> getMyMessages() {
-        return myMessages;
-    }
-
-    public List<Channel> getMyChannels() {
-        return myChannels;
-    }
-
-    public void addMessage(Message message){
-        this.myMessages.add(message);
-    }
-
-    public User(String username, String password, String email) {
-        this.username = username;
+    void updatePassword(String password) {
         this.password = password;
-        this.email = email;
     }
 
-    @Override
-    public String toString() {
-        return "이름: " + username + ", 이메일: " + email + ", 비밀번호: " + password;
+    public String getMail() {
+        return this.mail;
+    }
+    void updateMail(String mail) {
+        this.mail = mail;
     }
 }
