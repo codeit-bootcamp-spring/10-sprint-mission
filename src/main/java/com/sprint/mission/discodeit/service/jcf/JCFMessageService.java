@@ -1,7 +1,11 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -9,16 +13,24 @@ import java.util.Map;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
+    private UserService userService;
+    private ChannelService channelService;
     private final Map<UUID, Message> messageData;
 
     public JCFMessageService() {
+        userService = new JCFUserService();
+        channelService = new JCFChannelService();
         this.messageData = new HashMap<>();
     }
 
     @Override
     public Message create(String contents, UUID senderID, UUID channelID) {
-        // msg에 sender가 존재하는 거 check
-        // Channel 존재 확인 check
+        // msg에 sender, channel 존재하는 거 check
+        User sender = userService.read(senderID);
+        Channel channel = channelService.read(channelID);
+        if (sender == null | channel == null){
+            throw new IllegalArgumentException("Not found: " + senderID);
+        }
         // channel 안에 sender 존재하는지 check 후에 create
         Message msg = new Message(contents, senderID, channelID);
         messageData.put(msg.getId(), msg);
