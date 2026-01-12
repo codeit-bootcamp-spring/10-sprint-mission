@@ -8,110 +8,273 @@ import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 import java.util.ArrayList;
 
 public class Main {
+    public static final JCFUserService userService = new JCFUserService();
+    public static final JCFChannelService channelService = new JCFChannelService();
+    public static final JCFMessageService messageService = new JCFMessageService();
+
     public static void main(String[] args) {
         // 사용자 테스트
-        JCFUserService userService = new JCFUserService();
+        User user1 = null;
+        User user2 = null;
+        User user3 = null;
 
-        User user1 = userService.createUser("dlekthf0906@codeit.com",
-                                           "1234567890",
-                                           "LeeDyol");
+        // 생성 테스트
+        try {   // 정상
+            user1 = userService.createUser("dlekthf0906@codeit.com", "1234567890", "LeeDyol");
+        } catch (Exception e){
+            System.err.println(e.getMessage());
+        }
 
-        System.out.println("단건 조회 테스트: "
-                + userService.searchUser(user1.getId()).getNickname());    // 예상 출력: LeeDyol
+        try {   // 이메일 중복
+            user2 = userService.createUser("dlekthf0906@codeit.com", "1234567890", "dyoool");
+        } catch (Exception e){
+            System.err.println(e.getMessage());
+        }
 
-        User user2 = userService.createUser("Yushi0405@codeit.com",
-                                        "1234567890",
-                                        "tokuno");
+        try {   // 정상
+            user3 = userService.createUser("Yushi@codeit.com", "1234567890", "tokuno");
+        } catch (Exception e){
+            System.err.println(e.getMessage());
+        }
+
+        // 조회 테스트
+        if (user1 != null) {
+            try {       // 예상 출력: LeeDyol
+                System.out.println("단건 조회 테스트: " + userService.searchUser(user1.getId()).getNickname());
+            } catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
         ArrayList<User> users = userService.searchUserAll();
 
-        System.out.println("다건 조회 테스트");                                // 에상 출력: Lee Dyol, tokuno
-        for (User user : users) {
-            System.out.println(user.getNickname());
+        try {   // 에상 출력: Lee Dyol, tokuno
+            System.out.println("다건 조회 테스트");
+            for (User user : users) {
+                System.out.println(user.getNickname());
+            }
+        }  catch (Exception e){
+            System.err.println(e.getMessage());
         }
 
-        userService.updateUser(user2.getId(), "", "sakuya");
+        // 수정
+        if (user3 != null) {
+            try {   // 비밀번호 변경 실패
+                userService.updateUser(user3.getId(), "", "sakuya");
+                System.out.println("수정 테스트: " + userService.searchUser(user3.getId()).getNickname());
+            }
+            catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
-        System.out.println("수정 테스트: "
-                + userService.searchUser(user2.getId()).getNickname());     // 예상 출력: sakuya
+        if(user3 != null) {
+            try {   // 닉네임 변경 실패
+                userService.updateUser(user3.getId(), "1234", "");
+                System.out.println("수정 테스트: " + userService.searchUser(user3.getId()).getNickname());
+            }
+            catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
-        userService.deleteUser(user1.getId());
+        if (user3 != null) {
+            try {   // 예상 출력: sakuya
+                userService.updateUser(user3.getId(), "1234", "sakuya");
+                System.out.println("수정 테스트: " + userService.searchUser(user3.getId()).getNickname());
+            }
+            catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
-        System.out.println("삭제 테스트");                                    // 예상 출력: sakuya
-        for (User user : users) {
-            System.out.println(user.getNickname());
+        // 삭제
+        if (user1 != null) {
+            try {   // 예상 출력: sakuya
+                userService.deleteUser(user1.getId());
+                System.out.println("삭제 테스트");
+                for (User user : users) {
+                    System.out.println(user.getNickname());
+                }
+            } catch (Exception e){
+                System.err.println(e.getMessage());
+            }
         }
 
         System.out.println("=========================");
 
         // 채널 테스트
-        JCFChannelService channelService = new JCFChannelService();
+        Channel channel1 = null;
+        Channel channel2 = null;
+        Channel channel3 = null;
 
-        Channel channel1 = channelService.createChannel("Codeit",
-                                                        user2,
-                                                        ChannelType.CHAT);
+        // 생성 테스트
+        if (user3 != null) {
+            try {
+                channel1 = channelService.createChannel("Codeit", user3, ChannelType.CHAT);
+            } catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
-        System.out.println("단건 조회 테스트: "
-                + channelService.searchChannel(channel1.getId()).getChannelName());    // 예상 출력: Codeit
+        if (user3 != null) {
+            try {
+                channel2 = channelService.createChannel("Book Club", user3, ChannelType.VOICE);
+            } catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
-        Channel channel2 = channelService.createChannel("Book Club",
-                                                        user2,
-                                                        ChannelType.VOICE);
+        // if (user1 != null) {     // 존재하지 않는 사용자
+            try {
+                channel3 = channelService.createChannel("Book Club", user1, ChannelType.VOICE);
+            } catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        // }
+
+        // 조회
+        if (channel1 != null) {
+            try {   // 예상 출력: Codeit
+                System.out.println("단건 조회 테스트: " + channelService.searchChannel(channel1.getId()).getChannelName());
+            } catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
         ArrayList<Channel> channels = channelService.searchChannelAll();
 
-        System.out.println("다건 조회 테스트");                                           // 에상 출력: Codeit, Book Club
-        for (Channel channel : channels) {
-            System.out.println(channel.getChannelName());
+        try {   // 에상 출력: Codeit, Book Club
+            System.out.println("다건 조회 테스트");
+            for (Channel channel : channels) {
+                System.out.println(channel.getChannelName());
+            }
+        }  catch (Exception e){
+            System.err.println(e.getMessage());
         }
 
-        channelService.updateChannel(channel2.getId(), "Study Club");
+        // 수정
+        if (channel2 != null) {
+            try {   // 채널명 변경 실패
+                channelService.updateChannel(channel2.getId(), " ");
 
-        System.out.println("수정 테스트: "
-                + channelService.searchChannel(channel2.getId()).getChannelName());   // 예상 출력: Study Club
+                System.out.println("수정 테스트: " + channelService.searchChannel(channel2.getId()).getChannelName());
+            }  catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
-        channelService.deleteChannel(channel1.getId());
+        if (channel2 != null) {
+            try {   // 예상 출력: Study Club
+                channelService.updateChannel(channel2.getId(), "Study Club");
 
-        System.out.println("삭제 테스트");                                               // 예상 출력: Study Club
-         for (Channel channel : channels) {
-            System.out.println(channel.getChannelName());
+                System.out.println("수정 테스트: " + channelService.searchChannel(channel2.getId()).getChannelName());
+            }  catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
+
+        // 삭제
+        if (channel1 != null) {
+            try {   // 예상 출력: Study Club
+                channelService.deleteChannel(channel1.getId());
+
+                System.out.println("삭제 테스트");
+                for (Channel channel : channels) {
+                    System.out.println(channel.getChannelName());
+                }
+            }   catch (Exception e){
+                System.err.println(e.getMessage());
+            }
         }
 
         System.out.println("=========================");
 
         // 메시지 테스트
-        JCFMessageService messageService = new JCFMessageService();
+        Message message1 = null;
+        Message message2 = null;
+        Message message3 = null;
 
-        Message message1 = messageService.createMessage("안녕하세요",
-                                                        user2,
-                                                        channel2,
-                                                        MessageType.CHAT);
+        // 생성
+        if (user3 != null && channel2 != null) {
+            try {
+                message1 = messageService.createMessage("안녕하세요", user3, channel2, MessageType.CHAT);
+            }
+            catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
-        System.out.println("단건 조회 테스트: "
-                + messageService.searchMessage(message1.getId()).getMessage());       // 예상 출력: 안녕하세요
+        if (user3 != null && channel2 != null) {
+            try {
+                message2 = messageService.createMessage("안녕하세요", user3, channel2, MessageType.CHAT);
+            }
+            catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
-        Message message2 = messageService.createMessage("안녕 못하네요",
-                                                        user2,
-                                                        channel2,
-                                                        MessageType.CHAT);
+        // if (user3 != null && channel2 != null) {     // 존재하지 않는 사용자
+        try {
+            message3 = messageService.createMessage("안녕하세요", user1, channel2, MessageType.CHAT);
+        }
+        catch (Exception e){
+            System.err.println(e.getMessage());
+        }
+        //}
+
+        // 조회
+        if (message1 != null){
+            try {   // 예상 출력: 안녕하세요
+                System.out.println("단건 조회 테스트: "
+                        + messageService.searchMessage(message1.getId()).getMessage());
+            }   catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
         ArrayList<Message> messages = messageService.searchMessageAll();
 
-        System.out.println("다건 조회 테스트");                                          // 예상 출력: 안녕하세요, 안녕 못하네요
-        for (Message message : messages) {
-            System.out.println(message.getMessage());
+        try {   // 예상 출력: 안녕하세요, 안녕 못하네요
+            System.out.println("다건 조회 테스트");
+            for (Message message : messages) {
+                System.out.println(message.getMessage());
+            }
+        } catch (Exception e){
+            System.err.println(e.getMessage());
         }
 
-        messageService.updateMessage(message2.getId(), "죄송해요. 안녕합니다");
+        // 수정
+        if (message2 != null){
+            try {   // 메시지 변경 실패
+                messageService.updateMessage(message2.getId(), "");
+                System.out.println("수정 테스트: " + messageService.searchMessage(message2.getId()).getMessage());
+            } catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
-        System.out.println("수정 테스트: "
-                + messageService.searchMessage(message2.getId()).getMessage());      // 예상 출력: 죄송해요 안녕합니다
+        if (message2 != null){
+            try {   // 예상 출력: 죄송해요 안녕합니다
+                messageService.updateMessage(message2.getId(), "죄송해요. 안녕합니다");
+                System.out.println("수정 테스트: " + messageService.searchMessage(message2.getId()).getMessage());
+            } catch (Exception e){
+                System.err.println(e.getMessage());
+            }
+        }
 
-        messageService.deleteMessage(message1.getId());
+        // 삭제
+        if (message1 != null){
+            try {   // 예상 출력: 죄송해요 안녕합니다
+                messageService.deleteMessage(message1.getId());
 
-        System.out.println("삭제 테스트");                                              // 예상 출력: 죄송해요 안녕합니다
-        for (Message message : messages) {
-            System.out.println(message.getMessage());
+                System.out.println("삭제 테스트");
+                for (Message message : messages) {
+                    System.out.println(message.getMessage());
+                }
+            }  catch (Exception e){
+                System.err.println(e.getMessage());
+            }
         }
     }
 }
