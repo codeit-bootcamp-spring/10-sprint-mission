@@ -2,13 +2,9 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
-public class User {
-    private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
+public class User extends BaseEntity {
+
     private List<Channel> channels;
     //private String nickName;
     private String userName;
@@ -17,21 +13,16 @@ public class User {
     private String password;
 
     public User(String userName,String email, String password) {
+        super();
         this.userName = userName;
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
         this.email = email;
         this.password = password;
         this.channels = new ArrayList<>();
     }
 
-    public UUID getId() { return id;}
     public String getEmail() { return email;}
     public List<Channel> getChannels() { return channels; }
     public String getUserName() { return userName;}
-    private void setUpdatedAt() {
-        this.updatedAt = System.currentTimeMillis();
-    }
     public void setEmail(String email) {
         this.email = email;
     }
@@ -75,8 +66,8 @@ public class User {
                 +"\n이메일"+ email
                 //+ "\n전화번호: "+ phoneNumber
                 +"\n참여 채널: "+channelNames
-                +"\n생성: "+createdAt
-                + "\n마지막 수정: "+updatedAt+"\n";
+                +"\n생성: "+getCreatedAt()
+                + "\n마지막 수정: "+getUpdatedAt()+"\n";
     }
 }
 
