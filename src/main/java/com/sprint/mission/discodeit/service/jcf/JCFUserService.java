@@ -64,7 +64,7 @@ public class JCFUserService implements UserService {
             else {
                 System.out.println("잘못된 비밀번호입니다.");
             }
-            if (newNickname != null || newNickname.isEmpty()){   // 동시에 둘 다 변경할 수 있으므로 if
+            if (newNickname != null || newNickname.isBlank()){   // 동시에 둘 다 변경할 수 있으므로 if
                 targetUser.updateNickname(newNickname);
             }
             else {
