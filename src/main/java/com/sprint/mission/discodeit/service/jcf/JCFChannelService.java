@@ -33,27 +33,29 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void updateChannelName(UUID channelId, String newChannelName) {
-        channels.entrySet().stream()
-                .filter(entry -> entry.getKey().equals(channelId))
-                .findFirst()
-                .ifPresent(entry -> {
-                    if (!Objects.equals(entry.getValue().getChannelName(), newChannelName)) {
-                        entry.getValue().updateChannelName(newChannelName);
-                    } else {
-                        System.out.println("같은 이름으로 변경할 수 없습니다!");
-                    }
-                });
+        Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
+
+        Channel channel = channels.get(channelId);
+        if (channel == null) {
+            throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다");
+        } else if (channel.getChannelName().equals(newChannelName)) {
+            throw new IllegalArgumentException("해당 채널의 이름이 바꿀 이름과 동일합니다.");
+        }
+
+        channel.updateChannelName(newChannelName);
     }
 
     @Override
     public void joinChannel(UUID channelId, User user) {
         Channel channel = channels.get(channelId);
-        try {
-            channel.addUser(user);
-            user.updateJoinedChannels(channel);
-        } catch (NullPointerException e) {
-            System.out.println("해당 채널이 존재하지 않습니다.");
+        Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
+        Objects.requireNonNull(user, "user값은 null일 수 없습니다.");
+
+        if (channel == null) {
+            throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
         }
+
+        user.updateJoinedChannels(channel);
     }
 
     @Override
