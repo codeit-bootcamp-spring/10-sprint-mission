@@ -1,12 +1,19 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> channelMap = new HashMap<>();
+    private final UserService userService;
+    // 생성자 주입
+    public JCFChannelService(UserService userService) {
+        this.userService = userService;
+    }
 
     // 중복 로직 분리
     private Channel findChannelByIdOrThrow(UUID channelId) {
@@ -28,13 +35,17 @@ public class JCFChannelService implements ChannelService {
     // Create
     @Override
     public Channel createChannel(String name, UUID ownerId) {
-        // 채널 이름은 필수
+        // 이름 유효성 검사
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("채널 이름은 필수.");
+            throw new IllegalArgumentException("채널 이름은 필수입니다.");
         }
         validateDuplicateName(name);
 
-        Channel channel = new Channel(name, ownerId);
+        // ID로 User 객체 조회 (참조 무결성 검사 겸 객체 확보)
+        // UserService가 예외를 던져주므로 null 체크 불필요
+        User owner = userService.findUserByUserId(ownerId);
+
+        Channel channel = new Channel(name, owner);
         channelMap.put(channel.getId(), channel);
 
         return channel;

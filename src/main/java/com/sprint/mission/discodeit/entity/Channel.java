@@ -16,7 +16,7 @@ public class Channel extends BaseEntity {
     // === 2 필드 ===
     // id, createdAt, updatedAt 상속 받음
     private String channelName;
-    private UUID ownerId ;  // 객체 참조로 수정
+    private User owner ;  // 객체 참조로 수정
     // owner는 변경 가능하므로 final 사용 x
 
     // 생성할 때 무조건 사람이 있는 상태로 시작해야 되는가? -> 아무도 없는 채널을 만드는 건 이상함
@@ -26,13 +26,13 @@ public class Channel extends BaseEntity {
 
     // === 3 생성자 ===
     // BaseEntity() 상속 받음
-    public Channel(String channelName, UUID ownerId) {
+    public Channel(String channelName, User ownerUser) {
         super(); // id, createdAt, updatedAt -> 생성자로 초기화;
         validateChannelName(channelName);
-        validateOwnerId(ownerId);
+        validateOwnerId(ownerUser.getId());
 
         this.channelName = channelName;
-        this.ownerId = ownerId;
+        this.owner = ownerUser;
     }
 
     // === 4 공개 메서드 ===
@@ -40,8 +40,8 @@ public class Channel extends BaseEntity {
     public String getChannelName() {
         return channelName;
     }
-    public UUID getOwnerId() {
-        return ownerId;
+    public User getOwner() {
+        return owner;
     }
     // getId(), getCreatedAt(), getUpdatedAt()은 상속 받음
 
@@ -50,12 +50,12 @@ public class Channel extends BaseEntity {
         this.channelName = newChannelName;
         this.updateTimestamp();
     }
-    public void updateOwner(UUID newOwnerId) {
-        validateOwnerId(newOwnerId);
-        if(this.ownerId.equals(newOwnerId)) {
+    public void updateOwner(User newOwner) {
+        validateOwnerId(newOwner.getId());
+        if(this.owner.getId().equals(newOwner.getId())) {
             return;
         }
-        this.ownerId = newOwnerId;
+        this.owner = newOwner;
         this.updateTimestamp();
     }
 

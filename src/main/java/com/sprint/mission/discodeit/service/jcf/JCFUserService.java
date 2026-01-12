@@ -30,7 +30,7 @@ public class JCFUserService implements UserService {
         User user = new User(username);
         userMap.put(user.getId(), user);
 
-        System.out.println("User Created: " + user.toString());
+        System.out.println("User Created: " + user.getUsername() + " (ID: " + user.getId() + ")");
         return user;
     }
 
