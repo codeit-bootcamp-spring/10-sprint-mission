@@ -19,15 +19,15 @@ public class JCFChannel implements ChannelService {
     HashSet<Channel> channels = new HashSet<>();
 
     @Override
-    public Channel read(UUID id) {
+    public Channel find(UUID id) {
         return channels.stream()
                 .filter(channel -> channel.getId().equals(id))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new RuntimeException("Channel not found: id = " + id));
     }
 
     @Override
-    public HashSet<Channel> readAll() {
+    public HashSet<Channel> findAll() {
         return channels;
     }
 

@@ -19,15 +19,15 @@ public class JCFMessage implements MessageService {
     HashSet<Message> messages = new HashSet<>();
 
     @Override
-    public Message read(UUID id) {
+    public Message find(UUID id) {
         return messages.stream()
                 .filter(message -> message.getId().equals(id))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new RuntimeException("Channel not found: id = " + id));
     }
 
     @Override
-    public HashSet<Message> readAll() {
+    public HashSet<Message> findAll() {
         return messages;
     }
 
@@ -42,8 +42,7 @@ public class JCFMessage implements MessageService {
         messages.remove(messages.stream()
                 .filter(message -> message.getId().equals(id))
                 .findFirst()
-                .orElse(null)
-        );
+                .orElseThrow(() -> new RuntimeException("Channel not found: id = " + id)));
     }
 
     @Override

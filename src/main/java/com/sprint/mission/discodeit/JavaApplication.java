@@ -31,47 +31,36 @@ public class JavaApplication {
 
         //불러오기
 
-        System.out.println(messagedata.read(mes1.getId()));
-        messagedata.readAll().stream().forEach(System.out::println);
+        System.out.println(channeldata.find(user1.getId()));
 
-        System.out.println(channeldata.read(ch2.getId()));
-        channeldata.readAll().stream().forEach(System.out::println);
+        System.out.println(messagedata.find(mes1.getId()));
+        messagedata.findAll().stream().forEach(System.out::println);
 
-        System.out.println(userdata.read(user2.getId()));
-        userdata.readAll().stream().forEach(System.out::println);
+        System.out.println(channeldata.find(ch2.getId()));
+        channeldata.findAll().stream().forEach(System.out::println);
+
+        System.out.println(userdata.find(user2.getId()));
+        userdata.findAll().stream().forEach(System.out::println);
 
         //수정하기&조회
         messagedata.update(mes1.getId(), "이게 대체 뭐지?");
-        System.out.println(messagedata.read(mes1.getId()));
+        System.out.println(messagedata.find(mes1.getId()));
 
         userdata.update(user2.getId(), "초코유");
-        messagedata.readAll().stream().forEach(System.out::println);
+        messagedata.findAll().stream().forEach(System.out::println);
 
         channeldata.update(ch1.getId(), "코딩 하는 채널", false);
-        channeldata.readAll().stream().forEach(System.out::println);
+        channeldata.findAll().stream().forEach(System.out::println);
 
         //삭제하기, 조회
         messagedata.delete(mes2.getId());
-        messagedata.readAll().stream().forEach(System.out::println);
+        messagedata.findAll().stream().forEach(System.out::println);
 
         userdata.delete(user2.getId());
-        userdata.readAll().stream().forEach(System.out::println);
+        userdata.findAll().stream().forEach(System.out::println);
 
         channeldata.delete(ch2.getId());
-        channeldata.readAll().stream().forEach(System.out::println);
-
-
-
-
-
-
-
-
-
-
-
-
-
+        channeldata.findAll().stream().forEach(System.out::println);
 
     }
 }

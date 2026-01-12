@@ -19,15 +19,15 @@ public class JCFUser implements UserService {
     private HashSet<User> users = new HashSet<>();
 
     @Override
-    public User read(UUID id) {
+    public User find(UUID id) {
         return users.stream()
                 .filter(user -> user.getId() == id)
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new RuntimeException("Channel not found: id = " + id));
     }
 
     @Override
-    public HashSet<User> readAll() {
+    public HashSet<User> findAll() {
         return users;
     }
 
@@ -42,7 +42,7 @@ public class JCFUser implements UserService {
         users.remove(users.stream()
                 .filter(user -> user.getId().equals(id))
                 .findFirst()
-                .orElse(null)
+                .orElseThrow(() -> new RuntimeException("User not found: id = " + id))
         );
     }
 
