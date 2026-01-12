@@ -48,14 +48,14 @@ public class Main {
         JCFChannelService channelService = new JCFChannelService();
 
         Channel channel1 = channelService.createChannel("Codeit",
-                                                        user2.getId(),
+                                                        user2,
                                                         ChannelType.CHAT);
 
         System.out.println("단건 조회 테스트: "
                 + channelService.searchChannel(channel1.getId()).getChannelName());    // 예상 출력: Codeit
 
         Channel channel2 = channelService.createChannel("Book Club",
-                                                        user2.getId(),
+                                                        user2,
                                                         ChannelType.VOICE);
 
         ArrayList<Channel> channels = channelService.searchChannelAll();
@@ -83,16 +83,16 @@ public class Main {
         JCFMessageService messageService = new JCFMessageService();
 
         Message message1 = messageService.createMessage("안녕하세요",
-                                                        user2.getId(),
-                                                        channel2.getId(),
+                                                        user2,
+                                                        channel2,
                                                         MessageType.CHAT);
 
         System.out.println("단건 조회 테스트: "
                 + messageService.searchMessage(message1.getId()).getMessage());       // 예상 출력: 안녕하세요
 
         Message message2 = messageService.createMessage("안녕 못하네요",
-                                                        user2.getId(),
-                                                        channel2.getId(),
+                                                        user2,
+                                                        channel2,
                                                         MessageType.CHAT);
 
         ArrayList<Message> messages = messageService.searchMessageAll();

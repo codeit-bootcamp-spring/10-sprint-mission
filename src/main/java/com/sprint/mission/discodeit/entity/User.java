@@ -18,7 +18,6 @@ public class User extends BaseEntity {
         this.nickname = nickname;
     }
 
-    // update
     public void updatePassword(String newPassword) {
         this.password = newPassword;
         this.updatedAt = System.currentTimeMillis();
@@ -28,7 +27,6 @@ public class User extends BaseEntity {
         this.updatedAt = System.currentTimeMillis();
     }
 
-    // getter
     public UUID getId() {   return id;  }
     public Long getCreatedAt() {    return createdAt;   }
     public Long getUpdatedAt() {    return updatedAt;   }
