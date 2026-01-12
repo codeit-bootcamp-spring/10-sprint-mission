@@ -120,7 +120,7 @@ public class JCFUserService implements UserService {
         userMap.remove(userId);
     }
 
-    // Helper Method
+    // Helper
     private User getUserOrThrow(UUID userId) {
         return findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. ID: " + userId));

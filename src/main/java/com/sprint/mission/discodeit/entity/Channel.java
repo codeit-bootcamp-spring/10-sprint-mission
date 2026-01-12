@@ -10,7 +10,7 @@ public class Channel extends BaseEntity {
 
     private Set<ChannelPermission> permissions;
 
-    private Channel(String channelName, boolean isPublic){
+    public Channel(String channelName, boolean isPublic){
         super();
         this.channelName = channelName;
         this.isPublic = isPublic;
@@ -18,24 +18,27 @@ public class Channel extends BaseEntity {
     }
 
     // Authorized method
-    public void addPermission(User user) {
-        ChannelPermission permission = new ChannelPermission(
-                this.getId(),
-                user.getId(),
-                PermissionTarget.USER
-        );
-        this.permissions.add(permission);
-        updateTimestamp();
+    public void addPermission(UUID targetId, PermissionTarget type) {
+        boolean exists = this.permissions.stream()
+                .anyMatch(p -> p.getTargetId().equals(targetId));
+
+        if (!exists) {
+            ChannelPermission permission = new ChannelPermission(
+                    this.getId(),
+                    targetId,
+                    type
+            );
+
+            this.permissions.add(permission);
+        }
     }
 
-    public void addPermission(Role role) {
-        ChannelPermission permission = new ChannelPermission(
-                this.getId(),
-                role.getId(),
-                PermissionTarget.ROLE
-        );
-        this.permissions.add(permission);
-        updateTimestamp();
+    public void removePermission(UUID targetId) {
+        boolean removed = this.permissions.removeIf(p -> p.getTargetId().equals(targetId));
+
+        if (removed) {
+            updateTimestamp();
+        }
     }
 
     // Getters
