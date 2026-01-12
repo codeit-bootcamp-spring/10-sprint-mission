@@ -26,43 +26,39 @@ public class JavaApplication {
 
         Message mes1 = new Message(user1, "이게 뭐지", ch1);
         Message mes2 = new Message(user2, "그게 먼데", ch1);
-
-        ch1.addMessage(messagedata.create(mes1));
-        ch1.addMessage(messagedata.create(mes2));
+        messagedata.create(mes1);
+        messagedata.create(mes2);
 
         //불러오기
 
-        messagedata.read(mes1.getId());
-        messagedata.readAll();
+        System.out.println(messagedata.read(mes1.getId()));
+        messagedata.readAll().stream().forEach(System.out::println);
 
-        channeldata.read(ch2.getId());
-        channeldata.readAll();
+        System.out.println(channeldata.read(ch2.getId()));
+        channeldata.readAll().stream().forEach(System.out::println);
 
-        userdata.read(user2.getId());
-        userdata.readAll();
+        System.out.println(userdata.read(user2.getId()));
+        userdata.readAll().stream().forEach(System.out::println);
 
         //수정하기&조회
-        Message tmpmsg = new Message(mes1.getUser(), "이게 대체 뭐지?", mes1.getChannel());
-        messagedata.update(mes1, tmpmsg);
-        messagedata.read(mes1.getId());
+        messagedata.update(mes1.getId(), "이게 대체 뭐지?");
+        System.out.println(messagedata.read(mes1.getId()));
 
-        User tmpuser = new User("초코유");
-        userdata.update(user2, tmpuser);
-        messagedata.readAll();
+        userdata.update(user2.getId(), "초코유");
+        messagedata.readAll().stream().forEach(System.out::println);
 
-        Channel tmpch = new Channel("코딩 하는 채널", ch1.getChannelDescription());
-        channeldata.update(ch1, tmpch);
-        channeldata.readAll();
+        channeldata.update(ch1.getId(), "코딩 하는 채널", false);
+        channeldata.readAll().stream().forEach(System.out::println);
 
         //삭제하기, 조회
         messagedata.delete(mes2);
-        messagedata.readAll();
+        messagedata.readAll().stream().forEach(System.out::println);
 
         userdata.delete(user2);
-        userdata.readAll();
+        userdata.readAll().stream().forEach(System.out::println);
 
         channeldata.delete(ch2);
-        channeldata.readAll();
+        channeldata.readAll().stream().forEach(System.out::println);
 
 
 

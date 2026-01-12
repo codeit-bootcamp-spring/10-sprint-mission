@@ -19,18 +19,16 @@ public class JCFUser implements UserService {
     private HashSet<User> users = new HashSet<>();
 
     @Override
-    public void read(UUID id) {
-        for(User user : users) {
-            if (user.getId() == id){
-                System.out.println(user);
-                return;
-            }
-        }
+    public User read(UUID id) {
+        return users.stream()
+                .filter(user -> user.getId() == id)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
-    public void readAll() {
-        users.forEach(System.out::println);
+    public HashSet<User> readAll() {
+        return users;
     }
 
     @Override
@@ -45,15 +43,10 @@ public class JCFUser implements UserService {
     }
 
     @Override
-    public void update(User originuser, User afteruser) {
-        if (originuser == null || originuser.getId() == null) {
-            return;
-        }
-
-        for(User user : users) {
-            if (user.getId() == originuser.getId()){
-                user.updateUserName(afteruser.getUserName());
-            }
-        }
+    public void update(UUID id, String str) {
+        users.stream()
+                .filter(user -> user.getId().equals(id))
+                .findFirst()
+                .ifPresent(user -> user.updateUserName(str));
     }
 }

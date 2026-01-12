@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.UUID;
 
 public interface UserService {
-    public void read(UUID id);
-    public void readAll();
+    public User read(UUID id);
+    public HashSet<User> readAll();
     public User create(User user);
     public void delete(User user);
-    public void update(User originuser, User afteruser);
+    public void update(UUID id, String str);
 }

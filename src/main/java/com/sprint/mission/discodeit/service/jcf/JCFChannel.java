@@ -20,12 +20,10 @@ public class JCFChannel implements ChannelService {
 
     @Override
     public Channel read(UUID id) {
-        for(Channel channel : this.channels) {
-            if (channel.getId() == id){
-                return channel;
-            }
-        }
-        return null;
+        return channels.stream()
+                .filter(channel -> channel.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -49,15 +47,13 @@ public class JCFChannel implements ChannelService {
     @Override
     public void update(UUID id, String str, boolean isChangingName) {
         channels.stream()
-                .map(s -> s.getId())
-                .forEach(uuid -> {
-                    if(uuid.equals(id)){
-                        if(isChangingName){
-                            this.read(uuid).updateChannelName(str);
-                        }
-                        else{
-                            this.read(uuid).updateChannelDescription(str);
-                        }
+                .filter(channel -> channel.getId().equals(id))
+                .findFirst()
+                .ifPresent(channel ->{
+                    if(isChangingName){
+                        channel.updateChannelName(str);
+                    }else{
+                        channel.updateChannelDescription(str);
                     }
                 });
     }

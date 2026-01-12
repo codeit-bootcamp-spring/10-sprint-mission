@@ -19,18 +19,16 @@ public class JCFMessage implements MessageService {
     HashSet<Message> messages = new HashSet<>();
 
     @Override
-    public void read(UUID id) {
-        for(Message message : messages) {
-            if (message.getId() == id) {
-                System.out.println(message);
-                return;
-            }
-        }
+    public Message read(UUID id) {
+        return messages.stream()
+                .filter(message -> message.getId().equals(id))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
-    public void readAll() {
-        messages.forEach(System.out::println);
+    public HashSet<Message> readAll() {
+        return messages;
     }
 
     @Override
@@ -45,16 +43,10 @@ public class JCFMessage implements MessageService {
     }
 
     @Override
-    public void update(Message originmessage, Message aftermessage) {
-        if(originmessage == null || originmessage.getId() == null) {
-            return;
-        }
-
-        for(Message msg : messages) {
-            if (msg.getId() == originmessage.getId()){
-                msg.updateMessage(aftermessage.getMessage());
-                return;
-            }
-        }
+    public void update(UUID id, String msg) {
+        messages.stream()
+                .filter(message -> message.getId().equals(id))
+                .findFirst()
+                .ifPresent(message -> message.updateMessage(msg));
     }
 }

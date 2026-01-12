@@ -6,9 +6,9 @@ import java.util.HashSet;
 import java.util.UUID;
 
 public interface MessageService {
-    public void read(UUID id);
-    public void readAll();
+    public Message read(UUID id);
+    public HashSet<Message> readAll();
     public Message create(Message message);
     public void delete(Message message);
-    public void update(Message originmessage, Message aftermessage);
+    public void update(UUID id, String str);
 }
