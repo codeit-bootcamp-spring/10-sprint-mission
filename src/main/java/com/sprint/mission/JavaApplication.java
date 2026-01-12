@@ -30,16 +30,18 @@ public class JavaApplication {
         Channel ch2 = channelService.create("codeTree");
         Channel ch3 = channelService.create("Baekjoon");
         Channel ch4 = channelService.create("LOL");
+
         // user 채널 가입 및 채널 user등록
         System.out.println("===Channel Join===");
         channelService.addMember(user1.getId(), ch.getId());
         channelService.addMember(user2.getId(), ch.getId());
         channelService.addMember(user3.getId(), ch.getId());
         channelService.addMember(user4.getId(), ch.getId());
-
+            // ch2
         channelService.addMember(user1.getId(), ch2.getId());
         channelService.addMember(user4.getId(), ch3.getId());
         channelService.addMember(user4.getId(), ch4.getId());
+
         System.out.println("user4 channel list");
         System.out.println(user4.getChannels());
         System.out.println(ch.getMembersSet());
@@ -47,6 +49,7 @@ public class JavaApplication {
         channelService.removeMember(user4.getId(), ch.getId());
         System.out.println(user4.getChannels());
         System.out.println(ch.getMembersSet());
+
         // 메시지 생성
         Message msg1 = messageService.create("Hello everyone", user1, ch);
         Message msg2 = messageService.create("Have a nice Day", user2, ch);
@@ -57,15 +60,15 @@ public class JavaApplication {
         System.out.println();
         System.out.println("===read test===");
         System.out.println("===user1 read test===");
-        System.out.println(userService.read(user1.getId()));
-        System.out.println(userService.read(id));
+        System.out.println(userService.find(user1.getId()));
+        System.out.println(userService.find(id));
         System.out.println("===user readall test===");
         System.out.println(userService.readAll());
 
         // Channel 조회
         System.out.println();
         System.out.println("===channel test===");
-        System.out.println(channelService.read(ch.getId()));
+        System.out.println(channelService.find(ch.getId()));
         System.out.println("===channel readall test===");
         System.out.println(channelService.readAll());
         System.out.println();
@@ -73,7 +76,7 @@ public class JavaApplication {
         // Message 조회
         System.out.println();
         System.out.println("===Message test===");
-        System.out.println(messageService.read(msg2.getId()));
+        System.out.println(messageService.find(msg2.getId()));
         System.out.println("===Message readall test===");
         System.out.println(messageService.readAll());
         System.out.println();

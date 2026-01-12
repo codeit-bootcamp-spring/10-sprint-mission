@@ -5,10 +5,12 @@ import java.util.UUID;
 // User, Channel, Message 간 공통 필드, Getter, Setter가 존재해 추상 Class
 
 public abstract class Base {
+    // 필드
     private final UUID id;
     private final Long createdAt;
     private Long updatedAt;
 
+    // 생성자
     public Base() {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
@@ -28,11 +30,13 @@ public abstract class Base {
         return updatedAt;
     }
 
-    public void update(){
+    // Setter
+    public void updateUpdatedAt() {
         this.updatedAt = System.currentTimeMillis();
     }
-    // Update
-    public void updateUpdatedAt() {
+
+    // other
+    public void update(){
         this.updatedAt = System.currentTimeMillis();
     }
 }

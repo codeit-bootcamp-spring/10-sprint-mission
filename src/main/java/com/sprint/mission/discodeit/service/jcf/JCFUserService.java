@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -27,11 +26,7 @@ public class JCFUserService implements UserService {
 
     // 단건 조회
     @Override
-    public User read(UUID id){
-        if (id == null) {
-            throw new IllegalArgumentException("id must not be null");
-        }
-
+    public User find(UUID id){
         return userData.stream()
                 .filter(user -> user.getId().equals(id))
                 .findFirst()
@@ -47,22 +42,14 @@ public class JCFUserService implements UserService {
     // User 수정
     @Override
     public void update(UUID id, String name){
-        if (id == null) {
-            throw new IllegalArgumentException("id must not be null");
-        }
-
-        User user = read(id);
+        User user = find(id);
         user.updateName(name);
     }
 
     // User 삭제
     @Override
     public void delete(UUID id) {
-        if (id == null) {
-            throw new IllegalArgumentException("id must not be null");
-        }
-
-        User delUser = read(id);
+        User delUser = find(id);
         userData.remove(delUser);
     }
 

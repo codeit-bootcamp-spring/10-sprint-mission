@@ -9,9 +9,9 @@ import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 public class Factory {
-    private UserService userService;
-    private ChannelService channelService;
-    private MessageService messageService;
+    private final UserService userService;
+    private final ChannelService channelService;
+    private final MessageService messageService;
 
     public Factory() {
         this.userService = new JCFUserService();

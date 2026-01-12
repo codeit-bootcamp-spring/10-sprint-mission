@@ -3,15 +3,17 @@ package com.sprint.mission.discodeit.entity;
 import java.util.*;
 
 public class Channel extends Base {
+    // 필드
     private String name;
     private final Set<User> membersSet;
-    private List<Message> messageList;
+    private final List<Message> messageList;
 
+    // 생성자
     public Channel(String name) {
         super();
         this.name = name;
         this.membersSet = new HashSet<>();
-        this.messageList = new ArrayList<Message>();
+        this.messageList = new ArrayList<>();
     }
 
     // getter

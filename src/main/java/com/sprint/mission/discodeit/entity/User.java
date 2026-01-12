@@ -5,10 +5,10 @@ import java.util.*;
 public class User extends Base {
     // 필드
     private String name;
-    private Set<Channel> channels;
-    private List<Message> messageList;
+    private final Set<Channel> channels;
+    private final List<Message> messageList;
 
-    // Constructor
+    // 생성자
     public User(String name) {
         super();
         this.name = name;
@@ -28,12 +28,12 @@ public class User extends Base {
     public List<Message> getMessageList(){
         return messageList;
     }
+
     // Setter
     public void updateName(String name) {
         this.name = name;
         update();
     }
-
 
     // other
     public void joinChannel(Channel channel) {
@@ -51,6 +51,5 @@ public class User extends Base {
     public void removeMessage(Message msg){
         messageList.remove(msg);
     }
-
 }
 
