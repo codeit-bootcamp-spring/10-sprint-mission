@@ -3,34 +3,15 @@ package com.sprint.mission.discodeit.entity;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class Channel {
-    private final UUID id;
-    private final Long createAt;
-    private Long updatedAt;
+public class Channel extends defaultEntity{
     private String channelName;
     private String channelDescription;
 
     private ArrayList<Message> messages = new ArrayList<>();
 
     public Channel(String channelName, String channelDescription) {
-        this.id = UUID.randomUUID();
-        this.createAt = System.currentTimeMillis();
-        this.updatedAt = System.currentTimeMillis();
-
         this.channelName = channelName;
         this.channelDescription = channelDescription;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreateAt() {
-        return createAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
     }
 
     public String getChannelName() {
