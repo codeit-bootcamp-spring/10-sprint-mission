@@ -53,69 +53,23 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User updateNickName(UUID userId, String nickName) {
-        User user = data.stream()
-            .filter(u -> u.getId().equals(userId))
-            .findFirst()
-            .orElseThrow(
-                () -> new IllegalArgumentException(userId + "은(는) 존재하지 않는 유저ID입니다.")
-            );
+    public User updateUser(UUID userId, User user) {
+        User updatedUser = data.stream()
+                .filter(u -> u.getId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("id가 " + userId + "인 유저를 찾을 수 없습니다."));
 
-        user.updateNickName(nickName);
-        user.updateUpdatedAt(System.currentTimeMillis());
-
-        return user;
-    }
-
-    @Override
-    public User updateUserName(UUID userId, String userName) {
-        // userName(사용자명)은 중복이 될 수 없다.
-        if (data.stream()
-            .anyMatch(u -> u.getUserName().equals(userName))) {
-            throw new IllegalArgumentException(userName + "은(는) 이미 존재하는 사용자명입니다.");
+        if(user.getNickName() != null) {
+            updatedUser.updateNickName(user.getNickName());
+        } else if(user.getUserName() != null) {
+            updatedUser.updateUserName(user.getUserName());
+        } else if(user.getEmail() != null) {
+            updatedUser.updateEmail(user.getEmail());
+        } else if(user.getPhoneNumber() != null) {
+            updatedUser.updatePhoneNumber(user.getPhoneNumber());
         }
 
-        User user = data.stream()
-            .filter(u -> u.getId().equals(userId))
-            .findFirst()
-            .orElseThrow(
-                () -> new IllegalArgumentException(userId + "은(는) 존재하지 않는 유저ID입니다.")
-            );
-
-        user.updateUserName(userName);
-        user.updateUpdatedAt(System.currentTimeMillis());
-
-        return user;
-    }
-
-    @Override
-    public User updateEmail(UUID userId, String email) {
-        User user = data.stream()
-            .filter(u -> u.getId().equals(userId))
-            .findFirst()
-            .orElseThrow(
-                () -> new IllegalArgumentException(userId + "은(는) 존재하지 않는 유저ID입니다.")
-            );
-
-        user.updateEmail(email);
-        user.updateUpdatedAt(System.currentTimeMillis());
-
-        return user;
-    }
-
-    @Override
-    public User updatePhoneNumber(UUID userId, String phoneNumber) {
-        User user = data.stream()
-            .filter(u -> u.getId().equals(userId))
-            .findFirst()
-            .orElseThrow(
-                () -> new IllegalArgumentException(userId + "은(는) 존재하지 않는 유저ID입니다.")
-            );
-
-        user.updateEmail(phoneNumber);
-        user.updateUpdatedAt(System.currentTimeMillis());
-
-        return user;
+        return updatedUser;
     }
 
     @Override

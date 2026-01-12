@@ -14,13 +14,7 @@ public interface UserService {
 
     List<User> findAllUser(); // 전체 조회(다건)
 
-    User updateNickName(UUID userId, String nickName);
-
-    User updateUserName(UUID userId, String userName);
-
-    User updateEmail(UUID userId, String email);
-
-    User updatePhoneNumber(UUID userId, String phoneNumber);
+    User updateUser(UUID userId, User user); // 수정하고 싶은 필드에 null 이외의 값을 넣는다.
 
     boolean delete(UUID userId);
 }

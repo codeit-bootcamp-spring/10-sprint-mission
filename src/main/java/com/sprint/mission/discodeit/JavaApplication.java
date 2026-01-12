@@ -55,9 +55,12 @@ public class JavaApplication {
         System.out.println(userService.findAllUser());
 
         // 수정
-        user2 = userService.updateUserName(user2.getId(), "cheolsu_99999");
-        user2 = userService.updateEmail(user2.getId(), "cheolsu99@naver.com");
-        user2 = userService.updatePhoneNumber(user2.getId(), "010-9999-9999");
+        user2 = userService.updateUser(user2.getId(), new User(
+                null,
+                "cheolsu_99999",
+                "cheolsu99@naver.com",
+                "010-9999-9999"
+        ));
 
         // 수정된 데이터 조회
         System.out.println("\n======== 수정된 데이터 조회 ========");
@@ -113,7 +116,7 @@ public class JavaApplication {
 
 
         // message
-        System.out.println("\n\n========== Message ==========");
+        System.out.println("\n\n========== Message ==========");;
 
         // 메시지 등록
         Message message1 = messageService.create(
