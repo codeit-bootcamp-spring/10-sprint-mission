@@ -39,4 +39,9 @@ public class JCFChannelService implements ChannelService {
         readChannel(id).updateChannelName(channelName);
         readChannel(id).updateChannelDescription(channelDescription);
     }
+
+    @Override
+    public void deleteChannel(UUID id) {
+        list.remove(readChannel(id));
+    }
 }

@@ -23,8 +23,6 @@ public class JavaApplication {
 //        System.out.println(userService.readAllUser());
 //        System.out.println(user.getUserStatus() + "  " + user.getId());
         userService.updateUser(user.getId(), "Ally", "ckdgus177@gmail.com", "asdfqwer");
-        userService.deleteUser(user.getId());
-        System.out.println(user.getId());
 //        System.out.println(user.getUserStatus() + "  " + user.getId());
 
 //
