@@ -6,12 +6,12 @@ import com.sprint.mission.discodeit.service.MessageService;
 import java.util.HashSet;
 import java.util.UUID;
 
-public class JCFMessage implements MessageService {
-    private static JCFMessage instance = null;
-    private JCFMessage(){}
-    public static JCFMessage getInstance(){
+public class JCFMessageService implements MessageService {
+    private static JCFMessageService instance = null;
+    private JCFMessageService(){}
+    public static JCFMessageService getInstance(){
         if(instance == null){
-            instance = new JCFMessage();
+            instance = new JCFMessageService();
         }
         return instance;
     }
@@ -28,7 +28,11 @@ public class JCFMessage implements MessageService {
 
     @Override
     public HashSet<Message> findAll() {
-        return messages;
+        HashSet<Message> newMessages = new HashSet<>();
+        for(Message message : messages){
+            newMessages.add(message);
+        }
+        return newMessages;
     }
 
     @Override
@@ -44,7 +48,8 @@ public class JCFMessage implements MessageService {
 
     @Override
     public Message update(UUID id, String msg) {
-        this.find(id).updateMessage(msg);
+        this.find(id)
+                .updateMessage(msg);
         return this.find(id);
     }
 }

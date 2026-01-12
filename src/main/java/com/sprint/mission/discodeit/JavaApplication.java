@@ -3,18 +3,18 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.jcf.JCFChannel;
-import com.sprint.mission.discodeit.service.jcf.JCFMessage;
-import com.sprint.mission.discodeit.service.jcf.JCFUser;
+import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
+import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
+import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.UUID;
 
 public class JavaApplication {
     public static void main(String[] args) {
         //생성
-        JCFUser userdata = JCFUser.getInstance();
-        JCFChannel channeldata = JCFChannel.getInstance();
-        JCFMessage messagedata = JCFMessage.getInstance();
+        JCFUserService userdata = JCFUserService.getInstance();
+        JCFChannelService channeldata = JCFChannelService.getInstance();
+        JCFMessageService messagedata = JCFMessageService.getInstance();
 
         User user1 = new User("초시");
         User user2 = new User("초코");

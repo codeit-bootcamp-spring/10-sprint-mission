@@ -6,12 +6,12 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.HashSet;
 import java.util.UUID;
 
-public class JCFChannel implements ChannelService {
-    private static JCFChannel instance = null;
-    private JCFChannel(){}
-    public static JCFChannel getInstance(){
+public class JCFChannelService implements ChannelService {
+    private static JCFChannelService instance = null;
+    private JCFChannelService(){}
+    public static JCFChannelService getInstance(){
         if(instance == null){
-            instance = new JCFChannel();
+            instance = new JCFChannelService();
         }
         return instance;
     }
@@ -28,7 +28,11 @@ public class JCFChannel implements ChannelService {
 
     @Override
     public HashSet<Channel> findAll() {
-        return channels;
+        HashSet<Channel> newChannels = new HashSet<>();
+        for(Channel channel : channels){
+            newChannels.add(channel);
+        }
+        return newChannels;
     }
 
     @Override
@@ -46,12 +50,14 @@ public class JCFChannel implements ChannelService {
 
     @Override
     public Channel updateName(UUID id, String name) {
-        this.find(id).updateChannelName(name);
+        this.find(id)
+                .updateChannelName(name);
         return this.find(id);
     }
 
     public Channel updateDesc(UUID id, String desc) {
-        this.find(id).updateChannelDescription(desc);
+        this.find(id)
+                .updateChannelDescription(desc);
         return this.find(id);
     }
 }

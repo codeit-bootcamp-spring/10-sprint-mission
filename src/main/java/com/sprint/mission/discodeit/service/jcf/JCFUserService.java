@@ -1,18 +1,16 @@
 package com.sprint.mission.discodeit.service.jcf;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.UUID;
 
-public class JCFUser implements UserService {
-    private static JCFUser instance = null;
-    private JCFUser(){}
-    public static JCFUser getInstance() {
+public class JCFUserService implements UserService {
+    private static JCFUserService instance = null;
+    private JCFUserService(){}
+    public static JCFUserService getInstance() {
         if(instance == null){
-            instance = new JCFUser();
+            instance = new JCFUserService();
         }
         return instance;
     }
@@ -30,7 +28,11 @@ public class JCFUser implements UserService {
 
     @Override
     public HashSet<User> findAll() {
-        return users;
+        HashSet<User> newUsers = new HashSet<>();
+        for(User user : users){
+            newUsers.add(user);
+        }
+        return newUsers;
     }
 
     @Override
@@ -46,7 +48,8 @@ public class JCFUser implements UserService {
 
     @Override
     public User update(UUID id, String newUserName) {
-        this.find(id).updateUserName(newUserName);
+        this.find(id)
+                .updateUserName(newUserName);
         return this.find(id);
     }
 }
