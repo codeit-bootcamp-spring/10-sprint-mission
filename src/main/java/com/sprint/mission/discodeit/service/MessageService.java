@@ -17,7 +17,7 @@ public interface MessageService {
 
     List<Message> getMessageListByChannel(UUID channelId);
 
-    Optional<Message> getMessageByMessageId(UUID messageId);
+    Message getMessageByMessageId(UUID messageId);
 
     void editMessage(UUID messageId, String newContent);
 

@@ -40,10 +40,12 @@ public class JCFMessageService implements MessageService {
 
     // 메시지 아이디에 따라 해당 메시지 반환
     @Override
-    public Optional<Message> getMessageByMessageId(UUID messageId) {
-        return messages.values().stream()
-                .filter(id -> id.getId().equals(messageId))
-                .findFirst();
+    public Message getMessageByMessageId(UUID messageId) {
+        return messages.entrySet().stream()
+                .filter(message -> message.getKey().equals(messageId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 id에 해당하는 메시지가 존재하지 않습니다."))
+                .getValue();
     }
 
     @Override
