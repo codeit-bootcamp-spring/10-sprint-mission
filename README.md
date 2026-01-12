@@ -46,7 +46,8 @@ com.sprint.mission.discodeit
 💡 Key Design Decisions (설계 의사결정)  
 이 프로젝트를 진행하면서 고민했던 주요 설계 포인트입니다.
 1. ID 참조 vs 객체 참조
-   초기 설계: Channel 엔티티가 User 객체를 직접 필드로 가짐 (private User owner)
+   초기 설계: Channel 엔티티가 User 객체를 직접 필드로 가짐 (private User owner)  
+   ID 참조로 변경하였습니다. 추후 리펙토링을 통해 객체 참조로 변경할 예정입니다.
 2. BaseEntity를 통한 중복 제거
    모든 엔티티가 공통으로 가지는 UUID id, createdAt, updatedAt 필드를 BaseEntity 추상 클래스로 분리하여 상속받도록 설계했습니다.   
    이를 통해 코드 중복을 줄이고 일관성을 확보했습니다.  
