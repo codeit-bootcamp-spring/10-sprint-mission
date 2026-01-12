@@ -43,3 +43,11 @@
     - channelId: channel 이름, 변경 가능
   - `Message`
     - message: 수정 가능
+- model
+  - `Model` 각 `Entity` 별로 `Map` 에 <UUID, Entity> 저장
+  - `RelationModel` `Entity` 간 관계를 저장
+    - ```
+      RelationModel<User, Message> // 각 user 가 생성한 message 들을 저장
+      ```
+  - 공통 부분
+    - get, getAll(`Model`), remove, add, update, contain
