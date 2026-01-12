@@ -9,7 +9,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateField;
 
 public class JCFUserService implements UserService {
-    public final ArrayList<User> users = new ArrayList<>();         // 전체 사용자 리스트
+    public static final ArrayList<User> users = new ArrayList<>();         // 전체 사용자 리스트
 
     // 사용자 생성
     @Override

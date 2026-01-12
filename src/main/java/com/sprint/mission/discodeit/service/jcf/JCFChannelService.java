@@ -12,12 +12,14 @@ import static com.sprint.mission.discodeit.Main.userService;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateField;
 
 public class JCFChannelService implements ChannelService {
-    public final ArrayList<Channel> channels = new ArrayList<>();        // 사용자 한 명당 가지는 채널
+    public static final ArrayList<Channel> channels = new ArrayList<>();        // 사용자 한 명당 가지는 채널
 
     // 채널 생성
     @Override
     public Channel createChannel(String channelName, User user, ChannelType channelType) {
-        Channel newChannel = new Channel(channelName, user, channelType);
+        User owner = userService.searchUser(user.getId());
+
+        Channel newChannel = new Channel(channelName, owner, channelType);
         channels.add(newChannel);
         return newChannel;
     }

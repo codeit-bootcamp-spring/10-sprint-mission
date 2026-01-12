@@ -13,12 +13,15 @@ import static com.sprint.mission.discodeit.Main.*;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateField;
 
 public class JCFMessageService implements MessageService {
-    public final ArrayList<Message> messages = new ArrayList<>();      // 한 채널에서 발생한 메시지 리스트
+    public static final ArrayList<Message> messages = new ArrayList<>();      // 한 채널에서 발생한 메시지 리스트
 
     // 메시지 생성
     @Override
     public Message createMessage(String message, User user, Channel channel, MessageType type) {
-        Message newMessage = new Message(message, user, channel, type);
+        User sender = userService.searchUser(user.getId());
+        Channel targetChannel = channelService.searchChannel(channel.getId());
+
+        Message newMessage = new Message(message, sender, targetChannel, type);
         messages.add(newMessage);
         return newMessage;
     }
