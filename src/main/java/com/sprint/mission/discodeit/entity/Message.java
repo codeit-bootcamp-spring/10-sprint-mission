@@ -59,14 +59,6 @@ public class Message implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public void updateSenderId(User sender) {
-        this.sender = sender;
-    }
-
-    public void updateChannelId(UUID channelId) {
-        this.channelId = channelId;
-    }
-
     public void updateContent(String content) {
         this.content = content;
     }

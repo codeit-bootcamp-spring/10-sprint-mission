@@ -25,13 +25,22 @@ public class FileMessageService implements MessageService {
     }
 
     // 객체를 파일에 저장 - 직렬화
-    private void save(Map<UUID, Message> data) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-            oos.writeObject(data);  // 객체 단위로 파일에 저장, 객체의 필드값 전체를 바이트로 변환해서 파일에 저장
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    private void save(Message message) {
+        Map<UUID, Message> data = load();
+
+        if(data.containsKey(message.getId())){
+            Message existing = data.get(message.getId());
+            existing.updateContent(message.getContent());
+            existing.updateUpdatedAt(System.currentTimeMillis());
+            data.put(existing.getId(), existing);
         }
+        else{
+            data.put(message.getId(), message);
+
+        }
+        writeToFile(data);
     }
+
     // 파일에서 로드(없으면 빈 Map) - 역직렬화
     @SuppressWarnings("unchecked")  // Object형을 Map으로 형변환할 때 뜨는 경고 억제
     private Map<UUID, Message> load() {
@@ -54,10 +63,9 @@ public class FileMessageService implements MessageService {
         if ((channelService.read(message.getChannelId())) == null) {
             throw new IllegalArgumentException("존재하지 않는 채널입니다.");
         }
-        Map<UUID, Message> data = load();
-        data.put(message.getId(), message);
-        save(data);
-        return null;
+
+        save(message);
+        return message;
     }
 
     @Override
@@ -73,30 +81,36 @@ public class FileMessageService implements MessageService {
 
     @Override
     public Message update(Message message) {
-        Map<UUID, Message> data = load();
-
-        Message found = data.get(message.getId());
-        if (found == null) {
+        if (read(message.getId()) == null) {
             throw new IllegalArgumentException("존재하지 않는 메시지입니다.");
         }
-
-        found.updateContent(message.getContent());
-        found.updateUpdatedAt(System.currentTimeMillis());
-
-        data.put(message.getId(), message);
-        save(data);
+        save(message);
         return message;
     }
 
     @Override
     public void delete(UUID id) {
+        remove(id);
+    }
+
+    private void remove(UUID id) {
         Map<UUID, Message> data = load();
-        data.remove(id);
-        save(data);
+        if (data.containsKey(id)) {
+            data.remove(id);
+            writeToFile(data);
+        }
     }
 
     @Override
     public void clear() {
-        save(new HashMap<>());
+        writeToFile(new HashMap<UUID, Message>());
+    }
+
+    public void writeToFile(Map<UUID, Message> data) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+            oos.writeObject(data);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
