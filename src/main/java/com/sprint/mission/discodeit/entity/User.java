@@ -48,6 +48,18 @@ public class User {
         return sentMessages;
     }
 
+    public void updateJoinedChannels(Channel channel) {
+        joinedChannels.add(channel);
+    }
+
+    public void removeChannel(Channel channel) {
+        joinedChannels.remove(channel);
+    }
+
+    public void updateSentMessages(Message message) {
+        sentMessages.add(message);
+    }
+
     @Override
     public String toString() {
         return "User{" +

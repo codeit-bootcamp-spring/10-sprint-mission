@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -42,18 +41,24 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void joinChannel(UUID channelId, User user) {
-        channels.entrySet().stream()
-                .filter(entry -> entry.getKey().equals(channelId))
-                .findFirst()
-                .ifPresent(entry -> entry.getValue().addUser(user));
+        Channel channel = channels.get(channelId);
+        try {
+            channel.addUser(user);
+            user.updateJoinedChannels(channel);
+        } catch (NullPointerException e) {
+            System.out.println("해당 채널이 존재하지 않습니다.");
+        }
     }
 
     @Override
-    public void leaveChannel(UUID channelId, UUID userId) {
-        channels.entrySet().stream()
-                .filter(entry -> entry.getKey().equals(channelId))
-                .findFirst()
-                .ifPresent(entry -> entry.getValue().removeUser(userId));
+    public void leaveChannel(UUID channelId, User user) {
+        Channel channel = channels.get(channelId);
+        try {
+            channel.removeUser(user.getUserId());
+            user.removeChannel(channel);
+        } catch (NullPointerException e) {
+            System.out.println("해당 채널이 존재하지 않습니다.");
+        }
     }
 
     @Override

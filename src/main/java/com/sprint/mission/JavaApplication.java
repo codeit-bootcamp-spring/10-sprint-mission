@@ -69,7 +69,7 @@ public class JavaApplication {
         System.out.println("메시지 삭제 후: " + jcfMessageService.getAllMessages());
 
         // 채널에서 유저 제거
-        jcfChannelService.leaveChannel(testChannel.getChannelId(), charlie.getUserId());
+        jcfChannelService.leaveChannel(testChannel.getChannelId(), charlie);
         System.out.println("채널에서 유저 제거 후: " + jcfChannelService.getChannelList());
 
         // 채널 삭제
