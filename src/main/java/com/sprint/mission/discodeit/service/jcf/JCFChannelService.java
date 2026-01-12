@@ -13,12 +13,12 @@ import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
     private final MessageService messageService;
-    private final UserService userSerivce;
+    private final UserService userService;
     private final Map<UUID, Channel> channels = new HashMap<>();
 
-    public JCFChannelService(MessageService messageService, UserService userSerivce) {
+    public JCFChannelService(MessageService messageService, UserService userService) {
         this.messageService = messageService;
-        this.userSerivce = userSerivce;
+        this.userService = userService;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class JCFChannelService implements ChannelService {
         Objects.requireNonNull(userID, "userId값은 null일 수 없습니다.");
 
         Channel channel = checkNoSuchElementException(channelId);
-        User user = userSerivce.getUserInfoByUserId(userID);
+        User user = userService.getUserInfoByUserId(userID);
 
         channel.addUser(user);
         user.updateJoinedChannels(channel);
@@ -63,7 +63,7 @@ public class JCFChannelService implements ChannelService {
         Objects.requireNonNull(userID, "userId값은 null일 수 없습니다.");
 
         Channel channel = checkNoSuchElementException(channelId);
-        User user = userSerivce.getUserInfoByUserId(userID);
+        User user = userService.getUserInfoByUserId(userID);
 
         channel.removeUser(user.getId());
         user.removeChannel(channel);
