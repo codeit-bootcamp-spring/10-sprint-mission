@@ -21,13 +21,12 @@ public interface UserService {
     // R. 모두 읽기
     // 모든 사용자
     List<User> readAllUsers();
-    // 특정 채널에 속한 모든 유저
-//    List<User> readAllUsersByChannelId(UUID channelId);
-    // 특정 채널에서 특정 사용자 찾기
-//    List<User> searchUserAtChannelByChannelIdAndPartialName(UUID channelId, String partialName);
     // userName 또는 nickName을 이용한 전체 검색으로 특정 사용자 찾기
     List<User> searchAllUsersByPartialName(String partialName);
-
+    // 특정 사용자가 참여한 모든 채널
+    List<Channel> readAllJoinChannelsAtUserByUserId(UUID userId);
+//    // 특정 사용자가 작성한 모든 메시지
+//    List<Message> readAllMessageAtUserByUserId(UUID userId);
 
     // U. 수정
     Optional<User> updateEmail(UUID userId, String email); // 이메일 수정
@@ -35,6 +34,9 @@ public interface UserService {
     Optional<User> updateNickName(UUID userId, String nickName); // 별명 수정
     Optional<User> updateUserName(UUID userId, String userName); // 사용자 이름 수정
     Optional<User> updateBirthday(UUID userId, String birthday); // 생년월일 수정
+    Optional<User> joinChannel(UUID userId, Channel channel); // 채널 참여
+    Optional<User> leaveChannel(UUID userId, Channel channel); // 채널 탈퇴
+    Optional<User> writeMessage(UUID userId, String messageContent, Channel channel); // 메시지 작성
 
     // D. 삭제
     void deleteUser(UUID userId);
