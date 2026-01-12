@@ -32,5 +32,9 @@ public class JCFMessageService implements MessageService {
         return list;
     }
 
+    @Override
+    public void updateMessage(UUID id, String content) {
+        readMessage(id).updateContent(content);
+    }
 
 }

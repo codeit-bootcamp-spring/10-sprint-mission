@@ -32,6 +32,10 @@ public class Message {
         return updatedAt;
     }
 
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
     public String getMessageStatus() {
         return "메세지: " + content + ", 채널 아이디: " + channelId + ", 유저 아이디: " + userId;
     }
