@@ -29,6 +29,7 @@ public class User extends Entity {
     }
 
     public User updateUserNickname(String nickname) {
+        // 마지막 수정 시각 갱신
         super.update();
         this.nickname = nickname;
         return this;

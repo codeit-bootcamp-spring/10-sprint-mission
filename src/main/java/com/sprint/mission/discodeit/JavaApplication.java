@@ -58,9 +58,9 @@ public class JavaApplication {
         System.out.println("\n=== 채널 테스트 ===");
         System.out.println("=== 채널 생성 ===");
 
-        Channel channel1 = channelService.createChannel("1번 채널", user1.getId());
-        Channel channel2 = channelService.createChannel("2번 채널", user2.getId());
-        Channel channel3 = channelService.createChannel("3번 채널", user1.getId());
+        Channel channel1 = channelService.createChannel("1번 채널", user1);
+        Channel channel2 = channelService.createChannel("2번 채널", user2);
+        Channel channel3 = channelService.createChannel("3번 채널", user1);
 
         System.out.println(channel1);
         System.out.println(channel2);
@@ -109,9 +109,12 @@ public class JavaApplication {
         List<Channel> channelList = channelService.findAll();
         for (Channel channel : channelList) {
             System.out.println("\n[채널: " + channel.getName() + "]");
-            System.out.println("홍길동(user1) 채널 참가");
+            System.out.println("홍길동(user1) 채널 가입");
 
             channelService.joinChannel(channel.getId(), user1.getId());
+
+            System.out.println("\n=== 회원 단건 조회 ===");
+            System.out.println(userService.findUserById(user1.getId()));
 
             Message message1 = messageService.createMessage(channel.getId(), user1.getId(), "이곳은 " + channel.getName() + " 입니다.");
             Message message2 = messageService.createMessage(channel.getId(), user1.getId(), "안녕하세요");
@@ -120,7 +123,7 @@ public class JavaApplication {
             System.out.println("메시지 생성 완료");
 
             System.out.println("\n- 메시지 조회");
-            messageService.readMessages(channel.getId())
+            messageService.findMessagesByChannelId(channel.getId())
                     .forEach(System.out::println);
 
             System.out.println("\n- 메시지 수정");
@@ -131,7 +134,7 @@ public class JavaApplication {
                     "이곳은 " + channel.getName() + " 입니다. 수정된 메시지입니다."
             );
 
-            messageService.readMessages(channel.getId())
+            messageService.findMessagesByChannelId(channel.getId())
                     .forEach(System.out::println);
 
             System.out.println("\n- 메시지 삭제");
@@ -143,8 +146,16 @@ public class JavaApplication {
             System.out.println(message3);
 
             System.out.println("\n- 메시지 조회");
-            messageService.readMessages(channel.getId())
+            messageService.findMessagesByChannelId(channel.getId())
                     .forEach(System.out::println);
+
+            System.out.println("\n홍길동(user1) 채널 탈퇴");
+            channelService.leaveChannel(channel.getId(), user1.getId());
+
+            System.out.println("\n=== 회원 단건 조회 ===");
+            System.out.println(userService.findUserById(user1.getId()));
+
+            System.out.println("\n===============================");
         }
     }
 }

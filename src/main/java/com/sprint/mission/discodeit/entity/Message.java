@@ -25,6 +25,7 @@ public class Message extends Entity {
     }
 
     public Message updateMessageContent(String content) {
+        // 마지막 수정 시각 갱신
         super.update();
         this.content = content;
         return this;

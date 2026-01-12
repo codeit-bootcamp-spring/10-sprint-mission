@@ -26,6 +26,7 @@ public abstract class Entity {
     }
 
     public void update() {
+        // 업데이트 시간 갱신
         this.updatedAt = System.currentTimeMillis();
     }
 }
