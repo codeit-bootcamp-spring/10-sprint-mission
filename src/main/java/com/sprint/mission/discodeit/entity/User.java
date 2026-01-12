@@ -11,7 +11,11 @@ public class User extends BaseEntity {
     private String email; // Nullable
     private String phoneNumber; // Nullable
 
+    // 현재는 유저가 역할을 가지고 있지만 서버가 있다면?
+    // 역할은 각 서버 별로 다르기 때문에 유저를 가지고 있는 멤버 클래스를 만들어야함
+    // 멤버 클래스는 각 서버 별 별명과 역할을 가질 수 있음
     private Set<UUID> roleIds;
+
     private UserPresence presence; // 유저의 상태 관리
 
 
@@ -92,6 +96,10 @@ public class User extends BaseEntity {
 
     public void removeRole(UUID roleId) {
         this.roleIds.remove(roleId);
+    }
+
+    public boolean hasRole(UUID roleId) {
+        return roleIds != null && roleIds.contains(roleId);
     }
 
     // validation
