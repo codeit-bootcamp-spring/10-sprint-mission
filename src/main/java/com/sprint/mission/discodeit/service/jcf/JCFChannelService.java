@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
-    ArrayList<Channel> list = new ArrayList<>();
+    final ArrayList<Channel> list = new ArrayList<>();
 
     @Override
     public Channel createChannel(ChannelType type, String channelName, String channelDescription) {

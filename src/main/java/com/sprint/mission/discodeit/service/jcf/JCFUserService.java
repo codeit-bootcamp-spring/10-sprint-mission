@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class JCFUserService implements UserService {
-    ArrayList<User> list = new ArrayList<>();
+    final ArrayList<User> list = new ArrayList<>();
 
     @Override
     public User createUser(String userName, String userEmail, String userPassword) {
