@@ -2,11 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.UUID;
 
-public class User {
-    private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
-
+public class User extends BaseEntity {
     private String email;           // 이메일 (변경 불가능)
     private String password;        // 비밀번호 (변경 가능)
     private String nickname;        // 닉네임 (변경 가능)

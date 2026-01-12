@@ -2,11 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.UUID;
 
-public class Message {
-    private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
-
+public class Message extends BaseEntity{
     private String message;         // 메시지 내용 (변경 가능)
     private UUID channelId;         // 메시지를 주고 받은 채널 id (변경 불가능)
     private MessageType type;       // 메시지 타입 - 채팅, 디엠 (변경 불가능)
