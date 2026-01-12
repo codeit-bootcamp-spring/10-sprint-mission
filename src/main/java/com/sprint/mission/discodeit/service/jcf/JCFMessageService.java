@@ -41,4 +41,13 @@ public class JCFMessageService implements MessageService {
         list.remove(readMessage(id));
     }
 
+    public boolean isMessageDeleted(UUID id) {
+        for (Message message : list) {
+            if(id.equals(message.getId())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

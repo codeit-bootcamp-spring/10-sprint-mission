@@ -44,4 +44,14 @@ public class JCFChannelService implements ChannelService {
     public void deleteChannel(UUID id) {
         list.remove(readChannel(id));
     }
+
+    @Override
+    public boolean isChannelDeleted(UUID id) {
+        for (Channel channel : list) {
+            if(id.equals(channel.getId())) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -18,17 +18,19 @@ public class JavaApplication {
         User user = userService.createUser("JEON", "ckdgus13@naver.com", "qweasd123");
         User user2 = userService.createUser("Hell", "ckdgus12@naver.com", "qweasd153");
 //        System.out.println(user.getId());
-        User userRead = userService.readUser(user.getId());
+//        User userRead = userService.readUser(user.getId());
 //        System.out.println(userRead.getId());
 //        System.out.println(userService.readAllUser());
 //        System.out.println(user.getUserStatus() + "  " + user.getId());
-        userService.updateUser(user.getId(), "Ally", "ckdgus177@gmail.com", "asdfqwer");
-//        System.out.println(user.getUserStatus() + "  " + user.getId());
+//        userService.updateUser(user.getId(), "Ally", "ckdgus177@gmail.com", "asdfqwer");
+//        userService.deleteUser(user.getId());
+//        System.out.println(userService.isUserDeleted(user.getId()));
+
 
 //
-//        ChannelService channelService = new JCFChannelService();
-//        Channel channel = channelService.createChannel(ChannelType.PUBLIC, "공지", "공지 채널입니다.");
-//        Channel channel2 = channelService.createChannel(ChannelType.PUBLIC, "공지2", "공지 2채널입니다.");
+        ChannelService channelService = new JCFChannelService();
+        Channel channel = channelService.createChannel(ChannelType.PUBLIC, "공지", "공지 채널입니다.");
+        Channel channel2 = channelService.createChannel(ChannelType.PUBLIC, "공지2", "공지 2채널입니다.");
 //        System.out.println(channel.getId());
 //        Channel readChannel = channelService.readChannel(channel.getId());
 //        System.out.println(readChannel.getId());
@@ -36,17 +38,23 @@ public class JavaApplication {
 //        System.out.println(channel.getChannelStatus());
 //        channelService.updateChannel(channel.getId(), ChannelType.PRIVATE, "비공개채널", "비공개채널입니다.");
 //        System.out.println(channel.getChannelStatus());
+//        System.out.println(channelService.isChannelDeleted(channel.getId()));
+//        channelService.deleteChannel(channel.getId());
+//        System.out.println(channelService.isChannelDeleted(channel.getId()));
 
-//        MessageService messageService = new JCFMessageService();
-//        Message message = messageService.createMessage("안녕하세요.", channel.getId(), user.getId());
-//        Message message2 = messageService.createMessage("안녕히가세요.", channel2.getId(), user2.getId());
-//        Message messageRead = messageService.readMessage(message.getId());
-//        System.out.println(message.getId());
-//        System.out.println(messageRead.getId());
-//        System.out.println(messageService.readAllMessage());
-//        System.out.println(message.getMessageStatus());
-//        messageService.updateMessage(message.getId(), "식사 맛있게하세요");
-//        System.out.println(message.getMessageStatus());
+        MessageService messageService = new JCFMessageService();
+        Message message = messageService.createMessage("안녕하세요.", channel.getId(), user.getId());
+        Message message2 = messageService.createMessage("안녕히가세요.", channel2.getId(), user2.getId());
+        Message messageRead = messageService.readMessage(message.getId());
+        System.out.println(message.getId());
+        System.out.println(messageRead.getId());
+        System.out.println(messageService.readAllMessage());
+        System.out.println(message.getMessageStatus());
+        messageService.updateMessage(message.getId(), "식사 맛있게하세요");
+        System.out.println(message.getMessageStatus());
+        System.out.println(messageService.isMessageDeleted(message.getId()));
+        messageService.deleteMessage(message.getId());
+        System.out.println(messageService.isMessageDeleted(message.getId()));
 
 
 

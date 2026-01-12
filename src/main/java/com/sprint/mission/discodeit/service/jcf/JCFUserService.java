@@ -39,6 +39,16 @@ public class JCFUserService implements UserService {
         readUser(id).updateUserPassword(userPassword);
     }
 
+    public boolean isUserDeleted(UUID id) {
+        for (User user : list) {
+            if(id.equals(user.getId())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     @Override
     public void deleteUser(UUID id) {
         list.remove(readUser(id));
