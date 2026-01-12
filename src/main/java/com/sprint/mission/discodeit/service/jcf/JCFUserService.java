@@ -26,13 +26,8 @@ public class JCFUserService implements UserService {
     @Override
     public User getUserInfoByUserId(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
-        User user = users.get(userId);
 
-        if (user == null) {
-            throw new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
-        }
-
-        return user;
+        return checkNoSuchElementException(userId);
     }
 
     // id 를 기준으로 수정
@@ -41,10 +36,7 @@ public class JCFUserService implements UserService {
         Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
         Objects.requireNonNull(newName, "username은 null일 수 없습니다.");
 
-        User user = users.get(userId);
-        if (user == null) {
-            throw new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다");
-        }
+        User user = checkNoSuchElementException(userId);
 
         user.updateUsername(newName);
         return user;
@@ -54,11 +46,18 @@ public class JCFUserService implements UserService {
     public void deleteUser(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
 
-        User user = users.get(userId);
+        User user = checkNoSuchElementException(userId);
+
+        users.remove(userId);
+    }
+
+    private User checkNoSuchElementException(UUID userID) {
+        User user = users.get(userID);
+
         if (user == null) {
             throw new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
         }
 
-        users.remove(userId);
+        return user;
     }
 }
