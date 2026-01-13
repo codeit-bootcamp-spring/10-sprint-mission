@@ -103,7 +103,8 @@ public class JavaApplication {
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
-
+        System.out.println("------4번 유저의 참여 채널 정보--------");
+        System.out.println(userService.getChannels(userId4));
         //메세지
         //생성
         User user1 = userService.getUserById(userId);
@@ -113,7 +114,11 @@ public class JavaApplication {
         Channel channel2 = channelService.getChannelByIdAndMemberId(channelId3,userId2);
         Channel channel3 = channelService.getChannelByIdAndMemberId(channelId2,userId3);
         UUID messageId = messageService.send(user1, channel1, "안녕!!!").getId();
-        UUID messageID2 = messageService.send(user2, channel2, "그래, 안녕@").getId();
+        UUID messageID2 = messageService.send(user2, channel2, "끝말잇기 시작!").getId();
+        messageService.send(user1, channel1, "나부터");
+        messageService.send(user1, channel1, "기러기");
+        messageService.send(user1, channel1, "기차");
+        messageService.send(user2, channel2, "차력");
         UUID messageID3 = messageService.send(user3, channel3, "안녕십니까").getId();
         UUID messageID4 = messageService.send(user3, channel3, "안녕십니wkl").getId();
         System.out.println("------------메세지 조회---------------");

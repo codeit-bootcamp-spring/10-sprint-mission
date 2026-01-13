@@ -45,7 +45,10 @@ public class JCFMessageService implements MessageService {
                 = data.values()
                     .stream()
                     .filter(e-> e.getChannel().getId().equals(channel.getId()))
-                .sorted(Comparator.comparing(Message::getCreatedAt).reversed())//최신순
+                .sorted(Comparator
+                        .comparing(Message::getCreatedAt,Comparator.reverseOrder())//시간순
+                        .thenComparing(m->m.getSequence())//같은 시간이면 시퀀스로 정렬
+                        )
                 .toList();
         return messages;
     }
