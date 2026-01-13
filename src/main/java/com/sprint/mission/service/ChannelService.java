@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    Channel create(User owner, String name);
+    Channel create(UUID userID, String name);
 
     Channel findById(UUID id);
 
@@ -17,7 +17,7 @@ public interface ChannelService {
 
     void deleteById(UUID id);
 
-    Channel joinChannel(User user, UUID channelId);
+    Channel joinChannel(UUID userID, UUID channelId);
 
-    Channel leaveChannel(User user, UUID channelId);
+    Channel leaveChannel(UUID userID, UUID channelId);
 }

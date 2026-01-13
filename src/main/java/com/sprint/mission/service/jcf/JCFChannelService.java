@@ -17,8 +17,13 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel create(User owner, String name) {
-        Channel channel = new Channel(owner, name);
+    public Channel create(UUID ownerId, String name) {
+        User owner = userService.findById(ownerId);
+
+        Channel channel = new Channel(ownerId, name);
+
+        owner.joinChannel(channel.getId());
+
         channels.put(channel.getId(), channel);
         return channel;
     }
@@ -49,16 +54,24 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel joinChannel(User user, UUID channelId) {
+    public Channel joinChannel(UUID userID, UUID channelId) {
         Channel channel = findById(channelId);
-        channel.joinUser(user);
+        channel.joinUser(userID);
+
+        User user = userService.findById(userID);
+        user.joinChannel(channelId);
+
         return channel;
     }
 
     @Override
-    public Channel leaveChannel(User user, UUID channelId) {
+    public Channel leaveChannel(UUID userID, UUID channelId) {
         Channel channel = findById(channelId);
-        channel.leaveUser(user);
+        channel.leaveUser(userID);
+
+        User user = userService.findById(userID);
+        user.leaveChannel(channelId);
+
         return channel;
     }
 

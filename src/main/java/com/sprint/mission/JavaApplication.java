@@ -11,7 +11,6 @@ import com.sprint.mission.service.jcf.JCFMessageService;
 import com.sprint.mission.service.jcf.JCFUserService;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class JavaApplication {
@@ -59,14 +58,14 @@ public class JavaApplication {
         // 현재 살아있는 유저(유리(user2), 이씨(user3), 오씨(user4), 서씨(user5), 황씨(user6), 홍씨(user7))
         // 채널 서비스 구현 테스트
         // 등록
-        Channel channel1 = channelService.create(user2, "일반1");
-        Channel channel2 = channelService.create(user3, "일반2");
-        Channel channel3 = channelService.create(user6, "일반3");
+        Channel channel1 = channelService.create(user2.getId(), "일반1");
+        Channel channel2 = channelService.create(user3.getId(), "일반2");
+        Channel channel3 = channelService.create(user6.getId(), "일반3");
 
         // 조회(단건)
         System.out.println(channelService.findById(channel1.getId()).getName());
-        System.out.println("사용자 이름: " + user2.getNickName());
-        System.out.println("방장 이름: " + channel1.getOwner().getNickName());
+        System.out.println("사용자 id: " + user2.getId());
+        System.out.println("방장 id: " + channel1.getOwnerId());
 
         // 수정 및 수정 확인
         System.out.println("채널명 수정 전: " + channel1.getName());
@@ -81,38 +80,59 @@ public class JavaApplication {
         System.out.println(channelResult);
 
         // 삭제 및 삭제확인
-        List<Channel> deleteChannels1 = channelService.findAll();
-        String deleteChannelResult1 = deleteChannels1.stream()
+        List<Channel> beforeDeleteChannels1 = channelService.findAll();
+        String deleteChannelsResult1 = beforeDeleteChannels1.stream()
                 .map(Channel::getName)
                 .collect(Collectors.joining(", ", "채널 삭제 전 : [", "]"));
-        System.out.println(deleteChannelResult1);
+        System.out.println(deleteChannelsResult1);
 
-        channelService.deleteById(channel1.getId());
+        channelService.deleteById(channel1.getId()); // 채널1 삭제
 
-        List<Channel> deleteChannels2 = channelService.findAll();
-        String deleteChannelResult2 = deleteChannels2.stream()
+        List<Channel> afterDeleteChannels2 = channelService.findAll();
+        String deleteChannelsResult2 = afterDeleteChannels2.stream()
                 .map(Channel::getName)
                 .collect(Collectors.joining(", ", "채널 삭제 후 : [", "]"));
-        System.out.println(deleteChannelResult2);
+        System.out.println(deleteChannelsResult2);
 
         // 채널에 유저 추가 및 확인
-        channelService.joinChannel(user4, channel2.getId());
-        channelService.joinChannel(user5, channel2.getId());
-        Set<User> channelUsers = channel2.getUsers();
-        String channelUsersName = channelUsers.stream()
-                .map(User::getNickName)
-                .collect(Collectors.joining(", ", "[", "]"));
-        System.out.println(channelUsersName);
+        Channel user4JoinChannel2 = channelService.joinChannel(user4.getId(), channel2.getId());
+        System.out.println("user4가 참여한 채널 id: " + user4JoinChannel2.getId());
+        boolean participated1 = user4.getChannelIds().stream()
+                .anyMatch(channelId -> channelId.equals(user4JoinChannel2.getId()));
+        if (participated1) {
+            System.out.println("user4는 " + user4JoinChannel2.getId() + "에 참가하고 있습니다.");
+        }
+
+        Channel user5JoinChannel2 = channelService.joinChannel(user5.getId(), channel2.getId());
+        System.out.println("user5가 참여한 채널 id: " + user5JoinChannel2.getId());
+        boolean participated2 = user5.getChannelIds().stream()
+                .anyMatch(channelId -> channelId.equals(user5JoinChannel2.getId()));
+        if (participated2) {
+            System.out.println("user5는 " + user5JoinChannel2.getId() + "에 참가하고 있습니다.");
+        }
 
         // 예시용 데이터 추가
-        channelService.joinChannel(user7, channel3.getId());
+        channelService.joinChannel(user7.getId(), channel3.getId());
 
-        // 채널에 유저 삭제 및 확인
-        channel2.leaveUser(user5);
-        String leaveResult = channelUsers.stream()
-                .map(User::getNickName)
-                .collect(Collectors.joining(", ", "[", "]"));
-        System.out.println(leaveResult);
+        // 유저5의 채널2 나가기 및 확인 (양방향 체크)
+        Channel user5LeaveChannel2 = channelService.leaveChannel(user5.getId(), user4JoinChannel2.getId());
+
+        // 채널2 안에 유저5가 없는지
+        boolean isUser5StillIn = user5LeaveChannel2.getUsers().stream()
+                .anyMatch(userId -> userId.equals(user5.getId()));
+        if (!isUser5StillIn) {
+            System.out.printf("채널 id: %s에 유저 id: %s가 존재하지 않습니다.%n",
+                    user5LeaveChannel2.getId(), user5.getId());
+        }
+        // 유저5가 속했던 채널2 중 방금 나갔던 채널2가 없는지
+        boolean channelRemovedFromUser = user5.getChannelIds()
+                .stream()
+                .noneMatch(channelId -> channelId.equals(user5LeaveChannel2.getId()));
+        if (channelRemovedFromUser) {
+            System.out.printf("유저 id: %s 의 채널 목록에는 채널 id: %s가 존재하지 않습니다.%n",
+                    user5.getId(), user5LeaveChannel2.getId());
+        }
+
 
         // ==================================================
 
