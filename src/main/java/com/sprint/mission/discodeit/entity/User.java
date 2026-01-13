@@ -41,4 +41,9 @@ public class User extends Common {
     public void updateMail(String mail) {
         this.mail = mail;
     }
+
+    @Override
+    public String toString() {
+        return String.format("계정ID: %s\t이름: %s\t메일: %s", getAccountId(), getName(), getMail());
+    }
 }

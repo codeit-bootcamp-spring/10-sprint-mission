@@ -46,6 +46,11 @@ public class Channel extends Common {
     public void updateDescription(String description) {
         this.description = description;
     }
+
+    @Override
+    public String toString() {
+        return String.format("채널이름: %s\t채널설명:%s", getTitle(), getDescription());
+    }
 }
 
 
