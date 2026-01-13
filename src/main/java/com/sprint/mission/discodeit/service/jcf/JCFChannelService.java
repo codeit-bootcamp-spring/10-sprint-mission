@@ -26,7 +26,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel readChannel(UUID id) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         for (Channel channel : list) {
             if(id.equals(channel.getId())){
                 return channel;
@@ -42,7 +42,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel updateChannel(UUID id, ChannelType type, String channelName, String channelDescription) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         Validators.validationChannel(type, channelName, channelDescription);
         Channel channel = validateExistenceChannel(id);
         channel.updateChannelType(type);
@@ -54,14 +54,14 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void deleteChannel(UUID id) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         Channel channel = validateExistenceChannel(id);
         list.remove(channel);
     }
 
     @Override
     public boolean isChannelDeleted(UUID id) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         for (Channel channel : list) {
             if(id.equals(channel.getId())) {
                 return false;

@@ -25,7 +25,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User readUser(UUID id) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         for (User user : list) {
             if(id.equals(user.getId())){
                 return user;
@@ -41,7 +41,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User updateUser(UUID id, String userName, String userEmail, String userPassword) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         User user = validateExistenceUser(id);
         validateDuplicationEmail(userEmail);
         Validators.validationUser(userName, userEmail, userPassword);
@@ -53,7 +53,7 @@ public class JCFUserService implements UserService {
     }
 
     public boolean isUserDeleted(UUID id) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         for (User user : list) {
             if(id.equals(user.getId())) {
                 return false;
@@ -65,7 +65,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public void deleteUser(UUID id) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         User user = validateExistenceUser(id);
         list.remove(user);
     }

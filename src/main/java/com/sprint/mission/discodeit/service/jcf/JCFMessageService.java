@@ -24,8 +24,8 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message createMessage(String content, UUID channelId, UUID userId) {
         Validators.validationMessage(content);
-        Objects.requireNonNull(channelId, "channelId는 null이 될 수 없습니다.");
-        Objects.requireNonNull(userId, "userId는 null이 될 수 없습니다.");
+        Validators.requireNonNull(channelId, "channelId는 null이 될 수 없습니다.");
+        Validators.requireNonNull(userId, "userId는 null이 될 수 없습니다.");
 
         Channel channel = channelService.validateExistenceChannel(channelId);
         User user = userService.validateExistenceUser(userId);
@@ -37,7 +37,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message readMessage(UUID id) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         for (Message message : list) {
             if (id.equals(message.getId())){
                 return message;
@@ -53,7 +53,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message updateMessage(UUID id, String content) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         Validators.validationMessage(content);
         Message message = validateExistenceMessage(id);
         message.updateContent(content);
@@ -62,13 +62,13 @@ public class JCFMessageService implements MessageService {
     }
 
     public void deleteMessage(UUID id) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         Message message = validateExistenceMessage(id);
         list.remove(message);
     }
 
     public boolean isMessageDeleted(UUID id) {
-        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         for (Message message : list) {
             if(id.equals(message.getId())) {
                 return false;
