@@ -1,85 +1,59 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
-
 public class JCFMessageService implements MessageService {
-    private final Map<UUID, Message> messageMap;
-    private final UserService userService;
-    private final ChannelService channelService;
+    private final Map<UUID, List<Message>> data;        // key: ChannelUuid
 
-    public JCFMessageService(UserService userService, ChannelService channelService){
-        this.messageMap = new HashMap<>();
-        this.userService = userService;
-        this.channelService = channelService;
+    public JCFMessageService() {
+        data = new HashMap<>();
     }
 
-    public Message createMessage(String content, UUID channelId, UUID userId){
-        Channel channel = channelService.findChannelByChannelId(channelId);
-        User user = userService.findUserById(userId);
-
-        Message newMessage = new Message(content, channel, user);
-        messageMap.put(newMessage.getId(), newMessage);
-
-        user.addMessage(newMessage);
-        channel.addMessage(newMessage);
-
-        return newMessage;
+    @Override
+    public Message createMessage(UUID channelId, UUID userId, String message) {
+        Message msg = new Message(channelId, userId, message);
+        data.computeIfAbsent(channelId, k -> new ArrayList<>()).add(msg);
+        return msg;
     }
 
-    public List<Message> findMessagesByChannelId(UUID channelId){
-        Channel channel = channelService.findChannelByChannelId(channelId);
-        return channel.getChannelMessages();
+    @Override
+    public Optional<Message> findMessage(UUID uuid) {
+        return findAllMessages().stream()
+                .filter(m -> Objects.equals(m.getId(), uuid)).findFirst();
     }
 
-    public List<Message> findMessagesByUserId(UUID userId){
-        User user = userService.findUserById(userId);
-
-        return user.getMyMessages();
+    @Override
+    public List<Message> findMessagesByChannelId(UUID uuid) {
+        return data.computeIfAbsent(uuid, k -> new ArrayList<>());
     }
 
-    public List<Message> findAllMessages(){
-        return new ArrayList<>(messageMap.values());
+    @Override
+    public List<Message> findAllMessages() {
+        return data.values().stream().flatMap(List::stream).toList();
     }
 
-    public Message findMessageById(UUID id){
-        Message message = messageMap.get(id);
-        if (message == null) {
-            throw new IllegalArgumentException("해당 메시지가 없습니다.");
-        }
-        return message;
-    }
+    @Override
+    public Message updateMessage(UUID uuid, String newMessage) {
+        Message msg = findMessage(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지입니다"));
 
-    public Message updateMessage(UUID id, String newContent){
-        Message targetMessage = findMessageById(id);
-
-        targetMessage.updateContent(newContent);
-        System.out.println("메시지가 수정되었습니다");
-
-        return targetMessage;
-    }
-
-    public void deleteMessage(UUID id){
-        Message targetMessage = findMessageById(id);
-
-        // 유저 쪽 리스트에서 삭제
-        if (targetMessage.getUser() != null) {
-            targetMessage.getUser().getMyMessages().remove(targetMessage);
-        }
-        // 채널 쪽 리스트에서 삭제
-        if (targetMessage.getChannel() != null) {
-            targetMessage.getChannel().getChannelMessages().remove(targetMessage);
+        if (!Objects.equals(msg.getMessage(), newMessage)) {
+            msg.updateMessage(newMessage);
+            msg.updateUpdatedAt();
         }
 
-        messageMap.remove(id);
-        System.out.println("메시지 삭제 완료: " + targetMessage.getContent());
+        return msg;
     }
 
+    @Override
+    public void deleteMessage(UUID uuid) {
+        Message msg = findMessage(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지입니다"));
+        for (var list : data.values()) {
+            if (list.remove(msg)) {
+                return;
+            }
+        }
+    }
 }
