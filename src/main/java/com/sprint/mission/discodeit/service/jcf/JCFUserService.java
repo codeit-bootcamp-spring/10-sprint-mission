@@ -8,7 +8,11 @@ import com.sprint.mission.discodeit.validation.ValidationMethods;
 import java.util.*;
 
 public class JCFUserService implements UserService {
-    private final Map<UUID, User> data = new HashMap<>();
+    private final Map<UUID, User> data;
+
+    public JCFUserService(Map<UUID, User> data) {
+        this.data = data;
+    }
 
     @Override
     public String toString() {
@@ -97,7 +101,7 @@ public class JCFUserService implements UserService {
     }
 
     // 특정 사용자가 참여한 모든 채널
-    public List<Channel> readAllJoinChannelsAtUserByUserId(UUID userId) {
+    public List<Channel> readUserJoinChannelsByUserId(UUID userId) {
         // User ID null 검증
         ValidationMethods.validateUserId(userId);
 
@@ -110,130 +114,147 @@ public class JCFUserService implements UserService {
         return user.getJoinChannelList().stream().toList();
     }
 
+    // 특정 사용자가 owner인 모든 채널
+    @Override
+    public List<Channel> readUserOwnChannelsByUserId(UUID userId) {
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
+
+        User user = data.get(userId);
+        // 유저 없으면 빈 리스트 반환
+        if (user == null) {
+            return Collections.emptyList();
+        }
+
+        return user.getOwnerChannelList().stream().toList();
+    }
+
     // 특정 사용자가 작성한 모든 메시지
 
 
     // U. 수정
+    // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
+    public static User validateMethods(Map<UUID, User> data, UUID requestId, UUID targetId) {
+        // request, target ID null 검증
+        ValidationMethods.validateUserId(requestId);
+        ValidationMethods.validateUserId(targetId);
+        // requestId와 targetId가 동일한지 검증
+        ValidationMethods.validateSameId(requestId, targetId);
+
+        User user = data.get(targetId);
+        ValidationMethods.existUser(user);
+
+        return user;
+    }
     // 이메일 수정
     @Override
-    public Optional<User> updateEmail(UUID userId, String email) {
-        // User ID null 검증
-        ValidationMethods.validateUserId(userId);
+    public User updateEmail(UUID requestId, UUID targetId, String email) {
         // email 검증
         ValidationMethods.validateString(email, "email");
         // 이메일 중복 확인
         ValidationMethods.duplicateEmail(data, email);
+        // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
+        User user = validateMethods(data, requestId, targetId);
 
-        return Optional.ofNullable(data.get(userId))
-                        .map(user -> {
-                            user.updateEmail(email);
-                            return user;
-                        });
+        user.updateEmail(email);
+        return user;
     }
 
     // 비밀번호 수정
     @Override
-    public Optional<User> updatePassword(UUID userId, String password) {
-        // User ID null 검증
-        ValidationMethods.validateUserId(userId);
+    public User updatePassword(UUID requestId, UUID targetId, String password) {
         // password 검증
         ValidationMethods.validateString(password, "password");
+        // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
+        User user = validateMethods(data, requestId, targetId);
 
-        return Optional.ofNullable(data.get(userId))
-                        .map(user -> {
-                            user.updatePassword(password);
-                            return user;
-                        });
+        user.updatePassword(password);
+        return user;
     }
 
     // 별명 수정
     @Override
-    public Optional<User> updateNickName(UUID userId, String nickName) {
-        // User ID null 검증
-        ValidationMethods.validateUserId(userId);
+    public User updateNickName(UUID requestId, UUID targetId, String nickName) {
+        // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
+        User user = validateMethods(data, requestId, targetId);
 
-        return Optional.ofNullable(data.get(userId))
-                        .map(user -> {
-                            user.updateNickName(nickName);
-                            return user;
-                        });
+        user.updateNickName(nickName);
+        return user;
     }
 
     // 사용자 이름 수정
     @Override
-    public Optional<User> updateUserName(UUID userId, String userName) {
-        // User ID null 검증
-        ValidationMethods.validateUserId(userId);
+    public User updateUserName(UUID requestId, UUID targetId, String userName) {
         // userName 검증
         ValidationMethods.validateString(userName, "userName");
 
-        return Optional.ofNullable(data.get(userId))
-                .map(user -> {
-                    user.updateUserName(userName);
-                    return user;
-                });
+        // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
+        User user = validateMethods(data, requestId, targetId);
+
+        user.updateUserName(userName);
+        return user;
     }
 
     // 생년월일 수정
     @Override
-    public Optional<User> updateBirthday(UUID userId, String birthday) {
-        // User ID null 검증
-        ValidationMethods.validateUserId(userId);
+    public User updateBirthday(UUID requestId, UUID targetId, String birthday) {
+        // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
+        User user = validateMethods(data, requestId, targetId);
 
-        return Optional.ofNullable(data.get(userId))
-                .map(user -> {
-                    user.updateBirthday(birthday);
-                    return user;
-                });
+        user.updateBirthday(birthday);
+        return user;
     }
 
     // 채널 참여
     @Override
-    public Optional<User> joinChannel(UUID userId, Channel channel) {
-        // User ID null 검증
-        ValidationMethods.validateUserId(userId);
-        // channel 존재 검증
+    public User joinChannel(UUID requestId, UUID targetId, Channel channel) {
+        // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
+        User user = validateMethods(data, requestId, targetId);
+        // channel null 검증
         ValidationMethods.validateObject(channel, "channel");
         // 이미 참여한 채널인지 검증
-        ValidationMethods.validateAlreadyParticipation(userId, channel);
+        ValidationMethods.validateAlreadyParticipation(targetId, channel);
 
-        return Optional.ofNullable(data.get(userId))
-                .map(user -> {
-                    user.joinChannel(channel);
-                    return user;
-                });
+        user.joinChannel(channel);
+        return user;
     }
 
     // 채널 탈퇴
     @Override
-    public Optional<User> leaveChannel(UUID userId, Channel channel) {
-        // User ID null 검증
-        ValidationMethods.validateUserId(userId);
-        // channel 존재 검증
+    public User leaveChannel(UUID requestId, UUID targetId, Channel channel) {
+        // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
+        User user = validateMethods(data, requestId, targetId);
+        // channel null 검증
         ValidationMethods.validateObject(channel, "channel");
 
-        return Optional.ofNullable(data.get(userId))
-                .map(user -> {
-                    user.leaveChannel(channel);
-                    return user;
-                });
+        user.leaveChannel(channel);
+        return user;
     }
 
     // 메시지 작성 - 수정 중...
     @Override
-    public Optional<User> writeMessage(UUID userId, String messageContent, Channel channel) {
-        // User ID null 검증
-        ValidationMethods.validateUserId(userId);
+    public User writeMessage(UUID requestId, UUID targetId, String messageContent, Channel channel) {
+        // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
+        User user = validateMethods(data, requestId, targetId);
 
-        return Optional.empty();
+        return null;
     }
 
     // D. 삭제
     @Override
-    public void deleteUser(UUID userId) {
-        // User ID null 검증
-        ValidationMethods.validateUserId(userId);
+    public void deleteUser(UUID requestId, UUID targetId) {
+        // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
+        User user = validateMethods(data, requestId, targetId);
 
-        data.remove(userId);
+        // 의존성 끊기
+        // 참여 채널에 존재하는 해당 유저 흔적 지우기
+        user.getJoinChannelList().forEach(channel -> channel.removeChannelMembers(user));
+        // owner인 채널에 존재하는 해당 유저 흔적 지우기
+        user.getOwnerChannelList().forEach(channel -> channel.removeOwner(user));
+
+        // 메시지 관련 삭제
+        // 수정 중...
+
+        data.remove(targetId);
     }
 }
