@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.ChannelPermission;
 import com.sprint.mission.discodeit.entity.PermissionTarget;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -12,6 +13,8 @@ import java.util.stream.Collectors;
 public class JCFChannelService implements ChannelService {
 
     private final Map<UUID, Channel> channelMap = new HashMap<>();
+
+    private MessageService messageService;
 
     // Create
     @Override
@@ -73,9 +76,8 @@ public class JCFChannelService implements ChannelService {
     // Delete
     @Override
     public void deleteChannel(UUID channelId) {
-        if (!channelMap.containsKey(channelId)) {
-            throw new NoSuchElementException("존재하지 않는 채널입니다. ID: " + channelId);
-        }
+        Channel channel = getChannelOrThrow(channelId);
+        messageService.deleteMessagesByAuthorId(channelId);
         channelMap.remove(channelId);
     }
 

@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class User extends BaseEntity {
     private String username; // 사용자명
@@ -16,6 +13,8 @@ public class User extends BaseEntity {
     // 멤버 클래스는 각 서버 별 별명과 역할을 가질 수 있음
     private final Set<UUID> roleIds =  new HashSet<>();
     private final UserPresence presence; // 유저의 상태 관리
+
+    private final List<Message> messages = new ArrayList<>();
 
 
     public User(String username, String nickname, String email, String phoneNumber) {
@@ -86,6 +85,12 @@ public class User extends BaseEntity {
         this.presence.toggleHeadset(isOn);
     }
 
+    // validation
+    private void validateContact(String email, String phoneNumber) {
+        if (email == null && phoneNumber == null) {
+            throw new IllegalArgumentException("이메일이나 전화번호 둘 중 적어도 하나라도 있어야 함.");
+        }
+    }
 
     // Role
     public void addRole(UUID roleId) {
@@ -97,13 +102,15 @@ public class User extends BaseEntity {
     }
 
     public boolean hasRole(UUID roleId) {
-        return roleIds != null && roleIds.contains(roleId);
+        return roleIds.contains(roleId);
     }
 
-    // validation
-    private void validateContact(String email, String phoneNumber) {
-        if (email == null && phoneNumber == null) {
-            throw new IllegalArgumentException("이메일이나 전화번호 둘 중 적어도 하나라도 있어야 함.");
-        }
+    // Message Control
+    public void addMessage(Message message) {
+        this.messages.add(message);
+    }
+
+    public List<Message> getMessages() {
+        return this.messages;
     }
 }

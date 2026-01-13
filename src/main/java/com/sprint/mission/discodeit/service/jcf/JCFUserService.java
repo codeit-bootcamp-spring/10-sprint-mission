@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
@@ -10,6 +11,7 @@ import java.util.*;
 public class JCFUserService implements UserService {
 
     private final Map<UUID, User> userMap;
+    private MessageService messageService;
 
     public JCFUserService() {
         this.userMap = new HashMap<>();
@@ -114,9 +116,8 @@ public class JCFUserService implements UserService {
     // Delete
     @Override
     public void deleteUser(UUID userId) {
-        if (!userMap.containsKey(userId)) {
-            throw new NoSuchElementException("삭제하려는 사용자를 찾을 수 없습니다. ID: " + userId);
-        }
+        User user = getUserOrThrow(userId);
+        messageService.deleteMessagesByAuthorId(userId);
         userMap.remove(userId);
     }
 

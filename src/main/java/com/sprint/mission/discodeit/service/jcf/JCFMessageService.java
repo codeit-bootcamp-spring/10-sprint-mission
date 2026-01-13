@@ -42,6 +42,9 @@ public class JCFMessageService implements MessageService {
         // 채널 마다 메시지가 저장됨
         channel.addMessage(message);
 
+        // 유저 마다 메시지가 저장됨
+        author.addMessage(message);
+
         return message;
 
     }
@@ -79,9 +82,9 @@ public class JCFMessageService implements MessageService {
     public void deleteMessage(UUID messageId) {
         Message message = messageMap.get(messageId);
 
-        if (message != null) { // 채널이 가지고 있는 메시지 리스트에서 삭제
-            Channel channel = message.getChannel();
-            channel.getMessages().remove(message);
+        if (message != null) {
+            message.getChannel().getMessages().remove(message);// 채널이 가지고 있는 메시지 리스트에서 삭제
+            message.getAuthor().getMessages().remove(message); // 유저가 가지고 있는 메시지 리스트에서 삭제
         }
 
         messageMap.remove(messageId); // 전역 메시지 맵에서 삭제
@@ -90,11 +93,21 @@ public class JCFMessageService implements MessageService {
     // 회원 탈퇴, 채널 삭제 등 메시지 전체 삭제
     @Override
     public void deleteMessagesByChannelId(UUID channelId) {
-        messageMap.values().removeIf(m -> m.getChannel().getId().equals(channelId));
+        Channel channel = channelService.findById(channelId).orElseThrow(() -> new IllegalArgumentException("해당 채널이 없습니다."));
+        channel.getMessages()
+                .stream()
+                .map(Message::getId)
+                .forEach(messageMap::remove);
+        channel.getMessages().clear();
     }
 
     @Override
     public void deleteMessagesByAuthorId(UUID authorId) {
-        messageMap.values().removeIf(m -> m.getAuthor().getId().equals(authorId));
+        User author = userService.findById(authorId).orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다."));
+        author.getMessages()
+                .stream()
+                .map(Message::getId)
+                .forEach(messageMap::remove);
+        author.getMessages().clear();
     }
 }
