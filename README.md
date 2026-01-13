@@ -1,4 +1,4 @@
-📱DiscodeIt (Java Console App)  
+📱DiscodeIt (Java Console App) v1.0.0
 DiscodeIt은 Discord의 핵심 기능을 모방하여 구현한 Java 기반의 백엔드 학습 프로젝트입니다.
 
 데이터베이스 없이 Java Collection Framework(Map)를 활용하여 인메모리(In-Memory) 저장소를 구현하였으며,   
