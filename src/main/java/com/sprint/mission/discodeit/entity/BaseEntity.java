@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import java.util.UUID;
 
 public abstract class BaseEntity {
-    // common field
+    // 식별자/생성 시각/수정 시각 공통 필드
     protected final UUID id;
     protected final Long createdAt;
     protected Long updatedAt;

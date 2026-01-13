@@ -15,7 +15,7 @@ public class JCFChannelService implements ChannelService {
 
 
     @Override
-    public void addUser(UUID userId, UUID channelId) {  //
+    public void addUser(UUID userId, UUID channelId) {  // 참여 사용자 추가
         Channel channel = findById(channelId);
         if (channel != null) {
             channel.addUser(userId);
@@ -23,9 +23,16 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void create(Channel channel) {
+    public void removeUser(UUID channelId, UUID userId) {// 참여 사용자 제거
+        Channel channel = findById(channelId);
         if (channel != null)
-            channels.put(channel.getId(), channel);
+            channel.removeUser(userId);
+    }
+
+    @Override
+    public void create(String name, String description) {
+        Channel channel = new Channel(name, description);
+        channels.put(channel.getId(), channel);
     }
 
     @Override
@@ -50,10 +57,4 @@ public class JCFChannelService implements ChannelService {
         channels.remove(id);
     }
 
-    @Override
-    public void removeUser(UUID channelId, UUID userId) {
-        Channel channel = findById(channelId);
-        if (channel != null)
-            channel.removeUser(userId);
-    }
 }

@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
@@ -31,7 +30,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void create(User user) {
+    public void create(String name, String email, String profileImageUrl) {
+        User user = new User(name, email, profileImageUrl);
         users.put(user.getId(), user);
     }
 
@@ -46,19 +46,14 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void update(UUID id, String name, String email, String profileImageUrl, String status) {
+    public void update(UUID id, String name, String email, String profileImageUrl) {
         User user = findById(id);
         if (user != null)
-            user.update(name, email, profileImageUrl, status);
+            user.update(name, email, profileImageUrl);
     }
 
     @Override
-    public void delete(UUID id) {
-        User user = findById(id);
-        if (user != null) {
-            for (UUID channelId : user.getChannelIds()) {
-            }
-            users.remove(id);
-        }
+    public void delete(UUID userId) {
+        users.remove(userId);
     }
 }

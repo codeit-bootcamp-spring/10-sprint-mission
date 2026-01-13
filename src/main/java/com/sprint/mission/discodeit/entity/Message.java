@@ -20,6 +20,7 @@ public class Message extends BaseEntity {
     public UUID getUserId() {return userId;}
     public UUID getChannelId() {return channelId;}
 
+    // 메세지 수정
     public void update(String content){
         updateTimestamp();
         this.content = content;

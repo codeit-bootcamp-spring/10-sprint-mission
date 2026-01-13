@@ -1,33 +1,28 @@
 package com.sprint.mission.discodeit.service.jcf;
-
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
 
-    // 메모리 저장소: Key는 Message의 ID, Value는 Message 객체
+    // 전체 메세지 저장
     private final Map<UUID, Message> repository = new HashMap<>();
+    // 채널 JCF 객체 저장
     private final ChannelService channelService;
 
-    public JCFMessageService(ChannelService channelService){
+    public JCFMessageService(ChannelService channelService) {
         this.channelService = channelService;
     }
 
     @Override
-    public void create(Message message) {
-        // 메시지 객체가 null이거나 ID가 없는 경우를 대비한 방어 코드
-        if (message != null && message.getId() != null) {
-            Channel channel = channelService.findById(message.getChannelId());
-
-            if (channel != null) {
-                repository.put(message.getId(), message);
-                channel.addMessage(message);
-            }
+    public void create(String content, User user, Channel channel) {    // 내용, 사용자, 채널 객체 받아서 메세지 생성
+        if (content != null && user != null && channel != null && channel.getUserIds().contains(user.getId())) {
+            Message message = new Message(content, user.getId(), channel.getId());
+            repository.put(message.getId(), message);
+            channel.addMessage(message);
         }
     }
 
@@ -48,7 +43,7 @@ public class JCFMessageService implements MessageService {
         Message message = repository.get(id);
         if (message != null) {
             // 메시지의 내용(content)을 업데이트
-            message.update(content); // Message 엔티티에 해당 메서드가 있다고 가정
+            message.update(content);
         }
     }
 
@@ -58,7 +53,7 @@ public class JCFMessageService implements MessageService {
 
         if (message != null) {
             Channel channel = channelService.findById(message.getChannelId());
-            if (channel != null){
+            if (channel != null) {
                 channel.removeMessage(id);
             }
         }

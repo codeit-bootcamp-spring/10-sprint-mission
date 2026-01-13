@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.UUID;
 
 public class Channel extends BaseEntity {
-    // enum
-    private final List<Message> messages = new ArrayList<>();
 
-    // field
-    private final List<UUID> userIds = new ArrayList<>(); // 채널에 참여한 유저 목록
+    // 채널에 속한 메세지 목록
+    private final List<Message> messages = new ArrayList<>();
+    // 채널에 참여한 유저 목록
+    private final List<UUID> userIds = new ArrayList<>();
+
     private String name;
     private String description;
 
@@ -31,7 +32,7 @@ public class Channel extends BaseEntity {
         this.description = description;
     }
 
-    // userId
+    // 유저 목록에 유저 추가
     public void addUser(UUID userId){
         if (userId == null)
             return;
@@ -39,20 +40,24 @@ public class Channel extends BaseEntity {
             this.userIds.add(userId);
     }
 
+    // 유저 목록에서 유저 삭제
     public void removeUser(UUID userId) {
             userIds.remove(userId);
     }
 
+    // 메세지 목록에 메세지 추가 + 채널 수정 시간 갱신
     public void addMessage(Message message) {
         this.messages.add(message);
-        this.updateTimestamp(); // 채널에 변화가 생겼으므로 업데이트 시간 갱신
+        this.updateTimestamp();
     }
 
+    // 메세지 목록에서 메세지 삭제 + 채널 수정 시간 갱신
     public void removeMessage(UUID messageId) {
         this.messages.removeIf(m -> m.getId().equals(messageId));
         this.updateTimestamp();
     }
 
+    // 채널 메세지 리스트 반환
     public List<Message> getMessages() {
         return Collections.unmodifiableList(messages);
     }
