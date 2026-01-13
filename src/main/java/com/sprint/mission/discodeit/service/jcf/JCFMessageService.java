@@ -49,11 +49,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message updateMessage(UUID uuid, String newMessage) {
         Message msg = findMessage(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지입니다"));
-
-        if (!Objects.equals(msg.getMessage(), newMessage)) {
-            msg.updateMessage(newMessage);
-            msg.updateUpdatedAt();
-        }
+        msg.update(newMessage);
 
         return msg;
     }

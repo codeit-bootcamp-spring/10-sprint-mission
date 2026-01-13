@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.UUID;
+import java.util.Objects;
 
 public class Message extends Common {
     private final Channel channel;
@@ -27,6 +27,13 @@ public class Message extends Common {
     }
     public void updateMessage(String message) {
         this.message = message;
+    }
+
+    public void update(String message) {
+        if (!Objects.equals(getMessage(), message)) {
+            updateMessage(message);
+            updateUpdatedAt();
+        }
     }
 
     @Override
