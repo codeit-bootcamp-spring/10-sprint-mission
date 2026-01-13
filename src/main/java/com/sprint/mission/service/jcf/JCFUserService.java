@@ -31,10 +31,11 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void updateUser(UUID id, String nickName) {
+    public User updateUser(UUID id, String nickName) {
         User user = findById(id);
         validateChangeNameExist(id, nickName);
         user.updateNickName(nickName);
+        return user;
     }
 
     @Override

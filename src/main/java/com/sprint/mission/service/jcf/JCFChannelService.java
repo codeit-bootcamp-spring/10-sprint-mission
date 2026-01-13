@@ -1,20 +1,24 @@
 package com.sprint.mission.service.jcf;
 
 import com.sprint.mission.entity.Channel;
+import com.sprint.mission.entity.User;
 import com.sprint.mission.service.ChannelService;
+import com.sprint.mission.service.UserService;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
+    private final UserService userService;
     private final Map<UUID, Channel> channels;
 
-    public JCFChannelService() {
+    public JCFChannelService(UserService userService) {
         this.channels = new HashMap<>();
+        this.userService = userService;
     }
 
     @Override
-    public Channel create(String name) {
-        Channel channel = new Channel(name);
+    public Channel create(User owner, String name) {
+        Channel channel = new Channel(owner, name);
         channels.put(channel.getId(), channel);
         return channel;
     }
@@ -31,16 +35,31 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void update(UUID id, String name) {
+    public Channel update(UUID id, String name) {
         Channel channel = findById(id);
         validateUpdateChannelNameNotExist(id, name);
         channel.updateName(name);
+        return channel;
     }
 
     @Override
     public void deleteById(UUID id) {
         validateChannelExists(id);
         channels.remove(id);
+    }
+
+    @Override
+    public Channel joinChannel(User user, UUID channelId) {
+        Channel channel = findById(channelId);
+        channel.joinUser(user);
+        return channel;
+    }
+
+    @Override
+    public Channel leaveChannel(User user, UUID channelId) {
+        Channel channel = findById(channelId);
+        channel.leaveUser(user);
+        return channel;
     }
 
     private void validateChannelExists(UUID id) {

@@ -1,16 +1,13 @@
 package com.sprint.mission.entity;
 
-import java.util.UUID;
+import java.util.List;
 
-public class User {
-    private final UUID id;
-    private final Long createdAt;
+public class User extends BaseEntity {
     private String nickName;
-    private Long updatedAt;
+    private List<Channel> channels;
 
     public User(String nickName) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        super();
         this.nickName = getValidatedTrimmedInput(nickName);
     }
 
@@ -28,22 +25,6 @@ public class User {
         if (input == null || input.isBlank()) {
             throw new IllegalArgumentException("닉네임이 비어있을 수 없습니다.");
         }
-    }
-
-    private void touch() {
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
     }
 
     public String getNickName() {

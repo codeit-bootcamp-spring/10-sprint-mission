@@ -13,7 +13,7 @@ public interface UserService {
 
     List<User> findAll();
 
-    void updateUser(UUID id, String nickName);
+    User updateUser(UUID id, String nickName);
 
     void deleteById(UUID id);
 }

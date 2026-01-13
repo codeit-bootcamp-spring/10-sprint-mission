@@ -1,22 +1,45 @@
 package com.sprint.mission.entity;
 
-import java.util.UUID;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public class Channel {
-    private UUID id;
+public class Channel extends BaseEntity {
+    private final User owner;
+    private final Set<User> users = new HashSet<>();
     private String name;
-    private Long createdAt;
-    private Long updatedAt;
+    private List<Message> messages;
 
-    public Channel(String name) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+    public Channel(User owner, String name) {
+        super();
         this.name = getValidatedTrimmedName(name);
+        this.owner = owner;
+        users.add(owner);
     }
 
     public void updateName(String name) {
         this.name = getValidatedTrimmedName(name);
         touch();
+    }
+
+    public void joinUser(User user) {
+        users.add(user);
+    }
+
+    public void leaveUser(User user) {
+        users.remove(user);
+    }
+
+    public Set<User> getUsers() {
+        return users;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public User getOwner() {
+        return owner;
     }
 
     private String getValidatedTrimmedName(String name) {
@@ -32,25 +55,5 @@ public class Channel {
 
     private String getTrimmedName(String name) {
         return name.trim();
-    }
-
-    private void touch() {
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public UUID getId() {
-        return id;
     }
 }
