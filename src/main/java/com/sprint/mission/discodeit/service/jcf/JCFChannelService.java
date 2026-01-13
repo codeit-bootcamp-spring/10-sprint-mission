@@ -13,9 +13,12 @@ public class JCFChannelService implements ChannelService {
     public JCFChannelService() {
         this.data = new ArrayList<>();
     }
+
     @Override
-    public void create(Channel channel) {
+    public Channel create(String name) {
+        Channel channel = new Channel(name);
         data.add(channel);
+        return channel;
     }
 
     @Override

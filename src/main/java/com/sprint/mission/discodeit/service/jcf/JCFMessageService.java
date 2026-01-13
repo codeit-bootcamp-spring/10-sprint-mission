@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.ArrayList;
@@ -15,9 +16,13 @@ public class JCFMessageService implements MessageService {
     public JCFMessageService() {
         this.data = new ArrayList<>();
     }
+
     @Override
-    public void create(Message message) {
+    public Message create(Channel channel, User sender, String text)
+    {
+        Message message = new Message(channel, sender, text);
         data.add(message);
+        return message;
     }
 
     @Override

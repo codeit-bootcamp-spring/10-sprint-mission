@@ -21,16 +21,13 @@ public class JavaApplication {
         System.out.println("=== [시작] 서비스 테스트 ===");
         //---------------------------------1. user---------------------------------
         // 1-1. user 등록 및 조회
-        User user1 = new User("박린", "lynnpark2003@ewha.ac.kr");
-        userService.create(user1);
+        User user1 = userService.create("박린", "lynnpark2003@ewha.ac.kr");
         System.out.println("1-1. 유저 등록 완료: " + userService.read(user1.getId()).getName());
 
-        User user2 = new User("하현상", "lynnpark2003@ewha.ac.kr");
-        userService.create(user2);
+        User user2 = userService.create("하현상", "lynnpark2003@ewha.ac.kr");
         System.out.println("1-1. 유저 등록 완료: " + userService.read(user2.getId()).getName());
 
-        User user3 = new User("강미연", "lynnpark2003@ewha.ac.kr");
-        userService.create(user3);
+        User user3 = userService.create("강미연", "lynnpark2003@ewha.ac.kr");
         System.out.println("1-1. 유저 등록 완료: " + userService.read(user3.getId()).getName());
 
         // 1-2. user 다건 조회
@@ -66,16 +63,13 @@ public class JavaApplication {
 
         //---------------------------------2. channel---------------------------------
         // 2-1. channel 등록 및 조회
-        Channel channel1 = new Channel("채널1");
-        channelService.create(channel1);
+        Channel channel1 = channelService.create("채널1");
         System.out.println("2-1. 채널 등록 완료: " + channelService.read(channel1.getId()).getName());
 
-        Channel channel2 = new Channel("채널7");
-        channelService.create(channel2);
+        Channel channel2 = channelService.create("채널2");
         System.out.println("2-1. 채널 등록 완료: " + channelService.read(channel2.getId()).getName());
 
-        Channel channel3 = new Channel("채널3");
-        channelService.create(channel3);
+        Channel channel3 = channelService.create("채널3");
         System.out.println("2-1. 채널 등록 완료: " + channelService.read(channel3.getId()).getName());
 
         // 2-2. user 다건 조회
@@ -101,14 +95,11 @@ public class JavaApplication {
 
         //---------------------------------3. message---------------------------------
         // 3-1. message 등록 및 조회
-        Message message1 = new Message(channel1, user1, "멍멍!");
-        messageService.create(message1);
+        Message message1 = messageService.create(channel1, user1, "멍멍!");
         System.out.println("3-1. 메시지 등록 완료: [" + user1.getName() + "] " + message1.getText());
 
-        Message message2 = new Message(channel1, user2, "냐옹~");
-        messageService.create(message2);
+        Message message2 = messageService.create(channel1, user2, "냐옹~");
         System.out.println("3-1. 메시지 등록 완료: [" + user2.getName() + "] " + message2.getText());
-
 
         // 3-2. message 다건 조회
         System.out.println("3-2. 메세지 다건 조회: " + "총" + messageService.readAll().size() + "개");
