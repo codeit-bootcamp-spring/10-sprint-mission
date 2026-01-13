@@ -29,9 +29,9 @@ public interface UserService {
     void toggleHeadset(UUID userId, boolean isOn);
 
     // Role Management
-    void addRoleToUser(UUID userId, Role role);
-    void removeRoleFromUser(UUID userId, Role role);
-    boolean hasRole(UUID userId, Role role);
+    void addRoleToUser(UUID userId, UUID roleId);
+    void removeRoleFromUser(UUID userId, UUID roleId);
+    boolean hasRole(UUID userId, UUID roleId);
 
     // Delete
     void deleteUser(UUID userId);

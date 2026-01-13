@@ -96,21 +96,21 @@ public class JCFUserService implements UserService {
 
     // Role Management
     @Override
-    public void addRoleToUser(UUID userId, Role role) {
+    public void addRoleToUser(UUID userId, UUID roleId) {
         User user = getUserOrThrow(userId);
-        user.addRole(role.getId());
+        user.addRole(roleId);
     }
 
     @Override
-    public void removeRoleFromUser(UUID userId, Role role) {
+    public void removeRoleFromUser(UUID userId, UUID roleId) {
         User user = getUserOrThrow(userId);
-        user.removeRole(role.getId());
+        user.removeRole(roleId);
     }
 
     @Override
-    public boolean hasRole(UUID userId, Role role) {
+    public boolean hasRole(UUID userId, UUID roleId) {
         User user = getUserOrThrow(userId);
-        return user.hasRole(role.getId());
+        return user.hasRole(roleId);
     }
 
     // Delete

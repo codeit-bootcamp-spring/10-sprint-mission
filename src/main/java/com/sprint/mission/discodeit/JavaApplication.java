@@ -34,6 +34,7 @@ public class JavaApplication {
         System.out.println("1. User (유저)");
         System.out.println("2. Channel (채널)");
         System.out.println("3. Message (메시지)");
+        System.out.println("4. Integrated (통합)");
         System.out.print(">> 선택 (번호 입력): ");
 
         String input = scanner.nextLine();
@@ -47,6 +48,9 @@ public class JavaApplication {
                 break;
             case "3":
                 testMessageDomain(userService, channelService, messageService);
+                break;
+            case "4":
+                testIntegratedDomain(userService, channelService, messageService);
                 break;
             default:
                 System.out.println("!! 잘못된 입력입니다. 프로그램을 종료합니다.");
@@ -179,10 +183,10 @@ public class JavaApplication {
 
         // 6-1. 역할 부여 및 서비스 레이어 확인
         System.out.printf(">> [Input] 역할 부여: %s (ID: %s)\n", adminRole.getRoleName(), adminId);
-        userService.addRoleToUser(targetId, adminRole);
+        userService.addRoleToUser(targetId, adminRole.getId());
 
         // 서비스의 hasRole 메서드를 통해 확인 (내부적으로 getUserOrThrow 사용)
-        boolean hasRoleResult = userService.hasRole(targetId, adminRole);
+        boolean hasRoleResult = userService.hasRole(targetId, adminRole.getId());
         System.out.println(">> [Result] userService.hasRole() 확인: " + (hasRoleResult ? "성공" : "실패"));
 
         // 6-2. 엔티티 수준에서 직접 확인
@@ -191,9 +195,9 @@ public class JavaApplication {
 
         // 6-3. 역할 회수 및 검증
         System.out.printf(">> [Input] 역할 회수: %s\n", adminRole.getRoleName());
-        userService.removeRoleFromUser(targetId, adminRole);
+        userService.removeRoleFromUser(targetId, adminRole.getId());
 
-        boolean hasRoleAfter = userService.hasRole(targetId, adminRole);
+        boolean hasRoleAfter = userService.hasRole(targetId, adminRole.getId());
         System.out.println(">> [Result] 회수 후 보유 여부: " + (hasRoleAfter ? "실패 (여전히 있음)" : "성공 (없음)"));
 
 
@@ -241,7 +245,7 @@ public class JavaApplication {
         User userNormal = userService.createUser("normal_user", "일반인", "normal@test.com", "010-3333-3333");
 
         Role managerRole = new Role("Manager");
-        userService.addRoleToUser(userAdmin.getId(), managerRole);
+        userService.addRoleToUser(userAdmin.getId(), managerRole.getId());
         System.out.println("역할 생성: " +  userAdmin.getUsername() + ", " + userAdmin.getNickname());
         System.out.println(userAdmin.getNickname() +"에게" + '"' + managerRole.getRoleName()+ '"' +"역할 부여 ");
 
@@ -452,6 +456,112 @@ public class JavaApplication {
         System.out.println("\n[SUCCESS] Message Domain Test Finished");
     }
 
+    /**
+     * 4. 도메인 종합 테스트 (Integrated Test)
+     * 시나리오: 유저/채널/권한 복합 상호작용 및 Role 삭제 시나리오 검증
+     */
+    private static void testIntegratedDomain(UserService us, ChannelService cs, MessageService ms) {
+        System.out.println("\n##################################################");
+        System.out.println("          Integrated Domain Test Start            ");
+        System.out.println("##################################################\n");
+
+        // ===============================================================
+        // [Step 1] 기초 데이터 생성 (유저 3명, 채널 2개)
+        // ===============================================================
+        System.out.println("[Step 1] 유저 및 채널 생성");
+
+        // 유저 생성
+        User memberUser = us.createUser("member_user", "1팀팀원", "m@test.com", "010-1111");
+        User adminUser = us.createUser("admin_user", "운영진", "a@test.com", "010-2222");
+        User outsiderUser = us.createUser("guest_user", "외부인", "g@test.com", "010-3333");
+
+        // 채널 생성
+        Channel publicChannel = cs.createChannel("전체게시판(공개)", true);
+        Channel privateChannel = cs.createChannel("1팀비밀게시판(비공개)", false);
+
+        System.out.println(">> 유저: 1팀팀원, 운영진, 외부인 생성 완료");
+        System.out.println(">> 채널: 전체게시판, 1팀비밀게시판 생성 완료");
+
+
+        // ===============================================================
+        // [Step 2] 권한 및 역할 부여
+        // ===============================================================
+        System.out.println("\n[Step 2] 권한 설정");
+
+        // 2-1. '1팀팀원'은 유저 ID로 직접 권한 부여
+        cs.grantPermission(privateChannel.getId(), memberUser.getId(), PermissionTarget.USER);
+        System.out.println(">> [권한부여] 1팀팀원 -> 1팀비밀게시판 (USER 권한)");
+
+        // 2-2. '운영진'은 Role을 통해 권한 부여
+        Role adminRole = new Role("SysAdmin"); // Role 객체 생성
+        us.addRoleToUser(adminUser.getId(), adminRole.getId()); // 유저에게 Role 부여
+        cs.grantPermission(privateChannel.getId(), adminRole.getId(), PermissionTarget.ROLE); // 채널에 Role 허용
+        System.out.println(">> [역할부여] 운영진 유저 -> 'SysAdmin' 역할 획득");
+        System.out.println(">> [권한부여] 'SysAdmin' 역할 -> 1팀비밀게시판 (ROLE 권한)");
+
+
+        // ===============================================================
+        // [Step 3] 1차 메시지 전송 시도 (Role 삭제 전)
+        // ===============================================================
+        System.out.println("\n[Step 3] 모든 멤버가 '1팀비밀게시판'에 메시지 전송 시도 (Role 삭제 전)");
+
+        // 예상: 팀원(O), 운영진(O), 외부인(X)
+        trySendMessage(ms, memberUser, privateChannel, "팀원입니다. 들어와지네요.");
+        trySendMessage(ms, adminUser, privateChannel, "운영진입니다. 저도 됩니다.");
+        trySendMessage(ms, outsiderUser, privateChannel, "외부인입니다. 계세요?");
+
+        //printChannelMessages(ms, privateChannel);
+        printAllMessagesInChannel(ms,  privateChannel);
+
+
+        // ===============================================================
+        // [Step 4] Role 삭제 (운영진 권한 박탈 시뮬레이션)
+        // ===============================================================
+        System.out.println("\n[Step 4] 'SysAdmin' 역할 자체를 채널 권한 목록에서 삭제");
+
+        // '운영진' 유저에게서 역할을 뺏는 게 아니라, 채널이 신뢰하던 'Role ID' 자체를 명단에서 파기함
+        cs.revokePermission(privateChannel.getId(), adminRole.getId());
+        System.out.println(">> 1팀비밀게시판: 'SysAdmin' 역할의 접근 권한이 제거되었습니다.");
+
+
+        // ===============================================================
+        // [Step 5] 2차 메시지 전송 시도 (Role 삭제 후)
+        // ===============================================================
+        System.out.println("\n[Step 5] 다시 메시지 전송 시도 (Role 삭제 후)");
+
+        // 예상: 팀원(O - 영향없음), 운영진(X - 권한 잃음), 외부인(X)
+        trySendMessage(ms, memberUser, privateChannel, "팀원입니다. 전 여전히 되는데요?");
+        trySendMessage(ms, adminUser, privateChannel, "운영진입니다. 어? 왜 안되죠?");
+        trySendMessage(ms, outsiderUser, privateChannel, "외부인입니다. 역시 안되네요.");
+
+        //printChannelMessages(ms, privateChannel);
+        printAllMessagesInChannel(ms,  privateChannel);
+
+        System.out.println("\n[SUCCESS] Integrated Domain Test Finished");
+    }
+
+    // -----------------------------------------------------------------------
+    // 테스트를 위한 헬퍼 메서드 (전송 시도 및 예외 처리)
+    // -----------------------------------------------------------------------
+    private static void trySendMessage(MessageService ms, User user, Channel channel, String content) {
+        System.out.print(">> [전송시도] " + user.getNickname() + ": ");
+        try {
+            // 실제로는 MessageService 내부나 Controller 단에서
+            // channelService.isAccessible()을 체크하고 막아야 합니다.
+            // 현재 로직상 MessageService가 권한 체크를 안 한다면 성공해버릴 수도 있습니다.
+            // (이 테스트를 통해 MessageService에 권한 체크 로직이 필요한지 검증할 수 있습니다.)
+
+            ms.sendMessage(user.getId(), channel.getId(), content);
+            System.out.println("성공 (Success)");
+        } catch (Exception e) {
+            System.out.println("실패 (" + e.getMessage() + ")"); // 권한 없음 예외 발생 예상
+        }
+    }
+
+    private static void printChannelMessages(MessageService ms, Channel ch) {
+        List<Message> msgs = ms.findAll(ch.getId());
+        System.out.println("   -> 현재 게시판 메시지 수: " + msgs.size() + "개");
+    }
     private static void printAllMessagesInChannel(MessageService ms, Channel ch) {
         // List<Message> msgs = ms.findAllByChannelId(ch.getId()); // 전체 맵에서 그 채널의 메시지 정렬
         List<Message> msgs = ms.findAll(ch.getId()); // 채널에 리스트로 메시지 들고있음
