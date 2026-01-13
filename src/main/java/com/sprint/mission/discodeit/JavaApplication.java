@@ -56,8 +56,8 @@ public class JavaApplication {
 
         //4. Message 등록
         System.out.println("\n=== Message 등록 ===");
-        Message message1 = new Message(user1.getId(), channel1.getId(), "안녕하세요! 첫 메시지입니다.");
-        Message message2 = new Message(user2.getId(), channel1.getId(), "반가워요!");
+        Message message1 = new Message(user1, channel1, "안녕하세요! 두번째 메시지입니다.");
+        Message message2 = new Message(user2, channel1, "반가워요!");
 
         messageService.create(message1);
         messageService.create(message2);
@@ -66,8 +66,8 @@ public class JavaApplication {
         System.out.println("전체 Message 조회:");
         for (Message m : messageService.findAll()) {
             System.out.println(" - " + m.getId()
-                    + ", userId=" + m.getUserId()
-                    + ", channelId=" + m.getChannelId()
+                    + ", user=" + m.getUser().getUsername()
+                    + ", channel=" + m.getChannel().getName()
                     + ", content=" + m.getContent());
         }
 
@@ -85,9 +85,9 @@ public class JavaApplication {
 
         // Message 수정
         messageService.update(message1.getId(),
-                "수정된 첫 메시지",
-                user1.getId(),
-                channel1.getId());
+                "수정된 두번째 메시지",
+                user1,
+                channel1);
         Message updatedMessage = messageService.findById(message1.getId());
         System.out.println("수정된 Message 조회: " + updatedMessage.getContent());
 

@@ -2,11 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.UUID;
 
-public class Channel {
-
-    private UUID id;
-    private final long createdAt;
-    private long updatedAt;
+public class Channel extends BaseEntity{
 
     private String name;
     private String email;

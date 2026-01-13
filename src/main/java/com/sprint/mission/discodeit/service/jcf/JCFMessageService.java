@@ -1,7 +1,9 @@
 
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.ArrayList;
@@ -38,10 +40,10 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID id, String content, UUID userId, UUID channelId) {
+    public Message update(UUID id, String content, User user, Channel channel) {
         for (Message message : data) {
             if (message.getId().equals(id)) {
-                message.update(content, userId, channelId); // Message 엔티티의 update 메서드
+                message.update(content, user, channel); // Message 엔티티의 update 메서드
                 return message;
             }
         }

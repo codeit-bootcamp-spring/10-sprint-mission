@@ -2,31 +2,27 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.UUID;
 
-public class Message {
+public class Message extends BaseEntity{
 
-    private final UUID id;
-    private final long createdAt;
-    private long updatedAt;
-
-    private UUID userId;
-    private UUID channelId;
+    private User user;
+    private Channel channel;
     private String content;
 
-    public Message(UUID userId, UUID channelId, String content) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = this.createdAt;
-
-        this.userId = userId;
-        this.channelId = channelId;
+    public Message(User user, Channel channel, String content) {
+//        this.id = UUID.randomUUID();
+//        this.createdAt = System.currentTimeMillis();
+//        this.updatedAt = this.createdAt;
+        super();
+        this.user = user;
+        this.channel = channel;
         this.content = content;
     }
 
-    public void update(String content, UUID channelId, UUID userId) {
+    public void update(String content, User user, Channel channel) {
         this.content = content;
-        this.channelId = channelId;
-        this.userId = userId;
-        this.updatedAt = System.currentTimeMillis();
+        this.user = user;
+        this.channel = channel;
+        touch(); // BaseEntity의 updatedAt 갱신
     }
 
     public UUID getId() {
@@ -41,15 +37,24 @@ public class Message {
         return updatedAt;
     }
 
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public UUID getChannelId() {
-        return channelId;
-    }
-
     public String getContent() {
         return content;
+    }
+    public User getUser() {
+        return user;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "user=" + user +
+                ", channel=" + channel +
+                ", content='" + content + '\'' +
+                '}';
     }
 }

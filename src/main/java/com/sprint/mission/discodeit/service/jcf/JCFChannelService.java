@@ -29,7 +29,7 @@ public class JCFChannelService implements ChannelService {
                 return channel;
             }
         }
-        return null; // 없으면 null (원하면 예외로 바꿔도 됨)
+        return null; //
     }
 
     @Override
