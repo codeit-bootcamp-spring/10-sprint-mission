@@ -14,7 +14,7 @@ public class Channel extends BaseEntity implements Serializable {
     private User owner; // 채널 주인
     private List<User> users;   // 채널 멤버
     private List<Message> messages; // 채널에서 주고받은 메시지들
-
+    private boolean isDm;
     public Channel(String name, IsPrivate isPrivate, User owner) {
         super(UUID.randomUUID(), System.currentTimeMillis());
         this.name = name;
@@ -80,6 +80,8 @@ public class Channel extends BaseEntity implements Serializable {
     }
 
 
+    //  + "\n대화 내용 : \n" + messages
+
     @Override
     public String toString() {
         String memberNames = users.stream()
@@ -88,7 +90,7 @@ public class Channel extends BaseEntity implements Serializable {
         String messages = this.messages.stream()
                 .map(Message::toString)
                 .collect(Collectors.joining("\n"));
-        return "채널명 : " + name + ", 공개여부 : " + isPrivate + ", 채널장 : " + owner.getName() + ", 채널 멤버 : " + memberNames + "\n대화 내용 : \n" + messages;
+        return "채널명 : " + name + ", 공개여부 : " + isPrivate + ", 채널장 : " + owner.getName() + ", 채널 멤버 : " + memberNames;
     }
 
 }

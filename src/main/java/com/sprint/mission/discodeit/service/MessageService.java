@@ -21,6 +21,8 @@ public interface MessageService {
 
     void searchMessage(UUID channelId, String msg);
 
+    UUID sendDirectMessage(UUID senderId, UUID receiverId, String content);
+
     // Delete
     void delete(UUID id);
 

@@ -2,11 +2,13 @@ package com.sprint.mission.discodeit.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.IsPrivate;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
@@ -54,6 +56,18 @@ public class JCFChannelService implements ChannelService {
     public void delete(UUID id) {
         validateExistence(data, id);
         data.remove(id);
+    }
+
+    // 채널에서 주고받은 메시지 출력
+    public void printChannelMessages(UUID channelId) {
+        Channel channel = findById(channelId);
+        System.out.println("[" + channel.getName() + "]");
+        String result = channel.getMessages().stream()
+                .map(msg -> String.format("- [%s] %s",
+                                msg.getSender().getName(),
+                                msg.getContent()))
+                .collect(Collectors.joining("\n"));
+        System.out.println(result);
     }
 
     private void validateExistence(Map<UUID, Channel> data, UUID id){

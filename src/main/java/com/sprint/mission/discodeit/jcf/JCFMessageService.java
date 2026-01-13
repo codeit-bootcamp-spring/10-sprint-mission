@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.IsPrivate;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -67,6 +68,35 @@ public class JCFMessageService implements MessageService {
             System.out.println("찾는 내용이 없습니다.");
         }
     }
+    @Override
+    public UUID sendDirectMessage(UUID senderId, UUID receiverId, String content) {
+        Channel dmChannel = getOrCreateDMChannel(senderId, receiverId);
+
+        User sender = userService.findById(senderId);
+        Message message = new Message(sender, dmChannel, content);
+
+        dmChannel.addMessage(message);
+
+        return dmChannel.getId();
+    }
+
+    private Channel getOrCreateDMChannel(UUID user1Id, UUID user2Id) {
+        User user1 = userService.findById(user1Id);
+        User user2 = userService.findById(user2Id);
+
+        return user1.getChannels().stream()
+                .filter(c -> c.getIsPrivate() == IsPrivate.PRIVATE)
+                .filter(c -> c.getUsers().size() == 2)
+                .filter(c -> c.getUsers().stream().anyMatch(u -> u.equals(user2)))
+                .findFirst()
+                .orElseGet(() -> {
+                    Channel newDmChannel = channelService.create("DM - " + user1.getName() + "-" + user2.getName(), IsPrivate.PRIVATE, user1.getId());
+                    newDmChannel.addUser(user2);
+                    return newDmChannel;
+                });
+    }
+
+
 
     @Override
     public void delete(UUID id) {

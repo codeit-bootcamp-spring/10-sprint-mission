@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.ClearMemory;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class FileChannelService extends AbstractFileService implements ChannelService, ClearMemory {
 
@@ -68,6 +69,16 @@ public class FileChannelService extends AbstractFileService implements ChannelSe
         Channel channel = findById(channelId);
         User user = userService.findById(userId);
         channel.addUser(user);
+    }
+
+    public void printChannelMessages(UUID channelId) {
+        Channel channel = findById(channelId);
+        String result = channel.getMessages().stream()
+                .map(msg -> String.format("- [%s] %s",
+                        msg.getSender().getName(),
+                        msg.getContent()))
+                .collect(Collectors.joining("\n"));
+        System.out.println(result);
     }
 
     @Override
