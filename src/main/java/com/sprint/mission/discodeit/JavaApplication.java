@@ -54,7 +54,7 @@ public class JavaApplication {
         Channel ch3 = channeldata.create("비밀 채널", "아무나 못 들어오는 채널");
         ch3.addAllowedUser(user1);
         Message ms3 = messagedata.create(user1.getId(), "몰루", ch3.getId());
-        Message ms4 = messagedata.create(user2.getId(), "몰?????????루", ch3.getId());//여기서버그남
+        //Message ms4 = messagedata.create(user2.getId(), "몰?????????루", ch3.getId());//여기서버그남
 
         System.out.println();
 
@@ -69,9 +69,6 @@ public class JavaApplication {
         channeldata.findAll().stream().forEach(System.out::println);
 
         System.out.println();
-
-
-
         //예외처리테스트
         //System.out.println(channeldata.find(UUID.randomUUID()));
     }

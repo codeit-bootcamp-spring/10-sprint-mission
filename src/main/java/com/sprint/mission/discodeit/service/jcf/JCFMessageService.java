@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {

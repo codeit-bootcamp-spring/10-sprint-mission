@@ -79,4 +79,10 @@ public class Channel extends DefaultEntity {
     public void removeAllowedUser(User user) {
         allowedUsers.remove(user);
     }
+
+    public HashSet<User> getAllowedUsers() {
+        HashSet<User> users = new HashSet<>();
+        users.addAll(allowedUsers);
+        return users;
+    }
 }
