@@ -2,12 +2,10 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFChannelService implements ChannelService {
 
@@ -44,15 +42,17 @@ public class JCFChannelService implements ChannelService {
     public void updateChannel(UUID id, ChannelType type, String channelName, String channelDescription) {
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
         validationChannel(type, channelName, channelDescription);
-        readChannel(id).updateChannelType(type);
-        readChannel(id).updateChannelName(channelName);
-        readChannel(id).updateChannelDescription(channelDescription);
+        Channel channel = validateExistenceChannel(id);
+        channel.updateChannelType(type);
+        channel.updateChannelName(channelName);
+        channel.updateChannelDescription(channelDescription);
     }
 
     @Override
     public void deleteChannel(UUID id) {
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        list.remove(readChannel(id));
+        Channel channel = validateExistenceChannel(id);
+        list.remove(channel);
     }
 
     @Override
@@ -76,5 +76,13 @@ public class JCFChannelService implements ChannelService {
         if(channelDescription.isBlank()) {
             throw new IllegalArgumentException("channelDescription에 공백을 입력할 수 없습니다.");
         }
+    }
+
+    private Channel validateExistenceChannel(UUID id) {
+        Channel channel = readChannel(id);
+        if(channel == null) {
+            throw new NoSuchElementException("채널 id가 존재하지 않습니다.");
+        }
+        return channel;
     }
 }

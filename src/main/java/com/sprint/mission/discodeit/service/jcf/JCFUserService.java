@@ -41,7 +41,7 @@ public class JCFUserService implements UserService {
     @Override
     public void updateUser(UUID id, String userName, String userEmail, String userPassword) {
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        User user = validateExistence(id);
+        User user = validateExistenceUser(id);
         validateDuplicationEmail(userEmail);
         validationUser(userName, userEmail, userPassword);
         user.updateUserName(userName);
@@ -63,7 +63,7 @@ public class JCFUserService implements UserService {
     @Override
     public void deleteUser(UUID id) {
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        User user = validateExistence(id);
+        User user = validateExistenceUser(id);
         list.remove(user);
     }
 
@@ -90,7 +90,7 @@ public class JCFUserService implements UserService {
         }
     }
 
-    private User validateExistence(UUID id) {
+    private User validateExistenceUser(UUID id) {
         User user = readUser(id);
         if(user == null) {
             throw new NoSuchElementException("유저 id가 존재하지 않습니다.");
