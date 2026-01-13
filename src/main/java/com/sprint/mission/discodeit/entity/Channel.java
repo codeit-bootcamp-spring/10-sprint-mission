@@ -29,11 +29,11 @@ public class Channel extends CommonEntity{
     }
 
     public List<Message> getMessages() {
-        return messages;
+        return List.copyOf(messages);
     }
 
     public List<User> getUsers() {
-        return users;
+        return List.copyOf(users);
     }
 
     public void updateChannelName(String channelName) {

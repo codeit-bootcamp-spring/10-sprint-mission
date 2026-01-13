@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import java.util.UUID;
 
 abstract class CommonEntity {
-    protected UUID id;
+    protected final UUID id;
     protected Long createdAt;
     protected Long updateAt;
 
