@@ -5,11 +5,13 @@ import java.util.UUID;
 public class Message extends BaseEntity{
     private String content;
     private User user;
+    private Channel channel;
 
-    public Message(User user, String content) {
+    public Message(User user, String content, Channel channel) {
         super();
         this.user = user;
         this.content = content;
+        this.channel = channel;
     }
 
     public void addUser(User user) {
@@ -28,6 +30,13 @@ public class Message extends BaseEntity{
         return user;
     }
 
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
     // 필드를 수정하는 update 함수
     public void updateContent(String content) {
         this.content = content;

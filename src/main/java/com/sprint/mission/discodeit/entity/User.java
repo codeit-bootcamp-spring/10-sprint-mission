@@ -36,18 +36,25 @@ public class User extends BaseEntity {
 
     public void addMessage(Message message, Channel channel) {
         this.messages.add(message);
-        channel.addMessage(message);
+        if (!channel.getMessageList().contains(message)) {
+            channel.addMessage(message);
+        }
         if (message.getUser() != this) {
             message.addUser(this);
+            message.setChannel(channel);
         }
     }
 
     public void removeMessage(Message message, Channel channel) {
         this.messages.remove(message);
-        channel.removeMessage(message);
         if (channel.getMessageList().contains(message)) {
             channel.removeMessage(message);
         }
+        message = null;
+    }
+
+    public boolean isInChannel(Channel channel) {
+        return this.channels.contains(channel);
     }
 
 

@@ -13,19 +13,20 @@ public class JCFChannelService implements ChannelService {
     public JCFChannelService() {
         channels = new HashMap<>();
     }
+
+    // 외부에서 객체를 받는 것 보다는 메소드 내부에서 객체 생성해서 반환
     @Override
-    public void createChannel(Channel channel) {
-        if (channel == null) {
-            throw new IllegalArgumentException("생성하고자 하는 메시지가 null일 수 없음");
+    public Channel createChannel(String channelName) {
+        if (channelName == null) {
+            throw new IllegalArgumentException("생성하고자하는 채널의 채널명이 null일 수 없음");
         }
+        Channel channel = new Channel(channelName);
         channels.put(channel.getId(), channel);
+        return channel;
     }
 
     @Override
     public Channel findById(UUID id) {
-        if (id == null) {
-            throw new IllegalArgumentException("찾고자 하는 채널의 id가 null일 수 없음");
-        }
         Channel channel = channels.get(id);
         if (channel == null) {
             throw new IllegalStateException("해당 id의 채널을 찾을 수 없음");
@@ -39,12 +40,13 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void updateById(UUID id, String newChannelName) {
-        Channel targetChannel = findById(id);
+    public Channel updateById(UUID id, String newChannelName) {
         if (newChannelName == null) {
             throw new IllegalStateException("업데이트하고자 하는 채널의 채널명이 null일 수 없음");
         }
+        Channel targetChannel = findById(id);
         targetChannel.setChannelName(newChannelName);
+        return targetChannel;
     }
 
     // 채널 삭제시 유저, 메시지 ??
@@ -52,12 +54,5 @@ public class JCFChannelService implements ChannelService {
     public void deleteById(UUID id) {
         findById(id);
         channels.remove(id);
-    }
-
-    @Override
-    public void printAllChannels() {
-        for (Channel channel : channels.values()) {
-            System.out.println(channel);
-        }
     }
 }

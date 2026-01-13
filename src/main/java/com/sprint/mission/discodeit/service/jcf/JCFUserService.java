@@ -12,19 +12,19 @@ public class JCFUserService implements UserService {
         users = new HashMap<>();
     }
 
+    // 외부에서 객체를 받는 것 보다는 메소드 내부에서 객체 생성해서 반환
     @Override
-    public void createUser(User user) {
-        if (user == null) {
-            throw new IllegalArgumentException("생성하고자 하는 유저가 null일 수 없음");
+    public User createUser(String userName) {
+        if (userName == null) {
+            throw new IllegalArgumentException("생성하고자 하는 유저의 이름이 null일 수 없음");
         }
+        User user = new User(userName);
         users.put(user.getId(), user);
+        return user;
     }
 
     @Override
     public User findById(UUID id) {
-        if (id == null) {
-            throw new IllegalArgumentException("찾고자 하는 유저의 id는 null 일 수 없음");
-        }
         User user = users.get(id);
         if (user == null) {
             throw new IllegalStateException("해당 id의 사용자를 찾을 수 없음");
@@ -38,12 +38,13 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void updateById(UUID id, String newUserName) {
+    public User updateById(UUID id, String newUserName) {
         User targetUser = findById(id);
         if (newUserName == null) {
             throw new IllegalArgumentException("변경 하려는 유저의 이름이 null일 수 없음");
         }
         targetUser.setUserName(newUserName);
+        return targetUser;
     }
 
     @Override
@@ -52,10 +53,4 @@ public class JCFUserService implements UserService {
         users.remove(id);
     }
 
-    @Override
-    public void printAllUsers() {
-        for (User user : users.values()) {
-            System.out.println(user);
-        }
-    }
 }

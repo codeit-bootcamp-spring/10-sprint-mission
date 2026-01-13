@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface ChannelService {
     // 생성
-    void createChannel(Channel channel);
+    Channel createChannel(String channelName);
 
     // 읽기
     Channel findById(UUID id);
@@ -16,11 +16,9 @@ public interface ChannelService {
     List<Channel> findAll();
 
     // 수정
-    void updateById(UUID id, String newChannelName);
+    Channel updateById(UUID id, String newChannelName);
 
     // 삭제
     void deleteById(UUID id);
-
-    void printAllChannels();
 
 }
