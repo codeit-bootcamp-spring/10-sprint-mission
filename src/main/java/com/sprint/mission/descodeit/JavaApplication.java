@@ -22,10 +22,13 @@ public class JavaApplication {
         // 유저 생성
         User user1 = userService.create("김현재");
         User user2 = userService.create("기면재");
+        // 친구 추가
+        userService.addFriend(user1.getId(), user2.getId());
 
         //채널 생성
         Channel channel1 = channelService.create("스프린트");
         Channel channel2 = channelService.create("코드잇");
+        // 채널 참여
         channelService.joinUsers(channel1.getId(), user1.getId(),user2.getId());
         channelService.joinUsers(channel2.getId(), user1.getId());
 
@@ -48,18 +51,25 @@ public class JavaApplication {
         test(() -> messageService.findMessage(message2.getId()));
         messageService.findAllMessages();
 
+        test(() -> userService.findFriends(user1.getId()));
+        test(() -> userService.findFriends(user2.getId()));
+
+        test(() -> messageService.findMessageByKeyword(channel1.getId(), "안녕"));
+
         System.out.println("");
 
         System.out.println("--- 수정&조회 ---");
         // 수정 & 조회
-        userService.update(user1.getId(), "현재");
+
+        test(() -> userService.update(user1.getId(), "현재"));
         test(() -> userService.findUser(user1.getId()));
 
-        channelService.update(channel1.getId(), "코드잇");
+        test(() -> channelService.update(channel1.getId(), "코드잇"));
         test(() -> channelService.findChannel(channel1.getId()));
 
 
-        messageService.update(message1.getId(), "Hello");
+        test(() -> messageService.update(message1.getId(), user1.getId(), "Hello"));
+        test(() -> messageService.update(message1.getId(), user2.getId(), "Hi"));
         test(() -> messageService.findMessage(message1.getId()));
         userService.findAllUsers();
         messageService.findAllMessages();

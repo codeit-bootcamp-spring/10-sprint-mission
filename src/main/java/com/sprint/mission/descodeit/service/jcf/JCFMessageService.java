@@ -53,9 +53,28 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID messageId, String newText) {
+    public List<Message> findMessageByKeyword(UUID channelId, String keyword) {
+        Channel channel = channelService.findChannel(channelId);
+        List<Message> messageList = data.values().stream()
+                .filter(message -> message.getChannel().getId().equals(channelId))
+                .filter(message -> message.getText().contains(keyword))
+                .toList();
+        System.out.println(channel+"채널의 " + "[" + keyword + "]를 포함한 메시지 조회");
+        for(Message message : messageList){
+            System.out.println(message);
+        }
+        System.out.println();
+        return messageList;
+    }
+
+    @Override
+    public Message update(UUID messageId,UUID requestUserId, String newText) {
         Message message = findMessage(messageId);
+        if(!requestUserId.equals(message.getUser().getId())){
+            throw new IllegalStateException("수정할 권한이 없습니다");
+        }
         message.updateMessage(newText);
+        System.out.println("수정완료!");
         return message;
     }
 

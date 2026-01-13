@@ -43,6 +43,19 @@ public class JCFUserService implements UserService {
     }
 
     @Override
+    public List<User> findFriends(UUID userId) {
+        User user = findUser(userId);
+        List<User> friendsList = user.getFriendsList();
+
+        System.out.println(" -- 친구 목록 조회 --");
+        for(User friend : friendsList){
+            System.out.println(friend);
+        }
+        System.out.println();
+        return friendsList;
+    }
+
+    @Override
     public User addFriend(UUID senderId, UUID receiverId) {
         User sender = data.get(senderId);
         User receiver = data.get(receiverId);

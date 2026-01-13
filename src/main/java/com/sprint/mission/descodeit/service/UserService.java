@@ -9,6 +9,7 @@ public interface UserService {
     User findUser(UUID userId);
     List<User> findAllUsers();
     User addFriend(UUID userId1, UUID userId2);
+    List<User> findFriends(UUID userId);
     User update(UUID userId, String newName);
     void delete(UUID userId);
 }

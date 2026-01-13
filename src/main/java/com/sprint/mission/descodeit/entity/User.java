@@ -48,7 +48,7 @@ public class User extends BaseEntity{
 
     public void addFriend(User user){
         this.friendsList.add(user);
-        if(user.getFriendsList() != this){
+        if(!user.getFriendsList().contains(this)){
             user.addFriend(this);
         }
     }
