@@ -9,11 +9,13 @@ import java.util.UUID;
 
 public class JCFUserService implements UserService {
     private final List<User> users =  new ArrayList<>();
-    // 이메일 중복 시 예외를 던져 가입 중단 (Fail-Fast)
+
     @Override
-    public void create(User user) {
-        validateDuplicateEmail(user.getUserEmail());
-        users.add(user);
+    public User create(String userName, String userEmail) {
+        validateDuplicateEmail(userEmail);
+        User newUser = new User(userName, userEmail);
+        users.add(newUser);
+        return newUser;
     }
 
     @Override
@@ -30,15 +32,10 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void update(UUID uuid, User entity) {
-        User existing = findById(uuid);
-
-        for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getId().equals(uuid)) {
-                users.set(i, entity);
-                return;
-            }
-        }
+    public User update(UUID id, String userNickname) {
+        User user = findById(id);
+        user.updateNickname(userNickname);
+        return user;
     }
 
     @Override
@@ -49,14 +46,14 @@ public class JCFUserService implements UserService {
 
 
     // 이메일 중복 시 예외를 던져 가입 중단 (Fail-Fast)
-    private void validateDuplicateEmail(String email) {
+    private void validateDuplicateEmail(String userEmail) {
 
         boolean exists = users.stream()
                 .anyMatch(existingUser ->
                         existingUser.getUserEmail()
-                                .equals(email));
+                                .equals(userEmail));
         if (exists) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + email);
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + userEmail);
         }
     }
 }

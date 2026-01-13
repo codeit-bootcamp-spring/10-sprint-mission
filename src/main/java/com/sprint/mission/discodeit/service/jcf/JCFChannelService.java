@@ -2,17 +2,26 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
+    private final UserService userService;
     private final List<Channel> channels = new ArrayList<>();
 
+    // 채널 참여, 퇴장을 위해 userService 참조
+    public JCFChannelService(UserService userService) {
+        this.userService = userService;
+    }
+
     @Override
-    public void create(Channel entity) {
-        channels.add(entity);
+    public Channel create(String channelName) {
+        Channel newChannel = new Channel(channelName);
+        channels.add(newChannel);
+        return newChannel;
     }
 
     @Override
@@ -23,27 +32,35 @@ public class JCFChannelService implements ChannelService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다. ID: "  + uuid));
     }
 
-
     @Override
     public List<Channel> findAll() {
         return new ArrayList<>(channels);
     }
 
     @Override
-    public void update(UUID uuid, Channel entity) {
-        findById(uuid);
-
-        for (int i = 0; i < channels.size(); i++) {
-            if (channels.get(i).getId().equals(uuid)) {
-                channels.set(i, entity);
-                return;
-            }
-        }
+    public Channel update(UUID id, String updateChannelName) {
+        Channel updateChannel = findById(id);
+        updateChannel.updateChannel(updateChannelName);
+        return updateChannel;
     }
 
     @Override
     public void delete(UUID uuid) {
         Channel channel = findById(uuid);
         channels.remove(channel);
+    }
+
+    @Override
+    public void joinUser(UUID channelId, UUID userId) {
+        Channel channel = findById(channelId);
+        userService.findById(userId);
+        channel.join(userId);
+    }
+
+    @Override
+    public void leaveUser(UUID channelId, UUID userId) {
+        Channel channel = findById(channelId);
+        userService.findById(userId);
+        channel.leave(userId);
     }
 }

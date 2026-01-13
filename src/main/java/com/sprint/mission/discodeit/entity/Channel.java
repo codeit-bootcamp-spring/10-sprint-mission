@@ -1,7 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 public class Channel extends BaseEntity {
     private String channelName;
+    private final Set<UUID> memberIds = new HashSet<>();
 
     public Channel(String channelName) {
         validateChannel(channelName);
@@ -12,6 +17,20 @@ public class Channel extends BaseEntity {
         validateChannel(channelName);
         this.channelName = channelName;
         super.update();
+    }
+
+    // 채널 참여
+    public void join(UUID userId) {
+        if (userId == null) throw new IllegalArgumentException("참여할 유저 ID가 필요합니다.");
+        if (memberIds.contains(userId)) throw new IllegalArgumentException("이미 채널에 참여 중인 유저입니다.");
+        memberIds.add(userId);
+    }
+
+    // 채널 퇴장
+    public void leave(UUID userId) {
+        if (userId == null) throw new IllegalArgumentException("퇴장할 유저 ID가 필요합니다.");
+        if (memberIds.contains(userId)) throw new IllegalArgumentException("채널에 참여하지 않은 유저는 나갈 수 없습니다.");
+        memberIds.remove(userId);
     }
 
     // 채널 생성 및 수정 시 준수해야 할 비즈니스 정책 (Fail-Fast)
@@ -30,5 +49,9 @@ public class Channel extends BaseEntity {
 
     public String getChannelName() {
         return channelName;
+    }
+
+    public Set<UUID> getMemberIds() {
+        return new HashSet<>(memberIds);
     }
 }

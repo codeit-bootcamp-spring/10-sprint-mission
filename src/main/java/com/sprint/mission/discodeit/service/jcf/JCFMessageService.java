@@ -23,17 +23,17 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void create(UUID userId, UUID channelId, String content) {
+    public Message create(UUID userId, UUID channelId, String content) {
         User user = userService.findById(userId);
         Channel channel = channelService.findById(channelId);
 
+        if (channel.getMemberIds().contains(userId)) {
+            throw new IllegalStateException("해당 채널에 속해 있지 않으므로 메세지를 보낼 수 없습니다.");
+        }
+
         Message message = new Message(user, channel, content);
         messages.add(message);
-    }
-
-    @Override
-    public void create(Message entity) {
-        throw new UnsupportedOperationException("Message는 유저와 채널 ID를 통한 생성을 권장합니다.");
+        return message;
     }
 
     @Override
@@ -50,8 +50,10 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void update(UUID uuid, Message entity) {
-        Message message = findById(uuid);
+    public Message update(UUID id, String content) {
+        Message updateContent = findById(id);
+        updateContent.updateMessage(content);
+        return updateContent;
     }
 
     @Override
