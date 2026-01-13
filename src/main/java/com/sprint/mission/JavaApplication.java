@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class JavaApplication {
     public static void main(String[] args) {
@@ -68,6 +69,23 @@ public class JavaApplication {
                 .forEach(
                         u -> System.out.println("id : " + u.getId() + ", name : " + u.getUserName())
                 );
+
+        // 중복 생성
+        try {
+            userService.createUser("user3", "4567", "");
+            userService.createUser("user3", "4567", "");
+            System.out.println("중복 처리 테스트 실패");
+        } catch (IllegalStateException e) {
+            System.out.println("중복 처리 테스트 성공");
+        }
+
+        // 없는 사용자 조회
+        try {
+            userService.getUser(java.util.UUID.randomUUID());
+            System.out.println("없는 사용자 조회 테스트 실패");
+        } catch (NoSuchElementException e) {
+            System.out.println("없는 사용자 조회 테스트 성공");
+        }
     }
 
     private static void channelServiceTest() {
@@ -115,6 +133,23 @@ public class JavaApplication {
                 .forEach(
                         c -> System.out.println("id : " + c.getId() + ", name : " + c.getChannelName())
                 );
+
+        // 채널 중복 테스트
+        try {
+            channelService.createChannel("channel2", ChannelType.PUBLIC, "channel2 description 중복");
+            channelService.createChannel("channel2", ChannelType.PUBLIC, "channel2 description 중복");
+            System.out.println("중복 처리 테스트 실패");
+        } catch (IllegalStateException e) {
+            System.out.println("중복 처리 테스트 성공");
+        }
+
+        // 없는 채널 조회
+        try {
+            Channel notFound = channelService.getChannel(java.util.UUID.randomUUID());
+            System.out.println("없는 채널 조회 테스트 실패");
+        } catch (NoSuchElementException e) {
+            System.out.println("없는 채널 조회 테스트 성공");
+        }
     }
 
     private static void messageServiceTest() {
@@ -160,8 +195,16 @@ public class JavaApplication {
                 .stream()
                 .forEach(
                         m -> System.out.println("content : " + m.getContent()
-                                + ", channel : " + m.getChannel().getChannelName() + ", sender : " + m.getSender())
+                                + ", channel : " + m.getChannel().getChannelName() + ", sender name : " + m.getSender().getUserName())
                 );
+
+        // 없는 메세지 조회
+        try {
+            Message notFound = messageService.getMessage(java.util.UUID.randomUUID());
+            System.out.println("없는 메세지 조회 테스트 실패");
+        } catch (NoSuchElementException e) {
+            System.out.println("없는 메세지 조회 테스트 성공");
+        }
     }
 
     private static void printN(String message) {
