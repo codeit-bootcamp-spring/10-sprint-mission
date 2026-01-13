@@ -21,16 +21,12 @@ public class JCFMessageService implements MessageService {
         // 데이터에 객체 추가
         data.put(message.getId(), message);
 
-        // 채널과 유저 객체에 해당 메시지 객체를 저장
-        user.addMessage(message);
-        channel.addMessage(message);
-
         return message;
     }
 
     @Override
-    public Message findMessage(UUID messageID) {
-        Message message = Optional.ofNullable(data.get(messageID))
+    public Message findMessage(UUID messageId) {
+        Message message = Optional.ofNullable(data.get(messageId))
                 .orElseThrow(()-> new NoSuchElementException("해당 메시지를 찾을 수 없습니다"));
         return message;
     }
@@ -46,19 +42,19 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID messageID, String newText) {
-        Message message = findMessage(messageID);
+    public Message update(UUID messageId, String newText) {
+        Message message = findMessage(messageId);
         message.updateMessage(newText);
         return message;
     }
 
     @Override
-    public boolean delete(UUID messageID) {
-        Message message = data.get(messageID);
+    public void delete(UUID messageId) {
+        Message message = data.get(messageId);
 
         // 데이터가 없으면 예외를 던지는 대신 false를 즉시 리턴
         if (message == null) {
-            return false;
+            return;
         }
 
         // 해당 메시지가 속했던 유저와 채널에서 메시지 정보 삭제
@@ -69,8 +65,6 @@ public class JCFMessageService implements MessageService {
         channel.getMessageList().remove(message);
 
         //데이터에서도 삭제
-        data.remove(messageID);
-
-        return true;
+        data.remove(messageId);
     }
 }

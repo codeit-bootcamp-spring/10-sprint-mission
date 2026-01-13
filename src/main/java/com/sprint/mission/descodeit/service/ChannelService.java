@@ -8,9 +8,9 @@ import java.util.*;
 
 public interface ChannelService {
     Channel create(String name);
-    Channel joinUsers(UUID channelID,UUID ...userID);
-    Channel findChannel(UUID channelID);
+    Channel joinUsers(UUID channelId,UUID ...userId);
+    Channel findChannel(UUID channelId);
     List<Channel> findAllChannel();
-    Channel update(UUID channelID, String newName);
-    boolean delete(UUID channelID);
+    Channel update(UUID channelId, String newName);
+    void delete(UUID channelId);
 }

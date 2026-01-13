@@ -29,20 +29,21 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel joinUsers(UUID channelID, UUID ... userID) {
-        Channel channel = findChannel(channelID);
+    public Channel joinUsers(UUID channelId, UUID ... userId) {
+        Channel channel = findChannel(channelId);
 
         // 유저 추가
-        for(UUID id : userID){
-            channel.addUsers(userService.findUser(id));
-            userService.findUser(id).addChannel(channel);
+        for(UUID id : userId){
+            User user = userService.findUser(id);
+            channel.addUsers(user);
+            user.addChannel(channel);
         }
         return channel;
     }
 
     @Override
-    public Channel findChannel(UUID channelID) {
-        Channel channel = Optional.ofNullable(data.get(channelID))
+    public Channel findChannel(UUID channelId) {
+        Channel channel = Optional.ofNullable(data.get(channelId))
                 .orElseThrow(()->new NoSuchElementException("해당 채널을 찾을 수 없습니다"));
         return channel;
     }
@@ -58,15 +59,15 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(UUID channelID, String newName) {
-        Channel channel = findChannel(channelID);
+    public Channel update(UUID channelId, String newName) {
+        Channel channel = findChannel(channelId);
         channel.updateChannel(newName);
         return channel;
     }
 
     @Override
-    public boolean delete(UUID channelID) {
-        Channel channel = findChannel(channelID);
+    public void delete(UUID channelId) {
+        Channel channel = findChannel(channelId);
 
         // 채널이 삭제될때 이 채널이 속해있는 유저의 채널리스트에서 채널 삭제
         for(User user : channel.getUserList()){
@@ -76,9 +77,7 @@ public class JCFChannelService implements ChannelService {
         for(Message message : new ArrayList<>(channel.getMessageList())){
             messageService.delete(message.getId());
         }
-        data.remove(channelID);
-
-        return true;
+        data.remove(channelId);
     }
 }
 

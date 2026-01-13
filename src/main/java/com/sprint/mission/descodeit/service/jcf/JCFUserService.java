@@ -26,8 +26,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User findUser(UUID userID) {
-        User user = Optional.ofNullable(data.get(userID))
+    public User findUser(UUID userId) {
+        User user = Optional.ofNullable(data.get(userId))
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자를 찾을 수 없습니다"));
         return user;
     }
@@ -43,15 +43,15 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userID,String newName) {
-        User user = findUser(userID);
+    public User update(UUID userId,String newName) {
+        User user = findUser(userId);
         user.updateUser(newName);
         return user;
     }
 
     @Override
-    public boolean delete(UUID userID) {
-        User user = findUser(userID);
+    public void delete(UUID userId) {
+        User user = findUser(userId);
 
         // 유저 삭제시 유저가 속한 채널의 유저 리스트에서 삭제
         List<Channel> channelList = user.getChannelList();
@@ -64,8 +64,7 @@ public class JCFUserService implements UserService {
             messageService.delete(message.getId());
         }
 
-        data.remove(userID);
-        return true;
+        data.remove(userId);
     }
 
 

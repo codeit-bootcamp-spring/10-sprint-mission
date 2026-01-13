@@ -10,6 +10,9 @@ public class Message extends BaseEntity{
         this.user = user;
         this.text = text;
         this.channel = channel;
+
+        if(this.user != null) user.addMessage(this);
+        if(this.channel != null) channel.addMessage(this);
     }
 
     public User getUser(){
