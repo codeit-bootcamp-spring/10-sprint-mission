@@ -23,17 +23,15 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message find(UUID id) {
         return messages.stream()
-                .filter(message -> message.getId().equals(id))
+                .filter(message -> id.equals(message.getId()))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Channel not found: id = " + id));
+                .orElseThrow(() -> new RuntimeException("Message not found: id = " + id));
     }
 
     @Override
     public HashSet<Message> findAll() {
         HashSet<Message> newMessages = new HashSet<>();
-        for(Message message : messages){
-            newMessages.add(message);
-        }
+        newMessages.addAll(messages);
         return newMessages;
     }
 

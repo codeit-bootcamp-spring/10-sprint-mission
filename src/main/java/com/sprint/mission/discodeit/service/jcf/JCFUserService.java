@@ -20,18 +20,16 @@ public class JCFUserService implements UserService {
     @Override
     public User find(UUID id) {
         return users.stream()
-                .filter(user -> user.getId() == id)
+                .filter(user -> id.equals(user.getId()))
                 .findFirst()
-                .orElseThrow(() -> {throw new RuntimeException("Channel not found: id = " + id);}
+                .orElseThrow(() -> {throw new RuntimeException("User not found: id = " + id);}
                 );
     }
 
     @Override
     public HashSet<User> findAll() {
         HashSet<User> newUsers = new HashSet<>();
-        for(User user : users){
-            newUsers.add(user);
-        }
+        newUsers.addAll(users);
         return newUsers;
     }
 

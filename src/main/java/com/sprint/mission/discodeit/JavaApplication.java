@@ -22,10 +22,8 @@ public class JavaApplication {
         Channel ch1 = channeldata.create("코딩", "코딩 관련해서 이야기 하는 채널");
         Channel ch2 = channeldata.create("마인크래프트", "마인크래프트 이야기 하는 채널");
 
-        Message mes1 = new Message(user1, "이게 뭐지", ch1);
-        Message mes2 = new Message(user2, "그게 먼데", ch1);
-        messagedata.create(user1, "이게 뭐지", ch1);
-        messagedata.create(user2, "그게 뭔데", ch1);
+        Message mes1 = messagedata.create(user1, "이게 뭐지", ch1);
+        Message mes2 = messagedata.create(user2, "그게 뭔데", ch1);
 
         //불러오기
 
@@ -45,7 +43,7 @@ public class JavaApplication {
         userdata.update(user2.getId(), "초코유");
         messagedata.findAll().stream().forEach(System.out::println);
 
-        channeldata.updateDesc(ch1.getId(), "코딩 하는 채널");
+        channeldata.update(ch1.getId(), null, "코딩 하는 채널");
         channeldata.findAll().stream().forEach(System.out::println);
 
         //삭제하기, 조회
@@ -59,6 +57,6 @@ public class JavaApplication {
         channeldata.findAll().stream().forEach(System.out::println);
 
         //예외처리테스트
-        System.out.println(channeldata.find(UUID.randomUUID()));
+        //System.out.println(channeldata.find(UUID.randomUUID()));
     }
 }

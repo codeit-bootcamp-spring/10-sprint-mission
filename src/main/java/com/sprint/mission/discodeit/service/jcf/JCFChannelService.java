@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
@@ -21,7 +22,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel find(UUID id) {
         return channels.stream()
-                .filter(channel -> channel.getId().equals(id))
+                .filter(channel -> id.equals(channel.getId()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Channel not found: id = " + id));
     }
@@ -29,9 +30,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public HashSet<Channel> findAll() {
         HashSet<Channel> newChannels = new HashSet<>();
-        for(Channel channel : channels){
-            newChannels.add(channel);
-        }
+        newChannels.addAll(channels);
         return newChannels;
     }
 
@@ -49,15 +48,14 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel updateName(UUID id, String name) {
-        this.find(id)
-                .updateChannelName(name);
-        return this.find(id);
-    }
-
-    public Channel updateDesc(UUID id, String desc) {
-        this.find(id)
-                .updateChannelDescription(desc);
-        return this.find(id);
+    public Channel update(UUID id, String name, String desc) {
+        Channel willUpdate = this.find(id);
+        Optional.ofNullable(name)
+                .ifPresent(channel -> willUpdate
+                        .updateChannelName(name));
+        Optional.ofNullable(desc)
+                .ifPresent(channel -> willUpdate
+                        .updateChannelDescription(desc));
+        return willUpdate;
     }
 }
