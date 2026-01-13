@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.validation.ValidationMethods;
 
 import java.util.*;
 
@@ -22,24 +23,13 @@ public class JCFUserService implements UserService {
     // C. 생성: User 생성 후 User 객체 반환
     @Override
     public User createUser(String email, String nickName, String userName, String password, String birthday) {
-        // 이메일 검증
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("이메일이 입력되지 않았습니다.");
-        }
-        // 이메일 중복인지 확인
-        data.values().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findAny()
-                .ifPresent(user -> {
-                    throw new IllegalStateException("동일한 이메일이 존재합니다");
-                });
+        // email 검증
+        ValidationMethods.validateString(email, "email");
+        // 이메일 중복 확인
+        ValidationMethods.duplicateEmail(data, email);
         // userName, password 검증
-        if (userName == null || userName.isBlank()) {
-            throw new IllegalArgumentException("userName이 입력되지 않았습니다.");
-        }
-        if (password == null || password.isBlank()) {
-            throw new IllegalArgumentException("비밀번호가 입력되지 않았습니다.");
-        }
+        ValidationMethods.validateString(userName, "userName");
+        ValidationMethods.validateString(password, "password");
 
         User user = new User(email, nickName, userName, password, birthday);
         data.put(user.getId(), user);
@@ -50,13 +40,10 @@ public class JCFUserService implements UserService {
     // 이메일+비번(로그인?)
     @Override
     public Optional<User> readUserByEmailAndPw(String email, String password) {
-        // 입력된 이메일과 비밀번호가 유효한 값인지 확인
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("이메일이 입력되지 않았습니다.");
-        }
-        if (password == null || password.isBlank()) {
-            throw new IllegalArgumentException("비밀번호가 입력되지 않았습니다.");
-        }
+        // email, password 검증
+        ValidationMethods.validateString(email, "email");
+        ValidationMethods.validateString(password, "password");
+
         return data.values().stream()
                 .filter(user -> user.getEmail().equals(email))
                 .filter(user -> user.getPassword().equals(password))
@@ -66,8 +53,8 @@ public class JCFUserService implements UserService {
     // 본인?
     @Override
     public Optional<User> readUserById(UUID userId) {
-        // 입력된 UUID가 null인지 확인(null이면 NPE+message)
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
 
         return Optional.ofNullable(data.get(userId));
     }
@@ -90,8 +77,8 @@ public class JCFUserService implements UserService {
 
     // 특정 사용자가 참여한 모든 채널
     public List<Channel> readAllJoinChannelsAtUserByUserId(UUID userId) {
-        // UUID가 null인지 확인
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
 
         User user = data.get(userId);
         // 유저 없으면 빈 리스트 반환
@@ -109,19 +96,12 @@ public class JCFUserService implements UserService {
     // 이메일 수정
     @Override
     public Optional<User> updateEmail(UUID userId, String email) {
-        // UUID null인지 확인
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
-        // 이메일이 빈 문자열인지 null인지 확인
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("이메일이 입력되지 않았습니다.");
-        }
-        // 중복된 이메일인지 확인
-        data.values().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findAny()
-                .ifPresent(user -> {
-                    throw new IllegalStateException();
-                });
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
+        // email 검증
+        ValidationMethods.validateString(email, "email");
+        // 이메일 중복 확인
+        ValidationMethods.duplicateEmail(data, email);
 
         return Optional.ofNullable(data.get(userId))
                         .map(user -> {
@@ -133,12 +113,10 @@ public class JCFUserService implements UserService {
     // 비밀번호 수정
     @Override
     public Optional<User> updatePassword(UUID userId, String password) {
-        // UUID null인지 확인
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
-        // 이메일이 빈 문자열인지 null인지 확인
-        if (password == null || password.isBlank()) {
-            throw new IllegalArgumentException("비밀번호가 입력되지 않았습니다.");
-        }
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
+        // password 검증
+        ValidationMethods.validateString(password, "password");
 
         return Optional.ofNullable(data.get(userId))
                         .map(user -> {
@@ -150,8 +128,8 @@ public class JCFUserService implements UserService {
     // 별명 수정
     @Override
     public Optional<User> updateNickName(UUID userId, String nickName) {
-        // UUID null인지 확인
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
 
         return Optional.ofNullable(data.get(userId))
                         .map(user -> {
@@ -163,8 +141,10 @@ public class JCFUserService implements UserService {
     // 사용자 이름 수정
     @Override
     public Optional<User> updateUserName(UUID userId, String userName) {
-        // UUID null인지 확인
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
+        // userName 검증
+        ValidationMethods.validateString(userName, "userName");
 
         return Optional.ofNullable(data.get(userId))
                 .map(user -> {
@@ -176,8 +156,8 @@ public class JCFUserService implements UserService {
     // 생년월일 수정
     @Override
     public Optional<User> updateBirthday(UUID userId, String birthday) {
-        // UUID null인지 확인
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
 
         return Optional.ofNullable(data.get(userId))
                 .map(user -> {
@@ -189,8 +169,8 @@ public class JCFUserService implements UserService {
     // 채널 참여
     @Override
     public Optional<User> joinChannel(UUID userId, Channel channel) {
-        // UUID null인지 확인
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
 
         return Optional.ofNullable(data.get(userId))
                 .map(user -> {
@@ -202,8 +182,8 @@ public class JCFUserService implements UserService {
     // 채널 탈퇴
     @Override
     public Optional<User> leaveChannel(UUID userId, Channel channel) {
-        // UUID null인지 확인
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
 
         return Optional.ofNullable(data.get(userId))
                 .map(user -> {
@@ -215,8 +195,8 @@ public class JCFUserService implements UserService {
     // 메시지 작성 - 수정 중...
     @Override
     public Optional<User> writeMessage(UUID userId, String messageContent, Channel channel) {
-        // UUID null인지 확인
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
 
         return Optional.empty();
     }
@@ -224,8 +204,8 @@ public class JCFUserService implements UserService {
     // D. 삭제
     @Override
     public void deleteUser(UUID userId) {
-        // UUID null인지 확인
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
 
         data.remove(userId);
     }
