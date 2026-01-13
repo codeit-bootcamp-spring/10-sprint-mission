@@ -36,6 +36,10 @@ public class Message extends BaseEntity implements  Serializable {
         return sender;
     }
 
+    public Channel getChannel(){
+        return channel;
+    }
+
     public UUID getChannelId() {
         return channel.getId();
     }

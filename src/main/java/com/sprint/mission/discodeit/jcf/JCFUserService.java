@@ -49,11 +49,17 @@ public class JCFUserService implements UserService {
     @Override
     public void printUserMessages(UUID id) {
         User user = findById(id);
-        String allMessages = user.getMessages().stream()
-                .map(Message::getContent)
-                .collect(Collectors.joining("\n"));
-
-        System.out.println("[" + user.getName() + "님이 보낸 메시지 내역]\n" + allMessages);
+        if(!user.getMessages().isEmpty()) {
+            String allMessages = user.getMessages().stream()
+                    .map(msg -> String.format("- [%s] %s",
+                            msg.getChannel().getName(),
+                            msg.getContent()))
+                    .collect(Collectors.joining("\n"));
+            System.out.println("[" + user.getName() + "님이 보낸 메시지 내역]\n" + allMessages);
+        }
+        else{
+            System.out.println(user.getName() + "님이 보낸 메시지가 없습니다.");
+        }
     }
 
     @Override
