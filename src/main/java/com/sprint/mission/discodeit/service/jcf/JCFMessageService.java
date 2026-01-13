@@ -56,7 +56,7 @@ public class JCFMessageService implements MessageService {
 
     // 전체 조회
     @Override
-    public List<Message> readAll() {
+    public List<Message> findAll() {
         return messageData.values().stream().toList();
     }
 

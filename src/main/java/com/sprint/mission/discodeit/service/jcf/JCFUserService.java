@@ -38,13 +38,13 @@ public class JCFUserService implements UserService {
 
     // 다건 조회
     @Override
-    public List<User> readAll(){
+    public List<User> findAll(){
         return userData;
     }
 
     // User 수정
     @Override
-    public User update(UUID id, String name){
+    public User updateName(UUID id, String name){
         User user = find(id);
         user.updateName(name);
         return user;
@@ -52,16 +52,24 @@ public class JCFUserService implements UserService {
 
     // User 삭제
     @Override
-    public void delete(UUID id) {
-        User delUser = find(id);
-        userData.remove(delUser);
+    public void delete(UUID userID){
+        User user = find(userID);
+
+        List<Channel> channels = new ArrayList<>(user.getChannels());
+
+        for(Channel ch : channels){
+            ch.removeMember(user);
+        }
+
+        // 관련 메시지도 삭제
+        userData.remove(user);
     }
 
-    // User가 보낸 메시지 출력
-    public List<String> getMessages(UUID userID){
+    @Override
+    public List<String> findJoinedChannels(UUID userID){
         User user = find(userID);
-        return user.getMessageList().stream()
-                .map(Message::getContents)
+        return user.getChannels().stream()
+                .map(Channel::getName)
                 .collect(Collectors.toList());
     }
 

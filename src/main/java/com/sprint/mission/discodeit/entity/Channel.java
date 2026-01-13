@@ -5,14 +5,14 @@ import java.util.*;
 public class Channel extends Base {
     // 필드
     private String name;
-    private final Set<User> membersSet;
+    private final List<User> membersList;
     private final List<Message> messageList;
 
     // 생성자
     public Channel(String name) {
         super();
         this.name = name;
-        this.membersSet = new HashSet<>();
+        this.membersList = new ArrayList<>();
         this.messageList = new ArrayList<>();
     }
 
@@ -21,8 +21,8 @@ public class Channel extends Base {
         return name;
     }
 
-    public Set<User> getMembersSet() {
-        return membersSet;
+    public List<User> getMembersList() {
+        return membersList;
     }
 
     public List<Message> getMessageList(){
@@ -36,11 +36,11 @@ public class Channel extends Base {
 
     // other
     public void addMember(User member){
-        membersSet.add(member);
+        membersList.add(member);
     }
 
-    public void removeMembersIDs(User member) {
-        membersSet.remove(member);
+    public void removeMember(User member) {
+        membersList.remove(member);
     }
 
     public void addMessage(Message msg){
