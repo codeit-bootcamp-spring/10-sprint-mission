@@ -70,10 +70,7 @@ public class JCFChannelService implements ChannelService {
 
         User user = userService.findById(userId);
 
-        // 양방향으로 서로의 정보 추가
         channel.addUser(user);
-        user.addChannel(channel);
-
         channel.updateUpdatedAt(System.currentTimeMillis());
 
         return channel;

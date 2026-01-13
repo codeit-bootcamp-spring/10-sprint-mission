@@ -31,8 +31,10 @@ public class Channel extends Base {
         this.name = name;
     }
 
+    // 연관관계 편의 메서드
     public void addUser(User user) {
         this.userList.add(user);
+        user.getChannelList().add(this);
     }
 
     public void addMessage(Message message) {
