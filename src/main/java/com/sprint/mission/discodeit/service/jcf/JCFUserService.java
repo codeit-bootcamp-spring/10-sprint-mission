@@ -32,14 +32,13 @@ public class JCFUserService implements UserService {
     public User updateUser(UUID id, String name, String email) {
         validateUserId(id);
         User user = data.get(id);
-        if(user != null){
-            if(name != null){
-                user.updateName(name);
-            }
-            if(email != null){
-                user.updateEmail(email);
-            }
-        }
+        Optional.ofNullable(name)
+                .filter(n -> !n.isBlank())
+                .ifPresent(user::updateName);
+
+        Optional.ofNullable(email)
+                .filter(e -> !e.isBlank())
+                .ifPresent(user::updateEmail);
         return user;
     }
     @Override
@@ -48,7 +47,6 @@ public class JCFUserService implements UserService {
         data.remove(id);
     }
 
-    @Override
     public void validateUser(User user) {
         if (user == null || user.getId() == null) {
             throw new IllegalArgumentException("유저 정보가 없습니다.");

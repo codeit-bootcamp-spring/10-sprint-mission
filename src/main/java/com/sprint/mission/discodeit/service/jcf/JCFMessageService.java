@@ -22,6 +22,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message createMessage(Channel channel, User author, String content) {
         validateMessage(channel, author, content);
+        channelService.enterChannel(author.getId(), channel.getId());
         Message message = new Message(channel, author, content);
         data.put(message.getId(), message);
         return message;
@@ -33,6 +34,11 @@ public class JCFMessageService implements MessageService {
         return data.get(id);
     }
 
+    public List<Message> getMessagesByChannel(UUID channelId) {
+        return data.values().stream()
+                .filter(m -> m.getChannel().getId().equals(channelId))
+                .toList();
+    }
     @Override
     public List<Message> getAllMessages() {
         return new ArrayList<>(data.values());
@@ -41,9 +47,10 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message updateMessage(String content, UUID id) {
         validateMessageId(id);
-        if(content == null || content.isBlank()) throw new IllegalArgumentException("수정할 내용을 입력하세요.");
         Message message = data.get(id);
-        message.update(content);
+        Optional.ofNullable(content)
+                .filter(c -> !c.isBlank())
+                .ifPresent(message::updateContent);
         return message;
     }
 

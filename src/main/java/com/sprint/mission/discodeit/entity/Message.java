@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.UUID;
-
 public class Message extends BaseEntity{
     private String content;
     private final User author;
@@ -16,7 +14,7 @@ public class Message extends BaseEntity{
     public String getContent() { return content; }
     public User getUser() { return author; }
     public Channel getChannel() { return channel; }
-    public void update(String content) {
+    public void updateContent(String content) {
         this.content = content;
         updateTimestamps();
     }

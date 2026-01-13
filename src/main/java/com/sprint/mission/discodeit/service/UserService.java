@@ -16,5 +16,5 @@ public interface UserService {
 
     void deleteUser(UUID id);
 
-    void validateUser(User user);
+    void validateUser(User author);
 }

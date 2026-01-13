@@ -2,13 +2,16 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
-    public JCFChannelService() {
+    private final UserService userService;
+    public JCFChannelService(UserService userService) {
+        this.userService = userService;
         this.data = new HashMap<>();
     }
 
@@ -27,6 +30,11 @@ public class JCFChannelService implements ChannelService {
         return data.get(id);
     }
 
+    public List<Channel> getChannelsByUserId(UUID userId) {
+        return data.values().stream()
+                .filter(c -> c.getMemberIds().contains(userId))
+                .toList();
+    }
     @Override
     public List<Channel> getAllChannels() {
         return new ArrayList<>(data.values());
@@ -36,8 +44,12 @@ public class JCFChannelService implements ChannelService {
     public Channel updateChannel(UUID id, String name, String type) {
         validateChannelId(id);
         Channel channel = data.get(id);
-        Optional.ofNullable(name).ifPresent(channel::updateName);
-        Optional.ofNullable(type).ifPresent(channel::updateType);
+        Optional.ofNullable(name)
+                .filter(n -> !n.isBlank())
+                .ifPresent(channel::updateName);
+        Optional.ofNullable(type)
+                .filter(t -> !t.isBlank())
+                .ifPresent(channel::updateType);
         return channel;
     }
 
@@ -47,7 +59,18 @@ public class JCFChannelService implements ChannelService {
         data.remove(id);
     }
 
-    @Override
+    public void enterChannel(UUID userId, UUID channelId) {
+        validateChannelId(channelId);
+        userService.getUser(userId);
+        data.get(channelId).addMember(userId);
+    }
+
+    public void leaveChannel(UUID userId, UUID channelId) {
+        validateChannelId(channelId);
+        userService.getUser(userId);
+        data.get(channelId).removeMember(userId);
+    }
+
     public void validateChannel(Channel channel) {
         if (channel == null || channel.getId() == null) {
             throw new IllegalArgumentException("채널 정보가 없습니다.");

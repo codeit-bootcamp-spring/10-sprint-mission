@@ -10,7 +10,7 @@ import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 public class JavaApplication {
     public static void main(String[] args) {
         JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService();
+        JCFChannelService channelService = new JCFChannelService(userService);
         JCFMessageService messageService = new JCFMessageService(userService, channelService);
 
         System.out.println("=== 정상 흐름 테스트 ===");
@@ -25,8 +25,12 @@ public class JavaApplication {
         User user2 = userService.createUser("김민교","qqq123@gmail.com");
         Channel channel1 = channelService.createChannel("채팅","chat");
         Channel channel2 = channelService.createChannel("음성","voice");
+        Channel channel3 = channelService.createChannel("잡담", "chat");
         Message message1 = messageService.createMessage(channel1, user1, "안녕하세요");
         Message message2 = messageService.createMessage(channel2, user2, "반갑습니다");
+        messageService.createMessage(channel1, user2, "교이루~");
+        messageService.createMessage(channel2, user1, "Hello~");
+        messageService.createMessage(channel3, user2, "반갑소");
 
         System.out.println("데이터 조회(단건)");
         System.out.println(userService.getUser(user1.getId()));
@@ -36,6 +40,11 @@ public class JavaApplication {
         System.out.println(userService.getAllUsers());
         System.out.println(channelService.getAllChannels());
         System.out.println(messageService.getAllMessages());
+        System.out.println(messageService.getMessagesByChannel(channel1.getId()));
+        System.out.println("추가기능 테스트");
+        System.out.println(messageService.getMessagesByChannel(channel1.getId()));
+        System.out.println(channelService.getChannelsByUserId(user2.getId()));
+
 
         System.out.println("데이터 수정");
         userService.updateUser(user1.getId(),"김현호","def123@gmail.com");
@@ -51,11 +60,15 @@ public class JavaApplication {
         userService.deleteUser(user1.getId());
         channelService.deleteChannel(channel1.getId());
         messageService.deleteMessage(message1.getId());
+        channelService.leaveChannel(user2.getId(),channel2.getId());
+
 
         System.out.println("데이터 삭제 확인");
         System.out.println(userService.getAllUsers());
         System.out.println(channelService.getAllChannels());
         System.out.println(messageService.getAllMessages());
+        System.out.println("김민교가 속해있는 채널");
+        System.out.println(channelService.getChannelsByUserId(user2.getId()));
 
     }
 

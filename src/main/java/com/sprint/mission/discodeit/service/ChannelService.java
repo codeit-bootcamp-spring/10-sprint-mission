@@ -15,5 +15,11 @@ public interface ChannelService {
 
     void deleteChannel(UUID id);
 
+    void enterChannel(UUID userId, UUID channelId);
+
+    void leaveChannel(UUID userId, UUID channelId);
+
+    List<Channel> getChannelsByUserId(UUID userId);
+
     void validateChannel(Channel channel);
 }
