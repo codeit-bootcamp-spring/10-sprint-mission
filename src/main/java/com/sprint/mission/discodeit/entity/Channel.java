@@ -41,8 +41,8 @@ public class Channel extends CommonEntity{
         this.updateAt = System.currentTimeMillis();
     }
 
-    public void updateChannelType() {
-        channelType = channelType.switchType();
+    public void updateChannelType(ChannelType channelType) {
+        this.channelType = channelType;
         this.updateAt = System.currentTimeMillis();
     }
 
