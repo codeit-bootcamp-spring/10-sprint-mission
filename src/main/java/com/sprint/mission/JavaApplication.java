@@ -174,6 +174,21 @@ public class JavaApplication {
         System.out.println(userService.getChannels(userId));
         //다시 멤버 복구
         channelService.addMembers(channelId3, userId2, List.of(userId,userId4));
+        //채널에서 나가기
+        System.out.println("------------------채널에서 나가기(gh123)-------------");
+        System.out.println(channelService.removeMember(channelId3, userId4));
+        try{
+            System.out.println("------------------소유자가 채널에서 나가기-------------");
+            System.out.println(channelService.removeMember(channelId3, userId2));
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+        try{
+            System.out.println("------------------멤버가 아닌 사용자가 채널에서 나가기-------------");
+            System.out.println(channelService.removeMember(channelId3, userId3));
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
         //채널 삭제
 
         System.out.println("-----------채널 삭제----------------");

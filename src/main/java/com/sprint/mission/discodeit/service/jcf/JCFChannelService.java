@@ -78,6 +78,21 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
+    public Channel removeMember(UUID id, UUID memberId) {
+        Channel channel = getChannelById(id);
+        if(channel.isOpenType()){
+            throw new IllegalArgumentException("공개 채널에서 멤버를 제거할 수 없음. 채널ID: "+ id);
+        }
+        if(memberId.equals(channel.getOwner().getId())){
+            throw new IllegalArgumentException("채널 소유자는 채널에서 나갈 수 없음. 소유자ID: "+ id);
+        }
+        User member =userService.getUserById(memberId);
+        checkMember(channel,member);
+        channel.removeMember(member);
+        return channel;
+    }
+
+    @Override
     public Channel getChannelByIdAndMemberId(UUID id, UUID memberId) {
         Channel channel = getChannelById(id);
         User user = userService.getUserById(memberId);
@@ -139,7 +154,7 @@ public class JCFChannelService implements ChannelService {
                 .stream()
                 .anyMatch(m -> m.getId().equals(member.getId()));
         if(!check){
-            throw new IllegalArgumentException("채널의 속한 사용자가 아님: "+member.getId());
+            throw new IllegalArgumentException("채널에 속한 사용자가 아님: "+member.getId());
         }
     }
 }
