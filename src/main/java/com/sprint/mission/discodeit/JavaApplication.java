@@ -96,10 +96,15 @@ public class JavaApplication {
         ch2 = channelService.addUser(ch2.getId(), user1.getId());
         ch1 = channelService.updateName(ch1.getId(), "CHANNEL_01");
 
-
-        // 수정된 데이터 조회
-        System.out.println("\n======== 수정된 데이터 조회 ========");
+        // 수정된 데이터 조회(유저 추가 및 채널 이름 변경)
+        System.out.println("\n======== 수정된 데이터 조회(1) ========");
         System.out.println(ch1);
+        System.out.println(ch2);
+
+        // 수정된 데이터 조회(유저 내보내기)
+        System.out.println("\n======== 수정된 데이터 조회(2) ========");
+        channelService.deleteUser(ch2.getId(), user1.getId());
+        System.out.println(ch2);
 
         // 삭제
         channelService.delete(ch2.getId());
@@ -114,7 +119,7 @@ public class JavaApplication {
 
 
         // message
-        System.out.println("\n\n========== Message ==========");;
+        System.out.println("\n\n========== Message ==========");
 
         // 메시지 등록
         Message message1 = messageService.create(
