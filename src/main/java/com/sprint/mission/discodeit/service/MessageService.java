@@ -9,6 +9,7 @@ public interface MessageService {
     // 메시지 생성 (하지만 실제로는 객체를 등록하는 역할)
     void createMessage(Message message);
 
+
     // 메세지 조회(시스템) ID로!
     // id(UUID)로 특정 메시지 찾기 — 내부 시스템용
     Message getMessageById(UUID id);

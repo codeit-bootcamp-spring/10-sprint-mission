@@ -6,15 +6,12 @@ public class Message extends Basic{
     private User sender; // 보내는 사람을 User 타입으로 받음.
     private Channel channel;
 
-
-
     public Message(String content, User sender, Channel channel) {
         super(); // Message 에도 역시 각각 고유 ID, 생성 시간 할당.
         this.messageContent = content;
         setSender(sender);
         setChannel(channel);
     }
-
 
     public String getContent() {
         return messageContent;

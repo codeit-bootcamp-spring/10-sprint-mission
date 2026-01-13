@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public interface UserService {
     //기능 정의
+
     void createUser(User user);
     // 유저 생성. //나중에 main 에서 new User("홍길동", 등등)으로 정보 받기 때문에.
     User getUserByID(UUID uuid);
