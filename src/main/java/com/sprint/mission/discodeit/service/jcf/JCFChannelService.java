@@ -41,13 +41,15 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void updateChannel(UUID id, ChannelType type, String channelName, String channelDescription) {
+    public Channel updateChannel(UUID id, ChannelType type, String channelName, String channelDescription) {
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
         Validators.validationChannel(type, channelName, channelDescription);
         Channel channel = validateExistenceChannel(id);
         channel.updateChannelType(type);
         channel.updateChannelName(channelName);
         channel.updateChannelDescription(channelDescription);
+
+        return channel;
     }
 
     @Override

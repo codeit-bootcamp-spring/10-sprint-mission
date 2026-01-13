@@ -12,7 +12,7 @@ public interface UserService {
 
     List<User> readAllUser();
 
-    void updateUser(UUID id, String userName, String userEmail, String userPassword);
+    User updateUser(UUID id, String userName, String userEmail, String userPassword);
 
     void deleteUser(UUID id);
 

@@ -40,7 +40,7 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void updateUser(UUID id, String userName, String userEmail, String userPassword) {
+    public User updateUser(UUID id, String userName, String userEmail, String userPassword) {
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
         User user = validateExistenceUser(id);
         validateDuplicationEmail(userEmail);
@@ -48,6 +48,8 @@ public class JCFUserService implements UserService {
         user.updateUserName(userName);
         user.updateUserEmail(userEmail);
         user.updateUserPassword(userPassword);
+
+        return user;
     }
 
     public boolean isUserDeleted(UUID id) {

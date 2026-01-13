@@ -52,11 +52,13 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void updateMessage(UUID id, String content) {
+    public Message updateMessage(UUID id, String content) {
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
         Validators.validationMessage(content);
         Message message = validateExistenceMessage(id);
         message.updateContent(content);
+
+        return message;
     }
 
     public void deleteMessage(UUID id) {
