@@ -106,9 +106,9 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public boolean hasRole(UUID userId, UUID roleId) {
+    public boolean hasRole(UUID userId, Role role) {
         User user = getUserOrThrow(userId);
-        return user.hasRole(roleId);
+        return user.hasRole(role.getId());
     }
 
     // Delete

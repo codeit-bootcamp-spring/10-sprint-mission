@@ -77,7 +77,14 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void deleteMessage(UUID messageId) {
-        messageMap.remove(messageId);
+        Message message = messageMap.get(messageId);
+
+        if (message != null) { // 채널이 가지고 있는 메시지 리스트에서 삭제
+            Channel channel = message.getChannel();
+            channel.getMessages().remove(message);
+        }
+
+        messageMap.remove(messageId); // 전역 메시지 맵에서 삭제
     }
 
     // 회원 탈퇴, 채널 삭제 등 메시지 전체 삭제

@@ -109,7 +109,7 @@
       <workItem from="1767923367059" duration="24772000" />
       <workItem from="1768046225582" duration="17155000" />
       <workItem from="1768175399973" duration="33372000" />
-      <workItem from="1768262469998" duration="8762000" />
+      <workItem from="1768262469998" duration="11256000" />
     </task>
     <servers />
   </component>
@@ -134,15 +134,6 @@
           <url>file://$PROJECT_DIR$/src/main/java/org/example/Main.java</url>
           <line>13</line>
           <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFUserService.java</url>
-          <line>96</line>
-          <properties class="com.sprint.mission.discodeit.service.jcf.JCFUserService" method="addRoleToUser">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -31,7 +31,7 @@ public interface UserService {
     // Role Management
     void addRoleToUser(UUID userId, Role role);
     void removeRoleFromUser(UUID userId, Role role);
-    boolean hasRole(UUID userId, UUID roleId);
+    boolean hasRole(UUID userId, Role role);
 
     // Delete
     void deleteUser(UUID userId);

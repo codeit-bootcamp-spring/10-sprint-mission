@@ -18,6 +18,26 @@ public class Channel extends BaseEntity {
         this.isPublic = isPublic;
     }
 
+    // Getters
+    public String getChannelName() {
+        return channelName;
+    }
+
+    public boolean isPublic() {
+        return isPublic;
+    }
+
+    // Updates
+    public void updateName(String newName){
+        this.channelName = newName;
+        updateTimestamp();
+    }
+
+    public void updatePublic(boolean isPublic){
+        this.isPublic = isPublic;
+        updateTimestamp();
+    }
+
     // Authorized method
     public void addPermission(UUID targetId, PermissionTarget type) {
         boolean exists = this.permissions.stream()
@@ -42,27 +62,6 @@ public class Channel extends BaseEntity {
         }
     }
 
-    // Getters
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public boolean isPublic() {
-        return isPublic;
-    }
-
-    // Updates
-    public void updateName(String newName){
-        this.channelName = newName;
-        updateTimestamp();
-    }
-
-    public void updatePublic(boolean isPublic){
-        this.isPublic = isPublic;
-        updateTimestamp();
-    }
-
-    // Logic
     public boolean isAccessibleBy(User user) {
         if (this.isPublic) return true;
 
@@ -90,8 +89,5 @@ public class Channel extends BaseEntity {
     public List<Message> getMessages() {
         return this.messages;
     }
-
-
-
 
 }

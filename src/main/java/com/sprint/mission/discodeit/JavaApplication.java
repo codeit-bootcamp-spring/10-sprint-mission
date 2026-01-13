@@ -24,7 +24,7 @@ public class JavaApplication {
         System.out.println("테스트할 도메인을 선택하세요:");
         System.out.println("1. User (유저)");
         System.out.println("2. Channel (채널)");
-        System.out.println("3. Message (메시지) - 미구현");
+        System.out.println("3. Message (메시지)");
         System.out.print(">> 선택 (번호 입력): ");
 
         String input = scanner.nextLine();
@@ -175,7 +175,7 @@ public class JavaApplication {
         userService.addRoleToUser(targetId, adminRole);
 
         // 서비스의 hasRole 메서드를 통해 확인 (내부적으로 getUserOrThrow 사용)
-        boolean hasRoleResult = userService.hasRole(targetId, adminId);
+        boolean hasRoleResult = userService.hasRole(targetId, adminRole);
         System.out.println(">> [Result] userService.hasRole() 확인: " + (hasRoleResult ? "성공" : "실패"));
 
         // 6-2. 엔티티 수준에서 직접 확인
@@ -186,7 +186,7 @@ public class JavaApplication {
         System.out.printf(">> [Input] 역할 회수: %s\n", adminRole.getRoleName());
         userService.removeRoleFromUser(targetId, adminRole);
 
-        boolean hasRoleAfter = userService.hasRole(targetId, adminId);
+        boolean hasRoleAfter = userService.hasRole(targetId, adminRole);
         System.out.println(">> [Result] 회수 후 보유 여부: " + (hasRoleAfter ? "실패 (여전히 있음)" : "성공 (없음)"));
 
 
@@ -453,7 +453,7 @@ public class JavaApplication {
     }
 
     private static void printAllMessagesInChannel(MessageService ms, Channel ch) {
-        // List<Message> msgs = ms.findAllByChannelId(ch.getId()); // 맵에서 정렬
+        // List<Message> msgs = ms.findAllByChannelId(ch.getId()); // 전체 맵에서 그 채널의 메시지 정렬
         List<Message> msgs = ms.findAll(ch.getId()); // 채널에 리스트로 메시지 들고있음
         System.out.println("--------------------------------------------------");
         System.out.printf(" [%s] 현재 메시지 상태 (%d개)\n", ch.getChannelName(), msgs.size());
