@@ -8,6 +8,7 @@ public class User extends CommonEntity{
     private String password;
     private String email;
     private final List<Channel> channels = new ArrayList<>();
+    private final List<Message> messages = new ArrayList<>();
 
     public User(String userName, String password, String email) {
         this.userName = userName;
@@ -28,7 +29,11 @@ public class User extends CommonEntity{
     }
 
     public List<Channel> getChannels() {
-        return channels;
+        return List.copyOf(channels);
+    }
+
+    public List<Message> getMessages() {
+        return List.copyOf(messages);
     }
 
     public void updateUserName(String userName) {
@@ -53,6 +58,16 @@ public class User extends CommonEntity{
 
     public void removeChannel(Channel channel) {
         channels.remove(channel);
+        this.updateAt = System.currentTimeMillis();
+    }
+
+    public void addMessage(Message message) {
+        messages.add(message);
+        this.updateAt = System.currentTimeMillis();
+    }
+
+    public void removeMessage(Message message) {
+        messages.remove(message);
         this.updateAt = System.currentTimeMillis();
     }
 }
