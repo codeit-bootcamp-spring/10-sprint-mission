@@ -44,19 +44,19 @@ public class JavaApplication {
 //        channelService.deleteChannel(channel.getId());
 //        System.out.println(channelService.isChannelDeleted(channel.getId()));
 
-//        MessageService messageService = new JCFMessageService();
-//        Message message = messageService.createMessage("안녕하세요.", channel.getId(), user.getId());
-//        Message message2 = messageService.createMessage("안녕히가세요.", channel2.getId(), user2.getId());
-//        Message messageRead = messageService.readMessage(message.getId());
-//        System.out.println(message.getId());
-//        System.out.println(messageRead.getId());
-//        System.out.println(messageService.readAllMessage());
-//        System.out.println(message.getMessageStatus());
-//        messageService.updateMessage(message.getId(), "식사 맛있게하세요");
-//        System.out.println(message.getMessageStatus());
-//        System.out.println(messageService.isMessageDeleted(message.getId()));
-//        messageService.deleteMessage(message.getId());
-//        System.out.println(messageService.isMessageDeleted(message.getId()));
+        MessageService messageService = new JCFMessageService(userService, channelService);
+        Message message = messageService.createMessage("안녕하세요.", channel.getId(), user.getId());
+        Message message2 = messageService.createMessage("안녕히가세요.", channel2.getId(), user2.getId());
+        Message messageRead = messageService.readMessage(message.getId());
+        System.out.println(message.getId());
+        System.out.println(messageRead.getId());
+        System.out.println(messageService.readAllMessage());
+        System.out.println(message.getMessageStatus());
+        messageService.updateMessage(message.getId(), "식사 맛있게하세요");
+        System.out.println(message.getMessageStatus());
+        System.out.println(messageService.isMessageDeleted(message.getId()));
+        messageService.deleteMessage(message.getId());
+        System.out.println(messageService.isMessageDeleted(message.getId()));
 
 
 

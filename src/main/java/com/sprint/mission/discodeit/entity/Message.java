@@ -4,20 +4,20 @@ import java.util.UUID;
 
 public class Message {
     private final UUID id;
-    private final UUID channelId;
-    private final UUID userId;
+    private final Channel channel;
+    private final User user;
     private final Long createdAt;
     private Long updatedAt;
     private String content;
 
 
-    public Message(String content, UUID channelId, UUID userId) {
+    public Message(String content, Channel channel, User user) {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = createdAt;
         this.content = content;
-        this.channelId = channelId;
-        this.userId = userId;
+        this.channel = channel;
+        this.user = user;
     }
 
     public UUID getId() {
@@ -38,6 +38,6 @@ public class Message {
     }
 
     public String getMessageStatus() {
-        return "메세지: " + content + ", 채널 아이디: " + channelId + ", 유저 아이디: " + userId;
+        return "메세지: " + content + ", 채널 아이디: " + channel.getId() + ", 유저 아이디: " + user.getId();
     }
 }

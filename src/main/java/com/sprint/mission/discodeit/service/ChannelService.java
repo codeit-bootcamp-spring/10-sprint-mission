@@ -18,4 +18,6 @@ public interface ChannelService {
     void deleteChannel(UUID id);
 
     boolean isChannelDeleted(UUID id);
+
+    Channel validateExistenceChannel(UUID id);
 }

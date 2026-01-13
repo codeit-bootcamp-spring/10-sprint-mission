@@ -1,24 +1,36 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.util.Validators;
 
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
     final ArrayList<Message> list;
+    private final ChannelService channelService;
+    private final UserService userService;
 
-    public JCFMessageService() {
+    public JCFMessageService(UserService userService, ChannelService channelService) {
         this.list = new ArrayList<>();
+        this.userService = userService;
+        this.channelService = channelService;
     }
 
     @Override
     public Message createMessage(String content, UUID channelId, UUID userId) {
-        validationMessage(content);
+        Validators.validationMessage(content);
         Objects.requireNonNull(channelId, "channelId는 null이 될 수 없습니다.");
         Objects.requireNonNull(userId, "userId는 null이 될 수 없습니다.");
-        Message message = new Message(content, channelId, userId);
+
+        Channel channel = channelService.validateExistenceChannel(channelId);
+        User user = userService.validateExistenceUser(userId);
+        Message message = new Message(content, channel, user);
+
         list.add(message);
         return message;
     }
@@ -42,7 +54,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public void updateMessage(UUID id, String content) {
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        validationMessage(content);
+        Validators.validationMessage(content);
         Message message = validateExistenceMessage(id);
         message.updateContent(content);
     }
@@ -63,14 +75,8 @@ public class JCFMessageService implements MessageService {
         return true;
     }
 
-    private void validationMessage(String content) {
-        Objects.requireNonNull(content, "content는 null이 될 수 없습니다.");
-        if(content.isBlank()) {
-            throw new IllegalArgumentException("content에 공백을 입력할 수 없습니다.");
-        }
-    }
 
-    private Message validateExistenceMessage(UUID id) {
+    public Message validateExistenceMessage(UUID id) {
         Message message = readMessage(id);
         if(message == null) {
             throw new NoSuchElementException("메세지 id가 존재하지 않습니다.");
