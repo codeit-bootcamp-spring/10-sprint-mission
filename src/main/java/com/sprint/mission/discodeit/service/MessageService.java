@@ -14,15 +14,12 @@ public interface MessageService {
     Message createMessage(Channel channel, User author, String content);
 
     // R. 읽기
-    Optional<Message> readMessageById(UUID messageId);
+    // 특정 메시지 정보 읽기 by messageId
+    Message readMessageById(UUID messageId);
 
     // R. 모두 읽기 : 시간순으로 정렬?
     // 메시지 전체
     List<Message> readAllMessage();
-    // 특정 채널의 모든 메시지 읽어오기
-    List<Message> readAllMessageAtChannelByChannelId(UUID channelId);
-    // 특정 유저의 모든 메시지 읽어오기
-    List<Message> readAllMessageAtUserByUserIdAndMessageId(UUID userId);
     // 특정 채널에서 원하는 메시지 찾기
     List<Message> searchAllMessageAtChannelByChannelIdAndWord(UUID channelId, String partialWord);
 

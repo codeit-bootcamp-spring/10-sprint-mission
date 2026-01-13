@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class Message extends BaseEntity {
@@ -19,8 +22,8 @@ public class Message extends BaseEntity {
     public String toString() {
         return "Message{" +
                 "messageId = " + getId() + ", " +
-                "createdAt = " + getCreatedAt() + ", " +
-                "updatedAt = " + getUpdatedAt() + ", " +
+//                "createdAt = " + getCreatedAt() + ", " +
+//                "updatedAt = " + getUpdatedAt() + ", " +
                 "author = " + author + ", " +
                 "content = " + content +
                 "}";
@@ -43,5 +46,13 @@ public class Message extends BaseEntity {
     public void updateContent(String content) {
         this.content = content;
         updateTime();
+    }
+
+    public void addUserWriteMessageList(User user, String content) {
+        // 진행 중...
+    }
+
+    public void addChannelWriteMessageList(Channel channel, String content) {
+        // 진행 중...
     }
 }
