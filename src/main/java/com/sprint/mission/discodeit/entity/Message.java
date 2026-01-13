@@ -23,7 +23,7 @@ public class Message extends DiscordEntity {
     }
 
     public User getUser(){
-        System.out.printf("%s 메시지의 작성자: %s %n",this.msgContext, this.user);
+        //System.out.printf("%s 메시지의 작성자: %s %n",this.msgContext, this.user);
         return this.user;
     }
 

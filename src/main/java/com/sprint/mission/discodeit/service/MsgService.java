@@ -13,8 +13,8 @@ public interface MsgService {
    // public Message createMessage(String context, String channelName, String userName);
     public List<Message> readMessageByChannel(Channel channel); // 채널 ID를 통해 조회
     public List<Message> readMessageByAuthor(User user); // 작성자를 통해 조회
-    public boolean updateMessage(UUID msgID, String context); // 업데이트
-    public boolean deleteMessage(UUID msgID); // 삭제
+    public Message updateMessage(UUID msgID, String context); // 업데이트
+    public Message deleteMessage(UUID msgID); // 삭제
     public ArrayList<Message> readAllMessage(); // 모두 조회
 
 }

@@ -1,13 +1,20 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.security.Provider;
 import java.util.*;
 
 public class JCFUserService implements UserService {
 
     public List<User> data = new ArrayList<>();
+    ChannelService channelService;
+
+    public JCFUserService(ChannelService channelService){
+        this.channelService = channelService;
+    }
 
     @Override
     public User createUser(String name, String email, String userId) {
@@ -96,9 +103,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public ArrayList<User> readAllUsers() {
-        System.out.println("-".repeat(20) + " 전체 조회 " + "-".repeat(20) );
-        data.forEach(System.out::println);
-        System.out.println("-".repeat(50) );
+
         return (ArrayList<User>) data;
 
     }

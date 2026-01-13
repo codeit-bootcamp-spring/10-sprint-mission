@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.service.helper;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.service.ChannelService;
 
 public class ChannelHelper {
     // try-catch 반복을 자제하기 위해 만들어진 호출을 감싸는 헬퍼 함수

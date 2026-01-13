@@ -1,8 +1,7 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.service.helper;
 
 import com.sprint.mission.discodeit.entity.User;
-
-import java.util.Objects;
+import com.sprint.mission.discodeit.service.UserService;
 
 public class UserHelper {
     public static User safeCreateUser(UserService service, String name, String email, String userID){

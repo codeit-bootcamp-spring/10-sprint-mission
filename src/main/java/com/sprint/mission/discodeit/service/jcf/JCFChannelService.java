@@ -36,7 +36,7 @@ public class JCFChannelService implements ChannelService {
                 .orElseThrow(() -> new IllegalStateException(name + " 채널은 존재하지 않습니다."));
 
         data.remove(channel);
-        return channel;
+        return null;
 
     }
 
@@ -75,9 +75,9 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public ArrayList<Channel> readAllChannels() {
-        System.out.println("-".repeat(20) + " 전체 조회 " + "-".repeat(20));
-        data.forEach(System.out::println);
-        System.out.println("-".repeat(50));
+//        System.out.println("-".repeat(20) + " 전체 조회 " + "-".repeat(20));
+//        data.forEach(System.out::println);
+//        System.out.println("-".repeat(50));
         return (ArrayList<Channel>) data;
     }
 }
