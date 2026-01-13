@@ -11,6 +11,7 @@ public interface ChannelService {
     Channel updateChannelName(UUID id, String name, UUID ownerId);
     Channel updateChannelDescription(UUID id, String description, UUID ownerId);
     Channel addMembers(UUID id, UUID ownerId, List<UUID> memberIds);
+    Channel removeMembers(UUID id, UUID ownerId, List<UUID> memberIds);
     Channel getChannelByIdAndMemberId(UUID id, UUID memberId);
     List<Channel> findAllChannels();
     List<User> findAllMembers(UUID id, UUID memberId);

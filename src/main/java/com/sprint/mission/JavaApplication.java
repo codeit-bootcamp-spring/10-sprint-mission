@@ -117,8 +117,8 @@ public class JavaApplication {
         UUID messageID2 = messageService.send(user2, channel2, "끝말잇기 시작!").getId();
         messageService.send(user1, channel1, "나부터");
         messageService.send(user1, channel1, "기러기");
-        messageService.send(user1, channel1, "기차");
-        messageService.send(user2, channel2, "차력");
+        messageService.send(user2, channel2, "기차");
+        messageService.send(user1, channel2, "차력");
         UUID messageID3 = messageService.send(user3, channel3, "안녕십니까").getId();
         UUID messageID4 = messageService.send(user3, channel3, "안녕십니wkl").getId();
         System.out.println("------------메세지 조회---------------");
@@ -159,6 +159,21 @@ public class JavaApplication {
             System.out.println(e.getMessage());
         }
 
+        //채널 멤버 제외
+        try{
+            System.out.println("------소유자가 자신을 제외----------");
+            channelService.removeMembers(channelId3,userId2,List.of(userId2));
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+        System.out.println("---------------소유자가 비밀 채널의 멤버를 제외--------------");
+        System.out.println(channelService.removeMembers(channelId3, userId2, List.of(userId,userId4)));
+        System.out.println("---------------변경된 비밀 채널의 멤버 조회--------------");
+        System.out.println(channelService.findAllMembers(channelId3, userId2));
+        System.out.println("---------------제외된 멤버의 채널 조회--------------");
+        System.out.println(userService.getChannels(userId));
+        //다시 멤버 복구
+        channelService.addMembers(channelId3, userId2, List.of(userId,userId4));
         //채널 삭제
 
         System.out.println("-----------채널 삭제----------------");

@@ -26,8 +26,8 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel updateChannelName(UUID id, String name, UUID ownerId) {
-        checkChannelOwner(id, ownerId);
         Channel channel = getChannelById(id);
+        checkChannelOwner(channel, ownerId);
         if(!name.equals(channel.getName())){
             validateChannelName(name);
         }
@@ -37,15 +37,16 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel updateChannelDescription(UUID id, String description, UUID ownerId) {
-        checkChannelOwner(id, ownerId);
-        getChannelById(id).setDescription(description);
+        Channel channel = getChannelById(id);
+        checkChannelOwner(channel, ownerId);
+        channel.setDescription(description);
         return getChannelById(id);
     }
 
     @Override
     public Channel addMembers(UUID id, UUID ownerId, List<UUID> memberIds) {
-        checkChannelOwner(id, ownerId);
         Channel channel = getChannelById(id);
+        checkChannelOwner(channel, ownerId);
         if(channel.isOpenType()){
             throw new IllegalArgumentException("공개 채널에 멤버를 추가할 수 없음. 채널ID: "+ id);
         }
@@ -57,16 +58,31 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
+    public Channel removeMembers(UUID id, UUID ownerId, List<UUID> memberIds) {
+        Channel channel = getChannelById(id);
+        checkChannelOwner(channel, ownerId);
+        if(channel.isOpenType()){
+            throw new IllegalArgumentException("공개 채널에서 멤버를 제거할 수 없음. 채널ID: "+ id);
+        }
+        if(memberIds.contains(ownerId)){
+            throw new IllegalArgumentException("채널 소유자는 제거될 수 없음. 소유자ID: "+ id);
+        }
+        List<User> members = memberIds.stream()
+                .map(uid->{User user =userService.getUserById(uid);
+                    checkMember(channel,user);
+                    return user;
+                })
+                .collect(Collectors.toList());
+        channel.removeMembers(members);
+        return channel;
+    }
+
+    @Override
     public Channel getChannelByIdAndMemberId(UUID id, UUID memberId) {
         Channel channel = getChannelById(id);
         User user = userService.getUserById(memberId);
         if(!channel.isOpenType()){
-            boolean checkMember = channel.getMembers()
-                    .stream()
-                    .anyMatch(m -> m.getId().equals(user.getId()));
-            if(!checkMember){
-                throw new IllegalArgumentException("채널의 속한 사용자가 아님: "+memberId);
-            }
+            checkMember(channel, user);
         }
         return channel;
     }
@@ -78,8 +94,8 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void deleteChannelById(UUID id, UUID ownerId) {
-        checkChannelOwner(id, ownerId);
         Channel channel = getChannelById(id);
+        checkChannelOwner(channel, ownerId);
         channel.removeAllMembers();
         //채널 메세지 삭제 로직 필요
         data.remove(id);
@@ -106,16 +122,24 @@ public class JCFChannelService implements ChannelService {
         }
     }
 
-    private void checkChannelOwner(UUID channelId, UUID ownerId) {
+    private void checkChannelOwner(Channel channel, UUID ownerId) {
         User owner = userService.getUserById(ownerId); //사용자가 존재
-        Channel channel = getChannelById(channelId);
         if(!channel.getOwner().getId().equals(owner.getId())){
-            throw new IllegalArgumentException("채널의 소유자가 아님: [채널ID-"+channelId+" 사용자ID-" + ownerId+"]");
+            throw new IllegalArgumentException("채널의 소유자가 아님: [채널ID-"+channel.getId()+" 사용자ID-" + ownerId+"]");
         }
     }
 
     private Channel getChannelById(UUID id) {
         validateChannel(id);
         return data.get(id);
+    }
+
+    private void checkMember(Channel channel, User member) {
+        boolean check = channel.getMembers()
+                .stream()
+                .anyMatch(m -> m.getId().equals(member.getId()));
+        if(!check){
+            throw new IllegalArgumentException("채널의 속한 사용자가 아님: "+member.getId());
+        }
     }
 }

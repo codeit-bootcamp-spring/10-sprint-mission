@@ -62,6 +62,11 @@ public class Channel extends BaseEntity {
             removeMember(member);
         }
     }
+    public void removeMembers(List<User> users) {
+        for (User member : new ArrayList<>(users)) {
+            removeMember(member);
+        }
+    }
 
     @Override
     public String toString() {
