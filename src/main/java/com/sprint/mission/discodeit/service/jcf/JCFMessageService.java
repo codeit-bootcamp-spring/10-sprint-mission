@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -13,18 +15,22 @@ import java.util.UUID;
 public class JCFMessageService implements MessageService {
     // 필드
     private final Map<UUID, Message> messageData;
+    private final ChannelService channelService;
+    private UserService userService;
+
     // 생성자
-    public JCFMessageService() {
+    public JCFMessageService(ChannelService channelService, UserService userService) {
         this.messageData = new HashMap<>();
+        this.channelService = channelService;
+        this.userService = userService;
     }
 
     //생성
     @Override
-    public Message create(String contents, User sender, Channel channel) {
+    public Message create(String contents, UUID userID, UUID channelID) {
         // sender, channel 존재하는 지 check
-        if (sender == null | channel == null){
-            throw new IllegalArgumentException("Not found");
-        }
+        User sender = userService.find(userID);
+        Channel channel = channelService.find(channelID);
 
         // create
         Message msg = new Message(contents, sender, channel);
@@ -35,6 +41,7 @@ public class JCFMessageService implements MessageService {
         channel.addMessage(msg);
         return msg;
     }
+
     // 조회
     @Override
     public Message find(UUID messageID) {
@@ -46,6 +53,7 @@ public class JCFMessageService implements MessageService {
 
         return message;
     }
+
     // 전체 조회
     @Override
     public List<Message> readAll() {
@@ -54,12 +62,13 @@ public class JCFMessageService implements MessageService {
 
     // 수정
     @Override
-    public void update(UUID messageID, String contents) {
+    public Message update(UUID messageID, String contents) {
         if (messageID == null) {
             throw new IllegalArgumentException("id must not be null");
         }
         Message msg = find(messageID);
         msg.updateContents(contents);
+        return msg;
     }
 
     // 삭제
@@ -74,4 +83,5 @@ public class JCFMessageService implements MessageService {
         channel.removeMessage(msg);
         messageData.remove(messageID);
     }
+
 }

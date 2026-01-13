@@ -19,6 +19,7 @@ public class JCFChannelService implements ChannelService {
         this.channelData = new ArrayList<>();
         this.userService = userService;
     }
+
     //생성
     @Override
     public Channel create(String name) {
@@ -44,9 +45,10 @@ public class JCFChannelService implements ChannelService {
 
     // 수정
     @Override
-    public void update(UUID id, String name) {
+    public Channel update(UUID id, String name) {
         Channel channel = find(id);
         channel.updateName(name);
+        return channel;
     }
 
     // 삭제
@@ -62,13 +64,8 @@ public class JCFChannelService implements ChannelService {
         Channel channel = find(channelID);
         User user = userService.find(userID);
 
-        if (channel == null || user == null){
-            throw new IllegalArgumentException("id must not be null");
-        }
-
         channel.addMember(user);
         user.joinChannel(channel);
-
     }
 
     // channel에서 member 제거

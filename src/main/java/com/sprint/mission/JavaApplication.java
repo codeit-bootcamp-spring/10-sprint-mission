@@ -54,9 +54,9 @@ public class JavaApplication {
         System.out.println(ch.getMembersSet());
 
         // 메시지 생성
-        Message msg1 = messageService.create("Hello everyone", user1, ch);
-        Message msg2 = messageService.create("Have a nice Day", user2, ch);
-        Message msg3 = messageService.create("GOOD", user3, ch);
+        Message msg1 = messageService.create("Hello everyone", user1.getId(), ch.getId());
+        Message msg2 = messageService.create("Have a nice Day", user2.getId(), ch.getId());
+        Message msg3 = messageService.create("GOOD", user3.getId(), ch.getId());
 
         // 예외 케이스 테스트
         System.out.println();

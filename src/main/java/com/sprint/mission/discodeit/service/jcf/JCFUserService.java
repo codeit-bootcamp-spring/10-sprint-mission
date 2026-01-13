@@ -41,9 +41,10 @@ public class JCFUserService implements UserService {
 
     // User 수정
     @Override
-    public void update(UUID id, String name){
+    public User update(UUID id, String name){
         User user = find(id);
         user.updateName(name);
+        return user;
     }
 
     // User 삭제
