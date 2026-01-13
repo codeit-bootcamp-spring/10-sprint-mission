@@ -6,6 +6,7 @@ import java.util.Objects;
 
 public class User extends Base {
     private final List<Channel> channelList; // 특정 유저의 채널 소속 확인 용
+    private final List<Message> messageList; // 특정 유저가 생성한 모든 메시지
     private String nickName;
     private String userName;
     private String email;
@@ -17,6 +18,7 @@ public class User extends Base {
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.channelList = new ArrayList<Channel>();
+        this.messageList = new ArrayList<Message>();
     }
 
     public String getNickName() {
@@ -39,6 +41,10 @@ public class User extends Base {
         return channelList;
     }
 
+    public List<Message> getMessageList() {
+        return messageList;
+    }
+
     public void updateNickName(String nickName) {
         this.nickName = nickName;
     }
@@ -57,6 +63,10 @@ public class User extends Base {
 
     public void addChannel(Channel channel) {
         this.channelList.add(channel);
+    }
+
+    public void addMessage(Message message) {
+        this.messageList.add(message);
     }
 
     @Override

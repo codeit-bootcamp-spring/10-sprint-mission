@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Objects;
 
 public class Channel extends Base {
+    private final List<User> userList;
+    private final List<Message> messageList;
     private String name;
-    private List<User> userList;
 
     public Channel(String name) {
         this.name = name;
         this.userList = new ArrayList<User>();
+        this.messageList = new ArrayList<Message>();
     }
 
     public String getName() {
@@ -21,6 +23,10 @@ public class Channel extends Base {
         return userList;
     }
 
+    public List<Message> getMessageList() {
+        return messageList;
+    }
+
     public void updateName(String name) {
         this.name = name;
     }
@@ -29,6 +35,9 @@ public class Channel extends Base {
         this.userList.add(user);
     }
 
+    public void addMessage(Message message) {
+        this.messageList.add(message);
+    }
 
     @Override
     public String toString() {

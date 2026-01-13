@@ -45,6 +45,11 @@ public class JCFMessageService implements MessageService {
 
         Message newMessage = new Message(user, text, channel);
         data.add(newMessage);
+
+        // channel과 user의 messageList에 현재 message를 add
+        channel.addMessage(newMessage);
+        user.addMessage(newMessage);
+
         return newMessage;
     }
 
@@ -60,18 +65,22 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> findByUser(UUID userId) {
-        // 해당 uuid를 갖는 유저가 존재하는지 확인한다.
-        return data.stream()
-            .filter(message -> message.getSender().getId().equals(userId))
-            .toList();
+//        return data.stream()
+//            .filter(message -> message.getSender().getId().equals(userId))
+//            .toList();
+        // 해당 id를 갖는 user 객체의 메시지 리스트를 반환하도록 변경
+        return userService.findById(userId).getMessageList();
+
     }
 
 
     @Override
     public List<Message> findByChannel(UUID channelId) {
-        return data.stream()
-            .filter(message -> message.getChannel().getId().equals(channelId))
-            .toList();
+//        return data.stream()
+//            .filter(message -> message.getChannel().getId().equals(channelId))
+//            .toList();
+        // 해당 id를 갖는 channel 객체의 메시지 리스트를 반환하도록 변경
+        return channelService.findById(channelId).getMessageList();
     }
 
     @Override
