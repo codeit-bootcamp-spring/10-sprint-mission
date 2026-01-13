@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.entity;
 
 public class User extends DefaultEntity {
     private String userName;
+    private Groups groups;
 
     public User(String userName) {
         this.userName = userName;
+        groups = null;
     }
 
     public String getUserName() {

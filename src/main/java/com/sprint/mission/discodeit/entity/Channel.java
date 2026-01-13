@@ -76,8 +76,18 @@ public class Channel extends DefaultEntity {
         allowedUsers.add(user);
     }
 
+    public void addAllowedUser(Groups group) {
+        group.getUsers()
+                .forEach(this::addAllowedUser);
+    }
+
     public void removeAllowedUser(User user) {
         allowedUsers.remove(user);
+    }
+
+    public void removeAllowedUser(Groups group) {
+        group.getUsers()
+                .forEach(this::removeAllowedUser);
     }
 
     public HashSet<User> getAllowedUsers() {
