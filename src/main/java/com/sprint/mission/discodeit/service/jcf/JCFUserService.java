@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -17,7 +18,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User createUser(String userName, String userEmail, String userPassword) {
-        Objects.requireNonNull(userName, "userName은 공백이 될 수 없습니다.");
+        validationUser(userName, userEmail, userPassword);
         User user = new User(userName, userEmail, userPassword);
         list.add(user);
         return user;
@@ -25,6 +26,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User readUser(UUID id) {
+        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
         for (User user : list) {
             if(id.equals(user.getId())){
                 return user;
@@ -40,12 +42,15 @@ public class JCFUserService implements UserService {
 
     @Override
     public void updateUser(UUID id, String userName, String userEmail, String userPassword) {
+        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        validationUser(userName, userEmail, userPassword);
         readUser(id).updateUserName(userName);
         readUser(id).updateUserEmail(userEmail);
         readUser(id).updateUserPassword(userPassword);
     }
 
     public boolean isUserDeleted(UUID id) {
+        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
         for (User user : list) {
             if(id.equals(user.getId())) {
                 return false;
@@ -57,6 +62,22 @@ public class JCFUserService implements UserService {
 
     @Override
     public void deleteUser(UUID id) {
+        Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
         list.remove(readUser(id));
+    }
+
+    private void validationUser(String userName, String userEmail, String userPassword) {
+        Objects.requireNonNull(userName, "userName은 null이 될 수 없습니다.");
+        if(userName.isBlank()) {
+            throw new IllegalArgumentException("userName에 공백을 입력할 수 없습니다.");
+        }
+        Objects.requireNonNull(userEmail, "userEmail은 null이 될 수 없습니다.");
+        if(userEmail.isBlank()) {
+            throw new IllegalArgumentException("userEmail에 공백을 입력할 수 없습니다.");
+        }
+        Objects.requireNonNull(userPassword, "userPassword는 null이 될 수 없습니다.");
+        if(userPassword.isBlank()) {
+            throw new IllegalArgumentException("userPassword에 공백을 입력할 수 없습니다.");
+        }
     }
 }

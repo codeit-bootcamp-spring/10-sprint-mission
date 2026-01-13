@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
@@ -16,6 +17,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message createMessage(String content, UUID channelId, UUID userId) {
+        Objects.requireNonNull(content, "content는 null이 될 수 없습니다.");
         Message message = new Message(content, channelId, userId);
         list.add(message);
         return message;
