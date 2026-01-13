@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class JCFUserService implements UserService {
@@ -16,6 +17,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User createUser(String userName, String userEmail, String userPassword) {
+        Objects.requireNonNull(userName, "userName은 공백이 될 수 없습니다.");
         User user = new User(userName, userEmail, userPassword);
         list.add(user);
         return user;
