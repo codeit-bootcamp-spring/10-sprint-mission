@@ -57,15 +57,15 @@ public class JCFUserService implements UserService {
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("id가 " + userId + "인 유저를 찾을 수 없습니다."));
 
-        if(user.getNickName() != null) {
-            updatedUser.updateNickName(user.getNickName());
-        } else if(user.getUserName() != null) {
-            updatedUser.updateUserName(user.getUserName());
-        } else if(user.getEmail() != null) {
-            updatedUser.updateEmail(user.getEmail());
-        } else if(user.getPhoneNumber() != null) {
-            updatedUser.updatePhoneNumber(user.getPhoneNumber());
-        }
+        // input이 null이 아닌 필드 업데이트
+        Optional.ofNullable(user.getNickName())
+                .ifPresent(updatedUser::updateNickName);
+        Optional.ofNullable(user.getUserName())
+                .ifPresent(updatedUser::updateUserName);
+        Optional.ofNullable(user.getEmail())
+                .ifPresent(updatedUser::updateEmail);
+        Optional.ofNullable(user.getPhoneNumber())
+                .ifPresent(updatedUser::updatePhoneNumber);
 
         return updatedUser;
     }
