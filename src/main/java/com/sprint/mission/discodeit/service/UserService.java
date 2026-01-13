@@ -16,5 +16,5 @@ public interface UserService {
 
     User updateUser(UUID userId, User user); // 수정하고 싶은 필드에 null 이외의 값을 넣는다.
 
-    boolean delete(UUID userId);
+    void delete(UUID userId);
 }

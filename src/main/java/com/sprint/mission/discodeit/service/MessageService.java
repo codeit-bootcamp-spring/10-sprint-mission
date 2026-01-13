@@ -23,5 +23,5 @@ public interface MessageService {
 
     Message updateById(UUID messageId, String text); // 메시지 내용 수정
 
-    boolean delete(UUID messageId);
+    void delete(UUID messageId);
 }

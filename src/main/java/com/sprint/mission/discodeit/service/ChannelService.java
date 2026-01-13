@@ -18,7 +18,7 @@ public interface ChannelService {
 
     boolean deleteUser(UUID channelId, UUID userId);
 
-    boolean delete(UUID channelId);
+    void delete(UUID channelId);
 
     boolean isUserInvolved(UUID channelId, UUID userId);
 }

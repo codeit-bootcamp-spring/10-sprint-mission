@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
@@ -59,15 +60,12 @@ public class JCFMessageService implements MessageService {
             .filter(message -> message.getId().equals(id))
             .findFirst()
             .orElseThrow(
-                () -> new RuntimeException("id가 " + id + "인 메시지는 존재하지 않습니다.")
+                () -> new NoSuchElementException("id가 " + id + "인 메시지는 존재하지 않습니다.")
             );
     }
 
     @Override
     public List<Message> findByUser(UUID userId) {
-//        return data.stream()
-//            .filter(message -> message.getSender().getId().equals(userId))
-//            .toList();
         // 해당 id를 갖는 user 객체의 메시지 리스트를 반환하도록 변경
         return userService.findById(userId).getMessageList();
 
@@ -76,9 +74,6 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> findByChannel(UUID channelId) {
-//        return data.stream()
-//            .filter(message -> message.getChannel().getId().equals(channelId))
-//            .toList();
         // 해당 id를 갖는 channel 객체의 메시지 리스트를 반환하도록 변경
         return channelService.findById(channelId).getMessageList();
     }
@@ -88,7 +83,7 @@ public class JCFMessageService implements MessageService {
         Message message = data.stream()
             .filter(msg -> msg.getId().equals(messageId))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("id가 " + messageId + "인 메시지는 존재하지 않습니다."));
+            .orElseThrow(() -> new NoSuchElementException("id가 " + messageId + "인 메시지는 존재하지 않습니다."));
 
         message.updateText(text);
         message.updateUpdatedAt(System.currentTimeMillis());
@@ -97,7 +92,8 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public boolean delete(UUID messageId) {
-        return data.removeIf(message -> message.getId().equals(messageId));
+    public void delete(UUID messageId) {
+        if (!data.removeIf(message -> message.getId().equals(messageId)))
+            throw new NoSuchElementException("id가 " + messageId + "인 메시지는 존재하지 않습니다.");
     }
 }

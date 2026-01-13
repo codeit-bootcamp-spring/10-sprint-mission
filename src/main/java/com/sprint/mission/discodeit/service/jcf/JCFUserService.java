@@ -3,9 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFUserService implements UserService {
     private static UserService instance;
@@ -36,7 +34,7 @@ public class JCFUserService implements UserService {
         return data.stream()
             .filter(user -> user.getId().equals(id))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("id가 " + id + "인 유저를 찾을 수 없습니다."));
+            .orElseThrow(() -> new NoSuchElementException("id가 " + id + "인 유저를 찾을 수 없습니다."));
     }
 
     @Override
@@ -44,7 +42,7 @@ public class JCFUserService implements UserService {
         return data.stream()
             .filter(user -> user.getUserName().equals(userName))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("사용자명이 " + userName + "인 유저를 찾을 수 없습니다."));
+            .orElseThrow(() -> new NoSuchElementException("사용자명이 " + userName + "인 유저를 찾을 수 없습니다."));
     }
 
     @Override
@@ -57,7 +55,7 @@ public class JCFUserService implements UserService {
         User updatedUser = data.stream()
                 .filter(u -> u.getId().equals(userId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("id가 " + userId + "인 유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("id가 " + userId + "인 유저를 찾을 수 없습니다."));
 
         if(user.getNickName() != null) {
             updatedUser.updateNickName(user.getNickName());
@@ -73,7 +71,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public boolean delete(UUID id) {
-        return data.removeIf(user -> user.getId().equals(id));
+    public void delete(UUID id) {
+        if (!data.removeIf(user -> user.getId().equals(id)))
+            throw new NoSuchElementException("id가 " + id + "인 유저는 존재하지 않습니다.");
     }
 }

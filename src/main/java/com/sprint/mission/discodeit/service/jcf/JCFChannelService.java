@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
@@ -39,7 +40,7 @@ public class JCFChannelService implements ChannelService {
             .filter(ch -> ch.getId().equals(channelId))
             .findFirst()
             .orElseThrow(
-                () -> new IllegalArgumentException(channelId + " 은(는) 존재하지 않는 채널 id입니다.")
+                () -> new NoSuchElementException(channelId + " 은(는) 존재하지 않는 채널 id입니다.")
             );
     }
 
@@ -53,7 +54,7 @@ public class JCFChannelService implements ChannelService {
         Channel channel = data.stream()
             .filter(ch -> ch.getId().equals(channelId))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
+            .orElseThrow(() -> new NoSuchElementException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
 
         channel.updateName(name);
         channel.updateUpdatedAt(System.currentTimeMillis());
@@ -66,7 +67,7 @@ public class JCFChannelService implements ChannelService {
         Channel channel = data.stream()
             .filter(ch -> ch.getId().equals(channelId))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
+            .orElseThrow(() -> new NoSuchElementException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
 
         User user = userService.findById(userId);
 
@@ -82,19 +83,20 @@ public class JCFChannelService implements ChannelService {
         Channel channel = data.stream()
             .filter(ch -> ch.getId().equals(channelId))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
+            .orElseThrow(() -> new NoSuchElementException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
 
-        // 해당 채널에 유저가 속해있는지 확인한다.
-        if (!this.isUserInvolved(channelId, userId)) {
-            return false;
+        // 해당 채널에 유저가 속해있는지 확인한 후 내보낸다.
+        if (this.isUserInvolved(channelId, userId)) {
+            return channel.getUserList().removeIf(u -> u.getId().equals(userId));
         }
 
-        return channel.getUserList().removeIf(u -> u.getId().equals(userId));
+        return false;
     }
 
     @Override
-    public boolean delete(UUID channelId) {
-        return data.removeIf(ch -> ch.getId().equals(channelId));
+    public void delete(UUID channelId) {
+        if (!data.removeIf(user -> user.getId().equals(channelId)))
+            throw new NoSuchElementException("id가 " + channelId + "인 채널은 존재하지 않습니다.");
     }
 
     @Override
@@ -103,7 +105,7 @@ public class JCFChannelService implements ChannelService {
         Channel channel = data.stream()
             .filter(ch -> ch.getId().equals(channelId))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
+            .orElseThrow(() -> new NoSuchElementException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
 
         User user = userService.findById(userId);
 
