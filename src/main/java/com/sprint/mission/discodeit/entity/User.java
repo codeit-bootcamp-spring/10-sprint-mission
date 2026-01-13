@@ -4,12 +4,14 @@ import java.util.*;
 
 public class User extends BaseEntity {
     private String email;
-    private String nickName;
+    private String nickName = "";
     private String userName;
     private String password;
-    private String birthday;
+    private String birthday = "";
 
     // 연관
+    // 해당 유저가 owner인 채널 목록
+    private final Set<Channel> ownerChannelList;
     // 해당 유저가 참여 중인 채널 목록
     private final Set<Channel> joinChannelList;
     // 해당 유저가 보낸 메시지 목록
@@ -23,6 +25,7 @@ public class User extends BaseEntity {
         this.password = password; // 해싱?
         this.birthday = birthday;
 
+        ownerChannelList = new HashSet<>();
         joinChannelList = new HashSet<>();
         writeMessageList = new ArrayList<>();
     }
@@ -38,6 +41,7 @@ public class User extends BaseEntity {
                 "userName = " + userName + ", " +
 //                "password = " + password + ", " +
 //                "birthday = " + birthday + ", " +
+//                "ownerChannelList = " + ownerChannelList + ", " +
 //                "joinChannelList = " + joinChannelList + ", " +
 //                "writeMessageList = " + writeMessageList +
                 "}";
@@ -64,8 +68,12 @@ public class User extends BaseEntity {
         return birthday;
     }
 
-    public Set<Channel> getJoinChannelList() {
-        return joinChannelList;
+    public List<Channel> getOwnerChannelList() {
+        return ownerChannelList.stream().toList();
+    }
+
+    public List<Channel> getJoinChannelList() {
+        return joinChannelList.stream().toList();
     }
 
     public List<Message> getWriteMessageList() {
@@ -99,6 +107,18 @@ public class User extends BaseEntity {
         updateTime();
     }
 
+    // owner 임명됨
+    public void ownChannel(Channel channel) {
+        this.ownerChannelList.add(channel);
+        updateTime();
+    }
+
+    // owner 소유권 제거
+    public void removeChannelOwner(Channel channel) {
+        this.ownerChannelList.remove(channel);
+        updateTime();
+    }
+
     // 채널 참가
     public void joinChannel(Channel channel) {
         this.joinChannelList.add(channel);
@@ -117,6 +137,6 @@ public class User extends BaseEntity {
     public void writeMessage(Message message) {
         this.writeMessageList.add(message);
         updateTime();
-        message.addUserWriteMessageList(this, message.getContent());
+//        message.addUserWriteMessageList(this, message.getContent());
     }
 }

@@ -27,19 +27,21 @@ public interface UserService {
     List<Channel> readUserJoinChannelsByUserId(UUID userId);
     // 특정 사용자가 참여한 채널 중에서 특정 채널 검색
     List<Channel> searchUserChannelByChannelName(UUID userId, String partialChannelName);
+    // 특정 사용자가 owner인 모든 채널
+    List<Channel> readUserOwnChannelsByUserId(UUID userId);
 //    // 특정 사용자가 작성한 모든 메시지
 //    List<Message> readAllMessageAtUserByUserId(UUID userId);
 
     // U. 수정
-    Optional<User> updateEmail(UUID userId, String email); // 이메일 수정
-    Optional<User> updatePassword(UUID userId, String password); // 비밀번호 수정
-    Optional<User> updateNickName(UUID userId, String nickName); // 별명 수정
-    Optional<User> updateUserName(UUID userId, String userName); // 사용자 이름 수정
-    Optional<User> updateBirthday(UUID userId, String birthday); // 생년월일 수정
-    Optional<User> joinChannel(UUID userId, Channel channel); // 채널 참여
-    Optional<User> leaveChannel(UUID userId, Channel channel); // 채널 탈퇴
-    Optional<User> writeMessage(UUID userId, String messageContent, Channel channel); // 메시지 작성
+    User updateEmail(UUID requestId, UUID targetId, String email); // 이메일 수정
+    User updatePassword(UUID requestId, UUID targetId, String password); // 비밀번호 수정
+    User updateNickName(UUID requestId, UUID targetId, String nickName); // 별명 수정
+    User updateUserName(UUID requestId, UUID targetId, String userName); // 사용자 이름 수정
+    User updateBirthday(UUID requestId, UUID targetId, String birthday); // 생년월일 수정
+    User joinChannel(UUID requestId, UUID targetId, Channel channel); // 채널 참여
+    User leaveChannel(UUID requestId, UUID targetId, Channel channel); // 채널 탈퇴
+    User writeMessage(UUID requestId, UUID targetId, String messageContent, Channel channel); // 메시지 작성
 
     // D. 삭제
-    void deleteUser(UUID userId);
+    void deleteUser(UUID requestId, UUID targetId);
 }
