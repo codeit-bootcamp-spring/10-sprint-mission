@@ -28,4 +28,9 @@ public class Message extends Common {
     public void updateMessage(String message) {
         this.message = message;
     }
+
+    @Override
+    public String toString() {
+        return String.format("채널ID: %s\t유저ID: %s\t채팅메세지: %s", getChannelId(), getUserId(), getMessage());
+    }
 }
