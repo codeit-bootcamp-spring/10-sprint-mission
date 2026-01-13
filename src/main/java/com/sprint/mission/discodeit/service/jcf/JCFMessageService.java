@@ -1,19 +1,28 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
     private final Map<UUID, List<Message>> data;        // key: ChannelUuid
+    private final UserService userService;
+    private final ChannelService channelService;
 
-    public JCFMessageService() {
+    public JCFMessageService(UserService userService, ChannelService channelService) {
         data = new HashMap<>();
+        this.userService = userService;
+        this.channelService = channelService;
     }
 
     @Override
     public Message createMessage(UUID channelId, UUID userId, String message) {
+        channelService.findChannel(channelId).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+        userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+
         Message msg = new Message(channelId, userId, message);
         data.computeIfAbsent(channelId, k -> new ArrayList<>()).add(msg);
         return msg;

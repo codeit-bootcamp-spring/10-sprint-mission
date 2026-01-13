@@ -9,7 +9,7 @@ import java.util.*;
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
 
-    public JCFChannelService(UserService userService) {
+    public JCFChannelService() {
         data = new HashMap<>();
     }
 
@@ -73,5 +73,17 @@ public class JCFChannelService implements ChannelService {
     public void deleteChannelByTitle(String title) {
         Channel channel = findChannelByTitle(title).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
         data.remove(channel.getId());
+    }
+
+    @Override
+    public void joinChannel(UUID uuid, UUID userId) {
+        Channel channel = findChannel(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+        channel.addParticipant(userId);
+    }
+
+    @Override
+    public void leaveChannel(UUID uuid, UUID userId) {
+        Channel channel = findChannel(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+        channel.removeParticipant(userId);
     }
 }
