@@ -20,7 +20,10 @@ public class JCFChannelService implements ChannelService {
         if (channelName == null) {
             throw new IllegalArgumentException("생성하고자하는 채널의 채널명이 null일 수 없음");
         }
-        Channel channel = new Channel(channelName);
+        if (channelName.isEmpty()) {
+            throw new IllegalArgumentException("생성하고자하는 채널의 채널명이 빈문자열일 수 없음");
+        }
+        Channel channel = new Channel(channelName.trim());
         channels.put(channel.getId(), channel);
         return channel;
     }
@@ -54,5 +57,25 @@ public class JCFChannelService implements ChannelService {
     public void deleteById(UUID id) {
         findById(id);
         channels.remove(id);
+    }
+    
+    // 해당 id를 가진 채널의 메시지 목록을 반환
+    public List<Message> getMessagesById(UUID id) {
+        Channel channel = findById(id);
+        List<Message> messages = channel.getMessageList();
+        if (messages.isEmpty()) {
+            throw new IllegalStateException("해당 채널에 메시지가 없습니다.");
+        }
+        return messages;
+    }
+
+    // 해당 id를 가진 채널의 유저 목록을 반환
+    public List<User> getUsersById(UUID id) {
+        Channel channel = findById(id);
+        List<User> users = channel.getJoinedUsers();
+        if (users.isEmpty()) {
+            throw new IllegalStateException("해당 채널에 유저가 없습니다.");
+        }
+        return users;
     }
 }

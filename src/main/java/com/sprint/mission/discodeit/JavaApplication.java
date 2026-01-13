@@ -125,17 +125,17 @@ public class JavaApplication {
 
 
         // 메시지
-        MessageService messageService = new JCFMessageService();
+        MessageService messageService = new JCFMessageService(userService,channelService);
 
-        Message message1 = messageService.createMessage(user1,"토익 스터디 합시다",channel1);
+        Message message1 = messageService.createMessage(user1Id,"토익 스터디 합시다",channel1Id);
         UUID message1Id = message1.getId();
 
-        Message message2 = messageService.createMessage(user2,"스프링 스터디 합시다",channel1);
+        Message message2 = messageService.createMessage(user2Id,"스프링 스터디 합시다",channel1Id);
         UUID message2Id = message2.getId();
         // 메시지 생성 시 예외 상황(생성하려는 메시지가 null인 경우)
         System.out.println("\n**생성하려는 메시지가 null인 경우(예외)**");
         try {
-            messageService.createMessage(user1,null,channel1);
+            messageService.createMessage(user1Id,null,channel1Id);
         } catch (Exception e) {
             System.out.println("**예외 상황 발생 : "+e.getMessage());
         }
@@ -143,7 +143,7 @@ public class JavaApplication {
         System.out.println("\n**참여하지 않은 채널에 메시지를 작성하려는 경우(예외)**");
         try {
             // user2는 channel2에 참여하지 않은 상황
-            messageService.createMessage(user2,"새로운 메시지 내용",channel2);
+            messageService.createMessage(user2Id,"새로운 메시지 내용",channel2Id);
         } catch (Exception e) {
             System.out.println("**예외 상황 발생 : "+e.getMessage());
         }
@@ -184,5 +184,24 @@ public class JavaApplication {
         messageService.deleteById(message1Id);
         messageService.findAll().forEach(System.out::println);
 
+        // channel1의 메시지 목록 출력
+        System.out.println("\n==channel1의 메시지 목록 출력==");
+        channelService.getMessagesById(channel1Id)
+                .forEach(System.out::println);
+
+        // channel1에 참여 중인 유저 목록 출력
+        System.out.println("\n==channel1에 참여 중인 유저 목록 출력==");
+        channelService.getUsersById(channel1Id)
+                .forEach(System.out::println);
+
+        // user1(장동규)가 참여 중인 채널 목록 출력
+        System.out.println("\n==user1(장동규)가 참여 중인 채널 목록 출력==");
+        userService.getChannelsById(user1Id)
+                .forEach(System.out::println);
+
+        // user1(장동규)가 작성한 메시지 목록 출력
+        System.out.println("\n==user1(장동규)가 작성한 메시지 목록 출력==");
+        userService.getMessagesById(user1Id)
+                .forEach(System.out::println);
     }
 }
