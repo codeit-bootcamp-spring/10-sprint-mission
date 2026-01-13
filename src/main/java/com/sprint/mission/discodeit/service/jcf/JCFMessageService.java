@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
@@ -36,7 +37,10 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message create(User user, String msg, Channel channel) {
+    public Message create(UUID userID, String msg, UUID channelID) {
+        User user = JCFUserService.getInstance().find(userID);
+        Channel channel = JCFChannelService.getInstance().find(channelID);
+
         Message newMessage = new Message(user, msg, channel);
         messages.add(newMessage);
         return newMessage;

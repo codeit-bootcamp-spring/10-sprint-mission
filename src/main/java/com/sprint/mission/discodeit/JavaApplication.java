@@ -22,8 +22,8 @@ public class JavaApplication {
         Channel ch1 = channeldata.create("코딩", "코딩 관련해서 이야기 하는 채널");
         Channel ch2 = channeldata.create("마인크래프트", "마인크래프트 이야기 하는 채널");
 
-        Message mes1 = messagedata.create(user1, "이게 뭐지", ch1);
-        Message mes2 = messagedata.create(user2, "그게 뭔데", ch1);
+        Message mes1 = messagedata.create(user1.getId(), "이게 뭐지", ch1.getId());
+        Message mes2 = messagedata.create(user2.getId(), "그게 뭔데", ch1.getId());
 
         //불러오기
 
