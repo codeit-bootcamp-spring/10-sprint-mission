@@ -14,4 +14,6 @@ public interface ChannelService {
     Channel updateChannel(UUID uuid, String title, String description);
     void deleteChannel(UUID uuid);
     void deleteChannelByTitle(String title);
+    void joinChannel(UUID uuid, UUID userId);
+    void leaveChannel(UUID uuid, UUID userId);
 }
