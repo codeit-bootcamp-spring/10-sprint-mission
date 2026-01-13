@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class User extends DiscordEntity {
@@ -58,20 +59,25 @@ public class User extends DiscordEntity {
     }
 
     public void joinChannel(Channel channel){
-        if(!this.channelList.contains(channel)){
-            this.channelList.add(channel);
-            channel.addUser(this);
-            updateTime();
-            System.out.printf("%s 님이 %s 채널에 입장했습니다.%n", this.userId, channel.getName());
+        Objects.requireNonNull(channel, "유효하지 않은 채널입니다.");
+        if(channelList.contains(channel)){
+            throw new IllegalStateException("이미 가입되어 있는 채널입니다.");
         }
+        this.channelList.add(channel);
+        channel.addUser(this);
     }
 
     public void exitChannel(Channel channel){
-        if(this.channelList.contains(channel)){
-            this.channelList.remove(channel);
-            channel.kickUser(this);
-            updateTime();
-        }
+        Objects.requireNonNull(channel, "유효하지 않은 채널입니다.");
+        Channel ch = channelList.stream()
+                .filter(channel::equals)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다."));
+
+        this.channelList.remove(ch); // 인스턴스의 channelList 필드에서 매개변수로 입력받은 채널을 제거합니다.
+        channel.kickUser(this); // 입력받은 채널의 userList에서도 연결을 끊습니다.
+
+        System.out.printf("%s 님이 %s 채널에서 퇴장했습니다.%n", this.userId, channel.getName());
     }
 
     public Set<Message> getMsgList(){

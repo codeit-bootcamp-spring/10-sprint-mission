@@ -37,8 +37,8 @@ public class Channel extends DiscordEntity {
     }
 
     public Set<User> getUsers(){
-        System.out.printf("%s 채널의 유저 리스트입니다.%n",this.channelName);
-        userList.forEach(System.out::println);
+        //System.out.printf("%s 채널의 유저 리스트입니다.%n",this.channelName);
+        //userList.forEach(System.out::println);
         updateTime();
         return this.userList;
     }

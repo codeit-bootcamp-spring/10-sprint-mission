@@ -40,6 +40,11 @@ public class JCFMsgService implements MsgService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("유저가 존재하지 않습니다."));
 
+        // 매개변수로 받은 채널과 유저가 종속관계인지 확인합니다. (유저가 해당 채널에 가입되어 있는지?)
+        if(!channel.getUsers().contains(user)){
+            throw new IllegalStateException("채널에 해당 유저가 존재하지 않습니다.");
+        }
+
         Message message = new Message(context, channel, user); // 검증이 마치게 되면 도메인 모델 생성.
         data.add(message); //jcf 구현부 data 리스트에 add
         return message;

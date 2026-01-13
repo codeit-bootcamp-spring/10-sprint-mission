@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.helper;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -39,6 +40,22 @@ public class UserHelper {
         } catch (NullPointerException e){
             System.out.println("해당 유저는 null입니다.");
             return null;
+        }
+    }
+
+    public static void safeJoinChannel(User user, Channel channel){
+        try{
+            user.joinChannel(channel);
+        } catch(NullPointerException | IllegalStateException e){
+            System.out.println(e);
+        }
+    }
+
+    public static void safeExitChannel(User user, Channel channel){
+        try{
+            user.exitChannel(channel);
+        }catch(NullPointerException | IllegalStateException e){
+            System.out.println(e);
         }
     }
 }
