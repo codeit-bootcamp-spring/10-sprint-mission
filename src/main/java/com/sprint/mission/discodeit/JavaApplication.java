@@ -14,7 +14,7 @@ public class JavaApplication {
         // 등록
 
         JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService();
+        JCFChannelService channelService = new JCFChannelService(userService);
         JCFMessageService messageService = new JCFMessageService(userService, channelService);
 //        FileChannelService channelService = new FileChannelService("channel.ser");
 //        channelService.clear();
@@ -34,26 +34,25 @@ public class JavaApplication {
         }
 
         // 채널 등록
-        Channel channel1 = channelService.create("달선이 채널", IsPrivate.PUBLIC, user1);
-        Channel channel2 = channelService.create("달룡이 채널", IsPrivate.PUBLIC, user2);
-        Channel channel3 = channelService.create("달례 채널", IsPrivate.PUBLIC, user3);
-
-        // 사용자에 채널 넣기
-        System.out.println(user1);
+        Channel channel1 = channelService.create("달선이 채널", IsPrivate.PUBLIC, user1.getId());
+        Channel channel2 = channelService.create("달룡이 채널", IsPrivate.PUBLIC, user2.getId());
+        Channel channel3 = channelService.create("달례 채널", IsPrivate.PUBLIC, user3.getId());
 
 
 
+
+        // 사용자 update 확인
         System.out.println("\n업데이트 확인");
         System.out.println(user1);
         user1.updateStatus(UserStatus.DONOTDISTURB);
-        userService.update(user1);
+        userService.update(user1.getId());
         System.out.println(user1);
         System.out.println();
 
         // 메시지 등록
-        Message message1 = messageService.create(user1, channel1, "언니 보고싶어");
-        Message message2 = messageService.create(user2, channel2, "얘들아 배고파");
-        Message message3 = messageService.create(user3, channel3, "엄마 보고싶어");
+        Message message1 = messageService.create(user1.getId(), channel1.getId(), "언니 보고싶어");
+        Message message2 = messageService.create(user2.getId(), channel2.getId(), "얘들아 배고파");
+        Message message3 = messageService.create(user3.getId(), channel3.getId(), "엄마 보고싶어");
 //        userService.delete(user1.getId());
 //        channelService.delete(channel1.getId());
 //        messageService.create(user1, channel1, "테스트 예외");
@@ -82,14 +81,14 @@ public class JavaApplication {
         System.out.println(messageService.findById(message3.getId()));
         System.out.println("후");
         message3.updateContent("엄마 나랑 놀쟈 !");
-        messageService.update(message3);
+        messageService.update(message3.getId());
         System.out.println(messageService.findById(message3.getId()));
 
         // 수정
         System.out.println("\n채널 수정 후");
         channel1.updateName("달선이의 롤 채널");
         channel1.updatePrivate(IsPrivate.PRIVATE);
-        channelService.update(channel1);
+        channelService.update(channel1.getId());
         System.out.println(channelService.readAll());
 //        channelService.delete(channel2.getId()); // 채널 예외 발생
 //        channelService.update(channel2);
@@ -104,8 +103,8 @@ public class JavaApplication {
 
         // 심화 요구 사항
         System.out.println("심화 요구 사항");
-        Message message4 = messageService.create(user3, channel2, "오빠 놀쟈!");
-        Message message5 = messageService.create(user3, channel2, "언니 놀쟈!");
+        Message message4 = messageService.create(user3.getId(), channel2.getId(), "오빠 놀쟈!");
+        Message message5 = messageService.create(user3.getId(), channel2.getId(), "언니 놀쟈!");
 //        messageService.delete(message4.getId());  // 예외 발생
 //        messageService.update(message4);
         System.out.println("보낸 사람 : " + userService.findById(message4.getSender().getId()));

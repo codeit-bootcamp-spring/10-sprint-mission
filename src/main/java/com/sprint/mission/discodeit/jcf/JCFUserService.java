@@ -37,8 +37,9 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User update(User user) {
-        validateExistence(data, user.getId());
+    public User update(UUID id) {
+        validateExistence(data, id);
+        User user = findById(id);
         data.put(user.getId(), user);
         return user;
     }

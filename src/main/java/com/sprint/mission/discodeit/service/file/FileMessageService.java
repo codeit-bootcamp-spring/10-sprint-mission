@@ -10,7 +10,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
-public class FileMessageService extends AbstractFileService implements MessageService,  ClearMemory {
+public class FileMessageService extends AbstractFileService implements MessageService, ClearMemory {
 
     private final UserService userService;
     private final ChannelService channelService;
@@ -26,27 +26,23 @@ public class FileMessageService extends AbstractFileService implements MessageSe
     private void save(Message message) {
         Map<UUID, Message> data = load();
 
-        if(data.containsKey(message.getId())){
+        if (data.containsKey(message.getId())) {
             Message existing = data.get(message.getId());
             existing.updateContent(message.getContent());
             existing.updateUpdatedAt(System.currentTimeMillis());
             data.put(existing.getId(), existing);
-        }
-        else{
+        } else {
             data.put(message.getId(), message);
         }
         writeToFile(data);
     }
 
     @Override
-    public Message create(User user, Channel channel, String content) {
+    public Message create(UUID userId, UUID channelId, String content) {
+        User user = userService.findById(userId);
+        Channel channel = channelService.findById(channelId);
+
         Message message = new Message(user, channel, content);
-        try {
-            userService.findById(message.getSender().getId());
-            channelService.findById(message.getChannelId());
-        } catch (NoSuchElementException e) {
-            throw new NoSuchElementException("메시지 생성 실패 - " + e.getMessage());
-        }
         save(message);
         return message;
     }
@@ -60,14 +56,15 @@ public class FileMessageService extends AbstractFileService implements MessageSe
 
     @Override
     public List<Message> readAll() {
-        Map<UUID,Message> data = load();
+        Map<UUID, Message> data = load();
         return List.copyOf(data.values());    // 값들만 뽑아서 불변 리스트로 반환, 조회용이라 불변
     }
 
     @Override
-    public Message update(Message message) {
+    public Message update(UUID id) {
         Map<UUID, Message> data = load();
-        validateExistence(data, message.getId());
+        validateExistence(data, id);
+        Message message = findById(id);
         save(message);
         return message;
     }
@@ -89,7 +86,7 @@ public class FileMessageService extends AbstractFileService implements MessageSe
         writeToFile(new HashMap<UUID, Message>());
     }
 
-    private void validateExistence(Map<UUID, Message> data, UUID id){
+    private void validateExistence(Map<UUID, Message> data, UUID id) {
         if (!data.containsKey(id)) {
             throw new NoSuchElementException("실패 : 존재하지 않는 메시지 ID입니다.");
         }

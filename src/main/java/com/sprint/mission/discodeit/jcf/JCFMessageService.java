@@ -11,8 +11,8 @@ import java.util.*;
 
 public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> data;
-    private UserService userService;
-    private ChannelService channelService;
+    private final UserService userService;
+    private final ChannelService channelService;
 
     public JCFMessageService(UserService userService, ChannelService channelService) {
         this.data = new HashMap<>();
@@ -21,14 +21,11 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message create(User user, Channel channel, String content) {
+    public Message create(UUID userId, UUID channelId, String content) {
+        User user = userService.findById(userId);
+        Channel channel = channelService.findById(channelId);
+
         Message message = new Message(user, channel, content);
-        try {
-            userService.findById(message.getSender().getId());
-            channelService.findById(message.getChannelId());
-        } catch (NoSuchElementException e) {
-            throw new NoSuchElementException("메시지 생성 실패 - " + e.getMessage());
-        }
         data.put(message.getId(), message);
         return message;
     }
@@ -45,8 +42,9 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message update(Message message) {
-        validateExistence(data, message.getId());
+    public Message update(UUID messageId) {
+        validateExistence(data, messageId);
+        Message message = findById(messageId);
         data.put(message.getId(), message);
         return message;
     }
@@ -57,7 +55,7 @@ public class JCFMessageService implements MessageService {
         data.remove(id);
     }
 
-    private void validateExistence(Map<UUID, Message> data, UUID id){
+    private void validateExistence(Map<UUID, Message> data, UUID id) {
         if (!data.containsKey(id)) {
             throw new NoSuchElementException("실패 : 존재하지 않는 메시지 ID입니다.");
         }

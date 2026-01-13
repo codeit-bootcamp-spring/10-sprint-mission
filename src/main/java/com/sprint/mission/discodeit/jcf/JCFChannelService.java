@@ -4,22 +4,23 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.IsPrivate;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
+    private final UserService userService;
 
-    public JCFChannelService() {
+    public JCFChannelService(UserService userService) {
         this.data = new HashMap<>();
+        this.userService = userService;
     }
 
     @Override
-    public Channel create(String name, IsPrivate isPrivate, User owner){
+    public Channel create(String name, IsPrivate isPrivate, UUID ownerId){
+        User owner = userService.findById(ownerId);
         Channel channel = new Channel(name, isPrivate, owner);
-        if (!owner.getChannels().contains(channel)) {
-            owner.addChannel(channel);
-        }
         data.put(channel.getId(), channel);
         return channel;
     }
@@ -36,8 +37,9 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(Channel channel) {
-        validateExistence(data, channel.getId());
+    public Channel update(UUID id) {
+        validateExistence(data, id);
+        Channel channel = findById(id);
         data.put(channel.getId(), channel);
         return channel;
     }

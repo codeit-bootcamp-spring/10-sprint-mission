@@ -14,7 +14,7 @@ public class Channel extends BaseEntity implements Serializable {
         super(UUID.randomUUID(), System.currentTimeMillis());
         this.name = name;
         this.isPrivate = isPrivate;
-        this.owner = owner;
+        addOwner(owner);
     }
 
     public void addOwner(User owner){

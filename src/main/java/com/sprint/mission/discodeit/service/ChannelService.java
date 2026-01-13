@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface ChannelService {
 
     // Create
-    Channel create(String name, IsPrivate isPrivate, User owner);
+    Channel create(String name, IsPrivate isPrivate, UUID ownerId);
 
     // Read
     Channel findById(UUID id);
@@ -19,7 +19,7 @@ public interface ChannelService {
     List<Channel> readAll();
 
     // Update
-    Channel update(Channel channel);
+    Channel update(UUID id);
 
     // Delete
     void delete(UUID id);

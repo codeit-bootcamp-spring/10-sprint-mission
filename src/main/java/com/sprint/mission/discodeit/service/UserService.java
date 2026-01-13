@@ -17,7 +17,7 @@ public interface UserService {
     List<User> readAll();
 
     // Update
-    User update(User user);
+    User update(UUID id);
 
     // Delete
     void delete(UUID id);
