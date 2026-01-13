@@ -3,6 +3,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class JCFUserService implements UserService {
@@ -15,7 +16,7 @@ public class JCFUserService implements UserService {
         return instance;
     }
 
-    private HashSet<User> users = new HashSet<>();
+    private Set<User> users = new HashSet<>();
 
     @Override
     public User find(UUID id) {
@@ -27,8 +28,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public HashSet<User> findAll() {
-        HashSet<User> newUsers = new HashSet<>();
+    public Set<User> findAll() {
+        Set<User> newUsers = new HashSet<>();
         newUsers.addAll(users);
         return newUsers;
     }

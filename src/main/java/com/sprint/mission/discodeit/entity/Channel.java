@@ -1,15 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.UUID;
+import java.util.*;
 
 public class Channel extends DefaultEntity {
     private String channelName;
     private String channelDescription;
 
-    private ArrayList<Message> messages = new ArrayList<>();//메시지 리스트
-    private HashSet<User> allowedUsers = new HashSet<>();//채널 사용 가능한 유저 목록, 비어있으면 공개채널
+    private List<Message> messages = new ArrayList<>();//메시지 리스트
+    private Set<User> allowedUsers = new HashSet<>();//채널 사용 가능한 유저 목록, 비어있으면 공개채널
 
     public Channel(String channelName, String channelDescription) {
         this.channelName = channelName;
@@ -34,7 +32,7 @@ public class Channel extends DefaultEntity {
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public ArrayList<Message> getMessages() {
+    public List<Message> getMessages() {
         return messages;
     }
 
@@ -90,8 +88,8 @@ public class Channel extends DefaultEntity {
                 .forEach(this::removeAllowedUser);
     }
 
-    public HashSet<User> getAllowedUsers() {
-        HashSet<User> users = new HashSet<>();
+    public Set<User> getAllowedUsers() {
+        Set<User> users = new HashSet<>();
         users.addAll(allowedUsers);
         return users;
     }

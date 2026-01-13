@@ -4,12 +4,12 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
-import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public interface MessageService {
     public Message find(UUID id);
-    public HashSet<Message> findAll();
+    public Set<Message> findAll();
     public Message create(UUID userID, String msg, UUID channelID);
     public void delete(UUID id);
     public Message update(UUID id, String str);

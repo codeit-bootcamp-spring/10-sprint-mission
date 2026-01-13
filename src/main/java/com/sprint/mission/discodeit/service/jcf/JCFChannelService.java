@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
@@ -17,7 +18,7 @@ public class JCFChannelService implements ChannelService {
         return instance;
     }
 
-    HashSet<Channel> channels = new HashSet<>();
+    Set<Channel> channels = new HashSet<>();
 
     @Override
     public Channel find(UUID id) {
@@ -28,8 +29,8 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public HashSet<Channel> findAll() {
-        HashSet<Channel> newChannels = new HashSet<>();
+    public Set<Channel> findAll() {
+        Set<Channel> newChannels = new HashSet<>();
         newChannels.addAll(channels);
         return newChannels;
     }
@@ -58,4 +59,6 @@ public class JCFChannelService implements ChannelService {
                         .updateChannelDescription(desc));
         return willUpdate;
     }
+
+
 }

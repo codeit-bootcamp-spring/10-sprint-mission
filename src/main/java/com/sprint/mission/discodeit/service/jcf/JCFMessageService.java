@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
@@ -18,7 +19,7 @@ public class JCFMessageService implements MessageService {
         return instance;
     }
 
-    HashSet<Message> messages = new HashSet<>();
+    Set<Message> messages = new HashSet<>();
 
     @Override
     public Message find(UUID id) {
@@ -29,8 +30,8 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public HashSet<Message> findAll() {
-        HashSet<Message> newMessages = new HashSet<>();
+    public Set<Message> findAll() {
+        Set<Message> newMessages = new HashSet<>();
         newMessages.addAll(messages);
         return newMessages;
     }

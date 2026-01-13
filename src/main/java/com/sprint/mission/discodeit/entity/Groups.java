@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public class Groups extends DefaultEntity{
     private String groupName;
-    private HashSet<User> users;
+    private Set<User> users;
 
     public Groups(String groupName) {
         this.groupName = groupName;
@@ -16,7 +17,7 @@ public class Groups extends DefaultEntity{
         return groupName;
     }
 
-    public HashSet<User> getUsers() {
+    public Set<User> getUsers() {
         return users;
     }
 
