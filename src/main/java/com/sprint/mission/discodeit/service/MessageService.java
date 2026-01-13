@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 
 import java.util.HashSet;
 import java.util.UUID;
@@ -8,7 +10,7 @@ import java.util.UUID;
 public interface MessageService {
     public Message find(UUID id);
     public HashSet<Message> findAll();
-    public Message create(Message message);
+    public Message create(User user, String msg, Channel channel);
     public void delete(UUID id);
     public Message update(UUID id, String str);
 }

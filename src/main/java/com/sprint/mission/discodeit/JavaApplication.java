@@ -16,18 +16,16 @@ public class JavaApplication {
         JCFChannelService channeldata = JCFChannelService.getInstance();
         JCFMessageService messagedata = JCFMessageService.getInstance();
 
-        User user1 = new User("초시");
-        User user2 = new User("초코");
-        userdata.create(user1);
-        userdata.create(user2);
+        User user1 = userdata.create("초시");
+        User user2 = userdata.create("초코");
 
         Channel ch1 = channeldata.create("코딩", "코딩 관련해서 이야기 하는 채널");
         Channel ch2 = channeldata.create("마인크래프트", "마인크래프트 이야기 하는 채널");
 
         Message mes1 = new Message(user1, "이게 뭐지", ch1);
         Message mes2 = new Message(user2, "그게 먼데", ch1);
-        messagedata.create(mes1);
-        messagedata.create(mes2);
+        messagedata.create(user1, "이게 뭐지", ch1);
+        messagedata.create(user2, "그게 뭔데", ch1);
 
         //불러오기
 

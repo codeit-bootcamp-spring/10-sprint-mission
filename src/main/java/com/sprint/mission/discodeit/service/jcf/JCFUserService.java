@@ -36,7 +36,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User create(User user) {
+    public User create(String userName) {
+        User user = new User(userName);
         users.add(user);
         return user;
     }

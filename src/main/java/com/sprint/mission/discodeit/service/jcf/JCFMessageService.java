@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.HashSet;
@@ -36,9 +38,10 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message create(Message message) {
-        messages.add(message);
-        return message;
+    public Message create(User user, String msg, Channel channel) {
+        Message newMessage = new Message(user, msg, channel);
+        messages.add(newMessage);
+        return newMessage;
     }
 
     @Override
