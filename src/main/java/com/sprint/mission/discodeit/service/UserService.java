@@ -9,6 +9,6 @@ public interface UserService {
     User create(String username);
     User findById(UUID userId);
     List<User> findAll();
-    void update(UUID userId, String username);
+    User update(UUID userId, String username);
     void delete(UUID userId);
 }

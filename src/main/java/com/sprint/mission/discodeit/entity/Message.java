@@ -1,15 +1,22 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.UUID;
-
 public class Message extends BaseEntity {
-    private final UUID userId;
-    private final UUID channelId;
+    private final User user;
+    private final Channel channel;
     private String content;
 
-    public Message(UUID userId, UUID channelId, String content) {
-        this.userId = userId;
-        this.channelId = channelId;
+    public Message(User user, Channel channel, String content) {
+        if (user == null) {
+            throw new IllegalArgumentException("user는 null일 수 없습니다.");
+        }
+        if (channel == null) {
+            throw new IllegalArgumentException("channel은 null일 수 없습니다.");
+        }
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("content는 비어 있을 수 없습니다.");
+        }
+        this.user = user;
+        this.channel = channel;
         this.content = content;
     }
 
@@ -17,17 +24,17 @@ public class Message extends BaseEntity {
     public String toString() {
         return "Message{" +
                 "id=" + getId() +
-                ", userId=" + userId +
-                ", channelId=" + channelId +
+                ", user=" + user +
+                ", channel=" + channel +
                 ", content='" + content + '\'' +
                 '}';
     }
-    public UUID getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public UUID getChannelId() {
-        return channelId;
+    public Channel getChannel() {
+        return channel;
     }
 
     public String getContent() {

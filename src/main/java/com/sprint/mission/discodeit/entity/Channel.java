@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
 public class Channel extends BaseEntity {
-
     private String name;
 
     public Channel(String name) {
@@ -19,7 +18,6 @@ public class Channel extends BaseEntity {
                 ", name='" + name + '\'' +
                 '}';
     }
-
 
     public void updateName(String name) {
         this.name = name;

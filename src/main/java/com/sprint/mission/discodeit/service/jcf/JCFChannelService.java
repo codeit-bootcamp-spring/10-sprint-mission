@@ -20,19 +20,25 @@ public class JCFChannelService implements ChannelService {
     }
 
     public Channel findById(UUID channelId) {
-        return data.get(channelId);
+        Channel channel = data.get(channelId);
+        if (channel == null) {
+            throw new NoSuchElementException("존재하지 않는 채널입니다. id= " + channelId);
+        }
+        return channel;
     }
 
     public List<Channel> findAll() {
         return new ArrayList<>(data.values());
     }
 
-    public void update(UUID channelId, String name) {
-        Channel channel = data.get(channelId);
+    public Channel update(UUID channelId, String name) {
+        Channel channel = findById(channelId);
         channel.updateName(name);
+        return channel;
     }
 
     public void delete(UUID channelId) {
+        findById(channelId);
         data.remove(channelId);
     }
 }
