@@ -17,17 +17,22 @@ public class JavaApplication {
         MessageService messageService = new JCFMessageService();
         UserService userService = new JCFUserService(messageService);
         ChannelService channelService = new JCFChannelService(userService,messageService);
+        messageService.setDependencies(userService,channelService);
 
         // 유저 생성
         User user1 = userService.create("김현재");
+        User user2 = userService.create("기면재");
 
         //채널 생성
         Channel channel1 = channelService.create("스프린트");
         Channel channel2 = channelService.create("코드잇");
+        channelService.joinUsers(channel1.getId(), user1.getId(),user2.getId());
+        channelService.joinUsers(channel2.getId(), user1.getId());
 
         // 메시지 생성
-        Message message1 = messageService.create(user1, "안녕하세요", channel1);
-        Message message2 = messageService.create(user1, "안녕히 계세요", channel1);
+        Message message1 = messageService.create(user1.getId(), "안녕하세요", channel1.getId());
+        Message message2 = messageService.create(user1.getId(), "안녕히 계세요", channel1.getId());
+        Message message3 = messageService.create(user2.getId(), "안녕!", channel2.getId());
 
         System.out.println("--- 조회 ---");
         // 조회
@@ -60,7 +65,8 @@ public class JavaApplication {
         messageService.findAllMessages();
         channelService.findAllChannel();
 
-        System.out.println("");
+        channelService.findAllChannelsByUserId(user1.getId());
+        channelService.findAllMessagesByChannelId(channel1.getId());
 
         System.out.println("--- 삭제&조회 ---");
         //삭제 & 조회
@@ -72,6 +78,10 @@ public class JavaApplication {
 
         channelService.delete(channel1.getId());
         test(() -> channelService.findChannel(channel1.getId()));
+
+        userService.findAllUsers();
+        messageService.findAllMessages();
+        channelService.findAllChannel();
     }
 
     private static void test(Runnable action){

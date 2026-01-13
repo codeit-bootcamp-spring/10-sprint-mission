@@ -8,6 +8,7 @@ public interface UserService {
     User create(String name);
     User findUser(UUID userId);
     List<User> findAllUsers();
+    User addFriend(UUID userId1, UUID userId2);
     User update(UUID userId, String newName);
     void delete(UUID userId);
 }

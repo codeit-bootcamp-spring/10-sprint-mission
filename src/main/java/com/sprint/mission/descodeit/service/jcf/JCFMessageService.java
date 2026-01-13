@@ -3,19 +3,30 @@ package com.sprint.mission.descodeit.service.jcf;
 import com.sprint.mission.descodeit.entity.Channel;
 import com.sprint.mission.descodeit.entity.Message;
 import com.sprint.mission.descodeit.entity.User;
+import com.sprint.mission.descodeit.service.ChannelService;
 import com.sprint.mission.descodeit.service.MessageService;
+import com.sprint.mission.descodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> data;
+    private UserService userService;
+    private ChannelService channelService;
 
     public JCFMessageService(){
         this.data = new HashMap<>();
     }
 
+    public void setDependencies(UserService userService, ChannelService channelService){
+        this.userService = userService;
+        this.channelService = channelService;
+    }
+
     @Override
-    public Message create(User user, String text, Channel channel) {
+    public Message create(UUID userId, String text, UUID channelId) {
+        User user = userService.findUser(userId);
+        Channel channel = channelService.findChannel(channelId);
         // 메시지 객체 생성
         Message message = new Message(user, text, channel);
         // 데이터에 객체 추가

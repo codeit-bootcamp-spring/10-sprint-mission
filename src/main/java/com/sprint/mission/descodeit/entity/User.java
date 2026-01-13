@@ -8,11 +8,13 @@ public class User extends BaseEntity{
     private String name;
     private final List<Message> messageList;
     private final List<Channel> channelList;
+    private final List<User> friendsList;
 
     public User(String name){
         this.name = name;
         this.messageList = new ArrayList<>();
         this.channelList = new ArrayList<>();
+        this.friendsList = new ArrayList<>();
     }
 
     public String getName() {
@@ -27,6 +29,9 @@ public class User extends BaseEntity{
         return channelList;
     }
 
+    public List<User> getFriendsList(){
+        return friendsList;
+    }
     public void addChannel(Channel channel){
         this.channelList.add(channel);
         if(!channel.getUserList().contains(this)){
@@ -38,6 +43,13 @@ public class User extends BaseEntity{
         this.messageList.add(message);
         if(message.getUser() != this){
             message.addUser(this);
+        }
+    }
+
+    public void addFriend(User user){
+        this.friendsList.add(user);
+        if(user.getFriendsList() != this){
+            user.addFriend(this);
         }
     }
 

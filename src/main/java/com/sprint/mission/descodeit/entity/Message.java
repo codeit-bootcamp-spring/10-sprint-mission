@@ -7,12 +7,9 @@ public class Message extends BaseEntity{
     private Channel channel;
 
     public Message(User user, String text, Channel channel) {
-        this.user = user;
         this.text = text;
-        this.channel = channel;
-
-        if(this.user != null) user.addMessage(this);
-        if(this.channel != null) channel.addMessage(this);
+        user.addMessage(this);
+        channel.addMessage(this);
     }
 
     public User getUser(){

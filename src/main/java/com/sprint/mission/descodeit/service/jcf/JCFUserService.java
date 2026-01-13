@@ -43,6 +43,15 @@ public class JCFUserService implements UserService {
     }
 
     @Override
+    public User addFriend(UUID senderId, UUID receiverId) {
+        User sender = data.get(senderId);
+        User receiver = data.get(receiverId);
+        sender.addFriend(receiver);
+
+        return receiver;
+    }
+
+    @Override
     public User update(UUID userId,String newName) {
         User user = findUser(userId);
         user.updateUser(newName);

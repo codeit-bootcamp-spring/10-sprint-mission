@@ -7,7 +7,8 @@ import java.util.*;
 import java.util.UUID;
 
 public interface MessageService {
-    Message create(User user, String text, Channel channel);
+    void setDependencies(UserService userService, ChannelService channelService);
+    Message create(UUID userId, String text, UUID channelId);
     Message findMessage(UUID messageId);
     List<Message> findAllMessages();
     Message update(UUID messageId, String newText);
