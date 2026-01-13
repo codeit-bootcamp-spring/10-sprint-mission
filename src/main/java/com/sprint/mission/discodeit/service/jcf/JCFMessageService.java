@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 
@@ -33,9 +34,9 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> readAllMessageByChannel(UUID channelId) {
+    public List<Message> readAllMessageByChannel(Channel channel) {
         return data.stream()
-                .filter(message -> message.getChannelId().equals(channelId))
+                .filter(message -> message.getChannel().equals(channel))
                 .collect(Collectors.toList());
     }
 
