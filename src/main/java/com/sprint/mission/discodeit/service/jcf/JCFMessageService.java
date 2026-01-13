@@ -4,7 +4,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.NotFoundException;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,13 +15,20 @@ import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
     private final List<Message> data;
+    private final UserService userService;
+    private final ChannelService channelService;
 
-    public JCFMessageService() {
+    public JCFMessageService(UserService userService, ChannelService channelService) {
         this.data = new ArrayList<>();
+        this.userService = userService;
+        this.channelService = channelService;
     }
 
     @Override
-    public Message create(Channel channel, User sender, String text) {
+    public Message create(UUID channelId, UUID senderId, String text) {
+        Channel channel = channelService.read(channelId);
+        User sender = userService.read(senderId);
+
         Message message = new Message(channel, sender, text);
         data.add(message);
         return message;

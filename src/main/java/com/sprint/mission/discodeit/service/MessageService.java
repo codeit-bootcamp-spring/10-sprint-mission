@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface MessageService {
 
-    Message create(Channel channel, User sender, String text);
+    Message create(UUID channelId, UUID senderId, String text);
     Message read(UUID id);
     List<Message> readAll();
     List<Message> readAllMessageByChannel(Channel channelId); // 채널별 메시지 목록 조회

@@ -16,7 +16,7 @@ public class JavaApplication {
         // 0. 서비스 초기화
         UserService userService = new JCFUserService();
         ChannelService channelService = new JCFChannelService();
-        MessageService messageService = new JCFMessageService();
+        MessageService messageService = new JCFMessageService(userService, channelService);
 
         System.out.println("=== [시작] 서비스 테스트 ===");
         //---------------------------------1. user---------------------------------
@@ -91,10 +91,10 @@ public class JavaApplication {
 
         //---------------------------------3. message---------------------------------
         // 3-1. message 등록 및 조회
-        Message message1 = messageService.create(channel1, user1, "멍멍!");
+        Message message1 = messageService.create(channel1.getId(), user1.getId(), "멍멍!");
         System.out.println("3-1. 메시지 등록 완료: [" + user1.getName() + "] " + message1.getText());
 
-        Message message2 = messageService.create(channel1, user2, "냐옹~");
+        Message message2 = messageService.create(channel1.getId(), user2.getId(), "냐옹~");
         System.out.println("3-1. 메시지 등록 완료: [" + user2.getName() + "] " + message2.getText());
 
         // 3-2. message 다건 조회
