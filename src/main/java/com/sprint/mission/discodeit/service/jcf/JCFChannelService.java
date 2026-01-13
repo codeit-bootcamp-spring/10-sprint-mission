@@ -31,7 +31,10 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel getChannel(UUID channelId) {
-        return findById(channelId);
+        return data.stream()
+                .filter(c -> c.getId().equals(channelId))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
     }
 
     @Override
@@ -42,7 +45,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel updateChannel(UUID channelId, String channelName, ChannelType channelType, String description) {
         validateChannelExist(channelName);
-        Channel findChannel = findById(channelId);
+        Channel findChannel = getChannel(channelId);
         Optional.ofNullable(channelName)
                 .ifPresent(findChannel::updateChannelName);
         Optional.ofNullable(channelType)
@@ -54,7 +57,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel deleteChannel(UUID channelId) {
-        Channel target = findById(channelId);
+        Channel target = getChannel(channelId);
         target.getUsers().forEach(user -> user.removeChannel(target));
         data.remove(target);
         return target;
@@ -62,7 +65,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
-        Channel channel = findById(channelId);
+        Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
 
         channel.addUser(user);
@@ -71,18 +74,11 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
-        Channel channel = findById(channelId);
+        Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
 
         channel.removeUser(user);
         user.removeChannel(channel);
-    }
-
-    private Channel findById(UUID id) {
-        return data.stream()
-                .filter(c -> c.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
     }
 
     private void validateChannelExist(String channelName) {

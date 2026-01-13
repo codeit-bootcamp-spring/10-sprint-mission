@@ -20,7 +20,10 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message getMessage(UUID messageId) {
-        return findById(messageId);
+        return data.stream()
+                .filter(m -> m.getId().equals(messageId))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 존재하지 않습니다."));
     }
 
     @Override
@@ -30,7 +33,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message updateMessage(UUID messageId, String content) {
-        Message findMessage = findById(messageId);
+        Message findMessage = getMessage(messageId);
         Optional.ofNullable(content)
                 .ifPresent(findMessage::updateContent);
         return findMessage;
@@ -38,16 +41,9 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message deleteMessage(UUID messageId) {
-        Message target = findById(messageId);
+        Message target = getMessage(messageId);
         target.getChannel().removeMessage(target);
         data.remove(target);
         return target;
-    }
-
-    private Message findById(UUID id) {
-        return data.stream()
-                .filter(m -> m.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 존재하지 않습니다."));
     }
 }

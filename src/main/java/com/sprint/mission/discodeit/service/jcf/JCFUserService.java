@@ -18,7 +18,10 @@ public class JCFUserService implements UserService {
 
     @Override
     public User getUser(UUID userId) {
-        return findById(userId);
+        return data.stream()
+                .filter(u -> u.getId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
     }
 
     @Override
@@ -29,7 +32,7 @@ public class JCFUserService implements UserService {
     @Override
     public User updateUser(UUID userId, String userName, String password, String email) {
         validateUserExist(userName);
-        User findUser = findById(userId);
+        User findUser = getUser(userId);
         Optional.ofNullable(userName)
                 .ifPresent(findUser::updateUserName);
         Optional.ofNullable(password)
@@ -41,17 +44,10 @@ public class JCFUserService implements UserService {
 
     @Override
     public User deleteUser(UUID userId) {
-        User target = findById(userId);
+        User target = getUser(userId);
         target.getChannels().forEach(channel -> channel.removeUser(target));
         data.remove(target);
         return target;
-    }
-
-    private User findById(UUID id) {
-        return data.stream()
-                .filter(u -> u.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
     }
 
     private void validateUserExist(String userName) {
