@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface MessageService {
     // 메시지 생성 (하지만 실제로는 객체를 등록하는 역할)
-    void createMessage(Message message);
+    Message createMessage(String content, User sender, Channel ch);
 
 
     // 메세지 조회(시스템) ID로!
@@ -19,7 +19,7 @@ public interface MessageService {
     List<Message> getMessageAll();
 
 
-    void updateMessage(Message message); // 메시지 내용 변경
+    Message updateMessage(UUID uuid, String newContent); // 메시지 내용 변경
 
 
     void deleteMessage(UUID id); // id로 메시지 삭제
