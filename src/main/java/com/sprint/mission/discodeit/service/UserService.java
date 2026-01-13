@@ -35,4 +35,7 @@ public interface UserService {
 
     // Delete
     void deleteUser(UUID userId);
+
+    // Setter
+    void setMessageService(MessageService messageService);
 }

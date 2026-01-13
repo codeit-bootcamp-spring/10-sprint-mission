@@ -32,4 +32,7 @@ public interface ChannelService {
 
     // Delete
     void deleteChannel(UUID channelId);
+
+    // Setter
+    void setMessageService(MessageService messageService);
 }

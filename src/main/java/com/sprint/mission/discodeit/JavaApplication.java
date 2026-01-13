@@ -18,6 +18,15 @@ public class JavaApplication {
     private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
+        // 1. 서비스 조립\
+        JCFUserService userService = new JCFUserService();
+        JCFChannelService channelService = new JCFChannelService();
+        JCFMessageService messageService = new JCFMessageService(userService, channelService);
+
+        // 서로 연결
+        userService.setMessageService(messageService);
+        channelService.setMessageService(messageService);
+
         System.out.println("==================================================");
         System.out.println("          Discodeit Integrated Test Runner        ");
         System.out.println("==================================================");
@@ -31,13 +40,13 @@ public class JavaApplication {
 
         switch (input) {
             case "1":
-                testUserDomain();
+                testUserDomain(userService);
                 break;
             case "2":
-                testChannelDomain();
+                testChannelDomain(userService, channelService);
                 break;
             case "3":
-                testMessageDomain();
+                testMessageDomain(userService, channelService, messageService);
                 break;
             default:
                 System.out.println("!! 잘못된 입력입니다. 프로그램을 종료합니다.");
@@ -49,12 +58,10 @@ public class JavaApplication {
     /**
      * 1. 유저 도메인 테스트
      */
-    private static void testUserDomain() {
+    private static void testUserDomain(JCFUserService userService) {
         System.out.println("\n##################################################");
         System.out.println("              User Domain Test Start              ");
         System.out.println("##################################################\n");
-
-        UserService userService = new JCFUserService();
 
         // -------------------------------------------------------------------
         // 1. Create (생성)
@@ -219,13 +226,10 @@ public class JavaApplication {
     /**
      * 2. 채널 도메인 테스트
      */
-    private static void testChannelDomain() {
+    private static void testChannelDomain(JCFUserService userService, JCFChannelService channelService) {
         System.out.println("\n##################################################");
         System.out.println("              Channel Domain Test Start           ");
         System.out.println("##################################################\n");
-
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService();
 
         // -------------------------------------------------------------------
         // [Step 0] 기초 데이터 준비
@@ -382,14 +386,10 @@ public class JavaApplication {
      * 3. 메시지 도메인 테스트
      * 시나리오: 메시지 전송 -> 변수 기반 수정(목록 출력) -> 변수 기반 삭제(목록 출력)
      */
-    private static void testMessageDomain() {
+    private static void testMessageDomain(JCFUserService userService, JCFChannelService channelService, JCFMessageService messageService) {
         System.out.println("\n##################################################");
         System.out.println("              Message Domain Test Start           ");
         System.out.println("##################################################\n");
-
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService();
-        MessageService messageService = new JCFMessageService(userService, channelService);
 
         // [Step 0] 기초 데이터 준비
         User userA = userService.createUser("user_a", "유저A", "a@test.com", "010-1111-1111");

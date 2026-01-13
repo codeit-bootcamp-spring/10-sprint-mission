@@ -77,7 +77,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID channelId) {
         Channel channel = getChannelOrThrow(channelId);
-        messageService.deleteMessagesByAuthorId(channelId);
+        messageService.deleteMessagesByChannelId(channelId);
         channelMap.remove(channelId);
     }
 
@@ -85,5 +85,10 @@ public class JCFChannelService implements ChannelService {
     private Channel getChannelOrThrow(UUID channelId) {
         return findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다. ID: " + channelId));
+    }
+
+    // Setter
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
     }
 }

@@ -126,4 +126,9 @@ public class JCFUserService implements UserService {
         return findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. ID: " + userId));
     }
+
+    // Setter
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
+    }
 }
