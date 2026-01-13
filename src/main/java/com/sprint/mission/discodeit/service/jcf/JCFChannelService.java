@@ -42,13 +42,14 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel updateChannel(UUID channelId, String channelName, ChannelType channelType, String description) {
         validateChannelExist(channelName);
-        Channel oldChannel = findById(channelId);
-        oldChannel.updateChannelName(channelName);
-        oldChannel.updateDescription(description);
-        if(!channelType.getValue().equals(oldChannel.getChannelType().getValue())) {
-            oldChannel.updateChannelType();
-        }
-        return oldChannel;
+        Channel findChannel = findById(channelId);
+        Optional.ofNullable(channelName)
+                .ifPresent(findChannel::updateChannelName);
+        Optional.ofNullable(channelType)
+                .ifPresent(findChannel::updateChannelType);
+        Optional.ofNullable(description)
+                .ifPresent(findChannel::updateDescription);
+        return findChannel;
     }
 
     @Override
@@ -82,11 +83,6 @@ public class JCFChannelService implements ChannelService {
                 .filter(c -> c.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
-    }
-
-    public ChannelType changeChannelType(Channel channel) {
-        channel.updateChannelType();
-        return channel.getChannelType();
     }
 
     private void validateChannelExist(String channelName) {

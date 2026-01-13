@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -30,11 +29,14 @@ public class JCFUserService implements UserService {
     @Override
     public User updateUser(UUID userId, String userName, String password, String email) {
         validateUserExist(userName);
-        User oldUser = findById(userId);
-        oldUser.updateUserName(userName);
-        oldUser.updatePassword(password);
-        oldUser.updateEmail(email);
-        return oldUser;
+        User findUser = findById(userId);
+        Optional.ofNullable(userName)
+                .ifPresent(findUser::updateUserName);
+        Optional.ofNullable(password)
+                .ifPresent(findUser::updatePassword);
+        Optional.ofNullable(email)
+                .ifPresent(findUser::updateEmail);
+        return findUser;
     }
 
     @Override

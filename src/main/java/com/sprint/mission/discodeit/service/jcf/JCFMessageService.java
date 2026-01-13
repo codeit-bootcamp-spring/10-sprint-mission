@@ -5,10 +5,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFMessageService implements MessageService {
     private final List<Message> data = new ArrayList<>();
@@ -33,9 +30,10 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message updateMessage(UUID messageId, String content) {
-        Message oldMessage = findById(messageId);
-        oldMessage.updateContent(content);
-        return oldMessage;
+        Message findMessage = findById(messageId);
+        Optional.ofNullable(content)
+                .ifPresent(findMessage::updateContent);
+        return findMessage;
     }
 
     @Override
