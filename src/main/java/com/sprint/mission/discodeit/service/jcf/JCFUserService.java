@@ -1,17 +1,17 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFUserService implements UserService {
     private final List<User> data = new ArrayList<>();
 
     @Override
     public User createUser(String userName, String password, String email) {
+        validateUserExist(userName);
         User user = new User(userName, password, email);
         data.add(user);
         return user;
@@ -29,6 +29,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User updateUser(UUID userId, String userName, String password, String email) {
+        validateUserExist(userName);
         User oldUser = findById(userId);
         oldUser.updateUserName(userName);
         oldUser.updatePassword(password);
@@ -48,6 +49,13 @@ public class JCFUserService implements UserService {
         return data.stream()
                 .filter(u -> u.getId().equals(id))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+    }
+
+    private void validateUserExist(String userName) {
+        Optional<User> target = data.stream()
+                .filter(u -> u.getUserName().equals(userName))
+                .findFirst();
+        if(target.isPresent()) throw new IllegalStateException("이미 존재하는 사용자 이름입니다.");
     }
 }

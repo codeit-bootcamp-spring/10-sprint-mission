@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
@@ -49,6 +50,6 @@ public class JCFMessageService implements MessageService {
         return data.stream()
                 .filter(m -> m.getId().equals(id))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("해당 메세지가 존재하지 않습니다."));
+                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 존재하지 않습니다."));
     }
 }

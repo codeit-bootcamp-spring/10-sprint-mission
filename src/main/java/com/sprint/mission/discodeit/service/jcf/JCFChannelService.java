@@ -6,9 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private UserService userService;
@@ -24,10 +22,12 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel createChannel(String channelName, ChannelType channelType, String description) {
+        validateChannelExist(channelName);
         Channel channel = new Channel(channelName, channelType, description);
         data.add(channel);
         return channel;
     }
+
 
     @Override
     public Channel getChannel(UUID channelId) {
@@ -41,6 +41,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel updateChannel(UUID channelId, String channelName, ChannelType channelType, String description) {
+        validateChannelExist(channelName);
         Channel oldChannel = findById(channelId);
         oldChannel.updateChannelName(channelName);
         oldChannel.updateDescription(description);
@@ -80,11 +81,18 @@ public class JCFChannelService implements ChannelService {
         return data.stream()
                 .filter(c -> c.getId().equals(id))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("해당 채널이 존재하지 않습니다."));
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
     }
 
     public ChannelType changeChannelType(Channel channel) {
         channel.updateChannelType();
         return channel.getChannelType();
+    }
+
+    private void validateChannelExist(String channelName) {
+        Optional<Channel> target = data.stream()
+                .filter(c -> c.getChannelName().equals(channelName))
+                .findFirst();
+        if(target.isPresent()) throw new IllegalStateException("이미 존재하는 채널 이름입니다.");
     }
 }
