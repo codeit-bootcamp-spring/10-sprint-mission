@@ -53,8 +53,8 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message update(UUID id, String msg) {
-        this.find(id)
-                .updateMessage(msg);
-        return this.find(id);
+        Message message= this.find(id);
+        message.updateMessage(msg);
+        return message;
     }
 }

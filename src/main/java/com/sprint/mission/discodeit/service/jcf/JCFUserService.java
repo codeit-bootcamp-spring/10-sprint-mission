@@ -48,8 +48,8 @@ public class JCFUserService implements UserService {
 
     @Override
     public User update(UUID id, String newUserName) {
-        this.find(id)
-                .updateUserName(newUserName);
-        return this.find(id);
+        User user = this.find(id);
+        user.updateUserName(newUserName);
+        return user;
     }
 }
