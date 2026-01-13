@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -19,12 +21,12 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message createMessage(UUID channelId, UUID userId, String message) {
-        channelService.findChannel(channelId).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
-        userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+    public Message createMessage(Channel channel, User user, String message) {
+        channelService.findChannel(channel.getId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+        userService.findUser(user.getId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
 
-        Message msg = new Message(channelId, userId, message);
-        data.computeIfAbsent(channelId, k -> new ArrayList<>()).add(msg);
+        Message msg = new Message(channel, user, message);
+        data.computeIfAbsent(channel.getId(), k -> new ArrayList<>()).add(msg);
         return msg;
     }
 
@@ -35,8 +37,8 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> findMessagesByChannelId(UUID uuid) {
-        return data.computeIfAbsent(uuid, k -> new ArrayList<>());
+    public List<Message> findMessagesByChannel(Channel channel) {
+        return data.computeIfAbsent(channel.getId(), k -> new ArrayList<>());
     }
 
     @Override
