@@ -6,7 +6,7 @@ public class Channel extends BaseEntity {
     private User owner;
     private Boolean isPrivate; // True = Private, False = Public
     private String channelName;
-    private String channelDescription;
+    private String channelDescription = "";
 
     // 연관 관계
     // 해당 채널에 참여 중인 유저 목록
@@ -16,11 +16,13 @@ public class Channel extends BaseEntity {
 
     // 생성자
     public Channel(User owner, Boolean isPrivate, String channelName, String channelDescription) {
-        this.owner = owner;
+        this.owner = owner; // owner 임명(생성하는 사용자 본인)
+        owner.ownChannel(this); // owner의 객체에도 반영
         this.isPrivate = isPrivate;
         this.channelName = channelName;
         this.channelDescription = channelDescription;
         channelMembersList = new HashSet<>();
+//        owner.joinChannel(this);
         channelMessagesList = new ArrayList<>();
     }
 
@@ -60,8 +62,8 @@ public class Channel extends BaseEntity {
         return channelDescription;
     }
 
-    public Set<User> getChannelMembersList() {
-        return channelMembersList;
+    public List<User> getChannelMembersList() {
+        return channelMembersList.stream().toList();
     }
 
     public List<Message> getChannelMessagesList() {
@@ -69,8 +71,8 @@ public class Channel extends BaseEntity {
     }
 
     // update
-    public void updateOwner(User owner) {
-        this.owner = owner;
+    public void updateChannelName(String channelName) {
+        this.channelName = channelName;
         updateTime();
     }
 
@@ -79,13 +81,22 @@ public class Channel extends BaseEntity {
         updateTime();
     }
 
-    public void updateChannelName(String channelName) {
-        this.channelName = channelName;
+    public void updateChannelDescription(String channelDescription) {
+        this.channelDescription = channelDescription;
         updateTime();
     }
 
-    public void updateChannelDescription(String channelDescription) {
-        this.channelDescription = channelDescription;
+    // owner 변경(+업데이트)
+    public void changeOwner(Channel channel, User owner) {
+        this.owner.removeChannelOwner(channel); // 기존 채널 주인 소유권 제거
+        this.owner = owner;
+        updateTime();
+        owner.ownChannel(this);
+    }
+
+    // owner 삭제
+    public void removeOwner(User user) {
+        this.owner = null; // ???????
         updateTime();
     }
 
@@ -101,7 +112,7 @@ public class Channel extends BaseEntity {
         updateTime();
     }
 
-    // 메시지 작성
+    // 채널에 메시지가 작성됨
     public void addChannelMessages(Message message) {
         this.channelMessagesList.add(message);
         updateTime();
