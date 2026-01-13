@@ -2,12 +2,12 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.UUID;
 
-public class defaultEntity {
+public abstract class DefaultEntity {
     protected final UUID id;
     protected final Long createAt;
     protected Long updatedAt;
 
-    public defaultEntity() {
+    public DefaultEntity() {
         this.id = UUID.randomUUID();
         this.createAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
@@ -24,4 +24,16 @@ public class defaultEntity {
     public Long getUpdatedAt() {
         return updatedAt;
     }
+
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DefaultEntity that = (DefaultEntity) o;
+        return getId().equals(that.getId());
+    }
+
+    public int hashCode() {
+        return java.util.Objects.hash(getId());
+    }
 }
+

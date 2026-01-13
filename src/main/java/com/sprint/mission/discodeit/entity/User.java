@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.UUID;
-
-public class User extends defaultEntity{
+public class User extends DefaultEntity {
     private String userName;
 
     public User(String userName) {

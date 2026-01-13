@@ -1,13 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
-import java.util.UUID;
+import java.util.HashSet;
 
-public class Channel extends defaultEntity{
+public class Channel extends DefaultEntity {
     private String channelName;
     private String channelDescription;
 
     private ArrayList<Message> messages = new ArrayList<>();
+    private HashSet<User> allowedUsers = new HashSet<>();
 
     public Channel(String channelName, String channelDescription) {
         this.channelName = channelName;

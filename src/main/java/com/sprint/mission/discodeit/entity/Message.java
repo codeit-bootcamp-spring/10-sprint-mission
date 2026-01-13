@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.UUID;
-
-public class Message extends defaultEntity{
+public class Message extends DefaultEntity {
     private String message; // 메시지 내용
     private final User user; // 보낸 사람
     private Channel channel; //속한 채널
