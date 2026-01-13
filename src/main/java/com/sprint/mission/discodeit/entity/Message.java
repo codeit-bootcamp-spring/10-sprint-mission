@@ -3,23 +3,23 @@ package com.sprint.mission.discodeit.entity;
 import java.util.UUID;
 
 public class Message extends Common {
-    private final UUID channelId;
-    private final UUID userId;
+    private final Channel channel;
+    private final User user;
     private String message;
 
-    public Message(UUID channelId, UUID userId, String message) {
+    public Message(Channel channel, User user, String message) {
         super();
-        this.channelId = channelId;
-        this.userId = userId;
+        this.channel = channel;
+        this.user = user;
         this.message = message;
     }
 
-    public UUID getChannelId() {
-        return this.channelId;
+    public Channel getChannel() {
+        return this.channel;
     }
 
-    public UUID getUserId() {
-        return this.userId;
+    public User getUser() {
+        return this.user;
     }
 
     public String getMessage() {
@@ -31,6 +31,6 @@ public class Message extends Common {
 
     @Override
     public String toString() {
-        return String.format("채널ID: %s\t유저ID: %s\t채팅메세지: %s", getChannelId(), getUserId(), getMessage());
+        return String.format("채널: %s\t\t유저: %s\t채팅메세지: %s", getChannel().getTitle(), getUser().getName(), getMessage());
     }
 }
