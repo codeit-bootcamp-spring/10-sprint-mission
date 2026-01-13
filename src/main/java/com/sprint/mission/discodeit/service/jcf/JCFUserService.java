@@ -53,27 +53,7 @@ public class JCFUserService implements UserService {
         if (!Objects.equals(user.getMail(), mail))
             findUserByMail(mail).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 accountId입니다"); });
 
-        boolean isChanged = false;
-        if (!Objects.equals(user.getAccountId(), accountId)) {
-            user.updateAccountId(accountId);
-            isChanged = true;
-        }
-        if (!Objects.equals(user.getPassword(), password)) {
-            user.updatePassword(password);
-            isChanged = true;
-        }
-        if (!Objects.equals(user.getName(), name)) {
-            user.updateName(name);
-            isChanged = true;
-        }
-        if (!Objects.equals(user.getMail(), mail)) {
-            user.updateMail(mail);
-            isChanged = true;
-        }
-
-        if (isChanged) {
-            user.updateUpdatedAt();
-        }
+        user.update(accountId, password, name, mail);
 
         return user;
     }

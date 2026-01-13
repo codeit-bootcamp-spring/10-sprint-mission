@@ -49,19 +49,7 @@ public class JCFChannelService implements ChannelService {
             findChannelByTitle(title).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 채널입니다"); });
         }
 
-        boolean isChanged = false;
-        if (!Objects.equals(channel.getTitle(), title)) {
-            channel.updateTitle(title);
-            isChanged = true;
-        }
-        if (!Objects.equals(channel.getDescription(), description)) {
-            channel.updateDescription(description);
-            isChanged = true;
-        }
-
-        if (isChanged) {
-            channel.updateUpdatedAt();
-        }
+        channel.update(title, description);
 
         return channel;
     }
