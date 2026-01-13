@@ -1,11 +1,14 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class JCFUserService implements UserService {
     // field
@@ -52,6 +55,14 @@ public class JCFUserService implements UserService {
     public void delete(UUID id) {
         User delUser = find(id);
         userData.remove(delUser);
+    }
+
+    // User가 보낸 메시지 출력
+    public List<String> getMessages(UUID userID){
+        User user = find(userID);
+        return user.getMessageList().stream()
+                .map(Message::getContents)
+                .collect(Collectors.toList());
     }
 
 }

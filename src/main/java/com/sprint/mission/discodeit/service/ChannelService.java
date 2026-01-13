@@ -10,7 +10,12 @@ public interface ChannelService {
     Channel find(UUID id);
     List<Channel> readAll();
     Channel update(UUID id, String name);
-    void delete(UUID id);
+    void deleteChannel(UUID channelID);
+    void deleteUser(UUID userID);
     void addMember(UUID userID, UUID channelID);
     void removeMember(UUID userID, UUID channelID);
+
+    List<String> getMembers(UUID id);
+    List<String> findJoinedChannels(UUID id);
+    List<String> getMessages(UUID id);
 }

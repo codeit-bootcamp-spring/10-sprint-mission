@@ -84,4 +84,9 @@ public class JCFMessageService implements MessageService {
         messageData.remove(messageID);
     }
 
+    // channel 전체 메시지 출력
+    public void printChannelAllMessage(UUID channelID){
+
+    }
+
 }

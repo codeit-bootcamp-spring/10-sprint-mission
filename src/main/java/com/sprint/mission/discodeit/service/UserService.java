@@ -11,4 +11,6 @@ public interface UserService {
     List<User> readAll();
     User update(UUID id, String name);
     void delete(UUID id);
+
+    List<String> getMessages(UUID id);
 }

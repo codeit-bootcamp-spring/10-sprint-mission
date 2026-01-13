@@ -46,11 +46,14 @@ public class JavaApplication {
 
         System.out.println("user4 channel list");
         System.out.println(user4.getChannels());
+        System.out.println("ch members :");
         System.out.println(ch.getMembersSet());
 
         System.out.println("===user4 leaveChannel Test===");
         channelService.removeMember(user4.getId(), ch.getId());
+        System.out.println("user4 channel list :");
         System.out.println(user4.getChannels());
+        System.out.println("channel member :");
         System.out.println(ch.getMembersSet());
 
         // 메시지 생성
@@ -99,7 +102,7 @@ public class JavaApplication {
         }
 
         try{
-            channelService.delete(id);
+            channelService.deleteChannel(id);
             System.out.println("Channel Delete Success");
         } catch (IllegalArgumentException e){
             System.out.println("Channel delete EX " + e.getMessage());
@@ -204,29 +207,108 @@ public class JavaApplication {
         System.out.println(messageService.readAll());
         System.out.println();
 
-        // Delete Test
+
+        // ============================
+        // Delete Test (삭제 반영 체크 포함)
+        // ============================
+
         // User Delete Test
         System.out.println();
-        System.out.println("===Before Delete===");
-        System.out.println(userService.readAll());
-        System.out.println("===After Delete===");
-        userService.delete(user3.getId());
-        System.out.println(userService.readAll());
+        System.out.println("===User Delete Test===");
 
-        // channel Delete Test
+        // 삭제 전: 유저 목록(이름)
+        System.out.println("===Before User Delete: Users===");
+        System.out.println(
+                userService.readAll().stream()
+                        .map(User::getName)
+                        .toList()
+        );
+
+        // 삭제 전: 채널별 멤버 목록(이름)
+        System.out.println("===Before User Delete: Channel -> Members===");
+        for (Channel c : channelService.readAll()) {
+            System.out.println(
+                    c.getName() + " members: " +
+                            c.getMembersSet().stream()
+                                    .map(User::getName)
+                                    .toList()
+            );
+        }
+
+        // 유저 삭제
+        System.out.println("===After User Delete===");
+        channelService.deleteUser(user3.getId());
+
+        // 삭제 후: 유저 목록(이름)
+        System.out.println("===After User Delete: Users===");
+        System.out.println(
+                userService.readAll().stream()
+                        .map(User::getName)
+                        .toList()
+        );
+
+        // 삭제 후: 채널별 멤버 목록(이름) -> 여기서 user3가 사라졌는지 확인
+        System.out.println("===After User Delete: Channel -> Members===");
+        for (Channel c : channelService.readAll()) {
+            System.out.println(
+                    c.getName() + " members: " +
+                            c.getMembersSet().stream()
+                                    .map(User::getName)
+                                    .toList()
+            );
+        }
+
+        // Channel Delete Test
         System.out.println();
-        System.out.println("===Before Delete===");
-        System.out.println(channelService.readAll());
-        System.out.println("===After Delete===");
-        channelService.delete(ch2.getId());
-        System.out.println(channelService.readAll());
+        System.out.println("===Channel Delete Test===");
+
+        // 삭제 전: 채널 목록(이름)
+        System.out.println("===Before Channel Delete: Channels===");
+        System.out.println(
+                channelService.readAll().stream()
+                        .map(Channel::getName)
+                        .toList()
+        );
+
+        // 삭제 전: 유저별 가입 채널 목록(이름)
+        System.out.println("===Before Channel Delete: User -> Channels===");
+        for (User u : userService.readAll()) {
+            System.out.println(
+                    u.getName() + " channels: " +
+                            u.getChannels().stream()
+                                    .map(Channel::getName)
+                                    .toList()
+            );
+        }
+
+        // 채널 삭제
+        System.out.println("===After Channel Delete===");
+        channelService.deleteChannel(ch2.getId());
+
+        // 삭제 후: 채널 목록(이름)
+        System.out.println("===After Channel Delete: Channels===");
+        System.out.println(
+                channelService.readAll().stream()
+                        .map(Channel::getName)
+                        .toList()
+        );
+
+        // 삭제 후: 유저별 가입 채널 목록(이름) -> 여기서 ch2가 사라졌는지 확인
+        System.out.println("===After Channel Delete: User -> Channels===");
+        for (User u : userService.readAll()) {
+            System.out.println(
+                    u.getName() + " channels: " +
+                            u.getChannels().stream()
+                                    .map(Channel::getName)
+                                    .toList()
+            );
+        }
 
         // Message Delete Test
         System.out.println("===Message Delete Test===");
         User testUser = msg3.getSender();
         Channel testChannel = msg3.getChannel();
 
-        System.out.println();
         System.out.println("===Before Delete===");
         System.out.println(messageService.readAll());
         System.out.println("channel messageList(before): "+ testChannel.getMessageList());
@@ -240,6 +322,36 @@ public class JavaApplication {
         System.out.println("user messageList: " + testUser.getMessageList());
         System.out.println("channel messageList: "+ testChannel.getMessageList());
 
+        // 추가 기능 테스트
+        System.out.println();
+        System.out.println("===Additional Feature Tests===");
 
+        // 1) Channel members
+        System.out.println("[1] Channel member names - ch(" + ch.getName() + ")");
+        System.out.println(channelService.getMembers(ch.getId()));
+
+        // 2) Channel messages
+        System.out.println();
+        System.out.println("[2] Channel message contents - ch(" + ch.getName() + ")");
+        System.out.println(channelService.getMessages(ch.getId()));
+
+        // 3) Messages sent by each user (contents)
+        System.out.println();
+        System.out.println("[3] Messages sent by users (message contents)");
+
+        System.out.println("user1 (" + user1.getName() + "): " +
+                userService.getMessages(user1.getId()));
+
+        System.out.println("user2 (" + user2.getName() + "): " +
+                userService.getMessages(user2.getId()));
+
+
+        // 4) Channels joined by a user (channel names)
+        System.out.println();
+        System.out.println("[4] Joined channel names - user4 (" + user4.getName() + ")");
+        System.out.println(channelService.findJoinedChannels(user4.getId()));
+
+        System.out.println("=== End of Additional Feature Tests ===");
+        System.out.println();
     }
 }
