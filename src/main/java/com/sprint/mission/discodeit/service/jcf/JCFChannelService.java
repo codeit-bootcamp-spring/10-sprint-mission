@@ -43,7 +43,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel updateChannel(UUID uuid, String title, String description) {
-        Channel channel = findChannel(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+        Channel channel = validateChannel(uuid);
         // title 중복성 검사
         if (!Objects.equals(channel.getTitle(), title)) {
             findChannelByTitle(title).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 채널입니다"); });
@@ -68,7 +68,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void deleteChannel(UUID uuid) {
-        Channel channel = findChannel(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+        Channel channel = validateChannel(uuid);
         data.remove(channel.getId());
     }
 
@@ -79,16 +79,20 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void joinChannel(UUID uuid, UUID userId) {
-        Channel channel = findChannel(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
-        userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-        channel.addParticipant(userId);
+    public void joinChannel(Channel channel, User user) {
+        Channel ch = validateChannel(channel.getId());
+        userService.findUser(user.getId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+        ch.addParticipant(user);
     }
 
     @Override
-    public void leaveChannel(UUID uuid, UUID userId) {
-        Channel channel = findChannel(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
-        userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-        channel.removeParticipant(userId);
+    public void leaveChannel(Channel channel, User user) {
+        Channel ch = validateChannel(channel.getId());
+        userService.findUser(user.getId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+        ch.removeParticipant(user);
+    }
+
+    private Channel validateChannel(UUID uuid) {
+        return findChannel(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
     }
 }
