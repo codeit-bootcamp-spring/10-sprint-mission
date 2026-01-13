@@ -2,13 +2,14 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.UUID;
 
 public class Channel extends DefaultEntity {
     private String channelName;
     private String channelDescription;
 
-    private ArrayList<Message> messages = new ArrayList<>();
-    private HashSet<User> allowedUsers = new HashSet<>();
+    private ArrayList<Message> messages = new ArrayList<>();//메시지 리스트
+    private HashSet<User> allowedUsers = new HashSet<>();//채널 사용 가능한 유저 목록, 비어있으면 공개채널
 
     public Channel(String channelName, String channelDescription) {
         this.channelName = channelName;
@@ -38,10 +39,16 @@ public class Channel extends DefaultEntity {
     }
 
     public void addMessage(Message message) {
-        messages.add(message);
-        if(!message.getChannel().equals(this)){
-            message.setChannel(this);
+        if(isAllowedUser(message.getUser().getId())){
+            messages.add(message);
+            if(!message.getChannel().equals(this)){
+                message.setChannel(this);
+            }
         }
+        else{
+            throw new RuntimeException("User not allowed to send message in this channel");
+        }
+
     }
 
     public void DeleteMessage(Message message) {
@@ -54,5 +61,14 @@ public class Channel extends DefaultEntity {
 
     public String toString() {
         return "채널명: " + channelName + ", 설명: " + channelDescription;
+    }
+
+    public boolean isAllowedUser(UUID userID) {
+        if(allowedUsers.isEmpty()){
+            return true; //허용 리스트에 아무도 없으면 전원허용으로 간주함.
+        }
+
+       return allowedUsers.stream()
+                .anyMatch(user -> userID.equals(user.getId()));
     }
 }
