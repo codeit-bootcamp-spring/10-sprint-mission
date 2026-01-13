@@ -37,11 +37,17 @@ public class JavaApplication {
         Channel channel1 = channelService.create("달선이 채널", IsPrivate.PUBLIC, user1.getId());
         Channel channel2 = channelService.create("달룡이 채널", IsPrivate.PUBLIC, user2.getId());
         Channel channel3 = channelService.create("달례 채널", IsPrivate.PUBLIC, user3.getId());
-        channel1.addUser(user2);
-        channel1.addUser(user3);
-        channel2.addUser(user3);
+        channelService.joinChannel(user2.getId(), channel1.getId());
+        channelService.joinChannel(user3.getId(), channel1.getId());
+        channelService.joinChannel(user1.getId(), channel3.getId());
 
-
+        System.out.println("\n테스트");
+        System.out.println(channel1);
+        System.out.println();
+        System.out.println(channel2);
+        System.out.println();
+        System.out.println(channel3);
+        System.out.println();
 
         // 사용자 update 확인
         System.out.println("\n업데이트 확인");

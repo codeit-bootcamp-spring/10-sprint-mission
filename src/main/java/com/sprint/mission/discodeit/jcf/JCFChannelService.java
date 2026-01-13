@@ -45,6 +45,11 @@ public class JCFChannelService implements ChannelService {
         return channel;
     }
 
+    public void joinChannel(UUID userId, UUID channelId) {
+        Channel channel = findById(channelId);
+        User user = userService.findById(userId);
+        channel.addUser(user);
+    }
     @Override
     public void delete(UUID id) {
         validateExistence(data, id);
