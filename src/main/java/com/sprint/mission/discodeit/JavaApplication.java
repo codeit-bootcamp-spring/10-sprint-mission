@@ -2,14 +2,13 @@ package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
+import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.UUID;
+import java.util.*;
 
 import static com.sprint.mission.discodeit.entity.PermissionTarget.*;
 
@@ -379,9 +378,93 @@ public class JavaApplication {
         System.out.println("\n[SUCCESS] Channel Domain Test Finished");
     }
 
+    /**
+     * 3. 메시지 도메인 테스트
+     * 시나리오: 메시지 전송 -> 변수 기반 수정(목록 출력) -> 변수 기반 삭제(목록 출력)
+     */
     private static void testMessageDomain() {
         System.out.println("\n##################################################");
-        System.out.println("            Message Domain Test (미구현)          ");
-        System.out.println("##################################################");
+        System.out.println("              Message Domain Test Start           ");
+        System.out.println("##################################################\n");
+
+        UserService userService = new JCFUserService();
+        ChannelService channelService = new JCFChannelService();
+        MessageService messageService = new JCFMessageService(userService, channelService);
+
+        // [Step 0] 기초 데이터 준비
+        User userA = userService.createUser("user_a", "유저A", "a@test.com", "010-1111-1111");
+        User userB = userService.createUser("user_b", "유저B", "b@test.com", "010-2222-2222");
+        Channel publicCh = channelService.createChannel("자유게시판", true);
+
+        // [Test 1] 메시지 전송 및 객체 보관
+        System.out.println("[TEST 1] Send & Store Messages");
+        Message msg1 = messageService.sendMessage(userA.getId(), publicCh.getId(), "첫 번째 메시지입니다.");
+        Message msg2 = messageService.sendMessage(userB.getId(), publicCh.getId(), "두 번째 메시지입니다.");
+        Message msg3 = messageService.sendMessage(userA.getId(), publicCh.getId(), "세 번째 메시지입니다.");
+        System.out.println("------------------------------------------\n");
+        System.out.println(">> 초기 메시지 전송 완료");
+        printAllMessagesInChannel(messageService, publicCh);
+
+
+        // -------------------------------------------------------------------
+        // [Test 2] 수정 (전/후 출력)
+        // -------------------------------------------------------------------
+        System.out.println("\n[TEST 2] Update Message (Using Variable)");
+
+        System.out.println(">> [Before Update] 수정 전 목록:");
+        printAllMessagesInChannel(messageService, publicCh);
+
+        System.out.println(">> [Action] 'msg2' (두 번째 메시지) 수정 요청");
+        messageService.updateMessage(msg2.getId(), "내용이 수정된 두 번째 메시지! (Edited)");
+
+        System.out.println(">> [After Update] 수정 후 목록:");
+        printAllMessagesInChannel(messageService, publicCh);
+
+
+        // -------------------------------------------------------------------
+        // [Test 3] 단일 삭제 (전/후 출력)
+        // -------------------------------------------------------------------
+        System.out.println("\n[TEST 3] Delete Single Message (Using Variable)");
+
+        System.out.println(">> [Before Delete] 삭제 전 목록:");
+        printAllMessagesInChannel(messageService, publicCh);
+
+        // 인덱스가 아닌 변수 msg1의 ID를 사용하여 정확히 첫 번째 메시지 타겟팅
+        System.out.println(">> [Action] 'msg1' (첫 번째 메시지) 삭제 요청");
+        messageService.deleteMessage(msg1.getId());
+
+        System.out.println(">> [After Delete] 삭제 후 목록:");
+        printAllMessagesInChannel(messageService, publicCh);
+
+
+        // -------------------------------------------------------------------
+        // [Test 4] 연쇄 삭제 확인
+        // -------------------------------------------------------------------
+        System.out.println("\n[TEST 4] Cascading Delete Check");
+        messageService.deleteMessagesByChannelId(publicCh.getId());
+        channelService.deleteChannel(publicCh.getId());
+
+        List<Message> result = messageService.findAllByChannelId(publicCh.getId());
+        if (result.isEmpty()) {
+            System.out.println(">> [SUCCESS] 채널 삭제와 함께 모든 메시지가 파기되었습니다.");
+        }
+
+        System.out.println("\n[SUCCESS] Message Domain Test Finished");
+    }
+
+    private static void printAllMessagesInChannel(MessageService ms, Channel ch) {
+        // List<Message> msgs = ms.findAllByChannelId(ch.getId()); // 맵에서 정렬
+        List<Message> msgs = ms.findAll(ch.getId()); // 채널에 리스트로 메시지 들고있음
+        System.out.println("--------------------------------------------------");
+        System.out.printf(" [%s] 현재 메시지 상태 (%d개)\n", ch.getChannelName(), msgs.size());
+        if (msgs.isEmpty()) {
+            System.out.println(" (메시지가 없습니다)");
+        } else {
+            for (Message m : msgs) {
+                String editedTag = m.isEdited() ? "(수정됨)" : "";
+                System.out.printf(" - [%s] %s %s\n", m.getAuthor().getNickname(), m.getContent(), editedTag);
+            }
+        }
+        System.out.println("--------------------------------------------------");
     }
 }

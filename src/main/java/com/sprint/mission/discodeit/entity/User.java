@@ -14,9 +14,8 @@ public class User extends BaseEntity {
     // 현재는 유저가 역할을 가지고 있지만 서버가 있다면?
     // 역할은 각 서버 별로 다르기 때문에 유저를 가지고 있는 멤버 클래스를 만들어야함
     // 멤버 클래스는 각 서버 별 별명과 역할을 가질 수 있음
-    private Set<UUID> roleIds;
-
-    private UserPresence presence; // 유저의 상태 관리
+    private final Set<UUID> roleIds =  new HashSet<>();
+    private final UserPresence presence; // 유저의 상태 관리
 
 
     public User(String username, String nickname, String email, String phoneNumber) {
@@ -26,7 +25,6 @@ public class User extends BaseEntity {
         this.nickname = nickname;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.roleIds = new HashSet<>();
         this.presence = new UserPresence();
     }
 

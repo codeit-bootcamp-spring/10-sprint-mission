@@ -1,20 +1,21 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class Channel extends BaseEntity {
     private String channelName;
     private boolean isPublic;
 
-    private Set<ChannelPermission> permissions;
+    private final Set<ChannelPermission> permissions = new HashSet<>();
+
+    // List는 멀티쓰레딩 환경에서 순서 보장 안됨
+    // 나중에 리팩토링 가능성 존재
+    private final List<Message> messages = new ArrayList<>();
 
     public Channel(String channelName, boolean isPublic){
         super();
         this.channelName = channelName;
         this.isPublic = isPublic;
-        this.permissions = new HashSet<>();
     }
 
     // Authorized method
@@ -79,6 +80,15 @@ public class Channel extends BaseEntity {
             }
         }
         return false;
+    }
+
+    // Message Control
+    public void addMessage(Message message) {
+        this.messages.add(message);
+    }
+
+    public List<Message> getMessages() {
+        return this.messages;
     }
 
 

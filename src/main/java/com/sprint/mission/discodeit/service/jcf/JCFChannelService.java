@@ -66,7 +66,7 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void removePermissionsByTargetId(UUID targetId) {
+    public void removePermissionsByTargetId(UUID targetId) {   // 서버에서 역할이 삭제될 때 서버 내 모든 채널의 부여된 권한 제거
         channelMap.values().forEach(channel -> channel.removePermission(targetId));
     }
 
