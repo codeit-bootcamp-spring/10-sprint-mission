@@ -1,6 +1,6 @@
 package com.sprint.mission.service;
 
-import com.sprint.mission.entity.Message;
+import com.sprint.mission.entity.Channel;
 import com.sprint.mission.entity.User;
 
 import java.util.List;
@@ -16,4 +16,6 @@ public interface UserService {
     User updateUser(UUID id, String nickName);
 
     void deleteById(UUID id);
+
+    List<Channel> findByUserId(UUID userId);
 }

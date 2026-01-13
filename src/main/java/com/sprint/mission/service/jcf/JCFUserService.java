@@ -1,5 +1,6 @@
 package com.sprint.mission.service.jcf;
 
+import com.sprint.mission.entity.Channel;
 import com.sprint.mission.entity.User;
 import com.sprint.mission.service.UserService;
 
@@ -17,6 +18,12 @@ public class JCFUserService implements UserService {
         User user = new User(nickName);
         users.put(user.getId(), user);
         return user;
+    }
+
+    @Override
+    public List<Channel> findByUserId(UUID userId) {
+        User user = findById(userId);
+        return user.getChannels();
     }
 
     @Override

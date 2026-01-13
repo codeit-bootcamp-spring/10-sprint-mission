@@ -1,20 +1,21 @@
 package com.sprint.mission.entity;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 public class Channel extends BaseEntity {
-    private final UUID ownerId;
-    private final Set<UUID> users = new HashSet<>();
+    private final User owner;
+    private final Set<User> users;
     private String name;
 //    private List<Message> messages;
 
-    public Channel(UUID ownerId, String name) {
+    public Channel(User owner, String name) {
         super();
+        this.users = new HashSet<>();
         this.name = getValidatedTrimmedName(name);
-        this.ownerId = ownerId;
-        users.add(ownerId);
+        this.owner = owner;
+        joinUser(owner);
     }
 
     public void updateName(String name) {
@@ -22,24 +23,24 @@ public class Channel extends BaseEntity {
         touch();
     }
 
-    public void joinUser(UUID userId) {
-        users.add(userId);
+    public void joinUser(User user) {
+        users.add(user);
     }
 
-    public void leaveUser(UUID userId) {
-        users.remove(userId);
+    public void leaveUser(User user) {
+        users.remove(user);
     }
 
-    public Set<UUID> getUsers() {
-        return users;
+    public List<User> getUsers() {
+        return List.copyOf(users);
     }
 
     public String getName() {
         return name;
     }
 
-    public UUID getOwnerId() {
-        return ownerId;
+    public User getOwner() {
+        return owner;
     }
 
     private String getValidatedTrimmedName(String name) {

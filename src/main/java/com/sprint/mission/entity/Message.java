@@ -1,17 +1,15 @@
 package com.sprint.mission.entity;
 
-import java.util.UUID;
-
 public class Message extends BaseEntity {
-    private final UUID userId;
-    private final UUID channelId;
+    private final User user;
+    private final Channel channel;
     private String content;
 
-    public Message(UUID userId, UUID channelId, String content) {
+    public Message(User user, Channel channel, String content) {
         super();
         this.content = getValidatedTrimmedContent(content);
-        this.userId = userId;
-        this.channelId = channelId;
+        this.user = user;
+        this.channel = channel;
     }
 
     public void updateContent(String content) {
@@ -34,11 +32,11 @@ public class Message extends BaseEntity {
         return content;
     }
 
-    public UUID getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public UUID getChannelId() {
-        return channelId;
+    public Channel getChannel() {
+        return channel;
     }
 }

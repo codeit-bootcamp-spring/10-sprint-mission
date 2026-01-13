@@ -20,4 +20,6 @@ public interface ChannelService {
     Channel joinChannel(UUID userID, UUID channelId);
 
     Channel leaveChannel(UUID userID, UUID channelId);
+
+    List<User> findByChannelId(UUID channelId);
 }

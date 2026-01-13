@@ -64,8 +64,8 @@ public class JavaApplication {
 
         // 조회(단건)
         System.out.println(channelService.findById(channel1.getId()).getName());
-        System.out.println("사용자 id: " + user2.getId());
-        System.out.println("방장 id: " + channel1.getOwnerId());
+        System.out.println("사용자 이름: " + user2.getNickName());
+        System.out.println("방장 이름: " + channel1.getOwner().getNickName());
 
         // 수정 및 수정 확인
         System.out.println("채널명 수정 전: " + channel1.getName());
@@ -96,19 +96,20 @@ public class JavaApplication {
 
         // 채널에 유저 추가 및 확인
         Channel user4JoinChannel2 = channelService.joinChannel(user4.getId(), channel2.getId());
-        System.out.println("user4가 참여한 채널 id: " + user4JoinChannel2.getId());
-        boolean participated1 = user4.getChannelIds().stream()
+        System.out.printf("%s가 참여한 채널 이름: %s%n", user4.getNickName(), user4JoinChannel2.getName());
+        boolean participated1 = user4.getChannels().stream()
                 .anyMatch(channelId -> channelId.equals(user4JoinChannel2.getId()));
         if (participated1) {
-            System.out.println("user4는 " + user4JoinChannel2.getId() + "에 참가하고 있습니다.");
+            System.out.printf("%s는 %s에 참가하고 있습니다.%n", user4.getNickName(), user4JoinChannel2.getName());
         }
 
         Channel user5JoinChannel2 = channelService.joinChannel(user5.getId(), channel2.getId());
-        System.out.println("user5가 참여한 채널 id: " + user5JoinChannel2.getId());
-        boolean participated2 = user5.getChannelIds().stream()
+        System.out.printf("%s가 참여한 채널 이름: %s%n", user5.getNickName(), user5JoinChannel2.getName());
+        boolean participated2 = user5.getChannels().stream()
                 .anyMatch(channelId -> channelId.equals(user5JoinChannel2.getId()));
         if (participated2) {
-            System.out.println("user5는 " + user5JoinChannel2.getId() + "에 참가하고 있습니다.");
+            System.out.printf("%s는 %s에 참가하고 있습니다.%n", user5.getNickName(), user5JoinChannel2.getName());
+
         }
 
         // 예시용 데이터 추가
@@ -121,18 +122,18 @@ public class JavaApplication {
         boolean isUser5StillIn = user5LeaveChannel2.getUsers().stream()
                 .anyMatch(userId -> userId.equals(user5.getId()));
         if (!isUser5StillIn) {
-            System.out.printf("채널 id: %s에 유저 id: %s가 존재하지 않습니다.%n",
-                    user5LeaveChannel2.getId(), user5.getId());
+            System.out.printf("채널:[%s] 에 유저:[%s] 가 존재하지 않습니다.%n",
+                    user5LeaveChannel2.getName(), user5.getNickName());
         }
+
         // 유저5가 속했던 채널2 중 방금 나갔던 채널2가 없는지
-        boolean channelRemovedFromUser = user5.getChannelIds()
+        boolean channelRemovedFromUser = user5.getChannels()
                 .stream()
                 .noneMatch(channelId -> channelId.equals(user5LeaveChannel2.getId()));
         if (channelRemovedFromUser) {
-            System.out.printf("유저 id: %s 의 채널 목록에는 채널 id: %s가 존재하지 않습니다.%n",
-                    user5.getId(), user5LeaveChannel2.getId());
+            System.out.printf("유저:[%s] 의 채널 목록에는 채널:[%s] 가 존재하지 않습니다.%n",
+                    user5.getNickName(), user5LeaveChannel2.getName());
         }
-
 
         // ==================================================
 
@@ -154,7 +155,7 @@ public class JavaApplication {
 
         // 수정 및 수정 확인
         System.out.println("메시지 수정 전: " + message.getContent());
-        messageService.updateMessage(message.getUserId(), message.getId(), "안녕하세요 !!");
+        messageService.updateMessage(message.getUser().getId(), message.getId(), "안녕하세요 !!");
         System.out.println("메시지 수정 후: " + message.getContent());
 
         // 조회(다건)
@@ -185,6 +186,27 @@ public class JavaApplication {
         System.out.println(deleteMessagesResult);
 
         // ==================================================
+
+        System.out.println("=".repeat(50));
+
+        // ==================================================
+
+        // 특정 유저의 참가한 채널 리스트 조회
+        User user10 = userService.createUser("10번유저");
+        Channel user10JoinChannel2 = channelService.joinChannel(user10.getId(), channel2.getId());
+        Channel user10JoinChannel3 = channelService.joinChannel(user10.getId(), channel3.getId());
+        List<Channel> user10Channels = userService.findByUserId(user10.getId());
+        String user10ChannelsResult = user10Channels.stream()
+                .map(Channel::getName)
+                .collect(Collectors.joining(", ", "[", "]"));
+        System.out.printf("[%s]의 채널 리스트 %s%n", user10.getNickName(), user10ChannelsResult);
+
+        // 특정 채널의 참가 중인 유저 리스트 조회
+        List<User> channel2InUsers = channelService.findByChannelId(channel2.getId());
+        String channel2InUsersResult = channel2InUsers.stream()
+                .map(User::getNickName)
+                .collect(Collectors.joining(", ", "[", "]"));
+        System.out.printf("[%s]채널 안의 유저리스트 %s%n", channel2.getName(), channel2InUsersResult);
 
         System.out.println("=".repeat(50));
     }

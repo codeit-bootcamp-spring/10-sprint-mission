@@ -1,24 +1,23 @@
 package com.sprint.mission.entity;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class User extends BaseEntity {
-    private final Set<UUID> channelIds = new HashSet<>();
+    private final Set<Channel> channels;
     private String nickName;
 
     public User(String nickName) {
         super();
+        this.channels = new HashSet<>();
         this.nickName = getValidatedTrimmedInput(nickName);
     }
 
-    public void joinChannel(UUID channelId) {
-        channelIds.add(channelId);
+    public void joinChannel(Channel channel) {
+        channels.add(channel);
     }
 
-    public void leaveChannel(UUID channelId) {
-        channelIds.remove(channelId);
+    public void leaveChannel(Channel channel) {
+        channels.remove(channel);
     }
 
     public void updateNickName(String nickName) {
@@ -41,7 +40,7 @@ public class User extends BaseEntity {
         return nickName;
     }
 
-    public Set<UUID> getChannelIds() {
-        return channelIds;
+    public List<Channel> getChannels() {
+        return List.copyOf(channels);
     }
 }

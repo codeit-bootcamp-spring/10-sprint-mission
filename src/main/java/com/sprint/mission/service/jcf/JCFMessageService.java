@@ -1,6 +1,8 @@
 package com.sprint.mission.service.jcf;
 
+import com.sprint.mission.entity.Channel;
 import com.sprint.mission.entity.Message;
+import com.sprint.mission.entity.User;
 import com.sprint.mission.service.ChannelService;
 import com.sprint.mission.service.MessageService;
 import com.sprint.mission.service.UserService;
@@ -21,9 +23,11 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message createMessage(UUID userId, UUID channelId, String content) {
-        userService.findById(userId);
-        channelService.findById(channelId);
-        Message message = new Message(userId, channelId, content);
+        User user = userService.findById(userId);
+        Channel channel = channelService.findById(channelId);
+
+        Message message = new Message(user, channel, content);
+
         messages.put(message.getId(), message);
         return message;
     }
@@ -42,7 +46,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> findByChannelId(UUID channelId) {
         return messages.values().stream()
-                .filter(message -> message.getChannelId().equals(channelId))
+                .filter(message -> message.getChannel().getId().equals(channelId))
                 .collect(Collectors.toList());
     }
 
@@ -50,7 +54,7 @@ public class JCFMessageService implements MessageService {
     public List<Message> findByUserIdAndChannelId(UUID userId, UUID channelId) {
         return messages.values().stream()
                 .filter(message ->
-                        message.getUserId().equals(userId) && message.getChannelId().equals(channelId))
+                        message.getUser().getId().equals(userId) && message.getChannel().getId().equals(channelId))
                 .collect(Collectors.toList());
     }
 
@@ -76,7 +80,7 @@ public class JCFMessageService implements MessageService {
     }
 
     private void validateAuthentication(Message message, UUID targetId) {
-        if (!message.getUserId().equals(targetId)) {
+        if (!message.getUser().getId().equals(targetId)) {
             throw new IllegalArgumentException("권한이 없습니다.");
         }
     }
