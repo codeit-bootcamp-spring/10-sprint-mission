@@ -71,4 +71,12 @@ public class Channel extends DefaultEntity {
        return allowedUsers.stream()
                 .anyMatch(user -> userID.equals(user.getId()));
     }
+
+    public void addAllowedUser(User user) {
+        allowedUsers.add(user);
+    }
+
+    public void removeAllowedUser(User user) {
+        allowedUsers.remove(user);
+    }
 }
