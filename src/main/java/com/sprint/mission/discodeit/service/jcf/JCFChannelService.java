@@ -55,14 +55,10 @@ public class JCFChannelService implements ChannelService {
     public Channel updateChannel(UUID uuid, String name, String content, Channel.CHANNEL_TYPE type) {
         Objects.requireNonNull(uuid, "유효하지 않은 식별자 ID입니다.");
 
-        Optional<Channel> opt = data.stream()
+        Channel channel = data.stream()
                 .filter(c -> uuid.equals(c.getId()))
-                .findFirst();
-        if(opt.isEmpty()){
-            throw new IllegalStateException("해당 식별자를 가진 채널이 존재하지 않습니다.");
-        }
-
-        Channel channel = opt.get();
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("해당 식별자를 가진 채널이 존재하지 않습니다."));
 
         Optional.ofNullable(name)
                 .ifPresent(channel::updateName);

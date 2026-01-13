@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.service.jcf.JCFMsgService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import static com.sprint.mission.discodeit.service.ChannelHelper.*;
+import static com.sprint.mission.discodeit.service.UserHelper.*;
 
 public class JavaApplication {
 
@@ -18,18 +19,10 @@ public class JavaApplication {
 
     public static void main(String[] args){
         ChannelService channelService = new JCFChannelService();
-        UserService userService = JCFUserService();
+        UserService userService = new JCFUserService();
         MsgService msgService = new JCFMsgService();
 
 
-        userService.readAllUsers(); // 다건 조회
-
-        userService.updateUser("hajiel234","Adrian","adrian@naver.com"); // 특정 유저의 이름과 이메일 변경
-        userService.readAllUsers(); // 다건 조회
-
-        //userService.deleteUser("hajiel234");
-        //userService.deleteUser(u1.getId());
-        //userService.readAllUsers(); // 다건 조회
 
 
         //Channel CRUD 테스트
@@ -37,34 +30,37 @@ public class JavaApplication {
         Channel ch2 = safeCreateChannel(channelService,"개인채널", null, Channel.CHANNEL_TYPE.PRIVATE);
         Channel ch3 = safeCreateChannel(channelService, "게임채널", "hi", Channel.CHANNEL_TYPE.PUBLIC);
 
-        safeDeleteChannel(channelService, "ㄹㄹ체날");
-        safeDeleteChannel(channelService, "공지채널");
+        // SafeDeleteChannel을 통해 내부적으로 try - catch 를 통한 예외 처리.
+        safeDeleteChannel(channelService, "ㄹㄹ체날"); // Exception 발생
+        safeDeleteChannel(channelService, "공지채널"); // 성공적으로 삭제
 
+        safeReadChannel(channelService, ch1); // Exception 발생
+        safeReadChannel(channelService, ch2); // Exception 발생
+        safeReadChannel(channelService, ch3); // 조회 성공
 
-        safeReadChannel(channelService, ch1); // 단건 조회
-        safeReadChannel(channelService, ch2);
-
-        safeUpdateChannel(channelService, ch3, "hogsg",null,null);
-//        channelService.readChannel(ch2.getId()); // UUID 를 이용한 채널 단건 조회
-//        channelService.readAllChannels(); // 다건 조회
-//
-//
-//        channelService.updateChannel("게임채널", "프라이빗게임공간", Channel.CHANNEL_TYPE.PRIVATE);
-        //channelService.readChannel("게임채널");
-//
-
+        safeUpdateChannel(channelService, ch3, "hogsg",null,null); // 성공적으로 update
         channelService.readAllChannels();
-//        channelService.readAllChannels();
 
-//        u1.joinChannel(ch1);
-//        u2.joinChannel(ch1);
-//        u1.joinChannel(ch2);
-//        u1.joinChannel(ch3);
-//        u3.joinChannel(ch3);
-//        u2.exitChannel(ch1);
-//        u2.exitChannel(ch1);
-//        ch1.getUsers();
-//        u1.getChannelList();
+        // User CRUD 테스트
+
+        User u1 = safeCreateUser(userService, "성경", "tjdrud@naver.com", "bible");
+        User u2 = safeCreateUser(userService, "성경", "tjdrud@naver.com", "bible");
+        User u3 = safeCreateUser(userService, "헬루", "hello@naver.com", "hello");
+
+        safeDeleteUser(userService, u2);
+
+        safeUpdateUser(userService, u3, "bible", "경성", null);
+        safeReadUser(userService, u2);
+        safeReadUser(userService, u3);
+        safeReadUser(userService, u2);
+
+
+        userService.readAllUsers();
+
+
+
+
+
 
 
         // Message CRUD 테스트
@@ -84,21 +80,5 @@ public class JavaApplication {
 //        System.out.println(msgService.readAllMessage());
 
 
-    }
-
-    private static UserService getUserService() {
-        UserService userService = new JCFUserService();
-        MsgService msgService = new JCFMsgService();
-
-
-        // User CRUD 테스트
-
-        User u1 = userService.createUser("Jake", "jake@12334.com", "jake234");
-        User u2 = userService.createUser("HelloMy", "he@la321.com", "hellohel");
-        User u3 = userService.createUser("Hailey", "jheily@g2123.com", "hajiel234");
-
-        userService.readUser(u1.getId()); // u1 유저의 UUID를 통하여 data에서 조회
-        userService.readUser("hellohel"); // u2 유저의 아이디를 통하여 data에서 조회
-        return userService;
     }
 }
