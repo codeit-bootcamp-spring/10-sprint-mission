@@ -4,10 +4,7 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFUserService implements UserService {
     final ArrayList<User> list;
@@ -23,8 +20,6 @@ public class JCFUserService implements UserService {
         User user = new User(userName, userEmail, userPassword);
         list.add(user);
         return user;
-
-
     }
 
     @Override
@@ -45,12 +40,13 @@ public class JCFUserService implements UserService {
 
     @Override
     public void updateUser(UUID id, String userName, String userEmail, String userPassword) {
-        validateDuplicationEmail(userEmail);
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        User user = validateExistence(id);
+        validateDuplicationEmail(userEmail);
         validationUser(userName, userEmail, userPassword);
-        readUser(id).updateUserName(userName);
-        readUser(id).updateUserEmail(userEmail);
-        readUser(id).updateUserPassword(userPassword);
+        user.updateUserName(userName);
+        user.updateUserEmail(userEmail);
+        user.updateUserPassword(userPassword);
     }
 
     public boolean isUserDeleted(UUID id) {
@@ -67,7 +63,8 @@ public class JCFUserService implements UserService {
     @Override
     public void deleteUser(UUID id) {
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        list.remove(readUser(id));
+        User user = validateExistence(id);
+        list.remove(user);
     }
 
     private void validationUser(String userName, String userEmail, String userPassword) {
@@ -91,6 +88,14 @@ public class JCFUserService implements UserService {
                 throw new IllegalStateException("이미 존재하는 이메일입니다.");
             }
         }
+    }
+
+    private User validateExistence(UUID id) {
+        User user = readUser(id);
+        if(user == null) {
+            throw new NoSuchElementException("유저 id가 존재하지 않습니다.");
+        }
+        return user;
     }
 
 }
