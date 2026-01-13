@@ -3,10 +3,9 @@ package com.sprint.mission.discodeit.entity;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 public class Channel extends Common {
-    private final Set<UUID> participants;
+    private final Set<User> participants;
     private String title;
     private String description;
 
@@ -18,20 +17,19 @@ public class Channel extends Common {
     }
 
     // participants
-    public Set<UUID> getParticipants() {
+    public Set<User> getParticipants() {
         return Collections.unmodifiableSet(this.participants);
     }
-    public void addParticipant(UUID uuid) {
-        if (!participants.add(uuid)) {
+    public void addParticipant(User user) {
+        if (!participants.add(user)) {
             throw new IllegalStateException("이미 참가한 참가자입니다");
         }
     }
-    public void removeParticipant(UUID uuid) {
-        if (!participants.remove(uuid)) {
+    public void removeParticipant(User user) {
+        if (!participants.remove(user)) {
             throw new IllegalStateException("참여하지 않은 참가자입니다");
         }
     }
-
 
     public String getTitle() {
         return this.title;

@@ -33,6 +33,10 @@ public class JavaApplication {
         System.out.println("<수정>");
         userService.findUserByAccountId("AAA")
                 .ifPresent(u-> userService.updateUser(u.getId(), "AAA", "q1w2e3!", "A말씨", "aaa@outlook.com"));
+        userService.findUserByAccountId("BBB")
+                .ifPresent(u-> userService.updateUser(u.getId(), "BBB", "bbb", "B명씨", "bbb@hanmail.net"));
+        userService.findUserByAccountId("CCC")
+                .ifPresent(u-> userService.updateUser(u.getId(), "CCC", "ccc", "CC씨", "seamonkey@base.net"));
         System.out.print("  다건: ");
         System.out.println(userService.findAllUsers().stream().toList());
 
@@ -74,14 +78,14 @@ public class JavaApplication {
         System.out.println("<채널참여>");
         channelService.findChannelByTitle("러닝맨").ifPresent(c -> {
             User user = userService.findUserByAccountId("BBB").orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-            channelService.joinChannel(c.getId(), user.getId());
+            channelService.joinChannel(c, user);
         });
         System.out.print("  참여자들 조회: ");
         channelService.findChannelByTitle("러닝맨").ifPresent(c -> System.out.println(c.getParticipants()));
         System.out.println("<채널나감>");
         channelService.findChannelByTitle("러닝맨").ifPresent(c -> {
             User user = userService.findUserByAccountId("BBB").orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-            channelService.leaveChannel(c.getId(), user.getId());
+            channelService.leaveChannel(c, user);
         });
         System.out.print("  참여자 빼고 다시 조회: ");
         channelService.findChannelByTitle("러닝맨").ifPresent(c -> System.out.println(c.getParticipants()));
