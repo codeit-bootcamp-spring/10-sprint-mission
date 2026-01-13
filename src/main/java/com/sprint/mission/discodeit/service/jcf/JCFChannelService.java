@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -8,14 +9,16 @@ import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
+    private final UserService userService;
 
-    public JCFChannelService() {
+    public JCFChannelService(UserService userService) {
         data = new HashMap<>();
+        this.userService = userService;
     }
 
     @Override
     public Channel createChannel(String title, String description) {
-        findChannelByTitle(title).orElseThrow(() -> new IllegalStateException("이미 존재하는 채널입니다"));
+        findChannelByTitle(title).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 채널입니다"); });
         Channel channel = new Channel(title, description);
         data.put(channel.getId(), channel);
         return channel;
@@ -78,12 +81,14 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void joinChannel(UUID uuid, UUID userId) {
         Channel channel = findChannel(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+        userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
         channel.addParticipant(userId);
     }
 
     @Override
     public void leaveChannel(UUID uuid, UUID userId) {
         Channel channel = findChannel(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+        userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
         channel.removeParticipant(userId);
     }
 }
