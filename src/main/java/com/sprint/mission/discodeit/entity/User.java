@@ -114,7 +114,7 @@ public class User extends BaseEntity {
     }
 
     // 메시지 작성
-    public void writeMessageList(Message message) {
+    public void writeMessage(Message message) {
         this.writeMessageList.add(message);
         updateTime();
         message.addUserWriteMessageList(this, message.getContent());

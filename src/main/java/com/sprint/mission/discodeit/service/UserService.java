@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
@@ -25,7 +24,7 @@ public interface UserService {
     // userName 또는 nickName을 이용한 전체 검색으로 특정 사용자 찾기
     List<User> searchAllUsersByPartialName(String partialName);
     // 특정 사용자가 참여한 모든 채널
-    List<Channel> readAllJoinChannelsAtUserByUserId(UUID userId);
+    List<Channel> readUserJoinChannelsByUserId(UUID userId);
     // 특정 사용자가 참여한 채널 중에서 특정 채널 검색
     List<Channel> searchUserChannelByChannelName(UUID userId, String partialChannelName);
 //    // 특정 사용자가 작성한 모든 메시지
