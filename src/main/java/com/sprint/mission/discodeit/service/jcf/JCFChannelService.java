@@ -56,11 +56,10 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel deleteChannel(UUID channelId) {
+    public void deleteChannel(UUID channelId) {
         Channel target = getChannel(channelId);
         target.getUsers().forEach(user -> user.removeChannel(target));
         data.remove(target);
-        return target;
     }
 
     @Override

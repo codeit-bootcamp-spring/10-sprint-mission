@@ -43,11 +43,10 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User deleteUser(UUID userId) {
+    public void deleteUser(UUID userId) {
         User target = getUser(userId);
         target.getChannels().forEach(channel -> channel.removeUser(target));
         data.remove(target);
-        return target;
     }
 
     private void validateUserExist(String userName) {

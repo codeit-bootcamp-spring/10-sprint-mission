@@ -56,8 +56,8 @@ public class JavaApplication {
                 user2Updated.getPassword(), user2Updated.getEmail());
 
         // 삭제
-        User deletedUser = userService.deleteUser(user1.getId());
-        if(userService.getAllUsers().size() == 1 && user1.getId().equals(deletedUser.getId()))
+        userService.deleteUser(user1.getId());
+        if(userService.getAllUsers().size() == 1)
             System.out.println("삭제 테스트 성공");
         else
             System.out.println("삭제 테스트 실패");
@@ -120,8 +120,8 @@ public class JavaApplication {
                 , channel1.getChannelName(), channel1.getChannelType(), channel1.getDescription());
 
         // 삭제
-        Channel deletedChannel = channelService.deleteChannel(channel2.getId());
-        if(channelService.getAllChannels().size() == 1 && deletedChannel.getId().equals(channel2.getId()))
+        channelService.deleteChannel(channel2.getId());
+        if(channelService.getAllChannels().size() == 1)
             System.out.println("삭제 테스트 성공");
         else
             System.out.println("삭제 테스트 실패");
@@ -183,8 +183,8 @@ public class JavaApplication {
         System.out.printf("수정된 message1 내용 : %s\n", updatedMessage.getContent());
 
         // 삭제
-        Message deletedMessage = messageService.deleteMessage(message2.getId());
-        if(messageService.getAllMessages().size() == 1 && deletedMessage.getId().equals(message2.getId()))
+        messageService.deleteMessage(message2.getId());
+        if(messageService.getAllMessages().size() == 1)
             System.out.println("삭제 테스트 성공");
         else
             System.out.println("삭제 테스트 실패");

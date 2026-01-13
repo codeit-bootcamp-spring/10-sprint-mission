@@ -40,10 +40,9 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message deleteMessage(UUID messageId) {
+    public void deleteMessage(UUID messageId) {
         Message target = getMessage(messageId);
         target.getChannel().removeMessage(target);
         data.remove(target);
-        return target;
     }
 }

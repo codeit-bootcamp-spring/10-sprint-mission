@@ -12,5 +12,5 @@ public interface MessageService {
     Message getMessage(UUID messageId);
     List<Message> getAllMessages();
     Message updateMessage(UUID messageId, String content);
-    Message deleteMessage(UUID messageId);
+    void deleteMessage(UUID messageId);
 }
