@@ -59,6 +59,24 @@ public class JCFUserService implements UserService {
         return Optional.ofNullable(data.get(userId));
     }
 
+    // 특정 사용자가 참여한 채널 중에서 특정 채널 검색
+    @Override
+    public List<Channel> searchUserChannelByChannelName(UUID userId, String partialChannelName) {
+        // User ID null 검증
+        ValidationMethods.validateChannelId(userId);
+        // partialChannelName 검증
+        ValidationMethods.validateString(partialChannelName, "partialChannelName");
+
+        User user = data.get(userId);
+        if (user == null) {
+            return Collections.emptyList();
+        }
+
+        return user.getJoinChannelList().stream()
+                .filter(channel -> channel.getChannelName().contains(partialChannelName))
+                .toList();
+    }
+
     // R. 모두 읽기
     // 모든 사용자
     @Override
@@ -69,6 +87,9 @@ public class JCFUserService implements UserService {
     // 전체 검색으로 특정 사용자 찾기
     @Override
     public List<User> searchAllUsersByPartialName(String partialName) {
+        // partialName 검증
+        ValidationMethods.validateString(partialName, "partialName");
+
         return data.values().stream()
                 .filter(user -> user.getUserName().contains(partialName) ||
                         user.getNickName().contains(partialName))
@@ -171,6 +192,10 @@ public class JCFUserService implements UserService {
     public Optional<User> joinChannel(UUID userId, Channel channel) {
         // User ID null 검증
         ValidationMethods.validateUserId(userId);
+        // channel 존재 검증
+        ValidationMethods.validateObject(channel, "channel");
+        // 이미 참여한 채널인지 검증
+        ValidationMethods.validateAlreadyParticipation(userId, channel);
 
         return Optional.ofNullable(data.get(userId))
                 .map(user -> {
@@ -184,6 +209,8 @@ public class JCFUserService implements UserService {
     public Optional<User> leaveChannel(UUID userId, Channel channel) {
         // User ID null 검증
         ValidationMethods.validateUserId(userId);
+        // channel 존재 검증
+        ValidationMethods.validateObject(channel, "channel");
 
         return Optional.ofNullable(data.get(userId))
                 .map(user -> {
