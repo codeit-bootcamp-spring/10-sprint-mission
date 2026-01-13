@@ -27,8 +27,8 @@ public class JavaApplication {
         User user1 = new User("user1", "user1@example.com");
         User user2 = new User("user2", "user2@example.com");
 
-        userService.create(user1);
-        userService.create(user2);
+        userService.createUser("김오렌지","orange@gmail.com");
+        userService.createUser("김사과","apple@naver.com");
 
         // 단건 조회
         System.out.println("단건 조회 (user1): " + userService.findById(user1.getId()));
@@ -45,8 +45,8 @@ public class JavaApplication {
         Channel channel1 = new Channel("general", "일반 채팅 채널");
         Channel channel2 = new Channel("voice-room", "음성 채널 설명");
 
-        channelService.create(channel1);
-        channelService.create(channel2);
+        channelService.createChannel("channel1","일반 채팅 채널입니다");
+        channelService.createChannel("channel2","일반 음성 채널입니다.");
 
         // 전체 Channel 조회
         System.out.println("전체 Channel 조회:");
@@ -59,8 +59,8 @@ public class JavaApplication {
         Message message1 = new Message(user1, channel1, "안녕하세요! 두번째 메시지입니다.");
         Message message2 = new Message(user2, channel1, "반가워요!");
 
-        messageService.create(message1);
-        messageService.create(message2);
+        messageService.createMessage(user1,channel1,"message1");
+        messageService.createMessage(user2,channel2,"message2");
 
         // 전체 Message 조회
         System.out.println("전체 Message 조회:");

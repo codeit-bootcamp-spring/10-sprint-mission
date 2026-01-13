@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    User create(User user);
+    User createUser(String username, String emailr);
     User findById(UUID id);
     List<User> findAll();
 

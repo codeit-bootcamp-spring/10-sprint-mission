@@ -6,7 +6,6 @@ public class Channel extends BaseEntity{
 
     private String name;
     private String email;
-    private String username;
     private String description;
 
     public Channel(String name, String description) {
@@ -18,7 +17,8 @@ public class Channel extends BaseEntity{
         this.description = description;
     }
 
-    public void update(UUID id,String name,String description) {
+
+    public void update(String name,String description) {
         this.name = name;
         this.description = description;
         this.updatedAt = System.currentTimeMillis();

@@ -19,7 +19,8 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message create(Message message) {
+    public Message createMessage(User user, Channel channel, String contents) {
+        Message message = new Message(user, channel, contents);
         data.add(message);
         return message;
     }

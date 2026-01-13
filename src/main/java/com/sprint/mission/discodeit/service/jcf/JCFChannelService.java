@@ -17,19 +17,22 @@ public class JCFChannelService implements ChannelService {
 
 
     @Override
-    public Channel create(Channel channel) {
+    public Channel createChannel(String name, String description) {
+        Channel channel = new Channel(name, description);
         data.add(channel);
         return channel;
     }
 
     @Override
     public Channel findById(UUID id) {
-        for (Channel channel : data) {
+        for (Channel channel : data){
             if (channel.getId().equals(id)) {
-                return channel;
+                {
+                    return channel;
+                }
             }
-        }
-        return null; //
+         }
+        throw new IllegalArgumentException("Channel not found" + id);
     }
 
     @Override
@@ -41,7 +44,7 @@ public class JCFChannelService implements ChannelService {
     public Channel update(UUID id, String name, String description) {
         for (Channel channel : data) {
             if (channel.getId().equals(id)) {
-                channel.update(id,name, description); // Channel 엔티티의 update 메서드
+                channel.update(name, description); // Channel 엔티티의 update 메서드
                 return channel;
             }
         }

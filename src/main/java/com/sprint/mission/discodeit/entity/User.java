@@ -4,7 +4,6 @@ import java.util.UUID;
 
 public class User extends BaseEntity {
 
-    private String name;
     private String email;
     private String username;
 
@@ -36,9 +35,6 @@ public class User extends BaseEntity {
         return updatedAt;
     }
 
-    public String getName() {
-        return name;
-    }
 
     public String getEmail() {
         return email;
