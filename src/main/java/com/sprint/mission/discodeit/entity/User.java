@@ -34,6 +34,10 @@ public class User {
         return updatedAt;
     }
 
+    public String getUserEmail() {
+        return userEmail;
+    }
+
     public void updateUserName(String userName) {
         this.userName = userName;
         this.updatedAt = System.currentTimeMillis();

@@ -18,10 +18,13 @@ public class JCFUserService implements UserService {
 
     @Override
     public User createUser(String userName, String userEmail, String userPassword) {
+        validateDuplicationEmail(userEmail);
         validationUser(userName, userEmail, userPassword);
         User user = new User(userName, userEmail, userPassword);
         list.add(user);
         return user;
+
+
     }
 
     @Override
@@ -42,6 +45,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public void updateUser(UUID id, String userName, String userEmail, String userPassword) {
+        validateDuplicationEmail(userEmail);
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
         validationUser(userName, userEmail, userPassword);
         readUser(id).updateUserName(userName);
@@ -80,4 +84,13 @@ public class JCFUserService implements UserService {
             throw new IllegalArgumentException("userPassword에 공백을 입력할 수 없습니다.");
         }
     }
+
+    private void validateDuplicationEmail(String userEmail) {
+        for (User user : list) {
+            if (user.getUserEmail().equals(userEmail)) {
+                throw new IllegalStateException("이미 존재하는 이메일입니다.");
+            }
+        }
+    }
+
 }
