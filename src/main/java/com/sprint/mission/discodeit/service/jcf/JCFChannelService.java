@@ -27,7 +27,7 @@ public class JCFChannelService implements ChannelService {
         boolean isDuplicate = channelMap.values().stream()
                 .anyMatch(ch -> ch.getChannelName().equals(channelName));
         if (isDuplicate) {
-            throw new IllegalArgumentException("이미 존재하는 채널 이름. channelName: " + channelName);
+            throw new IllegalArgumentException("이미 존재하는 채널 이름 channelName: " + channelName);
         }
     }
 
@@ -37,7 +37,7 @@ public class JCFChannelService implements ChannelService {
     public Channel createChannel(String name, UUID ownerId) {
         // 이름 유효성 검사
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("채널 이름은 필수입니다.");
+            throw new IllegalArgumentException("채널 이름은 필수");
         }
         validateDuplicateName(name);
 
@@ -48,6 +48,7 @@ public class JCFChannelService implements ChannelService {
         Channel channel = new Channel(name, owner);
         channelMap.put(channel.getId(), channel);
 
+        System.out.println("채널 생성됨: " + channel.getChannelName() + " (ID: " + channel.getId() + ")");
         return channel;
     }
 

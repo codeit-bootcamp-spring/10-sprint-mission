@@ -11,7 +11,7 @@ public class JCFUserService implements UserService {
     // 중복 로직 분리
     private User findUserByIdOrThrow(UUID id) {
         if (!userMap.containsKey(id)) {
-            throw new IllegalArgumentException("해당 ID의 사용자가 존재하지 않습니다. ID: " + id);
+            throw new IllegalArgumentException("해당 ID의 사용자가 존재하지 않음 ID: " + id);
         }
         return userMap.get(id);
     }
@@ -24,13 +24,13 @@ public class JCFUserService implements UserService {
         boolean isDuplicate = userMap.values().stream()
                 .anyMatch(user -> user.getUsername().equals(username));
         if (isDuplicate) {
-            throw new IllegalArgumentException("이미 존재하는 사용자 이름입니다: " + username);
+            throw new IllegalArgumentException("이미 존재하는 사용자 이름: " + username + " id : ");
         }
 
         User user = new User(username);
         userMap.put(user.getId(), user);
 
-        System.out.println("User Created: " + user.getUsername() + " (ID: " + user.getId() + ")");
+        System.out.println("유저 생성됨: " + user.getUsername() + " (ID: " + user.getId() + ")");
         return user;
     }
 
@@ -55,7 +55,7 @@ public class JCFUserService implements UserService {
                 .anyMatch(u -> !u.getId().equals(id) && u.getUsername().equals(newUsername) );
 
         if (isDuplicate) {
-            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
+            throw new IllegalArgumentException("이미 존재하는 이름");
         }
 
         user.updateUsername(newUsername);

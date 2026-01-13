@@ -71,7 +71,7 @@ public class Channel extends BaseEntity {
 
     private void validateOwnerId(UUID ownerId) {
         if (ownerId == null) {
-            throw new IllegalArgumentException("채널 관리자(Owner ID)는 필수입니다.");
+            throw new IllegalArgumentException("채널 관리자(Owner ID)는 필수");
         }
     }
 

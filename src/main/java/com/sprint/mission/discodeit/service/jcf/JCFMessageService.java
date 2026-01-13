@@ -26,7 +26,7 @@ public class JCFMessageService implements MessageService {
 
     private Message findMessageByIdOrThrow(UUID messageId) {
         if(!messageMap.containsKey(messageId)) {
-            throw new IllegalArgumentException("해당 ID의 메시지가 존재하지 않음. ID: " + messageId);
+            throw new IllegalArgumentException("해당 ID의 메시지가 존재하지 않음 ID: " + messageId);
         }
         return messageMap.get(messageId);
     }
@@ -36,7 +36,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message createMessage(String content, UUID userId, UUID channelId) {
         if (content == null || content.trim().isEmpty()) {
-            throw new IllegalArgumentException("메시지 내용을 입력해야 합니다.");
+            throw new IllegalArgumentException("메시지 내용을 입력해야 함");
         }
 
         // ID로 객체 조회 (참조 무결성 검사 + 객체 확보)
@@ -46,6 +46,7 @@ public class JCFMessageService implements MessageService {
 
         Message message = new Message(content, sender, channel);
         messageMap.put(message.getId(), message);
+        System.out.println("메시지 생성됨: " + message.getContent() + " (ID: " + message.getId() + ")");
         return message;
     }
 
@@ -72,7 +73,7 @@ public class JCFMessageService implements MessageService {
         Message message = findMessageByIdOrThrow(messageId);
 
         if (newContent == null || newContent.trim().isEmpty()) {
-            throw new IllegalArgumentException("수정할 내용이 비어있습니다.");
+            throw new IllegalArgumentException("수정할 내용이 비어있음");
         }
         message.updateContent(newContent);
         return message;

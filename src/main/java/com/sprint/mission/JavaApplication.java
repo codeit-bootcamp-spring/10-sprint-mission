@@ -93,6 +93,48 @@ public class JavaApplication {
         } catch (IllegalArgumentException e) {
             System.out.println("   -> [성공] 조회 실패 (예상된 에러: " + e.getMessage() + ")");
         }
+
+        // =================================================================
+
+        // [Unhappy Path]
+        printSubSection("User 서비스 테스트 - Unhappy Path");
+
+        // 1. 없는 걸 조회
+        System.out.print("Test 1) 존재하지 않는 ID 조회: ");
+        try {
+            userService.findUserByUserId(UUID.randomUUID()); // 랜덤 Id
+            System.out.println("❌ 실패 (예외가 발생하지 않음)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 2. 없는 걸 수정
+        System.out.print("Test 2) 존재하지 않는 ID 수정: ");
+        try {
+            userService.updateUser(UUID.randomUUID(), "Ghost");
+            System.out.println("❌ 실패 (예외가 발생하지 않음)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 3. 없는 걸 삭제
+        System.out.print("Test 3) 이미 삭제된 ID 삭제 시도: ");
+        try {
+            userService.deleteUser(testUser1.getId()); // testUser1 -> 위에서 이미 삭제함
+            System.out.println("❌ 실패 (예외가 발생하지 않음)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 4. 중복 생성
+        System.out.print("Test 4) 중복된 이름으로 생성 시도: ");
+        try {
+            userService.createUser("DuplicateUser");
+            userService.createUser("DuplicateUser");
+            System.out.println("❌ 실패 (중복이 허용됨)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
     }
 
     // =================================================================
@@ -142,6 +184,48 @@ public class JavaApplication {
             System.out.println("   -> [실패] 삭제되지 않음.");
         } catch (IllegalArgumentException e) {
             System.out.println("   -> [성공] 조회 실패 (예상된 에러: " + e.getMessage() + ")");
+        }
+
+        // =================================================================
+
+        // [Unhappy Path]
+        printSubSection("Channel 서비스 테스트 - Unhappy Path");
+
+        // 1. 없는 걸 조회
+        System.out.print("Test 1) 존재하지 않는 채널 조회: ");
+        try {
+            channelService.findChannelById(UUID.randomUUID());
+            System.out.println("❌ 실패");
+        } catch (IllegalArgumentException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 2. 없는 걸 수정
+        System.out.print("Test 2) 존재하지 않는 채널 수정: ");
+        try {
+            channelService.updateChannel(UUID.randomUUID(), "Hacking");
+            System.out.println("❌ 실패");
+        } catch (IllegalArgumentException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 3. 없는 걸 삭제
+        System.out.print("Test 3) 존재하지 않는 채널 삭제: ");
+        try {
+            channelService.deleteChannel(UUID.randomUUID());
+            System.out.println("❌ 실패");
+        } catch (IllegalArgumentException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 4. 중복 생성
+        System.out.print("Test 4) 중복된 채널 이름 생성: ");
+        try {
+            channelService.createChannel("UniqueChannel", testOwner6.getId());
+            channelService.createChannel("UniqueChannel", testOwner7.getId()); // 이름 중복
+            System.out.println("❌ 실패 (중복 허용됨)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
         }
     }
 
@@ -193,6 +277,80 @@ public class JavaApplication {
         } catch (IllegalArgumentException e) {
             System.out.println("   -> [성공] 조회 실패 (예상된 에러: " + e.getMessage() + ")");
         }
+
+        // =================================================================
+
+        // [Unhappy Path]
+        printSubSection("Message 서비스 테스트 - Unhappy Path");
+
+        // 1. 없는 메시지 조회
+        System.out.print("Test 1) 없는 메시지 ID 조회: ");
+        try {
+            messageService.findMessageById(UUID.randomUUID());
+            System.out.println("❌ 실패");
+        } catch (IllegalArgumentException e) { // 혹은 IllegalStateException
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 2. 없는 메시지 수정
+        System.out.print("Test 2) 없는 메시지 ID 수정: ");
+        try {
+            messageService.updateMessage(UUID.randomUUID(), "New Content");
+            System.out.println("❌ 실패");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 3. 없는 메시지 삭제
+        System.out.print("Test 3) 없는 메시지 ID 삭제 시도: ");
+        try {
+            messageService.deleteMessage(UUID.randomUUID());
+            System.out.println("❌ 실패 (예외가 발생하지 않음)");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 4. 메시지 중복 생성 (-> 메시지는 String content를 인자로 받으므로 같은 Id 중복 생성 테스트 불가능)
+
+        // =================================================================
+        // 예외 케이스
+        // [ ] 추가 필요
+
+        printSubSection("Message 서비스 테스트 - 예외 케이스");
+
+        // 1. 없는 유저가 메시지 전송
+        System.out.print("Test 1) 존재하지 않는 유저로 전송 시도: ");
+        try {
+            messageService.createMessage("Ghost Message", UUID.randomUUID(), testChannel4_8.getId());
+            System.out.println("❌ 실패 (유령 회원이 글을 씀)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 2. 없는 채널에 메시지 전송
+        System.out.print("Test 1) 존재하지 않는 채널로 전송 시도: ");
+        try {
+            messageService.createMessage("Void Message", testSender8.getId(), UUID.randomUUID());
+            System.out.println("❌ 실패 (채널 없이 글을 씀)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 3. 동일한 메시지 내용 전송
+        System.out.print("Test 3) 동일한 내용 연속 전송 확인: ");
+
+        Message msgA = messageService.createMessage("안녕하세요", testSender8.getId(), testChannel4_8.getId());
+        Message msgB = messageService.createMessage("안녕하세요", testSender8.getId(), testChannel4_8.getId());
+
+        // 검증 1: 둘 다 저장이 잘 되었는가?
+        // 검증 2: 둘의 ID가 다른가? (별개의 객체인가?)
+        if (!msgA.getId().equals(msgB.getId())) {
+            System.out.println("✅ 성공 (내용은 같지만 서로 다른 메시지(ID)로 잘 저장됨)");
+            System.out.println("   -> ID1: " + msgA.getId());
+            System.out.println("   -> ID2: " + msgB.getId());
+        } else {
+            System.out.println("❌ 실패 (ID가 같음 - 이건 물리적으로 불가능하지만 혹시 몰라 체크)");
+        }
     }
 
     // 콘솔 구분선 출력 메서드
@@ -200,5 +358,10 @@ public class JavaApplication {
         System.out.println("\n--------------------------------------------------");
         System.out.println(title);
         System.out.println("--------------------------------------------------");
+    }
+    private static void printSubSection(String title) {
+        System.out.println("\n-----------------------");
+        System.out.println(title);
+        System.out.println("-----------------------");
     }
 }

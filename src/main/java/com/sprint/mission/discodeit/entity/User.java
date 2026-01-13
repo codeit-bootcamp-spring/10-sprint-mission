@@ -25,11 +25,11 @@ public class User extends BaseEntity {
         }
         // username 규칙 (2) - 2자 이상 ~ 20자 이하
         if (username.length() < 2 || username.length() > 20) {
-            throw new IllegalArgumentException("2자 이상 20자 이하여야 합니다.");
+            throw new IllegalArgumentException("2자 이상 20자 이하");
         }
         // username 규칙 (3) - 영문, 한글, 숫자 (0-9), 밑줄(_), 하이픈(-)만 사용 가능
         if (!USERNAME_PATTERN.matcher(username).matches()) {
-            throw new IllegalArgumentException("사용자 이름은 영문, 한글, 숫자, _, - 만 사용할 수 있습니다.");
+            throw new IllegalArgumentException("사용자 이름은 영문, 한글, 숫자, _, - 만 사용할 수 있음");
         }
     }
 
