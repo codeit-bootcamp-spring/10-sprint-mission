@@ -1,32 +1,57 @@
 package org.example.entity;
-
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 public class User extends BaseEntity {
     private String username;
     private String email;
     private String password;
     private String nickname;
-    private String profileImage;
+    private List<Channel> channels;
+    private Status status;
 
-    public User (String username, String email, String password, String nickname, String profileImage) {
+    public User (String username, String email, String password, String nickname) {
         super();
         this.username = username;
         this.email = email;
         this.password = password;
         this.nickname = nickname;
-        this.profileImage = profileImage;
+        this.channels = new ArrayList<Channel>();
+        this.status = Status.ACTIVE;
     }
 
-    public void update(String username, String email, String password, String nickname, String profileImage){
+    // Setters
+    public void setUsername(String username) {
         this.username = username;
-        this.email = email;
-        this.password = password;   //비번은 따로 변경하게 해야 할거 같음
-        this.nickname = nickname;
-        this.profileImage = profileImage;
-        super.updatedAt = System.currentTimeMillis();
+        this.updatedAt = System.currentTimeMillis();
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void setChannels(List<Channel> channels) {
+        this.channels = channels;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    //getter
     public String getUsername() {
         return username;
     }
@@ -42,8 +67,10 @@ public class User extends BaseEntity {
     public String getNickname() {
         return nickname;
     }
-
-    public String getProfileImage() {
-        return profileImage;
+    public List<Channel> getChannels() {
+        return channels;
+    }
+    public Status getStatus() {
+        return status;
     }
 }
