@@ -40,7 +40,7 @@ public class JavaApplication {
         System.out.println(messageService.findAll());
         System.out.println(channelService.findAll());
         System.out.println(userService.findAll());
-        
+
     }
 
 }
