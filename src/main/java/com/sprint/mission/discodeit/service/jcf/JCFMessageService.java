@@ -1,12 +1,10 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFMessageService implements MessageService {
     final ArrayList<Message> list;
@@ -45,12 +43,14 @@ public class JCFMessageService implements MessageService {
     public void updateMessage(UUID id, String content) {
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
         validationMessage(content);
-        readMessage(id).updateContent(content);
+        Message message = validateExistenceMessage(id);
+        message.updateContent(content);
     }
 
     public void deleteMessage(UUID id) {
         Objects.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        list.remove(readMessage(id));
+        Message message = validateExistenceMessage(id);
+        list.remove(message);
     }
 
     public boolean isMessageDeleted(UUID id) {
@@ -68,6 +68,14 @@ public class JCFMessageService implements MessageService {
         if(content.isBlank()) {
             throw new IllegalArgumentException("content에 공백을 입력할 수 없습니다.");
         }
+    }
+
+    private Message validateExistenceMessage(UUID id) {
+        Message message = readMessage(id);
+        if(message == null) {
+            throw new NoSuchElementException("메세지 id가 존재하지 않습니다.");
+        }
+        return message;
     }
 
 }
