@@ -2,27 +2,18 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.UUID;
 
-public class Message {
+public class Message extends Common {
 
-    private UUID id;
     private String content;
-    private UUID userId;
-    private UUID channelId;
-    private Long createdAt;
-    private Long updatedAt;
+    private User user;
+    private Channel channel;
 
-    public Message(String content,UUID userId, UUID channelId){
-        this.id = UUID.randomUUID();
+    public Message(String content,User user,Channel channel){
+
         this.content = content;
-        this.userId = userId;
-        this.channelId = channelId;
-        this.createdAt = System.currentTimeMillis();
+        this.user = user;
+        this.channel = channel;
     }
-
-    public UUID getId() {
-        return id;
-    }
-
 
     public String getContent() {
         return content;
@@ -31,37 +22,21 @@ public class Message {
     //내용 수정일때 update시간 필요
     public void setContent(String content) {
         this.content = content;
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public UUID getChannelId() {
-        return channelId;
+        setUpdatedAt();
     }
 
 
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String toString(){
-        return "Message{" +
-                "id=" + id +
-                ", content='" + content + '\'' +
-                ", userId='" + userId + '\'' +
-                ", channelId='" + channelId + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-
+    @Override
+    public String toString() {
+        return String.format(
+                "User{id=%s, 내용='%s', userId='%s', channelId='%s', 생성일자=%d, 수정일자=%d}",
+                getId(),
+                content,
+                user.getId(),
+                channel.getId(),
+                getCreatedAt(),
+                getUpdatedAt()
+        );
     }
 
 

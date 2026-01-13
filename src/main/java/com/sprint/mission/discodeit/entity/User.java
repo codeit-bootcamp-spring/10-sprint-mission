@@ -2,32 +2,22 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.UUID;
 
-public class User {
+public class User extends Common{
 
-    private UUID id;
+//    private UUID id;
     private String userName;
     private String email;
     private String status;
-    private Long createdAt;
-    private Long updatedAt;
+//    private Long createdAt;
+//    private Long updatedAt;
 
-    public User(UUID id){
-        this.id = id;
-
-    }
 
     public User(String userName, String email, String status){
-        this.id = UUID.randomUUID();
+        //super가 숨겨져있음.
         this.userName = userName;
         this.email = email;
         this.status = status;
-        this.createdAt = System.currentTimeMillis();
     }
-
-    public UUID getId() {
-        return id;
-    }
-
 
     public String getUserName() {
         return userName;
@@ -36,7 +26,7 @@ public class User {
     //이름 변경
     public void setUserName(String userName) {
         this.userName = userName;
-        this.updatedAt = System.currentTimeMillis();
+        setUpdatedAt();
     }
 
     public String getEmail() {
@@ -55,34 +45,18 @@ public class User {
         this.status = status;
     }
 
-    public Long getCreatedAt() {
-        return createdAt;
+    @Override
+    public String toString() {
+        return String.format(
+                "User{id=%s, username='%s', email='%s', status='%s', 생성일자=%d, 수정일자=%d}",
+                getId(),
+                userName,
+                email,
+                status,
+                getCreatedAt(),
+                getUpdatedAt()
+        );
     }
 
-//    public void setCreatedAt(Long createdAt) {
-//        this.createdAt = createdAt;
-//    }
-
-    public Long getUpdatedAt() {
-
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Long updatedAt) {
-
-        this.updatedAt = updatedAt;
-    }
-
-    public String toString(){
-        return "User{" +
-                "id=" + id +
-                ", username='" + userName + '\'' +
-                ", email='" + email + '\'' +
-                ", status='" + status + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                '}';
-
-    }
 
 }

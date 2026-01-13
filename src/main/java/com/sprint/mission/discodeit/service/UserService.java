@@ -8,17 +8,17 @@ import java.util.UUID;
 public interface UserService {
 
     //생성
-    User create(User user);
+    User create(String userName,String email, String status);
 
     //읽기
-    User findById(UUID id);
+    User findById(User user);
 
     //모두 읽기
     List<User> findAll();
 
     //수정
-    User update(UUID id,String userName,String email, String status);
+    User update(User user,String userName,String email, String status);
 
     //삭제
-    void delete(UUID id);
+    void delete(User user);
 }

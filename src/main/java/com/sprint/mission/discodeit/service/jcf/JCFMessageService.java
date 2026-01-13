@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -20,11 +22,13 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message create(Message message){
-        if(userService.findById(message.getUserId()) == null){
+    public Message create(String content, User user, Channel channel){
+        Message message = new Message(content,user,channel);
+        if(userService.findById(user) == null){
             throw new IllegalArgumentException("존재하지 않는 사용자 입니다.");
         }
-        if(channelService.findById(message.getChannelId()) == null){
+        System.out.println(channelService.findById(channel));
+        if(channelService.findById(channel) == null){
             throw new IllegalArgumentException("존재하지 않는 채널입니다.");
         }
         data.put(message.getId(),message);
@@ -33,8 +37,11 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message findById(UUID id){
-        return data.get(id);
+    public Message findById(Message message){
+        if(data.get(message.getId()) == null){
+            throw  new IllegalArgumentException("메시지가 존재하지 않습니다.");
+        }
+        return data.get(message.getId());
     }
 
     //특정 User의 모든 메세지 목록
@@ -44,17 +51,22 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID id,String content){
-        Message message = data.get(id);
-        if(message != null){
-            message.setContent(content);
+    public Message update(Message message,String content){
+        Message messages = data.get(message.getId());
+        if(messages == null){
+            throw new IllegalArgumentException("수정할 메시지가 없습니다.");
         }
-        return message;
+        messages.setContent(content);
+        return messages;
     }
 
     @Override
-    public void delete(UUID id) {
-        data.remove(id);
+    public void delete(Message message) {
+        if(data.get(message.getId()) == null){
+            throw new IllegalArgumentException("삭제할 메시지가 존재하지 않습니다.");
+
+        }
+        data.remove(message.getId());
     }
 
 

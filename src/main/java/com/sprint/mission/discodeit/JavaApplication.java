@@ -24,17 +24,13 @@ public class JavaApplication {
 
         //등록
         System.out.println("----------등록 시작----------");
-        User user1 = userService.create(new User("인성","kis2690@naver.com","online"));
-        User user2 = userService.create(new User("은비","enbi@naver.com","online"));
-        User user3 = userService.create(new User("재형","jhp@naver.com","online"));
-        Channel channel1 = channelService.create(new Channel("코드잇 벡엔드","텍스트",user1.getId()));
-        Channel channel2 = channelService.create(new Channel("코드잇 프론트엔드","음성",user2.getId()));
-        Message message1 = messageService.create(new Message("안녕하세요 SB 곽인성입니다.",user1.getId(),channel1.getId()));
-        Message message2 = messageService.create(new Message("안녕하세요 FB 조은비입니다.",user2.getId(),channel1.getId()));
-
-//        System.out.println("생성된 user객체:" + user1.toString());
-//        System.out.println("생성된 Channel객체:" + channel1.toString());
-//        System.out.println("생성된 Message객체:" + message1.toString());
+        User user1 = userService.create("인성","kis2690@naver.com","online");
+        User user2 = userService.create("은비","enbi@naver.com","online");
+        User user3 = userService.create("재형","jhp@naver.com","online");
+        Channel channel1 = channelService.create("코드잇 벡엔드","텍스트",user1);
+        Channel channel2 = channelService.create("코드잇 프론트엔드","음성",user2);
+        Message message1 = messageService.create("안녕하세요 SB 곽인성입니다.",user1,channel1);
+        Message message2 = messageService.create("안녕하세요 FB 조은비입니다.",user2,channel1);
 
         System.out.println("----------조회 시작----------");
         //조회(다건)
@@ -43,21 +39,21 @@ public class JavaApplication {
         System.out.println("메세지 목록:" + messageService.findAll());
 
         //조회(단건)
-        System.out.println("사용자2: " + userService.findById(user2.getId()));
-        System.out.println("벡엔드 채널: " + channelService.findById(channel1.getId()));
-        System.out.println("안녕하세요 FB 조은비입니다 메시지: " + messageService.findById(message2.getId()));
+        System.out.println("사용자2: " + userService.findById(user2));
+        System.out.println("벡엔드 채널: " + channelService.findById(channel1));
+        System.out.println("안녕하세요 FB 조은비입니다 메시지: " + messageService.findById(message2));
 
         System.out.println("----------수정 시작----------");
         //수정
-        userService.update(user2.getId(),"조뿡빵","choenbi@gmail.com","offline");
+        userService.update(user2,"조뿡빵","choenbi@gmail.com","offline");
 
         System.out.println("----------수정된 data 조회----------");
         //수정된 data 조회
-        System.out.println(userService.findById(user2.getId()));
+        System.out.println(userService.findById(user2));
 
-        System.out.println("----------삭제 시작----------");
+        System.out.println(user3.getUserName() + "삭제 시작----------");
         //삭제
-        userService.delete(user3.getId());
+        userService.delete(user3);
         System.out.println("----------삭제된 data 조회----------");
         //조회를 통해 삭제 되었는지.
         System.out.println(userService.findAll());
