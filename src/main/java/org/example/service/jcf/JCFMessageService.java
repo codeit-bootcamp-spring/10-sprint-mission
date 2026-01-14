@@ -7,10 +7,8 @@ import org.example.service.ChannelService;
 import org.example.service.MessageService;
 import org.example.service.UserService;
 
-// findbyid로 해도 되는거 아님???
-// 예외처리 해야
-// 생성자에서 객체 선언하는거 이해.
-// create 잘 작성한건지??
+
+
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,26 +19,31 @@ public class JCFMessageService implements MessageService {
     private final UserService userService;
     private final ChannelService channelService;
 
-    JCFMessageService(UserService userService, ChannelService channelService){  //생성자에 왜 이코드가 필요한지,
+    public JCFMessageService(UserService userService, ChannelService channelService){
         this.data = new HashMap<>();
         this.userService = userService;
         this.channelService = channelService;
     }
 
-
     @Override
-    public Message create(String content, UUID senderId, UUID channelId) { // 엔티티에서는 필드를 객체로 선언. 인터페이스에서는 UUID를 받게함. 근데 Message 생성자 부분에서는 객체를 받게끔 했음. 여기는 객체를 넣어야 하나?
+    public Message create(String content, UUID senderId, UUID channelId) {
+
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("필드: content, 조건: null이 아니고 빈 값이 아님, 값: " + content);
+        }
+
         User sender = userService.findById(senderId);
         Channel channel = channelService.findById(channelId);
-//        User sender = JFCUserService.findById(senderId);
         Message message = new Message(content,sender,channel);
         data.put(message.getId(),message);
+        channel.getMessages().add(message);
         return message;
     }
 
     @Override
-    public Message findById(UUID id){
-        return data.get(id); // 그냥 리턴하면 안되나?
+    public Message findById(UUID messageId){
+        return Optional.ofNullable(data.get(messageId))
+                .orElseThrow(()->new NoSuchElementException( "필드: id, 조건: 존재하는 메시지, 값: " + messageId));
     }
 
     @Override
@@ -51,7 +54,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> findByChannel(UUID channelId) {
         return data.values().stream()
-                .filter(message -> !message.isDeletedAt())  // 삭제된 것 제외
+                .filter(message -> !message.isDeletedAt())  // 삭제된 상태 메시지 제외
                 .filter(message -> message.getChannel().getId().equals(channelId))
                 .collect(Collectors.toList());
     }
@@ -59,14 +62,14 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> findBySender(UUID senderId) {
         return data.values().stream()
-                .filter(message -> !message.isDeletedAt())  // 삭제된 것 제외
+                .filter(message -> !message.isDeletedAt())  // 삭제된 상태 메시지 제외
                 .filter(message -> message.getSender().getId().equals(senderId))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Message update(UUID id, String content) {
-        Message message = findById(id);
+    public Message update(UUID messageId, String content) {
+        Message message = findById(messageId);
 
         message.setContent(content);
         message.setEditedAt(true);
@@ -74,14 +77,16 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void softDelete(UUID id) {
-        Message message = findById(id); // findbyid로 해도 되는거 아님???
+    public void softDelete(UUID messageId) {
+        Message message = findById(messageId);
         message.setDeletedAt(true);
     }
 
     @Override
-    public void hardDelete(UUID id) {
-        data.remove(id);
+    public void hardDelete(UUID messageId) {
+        Message message = findById(messageId);
+        message.getChannel().getMessages().remove(message); // 채널의 메시지 리스트에서 제거 (양방향 관계 정리)
+        data.remove(messageId);
     }
 
 }

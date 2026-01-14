@@ -13,13 +13,16 @@ public interface UserService {
     User findById(UUID id);
     List<User> findAll();
 
-    User updateProfile(UUID id, String username, String email, String nickname);
+    User update(UUID userId, String username, String email, String nickname, String password, Status status);
+//    User updateProfile(UUID id, String username, String email, String nickname);
+//
+//    void changePassword(UUID id, String newPassword);
+//
+//    void changeStatus(UUID id, Status status);
 
-    void changePassword(UUID id, String newPassword);
+    void softDelete(UUID id);
 
-    void changeStatus(UUID id, Status status);
-
-    void delete(UUID id);
+    void hardDelete(UUID id);
 
     List<Channel> findChannelByUser(UUID id);
 }
