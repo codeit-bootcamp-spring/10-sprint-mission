@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.entity.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public interface ChannelService {
@@ -12,7 +13,7 @@ public interface ChannelService {
     //추가 -> 생성자 main x -> 서비스에서 객체 생성까지 담당으로 변경.
 
     // 각 서비스에 해당 ID가 존재하는지를 !
-    Channel getChannelById (UUID uuid);//channel 조회 -> id로...(클래스끼리)
+
     List<Channel> getChannelAll();// channel 조회 -> 채널 목록 전부!
     Channel updateChannel(UUID uuid, String newName);// channel 정보 변경
     void deleteChannel(UUID uuid);// channel 삭제
@@ -22,5 +23,11 @@ public interface ChannelService {
 
     // 특정 채널의 메세지 목록 조회?
     List<Message> getMessageInChannel(UUID uuid);
+
+//    //id로 조회 /
+//    Channel getChannelById(UUID uuid);
+
+    Channel findChannelOrThrow(UUID id);
+
 
 }

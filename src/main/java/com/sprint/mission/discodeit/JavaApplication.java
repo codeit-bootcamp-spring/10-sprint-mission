@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.*;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -143,19 +144,26 @@ public class JavaApplication {
             //  User 생성
             User u1 = userService.createUser("최종인", "jongin");
             System.out.println(" 사용자 생성: " + u1.getUserName() + " (" + u1.getId() + ")");
+            User u2 = userService.createUser("최종인", "jongin98");
+
 
             //  Channel 생성
             Channel ch1 = channelService.createChannel("공지사항");
             System.out.println(" 채널 생성: " + ch1.getChannelName() + " (" + ch1.getId() + ")");
 
-            //  Message 생성
-            Message m1 = messageService.createMessage("첫 번째 메시지입니다.",u1, ch1);
+              //Message 생성
+            Message m1 = messageService.createMessage("첫 번째 메시지입니다.",u1.getId(), ch1.getId());
             System.out.println(" 메시지 생성: " + m1.getContent() + " (" + m1.getId() + ")");
 
+//            Message m1 = messageService.createMessage("테스트 메세지!!!", u1, ch1);
+
+            System.out.println("메시지 저장 시점: " + m1.getCreatedAt());
+            System.out.println("Map에서 꺼낸 후 시점: " + messageService.findmsgOrThrow(m1.getId()).getCreatedAt());
+
             System.out.println("\n=== ID 기반 조회 (공통 find...OrThrow 메서드 테스트) ===");
-            User foundUser = userService.getUserByID(u1.getId());
-            Channel foundChannel = channelService.getChannelById(ch1.getId());
-            Message foundMessage = messageService.getMessageById(m1.getId());
+            User foundUser = userService.findUserOrThrow(u1.getId());
+            Channel foundChannel = channelService.findChannelOrThrow(ch1.getId());
+            Message foundMessage = messageService.findmsgOrThrow(m1.getId());
 
             System.out.println("조회된 User: " + foundUser.getUserName());
             System.out.println("조회된 Channel: " + foundChannel.getChannelName());
@@ -166,9 +174,17 @@ public class JavaApplication {
             channelService.updateChannel(ch1.getId(), "일반공지");
             messageService.updateMessage(m1.getId(), "수정된 메시지 내용입니다.");
 
-            System.out.println(" 사용자 이름 변경: " + userService.getUserByID(u1.getId()).getUserName());
-            System.out.println("️ 채널 이름 변경: " + channelService.getChannelById(ch1.getId()).getChannelName());
-            System.out.println(" 메시지 내용 변경: " + messageService.getMessageById(m1.getId()).getContent());
+
+            System.out.println("=== " + u1.getUserName() + "이(가) 보낸 메시지 목록 ===");
+            UUID userId = u1.getId();
+            List<Message> messages = messageService.getMessagesBySenderId(userId);
+            for (Message m : messages) {
+                System.out.println(m.getContent());
+            }
+
+            System.out.println(" 사용자 이름 변경: " + userService.findUserOrThrow(u1.getId()).getUserName());
+            System.out.println("️ 채널 이름 변경: " + channelService.findChannelOrThrow(ch1.getId()).getChannelName());
+            System.out.println(" 메시지 내용 변경: " + messageService.findmsgOrThrow(m1.getId()).getContent());
 
             System.out.println("\n=== ID 기반 삭제 (delete 메서드 테스트) ===");
             userService.deleteUser(u1.getId());
@@ -179,24 +195,28 @@ public class JavaApplication {
 
             System.out.println("\n===  예외 발생 테스트 (삭제 후 조회 시도) ===");
             try {
-                    userService.getUserByID(u1.getId());
+                    userService.findUserOrThrow(u1.getId());
             } catch (NoSuchElementException e) {
                     System.out.println(" 사용자 조회 실패: " + e.getMessage());
             }
 
             try {
-                    channelService.getChannelById(ch1.getId());
+                    channelService.findChannelOrThrow(u1.getId());
             } catch (NoSuchElementException e) {
                     System.out.println(" 채널 조회 실패: " + e.getMessage());
             }
 
             try {
-                    messageService.getMessageById(m1.getId());
+                    messageService.findmsgOrThrow(m1.getId());
             } catch (NoSuchElementException e) {
                     System.out.println(" 메시지 조회 실패: " + e.getMessage());
             }
 
             System.out.println("\n 모든 공통 메서드 테스트 완료!");
+
+
+
+
 
     }
 }

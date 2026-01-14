@@ -21,35 +21,27 @@ public class JCFMessageService implements MessageService{
     }
 
     @Override
-    public Message createMessage(String content, User sender, Channel ch){
-        // 연관된 도메인 유효성 검증
-        // 메세지 객체를 설정할 때 Message m1 = new Message("안녕하세요!", u1, ch1);
-        if (sender == null || ch ==null){
-            throw new IllegalArgumentException("메세지 생성 실패: sender나 channel이 null 입니다.");
+    public Message createMessage(String content, UUID senderId, UUID channelId) {
+        // 1️⃣ 입력값 검증
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("메시지 내용이 비어 있습니다.");
         }
-        //User 존재 여부 확인
-        UUID senderId = sender.getId();
-        if(userService.getUserByID(senderId) == null){
-            throw new IllegalArgumentException("메세지 생성 실패: 존재하지 않는 사용자입니다. ID: " + senderId );
-        }
-        //Channel 존재 여부 확인
-        UUID channelId = ch.getId(); // Channel의 아이디.
-        if(channelService.getChannelById(channelId)==null){
-            throw new IllegalArgumentException("메세지 생성 실패: 존재하지 않는 채널입니다. ID: " + senderId);
-        }
-        // 통과 시 저장.
-        Message message = new Message(content,sender,ch);
-        data.put(message.getId(), message);
-        return message;
-    }
 
-    @Override
-    public Message getMessageById(UUID id){
-        Message message = data.get(id); // 특정 id의 메세지 객체 찾기 (시스템)
-        if(message == null) {
-            throw new NoSuchElementException("해당 ID의 메세지가 존재하지 않습니다: " + id);
+        if (senderId == null || channelId == null) {
+            throw new IllegalArgumentException("senderId나 channelId가 null일 수 없습니다.");
         }
-        return message; //해쉬맵에서 키값으로 값 찾기.
+
+        // 2️⃣ User 유효성 검사 및 조회
+        User sender = userService.findUserOrThrow(senderId);
+
+        // 3️⃣ Channel 유효성 검사 및 조회
+        Channel channel = channelService.findChannelOrThrow(channelId);
+
+        // 4️⃣ Message 생성 및 저장
+        Message message = new Message(content, sender, channel);
+        data.put(message.getId(), message);
+
+        return message;
     }
 
     @Override
@@ -79,35 +71,47 @@ public class JCFMessageService implements MessageService{
 
     @Override
     public List<Message> getMessagesByChannelName(String channelName) {
-        List<Message> result = new ArrayList<>();
-        for (Message message : data.values()) {
-            if (message.getChannel() != null &&
-                    message.getChannel().getChannelName() != null &&
-                    message.getChannel().getChannelName().trim().equalsIgnoreCase(channelName.trim())) {
-                result.add(message);
-            }
-        }
-        return result;
+        return data.values().stream()
+                .filter(m -> m.getChannel() != null
+                && m.getChannel().getChannelName().equals(channelName))
+                .toList();
+//        List<Message> result = new ArrayList<>();
+//        for (Message message : data.values()) {
+//            if (message.getChannel() != null &&
+//                    message.getChannel().getChannelName() != null &&
+//                    message.getChannel().getChannelName().trim().equalsIgnoreCase(channelName.trim())) {
+//                result.add(message);
+//            }
+//        }
+//        return result;
     }
 
+    // 이름 중복 허용인데...??? -> 그럼 id로 찾도록 (관리자용)
+    // (사용자용)은 별명이나 유저이름으로 조회하도록..?
     @Override
-    public List<Message> getMessagesBySenderName(String senderName) {
-        List<Message> result = new ArrayList<>();
-        for(Message message: data.values()){
-            if(message.getSender() != null &&
-            message.getSender().getUserName().equals(senderName)){
-                result.add(message);
-            }
-        }
-        return result;
+    public List<Message> getMessagesBySenderId(UUID senderId) {
+        return data.values().stream()
+                .filter(m->m.getSender() != null
+                && m.getSender().getId().equals(senderId))
+                .toList();
+//        List<Message> result = new ArrayList<>();
+//        for (Message message : data.values()) {
+//            if (message.getSender() != null &&
+//                    message.getSender().getId().equals(senderId)) {
+//                result.add(message);
+//            }
+//        }
+//        return result;
     }
 
-    // 공통 메서드: ID로 메세지를 찾고, 없으면 예외 던짐.
-    private Message findmsgOrThrow(UUID id) {
+    // ID로 메세지를 찾고, 없으면 예외 던짐.
+    public Message findmsgOrThrow(UUID id) {
         Message message  = data.get(id);
         if (message == null) {
             throw new NoSuchElementException("해당 메세지가 존재하지 않습니다: " + id);
         }
         return message;
     }
+
+
 }

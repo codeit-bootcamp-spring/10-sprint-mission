@@ -13,16 +13,6 @@ public class JCFChannelService implements ChannelService {
     }
 
 
-    // 공통 메서드: ID로 채널을 찾고, 없으면 예외.
-    private Channel findChannelOrThrow(UUID id) {
-        Channel channel = data.get(id);
-        if (channel == null) {
-            throw new NoSuchElementException("해당 채널이 존재하지 않습니다: " + id);
-        }
-        return channel;
-    }
-
-
     @Override
     public Channel createChannel(String channelName){
 
@@ -31,21 +21,21 @@ public class JCFChannelService implements ChannelService {
             throw new IllegalArgumentException("채널 이름은 비어 있을 수 없습니다.");
         }
         // 중복 이름 검사
-        for (Channel ch : data.values()) {
-            if (ch.getChannelName().equals(channelName)) {
-                throw new IllegalStateException("이미 존재하는 채널 이름입니다: " + channelName);
-            }
+        boolean existing = data.values().stream()
+                .anyMatch(ch->ch.getChannelName().equals(channelName));
+        if (existing) {
+            throw new IllegalStateException("이미 존재하는 채널 이름입니다." + channelName);
         }
+//        for (Channel ch : data.values()) {
+//            if (ch.getChannelName().equals(channelName)) {
+//                throw new IllegalStateException("이미 존재하는 채널 이름입니다: " + channelName);
+//            }
+//        }
         Channel channel = new Channel(channelName);
         data.put(channel.getId(), channel);
         return channel;
     }
 
-    @Override
-    public Channel getChannelById(UUID uuid){
-        Channel channel = data.get(uuid);
-        return findChannelOrThrow(uuid);
-    }
 
     @Override
     public List<Channel> getChannelAll(){
@@ -76,11 +66,16 @@ public class JCFChannelService implements ChannelService {
     // 중복일 경우, 없는경우 예외를 던져야한다.
     @Override
     public Channel getChannelByName(String channelName){
-        for(Channel ch : data.values()){
-            if(ch.getChannelName().equals(channelName)) {
-                return ch;
-            }
-        } throw new NoSuchElementException("채널이 존재하지 않습니다. : "  + channelName);
+        return data.values().stream()
+                .filter(ch->ch.getChannelName().equals(channelName))
+                .findFirst()
+                .orElseThrow(()->new NoSuchElementException("채널이 존재하지 않습니다: " + channelName));
+
+//        for(Channel ch : data.values()){
+//            if(ch.getChannelName().equals(channelName)) {
+//                return ch;
+//            }
+//        } throw new NoSuchElementException("채널이 존재하지 않습니다. : "  + channelName);
     }
 
     @Override
@@ -90,6 +85,16 @@ public class JCFChannelService implements ChannelService {
             return Collections.emptyList();
         }
         return channel.getMessages();
+    }
+
+
+    //id로 조회 후 없으면 예외
+    public Channel findChannelOrThrow(UUID id) {
+        Channel channel = data.get(id);
+        if (channel == null) {
+            throw new NoSuchElementException("해당 채널이 존재하지 않습니다: " + id);
+        }
+        return channel;
     }
 }
 

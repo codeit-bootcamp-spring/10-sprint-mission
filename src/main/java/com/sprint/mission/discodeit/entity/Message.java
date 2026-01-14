@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.time.format.DateTimeFormatter;
+
 public class Message extends Basic{
 
     private String messageContent;
@@ -48,5 +50,10 @@ public class Message extends Basic{
         }
     }
 
-
+    @Override
+    public String toString() {
+        return "[" + getCreatedAt() + "] "  // Basic에서 상속받은 포맷된 시간
+                + getSender().getUserName() + ": "
+                + getContent();
+    }
 }
