@@ -35,10 +35,8 @@ public class JCFUserService implements UserService {
     @Override
     public List<User> findAllUsers() {
         System.out.println("[유저 전체 조회]");
-        for(UUID id : data.keySet()){
-            System.out.println(data.get(id).getName());
-        }
-        System.out.println();
+        data.keySet().forEach(uuid -> System.out.println(data.get(uuid)));
+
         return new ArrayList<>(data.values());
     }
 
@@ -48,10 +46,13 @@ public class JCFUserService implements UserService {
         List<User> friendsList = user.getFriendsList();
 
         System.out.println(" -- 친구 목록 조회 --");
-        for(User friend : friendsList){
-            System.out.println(friend);
+        if(friendsList.isEmpty()){
+            System.out.println("친구가 없습니다");
         }
-        System.out.println();
+        else{
+            friendsList.forEach(System.out::println);
+        }
+
         return friendsList;
     }
 
@@ -77,21 +78,16 @@ public class JCFUserService implements UserService {
 
         List<Channel> channelList = new ArrayList<>(user.getChannelList());
         // 유저 삭제시 유저가 속한 채널의 유저 리스트에서 삭제
-        for(Channel channel : channelList){
-            channel.getUserList().remove(user);
-        }
+        channelList.forEach(channel -> channel.getUserList().remove(user));
 
         List<Message> messageList = new ArrayList<>(user.getMessageList());
         // 유저가 가지고 있던 메시지 삭제
-        for(Message message : messageList){
-            messageService.delete(message.getId());
-        }
+        messageList.forEach(message -> messageService.delete(message.getId()));
+
 
         List<User> friendsList = new ArrayList<>(user.getFriendsList());
         // 유저의 친구들의 친구목록에서 유저 삭제
-        for(User friend : friendsList){
-            friend.getFriendsList().remove(user);
-        }
+        friendsList.forEach(friend -> friend.getFriendsList().remove(user));
 
         data.remove(userId);
     }

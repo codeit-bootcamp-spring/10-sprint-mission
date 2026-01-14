@@ -50,10 +50,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<Channel> findAllChannel() {
         System.out.println("[채널 전체 조회]");
-        for(UUID id : data.keySet()){
-            System.out.println(data.get(id));
-        }
-        System.out.println();
+        data.keySet().forEach(uuid -> System.out.println(data.get(uuid)));
         return new ArrayList<>(data.values());
     }
 
@@ -63,13 +60,12 @@ public class JCFChannelService implements ChannelService {
         List<Channel> channelList = new ArrayList<>();
 
         System.out.println("-- " + user + "가 속한 채널 조회 --");
+        Collection<Channel> dataList = new ArrayList<>(data.values());
+        dataList.stream()
+                .filter(channel -> channel.getUserList().contains(user))
+                .forEach(channel -> {channelList.add(channel);
+                    System.out.println(channel);});
 
-        for(Channel channel : new ArrayList<>(data.values())){
-            if(channel.getUserList().contains(user)){
-                channelList.add(channel);
-                System.out.println(channel);
-            }
-        }
         return channelList;
     }
 
@@ -85,13 +81,13 @@ public class JCFChannelService implements ChannelService {
         Channel channel = findChannel(channelId);
 
         // 채널이 삭제될때 이 채널이 속해있는 유저의 채널리스트에서 채널 삭제
-        for(User user : channel.getUserList()){
-            userService.findUser(user.getId()).getChannelList().remove(channel);
-        }
+        List<User> userList = new ArrayList<>(channel.getUserList());
+        userList.forEach(user -> user.getChannelList().remove(channel));
+
         // 채널이 삭제될때 채널에 속해있던 메시지들 전부 삭제
-        for(Message message : new ArrayList<>(channel.getMessageList())){
-            messageService.delete(message.getId());
-        }
+        List<Message> messageList = new ArrayList<>(channel.getMessageList());
+        messageList.forEach(message -> messageService.delete(message.getId()));
+
         data.remove(channelId);
     }
 }

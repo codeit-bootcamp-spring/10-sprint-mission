@@ -45,10 +45,8 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> findAllMessages() {
         System.out.println("[메세지 전체 조회]");
-        for(UUID id : data.keySet()){
-            System.out.println(data.get(id));
-        }
-        System.out.println();
+        data.keySet().forEach(uuid -> System.out.println(data.get(uuid)));
+
         return new ArrayList<>(data.values());
     }
 
@@ -60,10 +58,8 @@ public class JCFMessageService implements MessageService {
                 .filter(message -> message.getText().contains(keyword))
                 .toList();
         System.out.println(channel+"채널의 " + "[" + keyword + "]를 포함한 메시지 조회");
-        for(Message message : messageList){
-            System.out.println(message);
-        }
-        System.out.println();
+        messageList.forEach(System.out::println);
+
         return messageList;
     }
 
@@ -72,11 +68,10 @@ public class JCFMessageService implements MessageService {
         Channel channel = channelService.findChannel(channelId);
 
         System.out.println("-- " + channel + "에 속한 메시지 조회 --");
-        for(Message message : channel.getMessageList()){
-            System.out.println(message);
-        }
-        System.out.println();
-        return channel.getMessageList();
+        List<Message> messageList = channel.getMessageList();
+        messageList.forEach(System.out::println);
+
+        return messageList;
     }
 
     @Override

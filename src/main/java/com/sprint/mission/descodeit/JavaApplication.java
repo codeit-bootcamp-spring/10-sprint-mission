@@ -56,6 +56,9 @@ public class JavaApplication {
 
         test(() -> messageService.findMessageByKeyword(channel1 .getId(), "안녕"));
 
+        test(() -> channelService.findAllChannelsByUserId(user1.getId()));
+        test(() -> messageService.findAllMessagesByChannelId(channel1.getId()));
+
         System.out.println("");
 
         System.out.println("--- 수정&조회 ---");
@@ -74,10 +77,6 @@ public class JavaApplication {
         userService.findAllUsers();
         messageService.findAllMessages();
         channelService.findAllChannel();
-
-        test(() -> channelService.findAllChannelsByUserId(user1.getId()));
-        test(() -> messageService.findAllMessagesByChannelId(channel1.getId()));
-
 
         System.out.println("--- 삭제&조회 ---");
         //삭제 & 조회
