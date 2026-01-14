@@ -71,7 +71,7 @@ public class JCFUserService implements UserService {
         List<Message> messageList = new ArrayList<>(user.getMessageList());
         messageList.forEach(message -> messageService.deleteMessage(message.getId()));
 
-        // Channel에서 User 탈퇴 및 User가 가입한 channel에서 User 탈퇴
+        // Channel에서 User 탈퇴 및 User가 가입한 channel에서 User 탈퇴 , 양방향 삭제를 해줘야 객체가 완전히 지워짐 ??
         List<Channel> channels = new ArrayList<>(user.getChannels());
         channels.forEach(channel -> {
             channel.removeMember(user);

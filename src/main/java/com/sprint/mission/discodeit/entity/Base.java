@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.entity;
 import java.util.UUID;
 
 // User, Channel, Message 간 공통 필드, Getter, Setter가 존재해 추상 Class
-
 public abstract class Base {
     // 필드
     private final UUID id;

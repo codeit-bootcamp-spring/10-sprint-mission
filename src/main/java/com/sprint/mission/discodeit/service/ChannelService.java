@@ -13,7 +13,7 @@ public interface ChannelService {
     Channel find(UUID id);
     List<Channel> findAll();
     Channel updateName(UUID channelID, String name);
-    // channel에 user 탈퇴
+    // channel 자체 삭제
     void deleteChannel(UUID channelID);
     // channel에 user 가입
     void joinChannel (UUID userID, UUID channelID);

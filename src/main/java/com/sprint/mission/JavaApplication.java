@@ -17,6 +17,7 @@ public class JavaApplication {
         UserService userService = factory.getUserService();
         ChannelService channelService = factory.getChannelService();
         MessageService messageService = factory.getMessageService();
+
         // 예외 케이스 테스트용 랜덤 id (존재하지 않는 UUID)
         UUID id = UUID.randomUUID();
 
@@ -25,6 +26,7 @@ public class JavaApplication {
         System.out.println("===Start Test===");
 
         System.out.println("\n=== [1] UserService: CREATE ===");
+
         // 등록 테스트
         User user1 = userService.create("JEON");
         User user2 = userService.create("KIM");
@@ -38,7 +40,7 @@ public class JavaApplication {
         // ============================================================
         // 2) ChannelService - CREATE
         // ============================================================
-        System.out.println("\n===  ChannelService: CREATE ===");
+        System.out.println("\n=== [2] ChannelService: CREATE ===");
 
         // 채널 생성
         Channel ch1 = channelService.create("codeit");
@@ -308,46 +310,6 @@ public class JavaApplication {
         System.out.println("messages=" + messageService.findAll());
         System.out.println("sender.messageList=" + msg1Sender.getMessageList());
         System.out.println("channel.messageList=" + msg1Channel.getMessageList());
-
-
-
-//        // ---------- User delete: 유저 삭제 시 채널 탈퇴/메시지 삭제가 반영되는지 ----------
-//        System.out.println("\n[UserService][deleteUser] user3");
-//        System.out.println("Before deleteUser(user3): users=" + userService.findAll());
-//        System.out.println("Before deleteUser(user3): ch1.members=" + channelService.findMembers(ch1.getId()));
-//        System.out.println("Before deleteUser(user3): messages=" + messageService.findAll());
-//
-//        userService.deleteUser(user3.getId());
-//
-//        System.out.println("After deleteUser(user3): users=" + userService.findAll());
-//        System.out.println("After deleteUser(user3): ch1.members=" + channelService.findMembers(ch1.getId()));
-//        System.out.println("After deleteUser(user3): messages=" + messageService.findAll());
-//
-//        // ---------- Channel delete: 채널 삭제 시 유저 채널 목록/메시지 삭제 반영 ----------
-//        System.out.println("\n[ChannelService][deleteChannel] ch2");
-//        System.out.println("Before deleteChannel(ch2): channels=" + channelService.findAll());
-//        System.out.println("Before deleteChannel(ch2): user1.channels=" + user1.getChannels());
-//
-//        channelService.deleteChannel(ch2.getId());
-//
-//        System.out.println("After deleteChannel(ch2): channels=" + channelService.findAll());
-//        System.out.println("After deleteChannel(ch2): user1.channels=" + user1.getChannels());
-//
-//        // ---------- Message delete: 메시지 삭제 시 유저/채널 messageList 반영 ----------
-//        System.out.println("\n[MessageService][deleteMessage] msg1");
-//        User msg1Sender = msg1.getSender();
-//        Channel msg1Channel = msg1.getChannel();
-//
-//        System.out.println("Before deleteMessage(msg1): messages=" + messageService.findAll());
-//        System.out.println("Before deleteMessage(msg1): sender.messageList=" + msg1Sender.getMessageList());
-//        System.out.println("Before deleteMessage(msg1): channel.messageList=" + msg1Channel.getMessageList());
-//
-//        messageService.deleteMessage(msg1.getId());
-//
-//        System.out.println("After deleteMessage(msg1): messages=" + messageService.findAll());
-//        System.out.println("After deleteMessage(msg1): sender.messageList=" + msg1Sender.getMessageList());
-//        System.out.println("After deleteMessage(msg1): channel.messageList=" + msg1Channel.getMessageList());
-
 
         // 추가 기능 테스트
         System.out.println();

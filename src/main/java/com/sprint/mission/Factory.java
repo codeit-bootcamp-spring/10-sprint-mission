@@ -26,7 +26,7 @@ public class Factory {
         messageService.setChannelService(channelService);
         messageService.setUserService(userService);
     }
-
+    // Getter
     public UserService getUserService() {
         return userService;
     }
