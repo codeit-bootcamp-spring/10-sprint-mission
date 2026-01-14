@@ -60,6 +60,8 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void deleteChannel(UUID channelId) {
+        // 삭제 대상 채널이 실제로 존재하는지 검색 및 검증
+        findChannelById(channelId);
         // 채널 삭제 전, 해당 채널에 가입된 모든 유저의 채널 목록에서 먼저 제거
         userService.removeChannelFromJoinedUsers(channelId);
         // 모든 유저와의 관계를 정리한 후 채널 삭제, 저장소에서 제거
