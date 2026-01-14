@@ -57,8 +57,8 @@ public class JCFUserService implements UserService {
 
     @Override
     public User addFriend(UUID senderId, UUID receiverId) {
-        User sender = data.get(senderId);
-        User receiver = data.get(receiverId);
+        User sender = findUser(senderId);
+        User receiver = findUser(receiverId);
         sender.addFriend(receiver);
 
         return receiver;
@@ -75,15 +75,22 @@ public class JCFUserService implements UserService {
     public void delete(UUID userId) {
         User user = findUser(userId);
 
+        List<Channel> channelList = new ArrayList<>(user.getChannelList());
         // 유저 삭제시 유저가 속한 채널의 유저 리스트에서 삭제
-        List<Channel> channelList = user.getChannelList();
         for(Channel channel : channelList){
             channel.getUserList().remove(user);
         }
 
+        List<Message> messageList = new ArrayList<>(user.getMessageList());
         // 유저가 가지고 있던 메시지 삭제
-        for(Message message : new ArrayList<>(user.getMessageList())){
+        for(Message message : messageList){
             messageService.delete(message.getId());
+        }
+
+        List<User> friendsList = new ArrayList<>(user.getFriendsList());
+        // 유저의 친구들의 친구목록에서 유저 삭제
+        for(User friend : friendsList){
+            friend.getFriendsList().remove(user);
         }
 
         data.remove(userId);

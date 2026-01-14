@@ -74,18 +74,6 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public List<Message> findAllMessagesByChannelId(UUID channelId) {
-        Channel channel = findChannel(channelId);
-
-        System.out.println("-- " + channel + "에 속한 메시지 조회 --");
-        for(Message message : channel.getMessageList()){
-            System.out.println(message);
-        }
-        System.out.println();
-        return channel.getMessageList();
-    }
-
-    @Override
     public Channel update(UUID channelId, String newName) {
         Channel channel = findChannel(channelId);
         channel.updateChannel(newName);

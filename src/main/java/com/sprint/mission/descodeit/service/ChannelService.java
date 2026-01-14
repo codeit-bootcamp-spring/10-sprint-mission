@@ -12,7 +12,7 @@ public interface ChannelService {
     Channel findChannel(UUID channelId);
     List<Channel> findAllChannel();
     List<Channel> findAllChannelsByUserId(UUID userId);
-    List<Message> findAllMessagesByChannelId(UUID channelId);
+
 
     Channel update(UUID channelId, String newName);
     void delete(UUID channelId);

@@ -68,6 +68,18 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
+    public List<Message> findAllMessagesByChannelId(UUID channelId) {
+        Channel channel = channelService.findChannel(channelId);
+
+        System.out.println("-- " + channel + "에 속한 메시지 조회 --");
+        for(Message message : channel.getMessageList()){
+            System.out.println(message);
+        }
+        System.out.println();
+        return channel.getMessageList();
+    }
+
+    @Override
     public Message update(UUID messageId,UUID requestUserId, String newText) {
         Message message = findMessage(messageId);
         if(!requestUserId.equals(message.getUser().getId())){
@@ -80,12 +92,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void delete(UUID messageId) {
-        Message message = data.get(messageId);
-
-        // 데이터가 없으면 예외를 던지는 대신 false를 즉시 리턴
-        if (message == null) {
-            return;
-        }
+        Message message = findMessage(messageId);
 
         // 해당 메시지가 속했던 유저와 채널에서 메시지 정보 삭제
         User user = message.getUser();

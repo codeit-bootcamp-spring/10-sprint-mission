@@ -54,7 +54,7 @@ public class JavaApplication {
         test(() -> userService.findFriends(user1.getId()));
         test(() -> userService.findFriends(user2.getId()));
 
-        test(() -> messageService.findMessageByKeyword(channel1.getId(), "안녕"));
+        test(() -> messageService.findMessageByKeyword(channel1 .getId(), "안녕"));
 
         System.out.println("");
 
@@ -75,18 +75,21 @@ public class JavaApplication {
         messageService.findAllMessages();
         channelService.findAllChannel();
 
-        channelService.findAllChannelsByUserId(user1.getId());
-        channelService.findAllMessagesByChannelId(channel1.getId());
+        test(() -> channelService.findAllChannelsByUserId(user1.getId()));
+        test(() -> messageService.findAllMessagesByChannelId(channel1.getId()));
+
 
         System.out.println("--- 삭제&조회 ---");
         //삭제 & 조회
-        userService.delete(user1.getId());
+        test(() -> userService.delete(user1.getId()));
         test(() -> userService.findUser(user1.getId()));
+        test(() -> userService.findFriends(user2.getId()));
 
-        messageService.delete(message1.getId());
+        test(() -> messageService.delete(message1.getId()));
         test(() -> messageService.findMessage(message1.getId()));
 
-        channelService.delete(channel1.getId());
+
+        test(() -> channelService.delete(channel1.getId()));
         test(() -> channelService.findChannel(channel1.getId()));
 
         userService.findAllUsers();
