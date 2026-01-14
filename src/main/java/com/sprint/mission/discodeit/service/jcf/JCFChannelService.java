@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,10 +15,16 @@ import java.util.stream.Collectors;
 public class JCFChannelService implements ChannelService {
     // 필드
     private final List<Channel> channelData;
-
+    private MessageService messageService;
     // 생성자
     public JCFChannelService() {
         this.channelData = new ArrayList<>();
+    }
+
+    // Setter
+    @Override
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
     }
 
     //생성
@@ -53,20 +61,20 @@ public class JCFChannelService implements ChannelService {
     // Channel 자체 삭제
     @Override
     public void deleteChannel(UUID channelID) {
+        if (messageService == null) {
+            throw new IllegalStateException("MessageService is not set in JCFChannelService");
+        }
+
         Channel channel = find(channelID);
 
+        // channel에 속한 user들 삭제
         List<User> members = new ArrayList<>(channel.getMembersList());
+        members.forEach(user -> user.leaveChannel(channel));
+
+        // channel message 삭제 (Sender의 messageList, Channel messageList에서 삭제)
         List<Message> messageList = new ArrayList<>(channel.getMessageList());
+        messageList.forEach(message -> messageService.deleteMessage(message.getId()));
 
-        // User 마다
-        for(User user : members){
-            user.leaveChannel(channel);
-        }
-
-        // Message 마다
-        for(Message msg : messageList){
-            //
-        }
         // channelData에서 channel 삭제
         channelData.remove(channel);
     }
@@ -93,7 +101,17 @@ public class JCFChannelService implements ChannelService {
         // channel에서 user 삭제
         channel.removeMember(user);
 
-        // message에 있는 데이터들도 삭제해야 하나?
+        // user가 보낸 messageList 중 해당 channel에 관한 것 삭제해줘야 함.
+        List<Message> messageList = new ArrayList<>(user.getMessageList());
+
+        // for 루프로 messageList에서 channel 과 일치하는 것을 delete
+        for(Message msg : messageList){
+            // 해당 channel에서 떠나는 user가 보낸 메시지 삭제
+            if (msg.getChannel().equals(channel)){
+                messageService.deleteMessage(msg.getId()); // user, channel 입장에서도 msg 삭제해줌
+            }
+        }
+
     }
 
     // Channel 안 모든 User 조회

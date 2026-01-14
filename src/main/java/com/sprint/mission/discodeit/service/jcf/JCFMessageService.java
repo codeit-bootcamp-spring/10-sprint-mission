@@ -7,27 +7,39 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
     // 필드
     private final Map<UUID, Message> messageData;
-    private final ChannelService channelService;
+    private ChannelService channelService;
     private UserService userService;
 
     // 생성자
-    public JCFMessageService(ChannelService channelService, UserService userService) {
+    public JCFMessageService() {
         this.messageData = new HashMap<>();
+    }
+    // Setter
+    public void setChannelService(ChannelService channelService) {
         this.channelService = channelService;
+    }
+
+    public void setUserService(UserService userService) {
         this.userService = userService;
     }
 
     //생성
     @Override
     public Message create(String contents, UUID userID, UUID channelID) {
+        // Service 예외
+        if (userService == null) {
+            throw new IllegalStateException("UserService is not set. Call setUserService() before using create().");
+        }
+        if (channelService == null) {
+            throw new IllegalStateException("ChannelService is not set. Call setChannelService() before using create().");
+        }
+
         // sender, channel 존재하는 지 check
         User sender = userService.find(userID);
         Channel channel = channelService.find(channelID);
@@ -73,20 +85,43 @@ public class JCFMessageService implements MessageService {
 
     // 삭제
     @Override
-    public void delete(UUID messageID) {
+    public void deleteMessage(UUID messageID) {
         Message msg = find(messageID);
         User sender = msg.getSender();
         Channel channel = msg.getChannel();
 
-        // sender, channel에서 msg 삭제
+        // sender, channel의 messageList에서 msg 삭제
         sender.removeMessage(msg);
         channel.removeMessage(msg);
+
+        // message 완전 삭제
         messageData.remove(messageID);
     }
 
-    // channel 전체 메시지 출력
-    public void printChannelAllMessage(UUID channelID){
+    // channel 전체 메시지 조회
+    public List<String> findMessagesByChannel (UUID channelID){
+        // channelService 예외처리
+        if (channelService == null) {
+            throw new IllegalStateException("ChannelService is not set. Call setChannelService() before using create().");
+        }
 
+        Channel channel = channelService.find(channelID);
+        return channel.getMessageList().stream()
+                .map(Message::getContents)
+                .collect(Collectors.toList());
+    }
+
+    // User 전체 메시지 조회
+    public List<String> findMessagesByUser (UUID userID){
+        // userService 예외처리
+        if (userService == null) {
+            throw new IllegalStateException("UserService is not set. Call setUserService() before using create().");
+        }
+
+        User user = userService.find(userID);
+        return user.getMessageList().stream()
+                .map(Message::getContents)
+                .collect(Collectors.toList());
     }
 
 }

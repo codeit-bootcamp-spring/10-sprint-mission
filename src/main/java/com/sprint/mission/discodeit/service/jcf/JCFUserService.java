@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
@@ -13,10 +14,17 @@ import java.util.stream.Collectors;
 public class JCFUserService implements UserService {
     // field
     private final List<User> userData;
+    private MessageService messageService;
 
     // constructor
     public JCFUserService() {
         this.userData = new ArrayList<>();
+    }
+
+    // Setter
+    @Override
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
     }
 
     // User 등록
@@ -52,19 +60,28 @@ public class JCFUserService implements UserService {
 
     // User 삭제
     @Override
-    public void delete(UUID userID){
+    public void deleteUser(UUID userID){
+        if (messageService == null) {
+            throw new IllegalStateException("MessageService is not set in JCFUserService");
+        }
         User user = find(userID);
 
+        // User가 보낸 Message 삭제
+        List<Message> messageList = new ArrayList<>(user.getMessageList());
+        messageList.forEach(message -> messageService.deleteMessage(message.getId()));
+
+        // Channel에서 User 탈퇴 및 User가 가입한 channel에서 User 탈퇴
         List<Channel> channels = new ArrayList<>(user.getChannels());
+        channels.forEach(channel -> {
+            channel.removeMember(user);
+            user.leaveChannel(channel);
+        });
 
-        for(Channel ch : channels){
-            ch.removeMember(user);
-        }
-
-        // 관련 메시지도 삭제
+        // userData에서 user 완전 삭제
         userData.remove(user);
     }
 
+    // User가 가입한 전체 Channel 조회
     @Override
     public List<String> findJoinedChannels(UUID userID){
         User user = find(userID);

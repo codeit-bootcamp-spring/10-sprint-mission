@@ -14,8 +14,14 @@ public class Factory {
 
     public Factory() {
         this.userService = new JCFUserService();
-        this.channelService = new JCFChannelService(userService);
-        this.messageService = new JCFMessageService(channelService, userService);
+        this.channelService = new JCFChannelService();
+        this.messageService = new JCFMessageService();
+
+        // 각 서비스 주입 ?
+        messageService.setChannelService(channelService);
+        messageService.setUserService(userService);
+        userService.setMessageService(messageService);
+        channelService.setMessageService(messageService);
     }
 
     public UserService getUserService() {
