@@ -29,4 +29,8 @@ public interface UserService {
 
     // Delete
     User deleteUser(UUID userId);
+
+    // Logic
+    void joinChannel(UUID userId, UUID channelId);
+    void leaveChannel(UUID userId, UUID channelId);
 }

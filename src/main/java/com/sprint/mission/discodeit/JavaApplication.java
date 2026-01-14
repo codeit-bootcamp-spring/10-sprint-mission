@@ -7,126 +7,412 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
-import java.util.List;
-import java.util.Scanner;
-import java.util.UUID;
+import java.util.*;
 
 public class JavaApplication {
 
+    // 전역 스캐너 및 서비스
+    private static final Scanner scanner = new Scanner(System.in);
+    private static final JCFUserService userService = new JCFUserService();
+    private static final JCFChannelService channelService = new JCFChannelService();
+    private static final JCFMessageService messageService = new JCFMessageService();
+
     public static void main(String[] args) {
-        System.out.println("========== [Discodeit JCF 버전 테스트 시작] ==========\n");
-
-        // ---------------------------------------------------------------
-        // 1. 서비스 생성 및 의존성 조립 (Setter Injection)
-        // ---------------------------------------------------------------
-        // (1) 껍데기 생성 (아직 서로 모름)
-        JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService();
-        JCFMessageService messageService = new JCFMessageService();
-
-        // (2) 관계 맺어주기 (Setter 주입)
-        // -> 이 과정 덕분에 순환 참조 문제 없이 서로를 호출할 수 있게 됩니다.
+        // 0. 의존성 주입 (Dependency Injection)
         userService.setMessageService(messageService);
+        userService.setChannelService(channelService);
         channelService.setMessageService(messageService);
         messageService.setUserService(userService);
         messageService.setChannelService(channelService);
 
-        System.out.println("✅ 서비스 의존성 주입 완료 (Setter Injection)\n");
+        // 초기 데이터 (테스트 편의용)
+        initDummyData();
 
+        while (true) {
+            printMenu();
+            String choice = scanner.nextLine();
 
-        // ---------------------------------------------------------------
-        // 2. 데이터 준비 (유저 생성, 채널 생성)
-        // ---------------------------------------------------------------
-        User userA = userService.createUser("userA", "철수", "a@test.com", "010-1111-1111");
-        User userB = userService.createUser("userB", "영희", "b@test.com", "010-2222-2222");
-        Channel channelGeneral = channelService.createChannel("일반-채널", true);
+            try {
+                switch (choice) {
+                    case "1": createUserMenu(); break;
+                    case "2": createChannelMenu(); break;
+                    case "3": joinChannelMenu(); break;
+                    case "4": writeMessageMenu(); break;
+                    case "5": updateUserMenu(); break;
+                    case "6": deleteUserMenu(); break;
+                    case "7": updateChannelMenu(); break;
+                    case "8": deleteChannelMenu(); break;
+                    case "9": updateMessageMenu(); break;
+                    case "10": deleteMessageMenu(); break;
+                    // [추가된 기능]
+                    case "11": printUserInfoMenu(); break;
+                    case "12": printChannelInfoMenu(); break;
+                    case "13": printUserMessagesMenu(); break;
+                    case "14": printChannelMessagesMenu(); break;
 
-        // (편의상 유저들을 채널에 입장시킴 - 엔티티 메서드 직접 호출)
-        userA.joinChannel(channelGeneral);
-        userB.joinChannel(channelGeneral);
-
-        System.out.println("✅ 데이터 생성 완료");
-        System.out.println("   - 유저: 철수, 영희");
-        System.out.println("   - 채널: 일반-채널 (참여자: " + channelGeneral.getUsers().size() + "명)\n");
-
-
-        // ---------------------------------------------------------------
-        // 3. 메시지 전송 테스트 (Create)
-        // ---------------------------------------------------------------
-        System.out.println(">> [Test 1] 메시지 전송");
-
-        // 철수가 메시지 전송
-        Message msg1 = messageService.sendMessage(userA.getId(), channelGeneral.getId(), "안녕하세요! 철수입니다.");
-        // 영희가 메시지 전송
-        Message msg2 = messageService.sendMessage(userB.getId(), channelGeneral.getId(), "반가워요. 영희입니다.");
-
-        printChannelMessages(messageService, channelGeneral.getId());
-
-
-        // ---------------------------------------------------------------
-        // 4. 메시지 수정 및 빈 내용 삭제 테스트 (Update -> Delete)
-        // ---------------------------------------------------------------
-        System.out.println("\n>> [Test 2] 메시지 수정 (빈 내용 입력 시 삭제 확인)");
-
-        // 정상 수정
-        messageService.updateMessage(msg1.getId(), "안녕하세요! (수정됨)");
-        System.out.println("   -> 철수 메시지 수정 완료: " + msg1.getContent());
-
-        // 빈 내용으로 수정 시도 -> 삭제되어야 함
-        System.out.println("   -> 영희 메시지를 빈 값(\"\")으로 수정 시도...");
-        try {
-            messageService.updateMessage(msg2.getId(), ""); // 빈 문자열
-            System.out.println("   -> (성공) 영희 메시지가 삭제되었습니다.");
-        } catch (Exception e) {
-            System.out.println("   -> (에러) " + e.getMessage());
+                    case "0":
+                        System.out.println("프로그램을 종료합니다.");
+                        return;
+                    default:
+                        System.out.println("!! 잘못된 입력입니다. 다시 선택해주세요.");
+                }
+            } catch (Exception e) {
+                System.out.println("!! 에러 발생: " + e.getMessage());
+            }
+            System.out.println("\n--------------------------------------------------"); // 구분선
         }
-
-        // 확인: 메시지가 1개만 남아야 함 (철수 것만)
-        printChannelMessages(messageService, channelGeneral.getId());
-
-
-        // ---------------------------------------------------------------
-        // 5. 유저 탈퇴 시 연쇄 삭제 테스트 (Delete User -> Delete Messages)
-        // ---------------------------------------------------------------
-        System.out.println("\n>> [Test 3] 유저 '철수' 탈퇴 (작성한 메시지도 함께 삭제되어야 함)");
-
-        // 현재 상태: 채널에는 철수의 메시지 1개가 남아있음
-        userService.deleteUser(userA.getId());
-
-        // 검증 1: 유저 조회 실패해야 함
-        boolean userExists = userService.findById(userA.getId()).isPresent();
-        System.out.println("   -> 철수 유저 존재 여부: " + userExists); // false 예상
-
-        // 검증 2: 채널의 메시지가 0개가 되어야 함 (철수가 쓴 글이 삭제됐으므로)
-        List<Message> remainingMessages = messageService.findMessagesByChannel(channelGeneral.getId());
-        System.out.println("   -> 채널에 남은 메시지 수: " + remainingMessages.size() + "개"); // 0개 예상
-
-        // 검증 3: 채널 참여자 명단에서 철수가 빠져야 함
-        System.out.println("   -> 채널 참여자 수: " + channelGeneral.getUsers().size() + "명"); // 1명(영희) 예상
-
-
-        // ---------------------------------------------------------------
-        // 6. 채널 삭제 테스트 (Delete Channel)
-        // ---------------------------------------------------------------
-        System.out.println("\n>> [Test 4] 채널 삭제");
-
-        channelService.deleteChannel(channelGeneral.getId());
-
-        boolean channelExists = channelService.findById(channelGeneral.getId()).isPresent();
-        System.out.println("   -> 채널 존재 여부: " + channelExists); // false 예상
-
-        // 영희의 채널 목록에서도 삭제되었는지 확인
-        System.out.println("   -> 영희가 가입한 채널 수: " + userB.getChannels().size() + "개"); // 0개 예상
-
-        System.out.println("\n========== [모든 테스트 통과 완료] ==========");
     }
 
-    // 메시지 목록 출력 헬퍼 메서드
-    private static void printChannelMessages(JCFMessageService service, UUID channelId) {
-        List<Message> msgs = service.findMessagesByChannel(channelId);
-        System.out.println("   [현재 채널 메시지 목록 (" + msgs.size() + "개)]");
-        for (Message m : msgs) {
-            System.out.println("    - [" + m.getAuthor().getNickname() + "]: " + m.getContent());
+    // =================================================================
+    // [메뉴 1] 유저 생성
+    // =================================================================
+    private static void createUserMenu() {
+        System.out.println("\n[1. 유저 생성]");
+        System.out.print("Username (ID): ");
+        String username = scanner.nextLine();
+        System.out.print("이름 (Nickname): ");
+        String nickname = scanner.nextLine();
+        System.out.print("이메일: ");
+        String email = scanner.nextLine();
+        System.out.print("전화번호: ");
+        String phoneNumber = scanner.nextLine();
+
+        User user = userService.createUser(username, nickname, email, phoneNumber);
+        System.out.println(">> 유저 생성 완료: " + user);
+    }
+
+    // =================================================================
+    // [메뉴 2] 채널 생성
+    // =================================================================
+    private static void createChannelMenu() {
+        System.out.println("\n[2. 채널 생성]");
+        System.out.print("채널 이름: ");
+        String name = scanner.nextLine();
+        System.out.print("공개 여부 (y/n): ");
+        boolean isPublic = scanner.nextLine().trim().equalsIgnoreCase("y");
+
+        Channel channel = channelService.createChannel(name, isPublic);
+        System.out.println(">> 채널 생성 완료: " + channel);
+    }
+
+    // =================================================================
+    // [메뉴 3] 채널 가입
+    // =================================================================
+    private static void joinChannelMenu() {
+        System.out.println("\n[3. 채널 가입]");
+        User user = selectUser();
+        if (user == null) return;
+
+        Channel channel = selectChannel();
+        if (channel == null) return;
+
+        user.joinChannel(channel);
+        System.out.printf(">> '%s'님이 '%s' 채널에 가입했습니다.\n", user.getNickname(), channel.getChannelName());
+    }
+
+    // =================================================================
+    // [메뉴 4] 메시지 남기기
+    // =================================================================
+    private static void writeMessageMenu() {
+        System.out.println("\n[4. 메시지 남기기]");
+        User user = selectUser();
+        if (user == null) return;
+
+        Set<Channel> joinedChannels = user.getChannels();
+        if (joinedChannels.isEmpty()) {
+            System.out.println("!! 가입한 채널이 없습니다.");
+            return;
         }
+
+        System.out.println("--- 가입한 채널 목록 ---");
+        List<Channel> channelList = new ArrayList<>(joinedChannels);
+        for (int i = 0; i < channelList.size(); i++) {
+            System.out.printf("%d. %s\n", (i + 1), channelList.get(i).getChannelName());
+        }
+        System.out.print(">> 채널 선택 (번호): ");
+        int chIdx = Integer.parseInt(scanner.nextLine()) - 1;
+
+        if (chIdx < 0 || chIdx >= channelList.size()) {
+            System.out.println("!! 잘못된 번호입니다.");
+            return;
+        }
+        Channel targetChannel = channelList.get(chIdx);
+
+        System.out.print("메시지 내용: ");
+        String content = scanner.nextLine();
+
+        Message message = messageService.sendMessage(user.getId(), targetChannel.getId(), content);
+        System.out.println(">> 메시지 전송 완료: " + message);
+    }
+
+    // =================================================================
+    // [메뉴 5] 유저 수정
+    // =================================================================
+    private static void updateUserMenu() {
+        System.out.println("\n[5. 유저 수정]");
+        User user = selectUser();
+        if (user == null) return;
+
+        System.out.println("1. 이름 수정  2. 이메일 수정  3. 전화번호 수정");
+        System.out.print(">> 선택: ");
+        String subChoice = scanner.nextLine();
+
+        switch (subChoice) {
+            case "1":
+                System.out.print("새 이름: ");
+                System.out.println(">> 결과: " + userService.updateNickname(user.getId(), scanner.nextLine()));
+                break;
+            case "2":
+                System.out.print("새 이메일: ");
+                System.out.println(">> 결과: " + userService.updateEmail(user.getId(), scanner.nextLine()));
+                break;
+            case "3":
+                System.out.print("새 전화번호: ");
+                System.out.println(">> 결과: " + userService.updatePhoneNumber(user.getId(), scanner.nextLine()));
+                break;
+            default: System.out.println("!! 잘못된 입력");
+        }
+    }
+
+    // =================================================================
+    // [메뉴 6] 유저 삭제
+    // =================================================================
+    private static void deleteUserMenu() {
+        System.out.println("\n[6. 유저 삭제]");
+        User user = selectUser();
+        if (user == null) return;
+
+        System.out.print("정말 삭제하시겠습니까? (y/n): ");
+        if (scanner.nextLine().trim().equalsIgnoreCase("y")) {
+            System.out.println(">> 삭제됨: " + userService.deleteUser(user.getId()));
+        } else {
+            System.out.println(">> 취소되었습니다.");
+        }
+    }
+
+    // =================================================================
+    // [메뉴 7] 채널 수정
+    // =================================================================
+    private static void updateChannelMenu() {
+        System.out.println("\n[7. 채널 수정]");
+        Channel channel = selectChannel();
+        if (channel == null) return;
+
+        System.out.print("새 채널 이름: ");
+        System.out.println(">> 결과: " + channelService.updateChannel(channel.getId(), scanner.nextLine()));
+    }
+
+    // =================================================================
+    // [메뉴 8] 채널 삭제
+    // =================================================================
+    private static void deleteChannelMenu() {
+        System.out.println("\n[8. 채널 삭제]");
+        Channel channel = selectChannel();
+        if (channel == null) return;
+
+        System.out.print("정말 삭제하시겠습니까? (y/n): ");
+        if (scanner.nextLine().trim().equalsIgnoreCase("y")) {
+            System.out.println(">> 삭제됨: " + channelService.deleteChannel(channel.getId()));
+        } else {
+            System.out.println(">> 취소되었습니다.");
+        }
+    }
+
+    // =================================================================
+    // [메뉴 9] 메시지 수정
+    // =================================================================
+    private static void updateMessageMenu() {
+        System.out.println("\n[9. 메시지 수정]");
+        User user = selectUser();
+        if (user == null) return;
+
+        List<Message> myMessages = messageService.findMessagesByAuthor(user.getId());
+        if (myMessages.isEmpty()) {
+            System.out.println("!! 작성한 메시지가 없습니다.");
+            return;
+        }
+
+        System.out.println("--- 작성한 메시지 목록 ---");
+        for (int i = 0; i < myMessages.size(); i++) {
+            System.out.printf("%d. [%s] %s\n", (i + 1), myMessages.get(i).getChannel().getChannelName(), myMessages.get(i).getContent());
+        }
+        System.out.print(">> 수정할 메시지 선택 (번호): ");
+        int msgIdx = Integer.parseInt(scanner.nextLine()) - 1;
+
+        if (msgIdx < 0 || msgIdx >= myMessages.size()) {
+            System.out.println("!! 잘못된 번호입니다.");
+            return;
+        }
+
+        System.out.print("수정할 내용: ");
+        String newContent = scanner.nextLine();
+        System.out.println(">> 결과: " + messageService.updateMessage(myMessages.get(msgIdx).getId(), newContent));
+    }
+
+    // =================================================================
+    // [메뉴 10] 메시지 삭제
+    // =================================================================
+    private static void deleteMessageMenu() {
+        System.out.println("\n[10. 메시지 삭제]");
+        User user = selectUser();
+        if (user == null) return;
+
+        List<Message> myMessages = messageService.findMessagesByAuthor(user.getId());
+        if (myMessages.isEmpty()) {
+            System.out.println("!! 작성한 메시지가 없습니다.");
+            return;
+        }
+
+        System.out.println("--- 작성한 메시지 목록 ---");
+        for (int i = 0; i < myMessages.size(); i++) {
+            System.out.printf("%d. [%s] %s\n", (i + 1), myMessages.get(i).getChannel().getChannelName(), myMessages.get(i).getContent());
+        }
+        System.out.print(">> 삭제할 메시지 선택 (번호): ");
+        int msgIdx = Integer.parseInt(scanner.nextLine()) - 1;
+
+        if (msgIdx < 0 || msgIdx >= myMessages.size()) {
+            System.out.println("!! 잘못된 번호입니다.");
+            return;
+        }
+
+        System.out.println(">> 삭제됨: " + messageService.deleteMessage(myMessages.get(msgIdx).getId()));
+    }
+
+    // =================================================================
+    // [메뉴 11] 유저 정보 출력
+    // =================================================================
+    private static void printUserInfoMenu() {
+        System.out.println("\n[11. 유저 정보 출력]");
+        User user = selectUser();
+        if (user == null) return;
+
+        System.out.println(">> 유저 정보:");
+        System.out.println(user.toString());
+    }
+
+    // =================================================================
+    // [메뉴 12] 채널 정보 출력
+    // =================================================================
+    private static void printChannelInfoMenu() {
+        System.out.println("\n[12. 채널 정보 출력]");
+        Channel channel = selectChannel();
+        if (channel == null) return;
+
+        System.out.println(">> 채널 정보:");
+        System.out.println(channel.toString());
+    }
+
+    // =================================================================
+    // [메뉴 13] 유저 메시지들 출력
+    // =================================================================
+    private static void printUserMessagesMenu() {
+        System.out.println("\n[13. 유저 작성 메시지 목록]");
+        User user = selectUser();
+        if (user == null) return;
+
+        List<Message> msgs = messageService.findMessagesByAuthor(user.getId());
+        System.out.println(">> 작성한 메시지 수: " + msgs.size() + "개");
+        if (msgs.isEmpty()) {
+            System.out.println("(메시지가 없습니다)");
+        } else {
+            for (Message m : msgs) {
+                // [채널명] 내용 (수정여부)
+                String edited = m.isEdited() ? " (수정됨)" : "";
+                System.out.printf(" - [%s] %s%s\n", m.getChannel().getChannelName(), m.getContent(), edited);
+            }
+        }
+    }
+
+    // =================================================================
+    // [메뉴 14] 채널 메시지들 출력
+    // =================================================================
+    private static void printChannelMessagesMenu() {
+        System.out.println("\n[14. 채널 내 메시지 목록]");
+        Channel channel = selectChannel();
+        if (channel == null) return;
+
+        List<Message> msgs = messageService.findMessagesByChannel(channel.getId());
+        System.out.println(">> 채널 메시지 수: " + msgs.size() + "개");
+        if (msgs.isEmpty()) {
+            System.out.println("(메시지가 없습니다)");
+        } else {
+            for (Message m : msgs) {
+                // [작성자] 내용 (수정여부)
+                String edited = m.isEdited() ? " (수정됨)" : "";
+                System.out.printf(" - [%s] %s%s\n", m.getAuthor().getNickname(), m.getContent(), edited);
+            }
+        }
+    }
+
+
+    // =================================================================
+    // [Helper Methods]
+    // =================================================================
+    private static User selectUser() {
+        List<User> users = userService.findAll();
+        if (users.isEmpty()) {
+            System.out.println("!! 등록된 유저가 없습니다.");
+            return null;
+        }
+
+        System.out.println("--- 유저 목록 ---");
+        for (int i = 0; i < users.size(); i++) {
+            System.out.printf("%d. %s (%s)\n", (i + 1), users.get(i).getNickname(), users.get(i).getUsername());
+        }
+        System.out.print(">> 유저 선택 (번호): ");
+        try {
+            int idx = Integer.parseInt(scanner.nextLine()) - 1;
+            if (idx >= 0 && idx < users.size()) {
+                return users.get(idx);
+            }
+        } catch (NumberFormatException e) {}
+
+        System.out.println("!! 잘못된 선택입니다.");
+        return null;
+    }
+
+    private static Channel selectChannel() {
+        List<Channel> channels = channelService.findAll();
+        if (channels.isEmpty()) {
+            System.out.println("!! 등록된 채널이 없습니다.");
+            return null;
+        }
+
+        System.out.println("--- 채널 목록 ---");
+        for (int i = 0; i < channels.size(); i++) {
+            System.out.printf("%d. %s (공개:%s)\n", (i + 1), channels.get(i).getChannelName(), channels.get(i).isPublic());
+        }
+        System.out.print(">> 채널 선택 (번호): ");
+        try {
+            int idx = Integer.parseInt(scanner.nextLine()) - 1;
+            if (idx >= 0 && idx < channels.size()) {
+                return channels.get(idx);
+            }
+        } catch (NumberFormatException e) {}
+
+        System.out.println("!! 잘못된 선택입니다.");
+        return null;
+    }
+
+    private static void printMenu() {
+        System.out.println("\n================ 메뉴 ================");
+        System.out.println("1. 유저 생성        2. 채널 생성");
+        System.out.println("3. 채널 가입        4. 메시지 남기기");
+        System.out.println("5. 유저 수정        6. 유저 삭제");
+        System.out.println("7. 채널 수정        8. 채널 삭제");
+        System.out.println("9. 메시지 수정      10. 메시지 삭제");
+        System.out.println("11. 유저 정보       12. 채널 정보");
+        System.out.println("13. 유저 메시지     14. 채널 메시지");
+        System.out.println("0. 종료");
+        System.out.println("======================================");
+        System.out.print(">> 선택: ");
+    }
+
+    private static void initDummyData() {
+        User u1 = userService.createUser("user1", "철수", "u1@test.com", "010-1111-1111");
+        userService.createUser("user2", "영희", "u2@test.com", "010-2222-2222");
+        Channel c1 = channelService.createChannel("자유게시판", true);
+        channelService.createChannel("공지사항", false);
+        u1.joinChannel(c1);
     }
 }

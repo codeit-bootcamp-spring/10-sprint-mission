@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -13,10 +15,15 @@ public class JCFUserService implements UserService {
 
     // 연관 도메인의 서비스
     private MessageService messageService;
+    private ChannelService channelService;
 
     // Setter 주입, 순환 참조 문제 회피
     public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
+    }
+
+    public void setChannelService(ChannelService channelService) {
+        this.channelService = channelService;
     }
 
     // Create
@@ -125,10 +132,30 @@ public class JCFUserService implements UserService {
     public User deleteUser(UUID userId) {
         User user = getUserOrThrow(userId);
         messageService.deleteMessagesByAuthorId(userId);
-        user.getChannels().forEach(channel -> {channel.removeUser(user);});
+        user.getChannels().forEach(user::leaveChannel);
         userMap.remove(userId);
 
         return user;
+    }
+
+    @Override
+    public void joinChannel(UUID userId, UUID channelId) {
+        User user = getUserOrThrow(userId);
+
+        Channel channel = channelService.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다. ID: " + channelId));
+
+        user.joinChannel(channel);
+    }
+
+    @Override
+    public void leaveChannel(UUID userId, UUID channelId) {
+        User user = getUserOrThrow(userId);
+
+        Channel channel = channelService.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다. ID: " + channelId));
+
+        user.leaveChannel(channel);
     }
 
     // Helper

@@ -45,10 +45,16 @@ public class Channel extends BaseEntity {
     }
 
     // User Control
-    public void addUser(User user){
+    void addUser(User user){
+        if (this.users.contains(user)) {
+            return;
+        }
         this.users.add(user);
     }
-    public void removeUser(User user){
+    void removeUser(User user){
+        if (!this.users.contains(user)) {
+            return;
+        }
         this.users.remove(user);
     }
     public Set<User> getUsers() {

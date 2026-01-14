@@ -92,10 +92,16 @@ public class User extends BaseEntity {
 
     // Channel Control
     public void  joinChannel(Channel channel) {
+        if (this.channels.contains(channel)) {
+            return;
+        }
         this.channels.add(channel);
         channel.addUser(this);
     }
     public void  leaveChannel(Channel channel) {
+        if (!this.channels.contains(channel)) {
+            return;
+        }
         this.channels.remove(channel);
         channel.removeUser(this);
     }
@@ -126,6 +132,8 @@ public class User extends BaseEntity {
                 ", status=" + status +
                 ", isMicrophoneOn=" + isMicrophoneOn +
                 ", isHeadsetOn=" + isHeadsetOn +
+                ", channels=" + channels.size() +
+                ", messages=" + messages.size() +
                 '}';
     }
 
