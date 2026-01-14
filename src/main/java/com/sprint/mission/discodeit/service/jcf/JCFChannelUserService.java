@@ -41,7 +41,10 @@ public class JCFChannelUserService implements ChannelUserService {
 
         // 3. ChannelUser 생성 및 저장
         ChannelUserRole channelUserRole = new ChannelUserRole(channel, user, role);
-        channelUserMap.put(channelUserRole.getId(), channelUserRole);
+
+        // 4. 데이터 정합성 맞추기 (양쪽 다 저장)
+        channelUserMap.put(channelUserRole.getId(), channelUserRole);  // (1) Map에 등록
+        user.addChannelUserRole(channelUserRole);  // (2) List에도 등록
 
         System.out.println("채널 참여 완료: " + user.getUsername() + " -> " + channel.getChannelName()
                 + " (Role: " + role + ")");
@@ -90,8 +93,9 @@ public class JCFChannelUserService implements ChannelUserService {
         // 1. 삭제할 대상을 찾음
         ChannelUserRole channelUserRole = findChannelUser(channelId, userId);
 
-        // 2. Map에서 제거
-        channelUserMap.remove(channelUserRole.getId());
+        channelUserMap.remove(channelUserRole.getId());  // Map에서 제거
+        User user = channelUserRole.getUser();  // 유저 객체 꺼내고
+        user.removeChannelUserRole(channelUserRole);  // 그 유저에게 삭제 명령
 
         System.out.println("채널 탈퇴 완료: " + channelUserRole.getUser().getUsername()
                 + " (채널: " + channelUserRole.getChannel().getChannelName() + ")");

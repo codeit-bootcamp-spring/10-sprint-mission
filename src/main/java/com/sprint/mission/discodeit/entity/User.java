@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class User extends BaseEntity {
@@ -12,6 +14,9 @@ public class User extends BaseEntity {
 //  private String displayName;  // 남들에게 보이는 이름 (중복 허용)
 //  private String password;     // 암호화해서 저장 필요
 //  private String dateOfBrith   // 생년월일 -> Date 클래스 사용이 더 좋을 듯
+
+    // 1:N 관계 (User : ChannelUserRole)
+    private List<ChannelUserRole> channelUserRoles = new ArrayList<>();
 
     // 유효성 검증 메서드 분리
     // JCFUserService.java에 해당 로직을 넣지 않는 이유는, 생성자 때에도 같은 로직을 사용해야하기 때문에
@@ -44,6 +49,9 @@ public class User extends BaseEntity {
     public String getUsername() {
         return username;
     }
+    public List<ChannelUserRole> getChannelUserRoles() {
+        return channelUserRoles;
+    }
     // getId(), getCreatedAt(), getUpdatedAt()은 상속 받음
 
     // update
@@ -51,6 +59,12 @@ public class User extends BaseEntity {
         validateUsername(newUsername);
         this.username = newUsername;
         this.updateTimestamp();
+    }
+    public void addChannelUserRole(ChannelUserRole role) { // 연관관계 편의 메서드
+        this.channelUserRoles.add(role);
+    }
+    public void removeChannelUserRole(ChannelUserRole role) { // 탈퇴 시 리스트에서도 제거
+        this.channelUserRoles.remove(role);
     }
     // updateTimestamp()는 상속받음
 
