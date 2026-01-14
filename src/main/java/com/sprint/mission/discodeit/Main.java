@@ -21,25 +21,25 @@ public class Main {
 
         // 생성 테스트
         try {   // 정상
-            user1 = userService.createUser("dlekthf0906@codeit.com", "1234567890", "LeeDyol");
+            user1 = userService.createUser("dlekthf0906@codeit.com", "1234567890", "LeeDyol", UserStatusType.ONLINE);
         } catch (Exception e){
             System.err.println(e.getMessage());
         }
 
         try {   // 정상
-            user2 = userService.createUser("dlekthf@codeit.com", "1234567890", "dyoool");
+            user2 = userService.createUser("dlekthf@codeit.com", "1234567890", "dyoool", UserStatusType.OFFLINE);
         } catch (Exception e){
             System.err.println(e.getMessage());
         }
 
         try {   // 정상
-            user3 = userService.createUser("Yushi@codeit.com", "1234567890", "tokuno");
+            user3 = userService.createUser("Yushi@codeit.com", "1234567890", "tokuno", UserStatusType.DND);
         } catch (Exception e){
             System.err.println(e.getMessage());
         }
 
         try {   // 이메일 중복
-            user3 = userService.createUser("Yushi@codeit.com", "1234567890", "yushi");
+            user3 = userService.createUser("Yushi@codeit.com", "1234567890", "yushi", UserStatusType.AWAY);
         } catch (Exception e){
             System.err.println(e.getMessage());
         }
@@ -65,7 +65,7 @@ public class Main {
         // 수정
         if (user3 != null) {
             try {   // 비밀번호 변경 실패
-                userService.updateUser(user3.getId(), "", "sakuya");
+                userService.updateUser(user3.getId(), "", "sakuya", null);
                 System.out.println("수정 테스트: " + userService.searchUser(user3.getId()).getNickname());
             } catch (Exception e){
                 System.err.println(e.getMessage());
@@ -74,7 +74,7 @@ public class Main {
 
         if(user3 != null) {
             try {   // 닉네임 변경 실패
-                userService.updateUser(user3.getId(), "1234", "");
+                userService.updateUser(user3.getId(), "1234", "",  null);
                 System.out.println("수정 테스트: " + userService.searchUser(user3.getId()).getNickname());
             } catch (Exception e){
                 System.err.println(e.getMessage());
@@ -83,7 +83,7 @@ public class Main {
 
         if (user3 != null) {
             try {   // 예상 출력: sakuya
-                userService.updateUser(user3.getId(), null, "sakuya");
+                userService.updateUser(user3.getId(), null, "sakuya", null);
                 System.out.println("수정 테스트: " + userService.searchUser(user3.getId()).getNickname());
             } catch (Exception e){
                 System.err.println(e.getMessage());
