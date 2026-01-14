@@ -12,5 +12,5 @@ public interface MessageService {
     public Set<Message> findAll();
     public Message create(UUID userID, String msg, UUID channelID);
     public void delete(UUID id);
-    public Message update(UUID id, String str);
+    public Message update(UUID id, String msg);
 }

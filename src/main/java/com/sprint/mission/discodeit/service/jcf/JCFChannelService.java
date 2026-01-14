@@ -53,24 +53,37 @@ public class JCFChannelService implements ChannelService {
     public Channel update(UUID id, String name, String desc) {
         Channel willUpdate = this.find(id);
         Optional.ofNullable(name)
-                .ifPresent(channel -> willUpdate
-                        .updateChannelName(name));
+                .ifPresent(n -> willUpdate
+                        .updateChannelName(n));
         Optional.ofNullable(desc)
-                .ifPresent(channel -> willUpdate
-                        .updateChannelDescription(desc));
+                .ifPresent(d -> willUpdate
+                        .updateChannelDescription(d));
         return willUpdate;
     }
 
     public void userJoinChannel(UUID channelId, UUID userId){
         Channel willJoinChannel = find(channelId);
-        User willJoinUser = JCFUserService.getInstance().find(userId);
-        willJoinChannel.addAllowedUser(willJoinUser);
+        try{
+            Optional.ofNullable(JCFUserService.getInstance().find(userId))
+                    .ifPresent(user -> willJoinChannel.addAllowedUser(user));
+        }catch (Exception e){
+            try{
+                Optional.ofNullable(JCFGroupService.getInstance().find(userId))
+                        .ifPresent(group -> group.getUsers().forEach(willJoinChannel::addAllowedUser));
+            }
+            catch (Exception e2){
+                e2.printStackTrace();
+            }
+        }
     }
 
     public void userLeaveChannel(UUID channelId, UUID userId){
         Channel willQuitChannel = find(channelId);
-        User willQuitUser = JCFUserService.getInstance().find(userId);
-        willQuitChannel.removeAllowedUser(willQuitUser);
+        Optional.ofNullable(JCFGroupService.getInstance().find(userId))
+                .ifPresent(group -> group.getUsers().forEach(willQuitChannel::removeAllowedUser));
+
+        Optional.ofNullable(JCFUserService.getInstance().find(userId))
+                .ifPresent(user -> willQuitChannel.removeAllowedUser(user));
     }
 
 }

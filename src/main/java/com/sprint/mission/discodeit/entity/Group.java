@@ -4,11 +4,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-public class Groups extends DefaultEntity{
+public class Group extends DefaultEntity{
     private String groupName;
     private Set<User> users;
 
-    public Groups(String groupName) {
+    public Group(String groupName) {
         this.groupName = groupName;
         this.users = new HashSet<>();
     }
@@ -19,6 +19,10 @@ public class Groups extends DefaultEntity{
 
     public Set<User> getUsers() {
         return users;
+    }
+
+    public void updateGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     public void addUser(User user) {

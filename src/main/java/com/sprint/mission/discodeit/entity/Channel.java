@@ -74,7 +74,7 @@ public class Channel extends DefaultEntity {
         allowedUsers.add(user);
     }
 
-    public void addAllowedUser(Groups group) {
+    public void addAllowedUser(Group group) {
         group.getUsers()
                 .forEach(this::addAllowedUser);
     }
@@ -83,7 +83,7 @@ public class Channel extends DefaultEntity {
         allowedUsers.remove(user);
     }
 
-    public void removeAllowedUser(Groups group) {
+    public void removeAllowedUser(Group group) {
         group.getUsers()
                 .forEach(this::removeAllowedUser);
     }

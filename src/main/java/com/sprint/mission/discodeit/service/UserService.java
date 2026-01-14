@@ -11,5 +11,5 @@ public interface UserService {
     public Set<User> findAll();
     public User create(String userName);
     public void delete(UUID id);
-    public User update(UUID id, String str);
+    public User update(UUID id, String newUserName);
 }
