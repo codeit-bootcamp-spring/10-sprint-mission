@@ -8,11 +8,11 @@ import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 import java.util.ArrayList;
 
 public class Main {
-    public static final JCFUserService userService = new JCFUserService();
-    public static final JCFChannelService channelService = new JCFChannelService();
-    public static final JCFMessageService messageService = new JCFMessageService();
-
     public static void main(String[] args) {
+        final JCFUserService userService = new JCFUserService();
+        final JCFChannelService channelService = new JCFChannelService();
+        final JCFMessageService messageService = new JCFMessageService();
+
         // 사용자 테스트 (현재 user2, user3 유효)
         User user1 = null;
         User user2 = null;
@@ -83,7 +83,7 @@ public class Main {
 
         if (user3 != null) {
             try {   // 예상 출력: sakuya
-                userService.updateUser(user3.getId(), "1234", "sakuya");
+                userService.updateUser(user3.getId(), null, "sakuya");
                 System.out.println("수정 테스트: " + userService.searchUser(user3.getId()).getNickname());
             } catch (Exception e){
                 System.err.println(e.getMessage());
