@@ -32,11 +32,11 @@ public class JavaApplication {
 
         System.out.println("<수정>");
         userService.findUserByAccountId("AAA")
-                .ifPresent(u-> userService.updateUser(u.getId(), "AAA", "q1w2e3!", "A말씨", "aaa@outlook.com"));
+                .ifPresent(u-> userService.updateUser(u.getId(), null, "q1w2e3!", "A말씨", "aaa@outlook.com"));
         userService.findUserByAccountId("BBB")
-                .ifPresent(u-> userService.updateUser(u.getId(), "BBB", "bbb", "B명씨", "bbb@hanmail.net"));
+                .ifPresent(u-> userService.updateUser(u.getId(), null, "bbb", "B명씨", "bbb@hanmail.net"));
         userService.findUserByAccountId("CCC")
-                .ifPresent(u-> userService.updateUser(u.getId(), "CCC", "ccc", "CC씨", "seamonkey@base.net"));
+                .ifPresent(u-> userService.updateUser(u.getId(), null, "ccc", "CC씨", "seamonkey@base.net"));
         System.out.print("  다건: ");
         System.out.println(userService.findAllUsers().stream().toList());
 
@@ -102,7 +102,7 @@ public class JavaApplication {
         Message msg2 = messageService.createMessage(channel2.getId(), user.getId(), "판매위치 제보받아요");
         System.out.println("<조회>");
         System.out.println("  단건: ");
-        System.out.printf("\t%s\n", messageService.findMessage(msg1.getId()));
+        System.out.printf("\t%s\n", messageService.getMessage(msg1.getId()));
         System.out.println("  다건 조회: ");
         System.out.printf("\t%s\n",messageService.findAllMessages());
         System.out.println("  채널별 조회: ");
