@@ -12,6 +12,7 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
     public static final ArrayList<Message> messages = new ArrayList<>();      // 한 채널에서
@@ -45,6 +46,13 @@ public class JCFMessageService implements MessageService {
     }
 
     // 특정 유저가 발행한 메시지 다건 조회
+    public ArrayList<Message> userMessages(UUID targetUserId) {
+        userService.searchUser(targetUserId);
+
+        return messages.stream()
+                .filter(message -> message.getUser().getId().equals(targetUserId))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
 
     // 특정 채널의 메시지 발행 리스트 조회
 
