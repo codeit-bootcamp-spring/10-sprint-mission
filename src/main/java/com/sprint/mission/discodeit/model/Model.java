@@ -61,4 +61,8 @@ public class Model<T extends Entity<T>> {
             entity.update(value);
         }
     }
+
+    public void remove(List<UUID> uuids) {
+        uuids.forEach(this::remove);
+    }
 }
