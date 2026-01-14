@@ -314,5 +314,37 @@ public class Main {
                 System.err.println(e.getMessage());
             }
         }
+
+        try {
+            System.out.println("특정 사용자가 전송한 메시지 목록 조회 테스트");
+            ArrayList<Message> userMessages = messageService.userMessages(user3.getId());
+            userMessages.forEach(message -> System.out.println(message.getMessage()));
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+        try {
+            System.out.println("특정 사용자가 전송한 메시지 목록 조회 테스트");
+            ArrayList<Message> userMessages = messageService.userMessages(user1.getId());
+            userMessages.forEach(message -> System.out.println(message.getMessage()));
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+        try {
+            System.out.println("특정 채널에서 발송된 메시지 목록 조회 테스트");
+            ArrayList<Message> channelMessages = messageService.channelMessages(channel2.getId());
+            channelMessages.forEach(message -> System.out.println(message.getMessage()));
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+        try {
+            System.out.println("특정 채널에서 발송된 메시지 목록 조회 테스트");
+            ArrayList<Message> channelMessages = messageService.channelMessages(channel1.getId());
+            channelMessages.forEach(message -> System.out.println(message.getMessage()));
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
     }
 }
