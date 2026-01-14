@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 
@@ -27,38 +28,28 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel deleteChannel(String name) {
-        Objects.requireNonNull(name, "해당 매개변수가 유효하지 않습니다.");
+    public void deleteChannel(UUID uuid) {
+        Objects.requireNonNull(uuid, "해당 매개변수가 유효하지 않습니다.");
 
-        Channel channel = data.stream()
-                .filter(c -> name.equals(c.getName()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException(name + " 채널은 존재하지 않습니다."));
+        Channel channel = CheckValidation.readEntity(data,uuid,()->new IllegalStateException("채널이 존재하지 않습니다."));
 
         data.remove(channel);
-        return null;
 
     }
 
     @Override
     public Channel readChannel(UUID id){
         Objects.requireNonNull(id, "유효하지 않은 매개변수입니다.");
-        Channel channel =  data.stream()
-                .filter(c -> id.equals(c.getId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다."));
-        System.out.println(channel);
-        return channel;
+
+        return CheckValidation.readEntity(data,id,() -> new IllegalStateException("채널이 존재하지 않습니다."));
     }
 
     @Override
     public Channel updateChannel(UUID uuid, String name, String content, Channel.CHANNEL_TYPE type) {
         Objects.requireNonNull(uuid, "유효하지 않은 식별자 ID입니다.");
 
-        Channel channel = data.stream()
-                .filter(c -> uuid.equals(c.getId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("해당 식별자를 가진 채널이 존재하지 않습니다."));
+        Channel channel = readChannel(uuid);
+
 
         Optional.ofNullable(name)
                 .ifPresent(channel::updateName);
@@ -70,7 +61,26 @@ public class JCFChannelService implements ChannelService {
         return channel;
     }
 
+    public void userAdd(User user, UUID channelID){
+        Objects.requireNonNull(user, "유효하지 않은 유저입니다.");
+        Objects.requireNonNull(channelID, "유효하지 않은 채널입니다.");
 
+        Channel channel = readChannel(channelID);
+        channel.getUsers().add(user);
+
+    }
+
+    @Override
+    public void userKick(User user, UUID channelID) {
+        Objects.requireNonNull(user, "유효하지 않은 유저입니다.");
+        Objects.requireNonNull(channelID, "유효하지 않은 채널입니다.");
+
+        Channel channel = readChannel(channelID);
+
+        channel.getUsers().remove(user);
+        user.getChannelList().remove(channel);
+
+    }
 
 
     @Override

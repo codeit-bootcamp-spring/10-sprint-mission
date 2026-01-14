@@ -38,7 +38,7 @@ public class Channel extends DiscordEntity {
 
     public Set<User> getUsers(){
         //System.out.printf("%s 채널의 유저 리스트입니다.%n",this.channelName);
-        //userList.forEach(System.out::println);
+
         updateTime();
         return this.userList;
     }
@@ -65,12 +65,10 @@ public class Channel extends DiscordEntity {
         this.userList.add(user);
         updateTime();
     }
+
     public void kickUser(User user){
-        if(this.userList.contains(user)){
-            this.userList.remove(user);
-            updateTime();
-            System.out.printf("%s 님이 %s 채널에서 퇴장하였습니다.%n", user.getUserName(), this.channelName);
-        }
+        this.userList.remove(user);
+        updateTime();
     }
 
     public String toString(){

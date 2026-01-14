@@ -29,22 +29,24 @@ public class JavaApplication {
 
         //Channel CRUD 테스트
         Channel ch1 = safeCreateChannel(channelService, "공지채널", "공지채널이에요", Channel.CHANNEL_TYPE.PUBLIC);
-        Channel ch2 = safeCreateChannel(channelService,null, "개인방", Channel.CHANNEL_TYPE.PRIVATE);
+        Channel ch2 = safeCreateChannel(channelService,"q채널", "개인방", Channel.CHANNEL_TYPE.PRIVATE);
         Channel ch3 = safeCreateChannel(channelService, "게임채널", "hi", Channel.CHANNEL_TYPE.PUBLIC);
 
         User u1 = safeCreateUser(userService, "성경", "bible@naver.com", "bible123");
-        safeJoinChannel(u1,ch1);
+        User u2 = safeCreateUser(userService, "홀리", "holly@google.com", "holygoyly");
 
-//        safeExitChannel(u1,ch2);
-//       ch1.getUsers();
-//        u1.getChannelList();
-//
+        safeJoinChannel(userService, u1, ch1);
+        safeJoinChannel(userService, u2, ch1);
+
+
+
+
+
+
         Message m1 = safeCreateMsg(msgService, "안녕하세요", ch1, u1);
         Message m2 = safeCreateMsg(msgService, "asdgag", ch2, u1);
-        Message m3 = safeCreateMsg(msgService, "asdgag", ch3, u1);
+        Message m3 = safeCreateMsg(msgService, "a11231g", ch3, u1);
 
-        //u1.getMsgList();
-        safeReadMsgbyUser(msgService, u1);
-        safeReadMsgbyChannel(msgService, ch1);
+        safeReadMsg(msgService, m1);
     }
 }

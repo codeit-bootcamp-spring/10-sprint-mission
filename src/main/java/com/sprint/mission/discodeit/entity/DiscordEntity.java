@@ -16,7 +16,6 @@ public abstract class DiscordEntity {
 
     public UUID getId() {
             return this.id;
-
     }
 
     public Long getCreatedAt(){

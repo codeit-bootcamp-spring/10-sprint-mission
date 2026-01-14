@@ -45,11 +45,6 @@ public class Message extends DiscordEntity {
 
 
 
-    public User user(){
-       return this.user;
-    }
-
-
 
     public String toString(){
         return String.format("[Message] context: %s | channel: %s | author: %s %n", this.msgContext, this.channel.getName(), this.user.getUserId());

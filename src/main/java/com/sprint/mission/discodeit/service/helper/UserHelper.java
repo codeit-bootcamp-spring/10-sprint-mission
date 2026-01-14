@@ -14,19 +14,19 @@ public class UserHelper {
         }
     }
 
-    public static User safeDeleteUser(UserService service, User user){
+    public static void safeDeleteUser(UserService service, User user){
 
         try{
-            return service.deleteUser(user.getId());
+            service.deleteUser(user.getUserId());
         } catch(NullPointerException e){
             System.out.println("해당 유저는 null이므로, 유효하지 않습니다.");
-            return null;
+
         }
     }
 
     public static User safeUpdateUser(UserService service, User user, String userId, String userName, String email){
         try{
-            return service.updateUser(user.getId(), userId, userName, email );
+            return service.updateUser(userId, userName, email );
         } catch(NullPointerException | IllegalStateException | IllegalAccessError e){
             System.out.println(e);
             return null;
@@ -36,24 +36,24 @@ public class UserHelper {
     public static User safeReadUser(UserService service, User user){
 
         try{
-            return service.readUser(user.getId());
+            return service.readUser(user.getUserId());
         } catch (NullPointerException e){
             System.out.println("해당 유저는 null입니다.");
             return null;
         }
     }
 
-    public static void safeJoinChannel(User user, Channel channel){
+    public static void safeJoinChannel(UserService userService, User user, Channel channel){
         try{
-            user.joinChannel(channel);
+            userService.joinChannel(user.getUserId(), channel.getId());
         } catch(NullPointerException | IllegalStateException e){
             System.out.println(e);
         }
     }
 
-    public static void safeExitChannel(User user, Channel channel){
+    public static void safeExitChannel(UserService userService, User user, Channel channel){
         try{
-            user.exitChannel(channel);
+            userService.exitChannel(user.getUserId(), channel.getId());
         }catch(NullPointerException | IllegalStateException e){
             System.out.println(e);
         }

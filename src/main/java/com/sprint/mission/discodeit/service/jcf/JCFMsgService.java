@@ -50,56 +50,30 @@ public class JCFMsgService implements MsgService {
         return message;
     }
 
-    @Override
-    public List<Message> readMessageByChannel(Channel channel) {
-        Objects.requireNonNull(channel, "해당 채널은 존재하지 않습니다.");
-        List<Message> msgList = new ArrayList<Message>();
-        // 채널에 축적된 메세지를 List<Message> 형태로 가공 후 리턴합니다.
-        data.stream()
-                .filter(msg -> channel.equals(msg.getChannel()))
-                .forEach(msgList::add);
-
-        System.out.println(msgList);
-        return msgList;
+    public Message readMessage(UUID uuid){
+          return data.stream()
+                .filter(m -> uuid.equals(m.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("해당 메시지는 존재하지 않습니다."));
     }
 
-    @Override
-    public List<Message> readMessageByAuthor(User user) {
-        Objects.requireNonNull(user,"해당 유저는 존재하지 않습니다.");
-        List<Message> msgList = new ArrayList<Message>();
-        // 채널에 축적된 메세지를 List<Message> 형태로 가공 후 리턴합니다.
-        data.stream()
-                .filter(msg->user.equals(msg.getUser()))
-                .forEach(msgList::add);
-
-        System.out.println(msgList);
-        return msgList;
-    }
 
 
     @Override
     public Message updateMessage(UUID msgID, String msgContext ) {
         Objects.requireNonNull(msgID, "유효하지 않은 식별자 ID입니다.");
 
-        Message message = data.stream()
-                .filter(m -> msgID.equals(m.getId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지입니다."));
+        Message message = readMessage(msgID);
         message.updateContext(msgContext);
         return message;
     }
 
     @Override
-    public Message deleteMessage(UUID msgID) {
+    public void deleteMessage(UUID msgID) {
         Objects.requireNonNull(msgID, "유효하지 않은 식별자 ID입니다.");
-
-        Message message = data.stream()
-                .filter(m -> msgID.equals(m.getId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지입니다."));
-
+        Message message = readMessage(msgID);
         data.remove(message);
-        return message;
+
     }
 
     @Override
@@ -107,4 +81,6 @@ public class JCFMsgService implements MsgService {
         data.forEach(System.out::println);
         return (ArrayList<Message>) data;
     }
+
+
 }

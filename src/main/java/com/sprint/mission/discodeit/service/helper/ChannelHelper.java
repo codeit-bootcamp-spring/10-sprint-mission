@@ -14,15 +14,15 @@ public class ChannelHelper {
         }
     }
 
-    public static Channel safeDeleteChannel(ChannelService service, String name){
+    public static void safeDeleteChannel(ChannelService service, Channel channel){
         try{
-            return service.deleteChannel(name);
+            service.deleteChannel(channel.getId());
         } catch (NullPointerException e){
             System.out.println("해당 채널이 null이므로, 식별자 id가 유효하지 않습니다.");
-            return null;
+
         } catch ( Exception e){
             System.out.println(e);
-            return null;
+
         }
     }
 
