@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -42,6 +43,16 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<Channel> getAllChannels() {
         return List.copyOf(data);
+    }
+
+    @Override
+    public List<Message> getMessagesById(UUID channelId) {
+        return getChannel(channelId).getMessages();
+    }
+
+    @Override
+    public List<User> getUsersById(UUID channelId) {
+        return getChannel(channelId).getUsers();
     }
 
     @Override
