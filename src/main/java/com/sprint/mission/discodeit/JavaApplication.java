@@ -11,6 +11,8 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
+import java.util.List;
+
 public class JavaApplication {
     public static void main(String[] args) {
         // 0. 서비스 초기화
@@ -19,6 +21,7 @@ public class JavaApplication {
         MessageService messageService = new JCFMessageService(userService, channelService);
 
         System.out.println("=== [시작] 서비스 테스트 ===");
+        //================================ 기본 기능 ================================
         //---------------------------------1. user---------------------------------
         // 1-1. user 등록 및 조회
         User user1 = userService.create("박린", "lynnpark2003@ewha.ac.kr");
@@ -111,6 +114,29 @@ public class JavaApplication {
 
         // 3-5. message 다건 조회
         System.out.println("3-5. 메세지 다건 재조회: " + "총" + messageService.readAll().size() + "개");
+        System.out.println();
+        System.out.println();
+
+
+
+
+        //================================ 추가 기능 ================================
+        // -----------------------1. 특정 채널의 참가자 목록 조회-----------------------
+        // 1-1. user의 channel 등록
+        user1.joinChannel(channel1);
+        user2.joinChannel(channel1);
+
+        // 1-2. channel 참가자 목록(name) 조회
+        List<User> userList = channelService.getUserList(channel1.getId());
+        List<String> userNames = userList.stream()
+                .map(User::getName)
+                .toList();
+        System.out.println("1-1. 채널 참가자 목록 조회");
+        System.out.println(channel1.getName() + "의 참가자 목록: " + userNames);
+        System.out.println();
+
+
+        // -----------------------2. 특정 유저의 참가 중인 채널 조회-----------------------
 
         System.out.println("=== [종료] 서비스 테스트 ===");
     }
