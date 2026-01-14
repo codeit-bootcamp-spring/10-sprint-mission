@@ -70,20 +70,28 @@ public class Channel extends DefaultEntity {
                 .anyMatch(user -> userID.equals(user.getId()));
     }
 
-    public void addAllowedUser(User user) {
+    public void addAllowedUser(User user) { //개인단위 권한허용
+        this.updatedAt = System.currentTimeMillis();
         allowedUsers.add(user);
+        if(!user.getAllowedChannels().contains(this)) {
+            user.addAllowedChannel(this);
+        }
+
     }
 
-    public void addAllowedUser(RoleGroup group) {
+    public void addAllowedUser(RoleGroup group) { //그룹단위 허용
         group.getUsers()
                 .forEach(this::addAllowedUser);
+
     }
 
-    public void removeAllowedUser(User user) {
+    public void removeAllowedUser(User user) {   //개인단위
+        this.updatedAt = System.currentTimeMillis();
         allowedUsers.remove(user);
+        user.removeAllowedChannel(this);
     }
 
-    public void removeAllowedUser(RoleGroup group) {
+    public void removeAllowedUser(RoleGroup group) {//그룹단위제거
         group.getUsers()
                 .forEach(this::removeAllowedUser);
     }

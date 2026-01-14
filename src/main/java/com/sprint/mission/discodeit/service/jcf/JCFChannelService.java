@@ -68,7 +68,12 @@ public class JCFChannelService implements ChannelService {
         }catch (Exception e){
             try{
                 Optional.ofNullable(JCFRoleGroupService.getInstance().find(userId))
-                        .ifPresent(group -> group.getUsers().forEach(willJoinChannel::addAllowedUser));
+                        .ifPresent(
+                                group -> {
+                                    willJoinChannel.addAllowedUser(group);
+                                    group.addAllowedChannel(willJoinChannel);
+                                }
+                        );
             }
             catch (Exception e2){
                 e2.printStackTrace();

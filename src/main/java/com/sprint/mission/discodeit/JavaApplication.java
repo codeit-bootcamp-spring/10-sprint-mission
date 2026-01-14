@@ -40,9 +40,20 @@ public class JavaApplication {
         Message mes3 = messagedata.create(user1.getId(), "몰루?", ch1.getId());
         Message mes4 = messagedata.create(user2.getId(), "몰?루", ch1.getId());
         ch1.getMessages().stream().forEach(System.out::println);
-        //Message mes5 = messagedata.create(user3.getId(), "?몰루", ch1.getId());
+        //Message mes5 = messagedata.create(user3.getId(), "?몰루", ch1.getId()); //이거는 버그남
 
+        System.out.println("=========================");
+        System.out.println(group1);
 
+        System.out.println("=========================");
+        //group1.removeUser(user2.getId());
+        group1.removeAllowedChannel(ch1);
+        System.out.println(group1);
+
+        Message mes5 = messagedata.create(user3.getId(), "?몰", ch1.getId()); //이거는 버그남
+
+        System.out.println("=========================");
+        System.out.println(ch1.getMessages());
         //ch1.getMessages().stream().forEach(System.out::println);
 
     }

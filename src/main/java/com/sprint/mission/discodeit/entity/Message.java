@@ -30,6 +30,7 @@ public class Message extends DefaultEntity {
     }
 
     public void setChannel(Channel channel) {
+        this.updatedAt = System.currentTimeMillis();
         this.channel = channel;
         if(!channel.getMessages().contains(this)){
             channel.addMessage(this);
