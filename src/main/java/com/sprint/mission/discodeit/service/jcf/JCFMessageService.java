@@ -37,7 +37,7 @@ public class JCFMessageService implements MessageService {
         Message message = new Message(messageChannel, author, content);
 
         // author가 해당 channel에 존재하는가? or 채널 입장 자체를 막기???
-        if (!messageChannel.getChannelMembersList().contains(author)) {
+        if (!messageChannel.getChannelUsersList().contains(author)) {
             throw new IllegalArgumentException("author는 해당 channel에 참가하지 않았습니다.");
         }
 
@@ -55,14 +55,13 @@ public class JCFMessageService implements MessageService {
     // R. 읽기
     // 특정 메시지 정보 읽기 by messageId
     @Override
-    public Message readMessageById(UUID messageId) {
+    public Optional<Message> readMessageById(UUID messageId) {
         // Message ID `null` 검증
         ValidationMethods.validateMessageId(messageId);
 
         Message message = data.get(messageId);
-        ValidationMethods.existMessage(message);
 
-        return message;
+        return Optional.ofNullable(message);
     }
 
     // R. 모두 읽기
