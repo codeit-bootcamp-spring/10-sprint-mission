@@ -8,10 +8,11 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
-    private final Map<UUID, Message> messageMap = new HashMap<>();
+    private final Map<UUID, Message> messageMap = new ConcurrentHashMap<>();
     // 의존성 (다른 서비스들)
     // 메시지를 만들 때 유저와 채널의 존재 여부를 확인하기 위해 필요
     private final UserService userService;
@@ -25,10 +26,11 @@ public class JCFMessageService implements MessageService {
     }
 
     private Message findMessageByIdOrThrow(UUID messageId) {
-        if(!messageMap.containsKey(messageId)) {
+        Message message = messageMap.get(messageId);
+        if (message == null) {
             throw new IllegalArgumentException("해당 ID의 메시지가 존재하지 않음 ID: " + messageId);
         }
-        return messageMap.get(messageId);
+        return message;
     }
 
     // Service Implementation
@@ -46,7 +48,6 @@ public class JCFMessageService implements MessageService {
 
         Message message = new Message(content, sender, channel);
         messageMap.put(message.getId(), message);
-        System.out.println("메시지 생성됨: " + message.getContent() + " (ID: " + message.getId() + ")");
         return message;
     }
 

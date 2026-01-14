@@ -1,12 +1,9 @@
 package com.sprint.mission;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.service.*;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
+import com.sprint.mission.discodeit.service.jcf.JCFChannelUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
@@ -24,6 +21,11 @@ Unhappy Path:
   4. 중복 생성: 아이디가 "ABC"인 유저가 있는데 또 "ABC"를 만들면?
 */
 
+/*
+[ ] 각 메서드 내애서만 변수의 범위가 유효하므로 user1,2,3 이 정도 숫자 내에서 돌려쓰기 하는 방향으로 수정할 것
+  숫자가 너무 많아지면 직관적으로 이해하기 어려워짐
+ */
+
 public class JavaApplication {
 
     public static void main(String[] args) {
@@ -34,6 +36,7 @@ public class JavaApplication {
         ChannelService channelService = new JCFChannelService(userService);
         // MessageService는 User와 Channel 서비스가 필요함 (생성자 주입)
         MessageService messageService = new JCFMessageService(userService, channelService);
+        ChannelUserService channelUserService = new JCFChannelUserService(userService, channelService);
 
         // 도메인별 테스트 실행
         // 각 테스트는 독립적으로 수행되도록 설계
@@ -41,6 +44,7 @@ public class JavaApplication {
             testUserDomain(userService);
             testChannelDomain(channelService, userService);
             testMessageDomain(messageService, channelService, userService);
+            testChannelUserDomain(channelUserService, channelService, userService);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("!!! 테스트 중 오류 발생 !!!");
@@ -350,6 +354,48 @@ public class JavaApplication {
             System.out.println("   -> ID2: " + msgB.getId());
         } else {
             System.out.println("❌ 실패 (ID가 같음 - 이건 물리적으로 불가능하지만 혹시 몰라 체크)");
+        }
+    }
+
+    // =================================================================
+    // 4. ChannelUser(참여자) 도메인 테스트
+    // =================================================================
+    private static void testChannelUserDomain(ChannelUserService channelUserService,
+                                              ChannelService channelService,
+                                              UserService userService) {
+        printSection("4. ChannelUser 서비스 테스트");
+
+        // [1] 테스트를 위한 데이터 준비 (유저 2명, 채널 1개)
+        System.out.println("1) 데이터 준비");
+        User user1 = userService.createUser("참여자1");
+        User user2 = userService.createUser("참여자2");
+        User owner = userService.createUser("방장");
+
+        Channel channel = channelService.createChannel("테스트채널", owner.getId());
+        // 방장은 채널 생성 시 자동으로 추가되는 로직이 없다면 여기서 추가 필요할 수 있음 -> UserService에서 구현하는 게 맞다
+        // channelUserService.addChannelUser(channel.getId(), owner.getId(), ChannelRole.OWNER);
+
+        // [2] 채널 입장 (참여)
+        System.out.println("2) 채널 입장");
+        channelUserService.addChannelUser(channel.getId(), user1.getId(), ChannelRole.MEMBER);
+        channelUserService.addChannelUser(channel.getId(), user2.getId(), ChannelRole.MEMBER);
+
+        // [3] 참가자 조회
+        System.out.println("3) 참가자 조회");
+        List<User> participants = channelUserService.findUsersByChannelId(channel.getId());
+
+        System.out.println("   -> 총 참가자 수: " + participants.size() + "명");
+        for (User u : participants) {
+            System.out.println("   -> 참가자: " + u.getUsername() + " id: " + u.getId());
+        }
+
+        // [4] 중복 참여 시도 (Unhappy Path)
+        System.out.println("4) 중복 참여 방어 테스트");
+        try {
+            channelUserService.addChannelUser(channel.getId(), user1.getId(), ChannelRole.MEMBER);
+            System.out.println("❌ 실패 (중복 참여가 허용됨)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("✅ 성공 (방어: " + e.getMessage() + ")" + " id: " + user1.getId());
         }
     }
 
