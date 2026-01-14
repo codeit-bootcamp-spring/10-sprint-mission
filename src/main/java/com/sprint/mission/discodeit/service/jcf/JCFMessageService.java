@@ -10,13 +10,17 @@ import java.util.UUID;
 public class JCFMessageService implements MessageService {
     private final ModelManager<Message> manager;
 
+    public JCFMessageService() {
+        this(new JCFModelManager<>());
+    }
+
     public JCFMessageService(ModelManager<Message> manager) {
         this.manager = manager;
     }
 
     @Override
     public void createMessage(Message message) {
-        manager.create(message.getMessage());
+        manager.create(message);
     }
 
     @Override
@@ -32,5 +36,10 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> getMessages(List<UUID> uuids) {
         return manager.readAll(uuids);
+    }
+
+    @Override
+    public void deleteMessages(List<UUID> messageUUIDs) {
+        manager.delete(messageUUIDs);
     }
 }

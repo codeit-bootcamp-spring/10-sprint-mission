@@ -13,4 +13,6 @@ public interface MessageService {
     void deleteMessage(Message message);
 
     List<Message> getMessages(List<UUID> uuids);
+
+    void deleteMessages(List<UUID> messageUUIDs);
 }

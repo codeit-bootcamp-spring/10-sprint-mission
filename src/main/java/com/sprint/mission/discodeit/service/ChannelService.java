@@ -25,4 +25,8 @@ public interface ChannelService {
     void deleteChannel(Channel channel);
 
     List<Channel> getChannels();
+
+    void deleteUserFromChannels(User user, List<UUID> channelUUIDs);
+
+    void deleteMessage(Channel channel, Message message);
 }

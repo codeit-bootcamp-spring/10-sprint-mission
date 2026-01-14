@@ -11,6 +11,10 @@ import java.util.UUID;
 public class JCFModelManager<T extends Entity<T>> implements ModelManager<T> {
     private final Model<T> model;
 
+    public JCFModelManager() {
+        this(new Model<>());
+    }
+
     public JCFModelManager(Model<T> model) {
         this.model = model;
     }
@@ -43,5 +47,10 @@ public class JCFModelManager<T extends Entity<T>> implements ModelManager<T> {
     @Override
     public void delete(UUID key) {
         model.remove(key);
+    }
+
+    @Override
+    public void delete(List<UUID> uuids) {
+        model.remove(uuids);
     }
 }

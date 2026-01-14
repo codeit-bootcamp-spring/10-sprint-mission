@@ -15,6 +15,10 @@ public class JCFChannelService implements ChannelService {
     private final RelationManager<Channel, Message> channelMessageRelationManager;
     private final RelationManager<Channel, User> channelUserRelationManager;
 
+    public JCFChannelService() {
+        this(new JCFModelManager<>(), new JCFRelationManager<>(), new JCFRelationManager<>());
+    }
+
     public JCFChannelService(ModelManager<Channel> channelManager,
                              RelationManager<Channel, Message> channelMessageRelationManager,
                              RelationManager<Channel, User> channelUserRelationManager) {
@@ -70,5 +74,15 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<Channel> getChannels() {
         return channelManager.readAll();
+    }
+
+    @Override
+    public void deleteUserFromChannels(User user, List<UUID> channelUUIDs) {
+        channelUUIDs.forEach(uuid -> channelUserRelationManager.delete(uuid, user.getUuid()));
+    }
+
+    @Override
+    public void deleteMessage(Channel channel, Message message) {
+        channelMessageRelationManager.delete(channel.getUuid(), message.getUuid());
     }
 }

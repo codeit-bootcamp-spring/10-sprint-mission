@@ -18,4 +18,6 @@ public interface ModelManager<T extends Entity<T>> {
     void update(UUID uuid, String value);
 
     void delete(UUID key);
+
+    void delete(List<UUID> uuids);
 }
