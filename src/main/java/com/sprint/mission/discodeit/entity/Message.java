@@ -4,15 +4,15 @@ import java.util.UUID;
 
 public class Message extends Common{
     String content;
-    private User userId;
-    private Channel channelId;
+    private Channel channel;
     private User sender;
 
     public Message(String content, User sender, Channel channel){
         super();
         this.content = content;
         this.sender = sender;
-        this.channelId = channel;
+        sender.addMessage(this);
+        this.channel = channel;
     }
 
     public String getContent(){
@@ -24,9 +24,9 @@ public class Message extends Common{
     }
 
     public User getUserId(){
-        return userId;
+        return sender;
     }
     public Channel getChannelId(){
-        return channelId;
+        return channel;
     }
 }

@@ -8,14 +8,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ChannelService {
-    void createChannel(Channel channel);
+    Channel createChannel(String channelName);
 
-    Channel findId(UUID id);
+    Channel findId(Channel channel);
 
     List<Channel> findAll();
 
-    void update(Channel channel, String channelName);
+    Channel update(Channel channel, String channelName);
 
-    void delete(UUID id);
-
+    void delete(Channel channel);
 }

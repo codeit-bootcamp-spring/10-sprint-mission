@@ -16,18 +16,18 @@ public class JCFMessageService implements MessageService {
         data = new ArrayList<>();
     }
 
-    public void createMessage(Message message){
-        if(findId(message.getId()) != null){
-            System.out.println("이미 있는 메세지입니다.");
-            return;
-        }
+    public Message createMessage(String content, User sender, Channel channel){
+        // user, channel 둘다 예외처리해야함.
+
+        Message message = new Message(content, sender, channel);
         data.add(message);
         System.out.println("메세지 생성이 완료되었습니다.");
+        return message;
     }
 
-    public Message findId(UUID id){
+    public Message findId(Message msg){
         return data.stream()
-                .filter(message -> message.getId().equals(id))
+                .filter(message -> message.getId().equals(msg.getId()))
                 .findFirst()
                 .orElse(null);
     }
@@ -42,22 +42,17 @@ public class JCFMessageService implements MessageService {
                 .toList();
     }
 
-    public void update(Message msg, String content){
-        if(findId(msg.getId()) == null){
-            System.out.println("존재하지 않는 메세지입니다.");
-            return;
+    public Message update(Message msg, String content){
+        Message foundMsg = findId(msg);
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("내용이 비어있거나 공백입니다.");
         }
-        msg.setContent(content);
+        return foundMsg;
     }
 
-    public void delete(UUID id){
-        Message target = findId(id);
+    public void delete(Message msg){
+        Message target = findId(msg);
         data.remove(target);
-    }
-    public void deleteByChannelId(UUID channelId){
-        List<Message> temp = findByChannelId(channelId);
-        temp.stream()
-                .forEach(message -> delete(message.getId()));
     }
 
 }

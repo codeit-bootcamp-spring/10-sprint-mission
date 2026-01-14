@@ -13,20 +13,30 @@ public class JCFUserService implements UserService {
     }
 
     //data 필드를 활용해 생성, 조회, 수정, 삭제하는 메소드
-    public void CreateUser(User user){
-        if(findId(user.getId()) != null){
-            System.out.println("이미 있는 계정입니다.");
-            return;
+    public User CreateUser(String userName, String email){
+        boolean isExist = data.stream()
+                .anyMatch(user -> user.getEmail().equals(email));
+        if (isExist) {
+            throw new IllegalArgumentException("이미 등록된 이메일입니다: " + email);
         }
+        User user = new User(userName, email);
         data.add(user);
         System.out.println(user.getUserName() + "님의 계정 생성이 완료되었습니다.");
+        return user;
     }
 
     public User findId(UUID id){
         return data.stream()
                 .filter(user -> user.getId().equals(id))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new NoSuchElementException("해당 계정은 존재하지 않습니다.\nID: " + id));
+    }
+
+    public User findEmail(String email){
+        return data.stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("해당 이메일이 등록되어 있지 않습니다."));
     }
 
 
@@ -34,28 +44,36 @@ public class JCFUserService implements UserService {
         return data;
     }
 
-    public void updateName(User user, String userName){
-        if(findId(user.getId()) == null){
-            System.out.println("존재하지 않는 계정입니다.");
-            return;
+    public User updateName(User user, String userName){
+        User foundUser = findId(user.getId());
+        if (userName == null || userName.trim().isEmpty()) {
+            throw new IllegalArgumentException("이름이 비어있거나 공백입니다.");
         }
-        user.setUserName(userName);
+        foundUser.setUserName(userName);
+        return foundUser;
     }
 
-    public void updateEmail(User user, String email){
-        if(findId(user.getId()) == null){
-            System.out.println("존재하지 않는 계정입니다.");
-            return;
+    public User updateEmail(User user, String email){
+        User foundEmail = findEmail(user.getEmail());
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("이메일이 비어있거나 공백입니다.");
         }
-        user.setEmail(email);
+        foundEmail.setUserName(email);
+        return foundEmail;
     }
 
-    public void changeEmail(User user, String email){
-        user.setEmail(email);
-    }
-
-    public void delete(UUID id){
-        User target = findId(id);
+    public void delete(User user){
+        User target = findId(user.getId());
         data.remove(target);
     }
+
+
+
+    // 메세지 가져오기
+    // 메세지 추가
+    // 메세지 삭제
+    // 메세지 전체삭제
+
+    // 채널도 위와 마찬가지
+
 }

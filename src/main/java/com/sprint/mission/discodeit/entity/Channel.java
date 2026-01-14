@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Channel extends Common{
     private String channelName;
-    private List<UUID> userList = new ArrayList<>();
+    private List<User> userList = new ArrayList<>();
     private List<Message> messageList = new ArrayList<>();
 
     public Channel(String channelName){
@@ -21,12 +21,12 @@ public class Channel extends Common{
         setUpdatedAt();
     }
 
-    public List<UUID> getUserList(){
+    public List<User> getUserList(){
         return userList;
     }
 
-    public void addUserList(UUID userId){
-        userList.add(userId);
+    public void addUserList(User user){
+        userList.add(user);
     }
 
     public List<Message> getMessageList(){

@@ -7,13 +7,15 @@ import java.util.UUID;
 public class User extends Common{
     private String userName;
     private String email;
-    private List<UUID> channelList = new ArrayList<>();
-    private List<Message> messageList = new ArrayList<>();
+    private List<Channel> channelList;
+    private List<Message> messageList;
 
     public User(String userName, String email){
         super();
         this.userName = userName;
         this.email = email;
+        this.channelList = new ArrayList<>();
+        this.messageList = new ArrayList<>();
     }
 
     public String getUserName(){
@@ -34,12 +36,12 @@ public class User extends Common{
         setUpdatedAt();
     }
 
-    public List<UUID> getChannelId(){
+    public List<Channel> getChannelId(){
         return channelList;
     }
 
-    public void addChannelId(UUID channelId){
-        channelList.add(channelId);
+    public void addChannelId(Channel channel){
+        channelList.add(channel);
     }
 
     public List<Message> getMessageList(){
@@ -49,4 +51,7 @@ public class User extends Common{
         messageList.add(message);
     }
 
+    public void addMessages(Message message) {
+            this.messageList.add(message);
+    }
 }

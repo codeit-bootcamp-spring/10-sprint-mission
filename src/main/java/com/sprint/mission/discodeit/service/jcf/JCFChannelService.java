@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
@@ -15,36 +16,41 @@ public class JCFChannelService implements ChannelService {
         data = new ArrayList<>();
     }
 
-    public void createChannel(Channel channel){
-        if(findId(channel.getId()) != null){
-            System.out.println("이미 있는 채널입니다.");
-            return;
+    public Channel createChannel(String channelName){
+        boolean isExist = data.stream()
+                .anyMatch(channel -> channel.getChannelName().equals(channelName));
+        if (isExist) {
+            throw new IllegalArgumentException("이미 등록된 이메일입니다: " + channelName);
         }
+        Channel channel = new Channel(channelName);
         data.add(channel);
         System.out.println(channel.getChannelName() + "채널 생성이 완료되었습니다.");
+        return channel;
     }
 
-    public Channel findId(UUID id){
+    public Channel findId(Channel channel){
         return data.stream()
-                .filter(user -> user.getId().equals(id))
+                .filter(user -> user.getId().equals(channel.getId()))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new NoSuchElementException("해당 채널은 존재하지 않습니다."));
     }
 
     public List<Channel> findAll(){
         return data;
     }
 
-    public void update(Channel channel, String channelName){
-        if(findId(channel.getId()) == null){
-            System.out.println("존재하지 않는 채널입니다.");
-            return;
+
+    public Channel update(Channel channel, String channelName){
+        Channel foundChannel = findId(channel);
+        if (channelName == null || channelName.trim().isEmpty()) {
+            throw new IllegalArgumentException("이름이 비어있거나 공백입니다.");
         }
         channel.setChannelName(channelName);
+        return channel;
     }
 
-    public void delete(UUID id){
-        Channel target = findId(id);
+    public void delete(Channel channel){
+        Channel target = findId(channel);
         data.remove(target);
     }
 }
