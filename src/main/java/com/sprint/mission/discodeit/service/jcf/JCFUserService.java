@@ -14,9 +14,6 @@ public class JCFUserService implements UserService {
     // 연관 도메인의 서비스
     private MessageService messageService;
 
-    public JCFUserService() {
-    }
-
     // Setter 주입, 순환 참조 문제 회피
     public void setMessageService(MessageService messageService) {
         this.messageService = messageService;

@@ -17,6 +17,10 @@ public class Message extends BaseEntity {
 
     public Message(String content, User author, Channel channel) {
         super();
+        validationContent(content);
+        if(author == null) throw new IllegalArgumentException("작성자는 필수입니다.");
+        if(channel == null) throw new IllegalArgumentException("채널은 필수입니다.");
+
         this.content = content;
         this.author = author;
         this.channel = channel;
@@ -49,7 +53,7 @@ public class Message extends BaseEntity {
         }
     }
 
-    // Logic
+    // validation
     private void validationContent(String content){
         if (content == null || content.trim().isEmpty()) throw new IllegalArgumentException("메세지가 비어있음");
     }
@@ -61,6 +65,19 @@ public class Message extends BaseEntity {
 
     public Channel getChannel() {
         return channel;
+    }
+
+    // toString
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", author=" + (author != null ? author.getNickname() : "null") +
+                ", channel=" + (channel != null ? channel.getChannelName() : "null") +
+                ", isEdited=" + isEdited +
+                ", sequence=" + sequence +
+                '}';
     }
 
 }

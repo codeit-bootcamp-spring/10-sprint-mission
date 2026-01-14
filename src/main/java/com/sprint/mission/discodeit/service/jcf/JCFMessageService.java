@@ -18,9 +18,6 @@ public class JCFMessageService implements MessageService {
     private UserService userService;
     private ChannelService channelService;
 
-    public JCFMessageService() {
-    }
-
     // Setter 주입, 순환 참조 문제 회피(생성 시점 딜레이로 문제를 회피)
     public void setUserService(UserService userService) {
         this.userService = userService;
@@ -31,21 +28,18 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message sendMessage(UUID authorId, UUID channelId, String content) {
-        if(content == null || content.trim().isEmpty()) {
-            throw new IllegalArgumentException("메시지 내용은 비어있을 수 없습니다.");
-        }
+        //엔티티에서 빈 메시지 검증함
+
         User author = userService.findById(authorId)
                 .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다. ID: " + authorId));
         Channel channel = channelService.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("채널을 찾을 수 없습니다. ID: " + channelId));
 
         Message message = new Message(content, author, channel);
-        // 모든 메시지가 전역적으로 저장됨
-        messageMap.put(message.getId(), message);
-        // 채널 마다 메시지가 저장됨
-        channel.addMessage(message);
-        // 유저 마다 메시지가 저장됨
-        author.addMessage(message);
+
+        messageMap.put(message.getId(), message); // 모든 메시지가 전역적으로 저장됨
+        channel.addMessage(message); // 채널 마다 메시지가 저장됨
+        author.addMessage(message); // 유저 마다 메시지가 저장됨
 
         return message;
 
@@ -54,7 +48,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
         channelService.findById(channelId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널: " + channelId));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널: " + channelId));
 
         return messageMap.values().stream()
                 .filter(m -> m.getChannel().getId().equals(channelId))
@@ -66,7 +60,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> findMessagesByChannel(UUID channelId) {
         Channel channel = channelService.findById(channelId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널: " + channelId));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널: " + channelId));
 
         return channel.getMessages();
     }
@@ -74,7 +68,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> findMessagesByAuthor(UUID authorId) {
         User author = userService.findById(authorId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저: " + authorId));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저: " + authorId));
 
         return author.getMessages();
     }
@@ -85,26 +79,28 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void updateMessage(UUID messageId, String newContent) {
-        Message message = findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("메시지가 존재하지 않음: " + messageId));
+    public Message updateMessage(UUID messageId, String newContent) {
+        Message message = getMessageOrThrow(messageId);
 
         if (newContent == null || newContent.trim().isEmpty()) {
-            deleteMessage(messageId);
+            deleteMessage(messageId); // 수정할 땐 빈 메시지 보낼 시 삭제됨.
         } else {
             message.updateContent(newContent);
         }
+
+        return message;
     }
 
     @Override
-    public void deleteMessage(UUID messageId) {
-        Message message = findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("메시지가 존재하지 않음: " + messageId));
+    public Message deleteMessage(UUID messageId) {
+        Message message = getMessageOrThrow(messageId);
 
         message.getChannel().removeMessage(message);// 채널이 가지고 있는 메시지 리스트에서 삭제
         message.getAuthor().removeMessage(message); // 유저가 가지고 있는 메시지 리스트에서 삭제
 
         messageMap.remove(messageId); // 전역 메시지 맵에서 삭제
+
+        return message;
     }
 
     // 회원 탈퇴, 채널 삭제 등 메시지 전체 삭제
@@ -128,5 +124,11 @@ public class JCFMessageService implements MessageService {
                 .stream()
                 .map(Message::getId)
                 .forEach(this::deleteMessage);
+    }
+
+    // Helper
+    private Message getMessageOrThrow(UUID messageId) {
+        return findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("메시지를 찾을 수 없습니다. ID: " + messageId));
     }
 }
