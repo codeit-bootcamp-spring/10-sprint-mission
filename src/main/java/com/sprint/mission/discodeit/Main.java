@@ -184,7 +184,7 @@ public class Main {
         // 초대
         if (channel2 != null && user2 != null) {
             try {
-                channelService.inviteMembers(user2.getId(), channel2.getUsers());
+                channelService.inviteMembers(user2.getId(), channel2.getMembers());
                 System.out.println("초대 테스트");
                 users.forEach(user -> System.out.println(user.getNickname()));
             } catch (Exception e) {
@@ -194,12 +194,29 @@ public class Main {
 
         if (channel2 != null && user3 != null) {
             try {       // 이미 존재하는 사용자
-                channelService.inviteMembers(user3.getId(), channel2.getUsers());
+                channelService.inviteMembers(user3.getId(), channel2.getMembers());
                 System.out.println("초대 테스트");
                 users.forEach(user -> System.out.println(user.getNickname()));
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
+        }
+
+        // 추가 조회 로직
+        try {
+            System.out.println("특정 사용자가 참가한 채널 리스트 조회 테스트");
+            ArrayList<Channel> userChannels = channelService.userChannels(user3.getId());
+            userChannels.forEach(channel -> System.out.println(channel.getChannelName()));
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+        try {
+            System.out.println("특정 채널의 참가자 리스트 조회 테스트");
+            ArrayList<User> channelUsers = channelService.channelUsers(channel2.getId());
+            channelUsers.forEach(channel -> System.out.println(channel.getNickname()));
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
         }
 
         System.out.println("=========================");
