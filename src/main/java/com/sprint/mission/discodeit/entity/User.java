@@ -23,6 +23,7 @@ public class User extends BaseEntity {
         this.password = newPassword;
         this.updatedAt = System.currentTimeMillis();
     }
+
     public void updateNickname(String newNickname) {
         this.nickname = newNickname;
         this.updatedAt = System.currentTimeMillis();
@@ -35,21 +36,27 @@ public class User extends BaseEntity {
     public UUID getId() {
         return id;
     }
+
     public Long getCreatedAt() {
         return createdAt;
     }
+
     public Long getUpdatedAt() {
         return updatedAt;
     }
+
     public String getEmail() {
         return email;
     }
+
     public String getPassword() {
         return password;
     }
+
     public String getNickname() {
         return nickname;
     }
+
     public UserStatusType getUserStatus() {
         return userStatus;
     }

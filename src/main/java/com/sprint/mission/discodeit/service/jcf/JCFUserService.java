@@ -26,9 +26,9 @@ public class JCFUserService implements UserService {
     @Override
     public User searchUser(UUID targetUserId) {
         return users.stream()
-                    .filter(user -> user.getId().equals(targetUserId))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+                .filter(user -> user.getId().equals(targetUserId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
     }
 
     // 사용자 전체 조회
@@ -44,16 +44,16 @@ public class JCFUserService implements UserService {
 
         Optional.ofNullable(newPassword)
                 .ifPresent(password -> {
-                            validateString(password, "[비밀 번호 변경 실패] 올바른 비밀 번호 형식이 아닙니다.");
-                            validateDuplicateValue(targetUser.getPassword(), newPassword, "[비밀 번호 변경 실패] 현재 비밀 번호와 일치합니다.");
-                            targetUser.updatePassword(password);
-                        });
+                    validateString(password, "[비밀 번호 변경 실패] 올바른 비밀 번호 형식이 아닙니다.");
+                    validateDuplicateValue(targetUser.getPassword(), newPassword, "[비밀 번호 변경 실패] 현재 비밀 번호와 일치합니다.");
+                    targetUser.updatePassword(password);
+                });
 
         Optional.ofNullable(newNickname)
                 .ifPresent(nickname -> {
-                            validateString(nickname, "[닉네임 변경 실패] 올바른 닉네임 형식이 아닙니다.");
-                            validateDuplicateValue(targetUser.getNickname(), newNickname, "[닉네임 변경 실패] 현재 닉네임과 일치합니다.");
-                            targetUser.updateNickname(nickname);
+                    validateString(nickname, "[닉네임 변경 실패] 올바른 닉네임 형식이 아닙니다.");
+                    validateDuplicateValue(targetUser.getNickname(), newNickname, "[닉네임 변경 실패] 현재 닉네임과 일치합니다.");
+                    targetUser.updateNickname(nickname);
                 });
 
         Optional.ofNullable(newUserStatus)

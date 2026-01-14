@@ -29,9 +29,9 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel searchChannel(UUID targetChannelId) {
         return channels.stream()
-                       .filter(channel -> channel.getId().equals(targetChannelId))
-                       .findFirst()
-                       .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+                .filter(channel -> channel.getId().equals(targetChannelId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
     }
 
     // 채널 다건 조회
@@ -49,7 +49,7 @@ public class JCFChannelService implements ChannelService {
         Channel targetChannel = searchChannel(targetChannelId);
 
         Optional.ofNullable(newChannelName)
-                .ifPresent(channelName-> {
+                .ifPresent(channelName -> {
                     validateString(channelName, "[채널 이름 변경 실패] 올바른 채널 이름 형식이 아닙니다.");
                     validateDuplicateValue(targetChannel.getChannelName(), channelName, "[채널 이름 변경 실패] 현재 채널 이름과 동일합니다.");
                 });

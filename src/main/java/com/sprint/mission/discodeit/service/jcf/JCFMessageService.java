@@ -33,9 +33,9 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message searchMessage(UUID targetMessageId) {
         return messages.stream()
-                        .filter(message -> message.getId().equals(targetMessageId))
-                        .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
+                .filter(message -> message.getId().equals(targetMessageId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
     }
 
     // 메시지 전체 조회

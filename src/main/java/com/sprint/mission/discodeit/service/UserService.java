@@ -8,8 +8,12 @@ import java.util.UUID;
 
 public interface UserService {
     public User createUser(String email, String password, String nickname, UserStatusType userStatus);
+
     public User searchUser(UUID userId);
+
     public ArrayList<User> searchUserAll();
+
     public void updateUser(UUID userId, String newPassword, String newNickname, UserStatusType newUserStatus);
+
     public void deleteUser(UUID userId);
 }
