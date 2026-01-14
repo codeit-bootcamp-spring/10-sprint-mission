@@ -4,20 +4,22 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private UserService userService;
+    private MessageService messageService;
     private final List<Channel> data = new ArrayList<>();
-
-    public JCFChannelService(UserService userService) {
-        this.userService = userService;
-    }
 
     public void setUserService(UserService userService) {
         this.userService = userService;
+    }
+
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
     }
 
     @Override
@@ -58,7 +60,8 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID channelId) {
         Channel target = getChannel(channelId);
-        target.getUsers().forEach(user -> user.removeChannel(target));
+        target.getMessages().forEach(message -> messageService.deleteMessage(message.getId()));
+        target.getUsers().forEach(user -> leaveChannel(channelId, user.getId()));
         data.remove(target);
     }
 

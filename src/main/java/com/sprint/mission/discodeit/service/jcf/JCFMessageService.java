@@ -15,6 +15,7 @@ public class JCFMessageService implements MessageService {
         Message message = new Message(content, sender, channel);
         data.add(message);
         channel.addMessage(message);
+        sender.addMessage(message);
         return message;
     }
 
@@ -42,6 +43,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public void deleteMessage(UUID messageId) {
         Message target = getMessage(messageId);
+        target.getSender().removeMessage(target);
         target.getChannel().removeMessage(target);
         data.remove(target);
     }

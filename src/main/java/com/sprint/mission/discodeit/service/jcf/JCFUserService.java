@@ -1,12 +1,24 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFUserService implements UserService {
+    private ChannelService channelService;
+    private MessageService messageService;
     private final List<User> data = new ArrayList<>();
+
+    public void setChannelService(ChannelService channelService) {
+        this.channelService = channelService;
+    }
+
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
+    }
 
     @Override
     public User createUser(String userName, String password, String email) {
@@ -45,7 +57,8 @@ public class JCFUserService implements UserService {
     @Override
     public void deleteUser(UUID userId) {
         User target = getUser(userId);
-        target.getChannels().forEach(channel -> channel.removeUser(target));
+        target.getMessages().forEach(message -> messageService.deleteMessage(message.getId()));
+        target.getChannels().forEach(channel -> channelService.leaveChannel(channel.getId(), userId));
         data.remove(target);
     }
 
