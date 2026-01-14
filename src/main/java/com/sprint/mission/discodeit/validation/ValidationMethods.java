@@ -10,19 +10,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class ValidationMethods {
-    // User ID `null` 검증
-    public static void validateUserId(UUID userId) {
-        Objects.requireNonNull(userId, "User ID가 null입니다.");
-    }
-
-    // Channel ID `null` 검증
-    public static void validateChannelId(UUID channelId) {
-        Objects.requireNonNull(channelId, "Channel ID가 null입니다.");
-    }
-
-    // Message ID `null` 검증
-    public static void validateMessageId(UUID messageId) {
-        Objects.requireNonNull(messageId, "Message ID가 null입니다.");
+    // 통합 ID `null` 검증
+    public static void validateId(UUID id) {
+        Objects.requireNonNull(id, "ID가 null입니다.");
     }
 
     // requestId와 targetId가 동일한지 검증
@@ -48,48 +38,6 @@ public class ValidationMethods {
         Objects.requireNonNull(obj, message);
     }
 
-    // 빈 상자([]) 출력하지 않을 때
-    // userId로 요청한 데이터가 존재하는지 검증
-    public static void validateDataByUserId(Map<UUID, User> data, UUID id) {
-        if (!data.containsKey(id)) {
-            throw new NoSuchElementException("해당 userId를 가진 User가 존재하지 않습니다.");
-        }
-    }
-
-    // channelId로 요청한 데이터가 존재하는지 검증
-    public static void validateDataByChannelId(Map<UUID, Channel> data, UUID id) {
-        if (!data.containsKey(id)) {
-            throw new NoSuchElementException("해당 channelId를 가진 Channel이 존재하지 않습니다.");
-        }
-    }
-
-    // messageId로 요청한 데이터가 존재하는지 검증
-    public static void validateDataByMessageId(Map<UUID, Message> data, UUID id) {
-        if (!data.containsKey(id)) {
-            throw new NoSuchElementException("해당 messageId를 가진 Message가 존재하지 않습니다.");
-        }
-    }
-
-    // email 중복 확인
-    public static void duplicateEmail(Map<UUID, User> data, String email) {
-        data.values().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findAny()
-                .ifPresent(user -> {
-                    throw new IllegalStateException("동일한 email이 존재합니다");
-                });
-    }
-
-    // 이미 참여한 채널인지 검증
-    public static void validateAlreadyParticipation(UUID userId, Channel channel) {
-        Boolean validateAlreadyParticipation = channel.getChannelUsersList().stream()
-                .noneMatch(user -> user.getId().equals(userId));
-        // false -> 중복 존재 O
-        if (!validateAlreadyParticipation) {
-            throw new IllegalStateException("이미 참여한 channel입니다.");
-        }
-    }
-
     // 존재하는 유저인지 확인
     public static void existUser(User user) {
         if (user == null) {
@@ -110,6 +58,28 @@ public class ValidationMethods {
             throw new NoSuchElementException("해당 메세지가 없습니다.");
         }
     }
+
+//    // 빈 상자([]) 출력하지 않을 때
+//    // userId로 요청한 데이터가 존재하는지 검증
+//    public static void validateDataByUserId(Map<UUID, User> data, UUID id) {
+//        if (!data.containsKey(id)) {
+//            throw new NoSuchElementException("해당 userId를 가진 User가 존재하지 않습니다.");
+//        }
+//    }
+//
+//    // channelId로 요청한 데이터가 존재하는지 검증
+//    public static void validateDataByChannelId(Map<UUID, Channel> data, UUID id) {
+//        if (!data.containsKey(id)) {
+//            throw new NoSuchElementException("해당 channelId를 가진 Channel이 존재하지 않습니다.");
+//        }
+//    }
+//
+//    // messageId로 요청한 데이터가 존재하는지 검증
+//    public static void validateDataByMessageId(Map<UUID, Message> data, UUID id) {
+//        if (!data.containsKey(id)) {
+//            throw new NoSuchElementException("해당 messageId를 가진 Message가 존재하지 않습니다.");
+//        }
+//    }
 
     // password 규칙? 8자이상, 특수기호
 
