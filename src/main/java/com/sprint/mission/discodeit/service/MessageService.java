@@ -17,6 +17,8 @@ public interface MessageService {
     // 메세지 전체 조회 -> 리스트로 역시.
     // 저장된 모든 메시지 목록 반환
     List<Message> getMessageAll();
+    //(시스템) id로 메세지 조회
+    Message getMessageById(UUID id);
 
 
     Message updateMessage(UUID uuid, String newContent); // 메시지 내용 변경

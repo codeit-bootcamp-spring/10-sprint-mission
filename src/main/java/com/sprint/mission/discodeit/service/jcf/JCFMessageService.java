@@ -2,13 +2,14 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.*;
+import com.sprint.mission.discodeit.utils.Validation;
 
 import java.util.*;
+
 public class JCFMessageService implements MessageService{
 
     private final Map<UUID, Message> data;
 
-    //의존성 주입
     // 서비스마다 자기 이외의 서비스 객체 만들어... 의존성 주입..
     private final UserService userService;
     private final ChannelService channelService;
@@ -22,22 +23,20 @@ public class JCFMessageService implements MessageService{
 
     @Override
     public Message createMessage(String content, UUID senderId, UUID channelId) {
-        // 1️⃣ 입력값 검증
-        if (content == null || content.trim().isEmpty()) {
-            throw new IllegalArgumentException("메시지 내용이 비어 있습니다.");
-        }
+        //  입력값 검증
+        Validation.notBlank(content, "메세지 내용");
 
         if (senderId == null || channelId == null) {
             throw new IllegalArgumentException("senderId나 channelId가 null일 수 없습니다.");
         }
 
-        // 2️⃣ User 유효성 검사 및 조회
+        // User 유효성 검사 및 조회
         User sender = userService.findUserOrThrow(senderId);
 
-        // 3️⃣ Channel 유효성 검사 및 조회
+        // Channel 유효성 검사 및 조회
         Channel channel = channelService.findChannelOrThrow(channelId);
 
-        // 4️⃣ Message 생성 및 저장
+        //  Message 생성 및 저장
         Message message = new Message(content, sender, channel);
         data.put(message.getId(), message);
 
@@ -47,6 +46,13 @@ public class JCFMessageService implements MessageService{
     @Override
     public List<Message> getMessageAll() {
         return new ArrayList<>(data.values());
+    }
+    @Override
+    public Message getMessageById(UUID id) {
+        return data.values().stream()
+                .filter(m -> m.getId().equals(id))
+                .findFirst()
+                .orElseThrow(()->new NoSuchElementException("해당 Id의 메세지는 존재하지 않습니다: "+ id ));
     }
     //data.values()가 반환하는 Collection은 Map과 연결된 “뷰(View)” 객체라서,
     //그냥 그걸 리턴하면 이후에 외부 코드가 실수로 리스트를 건드렸을 때
@@ -75,15 +81,6 @@ public class JCFMessageService implements MessageService{
                 .filter(m -> m.getChannel() != null
                 && m.getChannel().getChannelName().equals(channelName))
                 .toList();
-//        List<Message> result = new ArrayList<>();
-//        for (Message message : data.values()) {
-//            if (message.getChannel() != null &&
-//                    message.getChannel().getChannelName() != null &&
-//                    message.getChannel().getChannelName().trim().equalsIgnoreCase(channelName.trim())) {
-//                result.add(message);
-//            }
-//        }
-//        return result;
     }
 
     // 이름 중복 허용인데...??? -> 그럼 id로 찾도록 (관리자용)
@@ -91,19 +88,10 @@ public class JCFMessageService implements MessageService{
     @Override
     public List<Message> getMessagesBySenderId(UUID senderId) {
         return data.values().stream()
-                .filter(m->m.getSender() != null
-                && m.getSender().getId().equals(senderId))
+                .filter(m -> m.getSender() != null
+                        && m.getSender().getId().equals(senderId))
                 .toList();
-//        List<Message> result = new ArrayList<>();
-//        for (Message message : data.values()) {
-//            if (message.getSender() != null &&
-//                    message.getSender().getId().equals(senderId)) {
-//                result.add(message);
-//            }
-//        }
-//        return result;
     }
-
     // ID로 메세지를 찾고, 없으면 예외 던짐.
     public Message findmsgOrThrow(UUID id) {
         Message message  = data.get(id);

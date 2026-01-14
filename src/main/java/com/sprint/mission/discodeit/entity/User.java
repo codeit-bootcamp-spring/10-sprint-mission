@@ -30,11 +30,15 @@ public class User extends Basic {
     }
     public List<Message> getMessage() {return messages;}
 
-    // User 정보 변경 그대로인건 null 로 채우기.
-    public void update(String username, String alias) {
-        if (username != null) this.userName = username;
-        if (alias != null) this.alias = alias;
-        update();
+    // 필드별 수정 메서드 분리
+    public void changeUserName(String newUserName) {
+        this.userName = newUserName;
+        super.update(); // Basic의 update()를 명시적으로 호출
+    }
+
+    public void changeAlias(String newAlias) {
+        this.alias = newAlias;
+        super.update();
     }
     // 메세지 관련!!!!
     public List<Message> getMessages() {
@@ -44,7 +48,7 @@ public class User extends Basic {
     public void addMessage(Message message) {
         // 중복 방지
         if (!messages.contains(message)) {
-            messages.add(message); //list 에 mesaage add하고,
+            messages.add(message); // list 에 mesaage add하고,
             message.setSender(this); //
         }
     }
