@@ -5,56 +5,60 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFChannelService implements ChannelService {
-    private final List<Channel> channelList;
+    private final Map<UUID, Channel> channelMap;
     private final UserService userService;
 
     public JCFChannelService(UserService userService){
-        this.channelList = new ArrayList<>();
+        this.channelMap = new HashMap<>();
         this.userService = userService;
     }
 
     @Override
     public Channel createChannel(String channelName) {
         Channel channel = new Channel(channelName);
-        channelList.add(channel);
+        channelMap.put(channel.getId(), channel);
         System.out.println(channel.getChannelName() + "채널 생성이 완료되었습니다.");
         return channel;
     }
 
     @Override
-    public Channel findChannelById(UUID id){
-        return channelList.stream()
-                .filter(channel -> channel.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("해당 채널 없음"));
+    public Optional<Channel> findChannelById(UUID id){
+        return Optional.ofNullable(channelMap.get(id));
     }
 
     @Override
     public List<Channel> findAllChannels(){
-        return channelList;
+        return new ArrayList<>(channelMap.values());
     }
 
     @Override
-    public void deleteChannel(UUID id){ // 예외 처리가 구현되어있는 findChannelById(id) 사용
-        Channel targetChannel = findChannelById(id);
-        channelList.remove(targetChannel);
+    public void deleteChannel(UUID id){
+        Channel targetChannel = findChannelById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널 없음"));
+
+        for (User participant : targetChannel.getParticipants()) {
+            participant.getMyChannels().remove(targetChannel);
+        }
+
+        channelMap.remove(id);
     }
 
     public Channel updateChannel(UUID id, String channelName){
-        Channel targetChannel = findChannelById(id); // 예외 처리가 구현되어있는 findChannelById(id) 사용
+        Channel targetChannel = findChannelById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널 없음"));
         targetChannel.updateChannelInfo(channelName);
         return targetChannel;
     }
 
     @Override
     public void joinChannel(UUID userID, UUID channelID) {
-        Channel targetChannel = findChannelById(channelID);
-        User targetUser = userService.findUserById(userID);
+        Channel targetChannel = findChannelById(channelID)
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널 없음"));
+        User targetUser = userService.findUserById(userID)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자 없음"));
 
         boolean isAlreadyExist = targetChannel.getParticipants().stream()
                         .anyMatch(participant -> participant.getId().equals(targetUser.getId()));
@@ -64,13 +68,16 @@ public class JCFChannelService implements ChannelService {
         }
 
         targetChannel.getParticipants().add(targetUser);
+        targetUser.getMyChannels().add(targetChannel);
+
         System.out.println(targetUser.getUsername() + "님이 "
                                 + targetChannel.getChannelName() + " 채널에 입장했습니다.");
     }
 
     @Override
     public List<User> findParticipants(UUID channelID){
-        Channel targetChannel = findChannelById(channelID);
+        Channel targetChannel = findChannelById(channelID)
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널 없음"));
         return targetChannel.getParticipants();
     }
 }

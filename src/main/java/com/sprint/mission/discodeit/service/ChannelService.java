@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ChannelService {
@@ -11,7 +12,7 @@ public interface ChannelService {
 
     void deleteChannel(UUID id);
 
-    Channel findChannelById(UUID id);
+    Optional<Channel> findChannelById(UUID id);
     List<Channel> findAllChannels();
 
     Channel updateChannel(UUID id, String channelName);

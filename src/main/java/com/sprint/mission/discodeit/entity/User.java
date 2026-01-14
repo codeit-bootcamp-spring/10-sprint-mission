@@ -1,9 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class User extends BaseEntity {
     private String username;
     private String password;
     private String email;
+    private List<Channel> myChannels = new ArrayList<>();
+    private List<Message> myMessages = new ArrayList<>();
 
     public String getUsername() {
         return username;
@@ -30,6 +35,18 @@ public class User extends BaseEntity {
     public void updatePassword(String newPassword){
         this.password = newPassword;
         this.setUpdatedAt(System.currentTimeMillis());
+    }
+
+    public List<Message> getMyMessages() {
+        return myMessages;
+    }
+
+    public List<Channel> getMyChannels() {
+        return myChannels;
+    }
+
+    public void addMessage(Message message){
+        this.myMessages.add(message);
     }
 
     public User(String username, String password, String email) {

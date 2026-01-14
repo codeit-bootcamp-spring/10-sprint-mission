@@ -6,6 +6,7 @@ import java.util.List;
 public class Channel extends BaseEntity{
     private String channelName;
     private List<User> participants = new ArrayList<>();
+    private List<Message> channelMessages = new ArrayList<>();
 
     public String getChannelName() {
         return channelName;
@@ -22,6 +23,14 @@ public class Channel extends BaseEntity{
 
     public void addParticipant(User user){
        this.participants.add(user);
+    }
+
+    public List<Message> getChannelMessages() {
+        return channelMessages;
+    }
+
+    public void addMessage(Message message){
+        this.channelMessages.add(message);
     }
 
     public Channel(String channelName) {
