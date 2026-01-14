@@ -102,6 +102,20 @@ public class JavaApplication {
             System.out.println(user);
         }
 
+        System.out.println("\n=== 채널 유저 조회 ===");
+        System.out.println(channel1.getName());
+        channelService.getMembers(channel1.getId())
+                .forEach(System.out::println);
+
+        System.out.println("\n" + channel1.getName() + " - " + user2.getNickname() + " 참가");
+        channelService.joinChannel(channel1.getId(), user2.getId());
+
+        System.out.println("\n=== 채널 유저 조회 ===");
+        System.out.println(channel1.getName());
+        channelService.getMembers(channel1.getId())
+                .forEach(System.out::println);
+
+
         // Message 테스트
         System.out.println("\n===============================");
         System.out.println("\n=== 메시지 테스트 (채널별) ===");

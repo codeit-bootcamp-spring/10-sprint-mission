@@ -27,9 +27,8 @@ public class JCFChannelService implements ChannelService {
         // 채널 생성
         Channel channel = new Channel(name, owner);
 
-        // 채널 추가 및 채널 참가
+        // 채널 추가
         data.put(channel.getId(), channel);
-        joinChannel(channel.getId(), owner.getId());
         return channel;
     }
 
@@ -76,6 +75,7 @@ public class JCFChannelService implements ChannelService {
         User user = userService.findUserById(userId);
         // 채널 가입
         user.joinChannel(channel);
+        channel.addUser(user);
     }
 
     @Override
@@ -86,5 +86,14 @@ public class JCFChannelService implements ChannelService {
         User user = userService.findUserById(userId);
         // 채널 탈퇴
         user.leaveChannel(channel);
+        channel.removeUser(user);
+    }
+
+    @Override
+    public List<User> getMembers(UUID channelId) {
+        // 유저 목록을 조회하려는 채널이 실제로 존재하는지 검색 및 검증
+        Channel channel = findChannelById(channelId);
+        // 채널에 속한 유저 목록 반환
+        return channel.getUsers();
     }
 }
