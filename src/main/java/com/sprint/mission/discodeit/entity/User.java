@@ -18,6 +18,9 @@ public class User extends BaseEntity {
 
     public User(String username, String nickname, String email, String phoneNumber) {
         super();
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("사용자명은 필수입니다.");
+        }
         validateContact(email, phoneNumber);
         this.username = username;
         this.nickname = (nickname == null || nickname.isBlank()) ? username : nickname;
@@ -49,6 +52,9 @@ public class User extends BaseEntity {
 
     // Update
     public void updateUsername(String username) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("사용자명은 필수입니다.");
+        }
         this.username = username;
         updateTimestamp();
     }
@@ -57,10 +63,12 @@ public class User extends BaseEntity {
         updateTimestamp();
     }
     public void updateEmail(String email) {
+        validateContact(email, this.phoneNumber);
         this.email = email;
         updateTimestamp();
     }
     public void updatePhoneNumber(String phoneNumber) {
+        validateContact(this.email, phoneNumber);
         this.phoneNumber = phoneNumber;
         updateTimestamp();
     }
@@ -77,7 +85,7 @@ public class User extends BaseEntity {
 
     // validation
     private void validateContact(String email, String phoneNumber) {
-        if (email == null && phoneNumber == null) {
+        if ((email == null || email.isBlank()) && (phoneNumber == null || phoneNumber.isBlank())) {
             throw new IllegalArgumentException("이메일이나 전화번호 둘 중 적어도 하나라도 있어야 함.");
         }
     }
@@ -85,9 +93,11 @@ public class User extends BaseEntity {
     // Channel Control
     public void  joinChannel(Channel channel) {
         this.channels.add(channel);
+        channel.addUser(this);
     }
     public void  leaveChannel(Channel channel) {
         this.channels.remove(channel);
+        channel.removeUser(this);
     }
     public Set<Channel> getChannels() {
         return new HashSet<>(this.channels);

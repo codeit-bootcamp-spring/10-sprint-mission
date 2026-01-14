@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -27,16 +26,16 @@ public class JCFUserService implements UserService {
     // Create
     @Override
     public User createUser(String username, String nickname, String email, String phoneNumber) {
-        if (username == null || username.isBlank()) {
-            throw new IllegalArgumentException("사용자명은 필수입니다.");
-        }
+        // 사용자 명이 null이거나 비었는지는 엔티티에서 검증함
 
         if (findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + username);
         }
 
-        User newUser = new User(username, nickname, email, phoneNumber);
+        checkDuplicatePhoneNumber(phoneNumber, null);
+        checkDuplicateEmail(email, null);
 
+        User newUser = new User(username, nickname, email, phoneNumber);
         userMap.put(newUser.getId(), newUser);
 
         return newUser;
@@ -57,6 +56,7 @@ public class JCFUserService implements UserService {
                 .findFirst();
     }
 
+
     @Override
     public List<User> findAll() {
         return new ArrayList<>(userMap.values());
@@ -66,23 +66,28 @@ public class JCFUserService implements UserService {
     @Override
     public void updateUsername(UUID id, String newUsername) {
         User user = getUserOrThrow(id);
+        if (findByUsername(newUsername).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + newUsername);
+        }
         user.updateUsername(newUsername);
     }
     @Override
     public void updateNickname(UUID id, String newNickname) {
-        User user = getUserOrThrow(id); // 존재 여부 확인
-        user.updateNickname(newNickname); // 엔티티에게 로직 위임
+        User user = getUserOrThrow(id);
+        user.updateNickname(newNickname);
     }
 
     @Override
     public void updateEmail(UUID id, String email) {
         User user = getUserOrThrow(id);
-        user.updateEmail(email); // 엔티티의 방어 로직(폰 번호 확인 등)이 자동 수행됨
+        checkDuplicateEmail(email, id);
+        user.updateEmail(email);
     }
 
     @Override
     public void updatePhoneNumber(UUID id, String phoneNumber) {
         User user = getUserOrThrow(id);
+        checkDuplicatePhoneNumber(phoneNumber, id);
         user.updatePhoneNumber(phoneNumber);
     }
 
@@ -118,5 +123,33 @@ public class JCFUserService implements UserService {
     private User getUserOrThrow(UUID userId) {
         return findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. ID: " + userId));
+    }
+
+    private void checkDuplicateEmail(String email, UUID excludeUserId){
+        if (email == null) return;
+
+        boolean exists = userMap.values().stream()
+                .filter(u -> !u.getId().equals(excludeUserId)) // 본인 제외
+                .anyMatch(u -> u.getEmail()
+                        .map(e -> e.equals(email))
+                        .orElse(false));
+
+        if (exists) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일:" + email);
+        }
+    }
+
+    private void checkDuplicatePhoneNumber(String phoneNumber, UUID excludeUserId){
+        if (phoneNumber == null) return;
+
+        boolean exists = userMap.values().stream()
+                .filter(u -> !u.getId().equals(excludeUserId)) // 본인 제외
+                .anyMatch(u -> u.getPhoneNumber()
+                        .map(e -> e.equals(phoneNumber))
+                        .orElse(false));
+
+        if (exists) {
+            throw new IllegalArgumentException("이미 사용 중인 전화번호:" + phoneNumber);
+        }
     }
 }
