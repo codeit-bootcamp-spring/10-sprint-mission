@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.MessageType;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.util.ValidationUtil;
 
@@ -17,6 +18,9 @@ import static com.sprint.mission.discodeit.Main.*;
 public class JCFMessageService implements MessageService {
     public static final ArrayList<Message> messages = new ArrayList<>();      // 한 채널에서 발생한 메시지 리스트
     private final ValidationUtil validationUtil = new ValidationUtil();
+    private final JCFUserService userService = new JCFUserService();
+    private final ChannelService channelService = new JCFChannelService();
+
 
     // 메시지 생성
     @Override
