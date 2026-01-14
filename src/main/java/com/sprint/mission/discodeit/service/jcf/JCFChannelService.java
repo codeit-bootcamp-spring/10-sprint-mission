@@ -4,7 +4,8 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.util.ValidationUtil;
+
+import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -12,7 +13,6 @@ import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
     public static final ArrayList<Channel> channels = new ArrayList<>();        // 사용자 한 명당 가지는 채널
-    private final ValidationUtil validationUtil = new ValidationUtil();
     private final JCFUserService userService = new JCFUserService();
 
     // 채널 생성
@@ -50,8 +50,8 @@ public class JCFChannelService implements ChannelService {
 
         Optional.ofNullable(newChannelName)
                 .ifPresent(channelName-> {
-                    validationUtil.validateString(channelName, "[채널 이름 변경 실패] 올바른 채널 이름 형식이 아닙니다.");
-                    validationUtil.validateDuplicateValue(targetChannel.getChannelName(), channelName, "[채널 이름 변경 실패] 현재 채널 이름과 동일합니다.");
+                    validateString(channelName, "[채널 이름 변경 실패] 올바른 채널 이름 형식이 아닙니다.");
+                    validateDuplicateValue(targetChannel.getChannelName(), channelName, "[채널 이름 변경 실패] 현재 채널 이름과 동일합니다.");
                 });
 
         targetChannel.updateChannelName(newChannelName);

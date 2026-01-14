@@ -7,11 +7,11 @@ import java.util.UUID;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatusType;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.util.ValidationUtil;
+
+import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
 public class JCFUserService implements UserService {
-    public static final ArrayList<User> users = new ArrayList<>();         // 전체 사용자 리스트
-    private final ValidationUtil validationUtil = new ValidationUtil();
+    public static final ArrayList<User> users = new ArrayList<>();         // 전체 사용
 
     // 사용자 생성
     @Override
@@ -47,15 +47,15 @@ public class JCFUserService implements UserService {
 
         Optional.ofNullable(newPassword)
                 .ifPresent(password -> {
-                            validationUtil.validateString(password, "[비밀 번호 변경 실패] 올바른 비밀 번호 형식이 아닙니다.");
-                            validationUtil.validateDuplicateValue(targetUser.getPassword(), newPassword, "[비밀 번호 변경 실패] 현재 비밀 번호와 일치합니다.");
+                            validateString(password, "[비밀 번호 변경 실패] 올바른 비밀 번호 형식이 아닙니다.");
+                            validateDuplicateValue(targetUser.getPassword(), newPassword, "[비밀 번호 변경 실패] 현재 비밀 번호와 일치합니다.");
                             targetUser.updatePassword(password);
                         });
 
         Optional.ofNullable(newNickname)
                 .ifPresent(nickname -> {
-                            validationUtil.validateString(nickname, "[닉네임 변경 실패] 올바른 닉네임 형식이 아닙니다.");
-                            validationUtil.validateDuplicateValue(targetUser.getNickname(), newNickname, "[닉네임 변경 실패] 현재 닉네임과 일치합니다.");
+                            validateString(nickname, "[닉네임 변경 실패] 올바른 닉네임 형식이 아닙니다.");
+                            validateDuplicateValue(targetUser.getNickname(), newNickname, "[닉네임 변경 실패] 현재 닉네임과 일치합니다.");
                             targetUser.updateNickname(nickname);
                 });
 

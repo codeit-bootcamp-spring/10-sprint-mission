@@ -6,18 +6,15 @@ import com.sprint.mission.discodeit.entity.MessageType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.util.ValidationUtil;
 
-import javax.xml.validation.Validator;
+import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
+
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.sprint.mission.discodeit.Main.*;
-
 public class JCFMessageService implements MessageService {
-    public static final ArrayList<Message> messages = new ArrayList<>();      // 한 채널에서 발생한 메시지 리스트
-    private final ValidationUtil validationUtil = new ValidationUtil();
+    public static final ArrayList<Message> messages = new ArrayList<>();      // 한 채널에서
     private final JCFUserService userService = new JCFUserService();
     private final ChannelService channelService = new JCFChannelService();
 
@@ -58,8 +55,8 @@ public class JCFMessageService implements MessageService {
 
         Optional.ofNullable(newMessage)
                 .ifPresent(message -> {
-                    validationUtil.validateString(message, "[메시지 변경 실패] 올바른 메시지 형식이 아닙니다.");
-                    validationUtil.validateDuplicateValue(targetMessage.getMessage(), message, "[메시지 변경 실패] 이전 메시지와 동일합니다.");
+                    validateString(message, "[메시지 변경 실패] 올바른 메시지 형식이 아닙니다.");
+                    validateDuplicateValue(targetMessage.getMessage(), message, "[메시지 변경 실패] 이전 메시지와 동일합니다.");
                 });
 
         targetMessage.updateMessage(newMessage);
