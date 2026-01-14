@@ -24,9 +24,6 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message createMessage(String content, UUID channelId, UUID userId) {
         Validators.validationMessage(content);
-        Validators.requireNonNull(channelId, "channelId는 null이 될 수 없습니다.");
-        Validators.requireNonNull(userId, "userId는 null이 될 수 없습니다.");
-
         Channel channel = channelService.validateExistenceChannel(channelId);
         User user = userService.validateExistenceUser(userId);
         Message message = new Message(content, channel, user);
@@ -53,16 +50,16 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message updateMessage(UUID id, String content) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        Validators.validationMessage(content);
         Message message = validateExistenceMessage(id);
-        message.updateContent(content);
+        Optional.ofNullable(content).ifPresent(cont -> {
+            Validators.requireNotBlank(cont, "content");
+            message.updateContent(content);
+        });
 
         return message;
     }
 
     public void deleteMessage(UUID id) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         Message message = validateExistenceMessage(id);
         list.remove(message);
     }

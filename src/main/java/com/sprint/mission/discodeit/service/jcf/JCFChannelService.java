@@ -42,19 +42,25 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel updateChannel(UUID id, ChannelType type, String channelName, String channelDescription) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        Validators.validationChannel(type, channelName, channelDescription);
         Channel channel = validateExistenceChannel(id);
-        channel.updateChannelType(type);
-        channel.updateChannelName(channelName);
-        channel.updateChannelDescription(channelDescription);
+        Optional.ofNullable(type).ifPresent(t -> {
+            Validators.requireNonNull(t, "type");
+            channel.updateChannelType(t);
+        });
+        Optional.ofNullable(channelName).ifPresent(name -> {
+            Validators.requireNotBlank(name, "type");
+            channel.updateChannelName(name);
+        });
+        Optional.ofNullable(channelDescription).ifPresent(des -> {
+            Validators.requireNotBlank(des, "channelDescription");
+            channel.updateChannelDescription(des);
+        });
 
         return channel;
     }
 
     @Override
     public void deleteChannel(UUID id) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         Channel channel = validateExistenceChannel(id);
         list.remove(channel);
     }

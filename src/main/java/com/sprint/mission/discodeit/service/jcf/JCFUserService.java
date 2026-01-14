@@ -16,8 +16,8 @@ public class JCFUserService implements UserService {
 
     @Override
     public User createUser(String userName, String userEmail, String userPassword) {
-        validateDuplicationEmail(userEmail);
         Validators.validationUser(userName, userEmail, userPassword);
+        validateDuplicationEmail(userEmail);
         User user = new User(userName, userEmail, userPassword);
         list.add(user);
         return user;
@@ -41,13 +41,20 @@ public class JCFUserService implements UserService {
 
     @Override
     public User updateUser(UUID id, String userName, String userEmail, String userPassword) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         User user = validateExistenceUser(id);
-        validateDuplicationEmail(userEmail);
-        Validators.validationUser(userName, userEmail, userPassword);
-        user.updateUserName(userName);
-        user.updateUserEmail(userEmail);
-        user.updateUserPassword(userPassword);
+        Optional.ofNullable(userName).ifPresent(name -> {
+            Validators.requireNotBlank(name, "userName");
+            user.updateUserName(name);
+        });
+        Optional.ofNullable(userEmail).ifPresent(email -> {
+            Validators.requireNotBlank(email, "userEmail");
+            validateDuplicationEmail(email);
+            user.updateUserEmail(email);
+        });
+        Optional.ofNullable(userPassword).ifPresent(password -> {
+            Validators.requireNotBlank(password, "userPassword");
+            user.updateUserPassword(password);
+        });
 
         return user;
     }
@@ -65,7 +72,6 @@ public class JCFUserService implements UserService {
 
     @Override
     public void deleteUser(UUID id) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         User user = validateExistenceUser(id);
         list.remove(user);
     }

@@ -28,7 +28,7 @@ public class Validators {
     }
 
     public static void validationChannel(ChannelType type, String channelName, String channelDescription) {
-        requireNonNull(type, "type은 null이 될 수 없습니다.");
+        requireNonNull(type, "type");
         requireNotBlank(channelName, "channelName");
         requireNotBlank(channelDescription, "channelDescription");
     }

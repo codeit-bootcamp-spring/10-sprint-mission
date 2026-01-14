@@ -17,14 +17,14 @@ public class JavaApplication {
         UserService userService = new JCFUserService();
         User user = userService.createUser("JEON", "ckdgus13@naver.com", "qweasd123");
         User user2 = userService.createUser("Hell", "ckdgus12@naver.com", "qweasd153");
-        System.out.println(user.getId());
-        User userRead = userService.readUser(user.getId());
-        System.out.println(userRead);
-        System.out.println(user.getUserStatus());
-        System.out.println(userRead.getId());
-        System.out.println(userService.readAllUser());
-        System.out.println(user.getUserStatus() + "  " + user.getId());
-        User updateUser = userService.updateUser(user.getId(), "Ally", "ckdgus177@gmail.com", "asdfqwer");
+//        System.out.println(user.getId());
+//        User userRead = userService.readUser(user.getId());
+//        System.out.println(userRead);
+//        System.out.println(user.getUserStatus());
+//        System.out.println(userRead.getId());
+//        System.out.println(userService.readAllUser());
+//        System.out.println(user.getUserStatus() + "  " + user.getId());
+        User updateUser = userService.updateUser(user.getId(), "Ally", null, null);
         System.out.println(updateUser.getUserStatus());
 
 
