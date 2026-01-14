@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 
 import java.util.List;
-import java.util.UUID;
 
 public class JavaApplication {
 
@@ -24,11 +23,8 @@ public class JavaApplication {
 
         // 2. User 등록
         System.out.println("=== User 등록 ===");
-        User user1 = new User("user1", "user1@example.com");
-        User user2 = new User("user2", "user2@example.com");
-
-        userService.createUser("김오렌지","orange@gmail.com");
-        userService.createUser("김사과","apple@naver.com");
+        User user1 = userService.createUser("김오렌지","orange@gmail.com");
+        User user2 = userService.createUser("김사과","apple@naver.com");
 
         // 단건 조회
         System.out.println("단건 조회 (user1): " + userService.findById(user1.getId()));
@@ -42,11 +38,9 @@ public class JavaApplication {
 
         //3. Channel 등록
         System.out.println("\n=== Channel 등록 ===");
-        Channel channel1 = new Channel("general", "일반 채팅 채널");
-        Channel channel2 = new Channel("voice-room", "음성 채널 설명");
+        Channel channel1 = channelService.createChannel("channel1","일반 채팅 채널입니다");
+        Channel channel2 = channelService.createChannel("channel2","일반 음성 채널입니다.");
 
-        channelService.createChannel("channel1","일반 채팅 채널입니다");
-        channelService.createChannel("channel2","일반 음성 채널입니다.");
 
         // 전체 Channel 조회
         System.out.println("전체 Channel 조회:");
@@ -56,11 +50,11 @@ public class JavaApplication {
 
         //4. Message 등록
         System.out.println("\n=== Message 등록 ===");
-        Message message1 = new Message(user1, channel1, "안녕하세요! 두번째 메시지입니다.");
-        Message message2 = new Message(user2, channel1, "반가워요!");
+        Message message1 = messageService.createMessage(user1,channel1,"안녕하세요? 첫번째 메시지입니다");
+        Message message2 = messageService.createMessage(user2,channel2,"또 보네요? 두번째 메시지입니다");
 
-        messageService.createMessage(user1,channel1,"message1");
-        messageService.createMessage(user2,channel2,"message2");
+
+
 
         // 전체 Message 조회
         System.out.println("전체 Message 조회:");
@@ -79,7 +73,7 @@ public class JavaApplication {
         System.out.println("수정된 User 조회: " + userService.findById(user1.getId()).getUsername());
 
         // Channel 수정
-        channelService.update(channel1.getId(), "general-renamed", "수정된 채널 설명");
+        channelService.setDescription(channel1.getId(), "수정된 채널 설명");
         Channel updatedChannel = channelService.findById(channel1.getId());
         System.out.println("수정된 Channel 조회: " + updatedChannel.getName() + ", " + updatedChannel.getDescription());
 

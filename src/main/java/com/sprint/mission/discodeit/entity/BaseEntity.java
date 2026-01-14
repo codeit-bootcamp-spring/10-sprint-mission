@@ -25,7 +25,7 @@ public class BaseEntity {
         return updatedAt;
     }
 
-    protected void touch() { // 수정 시점 갱신용 헬퍼
+    public void touch() { // 수정 시점 갱신용 헬퍼
         this.updatedAt = System.currentTimeMillis();
     }
 

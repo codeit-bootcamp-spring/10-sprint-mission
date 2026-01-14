@@ -5,7 +5,6 @@ import java.util.UUID;
 public class Channel extends BaseEntity{
 
     private String name;
-    private String email;
     private String description;
 
     public Channel(String name, String description) {
@@ -17,9 +16,12 @@ public class Channel extends BaseEntity{
         this.description = description;
     }
 
-
-    public void update(String name,String description) {
+    public void setName(String name) {
         this.name = name;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void setDescription(String description) {
         this.description = description;
         this.updatedAt = System.currentTimeMillis();
     }
@@ -44,6 +46,5 @@ public class Channel extends BaseEntity{
         return description;
     }
 
-    // getter들도 추가
 }
 

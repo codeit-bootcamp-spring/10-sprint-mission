@@ -16,7 +16,7 @@ public class User extends BaseEntity {
         this.email = email;
     }
 
-    public void update(String username, String email) {
+    public void update(UUID id,String username, String email) {
         this.username = username;
         this.id = UUID.randomUUID();
         this.email = email;

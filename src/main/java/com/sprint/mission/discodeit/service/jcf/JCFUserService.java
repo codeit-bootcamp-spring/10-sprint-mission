@@ -41,7 +41,7 @@ public class JCFUserService implements UserService {
     public User update(UUID id, String username, String email) {
         for (User user : data) {
             if (user.getId().equals(id)) {
-                user.update(username, email);
+                user.update(id,username, email);
                 return user;
             }
         }
