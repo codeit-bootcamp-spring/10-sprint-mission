@@ -95,9 +95,7 @@ public class JCFChannelService implements ChannelService {
     }
 
     private void validateChannelExist(String channelName) {
-        Optional<Channel> target = data.stream()
-                .filter(c -> c.getChannelName().equals(channelName))
-                .findFirst();
-        if(target.isPresent()) throw new IllegalStateException("이미 존재하는 채널 이름입니다.");
+        if(data.stream().anyMatch(c -> c.getChannelName().equals(channelName)))
+            throw new IllegalStateException("이미 존재하는 채널 이름입니다.");
     }
 }

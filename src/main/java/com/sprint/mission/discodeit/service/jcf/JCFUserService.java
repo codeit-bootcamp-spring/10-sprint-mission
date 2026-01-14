@@ -75,9 +75,7 @@ public class JCFUserService implements UserService {
     }
 
     private void validateUserExist(String userName) {
-        Optional<User> target = data.stream()
-                .filter(u -> u.getUserName().equals(userName))
-                .findFirst();
-        if(target.isPresent()) throw new IllegalStateException("이미 존재하는 사용자 이름입니다.");
+        if(data.stream().anyMatch(u -> u.getUserName().equals(userName)))
+            throw new IllegalStateException("이미 존재하는 사용자 이름입니다.");
     }
 }
