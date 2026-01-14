@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class User extends Entity {
     private final String email;
@@ -36,7 +35,7 @@ public class User extends Entity {
         return this;
     }
 
-    public void join(Channel channel) {
+    public void joinChannel(Channel channel) {
         // 가입 여부 확인, 이미 가입한 채널이라면 예외 발생
         if (channels.contains(channel)) {
             throw new RuntimeException("이미 가입한 채널입니다.");
@@ -49,9 +48,14 @@ public class User extends Entity {
         super.update();
     }
 
-    public void leave(UUID channelId) {
-        // 채널이 존재하면 제거, 제거된 경우에만 수정 시각 갱신
-        boolean removed = channels.removeIf(ch -> ch.getId().equals(channelId));
+    public void leaveChannel(Channel channel) {
+        // 채널 null 체크
+        if (channel == null) {
+            throw new RuntimeException("채널이 존재하지 않습니다.");
+        }
+
+        // 가입한 채널인 경우에만 제거 및 수정 시각 갱신
+        boolean removed = channels.remove(channel);
         if (removed) {
             super.update();
         }
@@ -68,5 +72,4 @@ public class User extends Entity {
                         .map(ch -> "[id=" + ch.getId().toString().substring(0,5) + ", name=" + ch.getName() + "]").toList()
         );
     }
-
 }

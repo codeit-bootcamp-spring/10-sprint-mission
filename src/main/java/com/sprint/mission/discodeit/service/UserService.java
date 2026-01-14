@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 public interface UserService {
@@ -14,7 +13,5 @@ public interface UserService {
     User updateUserNickname(UUID userId, String nickname);
     void deleteUser(UUID userId);
     List<Channel> getJoinedChannels(UUID userId);
-    void joinChannel(Channel channel, UUID userId);
-    void leaveChannel(Channel channel, UUID userId);
-    void removeChannelFromJoinedUsers(UUID channelId);
+    void removeChannelFromJoinedUsers(Channel channel);
 }

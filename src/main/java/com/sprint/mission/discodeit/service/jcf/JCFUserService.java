@@ -68,36 +68,10 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void joinChannel(Channel channel, UUID userId) {
-        // ChannelService에서 검증을 마친 Channel을 기대하지만 null 체크
-        if (channel == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
-
-        // 실제로 존재하는 유저인지 검색 및 검증
-        User user = findUserById(userId);
-        // 채널 가입
-        user.join(channel);
-    }
-
-    @Override
-    public void leaveChannel(Channel channel, UUID userId) {
-        // ChannelService에서 검증을 마친 Channel을 기대하지만 null 체크
-        if (channel == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
-
-        // 실제로 존재하는 유저인지 검색 및 검증
-        User user = findUserById(userId);
-        // 채널 탈퇴
-        user.leave(channel.getId());
-    }
-
-    @Override
-    public void removeChannelFromJoinedUsers(UUID channelId) {
+    public void removeChannelFromJoinedUsers(Channel channel) {
         // 채널 삭제 시, 해당 채널에 가입된 모든 유저를 탈퇴 처리
         for (User user : data.values()) {
-            user.leave(channelId);
+            user.leaveChannel(channel);
         }
     }
 }
