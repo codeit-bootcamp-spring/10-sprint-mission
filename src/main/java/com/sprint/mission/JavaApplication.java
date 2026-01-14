@@ -56,22 +56,22 @@ public class JavaApplication {
         System.out.println("\n=== [3] ChannelService: JOIN / LEAVE (normal) ===");
 
         // ch1: user1~4 가입
-        channelService.joinChannel(user1, ch1.getId());
-        channelService.joinChannel(user2, ch1.getId());
-        channelService.joinChannel(user3, ch1.getId());
-        channelService.joinChannel(user4, ch1.getId());
+        channelService.joinChannel(user1.getId(), ch1.getId());
+        channelService.joinChannel(user2.getId(), ch1.getId());
+        channelService.joinChannel(user3.getId(), ch1.getId());
+        channelService.joinChannel(user4.getId(), ch1.getId());
 
         // 기타 채널 가입
-        channelService.joinChannel(user1, ch2.getId());
-        channelService.joinChannel(user2, ch2.getId());
-        channelService.joinChannel(user4, ch3.getId());
-        channelService.joinChannel(user4, ch4.getId());
+        channelService.joinChannel(user1.getId(), ch2.getId());
+        channelService.joinChannel(user2.getId(), ch2.getId());
+        channelService.joinChannel(user4.getId(), ch3.getId());
+        channelService.joinChannel(user4.getId(), ch4.getId());
 
         System.out.println("user4.channels(before leave) = " + user4.getChannels());
         System.out.println("ch1.members(before leave) = " + ch1.getMembersList());
 
         // user4가 ch1 탈퇴
-        channelService.leaveChannel(user4, ch1.getId());
+        channelService.leaveChannel(user4.getId(), ch1.getId());
         System.out.println("user4.channels(after leave) = " + user4.getChannels());
         System.out.println("ch1.members(after leave) = " + ch1.getMembersList());
 
@@ -164,13 +164,13 @@ public class JavaApplication {
         System.out.println("===Channel Member Exception Test===");
 
         try {
-            channelService.joinChannel(user1, id); // 없는 channelId
+            channelService.joinChannel(user1.getId(), id); // 없는 channelId
         } catch (IllegalArgumentException e) {
             System.out.println("addMember EX - channel " + e.getMessage());
         }
 
         try {
-            channelService.leaveChannel(user1, id); // 없는 channelId
+            channelService.leaveChannel(user1.getId(), id); // 없는 channelId
         } catch (IllegalArgumentException e) {
             System.out.println("removeMember EX - channel " + e.getMessage());
         }

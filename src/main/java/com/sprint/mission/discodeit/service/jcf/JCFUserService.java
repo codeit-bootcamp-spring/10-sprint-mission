@@ -37,11 +37,11 @@ public class JCFUserService implements UserService {
 
     // 단건 조회
     @Override
-    public User find(UUID id){
+    public User find(UUID userID){
         return userData.stream()
-                .filter(user -> user.getId().equals(id))
+                .filter(user -> user.getId().equals(userID))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
     }
 
     // 다건 조회
@@ -64,6 +64,7 @@ public class JCFUserService implements UserService {
         if (messageService == null) {
             throw new IllegalStateException("MessageService is not set in JCFUserService");
         }
+
         User user = find(userID);
 
         // User가 보낸 Message 삭제

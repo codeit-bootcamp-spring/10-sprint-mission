@@ -18,10 +18,13 @@ public class Factory {
         this.messageService = new JCFMessageService();
 
         // 각 서비스 주입 ?
+        userService.setMessageService(messageService);
+
+        channelService.setMessageService(messageService);
+        channelService.setUserService(userService);
+
         messageService.setChannelService(channelService);
         messageService.setUserService(userService);
-        userService.setMessageService(messageService);
-        channelService.setMessageService(messageService);
     }
 
     public UserService getUserService() {

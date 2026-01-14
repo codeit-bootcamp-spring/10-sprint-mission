@@ -16,6 +16,7 @@ public class JCFChannelService implements ChannelService {
     // 필드
     private final List<Channel> channelData;
     private MessageService messageService;
+    private UserService userService;
     // 생성자
     public JCFChannelService() {
         this.channelData = new ArrayList<>();
@@ -27,6 +28,10 @@ public class JCFChannelService implements ChannelService {
         this.messageService = messageService;
     }
 
+    @Override
+    public void setUserService(UserService userService){
+        this.userService = userService;
+    }
     //생성
     @Override
     public Channel create(String name) {
@@ -52,8 +57,8 @@ public class JCFChannelService implements ChannelService {
 
     // 수정
     @Override
-    public Channel updateName(UUID id, String name) {
-        Channel channel = find(id);
+    public Channel updateName(UUID channelID, String name) {
+        Channel channel = find(channelID);
         channel.updateName(name);
         return channel;
     }
@@ -81,8 +86,18 @@ public class JCFChannelService implements ChannelService {
 
     // channel에 user 가입
     @Override
-    public void joinChannel (User user, UUID channelID){
+    public void joinChannel (UUID userID, UUID channelID){
+        // Service 예외
+        if (userService == null) {
+            throw new IllegalStateException("UserService is not set. Call setUserService() before using create().");
+        }
+
         Channel channel = find(channelID);
+        User user = userService.find(userID);
+
+        if (channel.getMembersList().contains(user)) {
+            throw new IllegalArgumentException("User is already in this channel." + channelID);
+        }
 
         // channel에 user 추가
         channel.addMember(user);
@@ -92,8 +107,19 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void leaveChannel (User user, UUID channelID){
+    public void leaveChannel (UUID userID, UUID channelID){
+        // Service 예외
+        if (userService == null) {
+            throw new IllegalStateException("UserService is not set. Call setUserService() before using create().");
+        }
+        if (messageService == null) {
+            throw new IllegalStateException("MessageService is not set. Call setMessageService() before using create().");
+        }
         Channel channel = find(channelID);
+        User user = userService.find(userID);
+        if (!channel.getMembersList().contains(user)) {
+            throw new IllegalArgumentException("User is not in this channel." + channelID);
+        }
 
         // user에서 channel 삭제
         user.leaveChannel(channel);
@@ -104,13 +130,10 @@ public class JCFChannelService implements ChannelService {
         // user가 보낸 messageList 중 해당 channel에 관한 것 삭제해줘야 함.
         List<Message> messageList = new ArrayList<>(user.getMessageList());
 
-        // for 루프로 messageList에서 channel 과 일치하는 것을 delete
-        for(Message msg : messageList){
-            // 해당 channel에서 떠나는 user가 보낸 메시지 삭제
-            if (msg.getChannel().equals(channel)){
-                messageService.deleteMessage(msg.getId()); // user, channel 입장에서도 msg 삭제해줌
-            }
-        }
+        // messageList에서 channel 과 일치하는 것을 delete
+        messageList.stream()
+                .filter(msg -> msg.getChannel().equals(channel))
+                .forEach(msg -> messageService.deleteMessage(msg.getId()));
 
     }
 
