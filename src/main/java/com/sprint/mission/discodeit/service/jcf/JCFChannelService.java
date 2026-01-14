@@ -10,6 +10,7 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class JCFChannelService implements ChannelService {
     public static final ArrayList<Channel> channels = new ArrayList<>();        // 사용자 한 명당 가지는 채널
@@ -41,6 +42,12 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 특정 유저가 참가한 채널 리스트 조회
+    public ArrayList<Channel> userChannels(UUID userId) {
+        return channels.stream()
+                .filter(channel -> channel.getMembers().stream()
+                        .anyMatch(user -> user.getId().equals(userId)))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
 
     // 특정 채널의 참가자 리스트 조회
 
