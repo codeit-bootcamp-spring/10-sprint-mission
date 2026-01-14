@@ -13,6 +13,7 @@ public class Channel extends BaseEntity {
 
     public Channel(String name, String description, User owner, boolean openType) {
         super();
+        validateChannelName(name);
         this.name = name;
         this.description = description;
         this.owner = owner;
@@ -29,6 +30,7 @@ public class Channel extends BaseEntity {
     public boolean isOpenType() { return openType;}
 
     public void setName(String name) {
+        validateChannelName(name);
         this.name = name;
         setUpdatedAt();
     }
@@ -68,6 +70,11 @@ public class Channel extends BaseEntity {
         }
     }
 
+    private void validateChannelName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("채널 이름이 null 또는 비어있음");
+        }
+    }
     @Override
     public String toString() {
         List<String> memberList = members.stream().map(m->m.getEmail()).toList();

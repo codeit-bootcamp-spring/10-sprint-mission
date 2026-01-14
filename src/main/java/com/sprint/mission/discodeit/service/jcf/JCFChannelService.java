@@ -30,6 +30,8 @@ public class JCFChannelService implements ChannelService {
         checkChannelOwner(channel, ownerId);
         if(!name.equals(channel.getName())){
             validateChannelName(name);
+        }else{
+            throw new IllegalArgumentException("동일한 채널 이름");
         }
         channel.setName(name);
         return channel;
