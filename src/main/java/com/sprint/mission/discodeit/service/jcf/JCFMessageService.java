@@ -20,11 +20,15 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message createMessage(Channel channel, User author, String content) {
-        validateMessage(channel, author, content);
-        channelService.enterChannel(author.getId(), channel.getId());
+    public Message createMessage(UUID channelId, UUID userId, String content) {
+        Channel channel = channelService.getChannel(channelId);
+        User author = userService.getUser(userId);
+
+        validateMessageContent(content);
+
         Message message = new Message(channel, author, content);
         data.put(message.getId(), message);
+        channelService.enterChannel(author.getId(), channel.getId());
         return message;
     }
 
@@ -60,10 +64,10 @@ public class JCFMessageService implements MessageService {
         data.remove(id);
     }
 
-    private void validateMessage(Channel channel, User author, String content) {
-        channelService.validateChannel(channel);
-        userService.validateUser(author);
-        if(content == null || content.isBlank()) throw new IllegalArgumentException("내용을 다시 입력해주세요");
+    private void validateMessageContent(String content) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("내용을 다시 입력해주세요");
+        }
     }
 
     private void validateMessageId(UUID id){

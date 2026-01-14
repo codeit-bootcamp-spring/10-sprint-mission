@@ -26,11 +26,11 @@ public class JavaApplication {
         Channel channel1 = channelService.createChannel("채팅","chat");
         Channel channel2 = channelService.createChannel("음성","voice");
         Channel channel3 = channelService.createChannel("잡담", "chat");
-        Message message1 = messageService.createMessage(channel1, user1, "안녕하세요");
-        Message message2 = messageService.createMessage(channel2, user2, "반갑습니다");
-        messageService.createMessage(channel1, user2, "교이루~");
-        messageService.createMessage(channel2, user1, "Hello~");
-        messageService.createMessage(channel3, user2, "반갑소");
+        Message message1 = messageService.createMessage(channel1.getId(), user1.getId(), "안녕하세요");
+        Message message2 = messageService.createMessage(channel2.getId(), user2.getId(), "반갑습니다");
+        messageService.createMessage(channel1.getId(), user2.getId(), "교이루~");
+        messageService.createMessage(channel2.getId(), user1.getId(), "Hello~");
+        messageService.createMessage(channel3.getId(), user2.getId(), "반갑소");
 
         System.out.println("데이터 조회(단건)");
         System.out.println(userService.getUser(user1.getId()));
@@ -91,7 +91,7 @@ public class JavaApplication {
             System.out.print("[테스트 3] 저장되지 않은 유저 객체로 메시지 생성: ");
             Channel channel = channelService.createChannel("테스트채널", "chat");
             User ghostUser = new User("유령", "ghost@test.com");
-            messageService.createMessage(channel, ghostUser, "안녕");
+            messageService.createMessage(channel.getId(), ghostUser.getId(), "안녕");
         } catch (IllegalArgumentException e) {
             System.out.println("성공 (" + e.getMessage() + ")");
         }
@@ -100,7 +100,7 @@ public class JavaApplication {
             System.out.print("[테스트 4] 빈 메시지 내용으로 생성: ");
             User user = userService.createUser("테스터", "tester@test.com");
             Channel channel = channelService.getAllChannels().get(0);
-            messageService.createMessage(channel, user, "  ");
+            messageService.createMessage(channel.getId(), user.getId(), "  ");
         } catch (IllegalArgumentException e) {
             System.out.println("성공 (" + e.getMessage() + ")");
         }

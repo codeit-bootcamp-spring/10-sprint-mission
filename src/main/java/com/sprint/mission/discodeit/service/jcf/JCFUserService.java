@@ -13,8 +13,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User createUser(String name, String email) {
-        if (name == null || name.isBlank()) throw new IllegalArgumentException("이름은 필수입니다.");
-        if (email == null || email.isBlank()) throw new IllegalArgumentException("이메일은 필수입니다.");
+        validateUserInput(name, email);
         User user = new User(name, email);
         data.put(user.getId(), user);
         return user;
@@ -47,6 +46,10 @@ public class JCFUserService implements UserService {
         data.remove(id);
     }
 
+    public void validateUserInput(String name, String email){
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("이름은 필수입니다.");
+        if (email == null || email.isBlank()) throw new IllegalArgumentException("이메일은 필수입니다.");
+    }
     public void validateUser(User user) {
         if (user == null || user.getId() == null) {
             throw new IllegalArgumentException("유저 정보가 없습니다.");

@@ -28,4 +28,17 @@ public class User extends BaseEntity{
         return "유저[이름: " + name +
                 ", 이메일: " + email + "]";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return java.util.Objects.equals(getId(), user.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(getId());
+    }
 }

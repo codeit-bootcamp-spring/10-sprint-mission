@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -17,8 +18,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel createChannel(String name, String type) {
-        if (name == null || name.isBlank()) throw new IllegalArgumentException("채널 이름은 필수입니다.");
-        if (type == null || type.isBlank()) throw new IllegalArgumentException("채널 타입은 필수입니다.");
+        validateChannelInput(name, type);
         Channel channel = new Channel(name, type);
         data.put(channel.getId(), channel);
         return channel;
@@ -32,7 +32,8 @@ public class JCFChannelService implements ChannelService {
 
     public List<Channel> getChannelsByUserId(UUID userId) {
         return data.values().stream()
-                .filter(c -> c.getMemberIds().contains(userId))
+                .filter(c -> c.getUsers().stream()
+                        .anyMatch(user -> user.getId().equals(userId)))
                 .toList();
     }
     @Override
@@ -61,14 +62,23 @@ public class JCFChannelService implements ChannelService {
 
     public void enterChannel(UUID userId, UUID channelId) {
         validateChannelId(channelId);
-        userService.getUser(userId);
-        data.get(channelId).addMember(userId);
+        User user = userService.getUser(userId);
+        Channel channel = data.get(channelId);
+        if(channel.getUsers().contains(user)) throw new IllegalArgumentException("이미 해당 채널에 참가 중입니다.");
+        channel.addMember(user);
     }
 
     public void leaveChannel(UUID userId, UUID channelId) {
         validateChannelId(channelId);
-        userService.getUser(userId);
-        data.get(channelId).removeMember(userId);
+        User user = userService.getUser(userId);
+        Channel channel = data.get(channelId);
+        if(!channel.getUsers().contains(user)) throw new IllegalArgumentException("참가하고 있지 않은 채널입니다.");
+        channel.removeMember(user);
+    }
+
+    public void validateChannelInput(String name, String type){
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("채널 이름은 필수입니다.");
+        if (type == null || type.isBlank()) throw new IllegalArgumentException("채널 타입은 필수입니다.");
     }
 
     public void validateChannel(Channel channel) {
