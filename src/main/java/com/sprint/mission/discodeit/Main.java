@@ -111,7 +111,7 @@ public class Main {
         // 생성 테스트
         if (user3 != null) {
             try {
-                channel1 = channelService.createChannel("Codeit", user3, ChannelType.CHAT);
+                channel1 = channelService.createChannel("Codeit", user3.getId(), ChannelType.CHAT);
             } catch (Exception e){
                 System.err.println(e.getMessage());
             }
@@ -119,7 +119,7 @@ public class Main {
 
         if (user3 != null) {
             try {
-                channel2 = channelService.createChannel("Book Club", user3, ChannelType.VOICE);
+                channel2 = channelService.createChannel("Book Club", user3.getId(), ChannelType.VOICE);
             } catch (Exception e){
                 System.err.println(e.getMessage());
             }
@@ -127,7 +127,7 @@ public class Main {
 
         // if (user1 != null) {     // 존재하지 않는 사용자
             try {
-                channel3 = channelService.createChannel("Running Club", user1, ChannelType.CHAT);
+                channel3 = channelService.createChannel("Running Club", user1.getId(), ChannelType.CHAT);
             } catch (Exception e){
                 System.err.println(e.getMessage());
             }
@@ -212,7 +212,7 @@ public class Main {
         // 생성
         if (user3 != null && channel2 != null) {
             try {
-                message1 = messageService.createMessage("안녕하세요", user3, channel2, MessageType.CHAT);
+                message1 = messageService.createMessage("안녕하세요", user3.getId(), channel2.getId(), MessageType.CHAT);
             } catch (Exception e){
                 System.err.println(e.getMessage());
             }
@@ -220,7 +220,7 @@ public class Main {
 
         if (user3 != null && channel2 != null) {
             try {
-                message2 = messageService.createMessage("안녕 못하네요.", user3, channel2, MessageType.CHAT);
+                message2 = messageService.createMessage("안녕 못하네요.", user3.getId(), channel2.getId(), MessageType.CHAT);
             } catch (Exception e){
                 System.err.println(e.getMessage());
             }
@@ -228,7 +228,7 @@ public class Main {
 
         // if (user3 != null && channel2 != null) {     // 존재하지 않는 사용자
             try {
-                message3 = messageService.createMessage("저는 안녕해요", user1, channel2, MessageType.CHAT);
+                message3 = messageService.createMessage("저는 안녕해요", user1.getId(), channel2.getId(), MessageType.CHAT);
             } catch (Exception e){
                 System.err.println(e.getMessage());
             }
