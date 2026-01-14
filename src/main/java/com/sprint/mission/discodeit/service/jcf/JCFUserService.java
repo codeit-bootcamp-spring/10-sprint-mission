@@ -49,7 +49,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public void delete(UUID id) {
-        data.removeIf(user -> user.getId().equals(id));
+        User user = read(id);
+        data.remove(user);
     }
-
 }

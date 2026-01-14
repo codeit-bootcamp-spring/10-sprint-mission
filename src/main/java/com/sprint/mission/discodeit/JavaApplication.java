@@ -131,7 +131,7 @@ public class JavaApplication {
         List<String> userNames = userList.stream()
                 .map(User::getName)
                 .toList();
-        System.out.println("1-1. 채널 참가자 목록 조회");
+        System.out.println("1. 채널 참가자 목록 조회");
         System.out.println(channel1.getName() + "의 참가자 목록: " + userNames);
         System.out.println();
 
@@ -141,7 +141,7 @@ public class JavaApplication {
         List<String> chnlNames = channelList.stream()
                 .map(Channel::getName)
                 .toList();
-        System.out.println("1-2. 유저의 채널 목록 조회");
+        System.out.println("2. 유저의 채널 목록 조회");
         System.out.println(user1.getName() + "의 채녈 목록: " + chnlNames);
         System.out.println();
 
