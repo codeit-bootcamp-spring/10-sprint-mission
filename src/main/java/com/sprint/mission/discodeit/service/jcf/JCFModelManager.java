@@ -7,21 +7,17 @@ import com.sprint.mission.discodeit.service.ModelManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 
 public class JCFModelManager<T extends Entity<T>> implements ModelManager<T> {
     private final Model<T> model;
-    private final Function<String, T> factory;
 
-    public JCFModelManager(Model<T> model, Function<String, T> factory) {
+    public JCFModelManager(Model<T> model) {
         this.model = model;
-        this.factory = factory;
     }
 
     @Override
-    public void create(String value) {
-        T entity = factory.apply(value);
-        model.add(entity.getUuid(), entity);
+    public void create(T entity) {
+        model.add(entity);
     }
 
     @Override
@@ -35,16 +31,17 @@ public class JCFModelManager<T extends Entity<T>> implements ModelManager<T> {
     }
 
     @Override
+    public List<T> readAll() {
+        return model.getAll();
+    }
+
+    @Override
     public void update(UUID uuid, String value) {
-        if (model.containsKey(uuid)) {
-            model.update(uuid, value);
-        }
+        model.update(uuid, value);
     }
 
     @Override
     public void delete(UUID key) {
-        if (model.containsKey(key)) {
-            model.remove(key);
-        }
+        model.remove(key);
     }
 }

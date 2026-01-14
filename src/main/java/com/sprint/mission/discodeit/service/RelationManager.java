@@ -12,5 +12,7 @@ public interface RelationManager<T extends Entity<T>, U extends Entity<U>> {
 
     void update(T entity, U oldValue, U newValue);
 
-    void delete(T entity1, U entity2);
+    void delete(UUID uuid1, UUID uuid2);
+
+    void deleteKey(UUID key);
 }

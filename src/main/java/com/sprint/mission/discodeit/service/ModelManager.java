@@ -7,11 +7,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ModelManager<T extends Entity<T>> {
-    void create(String value);
+    void create(T entity);
 
     Optional<T> read(UUID uuid);
 
     List<T> readAll(List<UUID> uuids);
+
+    List<T> readAll();
 
     void update(UUID uuid, String value);
 

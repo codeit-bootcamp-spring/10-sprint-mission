@@ -23,31 +23,36 @@ public class JCFRelationManager<T extends Entity<T>, U extends Entity<U>>
     public void create(T entity1, U entity2) {
         UUID key = entity1.getUuid();
         UUID value = entity2.getUuid();
+        if (!model.containsKey(key)) {
+            model.initKey(key);
+        }
         model.add(key, value);
     }
 
     @Override
     public List<UUID> read(T entity) {
         UUID key = entity.getUuid();
-        if (!model.containsKey(key)) {
-            return List.of();
+        if (model.containsKey(key)) {
+            return model.get(key);
         }
-        return model.get(key).stream().toList();
+        return List.of();
     }
 
     @Override
     public void update(T entity, U oldValue, U newValue) {
-        delete(entity, oldValue);
+        delete(entity.getUuid(), oldValue.getUuid());
         create(entity, newValue);
     }
 
     @Override
-    public void delete(T entity1, U entity2) {
-        UUID key = entity1.getUuid();
-        UUID value = entity2.getUuid();
-        if (!model.containsKey(key)) {
-            return;
+    public void delete(UUID uuid1, UUID uuid2) {
+        if (model.containsKey(uuid1)) {
+            model.remove(uuid1, uuid2);
         }
-        model.remove(key, value);
+    }
+
+    @Override
+    public void deleteKey(UUID key) {
+        model.removeKey(key);
     }
 }
