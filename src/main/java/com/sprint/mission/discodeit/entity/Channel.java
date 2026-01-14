@@ -7,6 +7,7 @@ public class Channel extends Entity {
     private String name;
     private User owner;
     private final List<User> users;
+    private final List<Message> messages;
 
     public Channel(String name, User owner) {
         super();
@@ -17,6 +18,7 @@ public class Channel extends Entity {
         this.name = name;
         this.owner = owner;
         this.users = new ArrayList<>();
+        this.messages = new ArrayList<>();
         this.users.add(owner);
     }
 
@@ -30,6 +32,10 @@ public class Channel extends Entity {
 
     public List<User> getUsers() {
         return new ArrayList<>(users);
+    }
+
+    public List<Message> getMessages() {
+        return new ArrayList<>(messages);
     }
 
     public void addUser(User user) {
@@ -68,6 +74,38 @@ public class Channel extends Entity {
         super.update();
     }
 
+    public void addMessage(Message message) {
+        // 메시지 null 체크
+        if (message == null) {
+            throw new RuntimeException("메시지가 존재하지 않습니다.");
+        }
+
+        // 채널 일치 여부 확인
+        if (!message.getChannel().equals(this)) {
+            throw new RuntimeException("이 채널에 추가할 수 없는 메시지입니다.");
+        }
+
+        // 메시지 추가
+        messages.add(message);
+        // 수정 시각 갱신
+        super.update();
+    }
+
+    public void removeMessage(Message message) {
+        // 메시지 null 체크, 채널 및 유저 검증은 MessageService에서 진행
+        if (message == null) {
+            throw new RuntimeException("메시지가 존재하지 않습니다.");
+        }
+
+        // 존재하는 메시지인 경우에만 제거 및 수정 시각 갱신
+        boolean removed = messages.remove(message);
+        if (!removed) {
+            throw new RuntimeException("메시지가 존재하지 않습니다.");
+        }
+
+        super.update();
+    }
+
     public Channel updateChannelName(String name) {
         // 채널 이름 변경
         this.name = name;
@@ -79,10 +117,11 @@ public class Channel extends Entity {
     @Override
     public String toString() {
         return String.format(
-                "Channel [id=%s, name=%s, owner=%s]",
+                "Channel [id=%s, name=%s, owner=%s, messageCount=%s]",
                 getId().toString().substring(0, 5),
                 name,
-                owner.getId().toString().substring(0, 5)
+                owner.getId().toString().substring(0, 5),
+                messages.size()
         );
     }
 }
