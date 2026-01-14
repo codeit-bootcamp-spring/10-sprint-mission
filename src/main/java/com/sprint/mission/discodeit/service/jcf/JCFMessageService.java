@@ -22,8 +22,8 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message createMessage(UUID channelId, UUID userId, String message) {
-        Channel channel = channelService.findChannel(channelId).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
-        User user = userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+        Channel channel = channelService.getChannel(channelId);
+        User user = userService.getUser(userId);
 
         Message msg = new Message(channel, user, message);
         data.computeIfAbsent(channel.getId(), k -> new ArrayList<>()).add(msg);
@@ -31,9 +31,10 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Optional<Message> findMessage(UUID uuid) {
+    public Message getMessage(UUID uuid) {
         return findAllMessages().stream()
-                .filter(m -> Objects.equals(m.getId(), uuid)).findFirst();
+                .filter(m -> Objects.equals(m.getId(), uuid)).findFirst()
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지입니다"));
     }
 
     @Override
@@ -48,19 +49,17 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message updateMessage(UUID uuid, String newMessage) {
-        Message msg = findMessage(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지입니다"));
+        Message msg = getMessage(uuid);
 
-        if (!Objects.equals(msg.getMessage(), newMessage)) {
-            msg.updateMessage(newMessage);
-            msg.updateUpdatedAt();
-        }
+        Optional.ofNullable(newMessage).ifPresent(msg::updateMessage);
+        msg.updateUpdatedAt();
 
         return msg;
     }
 
     @Override
     public void deleteMessage(UUID uuid) {
-        Message msg = findMessage(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지입니다"));
+        Message msg = getMessage(uuid);
         for (var list : data.values()) {
             if (list.remove(msg)) {
                 return;

@@ -18,15 +18,17 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel createChannel(String title, String description) {
-        findChannelByTitle(title).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 채널명입니다"); });
+        validateDuplicateTitle(title);
+
         Channel channel = new Channel(title, description);
         data.put(channel.getId(), channel);
         return channel;
     }
 
     @Override
-    public Optional<Channel> findChannel(UUID uuid) {
-        return Optional.ofNullable(data.get(uuid));
+    public Channel getChannel(UUID uuid) {
+        return Optional.ofNullable(data.get(uuid))
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
     }
 
     @Override
@@ -43,32 +45,20 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel updateChannel(UUID uuid, String title, String description) {
-        Channel channel = validateChannel(uuid);
+        Channel channel = getChannel(uuid);
         // title 중복성 검사
-        if (!Objects.equals(channel.getTitle(), title)) {
-            findChannelByTitle(title).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 채널명입니다"); });
-        }
+        validateDuplicateTitle(title);
 
-        boolean isChanged = false;
-        if (!Objects.equals(channel.getTitle(), title)) {
-            channel.updateTitle(title);
-            isChanged = true;
-        }
-        if (!Objects.equals(channel.getDescription(), description)) {
-            channel.updateDescription(description);
-            isChanged = true;
-        }
-
-        if (isChanged) {
-            channel.updateUpdatedAt();
-        }
+        Optional.ofNullable(title).ifPresent(channel::updateTitle);
+        Optional.ofNullable(description).ifPresent(channel::updateDescription);
+        channel.updateUpdatedAt();
 
         return channel;
     }
 
     @Override
     public void deleteChannel(UUID uuid) {
-        Channel channel = validateChannel(uuid);
+        Channel channel = getChannel(uuid);
         data.remove(channel.getId());
     }
 
@@ -80,19 +70,19 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
-        Channel channel = validateChannel(channelId);
-        User user = userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+        Channel channel = getChannel(channelId);
+        User user = userService.getUser(userId);
         channel.addParticipant(user);
     }
 
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
-        Channel channel = validateChannel(channelId);
-        User user = userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+        Channel channel = getChannel(channelId);
+        User user = userService.getUser(userId);
         channel.removeParticipant(user);
     }
 
-    private Channel validateChannel(UUID uuid) {
-        return findChannel(uuid).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+    private void validateDuplicateTitle(String title) {
+        findChannelByTitle(title).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 채널명입니다"); });
     }
 }

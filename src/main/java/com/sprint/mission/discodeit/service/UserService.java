@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface UserService {
     User createUser(String accountId, String password, String name, String mail);
-    Optional<User> findUser(UUID uuid);
+    User getUser(UUID uuid);
     Optional<User> findUserByAccountId(String accountId);
     Optional<User> findUserByMail(String mail);
     List<User> findAllUsers();

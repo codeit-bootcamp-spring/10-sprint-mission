@@ -17,8 +17,8 @@ public class User extends Common {
     public String getAccountId() {
         return this.accountId;
     }
-    public void updateAccountId(String userId) {
-        this.accountId = userId;
+    public void updateAccountId(String accountId) {
+        this.accountId = accountId;
     }
 
     public String getName() {
