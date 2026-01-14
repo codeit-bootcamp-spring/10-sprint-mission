@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Channel extends BaseEntity {
     private User owner;
-    private Boolean isPrivate; // True = Private, False = Public
+    private Boolean isPrivate = false; // true = Private, false = Public
     private String channelName;
     private String channelDescription = "";
 
@@ -22,7 +22,6 @@ public class Channel extends BaseEntity {
         this.channelName = channelName;
         this.channelDescription = channelDescription;
         channelMembersList = new HashSet<>();
-//        owner.joinChannel(this);
         channelMessagesList = new ArrayList<>();
     }
 
@@ -32,12 +31,12 @@ public class Channel extends BaseEntity {
                 "channelId = " + getId() + ", " +
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +
-                "owner = " + owner + ", " +
+                "owner = " + owner.getId() + ", " +
                 "isPrivate = " + isPrivate + ", " +
                 "channelName = " + channelName + ", " +
 //                "channelDescription = " + channelDescription + ", " +
-                "channelMembers = " + channelMembersList + ", " +
-                "channelMessages = " + channelMessagesList +
+                "channelMembers = " + channelMembersList.stream().map(user -> user.getId()).toList() + ", " +
+                "channelMessages = " + channelMessagesList.stream().map(message -> message.getId()).toList() +
                 "}";
     }
 
@@ -96,7 +95,8 @@ public class Channel extends BaseEntity {
 
     // owner 삭제
     public void removeOwner(User user) {
-        this.owner = null; // ???????
+        this.owner = null; // 임시
+        // owner 없으면 다음 user가 owner가 되고, 더 이상 user가 존재하지 않으면 채널 폭파
         updateTime();
     }
 
@@ -113,8 +113,15 @@ public class Channel extends BaseEntity {
     }
 
     // 채널에 메시지가 작성됨
-    public void addChannelMessages(Message message) {
+    public void addMessageInChannel(Message message) {
         this.channelMessagesList.add(message);
         updateTime();
     }
+
+    // 채널에서 메시지 삭제됨
+    public void removeMessageInChannel(Message message) {
+        this.channelMessagesList.remove(message);
+        updateTime();
+    }
+
 }

@@ -1,17 +1,24 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
+    private final MessageService messageService; // 삭제 기능을 위해 추가
+    // 인프라 건설 후 사람 입주의 느낌으로 이해
+    // 실행: user->channel->message
+    // 조립: message->channel->user
 
-    public JCFChannelService(Map<UUID, Channel> data) {
+    public JCFChannelService(Map<UUID, Channel> data, MessageService messageService) {
         this.data = data;
+        this.messageService = messageService;
     }
 
     @Override
@@ -119,6 +126,37 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 특정 채널의 모든 메시지 읽어오기
+    @Override
+    public List<Message> readChannelMessageByChannelId(UUID channelId) {
+        // Channel ID null 검증
+        ValidationMethods.validateChannelId(channelId);
+
+        Channel channel = data.get(channelId);
+        // channel이 null인지 확인
+        if (channel == null) {
+            return Collections.emptyList();
+        }
+
+        return channel.getChannelMessagesList().stream().toList();
+    }
+
+    // 특정 채널에서 원하는 메시지 찾기
+    @Override
+    public List<Message> searchChannelMessageByChannelIdAndWord(UUID channelId, String partialWord) {
+        // Channel ID null 검증
+        ValidationMethods.validateChannelId(channelId);
+
+        Channel channel = data.get(channelId);
+        // channel이 null인지 확인
+        if (channel == null) {
+            // null이면 빈 리스트
+            return Collections.emptyList();
+        }
+
+        return channel.getChannelMessagesList().stream()
+                .filter(message -> message.getContent().contains(partialWord))
+                        .toList();
+    }
 
     // U. 수정
     // `Duplicated code fragment (12 lines long)`
@@ -146,6 +184,7 @@ public class JCFChannelService implements ChannelService {
     public Channel updateChannelName(UUID requestId, UUID channelId, String channelName) {
         // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체와 channel 객체 존재 확인
         Channel channel = validateMethods(data, requestId, channelId);
+        ValidationMethods.validateString(channelName, "channelName");
 
         channel.updateChannelName(channelName);
         return channel;
@@ -187,14 +226,15 @@ public class JCFChannelService implements ChannelService {
         Channel channel = validateMethods(data, requestId, channelId);
 
         // 연관 관계 정리
-        // 해당 채널에 참여한 user의 join 목록에서 제거
+        // 해당 채널과 관련된 모든 메시지 삭제 및 채널이 보유한 메세지 리스트 연결 끊기
+        channel.getChannelMessagesList()
+                .forEach(message ->
+                        messageService.deleteMessage(message.getAuthor().getId(), message.getId()));
+
+        // 해당 채널에 참여한 user 찾아서 내보내기
         channel.getChannelMembersList().forEach(user -> user.leaveChannel(channel));
-
-        // 해당 채널을 소유한 소유주의 owner 목록에서 제거
+        // 해당 채널을 소유한 소유주(user)를 찾아서 owner 소유권 제거
         channel.getOwner().removeChannelOwner(channel);
-
-        // 해당 채널에 존재하는 메시지
-        // 수정 중...
 
         data.remove(channelId);
     }

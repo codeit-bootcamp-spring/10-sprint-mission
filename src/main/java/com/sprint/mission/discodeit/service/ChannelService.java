@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
@@ -27,8 +28,10 @@ public interface ChannelService {
     List<Channel> searchChannelByChannelName(String partialChannelName);
     // 특정 채널에서 특정 사용자 찾기
     List<User> searchChannelUserByPartialName(UUID channelId, String partialName);
-//    // 특정 채널의 모든 메시지 읽어오기
-//    List<Message> readChannelMessageByChannelId(UUID channelId);
+    // 특정 채널의 모든 메시지 읽어오기
+    List<Message> readChannelMessageByChannelId(UUID channelId);
+    // 특정 채널에서 원하는 메시지 찾기
+    List<Message> searchChannelMessageByChannelIdAndWord(UUID channelId, String partialWord);
 
     // U. 수정
     // 채널 channelName 수정
