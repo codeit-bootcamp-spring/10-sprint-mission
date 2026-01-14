@@ -12,7 +12,7 @@ import java.util.List;
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data;
 
-    private JCFUserService(){
+    public JCFUserService(){
         this.data = new HashMap<>();
     }
 
@@ -42,5 +42,15 @@ public class JCFUserService implements UserService {
     @Override
     public void delete(UUID id){
         data.remove(id);
+    }
+
+
+    // 검증
+    @Override
+    public void validateUserStatus(UUID userId) {
+        // 유저 존재 확인
+        if (readById(userId) == null) {
+            throw new IllegalArgumentException("실패: 존재하지 않는 유저");
+        }
     }
 }

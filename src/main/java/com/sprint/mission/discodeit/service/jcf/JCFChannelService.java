@@ -45,4 +45,12 @@ public class JCFChannelService implements ChannelService {
     public void delete(UUID id){
         data.remove(id);
     }
+
+    // 검증
+    public void validateChannelStatus(UUID channelId) {
+        // 채널 존재 확인
+        if (readById(channelId) == null) {
+            throw new IllegalArgumentException("실패: 존재하지 않는 채널");
+        }
+    }
 }

@@ -15,4 +15,6 @@ public interface ChannelService {
     void update(Channel channel);
 
     void delete(UUID id);
+
+    void validateChannelStatus(UUID channelId); // 검증
 }

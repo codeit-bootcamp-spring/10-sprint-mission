@@ -1,11 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.ArrayList;
 import java.util.UUID;
+import java.util.List;
 
 public class Channel {
     private final UUID id;
     private String name;
     private String description;
+    private final List<User> members = new ArrayList<>();
     private final Long createdAt;
     private Long updatedAt;
 
@@ -27,6 +30,17 @@ public class Channel {
         this.name = name;
         this.description = description;
         this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void addMember(User user){
+        if (this.members.contains(user)) {
+            throw new IllegalStateException("이미 채널에 가입된 멤버");
+        }
+        this.members.add(user);
+    }
+
+    public boolean isMember(User user){
+        return members.contains(user);
     }
 
     @Override

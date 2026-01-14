@@ -15,4 +15,6 @@ public interface UserService {
     void update(User user);
 
     void delete(UUID id);
+
+    void validateUserStatus(UUID id); // 검증
 }
