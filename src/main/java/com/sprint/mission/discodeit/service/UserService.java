@@ -17,16 +17,16 @@ public interface UserService {
     List<User> findAll();
 
     // Update - Profile
-    void updateUsername(UUID id, String newUsername);
-    void updateNickname(UUID id, String newNickname);
-    void updateEmail(UUID id, String email);
-    void updatePhoneNumber(UUID id, String phoneNumber);
+    User updateUsername(UUID id, String newUsername);
+    User updateNickname(UUID id, String newNickname);
+    User updateEmail(UUID id, String email);
+    User updatePhoneNumber(UUID id, String phoneNumber);
 
     // Update - Status
-    void updateUserStatus(UUID userId, UserStatus status);
-    void toggleMicrophone(UUID userId, boolean isOn);
-    void toggleHeadset(UUID userId, boolean isOn);
+    User updateUserStatus(UUID userId, UserStatus status);
+    User toggleMicrophone(UUID userId, boolean isOn);
+    User toggleHeadset(UUID userId, boolean isOn);
 
     // Delete
-    void deleteUser(UUID userId);
+    User deleteUser(UUID userId);
 }

@@ -64,59 +64,75 @@ public class JCFUserService implements UserService {
 
     // Update - Profile
     @Override
-    public void updateUsername(UUID id, String newUsername) {
+    public User updateUsername(UUID id, String newUsername) {
         User user = getUserOrThrow(id);
         if (findByUsername(newUsername).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + newUsername);
         }
         user.updateUsername(newUsername);
+
+        return user;
     }
     @Override
-    public void updateNickname(UUID id, String newNickname) {
+    public User updateNickname(UUID id, String newNickname) {
         User user = getUserOrThrow(id);
         user.updateNickname(newNickname);
+
+        return user;
     }
 
     @Override
-    public void updateEmail(UUID id, String email) {
+    public User updateEmail(UUID id, String email) {
         User user = getUserOrThrow(id);
         checkDuplicateEmail(email, id);
         user.updateEmail(email);
+
+        return user;
     }
 
     @Override
-    public void updatePhoneNumber(UUID id, String phoneNumber) {
+    public User updatePhoneNumber(UUID id, String phoneNumber) {
         User user = getUserOrThrow(id);
         checkDuplicatePhoneNumber(phoneNumber, id);
         user.updatePhoneNumber(phoneNumber);
+
+        return user;
     }
 
     // Update - Status
     @Override
-    public void updateUserStatus(UUID userId, UserStatus status) {
+    public User updateUserStatus(UUID userId, UserStatus status) {
         User user = getUserOrThrow(userId);
         user.changeStatus(status);
+
+        return user;
     }
 
     @Override
-    public void toggleMicrophone(UUID userId, boolean isOn) {
+    public User toggleMicrophone(UUID userId, boolean isOn) {
         User user = getUserOrThrow(userId);
         user.toggleMicrophone(isOn);
+
+        return user;
     }
 
     @Override
-    public void toggleHeadset(UUID userId, boolean isOn) {
+    public User toggleHeadset(UUID userId, boolean isOn) {
         User user = getUserOrThrow(userId);
         user.toggleHeadset(isOn);
+
+        return user;
     }
 
     // Delete
     @Override
-    public void deleteUser(UUID userId) {
+    public User deleteUser(UUID userId) {
         User user = getUserOrThrow(userId);
         messageService.deleteMessagesByAuthorId(userId);
         user.getChannels().forEach(channel -> {channel.removeUser(user);});
         userMap.remove(userId);
+
+        return user;
     }
 
     // Helper

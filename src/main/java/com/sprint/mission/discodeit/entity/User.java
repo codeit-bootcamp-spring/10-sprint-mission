@@ -114,4 +114,16 @@ public class User extends BaseEntity {
         return new ArrayList<>(this.messages);
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", nickname='" + nickname + '\'' +
+                ", email=" + (email != null ? "'" + email + "'" : "null") +
+                ", phoneNumber=" + (phoneNumber != null ? "'" + phoneNumber + "'" : "null") +
+                ", status=" + status +
+                '}';
+    }
+
 }
