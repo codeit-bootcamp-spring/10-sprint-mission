@@ -43,7 +43,7 @@ public class JCFMessageService implements MessageService {
         return data.stream()
                 .filter(message -> message.getId().equals(id))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow( () -> new NotFoundException("해당 ID의 메시지를 찾을 수 없습니다"));
     }
 
     @Override
