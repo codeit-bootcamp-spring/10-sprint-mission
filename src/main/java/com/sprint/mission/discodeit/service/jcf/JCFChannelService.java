@@ -50,6 +50,14 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 특정 채널의 참가자 리스트 조회
+    public ArrayList<User> channelUsers(UUID channelId) {
+        Channel targetChannel = channels.stream()
+                .filter(channel -> channel.getId().equals(channelId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+
+        return targetChannel.getMembers();
+    }
 
     @Override
     public void updateChannel(UUID targetChannelId, String newChannelName) {
