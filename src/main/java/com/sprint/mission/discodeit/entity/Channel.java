@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 public class Channel extends Common {
@@ -37,31 +36,15 @@ public class Channel extends Common {
     public String getTitle() {
         return this.title;
     }
-    void updateTitle(String title) {
+    public void updateTitle(String title) {
         this.title = title;
     }
 
     public String getDescription() {
         return this.description;
     }
-    void updateDescription(String description) {
+    public void updateDescription(String description) {
         this.description = description;
-    }
-
-    public void update(String title, String description) {
-        boolean isChanged = false;
-        if (!Objects.equals(getTitle(), title)) {
-            updateTitle(title);
-            isChanged = true;
-        }
-        if (!Objects.equals(getDescription(), description)) {
-            updateDescription(description);
-            isChanged = true;
-        }
-
-        if (isChanged) {
-            updateUpdatedAt();
-        }
     }
 
     @Override
