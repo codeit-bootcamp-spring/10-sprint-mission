@@ -13,5 +13,4 @@ public interface ChannelService {
     public ArrayList<Channel> searchChannelAll();
     public void updateChannel(UUID targetChannelId, String newChannelName);
     public void deleteChannel(UUID targetChannelId);
-    public void inviteMembers(UUID targetUserId, ArrayList<UUID> memberIds);
 }

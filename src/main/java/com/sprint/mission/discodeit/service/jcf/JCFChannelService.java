@@ -56,20 +56,19 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 채널 참가자 초대
-    @Override
-    public void inviteMembers(UUID targetUserId, ArrayList<UUID> memberIds) {
-//        // 1. 추가하려는 사용자 조회
-//        User newUser = userService.searchUser(targetUserId);
-//
-//        // 2. 이미 채널에 존재하는지 확인
-//        for (UUID memberId : memberIds) {
-//            // 존재한다면 종료
-//            if (memberId.equals(newUser.getId())) {
-//                System.out.println("해당 채널에 이미 존재하는 사용자입니다.");
-//                return;
-//            }
-//        }
-//        // 존재하지 않는다면, 사용자 추가
-//        memberIds.add(newUser.getId());
+    public void inviteMembers(UUID targetUserId, ArrayList<User> members) {
+        User newUser = userService.searchUser(targetUserId);
+
+        if (isMemberDuplicated(targetUserId, members)) {
+            throw new IllegalArgumentException("이미 채널에 존재하는 사용자입니다.");
+        }
+
+        members.add(newUser);
+    }
+
+    // 유효성 검사 (초대)
+    public boolean isMemberDuplicated(UUID targetUserId, ArrayList<User> members) {
+        return members.stream()
+                      .anyMatch(member -> member.getId().equals(targetUserId));
     }
 }
