@@ -20,13 +20,11 @@ public interface MessageService {
     // R. 모두 읽기 : 시간순으로 정렬?
     // 메시지 전체
     List<Message> readAllMessage();
-    // 특정 채널에서 원하는 메시지 찾기
-    List<Message> searchAllMessageAtChannelByChannelIdAndWord(UUID channelId, String partialWord);
 
     // U. 수정
     // 메시지 수정
-    Message updateMessageContent(UUID messageId, String content);
+    Message updateMessageContent(UUID requestId, UUID messageId, String content);
 
     // D. 삭제
-    void deleteMessage(UUID messageId);
+    void deleteMessage(UUID requestId, UUID messageId);
 }

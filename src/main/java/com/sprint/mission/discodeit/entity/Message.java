@@ -22,9 +22,10 @@ public class Message extends BaseEntity {
     public String toString() {
         return "Message{" +
                 "messageId = " + getId() + ", " +
+                "messageChannel = " + messageChannel.getId() + ", " +
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +
-                "author = " + author + ", " +
+                "author = " + author.getId() + ", " +
                 "content = " + content +
                 "}";
     }

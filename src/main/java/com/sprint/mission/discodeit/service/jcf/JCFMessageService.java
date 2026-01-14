@@ -10,7 +10,6 @@ import java.util.*;
 
 public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> data;
-
     public JCFMessageService(Map<UUID, Message> data) {
         this.data = data;
     }
@@ -44,10 +43,10 @@ public class JCFMessageService implements MessageService {
 
         // 연관
         // channel 객체에 추가
-        messageChannel.addChannelMessages(message);
+        messageChannel.addMessageInChannel(message);
 
         // author(user) 객체에 추가
-        author.writeMessage(message);
+        author.addMessageInUser(message);
 
         data.put(message.getId(), message);
         return message;
@@ -67,9 +66,50 @@ public class JCFMessageService implements MessageService {
     }
 
     // R. 모두 읽기
+    // 메시지 전체
     @Override
     public List<Message> readAllMessage() {
-
         return new ArrayList<>(data.values());
+    }
+
+    // U. 수정
+    public static Message validationMethods(Map<UUID, Message> data, UUID requestId, UUID messageId) {
+        // request(수정하려는 user) ID `null` 검증
+        ValidationMethods.validateUserId(requestId);
+        // Message ID `null` 검증
+        ValidationMethods.validateMessageId(messageId);
+        // request(수정하려는 user) ID와 message 작성자(user) ID가 동일한지 확인
+        ValidationMethods.validateSameId(requestId, data.get(messageId).getAuthor().getId());
+
+        Message message = data.get(messageId);
+        ValidationMethods.existMessage(message);
+
+        return message;
+    }
+    // 메시지 수정
+    @Override
+    public Message updateMessageContent(UUID requestId, UUID messageId, String content) {
+        // id null 검증 / request ID와 message 작성자(user) ID가 동일한지 확인 / message 객체 존재 확인
+        Message message = validationMethods(data, requestId, messageId);
+        // content `null` or `blank` 검증
+        ValidationMethods.validateString(content, "content");
+
+        message.updateContent(content);
+        return message;
+    }
+
+    // D. 삭제
+    @Override
+    public void deleteMessage(UUID requestId, UUID messageId) {
+        // id null 검증 / request ID와 message 작성자(user) ID가 동일한지 확인 / message 객체 존재 확인
+        Message message = validationMethods(data, requestId, messageId);
+
+        // 연관 관계에 따른 다른 객체 리스트에서 삭제할 메세지 삭제
+        // user(author) 객체
+        message.getAuthor().removeMessageInUser(message);
+        // channel(messageChannel) 객체
+        message.getMessageChannel().removeMessageInChannel(message);
+
+        data.remove(messageId);
     }
 }
