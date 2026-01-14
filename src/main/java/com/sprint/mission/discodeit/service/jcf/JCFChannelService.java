@@ -35,7 +35,9 @@ public class JCFChannelService implements ChannelService {
 
     // 채널 다건 조회
     @Override
-    public ArrayList<Channel> searchChannelAll() {      return channels;        }
+    public ArrayList<Channel> searchChannelAll() {
+        return channels;
+    }
 
     // 채널 정보 수정
     @Override

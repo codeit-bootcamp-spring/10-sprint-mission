@@ -37,7 +37,9 @@ public class JCFMessageService implements MessageService {
 
     // 메시지 다건 조회
     @Override
-    public ArrayList<Message> searchMessageAll() {      return messages;        }
+    public ArrayList<Message> searchMessageAll() {
+        return messages;
+    }
 
     // 메시지 수정
     @Override

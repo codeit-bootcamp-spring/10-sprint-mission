@@ -23,11 +23,25 @@ public class Message extends BaseEntity{
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public UUID getId() {   return id;  }
-    public Long getCreatedAt() {    return createdAt;   }
-    public Long getUpdatedAt() {    return updatedAt;   }
-    public String getMessage() {    return message;     }
-    public User getUser() {       return user;      }
-    public Channel getChannel() {        return channel;      }
-    public MessageType getType() {      return type;     }
+    public UUID getId() {
+        return id;
+    }
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+    public Long getUpdatedAt() {
+        return updatedAt;
+    }
+    public String getMessage() {
+        return message;
+    }
+    public User getUser() {
+        return user;
+    }
+    public Channel getChannel() {
+        return channel;
+    }
+    public MessageType getType() {
+        return type;
+    }
 }

@@ -27,11 +27,25 @@ public class User extends BaseEntity {
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public UUID getId() {   return id;  }
-    public Long getCreatedAt() {    return createdAt;   }
-    public Long getUpdatedAt() {    return updatedAt;   }
-    public String getEmail() {      return email;       }
-    public String getPassword() {       return password;      }
-    public String getNickname() {       return nickname;      }
-    // public Image getImage() {       return image;       }
+    public UUID getId() {
+        return id;
+    }
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+    public Long getUpdatedAt() {
+        return updatedAt;
+    }
+    public String getEmail() {
+        return email;
+    }
+    public String getPassword() {
+        return password;
+    }
+    public String getNickname() {
+        return nickname;
+    }
+    // public Image getImage() {
+    // return image;
+    // }
 }

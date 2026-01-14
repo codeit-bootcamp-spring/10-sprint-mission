@@ -26,11 +26,25 @@ public class Channel extends BaseEntity{
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public UUID getId() {   return id;  }
-    public Long getCreatedAt() {    return createdAt;   }
-    public Long getUpdatedAt() {    return updatedAt;   }
-    public String getChannelName() {    return channelName;  }
-    public User getuser() {    return user;   }
-    public ArrayList<User> getUsers() { return users; }
-    public ChannelType getChannelType() { return type; }
+    public UUID getId() {
+        return id;
+    }
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+    public Long getUpdatedAt() {
+        return updatedAt;
+    }
+    public String getChannelName() {
+        return channelName;
+    }
+    public User getuser() {
+        return user;
+    }
+    public ArrayList<User> getUsers() {
+        return users;
+    }
+    public ChannelType getChannelType() {
+        return type;
+    }
 }

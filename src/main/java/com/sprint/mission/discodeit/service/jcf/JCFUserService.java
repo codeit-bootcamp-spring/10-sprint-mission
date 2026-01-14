@@ -34,7 +34,9 @@ public class JCFUserService implements UserService {
 
     // 사용자 전체 조회
     @Override
-    public ArrayList<User> searchUserAll() {        return users;       }
+    public ArrayList<User> searchUserAll() {
+        return users;
+    }
 
     // 사용자 정보 수정 (비밀번호, 닉네임)
     @Override
