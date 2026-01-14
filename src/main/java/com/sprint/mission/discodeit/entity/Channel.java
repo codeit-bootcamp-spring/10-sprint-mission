@@ -10,7 +10,7 @@ public class Channel extends BaseEntity {
 
     // 연관 관계
     // 해당 채널에 참여 중인 유저 목록
-    private final Set<User> channelMembersList; // 유저 중복 참가 불가
+    private final Set<User> channelUsersList; // 유저 중복 참가 불가
     // 해당 채널에 존재하는 메시지 목록
     private final List<Message> channelMessagesList; // 채팅창 안의 메시지들
 
@@ -21,7 +21,7 @@ public class Channel extends BaseEntity {
         this.isPrivate = isPrivate;
         this.channelName = channelName;
         this.channelDescription = channelDescription;
-        channelMembersList = new HashSet<>();
+        channelUsersList = new HashSet<>();
         channelMessagesList = new ArrayList<>();
     }
 
@@ -35,7 +35,7 @@ public class Channel extends BaseEntity {
                 "isPrivate = " + isPrivate + ", " +
                 "channelName = " + channelName + ", " +
 //                "channelDescription = " + channelDescription + ", " +
-                "channelMembers = " + channelMembersList.stream().map(user -> user.getId()).toList() + ", " +
+                "channelUsers = " + channelUsersList.stream().map(user -> user.getId()).toList() + ", " +
                 "channelMessages = " + channelMessagesList.stream().map(message -> message.getId()).toList() +
                 "}";
     }
@@ -61,12 +61,12 @@ public class Channel extends BaseEntity {
         return channelDescription;
     }
 
-    public List<User> getChannelMembersList() {
-        return channelMembersList.stream().toList();
+    public List<User> getChannelUsersList() {
+        return channelUsersList.stream().toList();
     }
 
     public List<Message> getChannelMessagesList() {
-        return channelMessagesList;
+        return channelMessagesList.stream().toList();
     }
 
     // update
@@ -93,22 +93,22 @@ public class Channel extends BaseEntity {
         owner.ownChannel(this);
     }
 
-    // owner 삭제
-    public void removeOwner(User user) {
-        this.owner = null; // 임시
-        // owner 없으면 다음 user가 owner가 되고, 더 이상 user가 존재하지 않으면 채널 폭파
+//    // owner 삭제
+//    public void removeOwner(User user) {
+//        this.owner = null; // 임시
+//        // owner 없으면 다음 user가 owner가 되고, 더 이상 user가 존재하지 않으면 채널 폭파
+//        updateTime();
+//    }
+
+    // 채널 유저
+    public void addChannelUser(User user) {
+        this.channelUsersList.add(user);
         updateTime();
     }
 
-    // 채널 멤버 추가
-    public void addChannelMembers(User user) {
-        this.channelMembersList.add(user);
-        updateTime();
-    }
-
-    // 채널 멤버 삭제
-    public void removeChannelMembers(User user) {
-        this.channelMembersList.remove(user);
+    // 채널 유저 삭제
+    public void removeChannelUser(User user) {
+        this.channelUsersList.remove(user);
         updateTime();
     }
 

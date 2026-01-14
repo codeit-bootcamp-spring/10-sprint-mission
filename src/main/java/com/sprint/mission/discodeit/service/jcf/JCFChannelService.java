@@ -92,7 +92,7 @@ public class JCFChannelService implements ChannelService {
             return Collections.emptyList();
         }
 
-        return channel.getChannelMembersList().stream().toList();
+        return channel.getChannelUsersList().stream().toList();
     }
 
     // 특정 채널 이름이 들어간 채널 검색
@@ -119,7 +119,7 @@ public class JCFChannelService implements ChannelService {
             return Collections.emptyList();
         }
 
-        return channel.getChannelMembersList().stream()
+        return channel.getChannelUsersList().stream()
                 .filter(user -> user.getUserName().contains(partialName) ||
                         user.getNickName().contains(partialName))
                 .toList();
@@ -232,7 +232,7 @@ public class JCFChannelService implements ChannelService {
                         messageService.deleteMessage(message.getAuthor().getId(), message.getId()));
 
         // 해당 채널에 참여한 user 찾아서 내보내기
-        channel.getChannelMembersList().forEach(user -> user.leaveChannel(channel));
+        channel.getChannelUsersList().forEach(user -> user.leaveChannel(channel));
         // 해당 채널을 소유한 소유주(user)를 찾아서 owner 소유권 제거
         channel.getOwner().removeChannelOwner(channel);
 
