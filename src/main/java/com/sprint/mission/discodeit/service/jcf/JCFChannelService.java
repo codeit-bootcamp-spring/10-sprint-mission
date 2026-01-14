@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.Exception.AlreadyJoinedChannelException;
-import com.sprint.mission.discodeit.Exception.SameNameChannelException;
+import com.sprint.mission.discodeit.Exception.ChannelNotFoundException;
+import com.sprint.mission.discodeit.Exception.DuplicationChannelException;
+import com.sprint.mission.discodeit.Exception.UserNotInChannelException;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -17,7 +19,7 @@ public class JCFChannelService implements ChannelService {
     public Channel channelCreate(String channelName) {
         for(Channel channel : channels.values()){
             if(channel.getChannelName().equals(channelName)){
-                throw new SameNameChannelException("이미 있는 채널입니다.");
+                throw new DuplicationChannelException("이미 있는 채널입니다.");
             }
         }
 
@@ -33,7 +35,7 @@ public class JCFChannelService implements ChannelService {
         Channel channel = channels.get(channelId);
 
         if (channel == null) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+            throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
         }
 
         return channel;
@@ -51,7 +53,7 @@ public class JCFChannelService implements ChannelService {
 
         //채널 확인
         if (channel == null) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+            throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
         }
 
         // 맴버 식별자 동일 = 같은사람
@@ -68,11 +70,11 @@ public class JCFChannelService implements ChannelService {
         Channel channel = channels.get(channelId);
 
         if (channel == null) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+            throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
         }
 
         if (!channel.hasMember(userId)) {
-            throw new IllegalArgumentException("채널에 없는 사용자입니다.");
+            throw new UserNotInChannelException("채널에 없는 사용자입니다.");
         }
 
         channel.removeMember(userId);
@@ -85,7 +87,7 @@ public class JCFChannelService implements ChannelService {
         Channel channel = channels.remove(channelId);
 
         if (channel == null) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+            throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
         }
 
         return channel;
@@ -97,11 +99,11 @@ public class JCFChannelService implements ChannelService {
         Channel channel = channels.get(channelId);
 
         if (channel == null) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+            throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
         }
 
         if (channel.getChannelName().equals(channelName)) {
-            throw new SameNameChannelException("이미 존재하는 이름 입니다.");
+            throw new DuplicationChannelException("이미 존재하는 채널 이름 입니다.");
         }
 
         channel.updateChannelName(channelName);

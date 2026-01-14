@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.Exception.ChannelNotFoundException;
+import com.sprint.mission.discodeit.Exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -44,7 +46,7 @@ public class JCFMessageService implements MessageService {
                 .orElse(null);
 
         if (message == null) {
-            throw new IllegalArgumentException("해당 메시지가 존재하지 않습니다.");
+            throw new MessageNotFoundException("해당 메시지가 존재하지 않습니다.");
         }
         return message;
     }
@@ -69,11 +71,11 @@ public class JCFMessageService implements MessageService {
     public void messageDelete(UUID channelId, UUID messageId) {
         Channel channel = channelService.channelFind(channelId); // 채널 가져오기
         if (channel == null) {
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+            throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
         }
 
         if (!channel.getMessages().stream().anyMatch(m -> m.getMessageId().equals(messageId))) {
-            throw new IllegalArgumentException("존재하지 않는 메시지입니다.");
+            throw new MessageNotFoundException("존재하지 않는 메시지입니다.");
         }
 
         channel.removeMessage(messageId); // 여기서 실제 삭제

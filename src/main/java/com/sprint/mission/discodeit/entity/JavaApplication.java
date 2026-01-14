@@ -33,9 +33,9 @@ public class JavaApplication {
             User user = userService.userCreate(data[0], data[1]);
             userIds.add(user.getUserId());
         }
-
-        System.out.println();
-
+//
+//        System.out.println();
+//
 //        // 유저 찾기: 단건
 //        System.out.println("[단건 조회(유저)]");
 //        User foundOneUser = userService.userFind(userIds.get(0));
@@ -94,25 +94,25 @@ public class JavaApplication {
             channelIds.add(channel.getChannelId());
         }
 
-        // 채널 보이기: 단건
-        System.out.println("[단건 조회(채널)]");
-        Channel foundOneChannel = channelService.channelFind(channelIds.get(0));
-        System.out.println(foundOneChannel);
-
-        System.out.println();
-
-
-        // 채널 찾기: 다건(all)
-        System.out.println("[전체 조회(채널)]");
-
-        String allChannel = channelService.channelFindAll()
-                .stream()
-                .map(Channel::getChannelName)
-                .collect(Collectors.joining(" , "));
-
-        System.out.println("채널: " + allChannel);
-
-        System.out.println();
+//        // 채널 보이기: 단건
+//        System.out.println("[단건 조회(채널)]");
+//        Channel foundOneChannel = channelService.channelFind(channelIds.get(0));
+//        System.out.println(foundOneChannel);
+//
+//        System.out.println();
+//
+//
+//        // 채널 찾기: 다건(all)
+//        System.out.println("[전체 조회(채널)]");
+//
+//        String allChannel = channelService.channelFindAll()
+//                .stream()
+//                .map(Channel::getChannelName)
+//                .collect(Collectors.joining(" , "));
+//
+//        System.out.println("채널: " + allChannel);
+//
+//        System.out.println();
 
 
         //채널 맴버 추가 및 각 채널에 맴버 표시
@@ -150,7 +150,7 @@ public class JavaApplication {
         }
 
 
-//        //채널 맴버 삭제 및 각 채널에 맴버 표시
+//        //채널 맴버 삭제 및 각 채널에 맴버 표시(삭제 시 메시지 오류)
 //        System.out.println("[맴버 삭제(채널)]");
 //
 //        channelService.channelMemberRemove(
@@ -163,7 +163,6 @@ public class JavaApplication {
 //
 //        );
 
-
         System.out.println("\n[채널별 멤버 목록(삭제)]");
 
         for (Channel channel : channelService.channelFindAll()) {
@@ -174,7 +173,7 @@ public class JavaApplication {
 //
 //        System.out.println("[채널 삭제]");
 //
-//        channelService.channelDelete(channelIds.get(0));
+//        channelService.channelDelete(channelIds.get(0)); //채널 삭제 시 메세지 오류
 //
 //        for (Channel channel : channelService.channelFindAll()) {
 //            System.out.println(channel);
@@ -197,11 +196,11 @@ public class JavaApplication {
         System.out.println("[메시지 작성(채널)]");
 
         Message msg1 = messageService.messageCreate(
-                channelIds.get(0), userService.userFind(userIds.get(0)), "안녕하세요!"); // 김
+                channelIds.get(0), userService.userFind(userIds.get(0)), "안녕하세요!"); //  채널1 - 김
         Message msg2 = messageService.messageCreate(
-                channelIds.get(0), userService.userFind(userIds.get(1)), "반갑습니다!"); // 이
+                channelIds.get(0), userService.userFind(userIds.get(1)), "반갑습니다!"); // 채널1 - 이
         Message msg3 = messageService.messageCreate(
-                channelIds.get(1), userService.userFind(userIds.get(2)), "채널2 첫 메시지"); // 박
+                channelIds.get(1), userService.userFind(userIds.get(2)), "채널2 첫 메시지"); // 채널2 - 박
 
         // 조회(all)
         for (Channel channel : channelService.channelFindAll()) {
@@ -235,7 +234,7 @@ public class JavaApplication {
 
         // 메시지 삭제
         System.out.println("[메시지 삭제(채널)]");
-        messageService.messageDelete(channelIds.get(0), msg1.getMessageId());
+        messageService.messageDelete(channelIds.get(0), msg1.getMessageId()); // 채널1 / msg1 - 김
 
         // 메시지 출력
         for (Channel channel : channelService.channelFindAll()) {

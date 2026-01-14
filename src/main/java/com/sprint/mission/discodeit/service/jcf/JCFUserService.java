@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 
+import com.sprint.mission.discodeit.Exception.DuplicationEmailException;
 import com.sprint.mission.discodeit.Exception.UserNotFoundException;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
@@ -14,7 +15,7 @@ public class JCFUserService implements UserService {
     public User userCreate(String userName, String userEmail) {
         for (User user : users.values()){
             if (user.getUserEmail().equals(userEmail)){
-                throw new IllegalArgumentException("이미 존재하는 이메일 입니다.");
+                throw new DuplicationEmailException("이미 존재하는 이메일 입니다.");
             }
         }
         User user = new User(userName, userEmail);
