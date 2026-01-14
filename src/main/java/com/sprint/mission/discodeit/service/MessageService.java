@@ -12,6 +12,8 @@ public interface MessageService {
 
     List<Message> readAll();
 
+    List<Message> readAllByChannelId(UUID channelId, UUID userID); // 특정 채널의 메시지 조회
+
     void update(Message message);
 
     void delete(UUID id);
