@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.TargetType;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.HashSet;
@@ -60,13 +61,14 @@ public class JCFChannelService implements ChannelService {
         return willUpdate;
     }
 
-    public void userJoinChannel(UUID channelId, UUID userId){
+    public void userJoinChannel(UUID channelId, UUID userId, TargetType type){
         Channel willJoinChannel = find(channelId);
-        try{
-            Optional.ofNullable(JCFUserService.getInstance().find(userId))
-                    .ifPresent(user -> willJoinChannel.addAllowedUser(user));
-        }catch (Exception e){
-            try{
+        switch (type){
+            case USER -> {
+                Optional.ofNullable(JCFUserService.getInstance().find(userId))
+                        .ifPresent(user -> willJoinChannel.addAllowedUser(user));
+            }
+            case GROUP -> {
                 Optional.ofNullable(JCFRoleGroupService.getInstance().find(userId))
                         .ifPresent(
                                 group -> {
@@ -75,10 +77,9 @@ public class JCFChannelService implements ChannelService {
                                 }
                         );
             }
-            catch (Exception e2){
-                e2.printStackTrace();
-            }
         }
+
+
     }
 
     public void userLeaveChannel(UUID channelId, UUID userId){

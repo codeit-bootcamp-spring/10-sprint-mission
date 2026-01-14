@@ -13,6 +13,8 @@ import com.sprint.mission.discodeit.service.jcf.JCFRoleGroupService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
+import static com.sprint.mission.discodeit.entity.TargetType.GROUP;
+
 public class JavaApplication {
     public static void main(String[] args) {
         //생성
@@ -36,7 +38,7 @@ public class JavaApplication {
         Message mes2 = messagedata.create(user2.getId(), "그게 뭔데", ch1.getId());
 
         //테스팅 내용
-        channeldata.userJoinChannel(ch1.getId(), group1.getId());
+        channeldata.userJoinChannel(ch1.getId(), group1.getId(), GROUP);
         Message mes3 = messagedata.create(user1.getId(), "몰루?", ch1.getId());
         Message mes4 = messagedata.create(user2.getId(), "몰?루", ch1.getId());
         ch1.getMessages().stream().forEach(System.out::println);
@@ -51,9 +53,9 @@ public class JavaApplication {
         System.out.println(group1);
 
         Message mes5 = messagedata.create(user3.getId(), "?몰", ch1.getId()); //이거는 버그남
-
+        ch1.getMessages().stream().forEach(System.out::println);
         System.out.println("=========================");
-        System.out.println(ch1.getMessages());
+
         //ch1.getMessages().stream().forEach(System.out::println);
 
     }
