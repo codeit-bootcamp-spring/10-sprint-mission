@@ -53,6 +53,8 @@ public class JCFChannelService implements ChannelService {
 
     // 특정 채널의 참가자 리스트 조회
     public ArrayList<User> channelUsers(UUID channelId) {
+        searchChannel(channelId);
+
         Channel targetChannel = channels.stream()
                 .filter(channel -> channel.getId().equals(channelId))
                 .findFirst()
