@@ -66,6 +66,11 @@ public class JavaApplication {
         UpdateUserRequest updateUserRequest = new UpdateUserRequest("qwer", "qwer", "qwer@gmail.com", "01033333333");
         User updatedUser = userDomainService.updateUser(user1.getId(), updateUserRequest);
         System.out.println(updatedUser);
+
+        System.out.println("\n<User 일부 필드 수정 성공>");
+        UpdateUserRequest updateUserRequest2 = new UpdateUserRequest("patch", null, null, null);
+        User updatedUser2 = userDomainService.updateUser(user1.getId(), updateUserRequest2);
+        System.out.println(updatedUser2);
     }
 
     private static void channelCRUTest(UserDomainService userDomainService, ChannelDomainService channelDomainService) {

@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class User extends BaseEntity {
     private String nickName;
@@ -46,16 +43,33 @@ public class User extends BaseEntity {
         return messages;
     }
 
+    private void setNickName(String nickName) {
+        this.nickName = nickName;
+    }
+
+    private void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    private void setEmail(String email) {
+        this.email = email;
+    }
+
+    private void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
     public void update(
             String nickName,
             String userName,
             String email,
             String phoneNumber
     ) {
-        this.nickName = nickName;
-        this.userName = userName;
-        this.email = email;
-        this.phoneNumber = phoneNumber;
+        Optional.ofNullable(nickName).ifPresent(this::setNickName);
+        Optional.ofNullable(userName).ifPresent(this::setUserName);
+        Optional.ofNullable(email).ifPresent(this::setEmail);
+        Optional.ofNullable(phoneNumber).ifPresent(this::setPhoneNumber);
+
         markUpdated();
     }
 
@@ -80,7 +94,7 @@ public class User extends BaseEntity {
     }
 
     public void clear() {
-        for(Message message : new ArrayList<>(messages)) {
+        for (Message message : new ArrayList<>(messages)) {
             message.clear();
         }
 
@@ -110,8 +124,8 @@ public class User extends BaseEntity {
 
 
     public void validateOwner() {
-        for(Channel channel : channels) {
-            if(channel.isOwner(this)) {
+        for (Channel channel : channels) {
+            if (channel.isOwner(this)) {
                 throw new IllegalArgumentException("소유한 채널있어 유저 삭제가 불가능합니다. userId: " + this.getId());
             }
         }
