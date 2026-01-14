@@ -47,7 +47,8 @@ public class JCFChannelService implements ChannelService {
     public Channel updateChannel(UUID uuid, String title, String description) {
         Channel channel = getChannel(uuid);
         // title 중복성 검사
-        validateDuplicateTitle(title);
+        if (title != null && !Objects.equals(channel.getTitle(), title))
+            validateDuplicateTitle(title);
 
         Optional.ofNullable(title).ifPresent(channel::updateTitle);
         Optional.ofNullable(description).ifPresent(channel::updateDescription);

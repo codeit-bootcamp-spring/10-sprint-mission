@@ -14,7 +14,10 @@ public class JCFUserService implements UserService {
 
     @Override
     public User createUser(String accountId, String password, String name, String mail) {
-        validateDuplicateAccountIdAndMail(accountId, mail);
+        findAllUsers().forEach(u -> {
+            if (Objects.equals(u.getAccountId(), accountId)) throw new IllegalStateException("이미 존재하는 accountId입니다");
+            if (Objects.equals(u.getMail(), mail)) throw new IllegalStateException("이미 존재하는 mail입니다");
+        });
 
         User user = new User(accountId, password, name, mail);
         data.put(user.getId(), user);
@@ -45,11 +48,15 @@ public class JCFUserService implements UserService {
         return new ArrayList<>(data.values());
     }
 
+    // 변경사항이 없는 필드는 null로 받음
     @Override
     public User updateUser(UUID uuid, String accountId, String password, String name, String mail) {
         User user = getUser(uuid);
         // accountId와 mail 중복성 검사
-        validateDuplicateAccountIdAndMail(accountId, mail);
+        if (accountId != null && !Objects.equals(user.getAccountId(), accountId))
+            validateDuplicateAccount(accountId);
+        if (mail != null && !Objects.equals(user.getMail(), mail))
+            validateDuplicateMail(mail);
 
         Optional.ofNullable(accountId).ifPresent(user::updateAccountId);
         Optional.ofNullable(password).ifPresent(user::updatePassword);
@@ -78,10 +85,11 @@ public class JCFUserService implements UserService {
         data.remove(user.getId());
     }
 
-    private void validateDuplicateAccountIdAndMail(String accountId, String mail) {
-        findAllUsers().forEach(u -> {
-            if (Objects.equals(u.getAccountId(), accountId)) throw new IllegalStateException("이미 존재하는 accountId입니다");
-            if (Objects.equals(u.getMail(), mail)) throw new IllegalStateException("이미 존재하는 mail입니다");
-        });
+    private void validateDuplicateAccount(String accountId) {
+        findUserByAccountId(accountId).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 accountId입니다"); });
+    }
+
+    private void validateDuplicateMail(String mail) {
+        findUserByMail(mail).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 mail입니다"); });
     }
 }
