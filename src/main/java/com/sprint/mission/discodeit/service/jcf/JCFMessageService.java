@@ -20,9 +20,9 @@ public class JCFMessageService implements MessageService {
 
     // 메시지 생성
     @Override
-    public Message createMessage(String message, User user, Channel channel, MessageType type) {
-        User sender = userService.searchUser(user.getId());
-        Channel targetChannel = channelService.searchChannel(channel.getId());
+    public Message createMessage(String message, UUID userId, UUID channelId, MessageType type) {
+        User sender = userService.searchUser(userId);
+        Channel targetChannel = channelService.searchChannel(channelId);
 
         Message newMessage = new Message(message, sender, targetChannel, type);
         messages.add(newMessage);
