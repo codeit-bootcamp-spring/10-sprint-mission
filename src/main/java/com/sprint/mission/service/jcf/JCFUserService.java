@@ -14,8 +14,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User createUser(String nickName) {
-        User user = new User(nickName);
+    public User create(String name, String email) {
+        User user = new User(name, email);
         users.put(user.getId(), user);
         return user;
     }
@@ -38,10 +38,10 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User updateUser(UUID id, String nickName) {
+    public User update(UUID id, String name) {
         User user = findById(id);
-        validateChangeNameExist(id, nickName);
-        user.updateNickName(nickName);
+        validateChangeNameExist(id, name);
+        user.updateName(name);
         return user;
     }
 
@@ -51,10 +51,10 @@ public class JCFUserService implements UserService {
         users.remove(id);
     }
 
-    private void validateChangeNameExist(UUID id, String nickName) {
-        String trimmedNickName = nickName.trim();
+    private void validateChangeNameExist(UUID id, String name) {
+        String trimmedNickName = name.trim();
         boolean exist = users.values().stream()
-                .anyMatch(user -> !user.getId().equals(id) && user.getNickName().equals(nickName));
+                .anyMatch(user -> !user.getId().equals(id) && user.getName().equals(name));
         if (exist) {
             throw new IllegalArgumentException("존재하는 닉네임입니다. 다른이름을 선택해주세요");
         }

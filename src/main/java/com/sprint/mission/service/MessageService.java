@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MessageService {
-    Message createMessage(UUID userId, UUID channelId, String content);
+    Message create(UUID userId, UUID channelId, String content);
 
     Message findById(UUID id);
 
     List<Message> findAll();
 
-    Message updateMessage(UUID userId, UUID messageId, String content);
+    Message update(UUID userId, UUID messageId, String content);
 
     void deleteById(UUID userId, UUID MessageId);
 

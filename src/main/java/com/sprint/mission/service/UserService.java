@@ -7,15 +7,15 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    User createUser(String nickName);
+    User create(String name, String email);
 
     User findById(UUID id);
 
+    List<Channel> findByUserId(UUID userId);
+
     List<User> findAll();
 
-    User updateUser(UUID id, String nickName);
+    User update(UUID id, String name);
 
     void deleteById(UUID id);
-
-    List<Channel> findByUserId(UUID userId);
 }

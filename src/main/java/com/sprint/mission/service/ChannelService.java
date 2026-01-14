@@ -11,6 +11,8 @@ public interface ChannelService {
 
     Channel findById(UUID id);
 
+    List<User> findByChannelId(UUID channelId);
+
     List<Channel> findAll();
 
     Channel update(UUID id, String name);
@@ -20,6 +22,4 @@ public interface ChannelService {
     Channel joinChannel(UUID userID, UUID channelId);
 
     Channel leaveChannel(UUID userID, UUID channelId);
-
-    List<User> findByChannelId(UUID channelId);
 }

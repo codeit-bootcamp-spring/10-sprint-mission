@@ -22,7 +22,7 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message createMessage(UUID userId, UUID channelId, String content) {
+    public Message create(UUID userId, UUID channelId, String content) {
         User user = userService.findById(userId);
         Channel channel = channelService.findById(channelId);
 
@@ -59,7 +59,7 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message updateMessage(UUID userId, UUID messageId, String content) {
+    public Message update(UUID userId, UUID messageId, String content) {
         Message message = findById(messageId);
         validateAuthentication(message, userId);
         message.updateContent(content);
