@@ -79,17 +79,17 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void joinChannel(Channel channel, User user) {
-        Channel ch = validateChannel(channel.getId());
-        userService.findUser(user.getId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-        ch.addParticipant(user);
+    public void joinChannel(UUID channelId, UUID userId) {
+        Channel channel = validateChannel(channelId);
+        User user = userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+        channel.addParticipant(user);
     }
 
     @Override
-    public void leaveChannel(Channel channel, User user) {
-        Channel ch = validateChannel(channel.getId());
-        userService.findUser(user.getId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-        ch.removeParticipant(user);
+    public void leaveChannel(UUID channelId, UUID userId) {
+        Channel channel = validateChannel(channelId);
+        User user = userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+        channel.removeParticipant(user);
     }
 
     private Channel validateChannel(UUID uuid) {

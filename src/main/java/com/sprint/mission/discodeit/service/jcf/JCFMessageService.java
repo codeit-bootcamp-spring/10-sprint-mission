@@ -21,9 +21,9 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message createMessage(Channel channel, User user, String message) {
-        channelService.findChannel(channel.getId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
-        userService.findUser(user.getId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+    public Message createMessage(UUID channelId, UUID userId, String message) {
+        Channel channel = channelService.findChannel(channelId).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+        User user = userService.findUser(userId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
 
         Message msg = new Message(channel, user, message);
         data.computeIfAbsent(channel.getId(), k -> new ArrayList<>()).add(msg);
@@ -37,8 +37,8 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> findMessagesByChannel(Channel channel) {
-        return data.computeIfAbsent(channel.getId(), k -> new ArrayList<>());
+    public List<Message> findMessagesByChannelId(UUID uuid) {
+        return data.computeIfAbsent(uuid, k -> new ArrayList<>());
     }
 
     @Override
