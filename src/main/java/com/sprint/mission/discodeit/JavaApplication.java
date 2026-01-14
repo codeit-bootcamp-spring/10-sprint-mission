@@ -107,53 +107,68 @@ public class JavaApplication {
         System.out.println("\n=== 메시지 테스트 (채널별) ===");
 
         List<Channel> channelList = channelService.findAll();
+        User tester = userService.createUser("테스터", "tester@test.com");
         for (Channel channel : channelList) {
             System.out.println("\n[채널: " + channel.getName() + "]");
-            System.out.println("홍길동(user1) 채널 가입");
+            System.out.println("테스터(tester) 채널 가입");
 
-            channelService.joinChannel(channel.getId(), user1.getId());
+            channelService.joinChannel(channel.getId(), tester.getId());
 
             System.out.println("\n=== 회원 단건 조회 ===");
-            System.out.println(userService.findUserById(user1.getId()));
+            System.out.println(userService.findUserById(tester.getId()));
 
-            Message message1 = messageService.createMessage(channel.getId(), user1.getId(), "이곳은 " + channel.getName() + " 입니다.");
-            Message message2 = messageService.createMessage(channel.getId(), user1.getId(), "안녕하세요");
-            Message message3 = messageService.createMessage(channel.getId(), user1.getId(), "저는 홍길동입니다.");
+            System.out.println("\n=== 메시지 생성 ===");
+            messageService.createMessage(channel.getId(), tester.getId(), "이곳은 " + channel.getName() + " 입니다.");
+            messageService.createMessage(channel.getId(), tester.getId(), "안녕하세요");
+            messageService.createMessage(channel.getId(), tester.getId(), "저는 테스터입니다.");
+            Message updateTestMessage = messageService.createMessage(channel.getId(), tester.getId(), "수정 테스트 메시지입니다.");
+            Message deleteTestMessage = messageService.createMessage(channel.getId(), tester.getId(), "삭제 테스트 메시지입니다.");
 
-            System.out.println("메시지 생성 완료");
+            System.out.println("\n=== 메시지 조회 ===");
+            messageService.readMessagesByChannelId(channel.getId())
+                    .forEach(System.out::println);
 
-            System.out.println("\n- 메시지 조회");
+            System.out.println("\n=== 메시지 상세 조회 ===");
             messageService.findMessagesByChannelId(channel.getId())
                     .forEach(System.out::println);
 
-            System.out.println("\n- 메시지 수정");
+            System.out.println("\n=== 메시지 수정 ===");
             messageService.updateMessageContent(
                     channel.getId(),
-                    user1.getId(),
-                    message1.getId(),
-                    "이곳은 " + channel.getName() + " 입니다. 수정된 메시지입니다."
+                    tester.getId(),
+                    updateTestMessage.getId(),
+                    "수정에 성공했습니다."
             );
 
+            System.out.println("\n=== 메시지 조회 ===");
+            messageService.readMessagesByChannelId(channel.getId())
+                    .forEach(System.out::println);
+
+            System.out.println("\n=== 메시지 상세 조회 ===");
             messageService.findMessagesByChannelId(channel.getId())
                     .forEach(System.out::println);
 
-            System.out.println("\n- 메시지 삭제");
+            System.out.println("\n=== 메시지 삭제 ===");
             messageService.deleteMessage(
                     channel.getId(),
-                    user1.getId(),
-                    message3.getId()
+                    tester.getId(),
+                    deleteTestMessage.getId()
             );
-            System.out.println(message3);
+            System.out.println(deleteTestMessage);
 
-            System.out.println("\n- 메시지 조회");
+            System.out.println("\n=== 메시지 조회 ===");
+            messageService.readMessagesByChannelId(channel.getId())
+                    .forEach(System.out::println);
+
+            System.out.println("\n=== 메시지 상세 조회 ===");
             messageService.findMessagesByChannelId(channel.getId())
                     .forEach(System.out::println);
 
-            System.out.println("\n홍길동(user1) 채널 탈퇴");
-            channelService.leaveChannel(channel.getId(), user1.getId());
+            System.out.println("\n테스터(tester) 채널 탈퇴");
+            channelService.leaveChannel(channel.getId(), tester.getId());
 
             System.out.println("\n=== 회원 단건 조회 ===");
-            System.out.println(userService.findUserById(user1.getId()));
+            System.out.println(userService.findUserById(tester.getId()));
 
             System.out.println("\n===============================");
         }

@@ -7,23 +7,19 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
     private final ChannelService channelService;
     private final UserService userService;
-    private final Map<UUID, List<Message>> data;
+    private final List<Message> data;
 
     public JCFMessageService(ChannelService channelService, UserService userService) {
         this.channelService = channelService;
         this.userService = userService;
-        this.data = new HashMap<>();
+        this.data = new ArrayList<>();
     }
 
     @Override
@@ -33,68 +29,99 @@ public class JCFMessageService implements MessageService {
         User user = userService.findUserById(userId);
 
         // 채널에 가입된 유저만 메시지를 작성할 수 있다.
-        Set<UUID> joinedChannels = userService.getJoinedChannels(userId);
-        if (!joinedChannels.contains(channelId)) {
-            throw new RuntimeException("채널의 멤버가 아닙니다.");
+        List<Channel> joinedChannels = userService.getJoinedChannels(userId);
+        if (!joinedChannels.contains(channel)) {
+            throw new RuntimeException("채널에 가입되어 있지 않습니다.");
         }
 
         // 메시지 생성
         Message message = new Message(channel, user, content);
-        // 채널의 메시지 목록이 없으면 생성하고, 해당 채널의 메시지 목록에 메시지를 추가
-        data.computeIfAbsent(channelId, id -> new ArrayList<>()).add(message);
+        data.add(message);
 
         return message;
+    }
+
+    @Override
+    public List<String> readMessagesByChannelId(UUID channelId) {
+        // 메시지를 조회하려는 채널이 실제로 존재하는지 검증
+        channelService.findChannelById(channelId);
+
+        // 해당 채널의 모든 메시지를 조회해서 반환, 메시지가 존재하지 않는다면 빈 리스트 반환
+        // 메시지의 작성자와 내용만 반환
+        return data.stream()
+                .filter(m -> m.getChannel().getId().equals(channelId))
+                .map(m -> m.getUser().getNickname() + ": " + m.getContent())
+                .toList();
     }
 
     @Override
     public List<Message> findMessagesByChannelId(UUID channelId) {
         // 메시지를 조회하려는 채널이 실제로 존재하는지 검증
         channelService.findChannelById(channelId);
-        // 채널의 메시지 목록 조회, 메시지가 없다면 빈 목록 반환 (null 처리 방지)
-        return data.getOrDefault(channelId, Collections.emptyList());
+
+        // 해당 채널의 모든 메시지를 조회해서 반환, 메시지가 존재하지 않는다면 빈 리스트 반환
+        return data.stream()
+                .filter(m -> m.getChannel().getId().equals(channelId))
+                .toList();
+    }
+
+    @Override
+    public Message findMessageByChannelIdAndMessageId(UUID channelId, UUID messageId) {
+        // 메시지를 조회하려는 채널이 실제로 존재하는지 검증
+        channelService.findChannelById(channelId);
+
+        // 메시지가 존재하지 않을 경우 예외 발생
+        Message message = data.stream()
+                .filter(m -> m.getId().equals(messageId))
+                .findFirst()
+                .orElse(null);
+        if (message == null) {
+            throw new RuntimeException("메시지가 존재하지 않습니다.");
+        }
+
+        return message;
     }
 
     @Override
     public Message updateMessageContent(UUID channelId, UUID userId, UUID messageId, String newMessage) {
-        // findMessage()에서 채널/유저/메시지 검색 및 검증
-        Message message = findMessage(channelId, userId, messageId);
+        // 메시지 검색 및 권한 확인
+        Message message = validateMessageAccess(channelId, userId, messageId);
         // 메시지 내용 수정
         return message.updateMessageContent(newMessage);
     }
 
     @Override
     public void deleteMessage(UUID channelId, UUID userId, UUID messageId) {
-        // findMessage()에서 채널/유저/메시지 검색 및 검증
-        Message message = findMessage(channelId, userId, messageId);
-        // 해당 채널의 메시지 목록에서 메시지 제거
-        List<Message> messageList = data.getOrDefault(channelId, Collections.emptyList());
-        messageList.remove(message);
+        // 메시지 검색 및 권한 확인
+        Message message = validateMessageAccess(channelId, userId, messageId);
+        // 메시지 삭제
+        data.remove(message);
     }
 
-    private Message findMessage(UUID channelId, UUID userId, UUID messageId) {
-        // 메시지 조회 전, 채널과 유저가 실제로 존재하는지 검증
-        channelService.findChannelById(channelId);
-        userService.findUserById(userId);
+    private Message validateMessageAccess(UUID channelId, UUID userId, UUID messageId) {
+        // 메시지 조회 전, 채널이 실제로 존재하는지 검색 및 검증
+        Channel channel = channelService.findChannelById(channelId);
 
-        // 채널에 가입된 유저만 조회 가능
-        Set<UUID> joinChannels = userService.getJoinedChannels(userId);
-        if (!joinChannels.contains(channelId)) {
-            throw new RuntimeException("채널의 멤버가 아닙니다.");
+        // getJoinedChannels() 내부에서 유저가 존재하는지 검증 후 유저가 가입한 채널 목록 조회
+        // 유저가 가입한 채널 중 해당 채널이 존재하는지 확인
+        List<Channel> joinedChannels = userService.getJoinedChannels(userId);
+        if (!joinedChannels.contains(channel)) {
+            throw new RuntimeException("채널에 가입되어 있지 않습니다.");
         }
 
-        // 해당 채널의 메시지 목록을 조회 (메시지가 없으면 빈 목록 반환)
-        List<Message> messageList = data.getOrDefault(channelId, Collections.emptyList());
-
-        // 메시지ID와 작성자가 모두 일치하는 메시지 탐색
-        Message message = messageList.stream()
+        // 메시지가 존재하지 않을 경우 예외 발생
+        Message message = data.stream()
                 .filter(m -> m.getId().equals(messageId))
-                .filter(m -> m.getUser().getId().equals(userId))
                 .findFirst()
                 .orElse(null);
-
-        // 메시지가 존재하지 않거나 작성자가 아닐 경우 예외 발생
         if (message == null) {
-            throw new RuntimeException("메시지가 존재하지 않거나 권한이 없습니다.");
+            throw new RuntimeException("메시지가 존재하지 않습니다.");
+        }
+
+        // 작성자가 아닐 경우 예외 발생
+        UUID writerId = message.getUser().getId();
+        if (!writerId.equals(userId)) {
+            throw new RuntimeException("해당 메시지에 대한 권한이 없습니다.");
         }
 
         return message;

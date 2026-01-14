@@ -37,9 +37,8 @@ public class Message extends Entity {
                 "Message [id=%s, content=%s, channel=%s, user=%s]",
                 getId().toString().substring(0, 5),
                 content,
-                channel,
-                user
+                "[id=" + channel.getId().toString().substring(0, 5) + ", " + channel.getName() + "]",
+                "[id=" +  user.getId().toString().substring(0, 5) + ", " + user.getNickname() + "]"
         );
     }
-
 }

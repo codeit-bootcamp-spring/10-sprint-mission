@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public abstract class Entity {
@@ -28,5 +29,20 @@ public abstract class Entity {
     public void update() {
         // 업데이트 시간 갱신
         this.updatedAt = System.currentTimeMillis();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Entity entity = (Entity) o;
+        return Objects.equals(id, entity.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

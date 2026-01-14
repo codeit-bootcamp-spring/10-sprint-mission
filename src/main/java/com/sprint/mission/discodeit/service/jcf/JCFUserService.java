@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -7,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 public class JCFUserService implements UserService {
@@ -30,7 +30,7 @@ public class JCFUserService implements UserService {
         // 존재하는 유저인지 검색 및 검증, 존재하지 않으면 예외 발생
         User user = data.get(userId);
         if (user == null) {
-            throw new RuntimeException("존재하지 않는 유저입니다.");
+            throw new RuntimeException("유저가 존재하지 않습니다.");
         }
 
         return user;
@@ -52,12 +52,15 @@ public class JCFUserService implements UserService {
 
     @Override
     public void deleteUser(UUID userId) {
+        // 삭제 대상 유저가 실제로 존재하는지 검증
+        findUserById(userId);
+
         // 유저 탈퇴, 저장소에서 제거
         data.remove(userId);
     }
 
     @Override
-    public Set<UUID> getJoinedChannels(UUID userId) {
+    public List<Channel> getJoinedChannels(UUID userId) {
         // 실제로 존재하는 유저인지 검색 및 검증
         User user = findUserById(userId);
         // 현재 유저가 가입한 채널 목록 반환
@@ -65,23 +68,33 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void joinChannel(UUID channelId, UUID userId) {
+    public void joinChannel(Channel channel, UUID userId) {
+        // ChannelService에서 검증을 마친 Channel을 기대하지만 null 체크
+        if (channel == null) {
+            throw new RuntimeException("채널이 존재하지 않습니다.");
+        }
+
         // 실제로 존재하는 유저인지 검색 및 검증
         User user = findUserById(userId);
         // 채널 가입
-        user.join(channelId);
+        user.join(channel);
     }
 
     @Override
-    public void leaveChannel(UUID channelId, UUID userId) {
+    public void leaveChannel(Channel channel, UUID userId) {
+        // ChannelService에서 검증을 마친 Channel을 기대하지만 null 체크
+        if (channel == null) {
+            throw new RuntimeException("채널이 존재하지 않습니다.");
+        }
+
         // 실제로 존재하는 유저인지 검색 및 검증
         User user = findUserById(userId);
         // 채널 탈퇴
-        user.leave(channelId);
+        user.leave(channel.getId());
     }
 
     @Override
-    public void leaveChannel(UUID channelId) {
+    public void removeChannelFromJoinedUsers(UUID channelId) {
         // 채널 삭제 시, 해당 채널에 가입된 모든 유저를 탈퇴 처리
         for (User user : data.values()) {
             user.leave(channelId);

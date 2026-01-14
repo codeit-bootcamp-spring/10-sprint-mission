@@ -29,7 +29,7 @@ public class JCFChannelService implements ChannelService {
 
         // 채널 추가 및 채널 참가
         data.put(channel.getId(), channel);
-        userService.joinChannel(channel.getId(), owner.getId());
+        userService.joinChannel(channel, owner.getId());
         return channel;
     }
 
@@ -38,7 +38,7 @@ public class JCFChannelService implements ChannelService {
         // 존재하는 채널인지 검색 및 검증, 존재하지 않으면 예외 발생
         Channel channel = data.get(channelId);
         if (channel == null) {
-            throw new RuntimeException("존재하지 않는 채널입니다.");
+            throw new RuntimeException("채널이 존재하지 않습니다.");
         }
 
         return channel;
@@ -61,7 +61,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID channelId) {
         // 채널 삭제 전, 해당 채널에 가입된 모든 유저의 채널 목록에서 먼저 제거
-        userService.leaveChannel(channelId);
+        userService.removeChannelFromJoinedUsers(channelId);
         // 모든 유저와의 관계를 정리한 후 채널 삭제, 저장소에서 제거
         data.remove(channelId);
     }
@@ -69,16 +69,16 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
         // 실제로 존재하는 채널인지 검증
-        findChannelById(channelId);
+        Channel channel = findChannelById(channelId);
         // 채널 가입
-        userService.joinChannel(channelId, userId);
+        userService.joinChannel(channel, userId);
     }
 
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
         // 실제로 존재하는 채널인지 검증
-        findChannelById(channelId);
+        Channel channel = findChannelById(channelId);
         // 채널에서 해당 유저 탈퇴 처리
-        userService.leaveChannel(channelId, userId);
+        userService.leaveChannel(channel, userId);
     }
 }
