@@ -23,9 +23,6 @@ public interface UserService {
     // 삭제
     void deleteById(UUID id);
 
-    // 해당 id를 가진 유저가 속한 채널 목록을 반환
-    List<Channel> getChannelsById(UUID id);
-
-    // 해당 id를 가진 유저가 작성한 메시지 목록을 반환
-    List<Message> getMessagesById(UUID id);
+    // 해당 channel Id를 가진 유저 목록을 반환
+    List<User> getUsersByChannelId(UUID channelId);
 }

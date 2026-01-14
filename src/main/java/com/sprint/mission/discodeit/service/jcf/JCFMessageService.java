@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.util.Validator;
 
 import java.util.*;
 
@@ -23,12 +24,10 @@ public class JCFMessageService implements MessageService {
     // 외부에서 객체를 받는 것 보다는 메소드 내부에서 객체 생성해서 반환
     @Override
     public Message createMessage(UUID userId, String content, UUID channelId) {
-        if (userId == null || content == null || channelId == null) {
-            throw new IllegalArgumentException("메시지 생성 시 userId, content, channelId이 null일 수 없음");
-        }
-        if (content.isEmpty()) {
-            throw new IllegalArgumentException("메시지 생성 시 content가 빈문자열일 수 없음");
-        }
+        Validator.validateNotNull(userId, "메시지 생성 시 userId가 null일 수 없음");
+        Validator.validateNotNull(content, "메시지 생성 시 content가 null일 수 없음");
+        Validator.validateNotNull(channelId, "메시지 생성 시 channelId가 null일 수 없음");
+        Validator.validateNotBlank(content,"메시지 생성 시 content가 빈문자열일 수 없음");
         User user = userService.findById(userId);
         Channel channel = channelService.findById(channelId);
         if (!user.isInChannel(channel)) {
@@ -57,9 +56,8 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message updateById(UUID id, String content) {
         Message targetMessage = findById(id);
-        if (content == null) {
-            throw new IllegalArgumentException("업데이트하려는 메시지 내용이 null일 수 없음");
-        }
+        Validator.validateNotNull(content, "업데이트하려는 메시지 내용이 null일 수 없음");
+        Validator.validateNotBlank(content, "업데이트하려는 메시지 내용이 빈내용일 수 없음");
         targetMessage.updateContent(content);
         return targetMessage;
     }
@@ -68,5 +66,23 @@ public class JCFMessageService implements MessageService {
     public void deleteById(UUID id) {
         findById(id);
         messages.remove(id);
+    }
+    
+    // 해당 user Id를 가진 유저가 작성한 메시지 목록을 반환
+    @Override
+    public List<Message> getMessagesByUserId(UUID userId) {
+        User user = userService.findById(userId);
+        return messages.values().stream()
+                .filter(message -> message.getUser() == user)
+                .toList();
+    }
+
+    // 해당 channel Id를 가진 채널의 메시지 목록을 반환
+    @Override
+    public List<Message> getMessagesByChannelId(UUID channelId) {
+        Channel channel = channelService.findById(channelId);
+        return messages.values().stream()
+                .filter(message -> message.getChannel()==channel)
+                .toList();
     }
 }

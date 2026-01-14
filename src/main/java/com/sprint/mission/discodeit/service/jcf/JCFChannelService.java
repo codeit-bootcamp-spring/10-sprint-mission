@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.util.Validator;
 
 import java.util.*;
 
@@ -17,12 +18,8 @@ public class JCFChannelService implements ChannelService {
     // 외부에서 객체를 받는 것 보다는 메소드 내부에서 객체 생성해서 반환
     @Override
     public Channel createChannel(String channelName) {
-        if (channelName == null) {
-            throw new IllegalArgumentException("생성하고자하는 채널의 채널명이 null일 수 없음");
-        }
-        if (channelName.isEmpty()) {
-            throw new IllegalArgumentException("생성하고자하는 채널의 채널명이 빈문자열일 수 없음");
-        }
+        Validator.validateNotNull(channelName, "생성하고자하는 채널의 채널명이 null일 수 없음");
+        Validator.validateNotBlank(channelName, "생성하고자하는 채널의 채널명이 빈문자열일 수 없음");
         Channel channel = new Channel(channelName.trim());
         channels.put(channel.getId(), channel);
         return channel;
@@ -44,11 +41,10 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel updateById(UUID id, String newChannelName) {
-        if (newChannelName == null) {
-            throw new IllegalStateException("업데이트하고자 하는 채널의 채널명이 null일 수 없음");
-        }
+        Validator.validateNotNull(newChannelName, "업데이트하고자 하는 채널의 채널명이 null일 수 없음");
+        Validator.validateNotBlank(newChannelName, "업데이트하고자 하는 채널의 채널명이 빈 문자열일 수 없음");
         Channel targetChannel = findById(id);
-        targetChannel.setChannelName(newChannelName);
+        targetChannel.setChannelName(newChannelName.trim());
         return targetChannel;
     }
 
@@ -58,24 +54,14 @@ public class JCFChannelService implements ChannelService {
         findById(id);
         channels.remove(id);
     }
-    
-    // 해당 id를 가진 채널의 메시지 목록을 반환
-    public List<Message> getMessagesById(UUID id) {
-        Channel channel = findById(id);
-        List<Message> messages = channel.getMessageList();
-        if (messages.isEmpty()) {
-            throw new IllegalStateException("해당 채널에 메시지가 없습니다.");
-        }
-        return messages;
-    }
 
-    // 해당 id를 가진 채널의 유저 목록을 반환
-    public List<User> getUsersById(UUID id) {
-        Channel channel = findById(id);
-        List<User> users = channel.getJoinedUsers();
-        if (users.isEmpty()) {
-            throw new IllegalStateException("해당 채널에 유저가 없습니다.");
-        }
-        return users;
+    // 해당 user Id를 가진 유저가 속한 채널 목록을 반환
+    @Override
+    public List<Channel> getChannelsByUserId(UUID userId) {
+        return channels.values().stream()
+                .filter(channel ->
+                        channel.getJoinedUsers().stream()
+                                .anyMatch(user -> user.getId().equals(userId)))
+                .toList();
     }
 }

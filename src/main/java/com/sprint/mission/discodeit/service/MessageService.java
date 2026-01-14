@@ -18,4 +18,9 @@ public interface MessageService {
 
     void deleteById(UUID id);
 
+    // 해당 user Id를 가진 유저가 작성한 메시지 목록을 반환
+    List<Message> getMessagesByUserId(UUID userId);
+
+    // 해당 channel Id를 가진 채널의 메시지 목록을 반환
+    List<Message> getMessagesByChannelId(UUID channelId);
 }

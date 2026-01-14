@@ -186,22 +186,22 @@ public class JavaApplication {
 
         // channel1의 메시지 목록 출력
         System.out.println("\n==channel1의 메시지 목록 출력==");
-        channelService.getMessagesById(channel1Id)
+        messageService.getMessagesByChannelId(channel1Id)
                 .forEach(System.out::println);
 
         // channel1에 참여 중인 유저 목록 출력
         System.out.println("\n==channel1에 참여 중인 유저 목록 출력==");
-        channelService.getUsersById(channel1Id)
+        userService.getUsersByChannelId(channel1Id)
                 .forEach(System.out::println);
 
         // user1(장동규)가 참여 중인 채널 목록 출력
         System.out.println("\n==user1(장동규)가 참여 중인 채널 목록 출력==");
-        userService.getChannelsById(user1Id)
+        channelService.getChannelsByUserId(user1Id)
                 .forEach(System.out::println);
 
         // user1(장동규)가 작성한 메시지 목록 출력
         System.out.println("\n==user1(장동규)가 작성한 메시지 목록 출력==");
-        userService.getMessagesById(user1Id)
+        messageService.getMessagesByUserId(user1Id)
                 .forEach(System.out::println);
     }
 }
