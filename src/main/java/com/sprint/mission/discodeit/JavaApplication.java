@@ -1,15 +1,15 @@
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Group;
+import com.sprint.mission.discodeit.entity.RoleGroup;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.GroupService;
+import com.sprint.mission.discodeit.service.RoleGroupService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFGroupService;
+import com.sprint.mission.discodeit.service.jcf.JCFRoleGroupService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
@@ -19,13 +19,13 @@ public class JavaApplication {
         UserService userdata = JCFUserService.getInstance();
         ChannelService channeldata = JCFChannelService.getInstance();
         MessageService messagedata = JCFMessageService.getInstance();
-        GroupService groupdata = JCFGroupService.getInstance();
+        RoleGroupService groupdata = JCFRoleGroupService.getInstance();
 
         User user1 = userdata.create("초시");
         User user2 = userdata.create("초코");
         User user3 = userdata.create("경단");
 
-        Group group1 = groupdata.create("허용 그룹");
+        RoleGroup group1 = groupdata.create("허용 그룹");
         group1.addUser(user1);
         group1.addUser(user2);
 
