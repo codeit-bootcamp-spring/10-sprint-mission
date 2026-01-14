@@ -5,13 +5,13 @@ import com.sprint.mission.discodeit.entity.Message;
 import java.util.*;
 
 public interface MessageService {
-    void create();
+    Message create(String msg);
 
     Optional<Message> read(UUID id);
 
-    Optional<ArrayList<Message>> readAll();
+    ArrayList<Message> readAll();
 
-    void update(Message messageData);
+    Message update(UUID id, String messageData);
 
-    Message delete(UUID id);
+    void delete(UUID id);
 }

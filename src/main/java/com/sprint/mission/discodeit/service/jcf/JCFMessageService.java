@@ -17,35 +17,43 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void create() {
-        Message message = new Message();
+    public Message create(String msg) {
+        Message message = new Message(msg);
         data.put(message.getId(), message);
+        return message;
     }
 
     @Override
     public Optional<Message> read(UUID id) {
-        if (data.isEmpty() || !data.containsKey(id)) {
-            System.out.println("해당 메시지가 존재하지 않습니다.");
-        }
         return Optional.ofNullable(data.get(id));
     }
 
     @Override
-    public Optional<ArrayList<Message>> readAll() {
-        ArrayList<Message> list = new ArrayList<>(data.values());
-        if (data.isEmpty()) {
-            System.out.println("메시지 데이터가 존재하지 않습니다.");
+    public ArrayList<Message> readAll() {
+        return new ArrayList<>(this.data.values());
+    }
+
+    @Override
+    public Message update(UUID id, String messageData) {
+        try {
+            this.data.get(id).updateText(messageData);
+            return this.data.get(id);
+        } catch (NoSuchElementException e) {
+            System.out.println("찾고자 하는 데이터가 없습니다.");
+        } catch (Exception e) {
+            System.out.println("잘못된 응답입니다.");
         }
-        return Optional.ofNullable(list);
+        return null;
     }
 
     @Override
-    public void update(Message messageData) {
-        this.data.put(messageData.getId(), messageData);
-    }
-
-    @Override
-    public Message delete(UUID id) {
-        return data.remove(id);
+    public void delete(UUID id) {
+        try {
+            data.remove(id);
+        } catch (NoSuchElementException e) {
+            System.out.println("삭제할 데이터가 존재하지 않습니다.");
+        } catch (Exception e) {
+            System.out.println("데이터가 존재하지 않습니다.");
+        }
     }
 }

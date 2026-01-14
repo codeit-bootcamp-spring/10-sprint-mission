@@ -17,35 +17,43 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void create() {
-        Channel channel = new Channel();
+    public Channel create(String channelName) {
+        Channel channel = new Channel(channelName);
         this.data.put(channel.getId(), channel);
+        return channel;
     }
 
     @Override
     public Optional<Channel> read(UUID id) {
-        if (data.isEmpty() || !data.containsKey(id)) {
-            System.out.println("해당 채널이 존재하지 않습니다.");
-        }
         return Optional.ofNullable(data.get(id));
     }
 
     @Override
-    public Optional<ArrayList<Channel>> readAll() {
-        ArrayList<Channel> list = new ArrayList<>(data.values());
-        if (data.isEmpty()) {
-            System.out.println("채널 데이터가 존재하지 않습니다.");
+    public ArrayList<Channel> readAll() {
+        return new ArrayList<>(this.data.values());
+    }
+
+    @Override
+    public Channel updateChannelname(UUID id, String name) {
+        try {
+            this.data.get(id).updateChannelName(name);
+            return this.data.get(id);
+        } catch (NoSuchElementException e) {
+            System.out.println("변경하고자 하는 데이터가 없습니다.");
+        } catch (Exception e) {
+            System.out.println("잘못된 응답입니다.");
         }
-        return Optional.ofNullable(list);
+        return null;
     }
 
     @Override
-    public void update(Channel channelData) {
-        this.data.put(channelData.getId(), channelData);
-    }
-
-    @Override
-    public Channel delete(UUID id) {
-        return data.remove(id);
+    public void delete(UUID id) {
+        try {
+            data.remove(id);
+        } catch (NoSuchElementException e) {
+            System.out.println("삭제할 데이터가 존재하지 않습니다.");
+        } catch (Exception e) {
+            System.out.println("데이터가 존재하지 않습니다.");
+        }
     }
 }

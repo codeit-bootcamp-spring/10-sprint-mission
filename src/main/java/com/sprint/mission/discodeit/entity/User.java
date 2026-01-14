@@ -1,52 +1,48 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-
+import java.util.ArrayList;
 import java.util.UUID;
 
-public class User {
+public class User extends BaseDomain {
     // 필드
-    private UUID id;
     private String name;
-    private JCFMessageService messageMap;
-    private long createdAt;
-    private long updatedAt;
+    private ArrayList<Message> messageList;
 
     // 생성자
     public User() {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.messageMap = new JCFMessageService();
+        super();
+        this.name = "기본 이름";
     }
-    public User(UUID id) {
-        this.id = id;
-        this.createdAt = System.currentTimeMillis();
-    }
-    public User(UUID id, long createdAt) {
-        this.id = id;
-        this.createdAt = createdAt;
+    public User(String name) {
+        super();
+        this.name = name;
     }
 
     // 메소드
     public UUID getId() {
-        return id;
+        return this.id;
     }
 
     public long getCreatedAt() {
-        return createdAt;
+        return this.createdAt;
     }
 
     public long getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
 
-    public void update(UUID id) {
-        this.id = id;
+    public ArrayList<Message> getMessageList() {
+        return this.messageList;
+    }
+
+    public void updateName(String name) {
+        this.name = name;
         this.updatedAt = System.currentTimeMillis();
     }
 
     public String toString() {
         return "이 유저의 id: " + this.id + "\n"
+                + "이름: " + this.name + "\n"
                 + "생성일: " + this.createdAt + "\n"
                 + "변경일: " + this.updatedAt;
     }

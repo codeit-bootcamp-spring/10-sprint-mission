@@ -2,47 +2,37 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.UUID;
 
-public class Message {
+public class Message extends BaseDomain {
     // 필드
-    private UUID id;
     private String msg;
-    private long createdAt;
-    private long updatedAt;
 
     // 생성자
-    public Message() {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-    }
-    public Message(UUID id) {
-        this.id = id;
-        this.createdAt = System.currentTimeMillis();
-    }
-    public Message(UUID id, long createdAt) {
-        this.id = id;
-        this.createdAt = createdAt;
+    public Message(String msg) {
+        super();
+        this.msg = msg;
     }
 
     // 메소드
     public UUID getId() {
-        return id;
+        return this.id;
     }
 
     public long getCreatedAt() {
-        return createdAt;
+        return this.createdAt;
     }
 
     public long getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
 
-    public void update(UUID id) {
-        this.id = id;
+    public void updateText(String msg) {
+        this.msg = msg;
         this.updatedAt = System.currentTimeMillis();
     }
 
     public String toString() {
         return "이 메시지의 id: " + this.id + "\n"
+                + "메시지 내용: " + this.msg + "\n"
                 + "생성일: " + this.createdAt + "\n"
                 + "변경일: " + this.updatedAt;
     }

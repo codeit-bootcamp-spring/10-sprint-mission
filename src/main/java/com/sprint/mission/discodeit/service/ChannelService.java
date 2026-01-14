@@ -7,13 +7,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ChannelService {
-    void create();
+    Channel create(String channelName);
 
     Optional<Channel> read(UUID id);
 
-    Optional<ArrayList<Channel>> readAll();
+    ArrayList<Channel> readAll();
 
-    void update(Channel chnData);
+    Channel updateChannelname(UUID id, String name);
 
-    Channel delete(UUID id);
+    void delete(UUID id);
 }

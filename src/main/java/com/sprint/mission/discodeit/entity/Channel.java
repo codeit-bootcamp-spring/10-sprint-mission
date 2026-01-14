@@ -1,29 +1,23 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
-
+import java.util.ArrayList;
 import java.util.UUID;
 
-public class Channel {
+public class Channel extends BaseDomain{
     // 필드
-    private UUID id;
-    private JCFUserService userMap;
-    private long createdAt;
-    private long updatedAt;
+    private String channelName;
+    private ArrayList<User> userList;
 
     // 생성자
     public Channel() {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.userMap = new JCFUserService();
+        super();
+        this.channelName = "기본 이름";
+        this.userList = new ArrayList<>();
     }
-    public Channel(UUID id) {
-        this.id = id;
-        this.createdAt = System.currentTimeMillis();
-    }
-    public Channel(UUID id, long createdAt) {
-        this.id = id;
-        this.createdAt = createdAt;
+    public Channel(String channelName) {
+        super();
+        this.channelName = channelName;
+        this.userList = new ArrayList<>();
     }
 
     // 메소드
@@ -39,13 +33,18 @@ public class Channel {
         return updatedAt;
     }
 
-    public void update(UUID id) {
-        this.id = id;
+    public void updateChannelName(String name) {
+        this.channelName = name;
         this.updatedAt = System.currentTimeMillis();
+    }
+
+    public ArrayList<User> getUserList() {
+        return this.userList;
     }
 
     public String toString() {
         return "이 채널의 id: " + this.id + "\n"
+                + "채널명: " + this.channelName + "\n"
                 + "생성일: " + this.createdAt + "\n"
                 + "변경일: " + this.updatedAt;
     }
