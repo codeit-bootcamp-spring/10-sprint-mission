@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 
@@ -9,9 +12,13 @@ import java.util.*;
 
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data;
+    private final ChannelService channelService;
+    private final MessageService messageService;
 
-    public JCFUserService(Map<UUID, User> data) {
+    public JCFUserService(Map<UUID, User> data, ChannelService channelService, MessageService messageService) {
         this.data = data;
+        this.channelService = channelService;
+        this.messageService = messageService;
     }
 
     @Override
@@ -130,7 +137,19 @@ public class JCFUserService implements UserService {
     }
 
     // 특정 사용자가 작성한 모든 메시지
+    @Override
+    public List<Message> readUserMessagesByUserId(UUID userId) {
+        // User ID null 검증
+        ValidationMethods.validateUserId(userId);
 
+        User user = data.get(userId);
+        // 유저 없으면 빈 리스트 반환
+        if (user == null) {
+            return Collections.emptyList();
+        }
+
+        return user.getWriteMessageList().stream().toList();
+    }
 
     // U. 수정
     // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
@@ -231,29 +250,25 @@ public class JCFUserService implements UserService {
         return user;
     }
 
-    // 메시지 작성 - 수정 중...
-    @Override
-    public User writeMessage(UUID requestId, UUID targetId, String messageContent, Channel channel) {
-        // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
-        User user = validateMethods(data, requestId, targetId);
-
-        return null;
-    }
-
     // D. 삭제
     @Override
     public void deleteUser(UUID requestId, UUID targetId) {
         // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체 존재 확인
         User user = validateMethods(data, requestId, targetId);
 
-        // 의존성 끊기
+        // 연관 관계 정리
+        // 해당 유저가 작성한(author) 메시지 모두 삭제
+        user.getWriteMessageList()
+                .forEach(message ->
+                        messageService.deleteMessage(message.getAuthor().getId(), message.getId()));
+        // 해당 유저가 owner인 모든 채널 삭제하기 + 채널 관련 삭제
+        user.getOwnerChannelList()
+                .forEach(channel ->
+                        channelService.deleteChannel(user.getId(), channel.getId()));
+
         // 참여 채널에 존재하는 해당 유저 흔적 지우기
         user.getJoinChannelList().forEach(channel -> channel.removeChannelMembers(user));
         // owner인 채널에 존재하는 해당 유저 흔적 지우기
-        user.getOwnerChannelList().forEach(channel -> channel.removeOwner(user));
-
-        // 메시지 관련 삭제
-        // 수정 중...
 
         data.remove(targetId);
     }

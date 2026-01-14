@@ -41,9 +41,9 @@ public class User extends BaseEntity {
                 "userName = " + userName + ", " +
 //                "password = " + password + ", " +
 //                "birthday = " + birthday + ", " +
-//                "ownerChannelList = " + ownerChannelList + ", " +
-//                "joinChannelList = " + joinChannelList + ", " +
-//                "writeMessageList = " + writeMessageList +
+                "ownerChannelList = " + ownerChannelList.stream().map(channel -> channel.getId()).toList() + ", " +
+                "joinChannelList = " + joinChannelList.stream().map(channel -> channel.getId()).toList() + ", " +
+                "writeMessageList = " + writeMessageList.stream().map(message -> message.getId()).toList() +
                 "}";
     }
 
@@ -77,7 +77,7 @@ public class User extends BaseEntity {
     }
 
     public List<Message> getWriteMessageList() {
-        return writeMessageList;
+        return writeMessageList.stream().toList();
     }
 
     // update
@@ -107,13 +107,13 @@ public class User extends BaseEntity {
         updateTime();
     }
 
-    // owner 임명됨
+    // 채널 생성 시 owner에 임명될 때 연관 관계로 owner인 user의 ownerChannelList에 추가
     public void ownChannel(Channel channel) {
         this.ownerChannelList.add(channel);
         updateTime();
     }
 
-    // owner 소유권 제거
+    // owner가 변경(업데이트)되거나 채널 삭제 시 소유권 제거
     public void removeChannelOwner(Channel channel) {
         this.ownerChannelList.remove(channel);
         updateTime();
@@ -134,9 +134,15 @@ public class User extends BaseEntity {
     }
 
     // 메시지 작성
-    public void writeMessage(Message message) {
+    public void addMessageInUser(Message message) {
         this.writeMessageList.add(message);
         updateTime();
 //        message.addUserWriteMessageList(this, message.getContent());
+    }
+
+    // 유저가 작성한 메시지 삭제
+    public void removeMessageInUser(Message message) {
+        this.writeMessageList.remove(message);
+        updateTime();
     }
 }

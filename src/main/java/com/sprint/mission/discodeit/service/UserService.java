@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
@@ -29,8 +30,8 @@ public interface UserService {
     List<Channel> searchUserChannelByChannelName(UUID userId, String partialChannelName);
     // 특정 사용자가 owner인 모든 채널
     List<Channel> readUserOwnChannelsByUserId(UUID userId);
-//    // 특정 사용자가 작성한 모든 메시지
-//    List<Message> readAllMessageAtUserByUserId(UUID userId);
+    // 특정 사용자가 작성한 모든 메시지
+    List<Message> readUserMessagesByUserId(UUID userId);
 
     // U. 수정
     User updateEmail(UUID requestId, UUID targetId, String email); // 이메일 수정
@@ -40,7 +41,6 @@ public interface UserService {
     User updateBirthday(UUID requestId, UUID targetId, String birthday); // 생년월일 수정
     User joinChannel(UUID requestId, UUID targetId, Channel channel); // 채널 참여
     User leaveChannel(UUID requestId, UUID targetId, Channel channel); // 채널 탈퇴
-    User writeMessage(UUID requestId, UUID targetId, String messageContent, Channel channel); // 메시지 작성
 
     // D. 삭제
     void deleteUser(UUID requestId, UUID targetId);
