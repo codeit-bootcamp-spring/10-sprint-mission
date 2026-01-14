@@ -22,7 +22,6 @@ public class JCFUserService implements UserService {
         this.messageService = messageService;
     }
 
-
     // Create
     @Override
     public User createUser(String username, String nickname, String email, String phoneNumber) {

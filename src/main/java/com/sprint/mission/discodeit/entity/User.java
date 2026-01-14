@@ -114,6 +114,7 @@ public class User extends BaseEntity {
         return new ArrayList<>(this.messages);
     }
 
+    // toString
     @Override
     public String toString() {
         return "User{" +
@@ -123,6 +124,8 @@ public class User extends BaseEntity {
                 ", email=" + (email != null ? "'" + email + "'" : "null") +
                 ", phoneNumber=" + (phoneNumber != null ? "'" + phoneNumber + "'" : "null") +
                 ", status=" + status +
+                ", isMicrophoneOn=" + isMicrophoneOn +
+                ", isHeadsetOn=" + isHeadsetOn +
                 '}';
     }
 

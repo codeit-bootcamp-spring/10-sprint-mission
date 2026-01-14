@@ -16,11 +16,11 @@ public interface ChannelService {
     List<Channel> findAll();
 
     // Update
-    void updateChannel(UUID channelId, String name);
-    void updateChannelVisibility(UUID channelId, boolean isPublic);
+    Channel updateChannel(UUID channelId, String name);
+    Channel updateChannelVisibility(UUID channelId, boolean isPublic);
 
     // Delete
-    void deleteChannel(UUID channelId);
+    Channel deleteChannel(UUID channelId);
 
     // Setter
     void setMessageService(MessageService messageService);

@@ -13,6 +13,7 @@ public class Channel extends BaseEntity {
 
     public Channel(String channelName, boolean isPublic){
         super();
+        validateName(channelName);
         this.channelName = channelName;
         this.isPublic = isPublic;
     }
@@ -27,12 +28,20 @@ public class Channel extends BaseEntity {
 
     // Updates
     public void updateName(String newName){
+        validateName(newName);
         this.channelName = newName;
         updateTimestamp();
     }
     public void updatePublic(boolean isPublic){
         this.isPublic = isPublic;
         updateTimestamp();
+    }
+
+    // validation
+    private void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("채널 이름은 비어있을 수 없습니다.");
+        }
     }
 
     // User Control
@@ -54,6 +63,18 @@ public class Channel extends BaseEntity {
     }
     public List<Message> getMessages() {
         return new  ArrayList<>(this.messages);
+    }
+
+    // toString
+    @Override
+    public String toString() {
+        return "Channel{" +
+                "id=" + id +
+                ", name='" + channelName + '\'' +
+                ", isPublic=" + isPublic +
+                ", userCount=" + users.size() +
+                ", messagesCount=" + messages.size() +
+                '}';
     }
 
 }

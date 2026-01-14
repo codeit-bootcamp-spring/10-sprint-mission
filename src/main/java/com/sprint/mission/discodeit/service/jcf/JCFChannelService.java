@@ -21,9 +21,7 @@ public class JCFChannelService implements ChannelService {
     // Create
     @Override
     public Channel createChannel(String name, boolean isPublic) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("채널 이름은 비어있을 수 없습니다.");
-        }
+        // 엔티티에서 빈 이름의 채널 확인함
         Channel newChannel = new Channel(name, isPublic);
         channelMap.put(newChannel.getId(), newChannel);
 
@@ -43,29 +41,32 @@ public class JCFChannelService implements ChannelService {
 
     // Update
     @Override
-    public void updateChannel(UUID channelId, String name) {
+    public Channel updateChannel(UUID channelId, String name) {
         Channel channel = getChannelOrThrow(channelId);
 
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("채널 이름은 비어있을 수 없습니다.");
-        }
+        channel.updateName(name); // 엔티티에서 빈 채널 이름 검증함.
 
-        channel.updateName(name);
+        return channel;
     }
 
     @Override
-    public void updateChannelVisibility(UUID channelId, boolean isPublic) {
+    public Channel updateChannelVisibility(UUID channelId, boolean isPublic) {
         Channel channel = getChannelOrThrow(channelId);
         channel.updatePublic(isPublic);
+
+        return channel;
     }
 
     // Delete
     @Override
-    public void deleteChannel(UUID channelId) {
+    public Channel deleteChannel(UUID channelId) {
         Channel channel = getChannelOrThrow(channelId);
+
         messageService.deleteMessagesByChannelId(channelId); // 채널 내 모든 메시지 삭제
         channel.getUsers().forEach(user -> {user.leaveChannel(channel);}); // 채널 내 유저에게서 채널 삭제
         channelMap.remove(channelId); // 채널 맵에서 삭제
+
+        return channel;
     }
 
     // Helper
