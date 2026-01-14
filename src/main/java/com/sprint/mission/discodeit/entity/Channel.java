@@ -6,18 +6,18 @@ import java.util.UUID;
 public class Channel extends BaseEntity {
     private String channelName;         // 채널 이름 (변경 가능)
     private User user;                  // 채널 소유자 (변경 불가능)
-    private ArrayList<User> users;      // 채널 참가자 (변경 가능)
+    private ArrayList<User> members;      // 채널 참가자 (변경 가능)
     private ChannelType type;           // CHAT, VOICE (변경 불가능)
 
     public Channel(String channelName, User user, ChannelType channelType) {
-        this.users = new ArrayList<>();
+        this.members = new ArrayList<>();
 
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
         this.channelName = channelName;
         this.user = user;
-        this.users.add(user);
+        this.members.add(user);
         this.type = channelType;
     }
 
@@ -46,8 +46,8 @@ public class Channel extends BaseEntity {
         return user;
     }
 
-    public ArrayList<User> getUsers() {
-        return users;
+    public ArrayList<User> getMembers() {
+        return members;
     }
 
     public ChannelType getChannelType() {
