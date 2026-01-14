@@ -14,30 +14,32 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void joinChannel(UUID userId, UUID channelId) {   // 채널 참가
-        User user = findById(userId);
-        if (user != null) {
-            user.joinChannel(channelId);
-        }
-    }
+    public User create(String name, String email, String profileImageUrl) {
+        Objects.requireNonNull(name, "유저 이름은 필수 항목입니다.");
+        Objects.requireNonNull(email, "이메일은 필수 항목입니다.");
+        Objects.requireNonNull(profileImageUrl, "프로필 이미지 URL은 필수 항목입니다.");
 
-    @Override
-    public void leaveChannel(UUID userId, UUID channelId) {   // 채널 나가기
-        User user = findById(userId);
-        if (user != null) {
-            user.leaveChannel(channelId);
-        }
-    }
-
-    @Override
-    public void create(String name, String email, String profileImageUrl) {
         User user = new User(name, email, profileImageUrl);
         users.put(user.getId(), user);
+
+        return user;
     }
 
     @Override
-    public User findById(UUID id) {
-        return users.get(id);
+    public void delete(UUID userId) {
+
+        if (!users.containsKey(userId)) {
+            System.out.println("삭제하려는 유저가 존재하지 않습니다.");
+            return;
+        }
+        users.remove(userId);
+    }
+
+
+    @Override
+    public User findById(UUID userId) {
+        Objects.requireNonNull(userId, "유저 Id가 유효하지 않습니다.");
+        return users.get(userId);
     }
 
     @Override
@@ -46,14 +48,17 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void update(UUID id, String name, String email, String profileImageUrl) {
-        User user = findById(id);
-        if (user != null)
-            user.update(name, email, profileImageUrl);
+    public User update(UUID userId, String name, String email, String profileImageUrl) {
+        Objects.requireNonNull(userId, "유저 Id가 유효하지 않습니다.");
+
+        User user = findById(userId);
+        if (user == null) {
+            System.out.println("수정할 유저가 존재하지 않습니다.");
+            return null;
+        }
+
+        user.update(name, email, profileImageUrl);
+        return user;
     }
 
-    @Override
-    public void delete(UUID userId) {
-        users.remove(userId);
-    }
 }

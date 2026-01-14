@@ -1,16 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Channel extends BaseEntity {
 
     // 채널에 속한 메세지 목록
     private final List<Message> messages = new ArrayList<>();
     // 채널에 참여한 유저 목록
-    private final List<UUID> userIds = new ArrayList<>();
+    private final List<User> users = new ArrayList<>();
 
     private String name;
     private String description;
@@ -22,27 +19,30 @@ public class Channel extends BaseEntity {
     }
 
     // Getter, update
-    public List<UUID> getUserIds() {return List.copyOf(this.userIds);}
+    public List<User> getUsers() {return List.copyOf(this.users);}
     public String getName() {return name;}
     public String getDescription() {return description;}
 
     public void update(String name, String description){
-        updateTimestamp();
-        this.name = name;
-        this.description = description;
+        if (name != null || description != null) {
+            Optional.ofNullable(name).ifPresent(n -> this.name = n);
+            Optional.ofNullable(description).ifPresent(d -> this.description = d);
+
+            updateTimestamp();
+        }
     }
 
     // 유저 목록에 유저 추가
-    public void addUser(UUID userId){
-        if (userId == null)
+    public void addUser(User user){
+        if (user == null)
             return;
-        if (!this.userIds.contains(userId))
-            this.userIds.add(userId);
+        if (!this.users.contains(user))
+            this.users.add(user);
     }
 
     // 유저 목록에서 유저 삭제
-    public void removeUser(UUID userId) {
-            userIds.remove(userId);
+    public void removeUser(User user) {
+            users.remove(user);
     }
 
     // 메세지 목록에 메세지 추가 + 채널 수정 시간 갱신

@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.jcf;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
@@ -18,44 +18,69 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void create(String content, User user, Channel channel) {    // 내용, 사용자, 채널 객체 받아서 메세지 생성
-        if (content != null && user != null && channel != null && channel.getUserIds().contains(user.getId())) {
-            Message message = new Message(content, user.getId(), channel.getId());
-            repository.put(message.getId(), message);
-            channel.addMessage(message);
-        }
+    public Message create(String content, User user, Channel channel) {    // 내용, 사용자, 채널 객체 받아서 메세지 생성
+
+        Objects.requireNonNull(content, "메시지 내용은 null일 수 없습니다.");
+        Objects.requireNonNull(user, "메시지 작성자(User)는 null일 수 없습니다.");
+        Objects.requireNonNull(channel, "메시지 대상 채널(Channel)은 null일 수 없습니다.");
+
+        if (!channel.getUsers().contains(user))
+            throw new IllegalArgumentException("해당 채널의 멤버가 아니면 메시지를 작성할 수 없습니다.");
+        Message message = new Message(content, user, channel);
+        repository.put(message.getId(), message);
+        channel.addMessage(message);
+
+        return message;
     }
 
+
     @Override
-    public Message findById(UUID id) {
-        return repository.get(id);
+    public Message findById(UUID messageId) {
+        Objects.requireNonNull(messageId, "조회하려는 메시지 ID가 null입니다.");
+        return repository.get(messageId);
     }
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
+        Objects.requireNonNull(channelId, "조회하려는 채널 ID가 null입니다.");
         // 해당 채널 ID를 가진 메시지만 필터링하여 리스트로 반환
         Channel channel = channelService.findById(channelId);
-        return (channel != null) ? channel.getMessages() : List.of();
-    }
-
-    @Override
-    public void update(UUID id, String content) {
-        Message message = repository.get(id);
-        if (message != null) {
-            // 메시지의 내용(content)을 업데이트
-            message.update(content);
+        if (channel == null) {
+            System.out.println("해당 채널이 존재하지 않습니다.");
+            return List.of(); // null 대신 빈 리스트 반환이 안전합니다.
         }
+
+        return channel.getMessages();
     }
 
     @Override
-    public void delete(UUID id) {
-        Message message = repository.remove(id);
+    public Message update(UUID messageId, String content) {
+        Objects.requireNonNull(messageId, "수정하려는 메시지 ID가 null입니다.");
+        Objects.requireNonNull(content, "수정할 내용이 null입니다.");
 
-        if (message != null) {
-            Channel channel = channelService.findById(message.getChannelId());
-            if (channel != null) {
-                channel.removeMessage(id);
-            }
+        Message message = repository.get(messageId);
+        if (message == null) {
+            System.out.println("메세지가 존재하지 않습니다.");
+            return null;
+        }
+
+        message.update(content);
+        return message;
+    }
+
+    @Override
+    public void delete(UUID messageId) {
+        Objects.requireNonNull(messageId, "메세지 Id가 유효하지 않습니다.");
+
+        Message message = repository.remove(messageId);
+        if (message == null) {
+            System.out.println("삭제하려는 메세지가 존재하지 않습니다.");
+            return;
+        }
+        Channel channel = channelService.findById(message.getChannelId());
+        if (channel != null) {
+            channel.removeMessage(messageId);
+
         }
     }
 }

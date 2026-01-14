@@ -1,28 +1,31 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class Message extends BaseEntity {
     // field
     private String content;
-    private final UUID userId;
-    private final UUID channelId;
+    private final User user;
+    private final Channel channel;
 
     // constructor
-    public Message(String content, UUID userId, UUID channelId){
+    public Message(String content, User user, Channel channel) {
         this.content = content;
-        this.userId = userId;
-        this.channelId = channelId;
+        this.user = user;
+        this.channel = channel;
     }
 
     // Getter, update
     public String getContent() {return content;}
-    public UUID getUserId() {return userId;}
-    public UUID getChannelId() {return channelId;}
+    public UUID getUserId() {return user.getId();}
+    public UUID getChannelId() {return channel.getId();}
 
     // 메세지 수정
-    public void update(String content){
-        updateTimestamp();
-        this.content = content;
+    public void update(String content) {
+        Optional.ofNullable(content).ifPresent(c -> {
+            this.content = c;
+            updateTimestamp();
+        });
     }
 }

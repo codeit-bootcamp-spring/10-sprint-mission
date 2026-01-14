@@ -2,12 +2,13 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.Objects;
+import java.util.Optional;
 
 public class User extends BaseEntity {
 
     // 유저가 속한 채널 목록
-    private final List<UUID> channelIds = new ArrayList<>();
+    private final List<Channel> channels = new ArrayList<>();
 
     private String name;
     private String email;
@@ -16,33 +17,37 @@ public class User extends BaseEntity {
     // constructor
     public User(String name, String email, String profileImageUrl){
         super();
-        this.name = name;
-        this.email = email;
+        this.name = Objects.requireNonNull(name, "이름은 필수입니다.");
+        this.email = Objects.requireNonNull(email, "이메일은 필수입니다.");
         this.profileImageUrl = profileImageUrl;
     }
 
     // Getter, update
-    public List<UUID> getChannelIds() {return List.copyOf(this.channelIds);}
+    public List<Channel> getChannels() {return List.copyOf(this.channels);}     // 채널 객체를 직접 전달
     public String getName() {return this.name;}
     public String getEmail() {return this.email;}
     public String getProfileImageUrl() {return this.profileImageUrl;}
 
-    public void update(String name, String email, String profileImageUrl){
-        updateTimestamp();
-        this.name = name;
-        this.email = email;
-        this.profileImageUrl = profileImageUrl;
+    public void update(String name, String email, String profileImageUrl) {
+        // 하나라도 수정 요청이 있을 때만 로직을 수행합니다.
+        if (name != null || email != null || profileImageUrl != null) {
+            Optional.ofNullable(name).ifPresent(n -> this.name = n);
+            Optional.ofNullable(email).ifPresent(e -> this.email = e);
+            Optional.ofNullable(profileImageUrl).ifPresent(p -> this.profileImageUrl = p);
+
+            updateTimestamp();
+        }
     }
 
     // 채널 참여 시 채널 목록에 채널 추가
-    public void joinChannel(UUID channelId) {
-        if (channelId == null)
+    public void joinChannel(Channel channel) {
+        if (channel == null)
             return;
-        if (!this.channelIds.contains(channelId))
-            this.channelIds.add(channelId);
+        if (!this.channels.contains(channel))
+            this.channels.add(channel);
     }
     // 퇴장 시 삭제
-    public void leaveChannel(UUID channelId) {
-        this.channelIds.remove(channelId);
+    public void leaveChannel(Channel channel) {
+        this.channels.remove(channel);
     }
 }
