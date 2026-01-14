@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatusType;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.util.ValidationUtil;
 
@@ -14,12 +15,12 @@ public class JCFUserService implements UserService {
 
     // 사용자 생성
     @Override
-    public User createUser(String email, String password, String nickname) {
+    public User createUser(String email, String password, String nickname, UserStatusType userStatus) {
         if (isEmailDuplicate(email)){
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
 
-        User newUser = new User(email, password, nickname);
+        User newUser = new User(email, password, nickname, userStatus);
         users.add(newUser);
         return newUser;
     }
@@ -41,7 +42,7 @@ public class JCFUserService implements UserService {
 
     // 사용자 정보 수정 (비밀번호, 닉네임) - 유연하게 계선
     @Override
-    public void updateUser(UUID targetUserId, String newPassword, String newNickname) {
+    public void updateUser(UUID targetUserId, String newPassword, String newNickname, UserStatusType newUserStatus) {
         User targetUser = searchUser(targetUserId);
 
         Optional.ofNullable(newPassword)
@@ -57,6 +58,9 @@ public class JCFUserService implements UserService {
                             validationUtil.validateDuplicateValue(targetUser.getNickname(), newNickname, "[닉네임 변경 실패] 현재 닉네임과 일치합니다.");
                             targetUser.updateNickname(nickname);
                 });
+
+        Optional.ofNullable(newUserStatus)
+                .ifPresent(targetUser::updateUserStatus);
     }
 
     // 사용자 삭제

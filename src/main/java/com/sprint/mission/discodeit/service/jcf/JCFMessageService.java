@@ -21,7 +21,6 @@ public class JCFMessageService implements MessageService {
     private final JCFUserService userService = new JCFUserService();
     private final ChannelService channelService = new JCFChannelService();
 
-
     // 메시지 생성
     @Override
     public Message createMessage(String message, User user, Channel channel, MessageType type) {
