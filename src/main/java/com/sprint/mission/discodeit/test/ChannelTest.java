@@ -1,8 +1,13 @@
 package com.sprint.mission.discodeit.test;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
+import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.*;
@@ -10,15 +15,19 @@ import java.util.*;
 public class ChannelTest {
     public static void main(String[] args) {
         Map<UUID, User> userRepo = new HashMap<>();
-        JCFUserService userService = new JCFUserService(userRepo);
+        Map<UUID, Channel> channelRepo = new HashMap<>();
+        Map<UUID, Message> messageRepo = new HashMap<>();
+
+        MessageService messageService = new JCFMessageService(messageRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, messageService);
+        UserService userService = new JCFUserService(userRepo, channelService, messageService);
+
         System.out.println("===== user1, user2, user3 생성 =====");
         User user1 = userService.createUser("park@gmail.com", "user1Nick", "user1Name", "1234", "20000000");
         User user2 = userService.createUser("jung@gmail.com", "user2Nick", "user2Name", "1234", "20101010");
         User user3 = userService.createUser("hyun@gmail.com", "user3Nick", "user3Name", "1234", "20101020");
         System.out.println(userService);
 
-        Map<UUID, Channel> channelRepo = new HashMap<>();
-        JCFChannelService channelService = new JCFChannelService(channelRepo);
         System.out.println("===== channel1, channel2 생성 =====");
         Channel channel1 = channelService.createChannel(user1, false, "channel1General", "General Channel");
         Channel channel2 = channelService.createChannel(user2, true, "channel2Private", "private Channel");
