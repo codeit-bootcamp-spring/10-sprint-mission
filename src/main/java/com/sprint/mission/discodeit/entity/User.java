@@ -83,17 +83,25 @@ public class User extends BaseEntity {
     }
 
     // Channel Control
-    public void  addChannel(Channel channel) {
+    public void  joinChannel(Channel channel) {
         this.channels.add(channel);
     }
-    public Set<Channel> getChannels() {return channels;}
+    public void  leaveChannel(Channel channel) {
+        this.channels.remove(channel);
+    }
+    public Set<Channel> getChannels() {
+        return new HashSet<>(this.channels);
+    }
 
     // Message Control
     public void addMessage(Message message) {
         this.messages.add(message);
     }
+    public void removeMessage(Message message) {
+        this.messages.remove(message);
+    }
     public List<Message> getMessages() {
-        return this.messages;
+        return new ArrayList<>(this.messages);
     }
 
 }

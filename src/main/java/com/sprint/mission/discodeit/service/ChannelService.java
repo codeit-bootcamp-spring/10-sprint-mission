@@ -13,9 +13,6 @@ public interface ChannelService {
 
     // Read
     Optional<Channel> findById(UUID channelId);
-
-    List<Channel> findChannelsAccessibleBy(User user);
-
     List<Channel> findAll();
 
     // Update

@@ -42,9 +42,7 @@ public class Message extends BaseEntity {
     public void updateContent(String newContent) {
         validationContent(content);
 
-        // 내용이 같으면 수정되지 않음.
-        // 내용이 다르다면 수정함.
-        if (!this.content.equals(newContent)){
+        if (!this.content.equals(newContent)){ // 내용이 같으면 수정, 다르면 아무일도 일어나지 않음
             this.content = newContent;
             isEdited = true;
             updateTimestamp();
@@ -53,7 +51,7 @@ public class Message extends BaseEntity {
 
     // Logic
     private void validationContent(String content){
-        if (content == null) throw new NullPointerException("content is null");
+        if (content == null || content.trim().isEmpty()) throw new IllegalArgumentException("메세지가 비어있음");
     }
 
     // Convenience Method

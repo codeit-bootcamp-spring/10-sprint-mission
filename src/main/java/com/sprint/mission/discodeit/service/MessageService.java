@@ -7,13 +7,21 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageService {
+
+    // Setter
+    void setUserService(UserService userService);
+    void setChannelService(ChannelService channelService);
+
     // Create
     Message sendMessage(UUID authorId, UUID channelId, String content);
 
-    // Read
+    // Read - Global Scan
     List<Message> findAllByChannelId(UUID channelId);
+    // Read - Direct Access
+    List<Message> findMessagesByChannel(UUID channelId);
+    List<Message> findMessagesByAuthor(UUID authorId);
+    // Read - Single
     Optional<Message> findById(UUID messageId);
-    List<Message> findAll(UUID authorId);
 
 
     // Update

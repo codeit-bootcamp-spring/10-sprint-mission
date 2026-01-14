@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -9,12 +10,19 @@ import java.util.*;
 
 public class JCFUserService implements UserService {
 
-    private final Map<UUID, User> userMap;
+    private final Map<UUID, User> userMap =  new LinkedHashMap<>();
+
+    // 연관 도메인의 서비스
     private MessageService messageService;
 
     public JCFUserService() {
-        this.userMap = new HashMap<>();
     }
+
+    // Setter 주입, 순환 참조 문제 회피
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
+    }
+
 
     // Create
     @Override
@@ -102,6 +110,7 @@ public class JCFUserService implements UserService {
     public void deleteUser(UUID userId) {
         User user = getUserOrThrow(userId);
         messageService.deleteMessagesByAuthorId(userId);
+        user.getChannels().forEach(channel -> {channel.removeUser(user);});
         userMap.remove(userId);
     }
 
@@ -109,10 +118,5 @@ public class JCFUserService implements UserService {
     private User getUserOrThrow(UUID userId) {
         return findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. ID: " + userId));
-    }
-
-    // Setter
-    public void setMessageService(MessageService messageService) {
-        this.messageService = messageService;
     }
 }
