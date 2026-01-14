@@ -10,8 +10,6 @@ import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.*;
 
-import static com.sprint.mission.discodeit.entity.PermissionTarget.*;
-
 public class JavaApplication {
 
     // Scanner를 전역이나 메인에서 사용하여 입력을 받습니다.
@@ -133,7 +131,7 @@ public class JavaApplication {
 
 
         // 4-2. Nickname 변경
-        String newNickname = "개발왕";
+        String newNickname = ""; // 닉네임이 공백이면 username이 nickname이 된다.
         System.out.printf(">> [Input] Nickname 변경 요청 (%s -> %s)\n", updatedUser.getNickname(), newNickname);
         userService.updateNickname(targetId, newNickname);
 

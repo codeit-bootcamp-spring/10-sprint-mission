@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 
@@ -27,11 +26,6 @@ public interface UserService {
     void updateUserStatus(UUID userId, UserStatus status);
     void toggleMicrophone(UUID userId, boolean isOn);
     void toggleHeadset(UUID userId, boolean isOn);
-
-    // Role Management
-    void addRoleToUser(UUID userId, UUID roleId);
-    void removeRoleFromUser(UUID userId, UUID roleId);
-    boolean hasRole(UUID userId, UUID roleId);
 
     // Delete
     void deleteUser(UUID userId);

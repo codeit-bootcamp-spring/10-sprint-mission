@@ -35,13 +35,10 @@ public class JCFMessageService implements MessageService {
         }
 
         Message message = new Message(content, author, channel);
-
         // 모든 메시지가 전역적으로 저장됨
         messageMap.put(message.getId(), message);
-
         // 채널 마다 메시지가 저장됨
         channel.addMessage(message);
-
         // 유저 마다 메시지가 저장됨
         author.addMessage(message);
 

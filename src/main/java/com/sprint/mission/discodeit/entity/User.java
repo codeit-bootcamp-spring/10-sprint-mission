@@ -8,12 +8,11 @@ public class User extends BaseEntity {
     private String email; // Nullable
     private String phoneNumber; // Nullable
 
-    // 현재는 유저가 역할을 가지고 있지만 서버가 있다면?
-    // 역할은 각 서버 별로 다르기 때문에 유저를 가지고 있는 멤버 클래스를 만들어야함
-    // 멤버 클래스는 각 서버 별 별명과 역할을 가질 수 있음
-    private final Set<UUID> roleIds =  new HashSet<>();
-    private final UserPresence presence; // 유저의 상태 관리
+    private UserStatus status; // 온라인, 오프라인, 자리비움
+    private boolean isMicrophoneOn;
+    private boolean isHeadsetOn;
 
+    private final Set<Channel> channels = new HashSet<>();
     private final List<Message> messages = new ArrayList<>();
 
 
@@ -21,68 +20,59 @@ public class User extends BaseEntity {
         super();
         validateContact(email, phoneNumber);
         this.username = username;
-        this.nickname = nickname;
+        this.nickname = (nickname == null || nickname.isBlank()) ? username : nickname;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.presence = new UserPresence();
+
+        this.status = UserStatus.ONLINE;
+        this.isMicrophoneOn = false;
+        this.isHeadsetOn = false;
     }
 
     // Getter
     public String getUsername() {
         return username;
     }
-
     public String getNickname() {
         return nickname;
     }
-
     public Optional<String> getEmail() {
         return Optional.ofNullable(email);
     }
-
     public Optional<String> getPhoneNumber() {
         return Optional.ofNullable(phoneNumber);
     }
 
-    public Set<UUID> getRoleIds() {
-        return new HashSet<>(roleIds);
-    }
-
-    public UserPresence getPresence() {
-        return presence;
-    }
+    public UserStatus getStatus() {return status;}
+    public boolean isMicrophoneOn() {return isMicrophoneOn;}
+    public boolean isHeadsetOn() {return isHeadsetOn;}
 
     // Update
     public void updateUsername(String username) {
         this.username = username;
         updateTimestamp();
     }
-
     public void updateNickname(String nickname) {
-        this.nickname = nickname;
+        this.nickname = (nickname == null || nickname.isBlank()) ? username : nickname;
         updateTimestamp();
     }
-
     public void updateEmail(String email) {
         this.email = email;
         updateTimestamp();
     }
-
     public void updatePhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
         updateTimestamp();
     }
 
     public void changeStatus(UserStatus status) {
-        this.presence.changeStatus(status);
+        this.status = status;
     }
-
     public void toggleMicrophone(boolean isOn) {
-        this.presence.toggleMicrophone(isOn);
+        this.isMicrophoneOn = isOn;
     }
-
     public void toggleHeadset(boolean isOn) {
-        this.presence.toggleHeadset(isOn);
+        this.isHeadsetOn = isOn;
     }
 
     // validation
@@ -92,25 +82,18 @@ public class User extends BaseEntity {
         }
     }
 
-    // Role
-    public void addRole(UUID roleId) {
-        this.roleIds.add(roleId);
+    // Channel Control
+    public void  addChannel(Channel channel) {
+        this.channels.add(channel);
     }
-
-    public void removeRole(UUID roleId) {
-        this.roleIds.remove(roleId);
-    }
-
-    public boolean hasRole(UUID roleId) {
-        return roleIds.contains(roleId);
-    }
+    public Set<Channel> getChannels() {return channels;}
 
     // Message Control
     public void addMessage(Message message) {
         this.messages.add(message);
     }
-
     public List<Message> getMessages() {
         return this.messages;
     }
+
 }

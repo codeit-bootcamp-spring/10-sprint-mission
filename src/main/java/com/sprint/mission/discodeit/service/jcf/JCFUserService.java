@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -20,6 +19,10 @@ public class JCFUserService implements UserService {
     // Create
     @Override
     public User createUser(String username, String nickname, String email, String phoneNumber) {
+        if (username == null || username.isBlank()) {
+            throw new IllegalArgumentException("사용자명은 필수입니다.");
+        }
+
         if (findByUsername(username).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + username);
         }
@@ -92,25 +95,6 @@ public class JCFUserService implements UserService {
     public void toggleHeadset(UUID userId, boolean isOn) {
         User user = getUserOrThrow(userId);
         user.toggleHeadset(isOn);
-    }
-
-    // Role Management
-    @Override
-    public void addRoleToUser(UUID userId, UUID roleId) {
-        User user = getUserOrThrow(userId);
-        user.addRole(roleId);
-    }
-
-    @Override
-    public void removeRoleFromUser(UUID userId, UUID roleId) {
-        User user = getUserOrThrow(userId);
-        user.removeRole(roleId);
-    }
-
-    @Override
-    public boolean hasRole(UUID userId, UUID roleId) {
-        User user = getUserOrThrow(userId);
-        return user.hasRole(roleId);
     }
 
     // Delete

@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelPermission;
-import com.sprint.mission.discodeit.entity.PermissionTarget;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -19,6 +17,9 @@ public class JCFChannelService implements ChannelService {
     // Create
     @Override
     public Channel createChannel(String name, boolean isPublic) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("채널 이름은 비어있을 수 없습니다.");
+        }
         Channel newChannel = new Channel(name, isPublic);
         channelMap.put(newChannel.getId(), newChannel);
         return newChannel;
@@ -46,6 +47,9 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void updateChannel(UUID channelId, String name) {
         Channel channel = getChannelOrThrow(channelId);
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("채널 이름은 비어있을 수 없습니다.");
+        }
         channel.updateName(name);
     }
 
@@ -53,24 +57,6 @@ public class JCFChannelService implements ChannelService {
     public void updateChannelVisibility(UUID channelId, boolean isPublic) {
         Channel channel = getChannelOrThrow(channelId);
         channel.updatePublic(isPublic);
-    }
-
-    // Permission Management
-    @Override
-    public void grantPermission(UUID channelId, UUID targetId, PermissionTarget type) {
-        Channel channel = getChannelOrThrow(channelId);
-        channel.addPermission(targetId, type);
-    }
-
-    @Override
-    public void revokePermission(UUID channelId, UUID targetId) {
-        Channel channel = getChannelOrThrow(channelId);
-        channel.removePermission(targetId);
-    }
-
-    @Override
-    public void removePermissionsByTargetId(UUID targetId) {   // 서버에서 역할이 삭제될 때 서버 내 모든 채널의 부여된 권한 제거
-        channelMap.values().forEach(channel -> channel.removePermission(targetId));
     }
 
     // Delete

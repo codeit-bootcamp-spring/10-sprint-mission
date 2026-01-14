@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelPermission;
-import com.sprint.mission.discodeit.entity.PermissionTarget;
 import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.Optional;
@@ -23,12 +21,6 @@ public interface ChannelService {
     // Update
     void updateChannel(UUID channelId, String name);
     void updateChannelVisibility(UUID channelId, boolean isPublic);
-
-    // Permission Management
-    void grantPermission(UUID channelId, UUID targetId, PermissionTarget type);
-
-    void revokePermission(UUID channelId, UUID targetId);
-    void removePermissionsByTargetId(UUID targetId);
 
     // Delete
     void deleteChannel(UUID channelId);
