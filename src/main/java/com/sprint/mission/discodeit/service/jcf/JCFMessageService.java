@@ -22,72 +22,63 @@ public class JCFMessageService implements MessageService{
     }
 
     @Override
-    public void create(Message message) {
-        validateCreateMessage(message);
-        data.put(message.getId(), message);
-        channelIndex.computeIfAbsent(message.getChannel().getId(), k -> new ArrayList<>())
-                .add(message);
+    public Message create(String content, UUID userId, UUID channelId) {
+        validateAccess(userId, channelId); // 권한 확인
+
+        Message newMessage = new Message(content, userService.findById(userId), channelService.findById(channelId));
+        data.put(newMessage.getId(), newMessage); // 데이터 저장
+
+        channelIndex.computeIfAbsent(channelId, k -> new ArrayList<>()).add(newMessage);
+
+        return newMessage;
     }
 
     @Override
-    public Message readById(UUID id){
-        return data.get(id);
+    public Message findById(UUID id){
+        Message message = data.get(id);
+        if (message == null) {
+            throw new NoSuchElementException("실패: 존재하지 않는 메시지 ID");
+        }
+        return message;
     }
 
     @Override
-    public List<Message> readAll() {
+    public List<Message> findAll() {
         return new ArrayList<>(data.values());
     }
 
     @Override
-    public List<Message> readAllByChannelId(UUID channelId, UUID userId) { // 특정 채널의 메시지 조회
+    public List<Message> findAllByChannelId(UUID channelId, UUID userId) { // 특정 채널의 메시지 조회
         validateAccess(userId, channelId);
-        return channelIndex.getOrDefault(channelId, Collections.emptyList());
+        return new ArrayList<>(channelIndex.getOrDefault(channelId, Collections.emptyList()));
     }
 
     @Override
-    public void update(Message message) {
-        if (data.containsKey(message.getId())) {
-            data.put(message.getId(), message);
-        }
+    public Message update(UUID id, String content) {
+        Message message = findById(id);
+        message.update(content); // 여기서 isEdited가 true로 변함
+        return message;
     }
 
     @Override
     public void delete(UUID id) {
-        Message message = data.get(id);
+        Message message = findById(id);
+        data.remove(id); // 데이터 삭제
 
-        if (message != null) {
-            data.remove(id);
-            UUID channelId = message.getChannel().getId();
-            List<Message> messagesInChannel = channelIndex.get(channelId);
-
-            if (messagesInChannel != null) {
-                messagesInChannel.remove(message);
-                if (messagesInChannel.isEmpty()) {
-                    channelIndex.remove(channelId);
-                }
-            }
+        // channelIndex에서 삭제
+        List<Message> channelMessages = channelIndex.get(message.getChannel().getId());
+        if (channelMessages != null){
+            channelMessages.remove(message);
         }
     }
 
-
-    // 검증
+    // 권한 확인
     private void validateAccess(UUID userId, UUID channelId) {
-        // 유저 존재 확인
-        userService.validateUserStatus(userId);
-
-        // 채널 존재 확인
-        channelService.validateChannelStatus(channelId);
-
         // 채널 멤버 확인
-        User user = userService.readById(userId);
-        Channel channel = channelService.readById(channelId);
+        User user = userService.findById(userId);
+        Channel channel = channelService.findById(channelId);
         if (!channel.isMember(user)) {
             throw new IllegalArgumentException("실패: 채널 멤버만 접근할 수 있음");
         }
-    }
-
-    private void validateCreateMessage(Message message) {
-        validateAccess(message.getUser().getId(), message.getChannel().getId());
     }
 }

@@ -3,54 +3,44 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 
-import java.util.UUID;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
+import java.util.*;
 
 public class JCFChannelService implements ChannelService {
-    private final Map<UUID, Channel> data;
+    private final Map<UUID, Channel> data = new HashMap<>();
 
-    public JCFChannelService(){
-        this.data = new HashMap<>();
+    @Override
+    public Channel create(String name, String description, String type, boolean isPublic) {
+        Channel newChannel = new Channel(name, description, type, isPublic);
+        data.put(newChannel.getId(), newChannel);
+        return newChannel;
     }
 
     @Override
-    public void create(Channel channel){
-        data.put(channel.getId(), channel);
+    public Channel findById(UUID id){
+        Channel channel = data.get(id);
+        if (data.get(id) == null) {
+            throw new NoSuchElementException("실패: 존재하지 않는 채널 ID");
+        }
+        return channel;
     }
 
     @Override
-    public Channel readById(UUID id){
-        return data.get(id);
-    }
-
-    @Override
-    public List<Channel> readAll(){
+    public List<Channel> findAll(){
         return new ArrayList<>(data.values());
     }
 
     @Override
-    public void update(Channel channel){
-        Channel existingChannel = data.get(channel.getId());
-
-        if (existingChannel != null){
-            existingChannel.update(channel.getName(), channel.getDescription(), channel.isPublic());
-        }
+    public Channel update(UUID id, String name, String description, boolean isPublic){
+        Channel channel = findById(id);
+        channel.update(name, description, isPublic);
+        return channel;
     }
 
     @Override
     public void delete(UUID id){
-        data.remove(id);
-    }
-
-    // 검증
-    public void validateChannelStatus(UUID channelId) {
-        // 채널 존재 확인
-        if (readById(channelId) == null) {
-            throw new IllegalArgumentException("실패: 존재하지 않는 채널");
+        if (!data.containsKey(id)) {
+            throw new NoSuchElementException("실패: 존재하지 않는 채널 ID");
         }
+        data.remove(id);
     }
 }

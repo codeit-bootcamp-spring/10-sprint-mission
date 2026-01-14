@@ -3,54 +3,44 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.UUID;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class JCFUserService implements UserService {
-    private final Map<UUID, User> data;
+    private final Map<UUID, User> data = new HashMap<>();
 
-    public JCFUserService(){
-        this.data = new HashMap<>();
+    @Override
+    public User create(String name, String nickname, String email, String password){
+        User newUser = new User(name, nickname, email, password);
+        data.put(newUser.getId(), newUser);
+        return newUser;
     }
 
     @Override
-    public void create(User user){
-        data.put(user.getId(), user);
+    public User findById(UUID id){
+        User user = data.get(id);
+        if (user == null){
+            throw new NoSuchElementException("실패: 존재하지 않는 유저 ID");
+        }
+        return user;
     }
 
     @Override
-    public User readById(UUID id){
-        return data.get(id);
-    }
-
-    @Override
-    public List<User> readAll(){
+    public List<User> findAll(){
         return new ArrayList<>(data.values());
     }
 
     @Override
-    public void update(User user){
-        User existingUser = data.get(user.getId());
-        if (existingUser != null){
-            existingUser.update(user.getName(),user.getNickname(), user.getEmail());
-        }
+    public User update(UUID id, String name, String nickname, String email){
+        User user = findById(id);
+        user.update(name, nickname, email);
+        return user;
     }
 
     @Override
     public void delete(UUID id){
-        data.remove(id);
-    }
-
-
-    // 검증
-    @Override
-    public void validateUserStatus(UUID userId) {
-        // 유저 존재 확인
-        if (readById(userId) == null) {
-            throw new IllegalArgumentException("실패: 존재하지 않는 유저");
+        if (!data.containsKey(id)){
+            throw new NoSuchElementException("실패: 존재하지 않는 유저 ID");
         }
+        data.remove(id);
     }
 }

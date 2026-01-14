@@ -6,15 +6,13 @@ import java.util.List;
 
 
 public interface UserService {
-    void create(User user);
+    User create(String name, String nickname, String email, String password);
 
-    User readById(UUID id);
+    User findById(UUID id);
 
-    List<User> readAll();
+    List<User> findAll();
 
-    void update(User user);
+    User update(UUID id, String name, String nickname, String email);
 
     void delete(UUID id);
-
-    void validateUserStatus(UUID id); // 검증
 }

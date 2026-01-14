@@ -6,15 +6,15 @@ import java.util.List;
 
 
 public interface MessageService {
-    void create(Message message);
+    Message create(String content, UUID userId, UUID channelId);
 
-    Message readById(UUID id);
+    Message findById(UUID id);
 
-    List<Message> readAll();
+    List<Message> findAll();
 
-    List<Message> readAllByChannelId(UUID channelId, UUID userID); // 특정 채널의 메시지 조회
+    List<Message> findAllByChannelId(UUID channelId, UUID userID); // 특정 채널의 메시지 조회
 
-    void update(Message message);
+    Message update(UUID id, String content);
 
     void delete(UUID id);
 }

@@ -6,15 +6,13 @@ import java.util.List;
 
 
 public interface ChannelService {
-    void create(Channel channel);
+    Channel create(String name, String description, String type, boolean isPublic);
 
-    Channel readById(UUID id);
+    Channel findById(UUID id);
 
-    List<Channel> readAll();
+    List<Channel> findAll();
 
-    void update(Channel channel);
+    Channel update(UUID id, String name, String description, boolean isPublic);
 
     void delete(UUID id);
-
-    void validateChannelStatus(UUID channelId); // 검증
 }

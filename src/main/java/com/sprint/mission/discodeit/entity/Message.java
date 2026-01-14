@@ -29,6 +29,8 @@ public class Message extends BaseEntity {
     public String getContent() { return content; }
     public User getUser() { return user; }
     public Channel getChannel() { return channel; }
+    public boolean isEdited() { return isEdited; }
+    public boolean isPinned() { return isPinned; }
 
     @Override
     public String toString() {
