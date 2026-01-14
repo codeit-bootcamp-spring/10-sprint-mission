@@ -26,12 +26,10 @@ public class JCFUserService implements UserService {
     // 사용자 단건 조회
     @Override
     public User searchUser(UUID targetUserId) {
-        for (User user : users) {
-            if (user.getId().equals(targetUserId)) {
-                return user;
-            }
-        }
-        throw new IllegalArgumentException("해당 사용자가 존재하지 않습니다.");
+        return users.stream()
+                    .filter(user -> user.getId().equals(targetUserId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
     }
 
     // 사용자 전체 조회
@@ -60,11 +58,7 @@ public class JCFUserService implements UserService {
 
     // 유효성 검사 (생성)
     public boolean isEmailDuplicate(String email) {
-        for (User user : users) {
-            if (user.getEmail().equals(email)) {
-                return true;
-            }
-        }
-        return false;
+        return users.stream()
+                    .anyMatch(user -> user.getEmail().equals(email));
     }
 }

@@ -27,12 +27,10 @@ public class JCFChannelService implements ChannelService {
     // 채널 단건 조회
     @Override
     public Channel searchChannel(UUID targetChannelId) {
-        for (Channel channel : channels) {
-            if (channel.getId().equals(targetChannelId)) {
-                return channel;
-            }
-        }
-        throw new IllegalArgumentException("해당 채널이 존재하지 않습니다.");
+        return channels.stream()
+                       .filter(channel -> channel.getId().equals(targetChannelId))
+                       .findFirst()
+                       .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
     }
 
     // 채널 다건 조회

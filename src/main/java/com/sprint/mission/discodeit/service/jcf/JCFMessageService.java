@@ -29,12 +29,10 @@ public class JCFMessageService implements MessageService {
     // 메시지 단건 조회
     @Override
     public Message searchMessage(UUID targetMessageId) {
-        for (Message message : messages) {
-            if (message.getId().equals(targetMessageId)) {
-                return message;
-            }
-        }
-        throw new IllegalArgumentException("해당 메시지가 존재하지 않습니다.");
+        return messages.stream()
+                        .filter(message -> message.getId().equals(targetMessageId))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
     }
 
     // 메시지 다건 조회
