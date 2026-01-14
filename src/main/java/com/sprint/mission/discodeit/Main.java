@@ -212,8 +212,24 @@ public class Main {
         }
 
         try {
+            System.out.println("특정 사용자가 참가한 채널 리스트 조회 테스트");
+            ArrayList<Channel> userChannels = channelService.userChannels(user1.getId());
+            userChannels.forEach(channel -> System.out.println(channel.getChannelName()));
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+        try {
             System.out.println("특정 채널의 참가자 리스트 조회 테스트");
             ArrayList<User> channelUsers = channelService.channelUsers(channel2.getId());
+            channelUsers.forEach(channel -> System.out.println(channel.getNickname()));
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+        try {
+            System.out.println("특정 채널의 참가자 리스트 조회 테스트");
+            ArrayList<User> channelUsers = channelService.channelUsers(channel1.getId());
             channelUsers.forEach(channel -> System.out.println(channel.getNickname()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
