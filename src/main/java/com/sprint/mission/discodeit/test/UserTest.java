@@ -95,7 +95,7 @@ public class UserTest {
         userService.deleteUser(user1.getId(), user2.getId());
         System.out.println("=====");
         System.out.println(channel1.getOwner());
-        System.out.println(channel1.getChannelMembersList());
+        System.out.println(channel1.getChannelUsersList());
 
 //        System.out.println("===== 전체 검색으로 특정 사용자 목록 =====");
 

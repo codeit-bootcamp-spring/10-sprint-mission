@@ -93,10 +93,10 @@ public class MessageTest {
 
         System.out.println("===== user1 삭제 =====");
         System.out.println(userService.readUserById(user1.getId()));
-        System.out.println(channel2.getChannelMembersList());
+        System.out.println(channel2.getChannelUsersList());
         userService.deleteUser(user1.getId(), user1.getId());
         System.out.println(userService.readUserById(user1.getId()));
-        System.out.println(channel2.getChannelMembersList());
+        System.out.println(channel2.getChannelUsersList());
 
 
 
