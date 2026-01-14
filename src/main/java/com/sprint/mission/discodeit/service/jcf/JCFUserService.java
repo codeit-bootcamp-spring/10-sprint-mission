@@ -25,34 +25,28 @@ public class JCFUserService implements UserService {
 
     @Override
     public User readUser(UUID id) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        for (User user : list) {
-            if(id.equals(user.getId())){
-                return user;
-            }
-        }
-        return null;
+        return validateExistenceUser(id);
     }
 
     @Override
     public List<User> readAllUser() {
-       return list;
+        return list;
     }
 
     @Override
     public User updateUser(UUID id, String userName, String userEmail, String userPassword) {
         User user = validateExistenceUser(id);
-        Optional.ofNullable(userName).ifPresent(name -> {
-            Validators.requireNotBlank(name, "userName");
+        Optional.ofNullable(userName)
+                .ifPresent(name -> {Validators.requireNotBlank(name, "userName");
             user.updateUserName(name);
         });
-        Optional.ofNullable(userEmail).ifPresent(email -> {
-            Validators.requireNotBlank(email, "userEmail");
+        Optional.ofNullable(userEmail)
+                .ifPresent(email -> {Validators.requireNotBlank(email, "userEmail");
             validateDuplicationEmail(email);
             user.updateUserEmail(email);
         });
-        Optional.ofNullable(userPassword).ifPresent(password -> {
-            Validators.requireNotBlank(password, "userPassword");
+        Optional.ofNullable(userPassword)
+                .ifPresent(password -> {Validators.requireNotBlank(password, "userPassword");
             user.updateUserPassword(password);
         });
 
@@ -61,12 +55,8 @@ public class JCFUserService implements UserService {
 
     public boolean isUserDeleted(UUID id) {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        for (User user : list) {
-            if(id.equals(user.getId())) {
-                return false;
-            }
-        }
-        return true;
+        return list.stream()
+                .noneMatch(user -> id.equals(user.getId()));
     }
 
 
@@ -77,20 +67,18 @@ public class JCFUserService implements UserService {
     }
 
     private void validateDuplicationEmail(String userEmail) {
-        for (User user : list) {
-            if (user.getUserEmail().equals(userEmail)) {
-                throw new IllegalStateException("이미 존재하는 이메일입니다.");
-            }
+        if(list.stream()
+                .anyMatch(user -> userEmail.equals(user.getUserEmail()))) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
     }
 
-    @Override
-    public User validateExistenceUser(UUID id) {
-        User user = readUser(id);
-        if(user == null) {
-            throw new NoSuchElementException("유저 id가 존재하지 않습니다.");
-        }
-        return user;
-    }
 
+    private User validateExistenceUser(UUID id) {
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        return list.stream()
+                .filter(user -> id.equals(user.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("유저 id가 존재하지 않습니다."));
+    }
 }

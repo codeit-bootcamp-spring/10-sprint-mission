@@ -24,8 +24,8 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message createMessage(String content, UUID channelId, UUID userId) {
         Validators.validationMessage(content);
-        Channel channel = channelService.validateExistenceChannel(channelId);
-        User user = userService.validateExistenceUser(userId);
+        Channel channel = channelService.readChannel(channelId);
+        User user = userService.readUser(userId);
         Message message = new Message(content, channel, user);
 
         list.add(message);
@@ -34,13 +34,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message readMessage(UUID id) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        for (Message message : list) {
-            if (id.equals(message.getId())){
-                return message;
-            }
-        }
-        return null;
+        return validateExistenceMessage(id);
     }
 
     @Override
@@ -51,8 +45,8 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message updateMessage(UUID id, String content) {
         Message message = validateExistenceMessage(id);
-        Optional.ofNullable(content).ifPresent(cont -> {
-            Validators.requireNotBlank(cont, "content");
+        Optional.ofNullable(content)
+                .ifPresent(cont -> {Validators.requireNotBlank(cont, "content");
             message.updateContent(content);
         });
 
@@ -66,21 +60,17 @@ public class JCFMessageService implements MessageService {
 
     public boolean isMessageDeleted(UUID id) {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        for (Message message : list) {
-            if(id.equals(message.getId())) {
-                return false;
-            }
-        }
-        return true;
+        return list.stream()
+                .noneMatch(message -> id.equals(message.getId()));
     }
 
 
-    public Message validateExistenceMessage(UUID id) {
-        Message message = readMessage(id);
-        if(message == null) {
-            throw new NoSuchElementException("메세지 id가 존재하지 않습니다.");
-        }
-        return message;
+    private Message validateExistenceMessage(UUID id) {
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        return list.stream()
+                .filter(message -> id.equals(message.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("메세지 id는 존재하지 않습니다."));
     }
 
 }

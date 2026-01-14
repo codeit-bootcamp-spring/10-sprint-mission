@@ -17,6 +17,4 @@ public interface UserService {
     void deleteUser(UUID id);
 
     boolean isUserDeleted(UUID id);
-
-    User validateExistenceUser(UUID id);
 }

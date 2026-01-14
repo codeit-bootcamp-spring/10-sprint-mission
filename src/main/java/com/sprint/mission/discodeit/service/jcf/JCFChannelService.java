@@ -26,13 +26,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel readChannel(UUID id) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        for (Channel channel : list) {
-            if(id.equals(channel.getId())){
-                return channel;
-            }
-        }
-        return null;
+        return validateExistenceChannel(id);
     }
 
     @Override
@@ -47,8 +41,8 @@ public class JCFChannelService implements ChannelService {
             Validators.requireNonNull(t, "type");
             channel.updateChannelType(t);
         });
-        Optional.ofNullable(channelName).ifPresent(name -> {
-            Validators.requireNotBlank(name, "type");
+        Optional.ofNullable(channelName)
+                .ifPresent(name -> {Validators.requireNotBlank(name, "type");
             channel.updateChannelName(name);
         });
         Optional.ofNullable(channelDescription).ifPresent(des -> {
@@ -68,20 +62,17 @@ public class JCFChannelService implements ChannelService {
     @Override
     public boolean isChannelDeleted(UUID id) {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        for (Channel channel : list) {
-            if(id.equals(channel.getId())) {
-                return false;
-            }
-        }
-        return true;
+        return list.stream()
+                .noneMatch(channel -> id.equals(channel.getId()));
     }
 
-    @Override
-    public Channel validateExistenceChannel(UUID id) {
-        Channel channel = readChannel(id);
-        if(channel == null) {
-            throw new NoSuchElementException("채널 id가 존재하지 않습니다.");
-        }
-        return channel;
+    private Channel validateExistenceChannel(UUID id) {
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        return list.stream()
+                .filter(channel -> id.equals(channel.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("채널 id가 존재하지 않습니다."));
     }
 }
+
+
