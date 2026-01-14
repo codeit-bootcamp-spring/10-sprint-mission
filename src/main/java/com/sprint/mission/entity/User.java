@@ -1,15 +1,22 @@
 package com.sprint.mission.entity;
 
-import java.util.*;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public class User extends BaseEntity {
+public class User extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final Set<Channel> channels;
-    private String nickName;
+    private final String email;
+    private String name;
 
-    public User(String nickName) {
+    public User(String name, String email) {
         super();
         this.channels = new HashSet<>();
-        this.nickName = getValidatedTrimmedInput(nickName);
+        this.name = getValidatedTrimmedInput(name);
+        this.email = getValidatedTrimmedInput(email);
     }
 
     public void joinChannel(Channel channel) {
@@ -20,8 +27,8 @@ public class User extends BaseEntity {
         channels.remove(channel);
     }
 
-    public void updateNickName(String nickName) {
-        this.nickName = getValidatedTrimmedInput(nickName);
+    public void updateName(String name) {
+        this.name = getValidatedTrimmedInput(name);
         touch();
     }
 
@@ -32,12 +39,16 @@ public class User extends BaseEntity {
 
     private void validateContentIsNotBlank(String input) {
         if (input == null || input.isBlank()) {
-            throw new IllegalArgumentException("닉네임이 비어있을 수 없습니다.");
+            throw new IllegalArgumentException("입력 값이 비어있을 수 없습니다.");
         }
     }
 
-    public String getNickName() {
-        return nickName;
+    public String getName() {
+        return name;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public List<Channel> getChannels() {
