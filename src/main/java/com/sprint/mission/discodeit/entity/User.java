@@ -12,6 +12,9 @@ public class User extends BaseEntity {
 
     public User(String userName,String email, String password) {
         super();
+        validateUserName(userName);
+        validateEmail(email);
+        validatePassword(password);
         this.userName = userName;
         this.email = email;
         this.password = password;
@@ -23,23 +26,17 @@ public class User extends BaseEntity {
     public String getUserName() { return userName;}
     public String getPassword() { return password; }
     public void setUserName(String userName) {
-        if(userName==null||userName.trim().isEmpty()){
-            throw new IllegalArgumentException("사용자 이름이 비어있음");//사용자 이름은 null가능
-        }
+        validateUserName(userName);
         this.userName = userName;
         setUpdatedAt();
     }
     public void setEmail(String email) {
-        if(email==null || email.trim().isEmpty()){
-            throw new IllegalArgumentException("이메일이 null 또는 비어있음");
-        }
+        validateEmail(email);
         this.email = email;
         setUpdatedAt();
     }
     public void setPassword(String password) {
-        if(password == null || password.trim().isEmpty()){
-            throw new IllegalArgumentException("비밀번호가 null 또는 비어있음");
-        }
+        validatePassword(password);
         this.password = password;
         setUpdatedAt();
     }
@@ -63,6 +60,21 @@ public class User extends BaseEntity {
         }
     }
 
+    private void validateUserName(String userName) {
+        if(userName==null||userName.trim().isEmpty()){
+            throw new IllegalArgumentException("사용자 이름이 null 또는 비어있음");
+        }
+    }
+    private void validateEmail(String email) {
+        if(email==null || email.trim().isEmpty()){
+            throw new IllegalArgumentException("이메일이 null 또는 비어있음");
+        }
+    }
+    private void validatePassword(String password) {
+        if(password == null || password.trim().isEmpty()){
+            throw new IllegalArgumentException("비밀번호가 null 또는 비어있음");
+        }
+    }
     @Override
     public String toString() {
         List<String> channelNames = channels.stream().map(c->c.getName()).toList();
