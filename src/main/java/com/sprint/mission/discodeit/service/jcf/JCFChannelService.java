@@ -4,15 +4,17 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.util.ValidationUtil;
 
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.sprint.mission.discodeit.Main.userService;
-import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateField;
 
 public class JCFChannelService implements ChannelService {
     public static final ArrayList<Channel> channels = new ArrayList<>();        // 사용자 한 명당 가지는 채널
+    private final ValidationUtil validationUtil = new ValidationUtil();
 
     // 채널 생성
     @Override
@@ -39,12 +41,19 @@ public class JCFChannelService implements ChannelService {
         return channels;
     }
 
-    // 채널 정보 수정
+    // 특정 유저가 참가한 채널 리스트 조회
+
+    // 특정 채널의 참가자 리스트 조회
+
     @Override
     public void updateChannel(UUID targetChannelId, String newChannelName) {
         Channel targetChannel = searchChannel(targetChannelId);
 
-        validateField(newChannelName, "[채널명 변경 실패] 올바른 채널명이 아닙니다.");
+        Optional.ofNullable(newChannelName)
+                .ifPresent(channelName-> {
+                    validationUtil.validateString(channelName, "[채널 이름 변경 실패] 올바른 채널 이름 형식이 아닙니다.");
+                    validationUtil.validateDuplicateValue(targetChannel.getChannelName(), channelName, "[채널 이름 변경 실패] 현재 채널 이름과 동일합니다.");
+                });
 
         targetChannel.updateChannelName(newChannelName);
     }
@@ -67,6 +76,8 @@ public class JCFChannelService implements ChannelService {
 
         members.add(newUser);
     }
+
+    // 채널 퇴장
 
     // 유효성 검사 (초대)
     public boolean isMemberDuplicated(UUID targetUserId, ArrayList<User> members) {
