@@ -82,7 +82,7 @@ public class ValidationMethods {
 
     // 이미 참여한 채널인지 검증
     public static void validateAlreadyParticipation(UUID userId, Channel channel) {
-        Boolean validateAlreadyParticipation = channel.getChannelMembersList().stream()
+        Boolean validateAlreadyParticipation = channel.getChannelUsersList().stream()
                 .noneMatch(user -> user.getId().equals(userId));
         // false -> 중복 존재 O
         if (!validateAlreadyParticipation) {
@@ -110,4 +110,10 @@ public class ValidationMethods {
             throw new NoSuchElementException("해당 메세지가 없습니다.");
         }
     }
+
+    // password 규칙? 8자이상, 특수기호
+
+    // email 규칙? @ 포함
+
+    // password 해시?
 }
