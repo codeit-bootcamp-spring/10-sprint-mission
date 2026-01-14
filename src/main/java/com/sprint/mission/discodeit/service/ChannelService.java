@@ -8,7 +8,9 @@ import java.util.UUID;
 
 public interface ChannelService {
     Channel createChannel(String title, String description);
+    // get: uuid로 검색하는건 확실하게 Channel반환 or Throw
     Channel getChannel(UUID uuid);
+    // find: 그 외의 필드로 검색하는건 Optional<Channel>로 호출한 쪽에서 분기처리
     Optional<Channel> findChannelByTitle(String title);
     List<Channel> findAllChannels();
     Channel updateChannel(UUID uuid, String title, String description);
