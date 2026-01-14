@@ -34,14 +34,14 @@ public interface UserService {
     List<Message> readUserMessagesByUserId(UUID userId);
 
     // U. 수정
-    User updateEmail(UUID requestId, UUID targetId, String email); // 이메일 수정
-    User updatePassword(UUID requestId, UUID targetId, String password); // 비밀번호 수정
-    User updateNickName(UUID requestId, UUID targetId, String nickName); // 별명 수정
-    User updateUserName(UUID requestId, UUID targetId, String userName); // 사용자 이름 수정
-    User updateBirthday(UUID requestId, UUID targetId, String birthday); // 생년월일 수정
-    User joinChannel(UUID requestId, UUID targetId, Channel channel); // 채널 참여
-    User leaveChannel(UUID requestId, UUID targetId, Channel channel); // 채널 탈퇴
+    User updateEmail(UUID userId, String email); // 이메일 수정
+    User updatePassword(UUID userId, String password); // 비밀번호 수정
+    User updateNickName(UUID userId,  String nickName); // 별명 수정
+    User updateUserName(UUID userId,  String userName); // 사용자 이름 수정
+    User updateBirthday(UUID userId,  String birthday); // 생년월일 수정
+    User joinChannel(UUID userId, Channel channel); // 채널 참여
+    User leaveChannel(UUID userId, Channel channel); // 채널 탈퇴
 
     // D. 삭제
-    void deleteUser(UUID requestId, UUID targetId);
+    void deleteUser(UUID userId);
 }
