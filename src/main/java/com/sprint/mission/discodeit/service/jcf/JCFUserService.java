@@ -11,7 +11,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
 public class JCFUserService implements UserService {
-    public static final ArrayList<User> users = new ArrayList<>();         // 전체 사용
+    public static final ArrayList<User> users = new ArrayList<>();         // 전체 사용자
 
     // 사용자 생성
     @Override
