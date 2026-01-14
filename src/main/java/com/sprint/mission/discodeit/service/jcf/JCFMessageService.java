@@ -55,6 +55,13 @@ public class JCFMessageService implements MessageService {
     }
 
     // 특정 채널의 메시지 발행 리스트 조회
+    public ArrayList<Message> channelMessages(UUID targetChannelId) {
+        channelService.searchChannel(targetChannelId);
+
+        return messages.stream()
+                .filter(message -> message.getChannel().getId().equals(targetChannelId))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
 
     // 메시지 수정
     @Override
