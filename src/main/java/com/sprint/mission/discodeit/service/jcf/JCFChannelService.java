@@ -69,9 +69,7 @@ public class JCFChannelService implements ChannelService {
     public void inviteMembers(UUID targetUserId, ArrayList<User> members) {
         User newUser = userService.searchUser(targetUserId);
 
-        if (isMemberDuplicated(targetUserId, members)) {
-            throw new IllegalArgumentException("이미 채널에 존재하는 사용자입니다.");
-        }
+        isMemberDuplicated(targetUserId, members);
 
         members.add(newUser);
     }
@@ -79,8 +77,8 @@ public class JCFChannelService implements ChannelService {
     // 채널 퇴장
 
     // 유효성 검사 (초대)
-    public boolean isMemberDuplicated(UUID targetUserId, ArrayList<User> members) {
-        return members.stream()
-                      .anyMatch(member -> member.getId().equals(targetUserId));
+    public void isMemberDuplicated(UUID targetUserId, ArrayList<User> members) {
+        if (members.stream().anyMatch(member -> member.getId().equals(targetUserId)))
+            throw new IllegalArgumentException("이미 채널에 존재하는 사용자입니다.");
     }
 }

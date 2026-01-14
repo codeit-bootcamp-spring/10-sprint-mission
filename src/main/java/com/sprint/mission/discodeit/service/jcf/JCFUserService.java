@@ -16,10 +16,7 @@ public class JCFUserService implements UserService {
     // 사용자 생성
     @Override
     public User createUser(String email, String password, String nickname, UserStatusType userStatus) {
-        if (isEmailDuplicate(email)){
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
-        }
-
+        isEmailDuplicate(email);
         User newUser = new User(email, password, nickname, userStatus);
         users.add(newUser);
         return newUser;
@@ -72,8 +69,8 @@ public class JCFUserService implements UserService {
     }
 
     // 유효성 검사 (생성)
-    public boolean isEmailDuplicate(String email) {
-        return users.stream()
-                    .anyMatch(user -> user.getEmail().equals(email));
+    public void isEmailDuplicate(String email) {
+        if (users.stream().anyMatch(user -> user.getEmail().equals(email)))
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
     }
 }
