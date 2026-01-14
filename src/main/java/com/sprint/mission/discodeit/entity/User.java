@@ -6,10 +6,8 @@ import java.util.List;
 public class User extends BaseEntity {
 
     private List<Channel> channels;
-    //private String nickName;
     private String userName;
     private String email;
-    //private String phoneNumber;
     private String password;
 
     public User(String userName,String email, String password) {
@@ -23,21 +21,28 @@ public class User extends BaseEntity {
     public String getEmail() { return email;}
     public List<Channel> getChannels() { return channels; }
     public String getUserName() { return userName;}
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getPassword() { return password; }
     public void setUserName(String userName) {
+        if(userName==null||userName.trim().isEmpty()){
+            throw new IllegalArgumentException("사용자 이름이 비어있음");//사용자 이름은 null가능
+        }
         this.userName = userName;
         setUpdatedAt();
     }
-//    public void setPhoneNumber(String phoneNumber) {
-//        this.phoneNumber = phoneNumber;
-//        setUpdatedAt();
-//    }
-//    public void setPassword(String password) {
-//        this.password = password;
-//        setUpdatedAt();
-//    }
+    public void setEmail(String email) {
+        if(email==null || email.trim().isEmpty()){
+            throw new IllegalArgumentException("이메일이 null 또는 비어있음");
+        }
+        this.email = email;
+        setUpdatedAt();
+    }
+    public void setPassword(String password) {
+        if(password == null || password.trim().isEmpty()){
+            throw new IllegalArgumentException("비밀번호가 null 또는 비어있음");
+        }
+        this.password = password;
+        setUpdatedAt();
+    }
 
     public void addChannel(Channel channel) {
         channels.add(channel);
@@ -62,9 +67,7 @@ public class User extends BaseEntity {
     public String toString() {
         List<String> channelNames = channels.stream().map(c->c.getName()).toList();
         return "이름: " + userName
-                //+ "\n별명" + nickName
                 +"\n이메일"+ email
-                //+ "\n전화번호: "+ phoneNumber
                 +"\n참여 채널: "+channelNames
                 +"\n생성: "+getCreatedAt()
                 + "\n마지막 수정: "+getUpdatedAt()+"\n";

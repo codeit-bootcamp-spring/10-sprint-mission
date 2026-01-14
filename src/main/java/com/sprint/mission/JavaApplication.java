@@ -44,8 +44,16 @@ public class JavaApplication {
 
         //유저 기본 설정
         System.out.println("------------유저 정보 수정-----------------");
-        userService.updateName(userId,"코드잇");
+        userService.updateInfo(userId, "코드잇",null,null);//이름만
         System.out.println(userService.getUserById(userId));
+        userService.updateInfo(userId, null,"abv123@codeit.com",null);//이메일만
+        System.out.println(userService.getUserById(userId));
+        try {//null과 이전값의 조합으로 변경 요청하는 경우
+            System.out.println("----------null과 이전값의 조합으로 변경 요청하는 경우---------------");
+            userService.updateInfo(userId, null, "abv123@codeit.com", null);
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
 
         //채널 만들기
         System.out.println("------------채널 생성----------------");

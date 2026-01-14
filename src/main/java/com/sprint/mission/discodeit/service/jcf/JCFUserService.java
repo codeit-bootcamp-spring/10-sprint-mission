@@ -22,9 +22,25 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User updateName(UUID id, String name) {
+    public User updateInfo(UUID id, String userName, String email, String password) {
         User user = getUserById(id);
-        user.setUserName(name);
+        //요청한 값이 널 또는 이전과 같은 값들로만 구성된 경우
+        boolean unChanged = (userName ==null || userName.equals(user.getUserName()))
+                && (email ==null || email.equals(user.getEmail()))
+                && (password ==null || password.equals(user.getPassword()));
+        if(unChanged){
+            throw new IllegalArgumentException("변경사항 없음");
+        }
+        Optional.ofNullable(userName)
+                .filter(n -> !n.equals(user.getUserName()))
+                .ifPresent(n->user.setUserName(n));
+        Optional.ofNullable(email)
+                .filter(n -> !n.equals(user.getEmail()))
+                .ifPresent(e -> user.setEmail(e));
+        Optional.ofNullable(password)
+                .filter(n -> !n.equals(user.getPassword()))
+                .ifPresent(p -> user.setPassword(p));
+
         return user;
     }
 
