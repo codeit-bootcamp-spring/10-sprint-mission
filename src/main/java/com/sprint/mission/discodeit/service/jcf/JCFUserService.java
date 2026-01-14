@@ -267,7 +267,7 @@ public class JCFUserService implements UserService {
                         channelService.deleteChannel(user.getId(), channel.getId()));
 
         // 참여 채널에 존재하는 해당 유저 흔적 지우기
-        user.getJoinChannelList().forEach(channel -> channel.removeChannelMembers(user));
+        user.getJoinChannelList().forEach(channel -> channel.removeChannelUser(user));
         // owner인 채널에 존재하는 해당 유저 흔적 지우기
 
         data.remove(targetId);

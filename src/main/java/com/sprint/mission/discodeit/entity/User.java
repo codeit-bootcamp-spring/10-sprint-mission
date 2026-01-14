@@ -123,14 +123,14 @@ public class User extends BaseEntity {
     public void joinChannel(Channel channel) {
         this.joinChannelList.add(channel);
         updateTime();
-        channel.addChannelMembers(this);
+        channel.addChannelUser(this);
     }
 
     // 채널 탈퇴
     public void leaveChannel(Channel channel) {
         this.joinChannelList.remove(channel);
         updateTime();
-        channel.removeChannelMembers(this);
+        channel.removeChannelUser(this);
     }
 
     // 메시지 작성
