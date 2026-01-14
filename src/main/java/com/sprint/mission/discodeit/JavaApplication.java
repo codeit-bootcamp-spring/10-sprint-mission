@@ -78,14 +78,14 @@ public class JavaApplication {
         System.out.println("<채널참여>");
         channelService.findChannelByTitle("러닝맨").ifPresent(c -> {
             User user = userService.findUserByAccountId("BBB").orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-            channelService.joinChannel(c, user);
+            channelService.joinChannel(c.getId(), user.getId());
         });
         System.out.print("  참여자들 조회: ");
         channelService.findChannelByTitle("러닝맨").ifPresent(c -> System.out.println(c.getParticipants()));
         System.out.println("<채널나감>");
         channelService.findChannelByTitle("러닝맨").ifPresent(c -> {
             User user = userService.findUserByAccountId("BBB").orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-            channelService.leaveChannel(c, user);
+            channelService.leaveChannel(c.getId(), user.getId());
         });
         System.out.print("  참여자 빼고 다시 조회: ");
         channelService.findChannelByTitle("러닝맨").ifPresent(c -> System.out.println(c.getParticipants()));
@@ -98,28 +98,28 @@ public class JavaApplication {
         Channel channel1 = channelService.findChannelByTitle("러닝맨").orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
         Channel channel2 = channelService.findChannelByTitle("두쫀쿠 헌터방").orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
 
-        Message msg1 = messageService.createMessage(channel1, user, "러닝맨 여러분들 안녕하세요");
-        Message msg2 = messageService.createMessage(channel2, user, "판매위치 제보받아요");
+        Message msg1 = messageService.createMessage(channel1.getId(), user.getId(), "러닝맨 여러분들 안녕하세요");
+        Message msg2 = messageService.createMessage(channel2.getId(), user.getId(), "판매위치 제보받아요");
         System.out.println("<조회>");
         System.out.println("  단건: ");
         System.out.printf("\t%s\n", messageService.findMessage(msg1.getId()));
         System.out.println("  다건 조회: ");
         System.out.printf("\t%s\n",messageService.findAllMessages());
         System.out.println("  채널별 조회: ");
-        System.out.printf("\t%s\n", messageService.findMessagesByChannel(channel1));
-        System.out.printf("\t%s\n", messageService.findMessagesByChannel(channel2));
+        System.out.printf("\t%s\n", messageService.findMessagesByChannelId(channel1.getId()));
+        System.out.printf("\t%s\n", messageService.findMessagesByChannelId(channel2.getId()));
 
 
         System.out.println("<수정>");
         messageService.updateMessage(msg2.getId(), "판매위치 제보 받았습니다!!!!!!!!");
         System.out.print("  수정한 채널조회: ");
-        System.out.println(messageService.findMessagesByChannel(channel2));
+        System.out.println(messageService.findMessagesByChannelId(channel2.getId()));
 
         System.out.println("<삭제>");
         System.out.print("  삭제전 채널조회: ");
-        System.out.println(messageService.findMessagesByChannel(channel1));
+        System.out.println(messageService.findMessagesByChannelId(channel1.getId()));
         messageService.deleteMessage(msg1.getId());
         System.out.print("  삭제한 채널조회: ");
-        System.out.println(messageService.findMessagesByChannel(channel1));
+        System.out.println(messageService.findMessagesByChannelId(channel1.getId()));
     }
 }
