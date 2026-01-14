@@ -48,6 +48,8 @@ public class JCFMessageService implements MessageService {
 
         Message message = new Message(content, sender, channel);
         messageMap.put(message.getId(), message);
+        channel.addMessage(message);  // 채널 객체 내부 리스트에도 동기화
+
         return message;
     }
 
