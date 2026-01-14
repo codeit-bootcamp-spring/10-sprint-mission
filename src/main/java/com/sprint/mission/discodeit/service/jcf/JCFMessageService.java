@@ -25,6 +25,12 @@ public class JCFMessageService implements MessageService {
         Channel channel = channelService.findById(channelId);
 
         Message message = new Message(user, channel, content);
+
+        user.addMessage(message);
+        user.addChannel(channel);
+        channel.addMessage(message);
+        channel.addUser(user);
+
         data.put(message.getId(), message);
         return message;
     }
@@ -52,11 +58,4 @@ public class JCFMessageService implements MessageService {
         data.remove(messageId);
     }
 
-    public UserService getUserService() {
-        return userService;
-    }
-
-    public ChannelService getChannelService() {
-        return channelService;
-    }
 }
