@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -22,11 +24,11 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User findById(User user){
-        if(data.get(user.getId()) == null){
+    public User findById(UUID id){
+        if(data.get(id) == null){
             throw new IllegalArgumentException("해당 id의 유저가 없습니다.");
         }
-        return data.get(user.getId());
+        return data.get(id);
     }
 
     @Override
@@ -35,23 +37,30 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User update(User user,String userName,String email,String status){
-        User users = data.get(user.getId());
-        if(users == null){
-            throw new IllegalArgumentException("수정할 사용자가 없습니다.");
-        }
-        users.setUserName(userName);
-        users.setEmail(email);
-        users.setStatus(status);
-        return users;
+    public User update(UUID id,String userName,String email,String status){
+        User user = findById(id);
+        user.setUserName(userName);
+        user.setEmail(email);
+        user.setStatus(status);
+        return user;
     }
 
     @Override
-    public void delete(User user){
-        if(data.get(user.getId()) == null){
-            throw new IllegalArgumentException("해당 id의 유저가 없습니다.");
-        }
-        data.remove(user.getId());
+    public User delete(UUID id){
+        User user = findById(id);
+        data.remove(id);
+        return user;
     }
+
+    public List<Channel> selectChannel(UUID id){
+        User user = findById(id);
+        return user.getChannelList();
+    }
+
+    public List<Message> selectMessage(UUID id){
+        User user = findById(id);
+        return user.getMessageList();
+    }
+
 
 }

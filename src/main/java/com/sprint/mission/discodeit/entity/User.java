@@ -1,22 +1,24 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class User extends Common{
 
-//    private UUID id;
     private String userName;
     private String email;
     private String status;
-//    private Long createdAt;
-//    private Long updatedAt;
-
+    private List<Channel> channelList;
+    private List<Message> messageList;
 
     public User(String userName, String email, String status){
         //super가 숨겨져있음.
         this.userName = userName;
         this.email = email;
         this.status = status;
+        this.channelList = new ArrayList<>();
+        this.messageList = new ArrayList<>();
     }
 
     public String getUserName() {
@@ -45,6 +47,18 @@ public class User extends Common{
         this.status = status;
     }
 
+    public List<Channel> getChannelList(){
+        return channelList;
+    }
+
+    public List<Message> getMessageList(){
+        return messageList;
+    }
+
+    public void setMessageList(Message message){
+        messageList.add(message);
+    }
+
     @Override
     public String toString() {
         return String.format(
@@ -56,6 +70,20 @@ public class User extends Common{
                 getCreatedAt(),
                 getUpdatedAt()
         );
+    }
+
+    public void addChannel(Channel channel){
+        if(channelList.contains(channel)){
+            throw new IllegalArgumentException("이미 채널이 존재합니다.");
+        }
+        channelList.add(channel);
+    }
+
+    public void removeChannel(Channel channel){
+        if (!channelList.contains(channel)) {
+            throw new IllegalArgumentException("해당 채널이 존재하지 않습니다.");
+        }
+        channelList.remove(channel);
     }
 
 

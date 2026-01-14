@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
@@ -11,14 +13,20 @@ public interface UserService {
     User create(String userName,String email, String status);
 
     //읽기
-    User findById(User user);
+    User findById(UUID id);
 
     //모두 읽기
     List<User> findAll();
 
     //수정
-    User update(User user,String userName,String email, String status);
+    User update(UUID id,String userName,String email, String status);
 
     //삭제
-    void delete(User user);
+    User delete(UUID id);
+
+    //채널조회
+    List<Channel> selectChannel(UUID id);
+
+    //메시지 조회
+    List<Message> selectMessage(UUID id);
 }

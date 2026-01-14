@@ -3,30 +3,33 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
 
     private final Map<UUID, Channel> data;
+    private final UserService userService;
 
-    public JCFChannelService(){
+    public JCFChannelService(UserService userService){
         this.data = new HashMap<>();
+        this.userService = userService;
     }
 
     @Override
-    public Channel create(String channelName, String type, User user){
-        Channel channel = new Channel(channelName,type,user);
+    public Channel create(String channelName, String type, User owner){
+        Channel channel = new Channel(channelName,type,owner);
         data.put(channel.getId(),channel); //data에 key value 값으로 넣음.
         return channel;
     }
 
     @Override
-    public Channel findById(Channel channel){
-        if(data.get(channel.getId()) == null){
+    public Channel findById(UUID id){
+        if(data.get(id) == null){
             throw new IllegalArgumentException("채널이 없습니다.");
         }
-        return data.get(channel.getId());
+        return data.get(id);
     }
 
     @Override
@@ -35,21 +38,39 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(Channel channel, String name) {
-        Channel channels = data.get(channel.getId());
-        if (channels == null) {
-            throw new IllegalArgumentException("수정할 채널이 없습니다.");
-        }
-        channels.setChannelName(name);
-        return channels;
+    public Channel update(UUID id, String name) {
+        Channel channel = findById(id);
+        channel.setChannelName(name);
+        return channel;
     }
 
     @Override
-    public void delete(Channel channel) {
-        if(data.get(channel) == null){
-            throw new IllegalArgumentException("삭제할 채널이 없습니다.");
-
-        }
-        data.remove(channel.getId());
+    public Channel delete(UUID id) {
+        Channel channel = findById(id);
+        data.remove(id);
+        return channel;
     }
+
+    @Override
+    public List<User> enter(UUID channelId,UUID userId){ //채널 id가 들어온다.
+        Channel channel = findById(channelId);
+        User user = userService.findById(userId);
+        channel.enter(user);
+        user.addChannel(channel);
+
+        return channel.getUserList();
+
+    }
+
+    @Override
+    public List<User> leave(UUID channelId,UUID userId){
+        Channel channel = findById(channelId);
+        User user = userService.findById(userId);
+
+        channel.leave(user);
+        user.removeChannel(channel);
+
+        return channel.getUserList();
+    }
+
 }
