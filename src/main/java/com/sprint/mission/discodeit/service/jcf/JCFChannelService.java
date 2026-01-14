@@ -37,7 +37,7 @@ public class JCFChannelService implements ChannelService {
         Channel existingChannel = data.get(channel.getId());
 
         if (existingChannel != null){
-            existingChannel.update(channel.getName(), channel.getDescription());
+            existingChannel.update(channel.getName(), channel.getDescription(), channel.isPublic());
         }
     }
 

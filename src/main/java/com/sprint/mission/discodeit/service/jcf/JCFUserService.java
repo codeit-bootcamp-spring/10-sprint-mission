@@ -35,7 +35,7 @@ public class JCFUserService implements UserService {
     public void update(User user){
         User existingUser = data.get(user.getId());
         if (existingUser != null){
-            existingUser.update(user.getName(), user.getEmail());
+            existingUser.update(user.getName(),user.getNickname(), user.getEmail());
         }
     }
 

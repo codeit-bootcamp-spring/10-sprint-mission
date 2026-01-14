@@ -3,12 +3,9 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-
 
 
 public class JavaApplication {
@@ -19,9 +16,9 @@ public class JavaApplication {
 
         System.out.println("========= [1. User 도메인 테스트] =========");
         // 1. 등록
-        User user1 = new User("김철수", "kcs@example.com");
-        User user2 = new User("김영희", "kyh@example.com");
-        User user3 = new User("홍길동", "hkd@example.com");
+        User user1 = new User("김철수", "철수", "kcs@example.com", "1234");
+        User user2 = new User("김영희", "0희", "kyh@example.com", "0000");
+        User user3 = new User("홍길동", "길동이", "hkd@example.com", "hkd9876");
         userService.create(user1);
         userService.create(user2);
         userService.create(user3);
@@ -32,7 +29,7 @@ public class JavaApplication {
         System.out.println("[다건 조회] 전체 유저 수: " + userService.readAll().size());
 
         // 3. 수정
-        user1.update("고철수", "go@example.com");
+        user1.update("고철수", "고철수 입니다.", "go@example.com");
         userService.update(user1);
         System.out.println("[수정] 계정 수정 완료");
 
@@ -49,8 +46,8 @@ public class JavaApplication {
 
         System.out.println("\n========= [2. Channel 도메인 테스트] =========");
         // 1. 등록
-        Channel channel1 = new Channel("코딩 공부방", "공부합시다");
-        Channel channel2 = new Channel("공지방", "공지방입니다");
+        Channel channel1 = new Channel("코딩 공부방", "공부합시다", "TEXT", false);
+        Channel channel2 = new Channel("공지방", "공지방입니다", "ANNOUNCEMENT", true);
         channelService.create(channel1);
         channelService.create(channel2);
         System.out.println("[등록] 채널 생성 완료");
@@ -60,7 +57,7 @@ public class JavaApplication {
         System.out.println("[다건 조회] 전체 채널 수: " + channelService.readAll().size());
 
         // 3. 수정
-        channel1.update("자바 열공방", "열공합시다");
+        channel1.update("자바 열공방", "열공합시다", true);
         channelService.update(channel1);
         System.out.println("[수정] 채널 수정 완료");
 
@@ -99,7 +96,7 @@ public class JavaApplication {
 
         // 5. 삭제
         messageService.delete(message1.getId());
-        System.out.println("[삭제] 메사지 삭제 완료");
+        System.out.println("[삭제] 메시지 삭제 완료");
 
         // 6. 조회를 통해 삭제 확인
         System.out.println("[삭제 확인]: " + (messageService.readById(message1.getId()) == null ? "message1 삭제 성공" : "message1 삭제 실패"));

@@ -1,55 +1,54 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
-import java.util.UUID;
 import java.util.List;
 
-public class Channel {
-    private final UUID id;
+public class Channel extends BaseEntity {
     private String name;
     private String description;
+    private String type;        // 채팅 채널(TEXT), 공지 채널(ANNOUNCEMENT), 음성 채널(VOICE)
+    private boolean isPublic;   // 공개/비공개 여부
     private final List<User> members = new ArrayList<>();
-    private final Long createdAt;
-    private Long updatedAt;
 
-    public Channel (String name, String description) {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = this.createdAt;
+    public Channel(String name, String description, String type, boolean isPublic) {
+        super();
         this.name = name;
         this.description = description;
+        this.type = (type != null) ? type : "TEXT";
+        this.isPublic = isPublic;
     }
 
-    public UUID getId() { return id; }
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public Long getCreatedAt() { return createdAt; }
-    public Long getUpdatedAt() { return updatedAt; }
-
-    public void update(String name, String description) {
+    public void update(String name, String description, boolean isPublic) {
         this.name = name;
         this.description = description;
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public void addMember(User user){
-        if (this.members.contains(user)) {
-            throw new IllegalStateException("이미 채널에 가입된 멤버");
-        }
-        this.members.add(user);
+        this.isPublic = isPublic;
+        this.updated(); // 직접 System.currentTimeMillis()를 쓰지 않고 부모의 메서드 활용
     }
 
     public boolean isMember(User user){
         return members.contains(user);
     }
 
+    public void addMember(User user){
+        if (isMember(user)) {
+            throw new IllegalStateException("이미 채널에 가입된 멤버");
+        }
+        this.members.add(user);
+    }
+
+    public String getName() { return name; }
+    public String getDescription() { return description; }
+    public String getType() { return type; }
+    public boolean isPublic() { return isPublic; }
+
     @Override
     public String toString() {
         return "Channel{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", createdAt=" + createdAt +
+                ", type='" + type + '\'' +
+                ", isPublic=" + isPublic +
+                ", members=" + members +
                 ", updatedAt=" + updatedAt +
                 '}';
     }
