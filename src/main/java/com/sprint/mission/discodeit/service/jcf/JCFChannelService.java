@@ -43,7 +43,7 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 특정 유저가 참가한 채널 리스트 조회
-    public ArrayList<Channel> userChannels(UUID userId) {
+    public ArrayList<Channel> searchChannelsByUserId(UUID userId) {
         userService.searchUser(userId);
 
         return channels.stream()
@@ -53,7 +53,7 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 특정 채널의 참가자 리스트 조회
-    public List<User> channelUsers(UUID channelId) {
+    public List<User> searchUsersByChannelId(UUID channelId) {
         searchChannel(channelId);
 
         Channel targetChannel = channels.stream()

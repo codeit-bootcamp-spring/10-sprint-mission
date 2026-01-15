@@ -46,7 +46,7 @@ public class JCFMessageService implements MessageService {
     }
 
     // 특정 유저가 발행한 메시지 다건 조회
-    public ArrayList<Message> userMessages(UUID targetUserId) {
+    public ArrayList<Message> searchMessagesByUserId(UUID targetUserId) {
         userService.searchUser(targetUserId);
 
         return messages.stream()
@@ -55,7 +55,7 @@ public class JCFMessageService implements MessageService {
     }
 
     // 특정 채널의 메시지 발행 리스트 조회
-    public ArrayList<Message> channelMessages(UUID targetChannelId) {
+    public ArrayList<Message> searchMessagesByChannelId(UUID targetChannelId) {
         channelService.searchChannel(targetChannelId);
 
         return messages.stream()

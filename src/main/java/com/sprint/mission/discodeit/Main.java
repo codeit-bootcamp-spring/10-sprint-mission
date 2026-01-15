@@ -234,7 +234,7 @@ public class Main {
         // 사용자 별 채널 리스트 조회
         try {
             System.out.println("특정 사용자가 참가한 채널 리스트 조회 테스트");
-            ArrayList<Channel> userChannels = channelService.userChannels(user3.getId());
+            ArrayList<Channel> userChannels = channelService.searchChannelsByUserId(user3.getId());
             userChannels.forEach(channel -> System.out.println(channel.getChannelName()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -242,7 +242,7 @@ public class Main {
 
         try {   // 해당 사용자가 존재하지 않음
             System.out.println("특정 사용자가 참가한 채널 리스트 조회 테스트");
-            ArrayList<Channel> userChannels = channelService.userChannels(user1.getId());
+            ArrayList<Channel> userChannels = channelService.searchChannelsByUserId(user1.getId());
             userChannels.forEach(channel -> System.out.println(channel.getChannelName()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -251,7 +251,7 @@ public class Main {
         // 특정 채널의 참가자 리스트 조회
         try {
             System.out.println("특정 채널의 참가자 리스트 조회 테스트");
-            List<User> channelUsers = channelService.channelUsers(channel2.getId());
+            List<User> channelUsers = channelService.searchUsersByChannelId(channel2.getId());
             channelUsers.forEach(channel -> System.out.println(channel.getNickname()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -259,7 +259,7 @@ public class Main {
 
         try {   // 해당 채널이 존재하지 않음
             System.out.println("특정 채널의 참가자 리스트 조회 테스트");
-            List<User> channelUsers = channelService.channelUsers(channel1.getId());
+            List<User> channelUsers = channelService.searchUsersByChannelId(channel1.getId());
             channelUsers.forEach(channel -> System.out.println(channel.getNickname()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -357,7 +357,7 @@ public class Main {
         // 특정 사용자가 전송한 메시지 모록 조회
         try {
             System.out.println("특정 사용자가 전송한 메시지 목록 조회 테스트");
-            ArrayList<Message> userMessages = messageService.userMessages(user3.getId());
+            ArrayList<Message> userMessages = messageService.searchMessagesByUserId(user3.getId());
             userMessages.forEach(message -> System.out.println(message.getMessage()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -365,7 +365,7 @@ public class Main {
 
         try {       // 존재하지 않는 사용자
             System.out.println("특정 사용자가 전송한 메시지 목록 조회 테스트");
-            ArrayList<Message> userMessages = messageService.userMessages(user1.getId());
+            ArrayList<Message> userMessages = messageService.searchMessagesByUserId(user1.getId());
             userMessages.forEach(message -> System.out.println(message.getMessage()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -374,7 +374,7 @@ public class Main {
         // 특정 채널에서 발송된 메시지 목록 조회 테스트
         try {
             System.out.println("특정 채널에서 발송된 메시지 목록 조회 테스트");
-            ArrayList<Message> channelMessages = messageService.channelMessages(channel2.getId());
+            ArrayList<Message> channelMessages = messageService.searchMessagesByChannelId(channel2.getId());
             channelMessages.forEach(message -> System.out.println(message.getMessage()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -382,7 +382,7 @@ public class Main {
 
         try {       // 존재하지 않는 채널
             System.out.println("특정 채널에서 발송된 메시지 목록 조회 테스트");
-            ArrayList<Message> channelMessages = messageService.channelMessages(channel1.getId());
+            ArrayList<Message> channelMessages = messageService.searchMessagesByChannelId(channel1.getId());
             channelMessages.forEach(message -> System.out.println(message.getMessage()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
