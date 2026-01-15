@@ -44,13 +44,8 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public List<Message> getMessagesById(UUID userId) {
-        return getUser(userId).getMessages();
-    }
-
-    @Override
-    public List<Channel> getChannelsById(UUID userId) {
-        return getUser(userId).getChannels();
+    public List<User> getUsersByChannelId(UUID channelId) {
+        return channelService.getChannel(channelId).getUsers();
     }
 
     @Override

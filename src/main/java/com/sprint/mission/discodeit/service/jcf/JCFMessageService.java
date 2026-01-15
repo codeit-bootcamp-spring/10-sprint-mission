@@ -3,12 +3,24 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
+    private UserService userService;
+    private ChannelService channelService;
     private final List<Message> data = new ArrayList<>();
+
+    public void setUserService(UserService userService) {
+        this.userService = userService;
+    }
+
+    public void setChannelService(ChannelService channelService) {
+        this.channelService = channelService;
+    }
 
     @Override
     public Message createMessage(String content, User sender, Channel channel) {
@@ -30,6 +42,16 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> getAllMessages() {
         return List.copyOf(data);
+    }
+
+    @Override
+    public List<Message> getMessagesByUserId(UUID userId) {
+        return userService.getUser(userId).getMessages();
+    }
+
+    @Override
+    public List<Message> getMessagesByChannelId(UUID channelId) {
+        return channelService.getChannel(channelId).getMessages();
     }
 
     @Override
