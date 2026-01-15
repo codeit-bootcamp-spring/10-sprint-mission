@@ -25,5 +25,7 @@ public interface ChannelService {
 
     void leaveChannel(UUID channelId, UUID userId);
 
+    List<Message> readMessagesByChannel(UUID channelId);
+
 
 }

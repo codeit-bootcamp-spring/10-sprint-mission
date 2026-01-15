@@ -101,6 +101,11 @@ public class JCFChannelService implements ChannelService {
         channel.getJoinedUsers().removeIf(u -> userId.equals(u.getId()));
     }
 
+    @Override
+    public List<Message> readMessagesByChannel(UUID channelId) {
+        Channel channel = readChannel(channelId);
+        return channel.getMessages();
+    }
 
     private Channel validateExistenceChannel(UUID id) {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
