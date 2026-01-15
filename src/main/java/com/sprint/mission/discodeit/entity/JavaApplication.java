@@ -34,34 +34,34 @@ public class JavaApplication {
         List<User> users = new ArrayList<>();
         for (String[] data : userData) users.add(userService.createUser(data[0], data[1]));
 
-//        //유저 단건 출력
-//        System.out.println("[유저 출력(단건)]");
-//        User findUser = userService.findUser(users.get(0).getId());
-//        System.out.println(findUser);
-//        System.out.println("개인 식별자(Id): " + findUser.getId());
-//        System.out.println();
-//
-//        //유저 다건 출력
-//        System.out.println("[유저 출력(다건)]");
-//        for(User allUser : userService.findAllUser()){
-//            System.out.println(allUser);
-//            System.out.println();
-//        }
-//
-//        //유저 수정 후 출력
-//        System.out.println("[유저 출력(수정)]");
-//        User updateUser = userService.updateUser(users.get(1).getId(), "이코딩_수정", "lee_update@test.com");
-//        System.out.println(updateUser);
-//        System.out.println();
-//
-//        //유저 삭제 후 출력
-//        System.out.println("[유저 출력(삭제)]");
-//        User deleteUser = userService.deleteUser(users.get(0).getId());
-//
-//        for(User allUser : userService.findAllUser()){
-//            System.out.println(allUser);
-//            System.out.println();
-//        }
+        //유저 단건 출력
+        System.out.println("[유저 출력(단건)]");
+        User findUser = userService.findUser(users.get(0).getId());
+        System.out.println(findUser);
+        System.out.println("개인 식별자(Id): " + findUser.getId());
+        System.out.println();
+
+        //유저 다건 출력
+        System.out.println("[유저 출력(다건)]");
+        for(User allUser : userService.findAllUser()){
+            System.out.println(allUser);
+            System.out.println();
+        }
+
+        //유저 수정 후 출력
+        System.out.println("[유저 출력(수정)]");
+        User updateUser = userService.updateUser(users.get(1).getId(), "이코딩_수정", "lee_update@test.com");
+        System.out.println(updateUser);
+        System.out.println();
+
+        //유저 삭제 후 출력
+        System.out.println("[유저 출력(삭제)]");
+        User deleteUser = userService.deleteUser(users.get(0).getId());
+
+        for(User allUser : userService.findAllUser()){
+            System.out.println(allUser);
+            System.out.println();
+        }
 
         //====================================================================================
 
@@ -96,32 +96,32 @@ public class JavaApplication {
                 users.get(5).getId()
         );
 
-//        //채널 단건 출력
-//        System.out.println("[채널 출력(단건)]");
-//        Channel findOneChannel = channelService.findChannel(channels.get(0).getId());
-//        System.out.println(ChannelView.viewChannel(findOneChannel));
-//        System.out.println();
-//
-//        //채널 다건 출력
-//        System.out.println("[채널 출력(다건)]");
-//        for(Channel allChannel : channelService.findAllChannel()) {
-//            System.out.println(ChannelView.viewChannel(allChannel));
-//            System.out.println();
-//        }
-//
-//        //채널 이름 수정
-//        System.out.println("[채널 이름 수정]");
-//        Channel updateChannel = channelService.nameUpdateChannel(channels.get(1).getId(), "채널2_수정");
-//        System.out.println(ChannelView.viewChannel(updateChannel));
-//        System.out.println();
-//
-//        //채널 삭제
-//        System.out.println("[채널 삭제]");
-//        Channel deleteChannel = channelService.deleteChannel(channels.get(0).getId());
-//        for(Channel allChannel : channelService.findAllChannel()) {
-//            System.out.println(ChannelView.viewChannel(allChannel));
-//            System.out.println();
-//        }
+        //채널 단건 출력
+        System.out.println("[채널 출력(단건)]");
+        Channel findOneChannel = channelService.findChannel(channels.get(0).getId());
+        System.out.println(ChannelView.viewChannel(findOneChannel));
+        System.out.println();
+
+        //채널 다건 출력
+        System.out.println("[채널 출력(다건)]");
+        for(Channel allChannel : channelService.findAllChannel()) {
+            System.out.println(ChannelView.viewChannel(allChannel));
+            System.out.println();
+        }
+
+        //채널 이름 수정
+        System.out.println("[채널 이름 수정]");
+        Channel updateChannel = channelService.nameUpdateChannel(channels.get(1).getId(), "채널2_수정");
+        System.out.println(ChannelView.viewChannel(updateChannel));
+        System.out.println();
+
+        //채널 삭제
+        System.out.println("[채널 삭제]");
+        Channel deleteChannel = channelService.deleteChannel(channels.get(0).getId());
+        for(Channel allChannel : channelService.findAllChannel()) {
+            System.out.println(ChannelView.viewChannel(allChannel));
+            System.out.println();
+        }
 
         //========================================================
 
