@@ -107,6 +107,12 @@ public class JCFChannelService implements ChannelService {
         return channel.getMessages();
     }
 
+    @Override
+    public List<User> readUsersByChannel(UUID channelId) {
+        Channel channel = readChannel(channelId);
+        return channel.getUsers();
+    }
+
     private Channel validateExistenceChannel(UUID id) {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         return list.stream()

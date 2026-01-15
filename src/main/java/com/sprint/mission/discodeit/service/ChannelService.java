@@ -27,5 +27,6 @@ public interface ChannelService {
 
     List<Message> readMessagesByChannel(UUID channelId);
 
+    List<User> readUsersByChannel(UUID channelId);
 
 }
