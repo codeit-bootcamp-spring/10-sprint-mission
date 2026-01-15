@@ -29,6 +29,8 @@ public class JCFMessageService implements MessageService {
         Message msg = new Message(channel, user, message);
         data.put(msg.getId(), msg);
         channel.addMessage(msg);
+        user.addMessageHistory(msg);
+
         return msg;
     }
 
@@ -41,10 +43,8 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> findMessagesByChannelId(UUID uuid) {
-        return data.values().stream()
-                .filter(m -> Objects.equals(m.getChannel().getId(), uuid))
-                .sorted(Comparator.comparingLong(Common::getCreatedAt))
-                .toList();
+        Channel channel = channelService.getChannel(uuid);
+        return channel.getMessages();
     }
 
     @Override
@@ -68,7 +68,9 @@ public class JCFMessageService implements MessageService {
     public void deleteMessage(UUID uuid) {
         Message msg = getMessage(uuid);
         Channel channel = msg.getChannel();
+        User user = msg.getUser();
 
+        user.removeMessageHistory(msg);
         channel.removeMessage(msg);
         data.remove(uuid);
     }

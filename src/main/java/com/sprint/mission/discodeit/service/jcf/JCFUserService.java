@@ -70,19 +70,19 @@ public class JCFUserService implements UserService {
     @Override
     public void deleteUser(UUID uuid) {
         User user = getUser(uuid);
-        data.remove(user.getId());
+        deleteProcess(user);
     }
 
     @Override
     public void deleteUserByAccountId(String accountId) {
         User user = findUserByAccountId(accountId).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-        data.remove(user.getId());
+        deleteProcess(user);
     }
 
     @Override
     public void deleteUserByMail(String mail) {
         User user = findUserByMail(mail).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-        data.remove(user.getId());
+        deleteProcess(user);
     }
 
     private void validateDuplicateAccount(String accountId) {
@@ -91,5 +91,13 @@ public class JCFUserService implements UserService {
 
     private void validateDuplicateMail(String mail) {
         findUserByMail(mail).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 mail입니다"); });
+    }
+
+    private void deleteProcess(User user) {
+        for (var channel: user.getJoinedChannels()) {
+            channel.removeParticipant(user);
+        }
+
+        data.remove(user.getId());
     }
 }
