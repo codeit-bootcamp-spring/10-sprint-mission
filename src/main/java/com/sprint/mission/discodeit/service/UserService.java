@@ -12,15 +12,15 @@ public interface UserService {
     User createUser(String username, String nickname, String email, String phoneNumber);
 
     // Read
-    Optional<User> findById(UUID userId);
+    User findById(UUID userId);
     Optional<User> findByUsername(String username);
     List<User> findAll();
 
     // Update - Profile
-    User updateUsername(UUID id, String newUsername);
-    User updateNickname(UUID id, String newNickname);
-    User updateEmail(UUID id, String email);
-    User updatePhoneNumber(UUID id, String phoneNumber);
+    User updateUsername(UUID userId, String newUsername);
+    User updateNickname(UUID userId, String newNickname);
+    User updateEmail(UUID userId, String email);
+    User updatePhoneNumber(UUID userId, String phoneNumber);
 
     // Update - Status
     User updateUserStatus(UUID userId, UserStatus status);

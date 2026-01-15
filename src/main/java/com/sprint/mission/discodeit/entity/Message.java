@@ -55,7 +55,7 @@ public class Message extends BaseEntity {
 
     // validation
     private void validationContent(String content){
-        if (content == null || content.trim().isEmpty()) throw new IllegalArgumentException("메세지가 비어있음");
+        if (content == null || content.isBlank()) throw new IllegalArgumentException("메세지가 비어있음");
     }
 
     // Convenience Method

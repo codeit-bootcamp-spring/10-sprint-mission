@@ -12,12 +12,11 @@ public interface ChannelService {
     Channel createChannel(String name, boolean isPublic);
 
     // Read
-    Optional<Channel> findById(UUID channelId);
+    Channel findById(UUID channelId);
     List<Channel> findAll();
 
     // Update
-    Channel updateChannel(UUID channelId, String name);
-    Channel updateChannelVisibility(UUID channelId, boolean isPublic);
+    Channel updateChannel(UUID channelId, String newName, Boolean isPublic);
 
     // Delete
     Channel deleteChannel(UUID channelId);

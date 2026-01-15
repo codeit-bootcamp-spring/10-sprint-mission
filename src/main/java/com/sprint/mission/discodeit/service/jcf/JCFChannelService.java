@@ -30,8 +30,14 @@ public class JCFChannelService implements ChannelService {
 
     // Read
     @Override
-    public Optional<Channel> findById(UUID channelId) {
-        return Optional.ofNullable(channelMap.get(channelId));
+    public Channel findById(UUID channelId) {
+        Channel channel = channelMap.get(channelId);
+
+        if (channel == null) {
+            throw new NoSuchElementException("채널을 찾을 수 없습니다: " + channelId);
+        }
+
+        return channel;
     }
 
     @Override
@@ -41,26 +47,17 @@ public class JCFChannelService implements ChannelService {
 
     // Update
     @Override
-    public Channel updateChannel(UUID channelId, String name) {
-        Channel channel = getChannelOrThrow(channelId);
+    public Channel updateChannel(UUID channelId, String newName, Boolean isPublic) {
+        Channel channel = findById(channelId);
 
-        channel.updateName(name); // 엔티티에서 빈 채널 이름 검증함.
-
-        return channel;
-    }
-
-    @Override
-    public Channel updateChannelVisibility(UUID channelId, boolean isPublic) {
-        Channel channel = getChannelOrThrow(channelId);
-        channel.updatePublic(isPublic);
+        channel.updateChannel(newName, isPublic); // 엔티티에서 빈 채널 이름 검증함.
 
         return channel;
     }
-
     // Delete
     @Override
     public Channel deleteChannel(UUID channelId) {
-        Channel channel = getChannelOrThrow(channelId);
+        Channel channel = findById(channelId);
 
         messageService.deleteMessagesByChannelId(channelId); // 채널 내 모든 메시지 삭제
         channel.getUsers().forEach(user -> {user.leaveChannel(channel);}); // 채널 내 유저에게서 채널 삭제
@@ -69,9 +66,4 @@ public class JCFChannelService implements ChannelService {
         return channel;
     }
 
-    // Helper
-    private Channel getChannelOrThrow(UUID channelId) {
-        return findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다. ID: " + channelId));
-    }
 }

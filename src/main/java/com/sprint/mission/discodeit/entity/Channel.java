@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Channel extends BaseEntity {
     private String channelName;
-    private boolean isPublic;
+    private Boolean isPublic;
 
     // List는 멀티쓰레딩 환경에서 순서 보장 안됨
     // 나중에 리팩토링 가능성 존재
@@ -22,18 +22,19 @@ public class Channel extends BaseEntity {
     public String getChannelName() {
         return channelName;
     }
-    public boolean isPublic() {
+    public Boolean isPublic() {
         return isPublic;
     }
 
     // Updates
-    public void updateName(String newName){
-        validateName(newName);
-        this.channelName = newName;
-        updateTimestamp();
-    }
-    public void updatePublic(boolean isPublic){
-        this.isPublic = isPublic;
+    public void updateChannel(String newName, Boolean isPublic) {
+        if (newName != null) {
+            validateName(newName);
+            this.channelName = newName;
+        }
+        if (isPublic != null) {
+            this.isPublic = isPublic;
+        }
         updateTimestamp();
     }
 

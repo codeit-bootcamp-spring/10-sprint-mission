@@ -17,11 +17,12 @@ public interface MessageService {
 
     // Read - Global Scan
     List<Message> findAllByChannelId(UUID channelId);
+    List<Message> findAllByUserId(UUID userId);
     // Read - Direct Access
     List<Message> findMessagesByChannel(UUID channelId);
     List<Message> findMessagesByAuthor(UUID authorId);
     // Read - Single
-    Optional<Message> findById(UUID messageId);
+    Message findById(UUID messageId);
 
 
     // Update

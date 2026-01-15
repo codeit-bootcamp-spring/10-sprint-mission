@@ -30,10 +30,8 @@ public class JCFMessageService implements MessageService {
     public Message sendMessage(UUID authorId, UUID channelId, String content) {
         //엔티티에서 빈 메시지 검증함
 
-        User author = userService.findById(authorId)
-                .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다. ID: " + authorId));
-        Channel channel = channelService.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("채널을 찾을 수 없습니다. ID: " + channelId));
+        User author = userService.findById(authorId);
+        Channel channel = channelService.findById(channelId);
 
         Message message = new Message(content, author, channel);
 
@@ -47,42 +45,54 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
-        channelService.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널: " + channelId));
+        channelService.findById(channelId);
 
         return messageMap.values().stream()
                 .filter(m -> m.getChannel().getId().equals(channelId))
-                .sorted(Comparator.comparing(Message::getCreatedAt)) // 현재는 생성 시간 기준 정렬
+                .sorted(Comparator.comparing(Message::getSequence)) // 메시지 순서 보장을 위해선 sequence 정렬
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Message> findAllByUserId(UUID userId) {
+        userService.findById(userId);
+
+        return messageMap.values().stream()
+                .filter(message -> message.getAuthor().getId().equals(userId))
+                .sorted(Comparator.comparing(Message::getSequence)) // 메시지 순서 보장을 위해선 sequence 정렬
+                .collect(Collectors.toList());
+    }
 
     @Override
     public List<Message> findMessagesByChannel(UUID channelId) {
-        Channel channel = channelService.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널: " + channelId));
+        Channel channel = channelService.findById(channelId);
 
         return channel.getMessages();
     }
 
     @Override
     public List<Message> findMessagesByAuthor(UUID authorId) {
-        User author = userService.findById(authorId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저: " + authorId));
+        User author = userService.findById(authorId);
 
         return author.getMessages();
     }
 
     @Override
-    public Optional<Message> findById(UUID messageId) {
-        return Optional.ofNullable(messageMap.get(messageId));
+    public Message findById(UUID messageId) {
+        Message message = messageMap.get(messageId);
+
+        if (message == null) {
+            throw new NoSuchElementException("메시지를 찾을 수 없습니다.: " + messageId);
+        }
+
+        return message;
     }
 
     @Override
     public Message updateMessage(UUID messageId, String newContent) {
-        Message message = getMessageOrThrow(messageId);
+        Message message = findById(messageId);
 
-        if (newContent == null || newContent.trim().isEmpty()) {
+        if (newContent == null || newContent.isBlank()) {
             deleteMessage(messageId); // 수정할 땐 빈 메시지 보낼 시 삭제됨.
         } else {
             message.updateContent(newContent);
@@ -93,12 +103,12 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message deleteMessage(UUID messageId) {
-        Message message = getMessageOrThrow(messageId);
+        Message message = findById(messageId);
 
         message.getChannel().removeMessage(message);// 채널이 가지고 있는 메시지 리스트에서 삭제
         message.getAuthor().removeMessage(message); // 유저가 가지고 있는 메시지 리스트에서 삭제
 
-        messageMap.remove(messageId); // 전역 메시지 맵에서 삭제
+        messageMap.remove(messageId); // 전역 메시지 맵에서 삭제, 만약 이 부분을 제거하면 소프트 delete가 된다.
 
         return message;
     }
@@ -107,8 +117,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public void deleteMessagesByChannelId(UUID channelId) {
         Channel channel = channelService
-                .findById(channelId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 없음: " + channelId));
+                .findById(channelId);
         channel.getMessages()
                 .stream()
                 .map(Message::getId)
@@ -118,17 +127,11 @@ public class JCFMessageService implements MessageService {
     @Override
     public void deleteMessagesByAuthorId(UUID authorId) {
         User author = userService
-                .findById(authorId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없음: " + authorId));
+                .findById(authorId);
         author.getMessages()
                 .stream()
                 .map(Message::getId)
                 .forEach(this::deleteMessage);
     }
 
-    // Helper
-    private Message getMessageOrThrow(UUID messageId) {
-        return findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("메시지를 찾을 수 없습니다. ID: " + messageId));
-    }
 }

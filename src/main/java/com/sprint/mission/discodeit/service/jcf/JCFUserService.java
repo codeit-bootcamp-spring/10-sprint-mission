@@ -46,9 +46,13 @@ public class JCFUserService implements UserService {
 
     // Read
     @Override
-    public Optional<User> findById(UUID userId) {
-        // Map.get()은 키가 없으면 null을 반환하므로 ofNullable 사용
-        return Optional.ofNullable(userMap.get(userId));
+    public User findById(UUID userId) {
+        User user = userMap.get(userId);
+        if (user == null) {
+            throw new NoSuchElementException("사용자를 찾을 수 없습니다: " + userId);
+        }
+        return user;
+
     }
 
     @Override
@@ -67,8 +71,8 @@ public class JCFUserService implements UserService {
 
     // Update - Profile
     @Override
-    public User updateUsername(UUID id, String newUsername) {
-        User user = getUserOrThrow(id);
+    public User updateUsername(UUID userId, String newUsername) {
+        User user = findById(userId);
         if (findByUsername(newUsername).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + newUsername);
         }
@@ -77,26 +81,26 @@ public class JCFUserService implements UserService {
         return user;
     }
     @Override
-    public User updateNickname(UUID id, String newNickname) {
-        User user = getUserOrThrow(id);
+    public User updateNickname(UUID userId, String newNickname) {
+        User user = findById(userId);
         user.updateNickname(newNickname);
 
         return user;
     }
 
     @Override
-    public User updateEmail(UUID id, String email) {
-        User user = getUserOrThrow(id);
-        checkDuplicateEmail(email, id);
+    public User updateEmail(UUID userId, String email) {
+        User user = findById(userId);
+        checkDuplicateEmail(email, userId);
         user.updateEmail(email);
 
         return user;
     }
 
     @Override
-    public User updatePhoneNumber(UUID id, String phoneNumber) {
-        User user = getUserOrThrow(id);
-        checkDuplicatePhoneNumber(phoneNumber, id);
+    public User updatePhoneNumber(UUID userId, String phoneNumber) {
+        User user = findById(userId);
+        checkDuplicatePhoneNumber(phoneNumber, userId);
         user.updatePhoneNumber(phoneNumber);
 
         return user;
@@ -105,7 +109,7 @@ public class JCFUserService implements UserService {
     // Update - Status
     @Override
     public User updateUserStatus(UUID userId, UserStatus status) {
-        User user = getUserOrThrow(userId);
+        User user = findById(userId);
         user.changeStatus(status);
 
         return user;
@@ -113,7 +117,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User toggleMicrophone(UUID userId, boolean isOn) {
-        User user = getUserOrThrow(userId);
+        User user = findById(userId);
         user.toggleMicrophone(isOn);
 
         return user;
@@ -121,7 +125,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User toggleHeadset(UUID userId, boolean isOn) {
-        User user = getUserOrThrow(userId);
+        User user = findById(userId);
         user.toggleHeadset(isOn);
 
         return user;
@@ -130,7 +134,7 @@ public class JCFUserService implements UserService {
     // Delete
     @Override
     public User deleteUser(UUID userId) {
-        User user = getUserOrThrow(userId);
+        User user = findById(userId);
         messageService.deleteMessagesByAuthorId(userId);
         user.getChannels().forEach(user::leaveChannel);
         userMap.remove(userId);
@@ -140,55 +144,44 @@ public class JCFUserService implements UserService {
 
     @Override
     public void joinChannel(UUID userId, UUID channelId) {
-        User user = getUserOrThrow(userId);
+        User user = findById(userId);
 
-        Channel channel = channelService.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다. ID: " + channelId));
+        Channel channel = channelService.findById(channelId);
 
         user.joinChannel(channel);
     }
 
     @Override
     public void leaveChannel(UUID userId, UUID channelId) {
-        User user = getUserOrThrow(userId);
+        User user = findById(userId);
 
-        Channel channel = channelService.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다. ID: " + channelId));
+        Channel channel = channelService.findById(channelId);
 
         user.leaveChannel(channel);
     }
 
-    // Helper
-    private User getUserOrThrow(UUID userId) {
-        return findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. ID: " + userId));
-    }
-
+    // Duplicate Check
     private void checkDuplicateEmail(String email, UUID excludeUserId){
         if (email == null) return;
 
-        boolean exists = userMap.values().stream()
+        if(userMap.values().stream()
                 .filter(u -> !u.getId().equals(excludeUserId)) // 본인 제외
                 .anyMatch(u -> u.getEmail()
                         .map(e -> e.equals(email))
-                        .orElse(false));
-
-        if (exists) {
+                        .orElse(false))) {
             throw new IllegalArgumentException("이미 사용 중인 이메일:" + email);
-        }
+        };
     }
 
     private void checkDuplicatePhoneNumber(String phoneNumber, UUID excludeUserId){
         if (phoneNumber == null) return;
 
-        boolean exists = userMap.values().stream()
-                .filter(u -> !u.getId().equals(excludeUserId)) // 본인 제외
+        if(userMap.values().stream()
+                .filter(u -> !u.getId().equals(excludeUserId)) // 본인 ID 제외
                 .anyMatch(u -> u.getPhoneNumber()
                         .map(e -> e.equals(phoneNumber))
-                        .orElse(false));
-
-        if (exists) {
-            throw new IllegalArgumentException("이미 사용 중인 전화번호:" + phoneNumber);
+                        .orElse(false))) {
+            throw new IllegalArgumentException("이미 사용 중인 전화번호: " + phoneNumber);
         }
     }
 }

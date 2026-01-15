@@ -198,8 +198,16 @@ public class JavaApplication {
         Channel channel = selectChannel();
         if (channel == null) return;
 
+        // 1. 새 이름 입력
         System.out.print("새 채널 이름: ");
-        System.out.println(">> 결과: " + channelService.updateChannel(channel.getId(), scanner.nextLine()));
+        String newName = scanner.nextLine();
+
+        // 2. 새 공개 여부 입력
+        System.out.print("새 공개 여부 (y/n): ");
+        boolean newIsPublic = scanner.nextLine().trim().equalsIgnoreCase("y");
+
+        // 3. 통합된 서비스 메서드 호출 (ID, 이름, 공개여부)
+        System.out.println(">> 결과: " + channelService.updateChannel(channel.getId(), newName, newIsPublic));
     }
 
     // =================================================================
