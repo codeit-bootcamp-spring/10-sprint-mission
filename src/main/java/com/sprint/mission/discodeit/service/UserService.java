@@ -10,6 +10,7 @@ import java.util.UUID;
 public interface UserService {
     // Setter
     void setMessageService(MessageService messageService);
+    void setChannelService(ChannelService channelService);
     // CRUD
     User create(String name);
     User find(UUID id);

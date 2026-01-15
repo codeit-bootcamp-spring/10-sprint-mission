@@ -3,9 +3,13 @@ package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -13,12 +17,61 @@ import java.util.stream.Collectors;
 
 public class FileUserService implements UserService {
     // field
-    private final List<User> userData;
+    // 필드
+    private final Path basePath = Path.of("data/user");
+    private final Path storeFile = basePath.resolve("user.ser");
+
+    private List<User> userData;
     private MessageService messageService;
+    private ChannelService channelService;
 
     // constructor
     public FileUserService() {
         this.userData = new ArrayList<>();
+    }
+
+    // 디렉토리 체크
+    private void init() {
+        try {
+            if (!Files.exists(basePath)) {
+                Files.createDirectories(basePath);
+            }
+        } catch (IOException e) {
+            System.out.println("Directory creation failed." + e.getMessage());
+        }
+    }
+
+    // 저장 (직렬화)
+    void saveData() {
+
+        init();
+
+        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(storeFile.toFile()))) {
+
+            oos.writeObject(userData);
+
+        } catch (IOException e) {
+
+            throw new RuntimeException("Data save failed." + e.getMessage());
+
+        }
+    }
+
+    // 로드 (역직렬화)
+    private void loadData() {
+        init();
+
+        // 파일이 없으면: 첫 실행이므로 빈 리스트 유지
+        if (!Files.exists(storeFile)) {
+            userData = new ArrayList<>();
+            return;
+        }
+
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(storeFile.toFile()))){
+            userData = (List<User>) ois.readObject();
+        } catch (Exception e){
+            throw new RuntimeException("Data load failed." + e.getMessage());
+        }
     }
 
     // Setter
@@ -27,17 +80,21 @@ public class FileUserService implements UserService {
         this.messageService = messageService;
     }
 
+    public void setChannelService(ChannelService channelService) {this.channelService = channelService;}
+
     // User 등록
     @Override
     public User create(String name) {
         User user = new User(name);
         this.userData.add(user);
+        saveData();
         return user;
     }
 
     // 단건 조회
     @Override
     public User find(UUID userID){
+
         return userData.stream()
                 .filter(user -> user.getId().equals(userID))
                 .findFirst()
@@ -47,6 +104,7 @@ public class FileUserService implements UserService {
     // 다건 조회
     @Override
     public List<User> findAll(){
+
         return userData;
     }
 
@@ -55,6 +113,7 @@ public class FileUserService implements UserService {
     public User updateName(UUID id, String name){
         User user = find(id);
         user.updateName(name);
+        saveData();
         return user;
     }
 
@@ -67,19 +126,20 @@ public class FileUserService implements UserService {
 
         User user = find(userID);
 
-        // User가 보낸 Message 삭제
+        // User가 보낸 Message 삭제 , messageService 내부에서 saveData()
         List<Message> messageList = new ArrayList<>(user.getMessageList());
         messageList.forEach(message -> messageService.deleteMessage(message.getId()));
 
         // Channel에서 User 탈퇴 및 User가 가입한 channel에서 User 탈퇴 , 양방향 삭제를 해줘야 객체가 완전히 지워짐 ??
         List<Channel> channels = new ArrayList<>(user.getChannels());
         channels.forEach(channel -> {
-            channel.removeMember(user);
+            channelService.leaveChannel(user.getId(), channel.getId()); // channelService 내부에서 변경사항 저장
             user.leaveChannel(channel);
         });
 
         // userData에서 user 완전 삭제
         userData.remove(user);
+        saveData();
     }
 
     // User가 가입한 전체 Channel 조회

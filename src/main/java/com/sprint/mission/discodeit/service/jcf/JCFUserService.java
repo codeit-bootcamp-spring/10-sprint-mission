@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -15,6 +16,7 @@ public class JCFUserService implements UserService {
     // field
     private final List<User> userData;
     private MessageService messageService;
+    private ChannelService channelService;
 
     // constructor
     public JCFUserService() {
@@ -26,6 +28,8 @@ public class JCFUserService implements UserService {
     public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
     }
+
+    public void setChannelService(ChannelService channelService) {this.channelService = channelService;}
 
     // User 등록
     @Override

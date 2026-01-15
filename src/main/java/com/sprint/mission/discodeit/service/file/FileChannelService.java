@@ -15,23 +15,19 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class FileChannelService implements ChannelService, Serializable {
+public class FileChannelService implements ChannelService {
     // 필드
-    private static final long serialVersionUID = 1L;
-    private final Path basePath = Path.of("src/main/resources/channel");
+    private final Path basePath = Path.of("data/channel");
     private final Path storeFile = basePath.resolve("channel.ser");
 
     private List<Channel> channelData;
 
-    private transient MessageService fileMessageService;
-    private transient UserService fileUserService;
+    private MessageService fileMessageService;
+    private UserService fileUserService;
 
     // 생성자
     public FileChannelService() {
         this.channelData = new ArrayList<>();
-        // 시작 시 데이터 로드
-        init();
-        loadData();
     }
 
     // 디렉토리 체크
@@ -46,22 +42,33 @@ public class FileChannelService implements ChannelService, Serializable {
     }
 
     // 저장 (직렬화)
-    private void saveData() {
-        // init 추가해보자
+    void saveData() {
+        init();
+
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(storeFile.toFile()))) {
+
             oos.writeObject(channelData);
+
         } catch (IOException e) {
-            System.out.println("Data save failed." + e.getMessage());
+
+            throw new RuntimeException("Data save failed." + e.getMessage());
+
         }
     }
 
     // 로드 (역직렬화)
     private void loadData() {
+        init();
+        // 파일이 없으면: 첫 실행이므로 빈 리스트 유지
+        if (!Files.exists(storeFile)) {
+            channelData = new ArrayList<>();
+            return;
+        }
+
         try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(storeFile.toFile()))){
             channelData = (List<Channel>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e){
-            System.out.println("Data load failed." + e.getMessage());
-            channelData = new ArrayList<>();
+        } catch (Exception e){
+            throw new RuntimeException("Data load failed." + e.getMessage());
         }
     }
 
@@ -69,17 +76,11 @@ public class FileChannelService implements ChannelService, Serializable {
     @Override
     public void setMessageService(MessageService fileMessageService) {
         this.fileMessageService = fileMessageService;
-
-        if (fileMessageService instanceof FileMessageService){
-            this.fileMessageService = (FileMessageService) fileMessageService;
-        }
     }
 
     @Override
     public void setUserService(UserService fileUserService) {
         this.fileUserService = fileUserService;
-
-        if (fileUserService instanceof FileUserService) this.fileUserService = (FileUserService) fileUserService;
     }
 
     // 생성
@@ -95,6 +96,7 @@ public class FileChannelService implements ChannelService, Serializable {
     // 단일 조회
     @Override
     public Channel find(UUID id) {
+
         return channelData.stream()
                 .filter(channel -> channel.getId().equals(id))
                 .findFirst()
@@ -104,15 +106,17 @@ public class FileChannelService implements ChannelService, Serializable {
     // 전체 조회
     @Override
     public List<Channel> findAll() {
+
         return channelData;
     }
 
     // 수정
     @Override
     public Channel updateName(UUID channelID, String name) {
+
         Channel channel = find(channelID);
         channel.updateName(name);
-        // 이름만 바꾼건데 저장해줘야하나?
+
         saveData();
         return channel;
     }
@@ -130,11 +134,16 @@ public class FileChannelService implements ChannelService, Serializable {
         List<User> members = new ArrayList<>(channel.getMembersList()); // Load Data를 해줘야 겠는데
 
         members.forEach(user -> user.leaveChannel(channel));
-        fileUserService.saveData();
+        // interface type이라 saveData 사용 수 없음 !!
+
+        // user 저장
+        if (fileUserService instanceof FileUserService fus) {
+            fus.saveData();
+        }
 
         List<Message> messages = new ArrayList<>(channel.getMessageList()); // 여기도 마찬가지
         messages.forEach(message -> fileMessageService.deleteMessage(message.getId()));
-        fileMessageService.saveData();
+        // 여기도 마찬가지 deleteMessage 메서드 안에서 해결함.
 
 
         channelData.remove(channel);
@@ -155,12 +164,15 @@ public class FileChannelService implements ChannelService, Serializable {
             throw new IllegalArgumentException("User is already in this channel." + channelID);
         }
 
-        channel.addMember(user);
+        channel.addMember(user); // channelService loadData로 반영
 
-        user.joinChannel(channel);
+        user.joinChannel(channel); // userService에서 어떻게 반영하지?
 
-        // 여기서는 직렬화 어떻게 해야하지?
-        saveData(); // ??
+        if (fileUserService instanceof FileUserService fus) {
+            fus.saveData();
+        }
+
+        saveData();
     }
 
     @Override
@@ -179,18 +191,27 @@ public class FileChannelService implements ChannelService, Serializable {
             throw new IllegalArgumentException("User is not in this channel." + channelID);
         }
 
+        // 어떻게 해야지?
         // user에서 channel 삭제
         user.leaveChannel(channel); // 여기서도 user 직렬화 변경사항 저장해야하나
 
-        // channel에서 user 삭제
-        channel.removeMember(user); // 여기도 마찬가지
+        if (fileUserService instanceof FileUserService fus) {
+            fus.saveData();
+        }
+
+        // channel에서 user 삭제 -> channelService 자체에서 saveData()
+        channel.removeMember(user);
 
         // user가 보낸 messageList 중 해당 channel에 관한 것 삭제해줘야 함
         List<Message> messageList = new ArrayList<>(user.getMessageList());
 
         messageList.stream()
                 .filter(msg -> msg.getChannel().equals(channel))
-                .forEach(msg -> fileMessageService.deleteMessage(msg.getId()));
+                .forEach(msg -> fileMessageService.deleteMessage(msg.getId())); // messageService 내부에서 saveData 동작
+
+        if (fileMessageService instanceof FileMessageService fms) {
+            fms.saveData();
+        }
 
         saveData();
     }
