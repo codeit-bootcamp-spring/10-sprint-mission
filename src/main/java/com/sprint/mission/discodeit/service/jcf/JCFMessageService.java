@@ -1,83 +1,66 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.Exception.ChannelNotFoundException;
-import com.sprint.mission.discodeit.Exception.MessageNotFoundException;
+
+import com.sprint.mission.discodeit.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFMessageService implements MessageService {
 
-    private final JCFChannelService channelService;
+    private JCFChannelService channelService;
 
-    // 메시지 서비스 생성 시 채널 서비스 주입
     public JCFMessageService(JCFChannelService channelService) {
         this.channelService = channelService;
     }
 
     // 1. 메시지 생성
     @Override
-    public Message messageCreate(UUID channelId, User sender, String content) {
-        Channel channel = channelService.channelFind(channelId);
-
-        if (!channel.hasMember(sender.getUserId())) {
+    public Message createMessage(UUID channelId, UUID senderId, String content) {
+        Channel channel = channelService.findChannel(channelId);
+        if (!channel.hasMember(senderId)) {
             throw new IllegalArgumentException("채널 멤버만 메시지를 작성할 수 있습니다.");
         }
 
-        Message message = new Message(sender, content);
-        channel.addMessage(message);
+        // Channel.addMessage가 Message 객체를 만들어 반환하도록 변경
+        Message message = channel.addMessage(senderId, content);
 
-        return message;
+        return message; // Channel 내부 Map과 동일한 객체 반환
     }
+
 
     // 2. 메시지 단건 조회
     @Override
-    public Message messageFind(UUID channelId, UUID messageId) {
-        Channel channel = channelService.channelFind(channelId);
-        Message message = channel.getMessages()
+    public Message findMessage(UUID channelId, UUID messageId) {
+        Channel channel = channelService.findChannel(channelId);
+        return channel.getMessages()
                 .stream()
-                .filter(m -> m.getMessageId().equals(messageId))
+                .filter(m -> m.getId().equals(messageId))
                 .findFirst()
-                .orElse(null);
-
-        if (message == null) {
-            throw new MessageNotFoundException("해당 메시지가 존재하지 않습니다.");
-        }
-        return message;
+                .orElseThrow(() -> new MessageNotFoundException("해당 메시지가 존재하지 않습니다."));
     }
-
-    // 3. 메시지 전체 조회
     @Override
-    public List<Message> messageFindAll(UUID channelId) {
-        Channel channel = channelService.channelFind(channelId);
+    public List<Message> findAllMessage(UUID channelId) {
+        Channel channel = channelService.findChannel(channelId);
         return new ArrayList<>(channel.getMessages());
     }
 
-    // 4. 메시지 수정
     @Override
-    public Message messageUpdate(UUID channelId, UUID messageId, String newContent) {
-        Message message = messageFind(channelId, messageId);
+    public Message updateMessage(UUID channelId, UUID messageId, String newContent) {
+        Message message = findMessage(channelId, messageId); // 단건 조회 재사용
         message.updateContent(newContent);
         return message;
     }
 
-    // 5. 메시지 삭제
     @Override
-    public void messageDelete(UUID channelId, UUID messageId) {
-        Channel channel = channelService.channelFind(channelId); // 채널 가져오기
-        if (channel == null) {
-            throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
-        }
-
-        if (!channel.getMessages().stream().anyMatch(m -> m.getMessageId().equals(messageId))) {
+    public void deleteMessage(UUID channelId, UUID messageId) {
+        Channel channel = channelService.findChannel(channelId);
+        if (!channel.getMessages().stream().anyMatch(m -> m.getId().equals(messageId))) {
             throw new MessageNotFoundException("존재하지 않는 메시지입니다.");
         }
-
-        channel.removeMessage(messageId); // 여기서 실제 삭제
+        channel.removeMessage(messageId);
     }
+
 }

@@ -1,116 +1,86 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.Exception.AlreadyJoinedChannelException;
-import com.sprint.mission.discodeit.Exception.ChannelNotFoundException;
-import com.sprint.mission.discodeit.Exception.DuplicationChannelException;
-import com.sprint.mission.discodeit.Exception.UserNotInChannelException;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.entity.Channel;
-import java.util.*;
 
+import com.sprint.mission.discodeit.exception.AlreadyJoinedChannelException;
+import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.DuplicationChannelException;
+import com.sprint.mission.discodeit.exception.UserNotInChannelException;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.service.ChannelService;
+
+import java.util.*;
 
 public class JCFChannelService implements ChannelService {
 
-    private Map<UUID, Channel> channels =  new LinkedHashMap<>();
+    private final Map<UUID, Channel> channels = new LinkedHashMap<>();
 
-    //채널 생성
-    @Override
-    public Channel channelCreate(String channelName) {
-        for(Channel channel : channels.values()){
-            if(channel.getChannelName().equals(channelName)){
-                throw new DuplicationChannelException("이미 있는 채널입니다.");
-            }
-        }
-
-        Channel channel = new Channel(channelName);
-        channels.put(channel.getChannelId(), channel);
-
-        return channel;
-    }
-
-    // 채널 단건 조회
-    @Override
-    public Channel channelFind(UUID channelId) {
+    //중복 예외 한개로 통합
+    private Channel getChannelOrThrow(UUID channelId) {
         Channel channel = channels.get(channelId);
-
         if (channel == null) {
             throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
         }
-
         return channel;
     }
-    // 채널 다건 조회
+
     @Override
-    public List<Channel> channelFindAll() {
+    public Channel createChannel(String channelName) {
+        for (Channel channel : channels.values()) {
+            if (channel.getChannelName().equals(channelName)) {
+                throw new DuplicationChannelException();
+            }
+        }
+        Channel channel = new Channel(channelName);
+        channels.put(channel.getId(), channel);
+        return channel;
+    }
+
+    @Override
+    public Channel findChannel(UUID channelId) {
+        return getChannelOrThrow(channelId);
+    }
+
+    @Override
+    public List<Channel> findAllChannel() {
         return new ArrayList<>(channels.values());
     }
 
-    // 채널 맴버 추가
     @Override
-    public Channel channelMemberAdd(UUID channelId, User user) {
-        Channel channel = channels.get(channelId);
-
-        //채널 확인
-        if (channel == null) {
-            throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
+    public Channel memberAddChannel(UUID channelId, UUID userId) {
+        Channel channel = getChannelOrThrow(channelId);
+        if (channel.hasMember(userId)) {
+            throw new AlreadyJoinedChannelException();
         }
-
-        // 맴버 식별자 동일 = 같은사람
-        if (channel.hasMember(user.getUserId())) {
-            throw new AlreadyJoinedChannelException("이미 채널에 참여한 사용자입니다.");
-        }
-
-        channel.addMember(user);
+        channel.addMember(userId);
         return channel;
     }
-    // 채널 맴버 삭제
+
     @Override
-    public Channel channelMemberRemove(UUID channelId, UUID userId) {
-        Channel channel = channels.get(channelId);
-
-        if (channel == null) {
-            throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
-        }
-
+    public Channel memberRemoveChannel(UUID channelId, UUID userId) {
+        Channel channel = getChannelOrThrow(channelId);
         if (!channel.hasMember(userId)) {
-            throw new UserNotInChannelException("채널에 없는 사용자입니다.");
+            throw new UserNotInChannelException();
         }
-
         channel.removeMember(userId);
         return channel;
     }
 
-    // 채널 삭제
     @Override
-    public Channel channelDelete(UUID channelId) {
+    public Channel deleteChannel(UUID channelId) {
         Channel channel = channels.remove(channelId);
-
         if (channel == null) {
-            throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
+            throw new ChannelNotFoundException();
         }
-
         return channel;
     }
 
-    // 채널명 변경
     @Override
-    public Channel channelNameUpdate(UUID channelId, String channelName) {
-        Channel channel = channels.get(channelId);
-
-        if (channel == null) {
-            throw new ChannelNotFoundException("존재하지 않는 채널입니다.");
-        }
-
+    public Channel nameUpdateChannel(UUID channelId, String channelName) {
+        Channel channel = getChannelOrThrow(channelId);
         if (channel.getChannelName().equals(channelName)) {
-            throw new DuplicationChannelException("이미 존재하는 채널 이름 입니다.");
+            throw new DuplicationChannelException();
         }
-
         channel.updateChannelName(channelName);
         return channel;
     }
-
-
-
-
 }

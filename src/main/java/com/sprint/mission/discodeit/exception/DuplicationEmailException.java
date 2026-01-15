@@ -1,4 +1,5 @@
-package com.sprint.mission.discodeit.Exception;
+package com.sprint.mission.discodeit.exception;
+
 
 public class DuplicationEmailException extends RuntimeException {
 

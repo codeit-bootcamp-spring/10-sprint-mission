@@ -2,7 +2,7 @@
   <profile version="1.0">
     <option name="myName" value="Project Default" />
     <inspection_tool class="CommentedOutCode" enabled="true" level="WEAK WARNING" enabled_by_default="true">
-      <option name="minLines" value="93" />
+      <option name="minLines" value="176" />
     </inspection_tool>
   </profile>
 </component>

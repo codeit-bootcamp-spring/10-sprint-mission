@@ -1,6 +1,5 @@
-package com.sprint.mission.discodeit.Exception;
+package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.entity.Channel;
 
 public class ChannelNotFoundException extends RuntimeException {
 

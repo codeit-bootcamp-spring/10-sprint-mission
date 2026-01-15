@@ -5,17 +5,15 @@ import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.UUID;
 
-
 public interface UserService {
 
-    User userCreate(String userName, String userEmail);
+    User createUser(String userName, String userEmail);
 
-    User userFind(UUID userId);
+    User findUser(UUID userId);
 
-    List<User> userFindAll();
+    List<User> findAllUser();
 
-    User userUpdate(UUID id, String userName, String userEmail);
+    User updateUser(UUID userId, String userName, String userEmail);
 
-    void userDelete(UUID userId);
-
+    void deleteUser(UUID userId);
 }
