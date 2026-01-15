@@ -126,7 +126,7 @@ public class JavaApplication {
         Message msg3 = messageService.createMessage("가나다라", user3, channel3);
 
         System.out.println("---단건조회---");
-        System.out.println(messageService.findId(msg3) + " 조회 성공");
+        System.out.println(messageService.findId(msg3.getId()) + " 조회 성공");
 
         System.out.println("---다건 조회---");
         System.out.println("전체 메세지 수: " + messageService.findAll().size());
@@ -134,21 +134,21 @@ public class JavaApplication {
         System.out.println("---수정/조회---");
         System.out.println("메세지 수정 전 " + msg2.getContent());
         try {
-            msg3 = messageService.update(msg3, "1aaa5");
+            msg3 = messageService.update(msg3.getId(), "1aaa5");
         } catch (Exception e) {
             System.out.println(e);
         }
         System.out.println("메세지 수정 후 " + msg2.getContent());
         System.out.println("메세지 수정 전 " + msg3.getContent());
         try {
-            msg3 = messageService.update(msg3, "");
+            msg3 = messageService.update(msg3.getId(), "");
         } catch (Exception e) {
             System.out.println(e);
         }
         System.out.println("메세지 수정 후 " + msg3.getContent());
         System.out.println("메세지 수정 전 " + msg3.getContent());
         try {
-            msg3 = messageService.update(msg3, "     ");
+            msg3 = messageService.update(msg3.getId(), "     ");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -156,7 +156,7 @@ public class JavaApplication {
 
         System.out.println("---삭제---");
         System.out.println("메세지 삭제 전 전체 메세지 수: " + messageService.findAll().size());
-        messageService.delete(msg2);
+        messageService.delete(msg2.getId());
         System.out.println("메세지 삭제 후 전체 메세지 수: " + messageService.findAll().size());
     }
 }

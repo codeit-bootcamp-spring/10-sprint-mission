@@ -16,10 +16,8 @@ public class JCFUserService implements UserService {
 
     //data 필드를 활용해 생성, 조회, 수정, 삭제하는 메소드
     public User CreateUser(String userName, String email){
-        boolean isExist = data.stream()
-                .anyMatch(user -> user.getEmail().equals(email));
-        if (isExist) {
-            throw new IllegalArgumentException("이미 등록된 이메일입니다: " + email);
+        if (data.stream().anyMatch(user -> user.getEmail().equals(email))) {
+            throw new IllegalArgumentException("이미 등록된 계정입니다. " + email);
         }
         User user = new User(userName, email);
         data.add(user);
@@ -27,11 +25,11 @@ public class JCFUserService implements UserService {
         return user;
     }
 
-    public User findId(UUID id){
+    public User findId(UUID userId){
         return data.stream()
-                .filter(user -> user.getId().equals(id))
+                .filter(user -> user.getId().equals(userId))
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("해당 계정은 존재하지 않습니다.\nID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("해당 계정은 존재하지 않습니다.\nID: " + userId));
     }
 
     public User findName(String name){
@@ -53,8 +51,8 @@ public class JCFUserService implements UserService {
         return data;
     }
 
-    public User updateName(UUID user, String userName){
-        User foundUser = findId(user);
+    public User updateName(UUID userId, String userName){
+        User foundUser = findId(userId);
         if (userName == null || userName.trim().isEmpty()) {
             throw new IllegalArgumentException("이름이 비어있거나 공백입니다.");
         }
@@ -62,8 +60,8 @@ public class JCFUserService implements UserService {
         return foundUser;
     }
 
-    public User updateEmail(UUID user, String email){
-        User foundEmail = findId(user);
+    public User updateEmail(UUID userId, String email){
+        User foundEmail = findId(userId);
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("이메일이 비어있거나 공백입니다.");
         }
@@ -71,25 +69,39 @@ public class JCFUserService implements UserService {
         return foundEmail;
     }
 
-    public void delete(UUID user){
-        User target = findId(user);
-        data.remove(target);
+    public void addMessage(UUID userId, Message msg){
+        User foundUser = findId(userId);
+        foundUser.addMessage(msg);
+    }
+
+    public void addChannel(UUID userId, Channel channel){
+        User foundUser = findId(userId);
+        foundUser.addChannel(channel);
+        channel.addUserList(foundUser);
+    }
+
+    public List<Message> findMessages(UUID userId){
+        User foundUser = findId(userId);
+        return foundUser.getMessageList();
+    }
+
+    // 유저가 작성한 메세지 중 특정 채널에서의 메세지들
+    public List<Message> findMessagesInChannel(UUID userId, UUID channelId){
+        List<Message> messages = findMessages(userId);
+        return messages.stream()
+                .filter(message -> message.getChannel().getId().equals(channelId))
+                .toList();
     }
 
 
-    // 메세지 가져오기
-    // 특정사용자의 발행한 메세지 리스트 조회
-    // 위의 메소드를 이용해서 추린 후 거기서 특정 채널에 발행된 메세지 가져오기
-    // 메세지 전체 반환
-    // 메세지 추가
-    // 메세지 삭제
-    // 메세지 전체삭제
-//    public List<Channel> addChannel(UUID user, UUID channel){
-//        User foundUser = findId(user);
-//        JCFChannelService foundChannel;
-//    }
+    public List<Channel> findChannels(UUID userId){
+        User user = findId(userId);
+        return user.getChannelList();
+    }
 
-
-    // 채널도 위와 마찬가지
+    public void delete(UUID userId){
+        User target = findId(userId);
+        data.remove(target);
+    }
 
 }

@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.UUID;
-
 public class Message extends Common{
     String content;
     private Channel channel;
@@ -13,6 +11,7 @@ public class Message extends Common{
         this.sender = sender;
         sender.addMessage(this);
         this.channel = channel;
+        channel.addMessage(this);
     }
 
     public String getContent(){
@@ -23,10 +22,11 @@ public class Message extends Common{
         this.content = content;
     }
 
-    public User getUserId(){
+    public User getUser(){
         return sender;
     }
-    public Channel getChannelId(){
+
+    public Channel getChannel(){
         return channel;
     }
 }

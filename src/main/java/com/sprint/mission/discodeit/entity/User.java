@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class User extends Common{
     private String userName;
@@ -38,21 +37,24 @@ public class User extends Common{
 
 
     // 채널, 메세지 부분
-    public List<Channel> getChannelId(){
+    // 상호참조
+    public List<Channel> getChannelList(){
         return channelList;
     }
 
-    public void addChannelId(Channel channel){
-        channelList.add(channel);
+    public void addChannel(Channel channel){
+        this.channelList.add(channel);
+        if(!channel.getUserList().contains(this)) {
+            channel.addUserList(this);
+        }
     }
-
 
     public List<Message> getMessageList(){
         return messageList;
     }
 
     public void addMessage(Message message){
-        messageList.add(message);
+        this.messageList.add(message);
     }
 
 }

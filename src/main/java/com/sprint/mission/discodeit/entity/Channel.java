@@ -26,7 +26,10 @@ public class Channel extends Common{
     }
 
     public void addUserList(User user){
-        userList.add(user);
+        this.userList.add(user);
+        if (!user.getChannelList().contains(this)){
+            user.addChannel(this);
+        }
     }
 
     public List<Message> getMessageList(){

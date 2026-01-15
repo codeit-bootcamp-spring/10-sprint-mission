@@ -25,9 +25,9 @@ public class JCFMessageService implements MessageService {
         return message;
     }
 
-    public Message findId(Message msg){
+    public Message findId(UUID msgId){
         return data.stream()
-                .filter(message -> message.getId().equals(msg.getId()))
+                .filter(message -> message.getId().equals(msgId))
                 .findFirst()
                 .orElse(null);
     }
@@ -38,20 +38,20 @@ public class JCFMessageService implements MessageService {
 
     public List<Message> findByChannelId(UUID channelId){
         return data.stream()
-                .filter(msg -> msg.getChannelId().equals(channelId)) // 조건: 채널 ID가 같은가?
+                .filter(msg -> msg.getChannel().equals(channelId)) // 조건: 채널 ID가 같은가?
                 .toList();
     }
 
-    public Message update(Message msg, String content){
-        Message foundMsg = findId(msg);
+    public Message update(UUID msgId, String content){
+        Message foundMsg = findId(msgId);
         if (content == null || content.trim().isEmpty()) {
             throw new IllegalArgumentException("내용이 비어있거나 공백입니다.");
         }
         return foundMsg;
     }
 
-    public void delete(Message msg){
-        Message target = findId(msg);
+    public void delete(UUID msgId){
+        Message target = findId(msgId);
         data.remove(target);
     }
 
