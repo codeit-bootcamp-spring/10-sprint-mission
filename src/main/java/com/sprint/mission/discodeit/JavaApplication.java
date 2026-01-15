@@ -82,24 +82,26 @@ public class JavaApplication {
     }
 
     // =================================================================
-    // [메뉴 2] 채널 생성 (Enum 적용)
+    // [메뉴 2] 채널 생성
     // =================================================================
     private static void createChannelMenu() {
         System.out.println("\n[2. 채널 생성]");
         System.out.print("채널 이름: ");
         String name = scanner.nextLine();
 
-        // [수정됨] boolean 입력 -> Enum 선택으로 변경
+        System.out.print("채널 설명: ");
+        String description = scanner.nextLine();
+
         System.out.print("공개 여부 (1.PUBLIC / 2.PRIVATE): ");
         String visibilityInput = scanner.nextLine().trim();
 
+        // 1번이나 엔터, 그 외 입력은 모두 PUBLIC으로 처리
         Channel.ChannelVisibility visibility = Channel.ChannelVisibility.PUBLIC; // 기본값
         if (visibilityInput.equals("2") || visibilityInput.equalsIgnoreCase("PRIVATE")) {
             visibility = Channel.ChannelVisibility.PRIVATE;
         }
-        // 1번이나 엔터, 그 외 입력은 모두 PUBLIC으로 처리
 
-        Channel channel = channelService.createChannel(name, visibility);
+        Channel channel = channelService.createChannel(name, description, visibility);
         System.out.println(">> 채널 생성 완료: " + channel);
     }
 
@@ -271,6 +273,10 @@ public class JavaApplication {
         System.out.printf("새 채널 이름 [%s]: ", channel.getChannelName());
         String newName = scanner.nextLine().trim();
 
+        String currentDesc = (channel.getDescription() == null) ? "없음" : channel.getDescription();
+        System.out.printf("새 채널 설명 [%s]: ", currentDesc);
+        String newDescription = scanner.nextLine();
+
         System.out.printf("공개 여부 [%s] (1.PUBLIC / 2.PRIVATE): ", channel.getChannelVisibility());
         String visibilityInput = scanner.nextLine().trim();
 
@@ -288,6 +294,7 @@ public class JavaApplication {
         Channel updatedChannel = channelService.updateChannel(
                 channel.getId(),
                 newName.isEmpty() ? null : newName,
+                newDescription.isEmpty() ? null : newDescription,
                 newVisibility
         );
 
@@ -478,8 +485,8 @@ public class JavaApplication {
         userService.createUser("user2", "영희", "u2@test.com", "010-2222-2222");
 
         // [수정됨] Enum 사용 (기존: true/false -> PUBLIC/PRIVATE)
-        Channel c1 = channelService.createChannel("자유게시판", Channel.ChannelVisibility.PUBLIC);
-        channelService.createChannel("공지사항", Channel.ChannelVisibility.PRIVATE);
+        Channel c1 = channelService.createChannel("자유게시판", "모두가 자유롭게 이야기 할 수 있는 공간입니다.", Channel.ChannelVisibility.PUBLIC);
+        channelService.createChannel("공지사항", "", Channel.ChannelVisibility.PRIVATE);
 
         userService.joinChannel(u1.getId(), c1.getId());
     }

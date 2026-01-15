@@ -9,6 +9,7 @@ public class Channel extends BaseEntity {
         PRIVATE;
     }
     private String channelName;
+    private String description;
     private ChannelVisibility channelVisibility;
 
     // List는 멀티쓰레딩 환경에서 순서 보장 안됨
@@ -16,9 +17,10 @@ public class Channel extends BaseEntity {
     private final Set<User> users = new HashSet<>();
     private final List<Message> messages = new ArrayList<>();
 
-    public Channel(String channelName, ChannelVisibility channelVisibility) {
+    public Channel(String channelName, String description, ChannelVisibility channelVisibility) {
         super();
         validateName(channelName);
+        this.description = description;
         this.channelName = channelName;
         this.channelVisibility = channelVisibility;
     }
@@ -26,6 +28,9 @@ public class Channel extends BaseEntity {
     // Getters
     public String getChannelName() {
         return channelName;
+    }
+    public String getDescription() {
+        return description;
     }
     public ChannelVisibility getChannelVisibility() {
         return channelVisibility;
@@ -36,6 +41,12 @@ public class Channel extends BaseEntity {
         validateName(newName);
         this.channelName = newName;
         updateTimestamp();
+    }
+
+    public void updateDescription(String newDescription) {
+        this.description = newDescription;
+        updateTimestamp();
+
     }
 
     public void updateVisibility(ChannelVisibility visibility) {
@@ -82,6 +93,7 @@ public class Channel extends BaseEntity {
         return "Channel{" +
                 "id=" + id +
                 ", name='" + channelName + '\'' +
+                ", description='" + description + '\'' +
                 ", channelVisibility=" + channelVisibility +
                 ", userCount=" + users.size() +
                 ", messagesCount=" + messages.size() +

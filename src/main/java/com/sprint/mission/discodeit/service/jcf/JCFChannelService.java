@@ -20,9 +20,9 @@ public class JCFChannelService implements ChannelService {
 
     // Create
     @Override
-    public Channel createChannel(String name, Channel.ChannelVisibility visibility) {
+    public Channel createChannel(String name, String description, Channel.ChannelVisibility visibility) {
         // 엔티티에서 빈 이름의 채널 확인함
-        Channel newChannel = new Channel(name, visibility);
+        Channel newChannel = new Channel(name, description, visibility);
         channelMap.put(newChannel.getId(), newChannel);
 
         return newChannel;
@@ -47,12 +47,16 @@ public class JCFChannelService implements ChannelService {
 
     // Update
     @Override
-    public Channel updateChannel(UUID channelId, String newName, Channel.ChannelVisibility newVisibility) {
+    public Channel updateChannel(UUID channelId, String newName, String description, Channel.ChannelVisibility newVisibility) {
         Channel channel = findById(channelId);
 
         Optional.ofNullable(newName)
                 .filter(name -> !name.equals(channel.getChannelName()))
                 .ifPresent(channel::updateName);
+
+        Optional.ofNullable(description)
+                .filter(name -> !name.equals(channel.getDescription()))
+                .ifPresent(channel::updateDescription);
 
         Optional.ofNullable(newVisibility)
                 .filter(v -> v != channel.getChannelVisibility())

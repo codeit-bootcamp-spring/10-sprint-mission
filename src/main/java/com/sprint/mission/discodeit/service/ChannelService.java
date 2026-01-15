@@ -9,14 +9,14 @@ import java.util.UUID;
 public interface ChannelService {
 
     // Create
-    Channel createChannel(String name, Channel.ChannelVisibility visibility);
+    Channel createChannel(String name, String description, Channel.ChannelVisibility visibility);
 
     // Read
     Channel findById(UUID channelId);
     List<Channel> findAll();
 
     // Update
-    Channel updateChannel(UUID channelId, String newName, Channel.ChannelVisibility newVisibility);
+    Channel updateChannel(UUID channelId, String newName, String description, Channel.ChannelVisibility newVisibility);
 
     // Delete
     void deleteChannel(UUID channelId);
