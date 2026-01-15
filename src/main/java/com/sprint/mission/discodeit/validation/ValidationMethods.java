@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
@@ -26,7 +25,7 @@ public class ValidationMethods {
     // User: email이나 password, partialName 등
     // Channel: channelName, partialChannelName 등
     // Message: content 등
-    public static void validateString(String str, String fieldName) {
+    public static void validateNullBlankString(String str, String fieldName) {
         if (str == null || str.isBlank()) {
             throw new IllegalArgumentException(fieldName + "이(가) 입력되지 않았습니다.");
         }
