@@ -268,7 +268,7 @@ public class Main {
         // 특정 채널의 참가자 리스트 조회
         try {
             System.out.println("특정 채널의 참가자 리스트 조회 테스트");
-            List<User> channelUsers = channelService.searchUsersByChannelId(channel2.getId());
+            List<User> channelUsers = userService.searchUsersByChannelId(channel2.getId());
             channelUsers.forEach(channel -> System.out.println(channel.getNickname()));
         } catch (Exception e) {
             System.err.println("[채널의 참가자 목록 조회 실패] " + e.getMessage());
@@ -276,7 +276,7 @@ public class Main {
 
         try {   // 해당 채널이 존재하지 않음
             System.out.println("특정 채널의 참가자 리스트 조회 테스트");
-            List<User> channelUsers = channelService.searchUsersByChannelId(channel1.getId());
+            List<User> channelUsers = userService.searchUsersByChannelId(channel1.getId());
             channelUsers.forEach(channel -> System.out.println(channel.getNickname()));
         } catch (Exception e) {
             System.err.println("[채널의 참가자 목록 조회 실패] " + e.getMessage());
@@ -288,6 +288,7 @@ public class Main {
         Message message1 = null;
         Message message2 = null;
         Message message3 = null;
+        Message message4 = null;
 
         // 생성
         if (user3 != null && channel2 != null) {
@@ -313,6 +314,14 @@ public class Main {
             System.err.println("[생성 실패] " + e.getMessage());
         }
         //}
+
+        if (user2 != null && channel2 != null) {
+            try {
+                message4 = messageService.createMessage("꾸루루삥뽕", user2.getId(), channel2.getId(), MessageType.CHAT);
+            } catch (Exception e) {
+                System.err.println("[생성 실패] " + e.getMessage());
+            }
+        }
 
         // 단건 조회
         if (message1 != null) {
@@ -403,6 +412,43 @@ public class Main {
             channelMessages.forEach(message -> System.out.println(message.getMessage()));
         } catch (Exception e) {
             System.err.println("[사용자 메시지 목록 조회 실패] " + e.getMessage());
+        }
+
+        // 유저 삭제 -> 전체 채널 목록 및 전체 메시지 목록 연쇄 삭제
+        if (channel2 != null && user2 != null) {
+            try {       // 예상 출력: sakuya, dyoool
+                channelService.inviteMembers(user2.getId(), channel2.getId(), channel2.getMembers());
+                System.out.println("특정 채널 초대 테스트");
+                channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
+            } catch (Exception e) {
+                System.err.println("[특정 채널 초대 실패] " + e.getMessage());
+            }
+        }
+
+        if (user3 != null) {
+            try {   // 예상 출력: dyoool
+                userService.deleteUser(user3.getId());
+                System.out.println("특정 채널 내 사용자 삭제 테스트");
+                users.forEach(user -> System.out.println(user.getNickname()));
+            } catch (Exception e) {
+                System.err.println("[특정 체널 내 사용자 삭제 실패] " + e.getMessage());
+            }
+        }
+
+        try {   // 에상 출력: Codeit, Book Club
+            System.out.println("해당 채널의 참가자 전체 조회 테스트");
+            channels.stream()
+                    .flatMap(channel -> channel.getMembers().stream())
+                    .forEach(user -> System.out.println(user.getNickname()));
+        } catch (Exception e) {
+            System.err.println("[전체 조회 실패] " + e.getMessage());
+        }
+
+        try {   // 예상 출력: 꾸루루삥뽕
+            System.out.println("해당 채널에서 발송된 메시지 전체 조회 테스트");
+            messages.forEach(message -> System.out.println(message.getMessage()));
+        } catch (Exception e) {
+            System.err.println("[전체 조회 실패] " + e.getMessage());
         }
     }
 }

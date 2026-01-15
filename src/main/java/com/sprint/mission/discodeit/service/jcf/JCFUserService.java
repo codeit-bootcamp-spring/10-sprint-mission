@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.entity.UserStatusType;
 import com.sprint.mission.discodeit.service.UserService;
 
 import static com.sprint.mission.discodeit.service.jcf.JCFChannelService.channels;
+import static com.sprint.mission.discodeit.service.jcf.JCFMessageService.messages;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
 public class JCFUserService implements UserService {
@@ -79,6 +80,14 @@ public class JCFUserService implements UserService {
     @Override
     public void deleteUser(UUID targetUserId) {
         User targetUser = searchUser(targetUserId);
+
+        // 모든 채널의 member에서 해당 유저를 제거
+        channels.stream()
+                .filter(channel -> targetUser.getChannels().contains(channel))
+                .forEach(channel -> {channel.getMembers().remove(targetUser);});
+
+        // 모든 메시지에서 해당 유저가 작성한 메시지 제거
+        messages.removeIf(message -> targetUser.getMessages().contains(message));
 
         users.remove(targetUser);
     }
