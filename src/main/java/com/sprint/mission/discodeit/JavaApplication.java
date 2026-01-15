@@ -91,8 +91,8 @@ public class JavaApplication {
         channelService.findChannelByTitle("러닝맨").ifPresent(c -> System.out.println(c.getParticipants()));
         System.out.println("\n\n");
 
-        // --- Channel ---
-        System.out.println("-- Channel --");
+        // --- Message ---
+        System.out.println("-- Message --");
         System.out.println("<생성>");
         User user = userService.findUserByAccountId("CCC").orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
         Channel channel1 = channelService.findChannelByTitle("러닝맨").orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
