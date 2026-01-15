@@ -61,6 +61,11 @@ public class JCFUserService implements UserService {
 
     @Override
     public void removeChannelFromJoinedUsers(Channel channel) {
+        // 채널 null 체크
+        if (channel == null) {
+            throw new RuntimeException("채널이 존재하지 않습니다.");
+        }
+
         // 채널 삭제 시, 해당 채널에 가입된 모든 유저를 탈퇴 처리
         for (User user : data.values()) {
             user.leaveChannel(channel);
