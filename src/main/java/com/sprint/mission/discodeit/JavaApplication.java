@@ -15,6 +15,9 @@ public class JavaApplication {
         UserService userService = new JCFUserService();
         ChannelService channelService = new JCFChannelService(userService);
         MessageService messageService = new JCFMessageService(userService, channelService);
+        ((JCFUserService)userService).setMessageService(messageService);
+        ((JCFUserService)userService).setChannelService(channelService);
+        ((JCFChannelService)channelService).setMessageService(messageService);
 
         // --- User ---
         System.out.println("-- User --");

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
@@ -10,10 +11,15 @@ import java.util.*;
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
     private final UserService userService;
+    private MessageService messageService;
 
     public JCFChannelService(UserService userService) {
         data = new HashMap<>();
         this.userService = userService;
+    }
+
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
     }
 
     @Override
@@ -60,23 +66,13 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID uuid) {
         Channel channel = getChannel(uuid);
-
-        for (User user: channel.getParticipants()) {
-            user.removeJoinedChannels(channel);
-        }
-
-        data.remove(channel.getId());
+        deleteProcess(uuid, channel);
     }
 
     @Override
     public void deleteChannelByTitle(String title) {
         Channel channel = findChannelByTitle(title).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
-
-        for (User user: channel.getParticipants()) {
-            user.removeJoinedChannels(channel);
-        }
-
-        data.remove(channel.getId());
+        deleteProcess(channel.getId(), channel);
     }
 
     @Override
@@ -84,13 +80,11 @@ public class JCFChannelService implements ChannelService {
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
 
-        if (!channel.addParticipant(user)) {
-            throw new IllegalStateException("이미 참가한 참가자입니다");
-        };
-        if (!user.addJoinedChannels(channel)) {
-            channel.removeParticipant(user);
+        if (channel.getParticipants().contains(user)) {
             throw new IllegalStateException("이미 참가한 참가자입니다");
         }
+        channel.addParticipant(user);
+        user.addJoinedChannels(channel);
 
         channel.updateUpdatedAt();
     }
@@ -100,18 +94,23 @@ public class JCFChannelService implements ChannelService {
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
 
-        if (!user.removeJoinedChannels(channel)) {
+        if (!channel.getParticipants().contains(user)) {
             throw new IllegalStateException("참여하지 않은 참가자입니다");
         }
-        if (!channel.removeParticipant(user)) {
-            user.addJoinedChannels(channel);
-            throw new IllegalStateException("참여하지 않은 참가자입니다");
-        }
+        user.removeJoinedChannels(channel);
+        channel.removeParticipant(user);
 
         channel.updateUpdatedAt();
     }
 
     private void validateDuplicateTitle(String title) {
         findChannelByTitle(title).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 채널명입니다"); });
+    }
+
+    private void deleteProcess(UUID uuid, Channel channel) {
+        List<User> users = channel.getParticipants().stream().toList();
+        users.forEach(u -> leaveChannel(uuid, u.getId()));
+        channel.getMessages().forEach(m-> messageService.deleteMessage(m.getId()));
+        data.remove(channel.getId());
     }
 }
