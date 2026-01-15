@@ -39,6 +39,23 @@ public class User extends BaseEntity {
 
     public void updateUserStatus(UserStatusType newUserStatus) {
         this.userStatus = newUserStatus;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void addChannel(Channel channel) {
+        this.channels.add(channel);
+    }
+
+    public void removeChannel(Channel channel) {
+        this.channels.remove(channel);
+    }
+
+    public void addMessage(Message message) {
+        this.messages.add(message);
+    }
+
+    public void removeMessage(Message message) {
+        this.messages.remove(message);
     }
 
     public UUID getId() {
