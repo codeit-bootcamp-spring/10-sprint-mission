@@ -3,6 +3,9 @@ package com.sprint.mission.discodeit.factory;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -14,25 +17,54 @@ public class ServiceFactory {
     private static UserService userService;
     private static ChannelService channelService;
     private static MessageService messageService;
+    public ServiceType type;
 
-    public static UserService userService() {
-        if (userService == null) {
-            userService = JCFUserService.getInstance();
-        }
-        return userService;
+    public ServiceFactory(ServiceType type) {
+        this.type = type;
     }
 
-    public static ChannelService channelService() {
+    public ChannelService channelService() {
         if (channelService == null) {
-            channelService = JCFChannelService.getInstance();
+            switch (type) {
+                case JCF:
+                    channelService = JCFChannelService.getInstance();
+                    break;
+                case FILE:
+                    channelService = FileChannelService.getInstance();
+                    break;
+
+            }
         }
         return channelService;
     }
 
-    public static MessageService messageService() {
+    public MessageService messageService() {
         if (messageService == null) {
-            messageService = JCFMessageService.getInstance();
+            switch (type) {
+                case JCF:
+                    messageService = JCFMessageService.getInstance();
+                    break;
+                case FILE:
+                    messageService = FileMessageService.getInstance();
+                    break;
+
+            }
         }
         return messageService;
+    }
+
+    public UserService userService() {
+        if (userService == null) {
+            switch (type) {
+                case JCF:
+                    userService = JCFUserService.getInstance();
+                    break;
+                case FILE:
+                    userService = FileUserService.getInstance();
+                    break;
+
+            }
+        }
+        return userService;
     }
 }

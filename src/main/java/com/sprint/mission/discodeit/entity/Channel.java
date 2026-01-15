@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+
 public class Channel extends Base {
     private final List<User> userList;
     private final List<Message> messageList;

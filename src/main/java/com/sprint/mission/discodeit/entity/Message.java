@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.sql.Timestamp;
-import java.util.UUID;
+
 
 public class Message extends Base {
     private User sender;

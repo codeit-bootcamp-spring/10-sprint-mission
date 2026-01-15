@@ -4,31 +4,28 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.factory.ServiceFactory;
+import com.sprint.mission.discodeit.factory.ServiceType;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.nio.file.Paths;
+
 public class JavaApplication {
     public static void main(String[] args) {
-        /**
-         * 도메인 별 서비스 구현체 테스트
-         * [ ] 등록
-         * [ ] 조회(단건, 다건)
-         * [ ] 수정
-         * [ ] 수정된 데이터 조회
-         * [ ] 삭제
-         * [ ] 조회를 통해 삭제되었는지 확인
-         */
-
-
         // 팩토리 클래스를 이용하여 구현체 인스턴스화
-        UserService userService = ServiceFactory.userService();
-        ChannelService channelService = ServiceFactory.channelService();
-        MessageService messageService = ServiceFactory.messageService();
+        ServiceFactory serviceFactory = new ServiceFactory(ServiceType.FILE);
+
+        //구현체를 File*Service로 바꾸어 테스트
+        UserService userService = serviceFactory.userService();
+        ChannelService channelService = serviceFactory.channelService();
+        MessageService messageService = serviceFactory.messageService();
+
 
         // user 도메인
         System.out.println("========== User ==========");
 
+        System.out.println(Paths.get(System.getProperty("user.dir"), "data"));
         // 유저 등록
         User user1 = userService.create(
             "신지연",
@@ -45,7 +42,7 @@ public class JavaApplication {
 
         // id, 이름으로 유저 정보 조회(단건)
         System.out.println("\n======== 유저 단건 조회 ========");
-        System.out.println(userService.findById(user1.getId()));
+        System.out.println(userService.findById(user2.getId()));
         System.out.println(userService.findByUserName(user1.getUserName()));
 
         // 전체 유저 조회(다건)
@@ -54,15 +51,15 @@ public class JavaApplication {
 
         // 수정
         user2 = userService.updateUser(user2.getId(), new User(
-                null,
-                "cheolsu_99999",
-                "cheolsu99@naver.com",
-                "010-9999-9999"
+            null,
+            "cheolsu_99999",
+            "cheolsu99@naver.com",
+            "010-9999-9999"
         ));
 
         // 수정된 데이터 조회
         System.out.println("\n======== 수정된 데이터 조회 ========");
-        System.out.println(user2);
+        System.out.println(userService.findById(user2.getId()));
 
         // 삭제
         userService.delete(user2.getId());
@@ -98,13 +95,13 @@ public class JavaApplication {
 
         // 수정된 데이터 조회(유저 추가 및 채널 이름 변경)
         System.out.println("\n======== 수정된 데이터 조회(1) ========");
-        System.out.println(ch1);
-        System.out.println(ch2);
+        System.out.println(channelService.findById(ch1.getId()));
+        System.out.println(channelService.findById(ch2.getId()));
 
         // 수정된 데이터 조회(유저 내보내기)
         System.out.println("\n======== 수정된 데이터 조회(2) ========");
         channelService.deleteUser(ch2.getId(), user1.getId());
-        System.out.println(ch2);
+        System.out.println(channelService.findById(ch2.getId()));
 
         // 삭제
         channelService.delete(ch2.getId());
@@ -120,7 +117,7 @@ public class JavaApplication {
 
         // message
         System.out.println("\n\n========== Message ==========");
-
+        System.out.println(channelService.findById(ch1.getId()));
         // 메시지 등록
         Message message1 = messageService.create(
             user1.getId(),
@@ -152,7 +149,7 @@ public class JavaApplication {
 
         // 수정된 데이터 조회
         System.out.println("\n======== 수정된 데이터 조회 ========");
-        System.out.println(message2);
+        System.out.println(messageService.findById(message2.getId()));
 
         // 삭제
         messageService.delete(message2.getId());
@@ -167,5 +164,6 @@ public class JavaApplication {
             System.out.println(e.getMessage());
         }
     }
+
 
 }
