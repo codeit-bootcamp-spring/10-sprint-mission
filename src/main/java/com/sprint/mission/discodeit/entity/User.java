@@ -60,34 +60,16 @@ public class User extends Entity {
     }
 
     public void addMessage(Message message) {
-        // 메시지 null 체크
-        if (message == null) {
-            throw new RuntimeException("메시지가 존재하지 않습니다.");
-        }
-
-        // 작성자 일치 여부 확인
-        if (!message.getUser().equals(this)) {
-            throw new RuntimeException("메시지 작성자가 일치하지 않습니다.");
-        }
-
-        // 메시지 추가
+        // 유저가 작성한 메시지 목록에 메시지 추가
         messages.add(message);
         // 수정 시각 갱신
         super.update();
     }
 
     public void removeMessage(Message message) {
-        // 메시지 null 체크, 채널 및 유저 검증은 MessageService에서 진행
-        if (message == null) {
-            throw new RuntimeException("메시지가 존재하지 않습니다.");
-        }
-
-        // 존재하는 메시지인 경우에만 제거 및 수정 시각 갱신
-        boolean removed = messages.remove(message);
-        if (!removed) {
-            throw new RuntimeException("메시지가 존재하지 않습니다.");
-        }
-
+        // 유저가 작성한 메시지 목록에서 메시지 제거
+        messages.remove(message);
+        // 수정 시각 갱신
         super.update();
     }
 

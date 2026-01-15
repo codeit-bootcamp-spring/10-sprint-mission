@@ -36,7 +36,11 @@ public class JCFMessageService implements MessageService {
 
         // 메시지 생성 및 추가
         Message message = new Message(channel, user, content);
-        return addMessage(channel, user, message);
+        data.add(message);
+        // 채널과 유저가 가지고 있는 메시지 목록에 추가
+        message.addToChannelAndUser();
+
+        return message;
     }
 
     @Override
@@ -97,27 +101,11 @@ public class JCFMessageService implements MessageService {
     public void deleteMessage(UUID channelId, UUID userId, UUID messageId) {
         // 메시지 검색 및 권한 확인
         Message message = validateMessageAccess(channelId, userId, messageId);
-        Channel channel = channelService.findChannelById(channelId);
-        User user = userService.findUserById(userId);
 
         // 메시지 삭제
-        removeMessage(channel, user, message);
-    }
-
-    private Message addMessage(Channel channel, User user, Message message) {
-        // data, Channel, User에 모두 추가
-        data.add(message);
-        channel.addMessage(message);
-        user.addMessage(message);
-
-        return message;
-    }
-
-    private void removeMessage(Channel channel, User user, Message message) {
-        // data, Channel, User에서 모두 제거
         data.remove(message);
-        channel.removeMessage(message);
-        user.removeMessage(message);
+        // 채널과 유저가 가지고 있는 메시지 목록에서 삭제
+        message.removeFromChannelAndUser();
     }
 
     private Message validateMessageAccess(UUID channelId, UUID userId, UUID messageId) {

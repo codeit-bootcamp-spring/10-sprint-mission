@@ -24,6 +24,20 @@ public class Message extends Entity {
         return content;
     }
 
+    public void addToChannelAndUser() {
+        // 채널의 메시지 목록에 메시지 추가
+        channel.addMessage(this);
+        // 유저가 작성한 메시지 목록에 메시지 추가
+        user.addMessage(this);
+    }
+
+    public void removeFromChannelAndUser() {
+        // 채널의 메시지 목록에서 메시지 제거
+        channel.removeMessage(this);
+        // 유저가 작성한 메시지 목록에서 메시지 제거
+        user.removeMessage(this);
+    }
+
     public Message updateMessageContent(String content) {
         // 마지막 수정 시각 갱신
         super.update();
