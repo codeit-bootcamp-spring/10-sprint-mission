@@ -58,7 +58,12 @@ public class JCFMessageService implements MessageService {
 
     public void deleteMessage(UUID id) {
         Message message = validateExistenceMessage(id);
-        list.remove(message);
+        Channel channel = message.getChannel();
+        User user = message.getUser();
+
+        channel.getMessages().removeIf(m -> id.equals(m.getId()));
+        user.getMessages().removeIf(m -> id.equals(m.getId()));
+        list.removeIf(m -> id.equals(m.getId()));
     }
 
     public boolean isMessageDeleted(UUID id) {

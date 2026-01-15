@@ -19,6 +19,14 @@ public class Message extends CommonEntity{
         update();
     }
 
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
     public String getMessageStatus() {
         return "메세지: " + content + ", 채널 아이디: " + channel.getId() + ", 유저 아이디: " + user.getId();
     }

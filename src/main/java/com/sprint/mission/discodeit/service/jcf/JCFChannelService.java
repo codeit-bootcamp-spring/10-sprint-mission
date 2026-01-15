@@ -77,17 +77,11 @@ public class JCFChannelService implements ChannelService {
         Channel channel = readChannel(channelId);
         User user = userService.readUser(userId);
 
-        boolean channelHasUser = channel.getJoinedUsers().stream()
+        boolean alreadyJoined = channel.getJoinedUsers().stream()
                 .anyMatch(u -> userId.equals(u.getId()));
 
-        boolean userHasChannel = user.getJoinedChannels().stream()
-                .anyMatch(c -> channelId.equals(c.getId()));
-
-        if(channelHasUser && userHasChannel) {
+        if (alreadyJoined) {
             throw new IllegalArgumentException("이미 참가한 유저입니다.");
-        }
-        if(channelHasUser != userHasChannel) {
-            throw new IllegalArgumentException("채널-유저 참가 상태가 불일치합니다.");
         }
 
         channel.getJoinedUsers().add(user);
@@ -99,17 +93,11 @@ public class JCFChannelService implements ChannelService {
         Channel channel = readChannel(channelId);
         User user = userService.readUser(userId);
 
-        boolean channelHasNotUser = channel.getJoinedUsers().stream()
+        boolean alreadyLeaved = channel.getJoinedUsers().stream()
                 .noneMatch(u -> userId.equals(u.getId()));
 
-        boolean userHasNotChannel = user.getJoinedChannels().stream()
-                .noneMatch(c -> channelId.equals(c.getId()));
-
-        if(channelHasNotUser && userHasNotChannel) {
-            throw new IllegalArgumentException("이미 삭제된 유저입니다.");
-        }
-        if(channelHasNotUser != userHasNotChannel) {
-            throw new IllegalArgumentException("채널-유저 삭제 상태가 불일치합니다.");
+        if (alreadyLeaved) {
+            throw new IllegalArgumentException("이미 참가한 유저입니다.");
         }
 
         channel.getJoinedUsers().removeIf(u -> userId.equals(u.getId()));
