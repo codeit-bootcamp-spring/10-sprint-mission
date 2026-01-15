@@ -1,6 +1,11 @@
 package com.sprint.mission.entity;
 
-public class Message extends BaseEntity {
+import java.io.Serializable;
+import java.util.UUID;
+
+public class Message extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final User user;
     private final Channel channel;
     private String content;
@@ -15,6 +20,12 @@ public class Message extends BaseEntity {
     public void updateContent(String content) {
         this.content = getValidatedTrimmedContent(content);
         touch();
+    }
+
+    public void validateMessageOwner(User user) {
+        if (!this.user.equals(user)) {
+            throw new IllegalArgumentException("해당 메시지에 대한 권한이 없습니다.");
+        }
     }
 
     private String getValidatedTrimmedContent(String content) {

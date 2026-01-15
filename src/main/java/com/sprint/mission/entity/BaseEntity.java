@@ -1,8 +1,11 @@
 package com.sprint.mission.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public abstract class BaseEntity {
+public abstract class BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     protected final UUID id;
     protected final Long createdAt;
     protected Long updatedAt;

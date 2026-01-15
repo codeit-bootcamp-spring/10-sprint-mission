@@ -3,6 +3,7 @@ package com.sprint.mission.entity;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class User extends BaseEntity implements Serializable {
@@ -41,6 +42,19 @@ public class User extends BaseEntity implements Serializable {
         if (input == null || input.isBlank()) {
             throw new IllegalArgumentException("입력 값이 비어있을 수 없습니다.");
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true; // 같은 메모리 주소면 true
+        if (!(obj instanceof User)) return false; // 비교 대상이 User로 형변환(다운캐스팅)이 안되면 false
+        User user = (User) obj; // User로 형변환
+        return Objects.equals(this.id, user.id); // 실제 유저 id와 형변환 된 유저 id를 비교
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 
     public String getName() {

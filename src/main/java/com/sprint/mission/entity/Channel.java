@@ -1,10 +1,13 @@
 package com.sprint.mission.entity;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class Channel extends BaseEntity {
+public class Channel extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private final User owner;
     private final Set<User> users;
     private String name;
@@ -31,6 +34,27 @@ public class Channel extends BaseEntity {
         users.remove(user);
     }
 
+    private String getValidatedTrimmedName(String name) {
+        validatedNameIsNotBlank(getTrimmedName(name));
+        return getTrimmedName(name);
+    }
+
+    private String getTrimmedName(String name) {
+        return name.trim();
+    }
+
+    public void validateMember(User user) {
+        if(!users.contains(user)){
+            throw new IllegalArgumentException("해당 유저가 채널에 참여하고 있지 않습니다.");
+        }
+    }
+
+    private void validatedNameIsNotBlank(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("채널명이 비어있을 수 없습니다.");
+        }
+    }
+
     public List<User> getUsers() {
         return List.copyOf(users);
     }
@@ -41,20 +65,5 @@ public class Channel extends BaseEntity {
 
     public User getOwner() {
         return owner;
-    }
-
-    private String getValidatedTrimmedName(String name) {
-        validatedNameIsNotBlank(getTrimmedName(name));
-        return getTrimmedName(name);
-    }
-
-    private void validatedNameIsNotBlank(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("채널명이 비어있을 수 없습니다.");
-        }
-    }
-
-    private String getTrimmedName(String name) {
-        return name.trim();
     }
 }
