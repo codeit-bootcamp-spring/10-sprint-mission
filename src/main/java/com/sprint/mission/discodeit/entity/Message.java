@@ -1,45 +1,48 @@
 package com.sprint.mission.discodeit.entity;
 
-
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 public class Message extends BaseEntity {
 
-    private final UUID senderId;   // 보낸 사람 ID
-    private String content;        // 메시지 내용
+    private final User sender;
+    private final Channel channel;
+    private String content;
 
-    public Message(UUID senderId, String content) {
+    public Message(User sender, Channel channel, String content) {
         super();
-        this.senderId = senderId;
+        this.sender = sender;
+        this.channel = channel;
         this.content = content;
     }
 
-    // 메시지 내용 수정 / 시간 갱신
     public void updateContent(String newContent) {
         this.content = newContent;
         touch();
     }
 
-    public UUID getSenderId() {
-        return senderId;
+    public User getSender() {
+        return sender;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public String getContent() {
+        return content;
     }
 
     @Override
     public String toString() {
         Long updated = getUpdatedAt();
         long baseTime = (updated != null) ? updated : getCreatedAt();
-
         LocalTime time = Instant.ofEpochMilli(baseTime)
                 .atZone(ZoneId.systemDefault())
                 .toLocalTime();
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-
-        return content + " (" + time.format(formatter) + ")";
+        return sender.getUserName() + ": " + content + " (" + time.format(formatter) + ")";
     }
-
 }

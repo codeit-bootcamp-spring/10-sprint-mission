@@ -1,12 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
-
-import com.sprint.mission.discodeit.service.UserService;
-
-import java.util.*;
+import java.util.UUID;
 
 public abstract class BaseEntity {
-    // 모든 엔티티가 공통으로 가지는 필드
     protected final UUID id;
     protected final Long createdAt;
     protected Long updatedAt;

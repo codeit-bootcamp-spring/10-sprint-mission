@@ -15,5 +15,5 @@ public interface UserService {
 
     User updateUser(UUID userId, String userName, String userEmail);
 
-    void deleteUser(UUID userId);
+    User deleteUser(UUID userId);
 }

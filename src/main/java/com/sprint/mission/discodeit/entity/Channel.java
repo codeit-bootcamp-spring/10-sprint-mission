@@ -1,17 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
-
-import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Channel extends BaseEntity {
 
     private String channelName;
-    private Set<UUID> memberIds = new LinkedHashSet<>();
-    private final Map<UUID, Message> messages = new LinkedHashMap<>();
+    private final List<User> members = new ArrayList<>();
 
     public Channel(String channelName) {
         super();
@@ -23,54 +18,25 @@ public class Channel extends BaseEntity {
         touch();
     }
 
-
-    // ID 기반 멤버 추가
-    public void addMember(UUID userId) {
-        memberIds.add(userId);
-        touch(); // 수정 시간 갱신
-    }
-
-    public void removeMember(UUID userId) {
-        memberIds.remove(userId);
+    public void addMember(User user) {
+        members.add(user);
         touch();
     }
 
-    public boolean hasMember(UUID userId) {
-        return memberIds.contains(userId);
-    }
-
-    // ID 기반 메시지
-    public Message addMessage(UUID senderId, String content) {
-        if (!hasMember(senderId)) {
-            throw new IllegalArgumentException("채널 멤버만 메시지를 작성할 수 있습니다.");
-        }
-
-        Message message = new Message(senderId, content);
-        messages.put(message.getId(), message);
-        touch();
-
-        return message;
-    }
-
-
-    public void removeMessage(UUID messageId) {
-        messages.remove(messageId);
+    public void removeMember(User user) {
+        members.remove(user);
         touch();
     }
 
-    public Collection<Message> getMessages() {
-        return messages.values();
+    public boolean hasMember(User user) {
+        return members.contains(user);
     }
 
     public String getChannelName() {
         return channelName;
     }
 
-    public Set<UUID> getMemberIds() {
-        return memberIds;
+    public List<User> getMember() {
+        return members;
     }
 }
-
-
-
-

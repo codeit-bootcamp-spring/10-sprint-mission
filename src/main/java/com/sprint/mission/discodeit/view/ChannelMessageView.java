@@ -1,36 +1,24 @@
 package com.sprint.mission.discodeit.view;
 
-
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
-
-import com.sprint.mission.discodeit.service.UserService;
+import java.util.stream.Collectors;
 
 public class ChannelMessageView {
-    public static String viewMessage(Channel channel, UserService userService) {
+    public static String viewMessage(Channel channel, JCFMessageService messageService) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[").append(channel.getChannelName()).append(" 채팅방]").append("\n");
 
-            StringBuilder sb = new StringBuilder();
+        String messagesForChannel = messageService.findAllMessage(channel.getId()).stream()
+                .filter(m -> m.getChannel().equals(channel))
+                .map(Message::toString)
+                .collect(Collectors.joining("\n"));
 
-            sb.append("[").append(channel.getChannelName()).append(" 채팅방]\n");
+        if (messagesForChannel.isEmpty()) sb.append("(메시지 없음)");
+        else sb.append(messagesForChannel);
 
-            for (Message message : channel.getMessages()) {
-                try {
-                    User sender = userService.findUser(message.getSenderId());
-
-                    sb.append(sender.getUserName())
-                            .append(": ")
-                            .append(message.toString())
-                            .append("\n");
-
-                } catch (UserNotFoundException e) {
-                    continue;
-                }
-            }
-
-            return sb.toString();
+        return sb.toString();
     }
-
 }
