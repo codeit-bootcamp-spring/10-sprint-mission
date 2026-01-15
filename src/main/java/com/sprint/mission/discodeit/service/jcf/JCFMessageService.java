@@ -29,6 +29,7 @@ public class JCFMessageService implements MessageService {
         Message newMessage = new Message(message, sender, targetChannel, type);
         messages.add(newMessage);
         sender.addMessage(newMessage);
+        targetChannel.addMessage(newMessage);
 
         return newMessage;
     }
@@ -56,12 +57,10 @@ public class JCFMessageService implements MessageService {
     }
 
     // 특정 채널의 메시지 발행 리스트 조회
-    public ArrayList<Message> searchMessagesByChannelId(UUID targetChannelId) {
+    public List<Message> searchMessagesByChannelId(UUID targetChannelId) {
         Channel targetChannel = channelService.searchChannel(targetChannelId);
 
-        return messages.stream()
-                .filter(message -> message.getChannel().getId().equals(targetChannelId))
-                .collect(Collectors.toCollection(ArrayList::new));
+        return targetChannel.getMessages();
     }
 
     // 메시지 수정
@@ -85,6 +84,7 @@ public class JCFMessageService implements MessageService {
         Message targetMessage = searchMessage(targetMessageId);
 
         targetMessage.getUser().removeMessage(targetMessage);
+        targetMessage.getChannel().removeMessage(targetMessage);
         messages.remove(targetMessage);
     }
 }

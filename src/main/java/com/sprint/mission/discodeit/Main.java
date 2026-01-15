@@ -391,7 +391,7 @@ public class Main {
         // 특정 채널에서 발송된 메시지 목록 조회 테스트
         try {
             System.out.println("특정 채널에서 발송된 메시지 목록 조회 테스트");
-            ArrayList<Message> channelMessages = messageService.searchMessagesByChannelId(channel2.getId());
+            List<Message> channelMessages = messageService.searchMessagesByChannelId(channel2.getId());
             channelMessages.forEach(message -> System.out.println(message.getMessage()));
         } catch (Exception e) {
             System.err.println("[채널 메시지 목록 조회 실패] " + e.getMessage());
@@ -399,7 +399,7 @@ public class Main {
 
         try {       // 존재하지 않는 채널
             System.out.println("특정 채널에서 발송된 메시지 목록 조회 테스트");
-            ArrayList<Message> channelMessages = messageService.searchMessagesByChannelId(channel1.getId());
+            List<Message> channelMessages = messageService.searchMessagesByChannelId(channel1.getId());
             channelMessages.forEach(message -> System.out.println(message.getMessage()));
         } catch (Exception e) {
             System.err.println("[사용자 메시지 목록 조회 실패] " + e.getMessage());
