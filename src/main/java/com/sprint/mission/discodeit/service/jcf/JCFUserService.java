@@ -115,10 +115,7 @@ public class JCFUserService implements UserService {
 
     //특정 유저의 참가한 채널 리스트 조회
     public List<Channel> getChannelsByUser(UUID uuid){
-        User user = data.get(uuid);
-        if(user==null) {
-            throw new NoSuchElementException("해당 유저가 존재하지 않습니다: " + uuid);
-        }
+        User user = findUserOrThrow(uuid);
         return user.getJoinedChannels();
     }
 
