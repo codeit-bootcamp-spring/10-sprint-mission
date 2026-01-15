@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -27,6 +28,8 @@ public class JCFMessageService implements MessageService {
 
         Message newMessage = new Message(message, sender, targetChannel, type);
         messages.add(newMessage);
+        sender.addMessage(newMessage);
+
         return newMessage;
     }
 
@@ -46,17 +49,15 @@ public class JCFMessageService implements MessageService {
     }
 
     // 특정 유저가 발행한 메시지 다건 조회
-    public ArrayList<Message> searchMessagesByUserId(UUID targetUserId) {
-        userService.searchUser(targetUserId);
+    public List<Message> searchMessagesByUserId(UUID targetUserId) {
+        User targetUser = userService.searchUser(targetUserId);
 
-        return messages.stream()
-                .filter(message -> message.getUser().getId().equals(targetUserId))
-                .collect(Collectors.toCollection(ArrayList::new));
+        return targetUser.getMessages();
     }
 
     // 특정 채널의 메시지 발행 리스트 조회
     public ArrayList<Message> searchMessagesByChannelId(UUID targetChannelId) {
-        channelService.searchChannel(targetChannelId);
+        Channel targetChannel = channelService.searchChannel(targetChannelId);
 
         return messages.stream()
                 .filter(message -> message.getChannel().getId().equals(targetChannelId))
@@ -83,6 +84,7 @@ public class JCFMessageService implements MessageService {
     public void deleteMessage(UUID targetMessageId) {
         Message targetMessage = searchMessage(targetMessageId);
 
+        targetMessage.getUser().removeMessage(targetMessage);
         messages.remove(targetMessage);
     }
 }

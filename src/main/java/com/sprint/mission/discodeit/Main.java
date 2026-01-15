@@ -251,7 +251,7 @@ public class Main {
         // 사용자 별 채널 리스트 조회
         try {
             System.out.println("특정 사용자가 참가한 채널 리스트 조회 테스트");
-            ArrayList<Channel> userChannels = channelService.searchChannelsByUserId(user3.getId());
+            List<Channel> userChannels = channelService.searchChannelsByUserId(user3.getId());
             userChannels.forEach(channel -> System.out.println(channel.getChannelName()));
         } catch (Exception e) {
             System.err.println("[사용자의 채널 목록 조회 실패] " + e.getMessage());
@@ -259,7 +259,7 @@ public class Main {
 
         try {   // 해당 사용자가 존재하지 않음
             System.out.println("특정 사용자가 참가한 채널 리스트 조회 테스트");
-            ArrayList<Channel> userChannels = channelService.searchChannelsByUserId(user1.getId());
+            List<Channel> userChannels = channelService.searchChannelsByUserId(user1.getId());
             userChannels.forEach(channel -> System.out.println(channel.getChannelName()));
         } catch (Exception e) {
             System.err.println("[사용자의 채널 목록 조회 실패] " + e.getMessage());
@@ -374,7 +374,7 @@ public class Main {
         // 특정 사용자가 전송한 메시지 모록 조회
         try {
             System.out.println("특정 사용자가 전송한 메시지 목록 조회 테스트");
-            ArrayList<Message> userMessages = messageService.searchMessagesByUserId(user3.getId());
+            List<Message> userMessages = messageService.searchMessagesByUserId(user3.getId());
             userMessages.forEach(message -> System.out.println(message.getMessage()));
         } catch (Exception e) {
             System.err.println("[사용자 메시지 목록 조회 실패] " + e.getMessage());
@@ -382,7 +382,7 @@ public class Main {
 
         try {       // 존재하지 않는 사용자
             System.out.println("특정 사용자가 전송한 메시지 목록 조회 테스트");
-            ArrayList<Message> userMessages = messageService.searchMessagesByUserId(user1.getId());
+            List<Message> userMessages = messageService.searchMessagesByUserId(user1.getId());
             userMessages.forEach(message -> System.out.println(message.getMessage()));
         } catch (Exception e) {
             System.err.println("[사용자 메시지 목록 조회 실패] " + e.getMessage());

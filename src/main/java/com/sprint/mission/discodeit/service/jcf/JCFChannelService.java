@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class JCFChannelService implements ChannelService {
     public static final ArrayList<Channel> channels = new ArrayList<>();        // 사용자 한 명당 가지는 채널
@@ -24,6 +23,8 @@ public class JCFChannelService implements ChannelService {
 
         Channel newChannel = new Channel(channelName, owner, channelType);
         channels.add(newChannel);
+        owner.addChannel(newChannel);
+
         return newChannel;
     }
 
@@ -43,13 +44,10 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 특정 유저가 참가한 채널 리스트 조회
-    public ArrayList<Channel> searchChannelsByUserId(UUID userId) {
-        userService.searchUser(userId);
+    public List<Channel> searchChannelsByUserId(UUID userId) {
+        User targetUser = userService.searchUser(userId);
 
-        return channels.stream()
-                .filter(channel -> channel.getMembers().stream()
-                        .anyMatch(user -> user.getId().equals(userId)))
-                .collect(Collectors.toCollection(ArrayList::new));
+        return targetUser.getChannels();
     }
 
     // 특정 채널의 참가자 리스트 조회
@@ -64,6 +62,7 @@ public class JCFChannelService implements ChannelService {
         return targetChannel.getMembers();
     }
 
+    // 채널 정보 수정
     @Override
     public Channel updateChannel(UUID targetChannelId, String newChannelName) {
         Channel targetChannel = searchChannel(targetChannelId);
@@ -83,30 +82,34 @@ public class JCFChannelService implements ChannelService {
     public void deleteChannel(UUID targetChannelId) {
         Channel targetChannel = searchChannel(targetChannelId);
 
+        targetChannel.getMembers().forEach(member -> {member.removeChannel(targetChannel);});
+
         channels.remove(targetChannel);
     }
 
     // 채널 참가자 초대
     public void inviteMembers(UUID targetUserId, UUID targetChannelId, List<User> members) {
         User newUser = userService.searchUser(targetUserId);
-        searchChannel(targetChannelId);
+        Channel targetChannel = searchChannel(targetChannelId);
 
-        validateUserNotInChannel(targetUserId, targetChannelId);
+        validateMemberExists(targetUserId, targetChannelId);
 
         members.add(newUser);
+        newUser.addChannel(targetChannel);
     }
 
     // 채널 퇴장
     public void leaveMembers(UUID targetUserId, UUID targetChannelId, List<User> members) {
         User targetUser = userService.searchUser(targetUserId);
-        searchChannel(targetChannelId);
+        Channel targetChannel = searchChannel(targetChannelId);
 
-        validateMemberExists(targetUserId, targetChannelId);
+        validateUserNotInChannel(targetUserId, targetChannelId);
 
         members.remove(targetUser);
+        targetUser.removeChannel(targetChannel);
     }
 
-    // 유효성 검증 (퇴장)
+    // 유효성 검증 (초대)
     public void validateMemberExists(UUID userId, UUID channelId) {
         List<User> currentMembers = searchUsersByChannelId(channelId);
 
