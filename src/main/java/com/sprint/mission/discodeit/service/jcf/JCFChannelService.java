@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -16,7 +17,7 @@ public class JCFChannelService implements ChannelService {
         this.userService = userService;
     }
     @Override
-    public Channel addChannel(String name, String description, UUID ownerId, String channelType) {
+    public Channel addChannel(String name, String description, UUID ownerId, ChannelType channelType) {
         validateChannelName(name);
         Channel channel = new Channel(name, description, userService.getUserById(ownerId), channelType);
         data.put(channel.getId(), channel);
@@ -33,7 +34,7 @@ public class JCFChannelService implements ChannelService {
         }
         Optional.ofNullable(name).
                 filter(n -> !n.equals(channel.getName()))
-                .ifPresent(n -> {if(channel.getChannelType().equals(Channel.PUBLIC_CHANNEL)){
+                .ifPresent(n -> {if(channel.getChannelType()==ChannelType.PUBLIC){
                                           validateChannelName(name);
                                         }
                                         channel.setName(n);
@@ -62,7 +63,7 @@ public class JCFChannelService implements ChannelService {
     //공개방 전용 유효성
     private void validateChannelName(String channelName) {
         boolean exists = data.values().stream()
-                .filter(c->c.getChannelType().equals(Channel.PUBLIC_CHANNEL))//공개방만
+                .filter(c->c.getChannelType()==ChannelType.PUBLIC)//공개방만
                 .anyMatch(c ->c.getName().equals(channelName));
         if(exists){
            throw new IllegalArgumentException("이미 존재하는 공개 채널이름: "+channelName);

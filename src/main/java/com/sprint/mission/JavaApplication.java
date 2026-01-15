@@ -1,6 +1,7 @@
 package com.sprint.mission;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserCoordinatorService;
@@ -59,13 +60,13 @@ public class JavaApplication {
 
         //채널 만들기
         System.out.println("------------채널 생성----------------");
-        UUID channelId = channelService.addChannel("공지사항","백엔드 공지를 하는 채널입니다.",userId, Channel.PUBLIC_CHANNEL).getId();
-        UUID channelId2 = channelService.addChannel("수다방","수다 채널입니다.",userId, Channel.PUBLIC_CHANNEL).getId();
-        UUID channelId3 = channelService.addChannel("비밀방","비공개 방입니다.",userId2,Channel.PRIVATE_CHANNEL).getId();
-        UUID channelId4 = channelService.addChannel("비밀방2","비공개 방입니다.",userId4,Channel.PRIVATE_CHANNEL).getId();
+        UUID channelId = channelService.addChannel("공지사항","백엔드 공지를 하는 채널입니다.",userId, ChannelType.PUBLIC).getId();
+        UUID channelId2 = channelService.addChannel("수다방","수다 채널입니다.",userId, ChannelType.PUBLIC).getId();
+        UUID channelId3 = channelService.addChannel("비밀방","비공개 방입니다.",userId2,ChannelType.PRIVATE).getId();
+        UUID channelId4 = channelService.addChannel("비밀방2","비공개 방입니다.",userId4,ChannelType.PRIVATE).getId();
         System.out.println("------------중복된 이름의 채널 생성----------------");
         try{
-            UUID chanelId5 = channelService.addChannel("수다방","수다 채널입니다~~~",userId, Channel.PUBLIC_CHANNEL).getId();
+            UUID chanelId5 = channelService.addChannel("수다방","수다 채널입니다~~~",userId, ChannelType.PUBLIC).getId();
         }catch(Exception e){
             System.out.println(e.getMessage());
         }

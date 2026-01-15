@@ -4,21 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Channel extends BaseEntity {
-
-    public static final String DIRECT_CHANNEL = "directChannel";
-    public static final String PRIVATE_CHANNEL = "privateChannel";
-    public static final String PUBLIC_CHANNEL = "publicChannel";//공개: 멤버가 없음
-
     private String name;
     private String description;
     private User owner;
     private List<User> members;
-    private String channelType;
+    private ChannelType channelType;
 
-    public Channel(String name, String description, User owner, String channelType) {
+    public Channel(String name, String description, User owner, ChannelType channelType) {
         super();
         //채널 타입 필수
-        if(!channelType.equals(DIRECT_CHANNEL)){//디엠빼고는 전부 네임이 필수
+        if(channelType!=ChannelType.DIRECT){//디엠빼고는 전부 네임이 필수
             validateChannelName(name);
         }
         this.name = name;
@@ -26,7 +21,7 @@ public class Channel extends BaseEntity {
         this.owner = owner;
         this.members = new ArrayList<>();
         this.channelType = channelType;
-        if(channelType.equals(PRIVATE_CHANNEL)) {//비공개인경우 멤버에 소유자 추가
+        if(channelType==ChannelType.PRIVATE) {//비공개인경우 멤버에 소유자 추가
          addMember(owner);
         }
     }
@@ -35,7 +30,7 @@ public class Channel extends BaseEntity {
     public List<User> getMembers() {return members;}
     public User getOwner() { return owner;}
     public String getDescription() {return description;}
-    public String getChannelType() { return channelType;}
+    public ChannelType getChannelType() { return channelType;}
     public void setName(String name) {
         validateChannelName(name);
         this.name = name;
@@ -97,7 +92,8 @@ public class Channel extends BaseEntity {
         List<String> memberList = members.stream().map(m->m.getEmail()).toList();
         return "채널 이름: " + name+
                 "\n설명: "+ description+
-                "\n소유자: "+ owner.getEmail()
+                "\n속성: "+channelType.getValue()
+                +"\n소유자: "+ owner.getEmail()
                 +"\n멤버: "+memberList
                 +"\n생성: " +getCreatedAt()
                 +"\n마지막 수정: "+getUpdatedAt()+"\n";

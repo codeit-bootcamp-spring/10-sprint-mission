@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserCoordinatorService;
@@ -37,7 +38,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
         Channel channel = channelService.getChannelById(id);
         User owner = userService.getUserById(ownerId);
         channel.checkChannelOwner(owner);
-        if(channel.getChannelType().equals(Channel.PUBLIC_CHANNEL)){
+        if(channel.getChannelType()==ChannelType.PUBLIC){
             throw new IllegalArgumentException("공개 채널에 멤버를 추가할 수 없음. 채널ID: "+ id);
         }
         List<User> newMembers= memberIds.stream()
@@ -51,7 +52,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
         Channel channel = channelService.getChannelById(id);
         User owner = userService.getUserById(ownerId);
         channel.checkChannelOwner(owner);
-        if(channel.getChannelType().equals(Channel.PUBLIC_CHANNEL)){
+        if(channel.getChannelType()==ChannelType.PUBLIC){
             throw new IllegalArgumentException("공개 채널에서 멤버를 제거할 수 없음. 채널ID: "+ id);
         }
         if(memberIds.contains(ownerId)){
@@ -70,7 +71,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
     @Override
     public Channel removeMember(UUID id, UUID memberId) {
         Channel channel = channelService.getChannelById(id);
-        if(channel.getChannelType().equals(Channel.PUBLIC_CHANNEL)){
+        if(channel.getChannelType()==ChannelType.PUBLIC){
             throw new IllegalArgumentException("공개 채널에서 나갈 수 없음. 채널ID: "+ id);
         }
         if(memberId.equals(channel.getOwner().getId())){
@@ -85,7 +86,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
     public Channel getChannelByIdAndMemberId(UUID id, UUID memberId) {
         Channel channel = channelService.getChannelById(id);
         User user = userService.getUserById(memberId);
-        if(!channel.getChannelType().equals(Channel.PUBLIC_CHANNEL)){
+        if(channel.getChannelType()!=ChannelType.PUBLIC){
             channel.checkMember(user);
         }
         return channel;
