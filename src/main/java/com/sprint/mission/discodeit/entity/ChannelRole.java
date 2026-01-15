@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+// 채널별 역할/권한(Role)의 종류를 정의합니다.
 public enum ChannelRole {
     OWNER,         // 서버 소유자(Channel[Server] Owner)
     ADMINISTRATOR, // 관리자(Administrator) - Owner랑 동등한 권한을 가지나 Owner를 추방하거나 차단할 수 없음
