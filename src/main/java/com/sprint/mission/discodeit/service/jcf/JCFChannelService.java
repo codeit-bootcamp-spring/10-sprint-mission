@@ -89,4 +89,11 @@ public class JCFChannelService implements ChannelService {
         findChannelByIdOrThrow(channelId);
         channelMap.remove(channelId);
     }
+    @Override
+    public void deleteChannelsByOwnerId(UUID ownerId) {
+        // 채널 맵의 값들 중 방장(Owner)의 ID가 ownerId와 같은 것을 모두 삭제
+        channelMap.values().removeIf(channel -> channel.getOwner().getId().equals(ownerId));
+
+        System.out.println("해당 유저가 방장인 모든 채널을 삭제했습니다. OwnerId: " + ownerId);
+    }
 }
