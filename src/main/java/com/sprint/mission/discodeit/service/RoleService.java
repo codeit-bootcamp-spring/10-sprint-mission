@@ -11,4 +11,5 @@ public interface RoleService {
     public Set<Role> findAll();
     public Role create(PermissionLevel roleName, UUID userID, UUID channelID);
     public void delete(UUID id);
+    public Role update(UUID id, PermissionLevel roleName);
 }

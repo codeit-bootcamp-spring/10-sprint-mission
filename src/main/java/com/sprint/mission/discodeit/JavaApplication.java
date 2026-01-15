@@ -10,6 +10,9 @@ import com.sprint.mission.discodeit.service.jcf.JCFRoleService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
+import com.sprint.mission.discodeit.entity.PermissionLevel;
+
+import static com.sprint.mission.discodeit.entity.PermissionLevel.ADMIN;
 import static com.sprint.mission.discodeit.entity.PermissionLevel.USER;
 
 public class JavaApplication {
@@ -34,13 +37,10 @@ public class JavaApplication {
         Message mes2 = messagedata.create(user2.getId(), "그게 뭔데", ch1.getId());
 
         //테스팅 내용
-        ch1.printChannel();
+        channeldata.printChannel(ch1.getId());
 
-        roledata.delete(role1.getId());
-        ch1.printChannel();
-        //Message mes3 = messagedata.create(user1.getId(), "안보내짐?", ch1.getId());
+        roledata.update(role1.getId(), ADMIN);
 
-        messagedata.delete(mes1.getId());
         channeldata.printChannel(ch1.getId());
 
     }
