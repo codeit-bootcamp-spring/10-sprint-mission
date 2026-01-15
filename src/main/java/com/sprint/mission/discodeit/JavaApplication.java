@@ -9,38 +9,17 @@ import com.sprint.mission.discodeit.service.*;
 public class JavaApplication {
     public static void main(String[] args) {
         ServiceFactory factory = ServiceFactory.getInstance();
-
         UserService userService = factory.userService();
         ChannelService channelService = factory.channelService();
         MessageService messageService = factory.messageService();
 
-        User user = userService.create("이정혁");
-        Channel channel = channelService.create("일반서버");
-        Message message = messageService.create(
-                user.getId(),
-                channel.getId(),
-                "반갑습니다."
-        );
-        System.out.println(userService.findAll());
-        System.out.println(channelService.findAll());
-        System.out.println(messageService.findAll());
-        System.out.println(userService.findAll());
-        System.out.println(channelService.findAll());
-        System.out.println(messageService.findAll());
-        userService.update(user.getId(), "이정순");
-        channelService.update(channel.getId(), "공지서버");
-        messageService.update(message.getId(), "모두 반갑습니다.");
-        System.out.println(userService.findById(user.getId()));
-        System.out.println(channelService.findById(channel.getId()));
-        System.out.println(messageService.findById(message.getId()));
-        System.out.println(message);
-        messageService.delete(message.getId());
-        channelService.delete(channel.getId());
-        userService.delete(user.getId());
-        System.out.println(messageService.findAll());
-        System.out.println(channelService.findAll());
-        System.out.println(userService.findAll());
-
+        User user1 = userService.create("정혁");
+        Channel channel1 = channelService.create("헬스 정보 공유방");
+        channelService.joinChannel(channel1.getId(), user1.getId());
+        System.out.println("채널 참가자: " + channelService.findUsersByChannelId(channel1.getId()));
+        System.out.println("유저의 채널 목록: " + userService.findById(user1.getId()).getChannels());
+        channelService.leaveChannel(channel1.getId(), user1.getId());
+        System.out.println("탈퇴 후 참가자: " + channelService.findUsersByChannelId(channel1.getId()));
     }
 
 }

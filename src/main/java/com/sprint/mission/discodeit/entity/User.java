@@ -16,10 +16,8 @@ public class User extends BaseEntity {
         return username;
     }
 
-
     public List<Message> getMessages() { return messages; }
     public List<Channel> getChannels() { return channels; }
-
 
     public void addMessage(Message message) {
         this.messages.add(message);
@@ -37,5 +35,8 @@ public class User extends BaseEntity {
     public void updateUsername(String username) {
         this.username = username;
         this.updatedAt = System.currentTimeMillis();
+    }
+    public void removeChannel(Channel channel) {
+        this.channels.remove(channel);
     }
 }

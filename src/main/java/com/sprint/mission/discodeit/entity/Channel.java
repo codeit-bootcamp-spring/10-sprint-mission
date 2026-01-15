@@ -16,10 +16,8 @@ public class Channel extends BaseEntity {
         return name;
     }
 
-
     public List<User> getUsers() { return users; }
     public List<Message> getMessages() { return messages; }
-
 
     public void addUser(User user) {
         if (!this.users.contains(user)) { // 중복 방지
@@ -39,5 +37,9 @@ public class Channel extends BaseEntity {
     public void updateName(String name) {
         this.name = name;
         this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void removeUser(User user) {
+        this.users.remove(user);
     }
 }
