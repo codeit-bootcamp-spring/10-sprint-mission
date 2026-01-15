@@ -64,7 +64,12 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void deleteById(UUID id) {
-        findById(id);
+        Message message = findById(id);
+        Channel channel = message.getChannel();
+        User user = message.getUser();
+
+        channel.removeMessage(message);
+        user.removeMessage(message, channel);
         messages.remove(id);
     }
     

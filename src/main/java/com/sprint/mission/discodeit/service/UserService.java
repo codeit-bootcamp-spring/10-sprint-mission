@@ -25,4 +25,8 @@ public interface UserService {
 
     // 해당 channel Id를 가진 유저 목록을 반환
     List<User> getUsersByChannelId(UUID channelId);
+
+    void setChannelService(ChannelService channelService);
+
+    void setMessageService(MessageService messageService);
 }

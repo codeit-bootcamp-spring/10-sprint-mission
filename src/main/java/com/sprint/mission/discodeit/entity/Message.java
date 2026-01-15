@@ -47,6 +47,7 @@ public class Message extends BaseEntity{
     public String toString() {
         return  "{content=" + content +
                 ", user=" + user.getUserName() +
+                ", channel=" + channel.getChannelName() +
                 '}';
     }
 }

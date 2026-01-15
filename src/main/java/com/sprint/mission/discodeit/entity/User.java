@@ -50,7 +50,6 @@ public class User extends BaseEntity {
         if (channel.getMessageList().contains(message)) {
             channel.removeMessage(message);
         }
-        message = null;
     }
 
     public boolean isInChannel(Channel channel) {

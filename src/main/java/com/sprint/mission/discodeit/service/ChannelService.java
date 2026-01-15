@@ -25,4 +25,6 @@ public interface ChannelService {
 
     // 해당 user Id를 가진 유저가 속한 채널 목록을 반환
     List<Channel> getChannelsByUserId(UUID userId);
+
+    void setMessageService(MessageService messageService);
 }

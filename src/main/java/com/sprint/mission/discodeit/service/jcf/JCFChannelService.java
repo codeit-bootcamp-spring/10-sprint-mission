@@ -4,12 +4,14 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.Validator;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> channels;
+    private MessageService messageService;
 
     public JCFChannelService() {
         channels = new HashMap<>();
@@ -48,10 +50,23 @@ public class JCFChannelService implements ChannelService {
         return targetChannel;
     }
 
-    // 채널 삭제시 유저, 메시지 ??
+    // 채널 삭제시 참여 중인 유저와 작성된 메시지들과의 연관데이터도 제거
     @Override
     public void deleteById(UUID id) {
-        findById(id);
+        Channel channel = findById(id);
+        // 채널에 참여 중인 유저 리스트
+        List<User> users = channel.getJoinedUsers().stream().toList();
+        // 채널에 남겨진 메시지 리스트
+        List<Message> messages = channel.getMessageList().stream().toList();
+        // 유저 객체의 채널 리스트에서 채널 삭제
+        for (User user : users) {
+            user.leaveChannel(channel);
+        }
+        // 메시지 삭제
+        for (Message message : messages) {
+            messageService.deleteById(message.getId());
+            message.getUser().removeMessage(message, channel);
+        }
         channels.remove(id);
     }
 
@@ -63,5 +78,10 @@ public class JCFChannelService implements ChannelService {
                         channel.getJoinedUsers().stream()
                                 .anyMatch(user -> user.getId().equals(userId)))
                 .toList();
+    }
+
+    @Override
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
     }
 }

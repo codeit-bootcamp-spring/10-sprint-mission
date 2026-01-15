@@ -10,13 +10,18 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
+import java.sql.SQLOutput;
 import java.util.UUID;
 
 public class JavaApplication {
     public static void main(String[] args) {
-        // 유저
         UserService userService = new JCFUserService();
-
+        ChannelService channelService = new JCFChannelService();
+        MessageService messageService = new JCFMessageService(userService,channelService);
+        userService.setChannelService(channelService);
+        userService.setMessageService(messageService);
+        channelService.setMessageService(messageService);
+        // 유저
         User user1 = userService.createUser("장동규");
         UUID user1Id = user1.getId();
 
@@ -74,8 +79,6 @@ public class JavaApplication {
         userService.findAll().forEach(System.out::println);
 
         // 채널
-        ChannelService channelService = new JCFChannelService();
-
         Channel channel1 = channelService.createChannel("스터디 채널");
         UUID channel1Id = channel1.getId();
 
@@ -125,8 +128,6 @@ public class JavaApplication {
 
 
         // 메시지
-        MessageService messageService = new JCFMessageService(userService,channelService);
-
         Message message1 = messageService.createMessage(user1Id,"토익 스터디 합시다",channel1Id);
         UUID message1Id = message1.getId();
 
@@ -202,6 +203,81 @@ public class JavaApplication {
         // user1(장동규)가 작성한 메시지 목록 출력
         System.out.println("\n==user1(장동규)가 작성한 메시지 목록 출력==");
         messageService.getMessagesByUserId(user1Id)
+                .forEach(System.out::println);
+
+
+        // 각 객체 삭제 시 연관 데이터 삭제 확인
+        User user5 = userService.createUser("노경섭");
+
+        Channel catChannel = channelService.createChannel("고양이 채널");
+        Channel dogChannel = channelService.createChannel("강아지 채널");
+        Channel soccerChannel = channelService.createChannel("축구 채널");
+
+        user5.joinChannel(catChannel); // 고양이 채널
+        user5.joinChannel(dogChannel); // 강아지 채널
+        user5.joinChannel(soccerChannel); // 축구 채널
+        user5.joinChannel(channel1); // 스터디 채널
+
+        Message message3 = messageService.createMessage(user5.getId(),"고양이 귀여워요",catChannel.getId());
+        Message message4 = messageService.createMessage(user5.getId(),"고양이 좋아요",catChannel.getId());
+        Message message5 = messageService.createMessage(user5.getId(),"강아지 귀여워요",dogChannel.getId());
+        Message message6 = messageService.createMessage(user5.getId(),"강아지 좋아요",dogChannel.getId());
+        Message message7 = messageService.createMessage(user5.getId(),"축구 재밌어요",soccerChannel.getId());
+        Message message8 = messageService.createMessage(user5.getId(),"축구 좋아요",soccerChannel.getId());
+
+        System.out.println("\n=====삭제 시 연관 데이터 삭제 확인=======");
+        System.out.println("=====축구 채널 삭제 전=====");
+        System.out.println("-user5(노경섭)가 작성한 메시지 목록");
+        messageService.getMessagesByUserId(user5.getId())
+                        .forEach(System.out::println);
+        System.out.println("\n-축구 채널의 메시지 목록");
+        messageService.getMessagesByChannelId(soccerChannel.getId())
+                        .forEach(System.out::println);
+        System.out.println("\n-전체 채널 목록");
+        channelService.findAll().forEach(System.out::println);
+        System.out.println("\n-전체 메시지 목록");
+        messageService.findAll().forEach(System.out::println);
+        
+        // soccerChannel 삭제시
+        System.out.println("\n=====축구 채널 삭제 시=====");
+        channelService.deleteById(soccerChannel.getId());
+        System.out.println("\n-user5(노경섭)가 작성한 메시지 목록");
+        messageService.getMessagesByUserId(user5.getId())
+                .forEach(System.out::println);
+        System.out.println("\n-축구 채널의 메시지 목록");
+        try {
+            messageService.getMessagesByChannelId(soccerChannel.getId())
+                    .forEach(System.out::println);
+        }catch (Exception e) {
+            System.out.println("**예외 상황 발생 : "+e.getMessage());
+        }
+        System.out.println("\n-전체 채널 목록");
+        channelService.findAll().forEach(System.out::println);
+        System.out.println("\n-전체 메시지 목록");
+        messageService.findAll().forEach(System.out::println);
+        
+        // 메시지 삭제 시
+        System.out.println("\n=====message3(고양이 귀여워요) 삭제시 =====");
+        messageService.deleteById(message3.getId());
+        System.out.println("-전체 메시지 목록");
+        messageService.findAll().forEach(System.out::println);
+        System.out.println("\n-고양이 채널 메시지 목록");
+        messageService.getMessagesByChannelId(catChannel.getId())
+                .forEach(System.out::println);
+        System.out.println("\n-user5(노경섭)이 작성한 메시지 목록");
+        messageService.getMessagesByUserId(user5.getId())
+                .forEach(System.out::println);
+
+        // 유저 삭제 시
+        System.out.println("\n====== user5(노경섭) 삭제 시 ======");
+        userService.deleteById(user5.getId());
+        System.out.println("-전체 유저 목록");
+        userService.findAll().forEach(System.out::println);
+        System.out.println("\n-글을 작성했던 강아지 채널의 유저 목록");
+        userService.getUsersByChannelId(dogChannel.getId())
+                .forEach(System.out::println);
+        System.out.println("\n-글을 작성했던 강아지 채널의 글 목록");
+        messageService.getMessagesByChannelId(dogChannel.getId())
                 .forEach(System.out::println);
     }
 }
