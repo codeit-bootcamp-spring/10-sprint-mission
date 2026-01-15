@@ -27,11 +27,8 @@ public interface UserService {
 
     User getUserByAlias(String alias);
 
-    List<Message> getMessageByUser(UUID uuid); // 특정 user가 쓴 메세지 리스트 조회..?
+    User findUserById(UUID id);
 
-    User findUserOrThrow(UUID id);
-
-    List<Channel> getChannelsByUser(UUID uuid);
 }
 
 

@@ -7,14 +7,14 @@ import com.sprint.mission.discodeit.utils.*;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
-
-
+    List<Channel> joinedChannels = new ArrayList<>();
     //인터페이스 객체 생성시 새로운 해쉬맵 할당
     public JCFChannelService() {
         this.data = new HashMap<>();
     }
 
 
+    //생성
     @Override
     public Channel createChannel(String channelName) {
 
@@ -36,15 +36,37 @@ public class JCFChannelService implements ChannelService {
     }
 
 
+    //조회
+    // 채널 목록 가져오기
     @Override
     public List<Channel> getChannelAll() {
         return new ArrayList<>(data.values());
     }
+    //id로 채널 조회 후 없으면 예외
+    @Override
+    public Channel findChannelById(UUID id) {
+        Channel channel = data.get(id);
+        if (channel == null) {
+            throw new NoSuchElementException("해당 채널이 존재하지 않습니다: " + id);
+        }
+        return channel;
+    }
+    // 채널명으로 조회
+    @Override
+    public Channel getChannelByName(String channelName) {
+        return data.values().stream()
+                .filter(ch -> ch.getChannelName().equals(channelName))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("채널이 존재하지 않습니다: " + channelName));
 
-    // 채널 업데이트(관리자용)
+    }
+
+
+    // 갱신
+    // 채널 업데이트
     @Override
     public Channel updateChannel(UUID uuid, String newName) {
-        Channel existing = findChannelOrThrow(uuid);
+        Channel existing = findChannelById(uuid);
         // 만약 변경하려는 이름이 이미 존재한다면,
         Validation.noDuplicate(
                 data.values(),
@@ -59,44 +81,27 @@ public class JCFChannelService implements ChannelService {
         return existing;
     }
 
+
+    //삭제
     @Override
     public void deleteChannel(UUID uuid) {
-        findChannelOrThrow(uuid);
+        findChannelById(uuid);
         data.remove(uuid);
     }
 
 
-    // 중복일 경우, 없는경우 예외를 던져야한다.
-    @Override
-    public Channel getChannelByName(String channelName) {
-        return data.values().stream()
-                .filter(ch -> ch.getChannelName().equals(channelName))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("채널이 존재하지 않습니다: " + channelName));
-
-    }
-
-    // 현재 채널에 발행된 메세지 리스트 조회
-    @Override
-    public List<Message> getMessageInChannel(UUID uuid) {
-        Channel channel = findChannelOrThrow(uuid);
-        return channel.getMessages();
-    }
-    // 현재 채널에 참가한 유저 리스트 조회..
-    public List<User> getUsersInChannel(UUID uuid){
-        Channel channel = findChannelOrThrow(uuid);
-        return channel.getParticipants(); // 현재 uuid 채널의 참가자 리스트 반환.
-    }
 
 
-    //id로 조회 후 없으면 예외
-    public Channel findChannelOrThrow(UUID id) {
-        Channel channel = data.get(id);
-        if (channel == null) {
-            throw new NoSuchElementException("해당 채널이 존재하지 않습니다: " + id);
-        }
-        return channel;
-    }
+    //특정 유저의 참가한 채널 리스트 조회
+//    public List<Channel> getChannelsByUser(UUID uuid){
+//        for(Channel ch : data.values()){
+//            if(ch.getParticipants().stream().anyMatch(u->u.getId().equals(uuid))){
+//                joinedChannels.add(ch);
+//            }
+//        }
+//        return joinedChannels;
+//    }
+
 }
 
 

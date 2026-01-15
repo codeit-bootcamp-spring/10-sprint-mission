@@ -210,49 +210,92 @@ public class JavaApplication {
 //
 //            System.out.println("\n 모든 공통 메서드 테스트 완료!");
 
-        JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService();
-        JCFMessageService messageService = new JCFMessageService(userService, channelService);
+//        JCFUserService userService = new JCFUserService();
+//        JCFChannelService channelService = new JCFChannelService();
+//        JCFMessageService messageService = new JCFMessageService(userService, channelService);
+//
+//        User u1 = userService.createUser("홍길동", "gildong");
+//        User u2 = userService.createUser("김철수", "chulsoo");
+//        User u3 = userService.createUser("이영희", "younghee");
+//        Channel ch1 = channelService.createChannel("공지사항");
+//
+//        //참가시키기
+//        u1.joinChannel(ch1);
+//        u2.joinChannel(ch1);
+//
+//        // 특정 채널의 참가자 조회
+//        List<User> participants = channelService.getUsersInChannel(ch1.getId());
+//
+//        System.out.println("[ " + ch1.getChannelName()+ " ] 참가자" );
+//        for(User u : participants) {
+//            System.out.println("- " + u.getAlias());
+//        }
+//
+//        // 탈뢰 후 다시 확인
+//        u2.leaveChannel(ch1);
+//        System.out.println("\n [" + ch1.getChannelName() + "] 참가자 (탈퇴 후):");
+//        for (User u : participants) {
+//            System.out.println("- " + u.getAlias());
+//        }
+//
+//        System.out.println("===");
+//        System.out.println(ch1.getParticipants());
+//
+//        // 메세지 여러개 보내보자
+//        Message m1 = messageService.createMessage("첫번째 메세지 입니다.", u1.getId(), ch1.getId());
+//        Message m2 = messageService.createMessage("두번째 메세지 입니다.", u1.getId(), ch1.getId());
+//        Message m3 = messageService.createMessage("세번째 메세지 입니다.", u1.getId(), ch1.getId());
+//
+//        System.out.println(messageService.getMessagesBySenderId(u1.getId()));
+//
+//        System.out.println(u1.getAlias()+ "가 참가한 채널 목록");
+//        System.out.println(userService.getChannelsByUser(u1.getId()));
 
-        User u1 = userService.createUser("홍길동", "gildong");
-        User u2 = userService.createUser("김철수", "chulsoo");
-        User u3 = userService.createUser("이영희", "younghee");
-        Channel ch1 = channelService.createChannel("공지사항");
+                // 서비스 생성 (의존성 주입)
 
-        //참가시키기
-        u1.joinChannel(ch1);
-        u2.joinChannel(ch1);
+                JCFChannelService channelService = new JCFChannelService();
+                JCFUserService userService = new JCFUserService();
+                JCFMessageService messageService = new JCFMessageService();
 
-        // 특정 채널의 참가자 조회
-        List<User> participants = channelService.getUsersInChannel(ch1.getId());
+                //유저 채널 협력 클래스
+                ChatCoordinator chat = new ChatCoordinator(userService,channelService, messageService);
+                // 유저 2명 생성
+                User u1 = userService.createUser("최종인", "jongin");
+                User u2 = userService.createUser("김코딩", "kim");
 
-        System.out.println("[ " + ch1.getChannelName()+ " ] 참가자" );
-        for(User u : participants) {
-            System.out.println("- " + u.getAlias());
+                // 채널 2개 생성
+                Channel ch1 = channelService.createChannel("공지사항");
+                Channel ch2 = channelService.createChannel("자유채팅");
+
+                // 유저들을 채널에 참가시킴 (양방향 연동됨)
+                u1.joinChannel(ch1);
+                u1.joinChannel(ch2);
+                u2.joinChannel(ch2);
+
+                // 메시지 생성 (유저-채널 관계 반영됨)
+                chat.sendMessage(u1.getId(), ch1.getId(), "안녕하세요, 공지사항 채널입니다.");
+                chat.sendMessage(u1.getId(), ch2.getId(), "자유채팅방에 오신 걸 환영합니다!");
+                chat.sendMessage(u2.getId(), ch2.getId(), "저도 인사드립니다.");
+
+                // ===========================
+                // 특정 유저의 메시지 조회 테스트
+                // ===========================
+                System.out.println("=== [1] 특정 유저가 보낸 메시지 조회 ===");
+                messageService.getMsgListSenderId(u1.getId()).forEach(System.out::println);
+
+                // ===========================
+                // 특정 유저가 참여 중인 채널 조회 테스트
+                // ===========================
+                System.out.println("\n=== [2] 특정 유저가 참가 중인 채널 목록 ===");
+                chat.getChannelsByUser(u1.getId()).forEach(System.out::println);
+
+                System.out.println("\n=== [3] 두 번째 유저의 채널 목록 ===");
+                chat.getChannelsByUser(u2.getId()).forEach(System.out::println);
+
+                // 현재 채널에 참가한 유저리스트 조회
+                System.out.println("현재 채널의 유저리스트는...");
+                chat.getUsersInChannel(ch1.getId()).forEach(System.out::println);
+
+            }
         }
 
-        // 탈뢰 후 다시 확인
-        u2.leaveChannel(ch1);
-        System.out.println("\n📢 [" + ch1.getChannelName() + "] 참가자 (탈퇴 후):");
-        for (User u : participants) {
-            System.out.println("- " + u.getAlias());
-        }
-
-        System.out.println("===");
-        System.out.println(ch1.getParticipants());
-
-        // 메세지 여러개 보내보자
-        Message m1 = messageService.createMessage("첫번째 메세지 입니다.", u1.getId(), ch1.getId());
-        Message m2 = messageService.createMessage("두번째 메세지 입니다.", u1.getId(), ch1.getId());
-        Message m3 = messageService.createMessage("세번째 메세지 입니다.", u1.getId(), ch1.getId());
-
-        System.out.println(userService.getMessageByUser(u1.getId()));
-
-        System.out.println(u1.getAlias()+ "가 참가한 채널 목록");
-        System.out.println(userService.getChannelsByUser(u1.getId()));
-
-
-
-
-    }
-}

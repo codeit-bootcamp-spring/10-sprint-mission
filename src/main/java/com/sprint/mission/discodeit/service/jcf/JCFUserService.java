@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.utils.Validation;
 import java.util.*;
@@ -10,9 +11,6 @@ import java.util.*;
 public class JCFUserService implements UserService {
 
     //데이터 저장 공간 생성 Map -> uuid 중복없고, 각 id 마다 user 저장하면 됨.
-    // 인터페이스는 규약(약속)이지 데이터 저장소가 아님.
-    // Map은 인터페이스지만 "데이터를 실제로 담을 공간" -> 후에 타입 정해서 HashMap으로 초기화.
-    // private final Map<UUID, User> data = new HashMap<>();
     // final로 설정한 이유는....? -> Map 안의 내용은 바뀌어도 되지만, Map 변수 자체는 다른 객체로 바뀌면 안되므로.
     // ---- 서비스가 한번 만들어지면, 그 안의 저장소(Map) 자체는 바뀌지 않게 하기 위해!!!!
 
@@ -25,6 +23,8 @@ public class JCFUserService implements UserService {
     //JCF UserService 인스턴스마다 자기만의 data 저장소를 가지게 되고,
     // 인터페이스의 약속(UserService의 메서드 정의)은 그대로 따름.
 
+
+    // 생성
     @Override
     public User createUser(String userName, String alias){
         // 유효성 검사
@@ -42,13 +42,23 @@ public class JCFUserService implements UserService {
         return user;
     }
 
-    // HashMap 에서 value 값 모두 꺼내와서 arrayList<>()에 넣는 방식/
+    // 조회 (없으면 예외)
+    // 전체 유저 조회
     @Override
     public List<User> getUserAll() {
         return new ArrayList<>(data.values()); // hashmap의 values들을 전부 받아서 배열기반 리스트에 생성!!
     }
 
-    //동명이인 문제 -> 해당 이름을 갖는 유저리스트 반환으로 변경.
+    // ID로 유저을 조회
+    public User findUserById(UUID uuid) {
+        User user = data.get(uuid);
+        if (user == null) {
+            throw new NoSuchElementException("해당 유저가 존재하지 않습니다: " + uuid);
+        }
+        return user;
+    }
+
+    // 해당 이름을 갖는 유저리스트 반환으로 변경.(동명이인때문)
     public List<User> getUserByName(String userName) {
         List<User> matches =  data.values().stream()
                 .filter(user -> user.getUserName().equals(userName))
@@ -59,37 +69,19 @@ public class JCFUserService implements UserService {
         return matches;
     }
 
+    //별명으로 유저 조회
     @Override
     public User getUserByAlias(String alias){
-        return data.values().stream().filter(user->user.getAlias().equals(alias))
+        return data.values().stream()
+                .filter(user->user.getAlias().equals(alias))
                 .findFirst()
                 .orElseThrow(()->new NoSuchElementException("해당 별명을 가진 사용자가 없습니다."));
     }
 
-    //유저 정보 삭제
-    @Override
-    public void deleteUser(UUID uuid) {
-        findUserOrThrow(uuid);
-        data.remove(uuid);
-    }
-
-    // update는 반환을 User타입!! void 가 아닌.
-//    @Override
-//    public User updateUser(UUID uuid, String newName, String newAlias) {
-//        User existing = findUserOrThrow(uuid);
-//        existing.userUpdate(newName, newAlias);
-//        return existing;
-//    }
-
-    public List<Message> getMessageByUser(UUID uuid){
-        User user = data.get(uuid);
-        if(user == null) return Collections.emptyList();
-        return user.getMessages();
-    }
-
+    // 갱신
     @Override
     public User updateUser(UUID uuid, String newName, String newAlias) {
-        User existing = findUserOrThrow(uuid);
+        User existing = findUserById(uuid);
 
         // 빈칸 or null 검사
         Validation.notBlank(newName, "이름");
@@ -104,19 +96,41 @@ public class JCFUserService implements UserService {
         return existing;
     }
 
-    // ID로 유저을 찾고, 없으면 예외.
-    public User findUserOrThrow(UUID uuid) {
-        User user = data.get(uuid);
-        if (user == null) {
-            throw new NoSuchElementException("해당 유저가 존재하지 않습니다: " + uuid);
-        }
-        return user;
+
+
+    // 삭제
+    // 유저 정보 삭제
+    @Override
+    public void deleteUser(UUID uuid) {
+        findUserById(uuid);
+        data.remove(uuid);
     }
 
-    //특정 유저의 참가한 채널 리스트 조회
-    public List<Channel> getChannelsByUser(UUID uuid){
-        User user = findUserOrThrow(uuid);
-        return user.getJoinedChannels();
-    }
 
+
+
+
+
+
+
+
+    // update는 반환을 User타입!! void 가 아닌.
+//    @Override
+//    public User updateUser(UUID uuid, String newName, String newAlias) {
+//        User existing = findUserOrThrow(uuid);
+//        existing.userUpdate(newName, newAlias);
+//        return existing;
+//    }
+
+
+
+
+
+    // 현재 채널에 참가한 유저 리스트 조회..
+//    public List<User> getUsersInChannel(UUID uuid){
+//        Channel channel = channelService.findChannelById(uuid);
+//        return channel.getParticipants();
+//        // 현재 uuid 채널의 참가자 리스트 반환.
+//    }
 }
+

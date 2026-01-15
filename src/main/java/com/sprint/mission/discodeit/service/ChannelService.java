@@ -21,14 +21,11 @@ public interface ChannelService {
 
     Channel getChannelByName(String channelName); // channel 조회 (사용자)
 
-    // 특정 채널의 메세지 목록 조회?
-    List<Message> getMessageInChannel(UUID uuid);
 
-//    //id로 조회 /
-//    Channel getChannelById(UUID uuid);
+    //id로 채널 조회
+    Channel findChannelById(UUID id);
 
-
-    Channel findChannelOrThrow(UUID id);
-
+    // 유저가 참여한 채널리스트
+//    List<Channel> getChannelsByUser(UUID uuid);
 
 }
