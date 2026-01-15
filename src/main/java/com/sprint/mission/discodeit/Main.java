@@ -68,8 +68,8 @@ public class Main {
         // 수정
         if (user3 != null) {
             try {   // 비밀번호 변경 실패
-                userService.updateUser(user3.getId(), "", "sakuya", null);
-                System.out.println("수정 테스트: " + userService.searchUser(user3.getId()).getNickname());
+                User updateUser = userService.updateUser(user3.getId(), "", "sakuya", null);
+                System.out.println("수정 테스트: " + updateUser.getNickname());
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
@@ -77,8 +77,8 @@ public class Main {
 
         if (user3 != null) {
             try {   // 닉네임 변경 실패
-                userService.updateUser(user3.getId(), "1234", "", null);
-                System.out.println("수정 테스트: " + userService.searchUser(user3.getId()).getNickname());
+                User updateUser = userService.updateUser(user3.getId(), "1234", "", null);
+                System.out.println("수정 테스트: " + updateUser.getNickname());
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
@@ -86,8 +86,8 @@ public class Main {
 
         if (user3 != null) {
             try {   // 이전과 같은 비밀번호
-                userService.updateUser(user3.getId(), "1234", "sakuya", null);
-                System.out.println("수정 테스트: " + userService.searchUser(user3.getId()).getNickname());
+                User updateUser = userService.updateUser(user3.getId(), "1234", "sakuya", null);
+                System.out.println("수정 테스트: " + updateUser.getNickname());
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
@@ -95,8 +95,8 @@ public class Main {
 
         if (user3 != null) {
             try {   // 예상 출력: sakuya
-                userService.updateUser(user3.getId(), null, "sakuya", null);
-                System.out.println("수정 테스트: " + userService.searchUser(user3.getId()).getNickname());
+                User updateUser = userService.updateUser(user3.getId(), null, "sakuya", null);
+                System.out.println("수정 테스트: " + updateUser.getNickname());
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
@@ -175,8 +175,8 @@ public class Main {
         // 수정
         if (channel2 != null) {
             try {   // 채널명 변경 실패
-                channelService.updateChannel(channel2.getId(), " ");
-                System.out.println("수정 테스트: " + channelService.searchChannel(channel2.getId()).getChannelName());
+                Channel updateChannel = channelService.updateChannel(channel2.getId(), " ");
+                System.out.println("수정 테스트: " + updateChannel.getChannelName());
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
@@ -184,8 +184,8 @@ public class Main {
 
         if (channel2 != null) {
             try {   // 예상 출력: Study Club
-                channelService.updateChannel(channel2.getId(), "Study Club");
-                System.out.println("수정 테스트: " + channelService.searchChannel(channel2.getId()).getChannelName());
+                Channel updateChannel = channelService.updateChannel(channel2.getId(), "Study Club");
+                System.out.println("수정 테스트: " + updateChannel.getChannelName());
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
@@ -319,8 +319,8 @@ public class Main {
         // 수정
         if (message2 != null) {
             try {   // 메시지 변경 실패
-                messageService.updateMessage(message2.getId(), "");
-                System.out.println("수정 테스트: " + messageService.searchMessage(message2.getId()).getMessage());
+                Message updateMessage = messageService.updateMessage(message2.getId(), "");
+                System.out.println("수정 테스트: " + updateMessage.getMessage());
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
@@ -328,8 +328,8 @@ public class Main {
 
         if (message2 != null) {
             try {   // 예상 출력: 죄송해요 안녕합니다
-                messageService.updateMessage(message2.getId(), "죄송해요. 안녕합니다");
-                System.out.println("수정 테스트: " + messageService.searchMessage(message2.getId()).getMessage());
+                Message updateMessage = messageService.updateMessage(message2.getId(), "죄송해요. 안녕합니다");
+                System.out.println("수정 테스트: " + updateMessage.getMessage());
             } catch (Exception e) {
                 System.err.println(e.getMessage());
             }
