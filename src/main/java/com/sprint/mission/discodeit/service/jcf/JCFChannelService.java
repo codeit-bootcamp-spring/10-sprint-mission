@@ -72,9 +72,8 @@ public class JCFChannelService implements ChannelService {
                 .ifPresent(channelName -> {
                     validateString(channelName, "[채널 이름 변경 실패] 올바른 채널 이름 형식이 아닙니다.");
                     validateDuplicateValue(targetChannel.getChannelName(), channelName, "[채널 이름 변경 실패] 현재 채널 이름과 동일합니다.");
+                    targetChannel.updateChannelName(newChannelName);
                 });
-
-        targetChannel.updateChannelName(newChannelName);
     }
 
     // 채널 삭제

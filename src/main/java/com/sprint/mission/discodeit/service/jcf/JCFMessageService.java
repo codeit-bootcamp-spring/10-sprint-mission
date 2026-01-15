@@ -72,9 +72,8 @@ public class JCFMessageService implements MessageService {
                 .ifPresent(message -> {
                     validateString(message, "[메시지 변경 실패] 올바른 메시지 형식이 아닙니다.");
                     validateDuplicateValue(targetMessage.getMessage(), message, "[메시지 변경 실패] 이전 메시지와 동일합니다.");
+                    targetMessage.updateMessage(newMessage);
                 });
-
-        targetMessage.updateMessage(newMessage);
     }
 
     // 메시지 삭제
