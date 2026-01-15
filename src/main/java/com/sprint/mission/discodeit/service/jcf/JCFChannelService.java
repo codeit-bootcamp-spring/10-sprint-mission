@@ -44,7 +44,7 @@ public class JCFChannelService implements ChannelService {
     // R. 읽기
     // 특정 채널 정보 읽기
     @Override
-    public Optional<Channel> readChannelByChannelId(UUID channelId) {
+    public Optional<Channel> findChannelById(UUID channelId) {
         // Channel ID null 검증
         ValidationMethods.validateId(channelId);
 
@@ -157,14 +157,13 @@ public class JCFChannelService implements ChannelService {
     // U. 수정
     // `Duplicated code fragment (12 lines long)`
     // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체와 channel 객체 존재 확인
-    public static Channel validateMethods(Map<UUID, Channel> data, UUID requestId, UUID channelId) {
+    public Channel validateMethods(Map<UUID, Channel> data, UUID requestId, UUID channelId) {
         // request ID null 검증
         ValidationMethods.validateId(requestId);
-        // Channel ID `null` 검증
-        ValidationMethods.validateId(channelId);
+        
+        // Channel ID null & channel 객체 존재 확인
+        Channel channel = validateAndGetChannelByChannelId(channelId);
 
-        Channel channel = data.get(channelId);
-        ValidationMethods.existChannel(channel);
 
 //        User owner = channel.getOwner();
 //        ValidationMethods.existUser(owner);
@@ -236,9 +235,15 @@ public class JCFChannelService implements ChannelService {
 //        channel.getOwner().removeChannelOwner(channel);
 
     //// validation
-    // 로그인 되어있는 user ID null / user 객체 존재 확인
+    // 로그인 되어있는 user ID null & user 객체 존재 확인
     public void validateAndGetUserByUserId(UUID userId) {
         userService.findUserById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+    }
+
+    // Channel ID null & channel 객체 존재 확인
+    public Channel validateAndGetChannelByChannelId(UUID channelId) {
+        return findChannelById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
     }
 }
