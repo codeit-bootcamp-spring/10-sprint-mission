@@ -18,7 +18,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel findById(UUID id){
         Channel channel = data.get(id);
-        if (data.get(id) == null) {
+        if (channel == null) {
             throw new NoSuchElementException("실패: 존재하지 않는 채널 ID");
         }
         return channel;
@@ -38,9 +38,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void delete(UUID id){
-        if (!data.containsKey(id)) {
-            throw new NoSuchElementException("실패: 존재하지 않는 채널 ID");
-        }
+        findById(id);
         data.remove(id);
     }
 }

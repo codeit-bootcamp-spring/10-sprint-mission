@@ -38,9 +38,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public void delete(UUID id){
-        if (!data.containsKey(id)){
-            throw new NoSuchElementException("실패: 존재하지 않는 유저 ID");
-        }
+        findById(id);
         data.remove(id);
     }
 }
