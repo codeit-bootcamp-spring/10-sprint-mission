@@ -123,7 +123,7 @@ public class JavaApplication {
 
         System.out.println("\n[채널 유저 조회]");
         System.out.println("  채널명: " + channel1.getName());
-        userService.getMembers(channel1).forEach(u -> System.out.println("  • " + u));
+        channelService.getMembers(channel1.getId()).forEach(u -> System.out.println("  • " + u));
 
         System.out.println("\n[채널 참가]");
         System.out.println("  - " + channel1.getName() + " ← " + user2.getNickname());
@@ -132,7 +132,7 @@ public class JavaApplication {
 
         System.out.println("\n[채널 유저 조회 - 참가 후]");
         System.out.println("  채널명: " + channel1.getName());
-        userService.getMembers(channel1).forEach(u -> System.out.println("  • " + u));
+        channelService.getMembers(channel1.getId()).forEach(u -> System.out.println("  • " + u));
 
         // =========================================================
         // 메시지 테스트 (채널별)

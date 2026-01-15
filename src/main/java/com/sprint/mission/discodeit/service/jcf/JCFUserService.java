@@ -66,10 +66,4 @@ public class JCFUserService implements UserService {
             user.leaveChannel(channel);
         }
     }
-
-    @Override
-    public List<User> getMembers(Channel channel) {
-        // 채널에 속한 유저 목록 반환
-        return channel.getUsers();
-    }
 }
