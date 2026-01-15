@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
@@ -17,90 +16,31 @@ public class JCFChannelService implements ChannelService {
         this.userService = userService;
     }
     @Override
-    public Channel addChannel(String name, String description, UUID ownerId, boolean openType) {
+    public Channel addChannel(String name, String description, UUID ownerId, String channelType) {
         validateChannelName(name);
-        Channel channel = new Channel(name, description, userService.getUserById(ownerId), openType);
+        Channel channel = new Channel(name, description, userService.getUserById(ownerId), channelType);
         data.put(channel.getId(), channel);
         return channel;
     }
 
     @Override
-    public Channel updateChannelName(UUID id, String name, UUID ownerId) {
+    public Channel updateChannelInfo(UUID id, UUID ownerId, String name, String description) {
         Channel channel = getChannelById(id);
-        checkChannelOwner(channel, ownerId);
-        if(!name.equals(channel.getName())){
-            validateChannelName(name);
-        }else{
-            throw new IllegalArgumentException("동일한 채널 이름");
+        User owner = userService.getUserById(ownerId);
+        channel.checkChannelOwner(owner);
+        if((name == null || name.equals(channel.getName())) && (description == null || description.equals(channel.getDescription()))) {
+            throw new IllegalArgumentException("변경사항 없음");
         }
-        channel.setName(name);
-        return channel;
-    }
-
-    @Override
-    public Channel updateChannelDescription(UUID id, String description, UUID ownerId) {
-        Channel channel = getChannelById(id);
-        checkChannelOwner(channel, ownerId);
-        channel.setDescription(description);
-        return getChannelById(id);
-    }
-
-    @Override
-    public Channel addMembers(UUID id, UUID ownerId, List<UUID> memberIds) {
-        Channel channel = getChannelById(id);
-        checkChannelOwner(channel, ownerId);
-        if(channel.isOpenType()){
-            throw new IllegalArgumentException("공개 채널에 멤버를 추가할 수 없음. 채널ID: "+ id);
-        }
-        List<User> newMembers= memberIds.stream()
-                .map(uid -> userService.getUserById(uid))//추가할 멤버들의 유효성
-                        .collect(Collectors.toList());
-        channel.addMembers(newMembers);
-        return channel;
-    }
-
-    @Override
-    public Channel removeMembers(UUID id, UUID ownerId, List<UUID> memberIds) {
-        Channel channel = getChannelById(id);
-        checkChannelOwner(channel, ownerId);
-        if(channel.isOpenType()){
-            throw new IllegalArgumentException("공개 채널에서 멤버를 제거할 수 없음. 채널ID: "+ id);
-        }
-        if(memberIds.contains(ownerId)){
-            throw new IllegalArgumentException("채널 소유자는 제거될 수 없음. 소유자ID: "+ id);
-        }
-        List<User> members = memberIds.stream()
-                .map(uid->{User user =userService.getUserById(uid);
-                    checkMember(channel,user);
-                    return user;
-                })
-                .collect(Collectors.toList());
-        channel.removeMembers(members);
-        return channel;
-    }
-
-    @Override
-    public Channel removeMember(UUID id, UUID memberId) {
-        Channel channel = getChannelById(id);
-        if(channel.isOpenType()){
-            throw new IllegalArgumentException("공개 채널에서 멤버를 제거할 수 없음. 채널ID: "+ id);
-        }
-        if(memberId.equals(channel.getOwner().getId())){
-            throw new IllegalArgumentException("채널 소유자는 채널에서 나갈 수 없음. 소유자ID: "+ id);
-        }
-        User member =userService.getUserById(memberId);
-        checkMember(channel,member);
-        channel.removeMember(member);
-        return channel;
-    }
-
-    @Override
-    public Channel getChannelByIdAndMemberId(UUID id, UUID memberId) {
-        Channel channel = getChannelById(id);
-        User user = userService.getUserById(memberId);
-        if(!channel.isOpenType()){
-            checkMember(channel, user);
-        }
+        Optional.ofNullable(name).
+                filter(n -> !n.equals(channel.getName()))
+                .ifPresent(n -> {if(channel.getChannelType().equals(Channel.PUBLIC_CHANNEL)){
+                                          validateChannelName(name);
+                                        }
+                                        channel.setName(n);
+                                        });
+        Optional.ofNullable(description)
+                .filter(d -> !d.equals(channel.getDescription()))
+                .ifPresent(d -> channel.setDescription(d));
         return channel;
     }
 
@@ -112,23 +52,20 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void deleteChannelById(UUID id, UUID ownerId) {
         Channel channel = getChannelById(id);
-        checkChannelOwner(channel, ownerId);
+        User owner = userService.getUserById(ownerId);
+        channel.checkChannelOwner(owner);
         channel.removeAllMembers();
         //채널 메세지 삭제 로직 필요
         data.remove(id);
     }
 
-    @Override
-    public List<User> findAllMembers(UUID id, UUID memberId) {
-        Channel channel = getChannelByIdAndMemberId(id, memberId);
-        return new ArrayList<>(channel.getMembers());
-    }
-
+    //공개방 전용 유효성
     private void validateChannelName(String channelName) {
         boolean exists = data.values().stream()
+                .filter(c->c.getChannelType().equals(Channel.PUBLIC_CHANNEL))//공개방만
                 .anyMatch(c ->c.getName().equals(channelName));
         if(exists){
-           throw new IllegalArgumentException("이미 존재하는 채널이름: "+channelName);
+           throw new IllegalArgumentException("이미 존재하는 공개 채널이름: "+channelName);
         }
     }
 
@@ -139,24 +76,9 @@ public class JCFChannelService implements ChannelService {
         }
     }
 
-    private void checkChannelOwner(Channel channel, UUID ownerId) {
-        User owner = userService.getUserById(ownerId); //사용자가 존재
-        if(!channel.getOwner().getId().equals(owner.getId())){
-            throw new IllegalArgumentException("채널의 소유자가 아님: [채널ID-"+channel.getId()+" 사용자ID-" + ownerId+"]");
-        }
-    }
-
-    private Channel getChannelById(UUID id) {
+    public Channel getChannelById(UUID id) {
         validateChannel(id);
         return data.get(id);
     }
 
-    private void checkMember(Channel channel, User member) {
-        boolean check = channel.getMembers()
-                .stream()
-                .anyMatch(m -> m.getId().equals(member.getId()));
-        if(!check){
-            throw new IllegalArgumentException("채널에 속한 사용자가 아님: "+member.getId());
-        }
-    }
 }

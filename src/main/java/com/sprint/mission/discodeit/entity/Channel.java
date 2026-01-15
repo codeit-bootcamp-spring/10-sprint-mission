@@ -5,21 +5,28 @@ import java.util.List;
 
 public class Channel extends BaseEntity {
 
+    public static final String DIRECT_CHANNEL = "directChannel";
+    public static final String PRIVATE_CHANNEL = "privateChannel";
+    public static final String PUBLIC_CHANNEL = "publicChannel";//공개: 멤버가 없음
+
     private String name;
     private String description;
     private User owner;
-    private boolean openType;//공개여부 공개: 멤버가 없음
     private List<User> members;
+    private String channelType;
 
-    public Channel(String name, String description, User owner, boolean openType) {
+    public Channel(String name, String description, User owner, String channelType) {
         super();
-        validateChannelName(name);
+        //채널 타입 필수
+        if(!channelType.equals(DIRECT_CHANNEL)){//디엠빼고는 전부 네임이 필수
+            validateChannelName(name);
+        }
         this.name = name;
         this.description = description;
         this.owner = owner;
-        this.openType = openType;
         this.members = new ArrayList<>();
-        if(!openType) {//비공개인경우 멤버에 소유자 추가
+        this.channelType = channelType;
+        if(channelType.equals(PRIVATE_CHANNEL)) {//비공개인경우 멤버에 소유자 추가
          addMember(owner);
         }
     }
@@ -27,8 +34,8 @@ public class Channel extends BaseEntity {
     public String getName() { return name;}
     public List<User> getMembers() {return members;}
     public User getOwner() { return owner;}
-    public boolean isOpenType() { return openType;}
-
+    public String getDescription() {return description;}
+    public String getChannelType() { return channelType;}
     public void setName(String name) {
         validateChannelName(name);
         this.name = name;
@@ -73,6 +80,16 @@ public class Channel extends BaseEntity {
     private void validateChannelName(String name) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("채널 이름이 null 또는 비어있음");
+        }
+    }
+    public void checkChannelOwner(User user) {
+        if(!owner.getId().equals(user.getId())){
+            throw new IllegalArgumentException("채널의 소유자가 아님: [채널ID-"+this.getId()+" 사용자ID-" + user.getId()+"]");
+        }
+    }
+    public void checkMember(User member) {
+        if(!members.contains(member)){
+            throw new IllegalArgumentException("채널에 속한 사용자가 아님: "+member.getId());
         }
     }
     @Override

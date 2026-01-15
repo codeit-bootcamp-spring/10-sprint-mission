@@ -1,11 +1,9 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class JCFUserService implements UserService {
 
@@ -63,13 +61,6 @@ public class JCFUserService implements UserService {
         user.setUserName("[삭제된 사용자]");
         //소유 채널 삭제 필요
         data.remove(id);
-    }
-
-
-    @Override
-    public List<Channel> getChannels(UUID id) {
-        User user = getUserById(id);
-        return new ArrayList<>(user.getChannels());
     }
 
     private void validateEmail(String email) {
