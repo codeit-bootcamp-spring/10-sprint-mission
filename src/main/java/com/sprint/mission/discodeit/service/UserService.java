@@ -13,7 +13,7 @@ public interface UserService {
 
     public ArrayList<User> searchUserAll();
 
-    public void updateUser(UUID userId, String newPassword, String newNickname, UserStatusType newUserStatus);
+    public User updateUser(UUID userId, String newPassword, String newNickname, UserStatusType newUserStatus);
 
     public void deleteUser(UUID userId);
 }
