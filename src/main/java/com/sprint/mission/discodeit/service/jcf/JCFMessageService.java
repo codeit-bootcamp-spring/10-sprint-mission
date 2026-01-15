@@ -25,17 +25,10 @@ public class JCFMessageService implements MessageService {
     public Message create(String content, UUID userId, UUID channelId){
         User user = userService.findById(userId);
         Channel channel = channelService.findById(channelId);
-
         Message message = new Message(content,user,channel);
-        if(userService.findById(user.getId()) == null){
-            throw new IllegalArgumentException("존재하지 않는 사용자 입니다.");
-        }
-        System.out.println(channelService.findById(channel.getId()));
-        if(channelService.findById(channel.getId()) == null){
-            throw new IllegalArgumentException("존재하지 않는 채널입니다.");
-        }
+
         data.put(message.getId(),message);
-        user.setMessageList(message);
+        user.getMessageList().add(message);
         return message;
 
     }

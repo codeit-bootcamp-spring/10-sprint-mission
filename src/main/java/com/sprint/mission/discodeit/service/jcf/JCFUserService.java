@@ -57,9 +57,4 @@ public class JCFUserService implements UserService {
         return user;
     }
 
-    public List<Message> selectMessage(UUID id){
-        User user = findById(id);
-        return user.getMessageList();
-    }
-
 }

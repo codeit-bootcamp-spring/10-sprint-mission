@@ -55,10 +55,6 @@ public class User extends Common{
         return messageList;
     }
 
-    public void setMessageList(Message message){
-        messageList.add(message);
-    }
-
     @Override
     public String toString() {
         return String.format(
