@@ -12,7 +12,8 @@ public class JavaApplication {
         JCFUserService userService = new JCFUserService();
         JCFChannelService channelService = new JCFChannelService(userService);
         JCFMessageService messageService = new JCFMessageService(userService, channelService);
-
+        channelService.setMessageService(messageService);
+        userService.setMessageService(messageService);
         System.out.println("=== 정상 흐름 테스트 ===");
         runTest(userService, channelService, messageService);
 
@@ -68,7 +69,7 @@ public class JavaApplication {
         messageService.deleteMessage(message1.getId());
         channelService.deleteChannel(channel1.getId());
         userService.deleteUser(user1.getId());
-        messageService.leaveChannel(user2.getId(), channel2.getId());
+        channelService.leaveChannel(user2.getId(), channel2.getId());
 
         System.out.println("데이터 삭제 확인");
         System.out.println(userService.getAllUsers());

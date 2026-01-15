@@ -15,8 +15,6 @@ public interface MessageService {
 
     void deleteMessage(UUID id);
 
-    void leaveChannel(UUID userId, UUID channelId);
-
     List<Message> getMessagesByChannelId(UUID channelId); // 특정 채널 메시지 조회
 
     List<Message> getMessagesByUserId(UUID userId); // 특정 유저 메시지 조회

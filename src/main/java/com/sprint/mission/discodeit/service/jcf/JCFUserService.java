@@ -1,14 +1,20 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data;
+    private MessageService messageService;
     public JCFUserService() {
         this.data = new HashMap<>();
+    }
+
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
     }
 
     @Override
@@ -40,7 +46,11 @@ public class JCFUserService implements UserService {
     }
     @Override
     public void deleteUser(UUID id) {
-        validateUserId(id);
+        User user = validateUserId(id);
+        if (messageService != null) {
+            new ArrayList<>(user.getMessages()).forEach(m -> messageService.deleteMessage(m.getId()));
+        }
+        user.getChannels().forEach(channel -> channel.removeUser(user));
         data.remove(id);
     }
 

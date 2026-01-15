@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
@@ -11,9 +13,13 @@ import java.util.*;
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
     private final UserService userService;
+    private MessageService messageService;
     public JCFChannelService(UserService userService) {
         this.userService = userService;
         this.data = new HashMap<>();
+    }
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
     }
 
     @Override
@@ -59,7 +65,11 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void deleteChannel(UUID id) {
-        validateChannelId(id);
+        Channel channel = validateChannelId(id);
+        if (messageService != null) {
+            new ArrayList<>(channel.getMessages()).forEach(m -> messageService.deleteMessage(m.getId()));
+        }
+        channel.getUsers().forEach(user -> user.removeChannel(channel));
         data.remove(id);
     }
 
@@ -78,7 +88,12 @@ public class JCFChannelService implements ChannelService {
         User user = userService.getUser(userId);
         Channel channel = validateChannelId(channelId);
         if (!channel.getUsers().contains(user)) throw new IllegalArgumentException("참가하고 있지 않은 채널입니다.");
-
+        if (messageService != null) {
+            List<Message> targetMessages = channel.getMessages().stream()
+                    .filter(m -> m.getUser().equals(user))
+                    .toList();
+            targetMessages.forEach(m -> messageService.deleteMessage(m.getId()));
+        }
         channel.removeUser(user);
         user.removeChannel(channel);
     }

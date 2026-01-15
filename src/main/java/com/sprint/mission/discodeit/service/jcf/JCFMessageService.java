@@ -84,19 +84,6 @@ public class JCFMessageService implements MessageService {
         data.remove(id);
     }
 
-    @Override
-    public void leaveChannel(UUID userId, UUID channelId) {
-        List<Message> userMessagesInChannel = data.values().stream()
-                .filter(m -> m.getChannel().getId().equals(channelId) && m.getUser().getId().equals(userId))
-                .toList();
-
-        userMessagesInChannel.forEach(m -> deleteMessage(m.getId()));
-
-        channelService.leaveChannel(userId, channelId);
-    }
-
-
-
     private void validateMessageContent(String content) {
         if (content == null || content.isBlank()) {
             throw new IllegalArgumentException("내용을 다시 입력해주세요");
