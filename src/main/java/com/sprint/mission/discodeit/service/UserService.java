@@ -12,6 +12,5 @@ public interface UserService {
     List<User> findAll();
     User updateUserNickname(UUID userId, String nickname);
     void deleteUser(UUID userId);
-    List<Channel> getJoinedChannels(UUID userId);
     void removeChannelFromJoinedUsers(Channel channel);
 }

@@ -15,4 +15,5 @@ public interface ChannelService {
     void joinChannel(UUID channelId, UUID userId);
     void leaveChannel(UUID channelId, UUID userId);
     List<User> getMembers(UUID channelId);
+    List<Channel> getJoinedChannels(UUID userId);
 }

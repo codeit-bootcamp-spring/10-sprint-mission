@@ -60,14 +60,6 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public List<Channel> getJoinedChannels(UUID userId) {
-        // 실제로 존재하는 유저인지 검색 및 검증
-        User user = findUserById(userId);
-        // 현재 유저가 가입한 채널 목록 반환
-        return user.getChannels();
-    }
-
-    @Override
     public void removeChannelFromJoinedUsers(Channel channel) {
         // 채널 삭제 시, 해당 채널에 가입된 모든 유저를 탈퇴 처리
         for (User user : data.values()) {

@@ -29,7 +29,7 @@ public class JCFMessageService implements MessageService {
         User user = userService.findUserById(userId);
 
         // 채널에 가입된 유저만 메시지 작성 가능
-        List<Channel> joinedChannels = userService.getJoinedChannels(userId);
+        List<Channel> joinedChannels = channelService.getJoinedChannels(userId);
         if (!joinedChannels.contains(channel)) {
             throw new RuntimeException("채널에 가입되어 있지 않습니다.");
         }
@@ -126,7 +126,7 @@ public class JCFMessageService implements MessageService {
 
         // getJoinedChannels() 내부에서 유저가 존재하는지 검증 후 유저가 가입한 채널 목록 조회
         // 유저가 가입한 채널 중 해당 채널이 존재하는지 확인
-        List<Channel> joinedChannels = userService.getJoinedChannels(userId);
+        List<Channel> joinedChannels = channelService.getJoinedChannels(userId);
         if (!joinedChannels.contains(channel)) {
             throw new RuntimeException("채널에 가입되어 있지 않습니다.");
         }
