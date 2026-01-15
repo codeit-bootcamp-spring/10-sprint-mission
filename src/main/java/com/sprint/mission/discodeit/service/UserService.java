@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 
 import java.util.*;
 
@@ -18,5 +17,5 @@ public interface UserService {
 
     void delete(UUID id);
 
-    List<User> readChannelUserList(Channel channel);
+    List<User> readChannelUserList(UUID channelId, JCFChannelService channelService);
 }

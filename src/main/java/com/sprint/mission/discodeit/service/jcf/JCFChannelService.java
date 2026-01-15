@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.*;
@@ -56,8 +55,10 @@ public class JCFChannelService implements ChannelService {
         user.getChannelList().remove(channel);
     }
 
+    // 특정 유저가 참가한 채널 리스트 조회
     @Override
-    public List<Channel> readUserChannelList(User user) {
+    public List<Channel> readUserChannelList(UUID userId, JCFUserService userService) {
+        User user = userService.read(userId);
         return user.getChannelList();
     }
 }

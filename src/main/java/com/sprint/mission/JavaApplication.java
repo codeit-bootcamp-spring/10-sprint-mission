@@ -16,7 +16,7 @@ public class JavaApplication {
         // 등록
         JCFUserService jcfU1 = new JCFUserService();
         UUID userId1 = jcfU1.create("홍길동").getId();
-        JCFUserService jcfU2 = new JCFUserService();
+        JCFUserService jcfUserEmpty = new JCFUserService();
 
         // 조회(단건)
         try {
@@ -25,14 +25,14 @@ public class JavaApplication {
             System.out.println("해당 유저가 존재하지 않습니다.");
         }
         try {
-            System.out.println(jcfU2.read(UUID.randomUUID()));
+            System.out.println(jcfUserEmpty.read(UUID.randomUUID()));
         } catch (NoSuchElementException e) {
             System.out.println("해당 유저가 존재하지 않습니다.");
         }
 
         // 조회(다건)
         System.out.println(jcfU1.readAll());
-        System.out.println(jcfU2.readAll());
+        System.out.println(jcfUserEmpty.readAll());
 
         // 수정
         try {
@@ -89,7 +89,7 @@ public class JavaApplication {
             System.out.println("해당 채널이 존재하지 않습니다.");
         }
         try {
-            System.out.println(jcfU2.read(UUID.randomUUID()));
+            System.out.println(jcfUserEmpty.read(UUID.randomUUID()));
         } catch (NoSuchElementException e) {
             System.out.println("해당 채널이 존재하지 않습니다.");
         }
@@ -155,7 +155,7 @@ public class JavaApplication {
             System.out.println("해당 메시지가 존재하지 않습니다.");
         }
         try {
-            System.out.println(jcfU2.read(UUID.randomUUID()));
+            System.out.println(jcfUserEmpty.read(UUID.randomUUID()));
         } catch (NoSuchElementException e) {
             System.out.println("해당 메시지가 존재하지 않습니다.");
         }
@@ -217,28 +217,28 @@ public class JavaApplication {
 
         // 특정 채널에 발행된 메시지 목록 조회
         try {
-            System.out.println(jcfM1.readChannelMessageList(jcfC1.read(channelJoinTestId)));
+            System.out.println(jcfM1.readChannelMessageList(channelJoinTestId, jcfC1));
         } catch (NoSuchElementException e) {
             System.out.println();
         }
 
         // 특정 채널의 참가한 유저 목록 조회
         try {
-            System.out.println(jcfU1.readChannelUserList(jcfC1.read(channelJoinTestId)));
+            System.out.println(jcfU1.readChannelUserList(channelJoinTestId, jcfC1));
         } catch (NoSuchElementException e) {
             System.out.println("참가한 유저가 없습니다.");
         }
 
         // 특정 유저가 참가한 채널 목록 조회
         try {
-            System.out.println(jcfC1.readUserChannelList(jcfU1.read(userJoinTestId)));
+            System.out.println(jcfC1.readUserChannelList(userJoinTestId, jcfU1));
         } catch (NoSuchElementException e) {
             System.out.println("참가한 채널이 없습니다.");
         }
 
         // 특정 유저가 발행한 메시지 리스트 조회
         try {
-            System.out.println(jcfM1.readUserMessageList(jcfU1.read(userJoinTestId)));
+            System.out.println(jcfM1.readUserMessageList(userJoinTestId, jcfU1));
         } catch (NoSuchElementException e) {
             System.out.println("발행한 메시지가 없습니다.");
         }

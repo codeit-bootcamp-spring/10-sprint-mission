@@ -44,13 +44,17 @@ public class JCFMessageService implements MessageService {
         this.data.remove(id);
     }
 
+    // 특정 유저가 발행한 메시지 리스트 조회
     @Override
-    public List<Message> readUserMessageList(User user) {
+    public List<Message> readUserMessageList(UUID userId, JCFUserService userService) {
+        User user = userService.read(userId);
         return user.getMessageList();
     }
 
+    // 특정 채널의 발행된 메시지 목록 조회
     @Override
-    public List<Message> readChannelMessageList(Channel channel) {
+    public List<Message> readChannelMessageList(UUID channelId, JCFChannelService channelService) {
+        Channel channel = channelService.read(channelId);
         return channel.getMessagesList();
     }
 }
