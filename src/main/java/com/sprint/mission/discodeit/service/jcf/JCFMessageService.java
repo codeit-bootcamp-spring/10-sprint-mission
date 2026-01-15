@@ -2,63 +2,53 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
 
     private final List<Message> messages = new ArrayList<>();
-    private final JCFChannelService channelService;
 
-    public JCFMessageService(JCFChannelService channelService) {
-        this.channelService = channelService;
-    }
-
-    @Override
-    public Message createMessage(UUID channelId, UUID senderId, String content) {
-        Channel channel = channelService.findChannel(channelId);
-        User sender = channelService.getUserService().findUser(senderId);
-        Message message = new Message(sender, channel, content);
+    // 메시지 생성
+    public Message createMessage(Message message) {
         messages.add(message);
         return message;
     }
 
+    // 단건 조회
     @Override
-    public Message findMessage(UUID channelId, UUID messageId) {
-        Channel channel = channelService.findChannel(channelId);
+    public Message findMessage(UUID messageId) {
         return messages.stream()
-                .filter(m -> m.getId().equals(messageId) && m.getChannel().equals(channel))
+                .filter(m -> m.getId().equals(messageId))
                 .findFirst()
                 .orElseThrow(() -> new MessageNotFoundException("해당 메시지가 존재하지 않습니다."));
     }
 
-    @Override
+    // 채널별 메시지 조회
     public List<Message> findAllByChannelMessage(Channel channel) {
-        List<Message> result = new ArrayList<>();
-        for (Message message : messages) {
-            if (message.getChannel().equals(channel)) result.add(message);
-        }
-        return result;
+        return messages.stream()
+                .filter(m -> m.getChannel().equals(channel))
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public List<Message> findAllMessage(UUID channelId) {
+    // 전체 메시지 조회
+    public List<Message> findAllMessage() {
         return new ArrayList<>(messages);
     }
 
-    @Override
-    public Message updateMessage(UUID channelId, UUID messageId, String newContent) {
-        Message message = findMessage(channelId, messageId);
+    // 메시지 수정
+    public Message updateMessage(UUID messageId, String newContent) {
+        Message message = findMessage(messageId);
         message.updateContent(newContent);
         return message;
     }
 
-    @Override
-    public void deleteMessage(UUID channelId, UUID messageId) {
-        Message message = findMessage(channelId, messageId);
+    // 메시지 삭제
+    public void deleteMessage(UUID messageId) {
+        Message message = findMessage(messageId);
         messages.remove(message);
     }
 }

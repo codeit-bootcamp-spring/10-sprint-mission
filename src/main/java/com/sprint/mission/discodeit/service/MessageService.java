@@ -8,15 +8,21 @@ import java.util.UUID;
 
 public interface MessageService {
 
-    Message createMessage(UUID channelId, UUID senderId, String content);
+    // 메시지 생성 (Message 객체 직접 전달)
+    Message createMessage(Message message);
 
-    Message findMessage(UUID channelId, UUID messageId);
+    // 단건 조회 (메시지 ID 기준)
+    Message findMessage(UUID messageId);
 
-    List<Message> findAllMessage(UUID channelId);
-
+    // 채널별 메시지 조회
     List<Message> findAllByChannelMessage(Channel channel);
 
-    Message updateMessage(UUID channelId, UUID messageId, String newContent);
+    // 서버 전체 메시지 조회
+    List<Message> findAllMessage();
 
-    void deleteMessage(UUID channelId, UUID messageId);
+    // 메시지 수정
+    Message updateMessage(UUID messageId, String newContent);
+
+    // 메시지 삭제
+    void deleteMessage(UUID messageId);
 }
