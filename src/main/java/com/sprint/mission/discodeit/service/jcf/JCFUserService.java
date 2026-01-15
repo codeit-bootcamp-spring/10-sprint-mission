@@ -3,8 +3,6 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 
@@ -33,7 +31,7 @@ public class JCFUserService implements UserService {
         // email 검증
         ValidationMethods.validateString(email, "email");
         // 이메일 중복 확인
-        duplicateEmail(email);
+        validateDuplicateEmail(email);
         // userName, password 검증
         ValidationMethods.validateString(userName, "userName");
         ValidationMethods.validateString(password, "password");
@@ -59,7 +57,7 @@ public class JCFUserService implements UserService {
 
     // 본인?
     @Override
-    public Optional<User> readUserById(UUID userId) {
+    public Optional<User> findUserById(UUID userId) {
         // User ID null 검증
         ValidationMethods.validateId(userId);
 
@@ -156,7 +154,7 @@ public class JCFUserService implements UserService {
         // 기존 email과 변경할 email이 동일하지 않을 때
         if (!email.equals(data.get(userId).getEmail())) {
             // 이메일 중복 확인
-            duplicateEmail(email);
+            validateDuplicateEmail(email);
         }
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateMethods(userId);
@@ -271,22 +269,20 @@ public class JCFUserService implements UserService {
         return user;
     }
 
-    // email `null` 또는 `blank` 확인, 중복 확인
-    private void duplicateEmail(String email) {
-        this.data.values().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findAny()
-                .ifPresent(user -> {
-                    throw new IllegalStateException("동일한 email이 존재합니다");
-                });
+    // email 중복 확인
+    private void validateDuplicateEmail(String email) {
+        if (this.data.values().stream()
+                .anyMatch(user->user.getEmail().equals(email))) {
+            throw new IllegalArgumentException("동일한 email이 존재합니다");
+        }
+
     }
 
     // 이미 참여한 채널인지 검증
     private void validateAlreadyParticipation(UUID userId, Channel channel) {
-        Boolean validateAlreadyParticipation = channel.getChannelUsersList().stream()
-                .noneMatch(user -> user.getId().equals(userId));
-        // false -> 중복 존재 O
-        if (!validateAlreadyParticipation) {
+        // true -> 중복 존재 O
+        if (channel.getChannelUsersList().stream()
+                .anyMatch(user -> user.getId().equals(userId))) {
             throw new IllegalStateException("이미 참여한 channel입니다.");
         }
     }
