@@ -22,20 +22,25 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel findById(UUID id) {
-        for (Channel channel : data){
-            if (channel.getId().equals(id)) {
-                {
-                    return channel;
-                }
-            }
-         }
-        throw new IllegalArgumentException("Channel not found" + id);
+    public Optional<Channel> findById(UUID id) {
+        return data.stream()
+                .filter(channel -> channel.getId().equals(id))
+                .findFirst();
     }
 
     @Override
     public List<Channel> findAll() {
         return new ArrayList<>(data);
+    }
+
+    @Override
+    public void setName(UUID id, String name) {
+
+    }
+
+    @Override
+    public void setDescription(UUID id, String description) {
+
     }
 
 //    @Override
@@ -49,29 +54,17 @@ public class JCFChannelService implements ChannelService {
 //        throw new IllegalArgumentException("Channel not found: " + id);
 //    }
 
-    @Override
-    public void setName(UUID id, String name) {
-
-        Channel channel = findById(id); // null 가능
-
-        Optional.ofNullable(channel)
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
-
-        channel.setName(name);
-        channel.touch();
-    }
 
     @Override
-    public void setDescription(UUID id, String description) {
-        Channel channel = findById(id);
-
-        Optional.ofNullable(channel)
+    public void updateChannel(UUID id, String name, String description) {
+        Channel channel = findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
 
-        channel.setDescription(description);
+        Optional.ofNullable(name).ifPresent(channel::setName);
+        Optional.ofNullable(description).ifPresent(channel::setDescription);
+
         channel.touch();
     }
-
 
     @Override
     public void delete(UUID id) {

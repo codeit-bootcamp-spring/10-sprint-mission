@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFUserService implements UserService {
@@ -23,13 +25,10 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User findById(UUID id) {
-        for (User user : data) {
-            if (user.getId().equals(id)) {
-                return user;
-            }
-        }
-        return null;
+    public Optional<User> findById(UUID id) {
+        return data.stream()
+                .filter(channel -> channel.getId().equals(id))
+                .findFirst();
     }
 
     @Override

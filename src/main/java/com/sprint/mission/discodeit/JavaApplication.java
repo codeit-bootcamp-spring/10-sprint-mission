@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.entity.BaseEntity;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -11,6 +12,7 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 
 import java.util.List;
+import java.util.UUID;
 
 public class JavaApplication {
 
@@ -27,7 +29,9 @@ public class JavaApplication {
         User user2 = userService.createUser("김사과","apple@naver.com");
 
         // 단건 조회
-        System.out.println("단건 조회 (user1): " + userService.findById(user1.getId()));
+        User foundUser = userService.findById(user1.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        System.out.println("단건 조회 (user1): " + foundUser);
 
         // 전체 조회
         System.out.println("전체 User 조회:");
@@ -70,19 +74,28 @@ public class JavaApplication {
 
         // User 수정
         userService.update(user1.getId(), "user1-renamed", "user1-new@example.com");
-        System.out.println("수정된 User 조회: " + userService.findById(user1.getId()).getUsername());
+
+        User updatedUser = userService.findById(user1.getId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        System.out.println("수정된 User 조회: " + updatedUser.getUsername());
+
 
         // Channel 수정
+        channelService.setName(channel1.getId(), "수정된 채널명");
         channelService.setDescription(channel1.getId(), "수정된 채널 설명");
-        Channel updatedChannel = channelService.findById(channel1.getId());
+
+        Channel updatedChannel = channelService.findById(channel1.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found"));
+
         System.out.println("수정된 Channel 조회: " + updatedChannel.getName() + ", " + updatedChannel.getDescription());
 
+
         // Message 수정
-        messageService.update(message1.getId(),
-                "수정된 두번째 메시지",
-                user1,
-                channel1);
-        Message updatedMessage = messageService.findById(message1.getId());
+        messageService.update(message1.getId(), "수정된 두번째 메시지", user1, channel1);
+
+        Message updatedMessage = messageService.findById(message1.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Message not found"));
+
         System.out.println("수정된 Message 조회: " + updatedMessage.getContent());
 
         //6. 삭제 테스트

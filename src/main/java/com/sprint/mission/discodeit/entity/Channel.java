@@ -16,6 +16,11 @@ public class Channel extends BaseEntity{
         this.description = description;
     }
 
+    public void updateChannel (String name, String description) {
+        this.name = name;
+        this.description = description;
+        this.updatedAt = System.currentTimeMillis();
+    }
     public void setName(String name) {
         this.name = name;
         this.updatedAt = System.currentTimeMillis();
@@ -26,9 +31,6 @@ public class Channel extends BaseEntity{
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public UUID getId() {
-        return id;
-    }
 
     public long getCreatedAt() {
         return createdAt;
@@ -45,6 +47,8 @@ public class Channel extends BaseEntity{
     public String getDescription() {
         return description;
     }
+
+
 
 }
 

@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
@@ -26,13 +27,10 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message findById(UUID id) {
-        for (Message message : data) {
-            if (message.getId().equals(id)) {
-                return message;
-            }
-        }
-        return null;
+    public Optional<Message> findById(UUID id) {
+        return data.stream()
+                .filter(channel -> channel.getId().equals(id))
+                .findFirst();
     }
 
     @Override
