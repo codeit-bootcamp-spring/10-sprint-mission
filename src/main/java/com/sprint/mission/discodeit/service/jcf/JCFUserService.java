@@ -68,6 +68,11 @@ public class JCFUserService implements UserService {
         list.remove(user);
     }
 
+    @Override
+    public List<Message> readMessagesByUser(UUID userId) {
+        User user = readUser(userId);
+        return user.getMessages();
+    }
 
     private void validateDuplicationEmail(String userEmail) {
         if(list.stream()

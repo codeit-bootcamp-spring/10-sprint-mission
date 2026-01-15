@@ -8,6 +8,7 @@ public class User extends CommonEntity {
     private String userName;
     private String userEmail;
     private String userPassword;
+    private final List<Message> messages = new ArrayList<>();
 
     public User(String userName, String userEmail, String userPassword) {
         this.userName = userName;
@@ -38,6 +39,11 @@ public class User extends CommonEntity {
     public String getUserStatus() {
         return "이름: " + userName + ", 이메일: " + userEmail + ", 비번: " + userPassword;
     }
+
+    public List<Message> getMessages() {
+        return messages;
+    }
+
 
 
 }

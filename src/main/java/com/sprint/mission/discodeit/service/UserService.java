@@ -19,4 +19,7 @@ public interface UserService {
     void deleteUser(UUID id);
 
     boolean isUserDeleted(UUID id);
+
+    List<Message> readMessagesByUser(UUID userId);
+
 }
