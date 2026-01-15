@@ -47,10 +47,16 @@ public class JCFChannelService implements ChannelService {
 
     // Update
     @Override
-    public Channel updateChannel(UUID channelId, String newName, Boolean isPublic) {
+    public Channel updateChannel(UUID channelId, String newName, Channel.ChannelVisibility newVisibility) {
         Channel channel = findById(channelId);
 
-        channel.updateChannel(newName, isPublic); // 엔티티에서 빈 채널 이름 검증함.
+        Optional.ofNullable(newName)
+                .filter(name -> !name.equals(channel.getChannelName()))
+                .ifPresent(channel::updateName);
+
+        Optional.ofNullable(newVisibility)
+                .filter(v -> v != channel.getChannelVisibility())
+                .ifPresent(channel::updateVisibility);
 
         return channel;
     }

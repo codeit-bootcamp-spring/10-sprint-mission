@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -70,65 +69,96 @@ public class JCFUserService implements UserService {
     }
 
     // Update - Profile
+
     @Override
-    public User updateUsername(UUID userId, String newUsername) {
+    public User updateUserProfile(UUID userId, String newUsername, String newNickname, String newEmail, String newPhoneNumber) {
+        User user = findById(userId);
+
+        Optional.ofNullable(newUsername)
+                .filter(username -> !username.equals(user.getUsername()))
+                .ifPresent(username -> {updateUsername(userId, username);});
+
+        Optional.ofNullable(newNickname)
+                .filter(nickname -> !nickname.equals(user.getNickname()))
+                .ifPresent(nickname -> {updateNickname(userId, nickname);});
+
+        Optional.ofNullable(newEmail)
+                .filter(email -> !email.equals(user.getEmail().orElse(null)))
+                .ifPresent(email -> {updateEmail(userId, email);});
+
+        Optional.ofNullable(newPhoneNumber)
+                .filter(phoneNumber -> !phoneNumber.equals(user.getPhoneNumber().orElse(null)))
+                .ifPresent(phoneNumber -> {updatePhoneNumber(userId,  phoneNumber);});
+
+        return user;
+    }
+
+    @Override
+    public void updateUsername(UUID userId, String newUsername) {
         User user = findById(userId);
         if (findByUsername(newUsername).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + newUsername);
         }
         user.updateUsername(newUsername);
 
-        return user;
     }
     @Override
-    public User updateNickname(UUID userId, String newNickname) {
+    public void updateNickname(UUID userId, String newNickname) {
         User user = findById(userId);
         user.updateNickname(newNickname);
 
-        return user;
     }
 
     @Override
-    public User updateEmail(UUID userId, String email) {
+    public void updateEmail(UUID userId, String email) {
         User user = findById(userId);
         checkDuplicateEmail(email, userId);
         user.updateEmail(email);
-
-        return user;
     }
 
     @Override
-    public User updatePhoneNumber(UUID userId, String phoneNumber) {
+    public void updatePhoneNumber(UUID userId, String phoneNumber) {
         User user = findById(userId);
         checkDuplicatePhoneNumber(phoneNumber, userId);
         user.updatePhoneNumber(phoneNumber);
-
-        return user;
     }
 
     // Update - Status
     @Override
-    public User updateUserStatus(UUID userId, UserStatus status) {
+    public User updateUserStatus(UUID userId, User.UserPresence newPresence, Boolean newMicrophoneIsOn, Boolean newHeadsetIsOn) {
         User user = findById(userId);
-        user.changeStatus(status);
+
+        Optional.ofNullable(newPresence)
+                .filter(presence -> !presence.equals(user.getPresence()))
+                .ifPresent(presence -> {updatePresence(userId, presence);});
+
+        Optional.ofNullable(newMicrophoneIsOn)
+                .filter(microphoneIsOn -> !microphoneIsOn.equals(user.isMicrophoneOn()))
+                .ifPresent(microphoneIsOn -> {toggleMicrophone(userId, microphoneIsOn);});
+
+        Optional.ofNullable(newHeadsetIsOn)
+                .filter(headsetIsOn -> !headsetIsOn.equals(user.isHeadsetOn()))
+                .ifPresent(headsetIsOn -> {toggleHeadset(userId, headsetIsOn);});
 
         return user;
     }
 
     @Override
-    public User toggleMicrophone(UUID userId, boolean isOn) {
+    public void updatePresence(UUID userId, User.UserPresence presence) {
+        User user = findById(userId);
+        user.changeStatus(presence);
+    }
+
+    @Override
+    public void toggleMicrophone(UUID userId, boolean isOn) {
         User user = findById(userId);
         user.toggleMicrophone(isOn);
-
-        return user;
     }
 
     @Override
-    public User toggleHeadset(UUID userId, boolean isOn) {
+    public void toggleHeadset(UUID userId, boolean isOn) {
         User user = findById(userId);
         user.toggleHeadset(isOn);
-
-        return user;
     }
 
     // Delete

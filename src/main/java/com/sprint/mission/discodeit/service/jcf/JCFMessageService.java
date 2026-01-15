@@ -43,35 +43,35 @@ public class JCFMessageService implements MessageService {
 
     }
 
+//    @Override
+//    public List<Message> findAllByChannelId(UUID channelId) { // 전체 메시지 풀에서 채널 ID에 해당하는 메시지를 찾음
+//        channelService.findById(channelId);
+//
+//        return messageMap.values().stream()
+//                .filter(m -> m.getChannel().getId().equals(channelId))
+//                .sorted(Comparator.comparing(Message::getSequence)) // 메시지 순서 보장을 위해선 sequence 정렬
+//                .collect(Collectors.toList());
+//    }
+//
+//    @Override
+//    public List<Message> findAllByUserId(UUID userId) { // 전체 메시지 풀에서 유저 ID에 해당하는 메시지를 찾음
+//        userService.findById(userId);
+//
+//        return messageMap.values().stream()
+//                .filter(message -> message.getAuthor().getId().equals(userId))
+//                .sorted(Comparator.comparing(Message::getSequence)) // 메시지 순서 보장을 위해선 sequence 정렬
+//                .collect(Collectors.toList());
+//    }
+
     @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
-        channelService.findById(channelId);
-
-        return messageMap.values().stream()
-                .filter(m -> m.getChannel().getId().equals(channelId))
-                .sorted(Comparator.comparing(Message::getSequence)) // 메시지 순서 보장을 위해선 sequence 정렬
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Message> findAllByUserId(UUID userId) {
-        userService.findById(userId);
-
-        return messageMap.values().stream()
-                .filter(message -> message.getAuthor().getId().equals(userId))
-                .sorted(Comparator.comparing(Message::getSequence)) // 메시지 순서 보장을 위해선 sequence 정렬
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<Message> findMessagesByChannel(UUID channelId) {
+    public List<Message> findMessagesByChannel(UUID channelId) { // 채널이 가지고 있는 메시지만 가져옴
         Channel channel = channelService.findById(channelId);
 
         return channel.getMessages();
     }
 
     @Override
-    public List<Message> findMessagesByAuthor(UUID authorId) {
+    public List<Message> findMessagesByAuthor(UUID authorId) { // 유저가 가지고 있는 메시지만 가져옴
         User author = userService.findById(authorId);
 
         return author.getMessages();

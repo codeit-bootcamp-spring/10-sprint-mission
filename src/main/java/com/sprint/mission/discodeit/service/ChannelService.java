@@ -16,7 +16,7 @@ public interface ChannelService {
     List<Channel> findAll();
 
     // Update
-    Channel updateChannel(UUID channelId, String newName, Boolean isPublic);
+    Channel updateChannel(UUID channelId, String newName, Channel.ChannelVisibility newVisibility);
 
     // Delete
     Channel deleteChannel(UUID channelId);

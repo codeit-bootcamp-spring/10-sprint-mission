@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,15 +16,17 @@ public interface UserService {
     List<User> findAll();
 
     // Update - Profile
-    User updateUsername(UUID userId, String newUsername);
-    User updateNickname(UUID userId, String newNickname);
-    User updateEmail(UUID userId, String email);
-    User updatePhoneNumber(UUID userId, String phoneNumber);
+    User updateUserProfile(UUID userId, String newUsername, String newNickname, String newEmail, String newPhoneNumber);
+    void updateUsername(UUID userId, String newUsername);
+    void updateNickname(UUID userId, String newNickname);
+    void updateEmail(UUID userId, String email);
+    void updatePhoneNumber(UUID userId, String phoneNumber);
 
     // Update - Status
-    User updateUserStatus(UUID userId, UserStatus status);
-    User toggleMicrophone(UUID userId, boolean isOn);
-    User toggleHeadset(UUID userId, boolean isOn);
+    public User updateUserStatus(UUID userId, User.UserPresence newPresence, Boolean newMicrophoneIsOn, Boolean newHeadsetIsOn);
+    void updatePresence(UUID userId, User.UserPresence presence);
+    void toggleMicrophone(UUID userId, boolean isOn);
+    void toggleHeadset(UUID userId, boolean isOn);
 
     // Delete
     User deleteUser(UUID userId);

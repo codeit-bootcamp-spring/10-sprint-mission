@@ -3,12 +3,19 @@ package com.sprint.mission.discodeit.entity;
 import java.util.*;
 
 public class User extends BaseEntity {
+
+    public enum UserPresence {
+        ONLINE,
+        OFFLINE,
+        AWAY,
+    }
+
     private String username; // 사용자명
     private String nickname; // 별명
     private String email; // Nullable
     private String phoneNumber; // Nullable
 
-    private UserStatus status; // 온라인, 오프라인, 자리비움
+    private UserPresence status; // 온라인, 오프라인, 자리비움
     private boolean isMicrophoneOn;
     private boolean isHeadsetOn;
 
@@ -27,7 +34,7 @@ public class User extends BaseEntity {
         this.email = email;
         this.phoneNumber = phoneNumber;
 
-        this.status = UserStatus.ONLINE;
+        this.status = UserPresence.ONLINE;
         this.isMicrophoneOn = false;
         this.isHeadsetOn = false;
     }
@@ -46,7 +53,7 @@ public class User extends BaseEntity {
         return Optional.ofNullable(phoneNumber);
     }
 
-    public UserStatus getStatus() {return status;}
+    public UserPresence getPresence() {return status;}
     public boolean isMicrophoneOn() {return isMicrophoneOn;}
     public boolean isHeadsetOn() {return isHeadsetOn;}
 
@@ -73,7 +80,7 @@ public class User extends BaseEntity {
         updateTimestamp();
     }
 
-    public void changeStatus(UserStatus status) {
+    public void changeStatus(UserPresence status) {
         this.status = status;
     }
     public void toggleMicrophone(boolean isOn) {

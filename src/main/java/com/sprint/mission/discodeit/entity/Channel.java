@@ -3,8 +3,13 @@ package com.sprint.mission.discodeit.entity;
 import java.util.*;
 
 public class Channel extends BaseEntity {
+
+    public enum ChannelVisibility{
+        PUBLIC,
+        PRIVATE;
+    }
     private String channelName;
-    private Boolean isPublic;
+    private ChannelVisibility channelVisibility;
 
     // List는 멀티쓰레딩 환경에서 순서 보장 안됨
     // 나중에 리팩토링 가능성 존재
@@ -15,29 +20,28 @@ public class Channel extends BaseEntity {
         super();
         validateName(channelName);
         this.channelName = channelName;
-        this.isPublic = isPublic;
+        this.channelVisibility = ChannelVisibility.PUBLIC;
     }
 
     // Getters
     public String getChannelName() {
         return channelName;
     }
-    public Boolean isPublic() {
-        return isPublic;
+    public ChannelVisibility getChannelVisibility() {
+        return channelVisibility;
     }
 
     // Updates
-    public void updateChannel(String newName, Boolean isPublic) {
-        if (newName != null) {
-            validateName(newName);
-            this.channelName = newName;
-        }
-        if (isPublic != null) {
-            this.isPublic = isPublic;
-        }
+    public void updateName(String newName) {
+        validateName(newName);
+        this.channelName = newName;
         updateTimestamp();
     }
 
+    public void updateVisibility(ChannelVisibility visibility) {
+        this.channelVisibility = visibility;
+        updateTimestamp();
+    }
     // validation
     private void validateName(String name) {
         if (name == null || name.isBlank()) {
@@ -78,7 +82,7 @@ public class Channel extends BaseEntity {
         return "Channel{" +
                 "id=" + id +
                 ", name='" + channelName + '\'' +
-                ", isPublic=" + isPublic +
+                ", channelVisibility=" + channelVisibility +
                 ", userCount=" + users.size() +
                 ", messagesCount=" + messages.size() +
                 '}';
