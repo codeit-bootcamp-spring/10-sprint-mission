@@ -85,7 +85,7 @@ public class JCFChannelService implements ChannelService {
 
     // 특정 채널에 속한 모든 유저
     @Override
-    public List<UUID> findAllUsersByChannelId(UUID channelId) {
+    public List<UUID> findMemberIdsByChannelId(UUID channelId) {
     // Channel ID null & channel 객체 존재 확인
         Channel channel = validateAndGetChannelByChannelId(channelId);
 
@@ -100,42 +100,6 @@ public class JCFChannelService implements ChannelService {
 
         return findAllChannels().stream().filter(channel -> channel.getOwnerId().equals(userId)).toList();
     }
-
-    // 특정 채널의 모든 메시지 읽어오기
-    @Override
-    public List<Message> readChannelMessageByChannelId(UUID channelId) {
-        // Channel ID null 검증
-        ValidationMethods.validateId(channelId);
-
-        Channel channel = data.get(channelId);
-        // channel이 null인지 확인
-        if (channel == null) {
-            return Collections.emptyList();
-        }
-
-        return channel.getChannelMessagesList().stream().toList();
-    }
-
-    // 특정 채널에서 원하는 메시지 찾기
-    @Override
-    public List<Message> searchChannelMessageByChannelIdAndWord(UUID channelId, String partialWord) {
-        // Channel ID null 검증
-        ValidationMethods.validateId(channelId);
-
-        Channel channel = data.get(channelId);
-        // channel이 null인지 확인
-        if (channel == null) {
-            // null이면 빈 리스트
-            return Collections.emptyList();
-        }
-
-        return channel.getChannelMessagesList().stream()
-                .filter(message -> message.getContent().contains(partialWord))
-                        .toList();
-    }
-
-
-
 
     // U. 수정
     // 로그인 정보를 가져온다고 가정하면 `requestUserId` 와 `targetUserId` 로 나눌 필요는 없음

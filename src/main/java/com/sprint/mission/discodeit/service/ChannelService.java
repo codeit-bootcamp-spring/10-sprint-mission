@@ -2,8 +2,6 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,13 +22,9 @@ public interface ChannelService {
     // 비공개 여부에 따른 채널 목록
     List<Channel> findPublicOrPrivateChannel(ChannelType channelType);
     // 특정 채널에 속한 모든 유저
-    List<UUID> findAllUsersByChannelId(UUID channelId);
+    List<UUID> findMemberIdsByChannelId(UUID channelId);
     // 특정 사용자가 owner인 모든 채널
     List<Channel> findOwnerChannelsByUserId(UUID userId);
-    // 특정 채널의 모든 메시지 읽어오기
-    List<Message> readChannelMessageByChannelId(UUID channelId);
-    // 특정 채널에서 원하는 메시지 찾기
-    List<Message> searchChannelMessageByChannelIdAndWord(UUID channelId, String partialWord);
 
     // U. 수정
     Channel updateChannelInfo(UUID ownerId, UUID channelId, ChannelType channelType, String channelName, String channelDescription);
@@ -40,8 +34,6 @@ public interface ChannelService {
     Channel joinChannel(UUID userId, UUID channelId);
     // 채널 나가기
     Channel leaveChannel(UUID userId, UUID channelId);
-
-
 
     // D. 삭제
     void deleteChannel(UUID requestId, UUID channelId);
