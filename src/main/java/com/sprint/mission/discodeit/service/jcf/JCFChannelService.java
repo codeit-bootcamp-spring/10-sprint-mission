@@ -97,15 +97,23 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = readChannel(channelId);
+        User user = userService.readUser(userId);
 
-        boolean alreadyDeleted = channel.getJoinedUsers().stream()
-                        .noneMatch(u -> userId.equals(u.getId()));
+        boolean channelHasNotUser = channel.getJoinedUsers().stream()
+                .noneMatch(u -> userId.equals(u.getId()));
 
-        if(alreadyDeleted) {
+        boolean userHasNotChannel = user.getJoinedChannels().stream()
+                .noneMatch(c -> channelId.equals(c.getId()));
+
+        if(channelHasNotUser && userHasNotChannel) {
             throw new IllegalArgumentException("이미 삭제된 유저입니다.");
+        }
+        if(channelHasNotUser != userHasNotChannel) {
+            throw new IllegalArgumentException("채널-유저 삭제 상태가 불일치합니다.");
         }
 
         channel.getJoinedUsers().removeIf(u -> userId.equals(u.getId()));
+        user.getJoinedChannels().removeIf(c -> channelId.equals(c.getId()));
     }
 
     @Override
