@@ -4,23 +4,18 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data; // channel DB 데이터
-    private final Map<UUID, User> userData; // user DB 데이터
-    private final MessageService messageService; // 삭제 기능을 위해 추가
-    // 인프라 건설 후 사람 입주의 느낌으로 이해
-    // 실행: user->channel->message
-    // 조립: message->channel->user
+    private final UserService userService;
 
-    public JCFChannelService(Map<UUID, Channel> data, Map<UUID, User> userData, MessageService messageService) {
+    public JCFChannelService(Map<UUID, Channel> data, UserService userService) {
         this.data = data;
-        this.userData = userData;
-        this.messageService = messageService;
+        this.userService = userService;
     }
 
     @Override
@@ -35,8 +30,8 @@ public class JCFChannelService implements ChannelService {
     // C. 생성: Channel 생성 후 Channel 객체 반환
     @Override
     public Channel createChannel(UUID ownerId, Boolean isPrivate, String channelName, String channelDescription) {
-        // owner ID null 검증
-        ValidationMethods.validateId(ownerId);
+        // 로그인 되어있는 user ID null / user 객체 존재 확인
+        validateAndGetUserByUserId(ownerId);
         // channelName 검증
         ValidationMethods.validateNullBlankString(channelName, "channelName");
 
@@ -71,11 +66,11 @@ public class JCFChannelService implements ChannelService {
             return readAllChannel();
         } else if (isPrivate) {
             return data.values().stream()
-                    .filter(channel -> channel.getPrivate() == true)
+//                    .filter(channel -> channel.getChannelType() == true)
                     .toList();
         } else { // !isPrivate
             return data.values().stream()
-                    .filter(channel -> channel.getPrivate() == false)
+//                    .filter(channel -> channel.getChannelType() == false)
                     .toList();
         }
     }
@@ -226,17 +221,24 @@ public class JCFChannelService implements ChannelService {
     public void deleteChannel(UUID requestId, UUID channelId) {
         Channel channel = validateMethods(data, requestId, channelId);
 
-        // 연관 관계 정리
-        // 해당 채널과 관련된 모든 메시지 삭제 및 채널이 보유한 메세지 리스트 연결 끊기
-        channel.getChannelMessagesList()
-                .forEach(message ->
-                        messageService.deleteMessage(message.getAuthor().getId(), message.getId()));
+        data.remove(channelId);
+    }
 
-        // 해당 채널에 참여한 user 찾아서 내보내기
-        channel.getChannelUsersList().forEach(user -> user.leaveChannel(channel));
-        // 해당 채널을 소유한 소유주(user)를 찾아서 owner 소유권 제거
+//    // 연관 관계 정리
+//    // 해당 채널과 관련된 모든 메시지 삭제 및 채널이 보유한 메세지 리스트 연결 끊기
+//        channel.getChannelMessagesList()
+//                .forEach(message ->
+//            messageService.deleteMessage(message.getAuthor().getId(), message.getId()));
+//
+//    // 해당 채널에 참여한 user 찾아서 내보내기
+//        channel.getChannelUsersList().forEach(user -> user.leaveChannel(channel));
+//    // 해당 채널을 소유한 소유주(user)를 찾아서 owner 소유권 제거
 //        channel.getOwner().removeChannelOwner(channel);
 
-        data.remove(channelId);
+    //// validation
+    // 로그인 되어있는 user ID null / user 객체 존재 확인
+    public void validateAndGetUserByUserId(UUID userId) {
+        userService.findUserById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
 }
