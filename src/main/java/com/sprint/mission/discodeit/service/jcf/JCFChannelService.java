@@ -73,14 +73,22 @@ public class JCFChannelService implements ChannelService {
     public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
-        channel.addParticipant(user);
+
+        if (!channel.addParticipant(user)) {
+            throw new IllegalStateException("이미 참가한 참가자입니다");
+        };
+        channel.updateUpdatedAt();
     }
 
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
-        channel.removeParticipant(user);
+
+        if (!channel.removeParticipant(user)) {
+            throw new IllegalStateException("참여하지 않은 참가자입니다");
+        }
+        channel.updateUpdatedAt();
     }
 
     private void validateDuplicateTitle(String title) {

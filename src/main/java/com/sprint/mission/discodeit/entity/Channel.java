@@ -20,17 +20,11 @@ public class Channel extends Common {
     public Set<User> getParticipants() {
         return Collections.unmodifiableSet(this.participants);
     }
-    public void addParticipant(User user) {
-        if (!participants.add(user)) {
-            throw new IllegalStateException("이미 참가한 참가자입니다");
-        }
-        updateUpdatedAt();
+    public boolean addParticipant(User user) {
+        return participants.add(user);
     }
-    public void removeParticipant(User user) {
-        if (!participants.remove(user)) {
-            throw new IllegalStateException("참여하지 않은 참가자입니다");
-        }
-        updateUpdatedAt();
+    public boolean removeParticipant(User user) {
+        return participants.remove(user);
     }
 
     public String getTitle() {
