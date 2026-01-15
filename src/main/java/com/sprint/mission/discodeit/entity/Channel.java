@@ -20,6 +20,7 @@ public class Channel extends Entity {
         this.users = new ArrayList<>();
         this.messages = new ArrayList<>();
         this.users.add(owner);
+        owner.joinChannel(this);
     }
 
     public String getName() {
