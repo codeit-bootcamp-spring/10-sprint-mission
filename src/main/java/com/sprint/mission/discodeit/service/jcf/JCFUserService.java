@@ -27,16 +27,18 @@ public class JCFUserService implements UserService {
 
     // C. 생성: User 생성 후 User 객체 반환
     @Override
-    public User createUser(String email, String nickName, String userName, String password, String birthday) {
-        // email 검증
-        ValidationMethods.validateString(email, "email");
+    public User createUser(String email, String userName, String nickName, String password, String birthday) {
+        // email `null` or `blank` 검증
+        ValidationMethods.validateNullBlankString(email, "email");
         // 이메일 중복 확인
         validateDuplicateEmail(email);
-        // userName, password 검증
-        ValidationMethods.validateString(userName, "userName");
-        ValidationMethods.validateString(password, "password");
+        // userName, userName, password, birthday `null` or `blank` 검증
+        ValidationMethods.validateNullBlankString(userName, "userName");
+        ValidationMethods.validateNullBlankString(nickName, "nickName");
+        ValidationMethods.validateNullBlankString(password, "password");
+        ValidationMethods.validateNullBlankString(birthday, "birthday");
 
-        User user = new User(email, nickName, userName, password, birthday);
+        User user = new User(email, userName, nickName, password, birthday);
         data.put(user.getId(), user);
         return user;
     }
@@ -50,24 +52,6 @@ public class JCFUserService implements UserService {
         return Optional.ofNullable(data.get(userId));
     }
 
-    // 특정 사용자가 참여한 채널 중에서 특정 채널 검색
-    @Override
-    public List<Channel> searchUserChannelByChannelName(UUID userId, String partialChannelName) {
-        // User ID null 검증
-        ValidationMethods.validateId(userId);
-        // partialChannelName 검증
-        ValidationMethods.validateString(partialChannelName, "partialChannelName");
-
-        User user = data.get(userId);
-        if (user == null) {
-            return Collections.emptyList();
-        }
-
-        return user.getJoinChannelList().stream()
-                .filter(channel -> channel.getChannelName().contains(partialChannelName))
-                .toList();
-    }
-
     // R. 모두 읽기
     // 모든 사용자
     @Override
@@ -75,11 +59,11 @@ public class JCFUserService implements UserService {
         return new ArrayList<>(data.values());
     }
 
-    // 전체 검색으로 특정 사용자 찾기
+    // 특정 단어 검색으로 특정 사용자들 찾기
     @Override
-    public List<User> searchAllUsersByPartialName(String partialName) {
-        // partialName 검증
-        ValidationMethods.validateString(partialName, "partialName");
+    public List<User> searchUsersByPartialName(String partialName) {
+        // partialName `null` or `blank` 검증
+        ValidationMethods.validateNullBlankString(partialName, "partialName");
 
         return data.values().stream()
                 .filter(user -> user.getUserName().contains(partialName) ||
@@ -116,6 +100,24 @@ public class JCFUserService implements UserService {
         return user.getOwnerChannelList().stream().toList();
     }
 
+    // 특정 사용자가 join(참여한) 채널 중에서 특정 채널 검색
+    @Override
+    public List<Channel> findUserChannelByChannelName(UUID userId, String partialChannelName) {
+        // User ID null 검증
+        ValidationMethods.validateId(userId);
+        // partialChannelName 검증
+        ValidationMethods.validateNullBlankString(partialChannelName, "partialChannelName");
+
+        User user = data.get(userId);
+        if (user == null) {
+            return Collections.emptyList();
+        }
+
+        return user.getJoinChannelList().stream()
+                .filter(channel -> channel.getChannelName().contains(partialChannelName))
+                .toList();
+    }
+
     // 특정 사용자가 작성한 모든 메시지
     @Override
     public List<Message> readUserMessagesByUserId(UUID userId) {
@@ -132,72 +134,44 @@ public class JCFUserService implements UserService {
     }
 
     // U. 수정
-    // 이메일 수정
-    @Override
-    public User updateEmail(UUID userId, String email) {
-        // email 검증
-        ValidationMethods.validateString(email, "email");
-        // 기존 email과 변경할 email이 동일하지 않을 때
-        if (!email.equals(data.get(userId).getEmail())) {
-            // 이메일 중복 확인
-            validateDuplicateEmail(email);
+    // email, password, userName, nickName, birthday 수정
+    public User updateUserInfo(UUID userId, String email, String password, String userName, String nickName, String birthday) {
+        User user = validateAndGetUser(userId);
+        // email or pawword or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
+        if ((email == null || user.getEmail().equals(email))
+                && (password == null || user.getPassword().equals(password))
+                && (nickName == null || user.getNickName().equals(nickName))
+                && (userName == null || user.getUserName().equals(userName))
+                && (birthday == null || user.getBirthday().equals(birthday))) {
+            throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
         }
-        // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateMethods(userId);
 
-        user.updateEmail(email);
+        // filter로 중복 확인 후 업데이트
+        Optional.ofNullable(email)
+                .filter(e -> !user.getEmail().equals(e)) // !false(중복 아닌 값) -> true
+                .ifPresent(e -> user.updateEmail(e));
+        Optional.ofNullable(password)
+                .filter(p -> !user.getPassword().equals(p))
+                .ifPresent(p -> user.updatePassword(p));
+        Optional.ofNullable(nickName)
+                .filter(n -> !user.getNickName().equals(n))
+                .ifPresent(n -> user.updateNickName(n));
+        Optional.ofNullable(userName)
+                .filter(n -> !user.getUserName().equals(n))
+                .ifPresent(n -> user.updateUserName(n));
+        Optional.ofNullable(birthday)
+                .filter(b -> !user.getBirthday().equals(b))
+                .ifPresent(b -> user.updateBirthday(b));
+
         return user;
     }
 
-    // 비밀번호 수정
-    @Override
-    public User updatePassword(UUID userId, String password) {
-        // password 검증
-        ValidationMethods.validateString(password, "password");
-        // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateMethods(userId);
-
-        user.updatePassword(password);
-        return user;
-    }
-
-    // 별명 수정
-    @Override
-    public User updateNickName(UUID userId, String nickName) {
-        // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateMethods(userId);
-
-        user.updateNickName(nickName);
-        return user;
-    }
-
-    // 사용자 이름 수정
-    @Override
-    public User updateUserName(UUID userId, String userName) {
-        // userName 검증
-        ValidationMethods.validateString(userName, "userName");
-        // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateMethods(userId);
-
-        user.updateUserName(userName);
-        return user;
-    }
-
-    // 생년월일 수정
-    @Override
-    public User updateBirthday(UUID userId, String birthday) {
-        // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateMethods(userId);
-
-        user.updateBirthday(birthday);
-        return user;
-    }
 
     // 채널 참여
     @Override
     public User joinChannel(UUID userId, Channel channel) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateMethods(userId);
+        User user = validateAndGetUser(userId);
         // channel null 검증
         ValidationMethods.validateObject(channel, "channel");
         // 이미 참여한 채널인지 검증
@@ -211,7 +185,7 @@ public class JCFUserService implements UserService {
     @Override
     public User leaveChannel(UUID userId, Channel channel) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateMethods(userId);
+        User user = validateAndGetUser(userId);
         // channel null 검증
         ValidationMethods.validateObject(channel, "channel");
 
@@ -223,7 +197,7 @@ public class JCFUserService implements UserService {
     @Override
     public void deleteUser(UUID userId) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateMethods(userId);
+        User user = validateAndGetUser(userId);
 
 //        // 연관 관계 정리
 //        // 해당 유저가 작성한(author) 메시지 모두 삭제
@@ -244,21 +218,16 @@ public class JCFUserService implements UserService {
 
     // validation
     // 로그인 되어있는 user ID null / user 객체 존재 확인
-    public User validateMethods(UUID userId) {
+    public User validateAndGetUser(UUID userId) {
         // 로그인 정보를 가져온다고 가정하면 `requestUserId`와 `targetUserId`를 나눌 필요는 없음
-        // 로그인 되어있는 user ID null 검증
-        ValidationMethods.validateId(userId);
-
-        User user = data.get(userId);
-        existUser(user);
-
-        return user;
+        return findUserById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
 
     // email 중복 확인
     private void validateDuplicateEmail(String email) {
         if (this.data.values().stream()
-                .anyMatch(user->user.getEmail().equals(email))) {
+                .anyMatch(user -> user.getEmail().equals(email))) {
             throw new IllegalArgumentException("동일한 email이 존재합니다");
         }
 
@@ -270,13 +239,6 @@ public class JCFUserService implements UserService {
         if (channel.getChannelUsersList().stream()
                 .anyMatch(user -> user.getId().equals(userId))) {
             throw new IllegalStateException("이미 참여한 channel입니다.");
-        }
-    }
-
-    // 존재하는 유저인지 확인
-    public void existUser(User user) {
-        if (user == null) {
-            throw new NoSuchElementException("해당 사용자가 없습니다.");
         }
     }
 }

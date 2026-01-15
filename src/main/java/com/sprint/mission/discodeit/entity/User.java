@@ -4,10 +4,10 @@ import java.util.*;
 
 public class User extends BaseEntity {
     private String email;
-    private String nickName = "";
     private String userName;
+    private String nickName;
     private String password;
-    private String birthday = "";
+    private String birthday;
 
     // 연관
     // 해당 유저가 owner인 채널 목록
@@ -18,10 +18,10 @@ public class User extends BaseEntity {
     private final List<Message> writeMessageList;
 
     // 생성자
-    public User(String email, String nickName, String userName, String password, String birthday) {
+    public User(String email, String userName, String nickName, String password, String birthday) {
         this.email = email;
-        this.nickName = nickName;
         this.userName = userName;
+        this.nickName = nickName;
         this.password = password; // 해싱?
         this.birthday = birthday;
 

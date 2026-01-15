@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface UserService {
     // CRUD(생성, 읽기, 모두 읽기, 수정, 삭제 기능)
     // C. 생성: userId와 기타 등등 출력
-    User createUser(String email, String nickName, String userName, String password, String birthday);
+    User createUser(String email, String userName, String nickName, String password, String birthday);
 
     // R. 읽기
     Optional<User> findUserById(UUID userId);
@@ -19,23 +19,19 @@ public interface UserService {
     // R. 모두 읽기
     // 모든 사용자
     List<User> readAllUsers();
-    // userName 또는 nickName을 이용한 전체 검색으로 특정 사용자 찾기
-    List<User> searchAllUsersByPartialName(String partialName);
+    // 특정 단어 검색으로 특정 사용자들 찾기
+    List<User> searchUsersByPartialName(String partialName);
     // 특정 사용자가 참여한 모든 채널
     List<Channel> readUserJoinChannelsByUserId(UUID userId);
-    // 특정 사용자가 참여한 채널 중에서 특정 채널 검색
-    List<Channel> searchUserChannelByChannelName(UUID userId, String partialChannelName);
     // 특정 사용자가 owner인 모든 채널
     List<Channel> readUserOwnChannelsByUserId(UUID userId);
+    // 특정 사용자가 join(참여한) 채널 중에서 특정 채널 검색
+    List<Channel> findUserChannelByChannelName(UUID userId, String partialChannelName);
     // 특정 사용자가 작성한 모든 메시지
     List<Message> readUserMessagesByUserId(UUID userId);
 
     // U. 수정
-    User updateEmail(UUID userId, String email); // 이메일 수정
-    User updatePassword(UUID userId, String password); // 비밀번호 수정
-    User updateNickName(UUID userId,  String nickName); // 별명 수정
-    User updateUserName(UUID userId,  String userName); // 사용자 이름 수정
-    User updateBirthday(UUID userId,  String birthday); // 생년월일 수정
+    User updateUserInfo(UUID userId, String email, String password, String userName, String nickName, String birthday);
     User joinChannel(UUID userId, Channel channel); // 채널 참여
     User leaveChannel(UUID userId, Channel channel); // 채널 탈퇴
 
