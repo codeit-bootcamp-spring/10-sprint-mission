@@ -21,18 +21,25 @@ public class JCFMessageService implements MessageService {
     }
 
 
-//    @Override
-//    public Message sendDirectMessage(UUID senderId, UUID receiverId, String content) {
-//        /*
-//        1. 송수신자가 포함되어 있는 다이렉트 채널 가져오기
-//            - 유저 유효성 확인
-//            - 없으면 생성
-//        2. 채널에 메세지 보내기- 아래의 샌드 메서드 활용
-//         */
-//        Channel channel = userCoordinatorService.getOrCreateDirectChannelByChatterIds(senderId, receiverId);
-//        Message message = send(senderId, channel.getId(), content);
-//        return message;
-//    }
+    @Override
+    public Message sendDirectMessage(UUID senderId, UUID receiverId, String content) {
+        /*
+        1. 송수신자가 포함되어 있는 다이렉트 채널 가져오기
+            - 유저 유효성 확인
+            - 없으면 생성
+        2. 채널에 메세지 보내기- 아래의 샌드 메서드 활용
+         */
+        Channel channel = userCoordinatorService.getOrCreateDirectChannelByChatterIds(senderId, receiverId);
+        Message message = send(senderId, channel.getId(), content);
+        return message;
+    }
+
+    @Override
+    public List<Message> getDirectMessages(UUID senderId, UUID receiverId) {
+        Channel channel = userCoordinatorService.getOrCreateDirectChannelByChatterIds(senderId, receiverId);
+        return getMessagesByChannelIdAndMemberId(channel.getId(), senderId);
+    }
+
 
     @Override
     public Message send(UUID senderId, UUID channelId, String content) {
@@ -61,7 +68,7 @@ public class JCFMessageService implements MessageService {
                     .stream()
                     .filter(e-> e.getChannel().getId().equals(channel.getId()))
                 .sorted(Comparator
-                        .comparing(Message::getCreatedAt,Comparator.reverseOrder())//시간순
+                        .comparing(Message::getCreatedAt)//시간순
                         .thenComparing(m->m.getSequence())//같은 시간이면 시퀀스로 정렬
                         )
                 .toList();

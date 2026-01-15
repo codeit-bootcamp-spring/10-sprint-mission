@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface ChannelService {
@@ -12,5 +13,5 @@ public interface ChannelService {
     List<Channel> findAllChannels();
     Channel getChannelById(UUID id);
     void deleteChannelById(UUID id, UUID ownerId);
-
+    Channel createDirectChannel(List<UUID> chatterIdSet);
 }

@@ -7,9 +7,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserCoordinatorService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class JCFUserCoordinatorService implements UserCoordinatorService {
@@ -37,7 +35,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
     public Channel addMembers(UUID id, UUID ownerId, List<UUID> memberIds) {
         Channel channel = channelService.getChannelById(id);
         User owner = userService.getUserById(ownerId);
-        channel.checkChannelOwner(owner);
+        channel.checkChannelOwner(owner);//dm 걸러짐
         if(channel.getChannelType()==ChannelType.PUBLIC){
             throw new IllegalArgumentException("공개 채널에 멤버를 추가할 수 없음. 채널ID: "+ id);
         }
@@ -50,7 +48,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
     @Override
     public Channel removeMembers(UUID id, UUID ownerId, List<UUID> memberIds) {
         Channel channel = channelService.getChannelById(id);
-        User owner = userService.getUserById(ownerId);
+        User owner = userService.getUserById(ownerId);//dm걸러짐
         channel.checkChannelOwner(owner);
         if(channel.getChannelType()==ChannelType.PUBLIC){
             throw new IllegalArgumentException("공개 채널에서 멤버를 제거할 수 없음. 채널ID: "+ id);
@@ -71,8 +69,8 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
     @Override
     public Channel removeMember(UUID id, UUID memberId) {
         Channel channel = channelService.getChannelById(id);
-        if(channel.getChannelType()==ChannelType.PUBLIC){
-            throw new IllegalArgumentException("공개 채널에서 나갈 수 없음. 채널ID: "+ id);
+        if(channel.getChannelType()==ChannelType.PUBLIC||channel.getChannelType()==ChannelType.DIRECT){
+            throw new IllegalArgumentException(channel.getChannelType().getValue()+" 채널에서 나갈 수 없음. 채널ID: "+ id);
         }
         if(memberId.equals(channel.getOwner().getId())){
             throw new IllegalArgumentException("채널 소유자는 채널에서 나갈 수 없음. 소유자ID: "+ id);
@@ -91,7 +89,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
         }
         return channel;
     }
-        /*
+
     @Override//디엠
     public Channel getOrCreateDirectChannelByChatterIds(UUID senderId, UUID receiverId){
         /*
@@ -101,13 +99,11 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
         -> 멤버가 2인 채널 추출 및 반환(그룹 디엠 대비) 이 메서드는 2인용이니까...
         -> 멤버 비교해서 해당하는 채널 또는 널 반환
          */
-    /*
-        User sender = userService.getUserById(senderId);
-        User receiver = userService.getUserById(receiverId);
+        User sender = userService.getUserById(senderId);//이미 삭제된 사용자와의 대화도 조회가 가능하도록
         Set<UUID> chatterIdSet = new HashSet<>(Set.of(senderId,receiverId));
-        Channel directChannel = data.values()
+        Channel directChannel = channelService.findAllChannels()
                                     .stream()
-                                    .filter(c->c.getChannelType().equals(Channel.DIRECT_CHANNEL))
+                                    .filter(c->c.getChannelType()==ChannelType.DIRECT)
                                     .filter(c-> {
                                         Set<UUID> memberIdSet = c.getMembers().stream()
                                                                 .map(m->m.getId())
@@ -119,17 +115,10 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
                                     })
                                     .findFirst().orElse(null);
         if(directChannel == null){
-            directChannel = createDirectChannel(chatterIdSet);
+            User receiver = userService.getUserById(receiverId);//삭제된사용자와의 대화가 아니면 수신지 유효성 확인
+            directChannel = channelService.createDirectChannel(chatterIdSet.stream().toList());
         }
         return directChannel;
     }
-    private Channel createDirectChannel(Set<UUID> chatterIdSet){
-        Channel directChannel = new Channel(null,null,null,Channel.DIRECT_CHANNEL);
-        for(UUID chatterId : chatterIdSet){
-            directChannel.addMember(userService.getUserById(chatterId));
-        }
-        data.put(directChannel.getId(), directChannel);
-        return directChannel;
-    }
-    */
+
 }

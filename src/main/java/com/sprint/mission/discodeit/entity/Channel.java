@@ -90,6 +90,12 @@ public class Channel extends BaseEntity {
     @Override
     public String toString() {
         List<String> memberList = members.stream().map(m->m.getEmail()).toList();
+        if(channelType==ChannelType.DIRECT){
+            return "\n속성: "+channelType.getValue()
+                    +"\n멤버: "+memberList
+                    +"\n생성: " +getCreatedAt()
+                    +"\n마지막 수정: "+getUpdatedAt()+"\n";
+        }
         return "채널 이름: " + name+
                 "\n설명: "+ description+
                 "\n속성: "+channelType.getValue()

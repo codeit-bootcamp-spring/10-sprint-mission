@@ -18,6 +18,7 @@ public class JCFChannelService implements ChannelService {
     }
     @Override
     public Channel addChannel(String name, String description, UUID ownerId, ChannelType channelType) {
+        blockDirectChannel(channelType);
         validateChannelName(name);
         Channel channel = new Channel(name, description, userService.getUserById(ownerId), channelType);
         data.put(channel.getId(), channel);
@@ -27,6 +28,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel updateChannelInfo(UUID id, UUID ownerId, String name, String description) {
         Channel channel = getChannelById(id);
+        blockDirectChannel(channel.getChannelType());
         User owner = userService.getUserById(ownerId);
         channel.checkChannelOwner(owner);
         if((name == null || name.equals(channel.getName())) && (description == null || description.equals(channel.getDescription()))) {
@@ -53,6 +55,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void deleteChannelById(UUID id, UUID ownerId) {
         Channel channel = getChannelById(id);
+        blockDirectChannel(channel.getChannelType());
         User owner = userService.getUserById(ownerId);
         channel.checkChannelOwner(owner);
         channel.removeAllMembers();
@@ -82,4 +85,17 @@ public class JCFChannelService implements ChannelService {
         return data.get(id);
     }
 
+    public Channel createDirectChannel(List<UUID> chatterIdSet){
+        Channel directChannel = new Channel(null,null,null,ChannelType.DIRECT);
+        for(UUID chatterId : chatterIdSet){
+            directChannel.addMember(userService.getUserById(chatterId));
+        }
+        data.put(directChannel.getId(), directChannel);
+        return directChannel;
+    }
+    private void blockDirectChannel(ChannelType channelType) {
+        if(channelType==ChannelType.DIRECT){
+            throw new IllegalArgumentException("dm으로 접근할 수 없는 서비스");
+        }
+    }
 }

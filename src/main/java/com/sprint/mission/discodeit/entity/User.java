@@ -48,15 +48,14 @@ public class User extends BaseEntity {
         }
     }
     public void removeChannel(Channel channel) {
-        channels.remove(channel);
-        if(channel.getMembers().contains(this)) {
+        channels.remove(channel);//디엠에서는 사용자가 삭제되어도 멤버에서 제거x(dm은 아이디로 대화 조회하니까)
+        if(channel.getMembers().contains(this)&&channel.getChannelType()!=ChannelType.DIRECT) {
             channel.removeMember(this);
         }
     }
     public void removeAllChannels() {
-        int channelsSize = channels.size();
-        for(int i = 0; i < channelsSize; i++) {
-            removeChannel(channels.get(i));
+        for(Channel channel: new ArrayList<>(channels)) {
+            removeChannel(channel);
         }
     }
 

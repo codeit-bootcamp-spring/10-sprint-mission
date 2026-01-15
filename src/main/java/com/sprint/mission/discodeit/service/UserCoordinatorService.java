@@ -13,5 +13,5 @@ public interface UserCoordinatorService {
     Channel removeMembers(UUID id, UUID ownerId, List<UUID> memberIds);
     Channel removeMember(UUID id, UUID memberId);
     Channel getChannelByIdAndMemberId(UUID id, UUID memberId);
-    //Channel getOrCreateDirectChannelByChatterIds(UUID senderId, UUID receiverId);
+    Channel getOrCreateDirectChannelByChatterIds(UUID senderId, UUID receiverId);
 }

@@ -168,7 +168,21 @@ public class JavaApplication {
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
-
+        //다이렉트 메세지
+        System.out.println("-----------다이렉트 메세지 발송---------------");
+        System.out.println(messageService.sendDirectMessage(userId,userId2,"디엠을 시작하자~~"));
+        System.out.println(messageService.sendDirectMessage(userId2,userId,"그래 좋아"));
+        System.out.println(messageService.sendDirectMessage(userId,userId2,"가나다"));
+        System.out.println(messageService.sendDirectMessage(userId,userId2,"라마바사!!"));
+        UUID dmid = messageService.sendDirectMessage(userId2,userId,"아자차카타파하~~").getId();
+        //디엠 한번에 조회
+        System.out.println("-----------다이렉트 메세지 조회---------------");
+        System.out.println(messageService.getDirectMessages(userId,userId2));
+        //디엠 수정
+        System.out.println("-----------다이렉트 메세지 수정---------------");
+        System.out.println(messageService.updateMessage(userId2,dmid,"아자차카!!!까지로 바꿀게~~"));
+        System.out.println("-----------수정 다이렉트 메세지 목록 조회---------------");
+        System.out.println(messageService.getDirectMessages(userId,userId2));
         //채널 멤버 제외
         try{
             System.out.println("------소유자가 자신을 제외----------");
@@ -238,6 +252,15 @@ public class JavaApplication {
         System.out.println(userCoordinatorService.getChannelByIdAndMemberId(channelId3,userId2));
         System.out.println("-----------채널 메세지 확인-----------");
         System.out.println(messageService.getMessagesByChannelIdAndMemberId(channelId3,userId2));
+        System.out.println("-----------다이렉트 메세지 조회(삭제된 유저의 디엠 상대방이 조회)---------------");
+        try{
+            System.out.println(messageService.getDirectMessages(userId2,userId));//user2는 탈퇴 안하니까 메세지 확인가능
+            System.out.println("-----------다이렉트 메세지 조회(삭제 당사자가 조회)---------------");
+            System.out.println(messageService.getDirectMessages(userId,userId2));//user1은 불가
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+
 
 
 
