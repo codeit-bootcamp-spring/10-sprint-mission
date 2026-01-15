@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Common;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -10,7 +11,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
-    private final Map<UUID, List<Message>> data;        // key: ChannelUuid
+    private final Map<UUID, Message> data;
     private final UserService userService;
     private final ChannelService channelService;
 
@@ -26,7 +27,7 @@ public class JCFMessageService implements MessageService {
         User user = userService.getUser(userId);
 
         Message msg = new Message(channel, user, message);
-        data.computeIfAbsent(channel.getId(), k -> new ArrayList<>()).add(msg);
+        data.put(msg.getId(), msg);
         return msg;
     }
 
@@ -39,12 +40,17 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> findMessagesByChannelId(UUID uuid) {
-        return data.computeIfAbsent(uuid, k -> new ArrayList<>());
+        return data.values().stream()
+                .filter(m -> Objects.equals(m.getChannel().getId(), uuid))
+                .sorted(Comparator.comparingLong(Common::getCreatedAt))
+                .toList();
     }
 
     @Override
     public List<Message> findAllMessages() {
-        return data.values().stream().flatMap(List::stream).toList();
+        return data.values().stream()
+                .sorted(Comparator.comparingLong(Common::getCreatedAt))
+                .toList();
     }
 
     @Override
@@ -59,11 +65,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void deleteMessage(UUID uuid) {
-        Message msg = getMessage(uuid);
-        for (var list : data.values()) {
-            if (list.remove(msg)) {
-                return;
-            }
-        }
+        getMessage(uuid);
+        data.remove(uuid);
     }
 }
