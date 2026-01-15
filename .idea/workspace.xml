@@ -5,15 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e250045b-4cec-4d3c-8448-3ba5a11b2cd2" name="변경" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/file/FileChannelService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/file/FileMessageService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/file/FileUserService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/entity/Channel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/entity/Channel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/entity/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/entity/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/entity/UserStatus.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFUserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/ChannelService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/ChannelService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFChannelService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/jcf/JCFChannelService.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,26 +57,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Gradle.10-sprint-mission [:com.sprint.mission.discodeit.JavaApplication.main()].executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;sprint2&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;onboarding.tips.debug.path&quot;: &quot;C:/codeit/10-sprint-mission/src/main/java/org/example/Main.java&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;모듈&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;,
-    &quot;애플리케이션.JavaApplication.executor&quot;: &quot;Run&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Gradle.10-sprint-mission [:com.sprint.mission.discodeit.JavaApplication.main()].executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "git-widget-placeholder": "sprint2",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "onboarding.tips.debug.path": "C:/codeit/10-sprint-mission/src/main/java/org/example/Main.java",
+    "project.structure.last.edited": "프로젝트",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
+    "vue.rearranger.settings.migration": "true",
+    "애플리케이션.JavaApplication.executor": "Run"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="JavaApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.JavaApplication" />
@@ -121,7 +117,7 @@
       <workItem from="1768175399973" duration="33372000" />
       <workItem from="1768262469998" duration="16184000" />
       <workItem from="1768348980733" duration="31987000" />
-      <workItem from="1768435290447" duration="14388000" />
+      <workItem from="1768435290447" duration="15368000" />
     </task>
     <servers />
   </component>

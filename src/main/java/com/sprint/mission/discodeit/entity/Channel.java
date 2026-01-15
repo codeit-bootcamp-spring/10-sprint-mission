@@ -16,11 +16,11 @@ public class Channel extends BaseEntity {
     private final Set<User> users = new HashSet<>();
     private final List<Message> messages = new ArrayList<>();
 
-    public Channel(String channelName, boolean isPublic){
+    public Channel(String channelName, ChannelVisibility channelVisibility) {
         super();
         validateName(channelName);
         this.channelName = channelName;
-        this.channelVisibility = ChannelVisibility.PUBLIC;
+        this.channelVisibility = channelVisibility;
     }
 
     // Getters

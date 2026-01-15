@@ -20,9 +20,9 @@ public class JCFChannelService implements ChannelService {
 
     // Create
     @Override
-    public Channel createChannel(String name, boolean isPublic) {
+    public Channel createChannel(String name, Channel.ChannelVisibility visibility) {
         // 엔티티에서 빈 이름의 채널 확인함
-        Channel newChannel = new Channel(name, isPublic);
+        Channel newChannel = new Channel(name, visibility);
         channelMap.put(newChannel.getId(), newChannel);
 
         return newChannel;

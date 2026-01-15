@@ -9,7 +9,7 @@ import java.util.UUID;
 public interface ChannelService {
 
     // Create
-    Channel createChannel(String name, boolean isPublic);
+    Channel createChannel(String name, Channel.ChannelVisibility visibility);
 
     // Read
     Channel findById(UUID channelId);

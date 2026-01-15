@@ -35,7 +35,7 @@ public class JavaApplication {
             try {
                 switch (choice) {
                     case "1": createUserMenu(); break;
-                    case "2": createChannelMenu(); break;
+                    case "2": createChannelMenu(); break; // [수정됨] Enum 적용
                     case "3": joinChannelMenu(); break;
                     case "4": writeMessageMenu(); break;
                     case "5": updateUserMenu(); break;
@@ -44,7 +44,7 @@ public class JavaApplication {
                     case "8": deleteChannelMenu(); break;
                     case "9": updateMessageMenu(); break;
                     case "10": deleteMessageMenu(); break;
-                    // [추가된 기능]
+                    // 조회 기능
                     case "11": printUserInfoMenu(); break;
                     case "12": printChannelInfoMenu(); break;
                     case "13": printUserMessagesMenu(); break;
@@ -82,16 +82,24 @@ public class JavaApplication {
     }
 
     // =================================================================
-    // [메뉴 2] 채널 생성
+    // [메뉴 2] 채널 생성 (Enum 적용)
     // =================================================================
     private static void createChannelMenu() {
         System.out.println("\n[2. 채널 생성]");
         System.out.print("채널 이름: ");
         String name = scanner.nextLine();
-        System.out.print("공개 여부 (y/n): ");
-        boolean isPublic = scanner.nextLine().trim().equalsIgnoreCase("y");
 
-        Channel channel = channelService.createChannel(name, isPublic);
+        // [수정됨] boolean 입력 -> Enum 선택으로 변경
+        System.out.print("공개 여부 (1.PUBLIC / 2.PRIVATE): ");
+        String visibilityInput = scanner.nextLine().trim();
+
+        Channel.ChannelVisibility visibility = Channel.ChannelVisibility.PUBLIC; // 기본값
+        if (visibilityInput.equals("2") || visibilityInput.equalsIgnoreCase("PRIVATE")) {
+            visibility = Channel.ChannelVisibility.PRIVATE;
+        }
+        // 1번이나 엔터, 그 외 입력은 모두 PUBLIC으로 처리
+
+        Channel channel = channelService.createChannel(name, visibility);
         System.out.println(">> 채널 생성 완료: " + channel);
     }
 
@@ -106,7 +114,7 @@ public class JavaApplication {
         Channel channel = selectChannel();
         if (channel == null) return;
 
-        user.joinChannel(channel);
+        userService.joinChannel(user.getId(), channel.getId());
         System.out.printf(">> '%s'님이 '%s' 채널에 가입했습니다.\n", user.getNickname(), channel.getChannelName());
     }
 
@@ -146,32 +154,92 @@ public class JavaApplication {
     }
 
     // =================================================================
-    // [메뉴 5] 유저 수정
+    // [메뉴 5] 유저 수정 (프로필 / 상태 분리)
     // =================================================================
     private static void updateUserMenu() {
         System.out.println("\n[5. 유저 수정]");
         User user = selectUser();
         if (user == null) return;
 
-        System.out.println("1. 이름 수정  2. 이메일 수정  3. 전화번호 수정");
+        System.out.println("1. 프로필 수정 (이름, 이메일 등)");
+        System.out.println("2. 상태 수정 (활동상태, 마이크, 헤드셋)");
         System.out.print(">> 선택: ");
-        String subChoice = scanner.nextLine();
+        String subChoice = scanner.nextLine().trim();
 
-        switch (subChoice) {
-            case "1":
-                System.out.print("새 이름: ");
-                System.out.println(">> 결과: " + userService.updateNickname(user.getId(), scanner.nextLine()));
-                break;
-            case "2":
-                System.out.print("새 이메일: ");
-                System.out.println(">> 결과: " + userService.updateEmail(user.getId(), scanner.nextLine()));
-                break;
-            case "3":
-                System.out.print("새 전화번호: ");
-                System.out.println(">> 결과: " + userService.updatePhoneNumber(user.getId(), scanner.nextLine()));
-                break;
-            default: System.out.println("!! 잘못된 입력");
+        if (subChoice.equals("1")) {
+            updateUserProfile(user);
+        } else if (subChoice.equals("2")) {
+            updateUserStatus(user);
+        } else {
+            System.out.println("!! 잘못된 입력입니다.");
         }
+    }
+
+    private static void updateUserProfile(User user) {
+        System.out.println("\n--- 프로필 수정 ---");
+        System.out.println(">> 변경할 값을 입력하세요. (변경하지 않으려면 그냥 Enter)");
+
+        System.out.printf("Username [%s]: ", user.getUsername());
+        String newUsername = scanner.nextLine().trim();
+
+        System.out.printf("이름 [%s]: ", user.getNickname());
+        String newNickname = scanner.nextLine().trim();
+
+        String currentEmail = user.getEmail().orElse("없음");
+        System.out.printf("이메일 [%s]: ", currentEmail);
+        String newEmail = scanner.nextLine().trim();
+
+        String currentPhone = user.getPhoneNumber().orElse("없음");
+        System.out.printf("전화번호 [%s]: ", currentPhone);
+        String newPhone = scanner.nextLine().trim();
+
+        User updatedUser = userService.updateUserProfile(
+                user.getId(),
+                newUsername.isEmpty() ? null : newUsername,
+                newNickname.isEmpty() ? null : newNickname,
+                newEmail.isEmpty() ? null : newEmail,
+                newPhone.isEmpty() ? null : newPhone
+        );
+        System.out.println(">> 프로필 수정 완료: " + updatedUser);
+    }
+
+    private static void updateUserStatus(User user) {
+        System.out.println("\n--- 상태 수정 ---");
+        System.out.println(">> 변경할 값을 선택하세요. (변경하지 않으려면 그냥 Enter)");
+
+        // 1. 활동 상태
+        System.out.printf("활동 상태 [%s] (1.ONLINE / 2.AWAY / 3.OFFLINE): ", user.getPresence());
+        String presenceInput = scanner.nextLine().trim();
+        User.UserPresence newPresence = null;
+        if (!presenceInput.isEmpty()) {
+            switch (presenceInput.toUpperCase()) {
+                case "1": case "ONLINE": newPresence = User.UserPresence.ONLINE; break;
+                case "2": case "AWAY": newPresence = User.UserPresence.AWAY; break;
+                case "3": case "OFFLINE": newPresence = User.UserPresence.OFFLINE; break;
+                default: System.out.println("!! 잘못된 상태 입력 (유지됨)");
+            }
+        }
+
+        // 2. 마이크 상태
+        System.out.printf("마이크 [%s] (1.ON / 2.OFF): ", user.isMicrophoneOn() ? "ON" : "OFF");
+        String micInput = scanner.nextLine().trim();
+        Boolean newMic = null;
+        if (!micInput.isEmpty()) {
+            if (micInput.equals("1") || micInput.equalsIgnoreCase("ON")) newMic = true;
+            else if (micInput.equals("2") || micInput.equalsIgnoreCase("OFF")) newMic = false;
+        }
+
+        // 3. 헤드셋 상태
+        System.out.printf("헤드셋 [%s] (1.ON / 2.OFF): ", user.isHeadsetOn() ? "ON" : "OFF");
+        String headsetInput = scanner.nextLine().trim();
+        Boolean newHeadset = null;
+        if (!headsetInput.isEmpty()) {
+            if (headsetInput.equals("1") || headsetInput.equalsIgnoreCase("ON")) newHeadset = true;
+            else if (headsetInput.equals("2") || headsetInput.equalsIgnoreCase("OFF")) newHeadset = false;
+        }
+
+        User updatedUser = userService.updateUserStatus(user.getId(), newPresence, newMic, newHeadset);
+        System.out.println(">> 상태 수정 완료: " + updatedUser);
     }
 
     // =================================================================
@@ -198,16 +266,32 @@ public class JavaApplication {
         Channel channel = selectChannel();
         if (channel == null) return;
 
-        // 1. 새 이름 입력
-        System.out.print("새 채널 이름: ");
-        String newName = scanner.nextLine();
+        System.out.println(">> 변경할 값을 입력하세요. (변경하지 않으려면 그냥 Enter)");
 
-        // 2. 새 공개 여부 입력
-        System.out.print("새 공개 여부 (y/n): ");
-        boolean newIsPublic = scanner.nextLine().trim().equalsIgnoreCase("y");
+        System.out.printf("새 채널 이름 [%s]: ", channel.getChannelName());
+        String newName = scanner.nextLine().trim();
 
-        // 3. 통합된 서비스 메서드 호출 (ID, 이름, 공개여부)
-        System.out.println(">> 결과: " + channelService.updateChannel(channel.getId(), newName, newIsPublic));
+        System.out.printf("공개 여부 [%s] (1.PUBLIC / 2.PRIVATE): ", channel.getChannelVisibility());
+        String visibilityInput = scanner.nextLine().trim();
+
+        Channel.ChannelVisibility newVisibility = null;
+        if (!visibilityInput.isEmpty()) {
+            if (visibilityInput.equals("1") || visibilityInput.equalsIgnoreCase("PUBLIC")) {
+                newVisibility = Channel.ChannelVisibility.PUBLIC;
+            } else if (visibilityInput.equals("2") || visibilityInput.equalsIgnoreCase("PRIVATE")) {
+                newVisibility = Channel.ChannelVisibility.PRIVATE;
+            } else {
+                System.out.println("!! 잘못된 입력입니다. 공개 여부는 변경되지 않습니다.");
+            }
+        }
+
+        Channel updatedChannel = channelService.updateChannel(
+                channel.getId(),
+                newName.isEmpty() ? null : newName,
+                newVisibility
+        );
+
+        System.out.println(">> 결과: " + updatedChannel);
     }
 
     // =================================================================
@@ -287,65 +371,46 @@ public class JavaApplication {
     }
 
     // =================================================================
-    // [메뉴 11] 유저 정보 출력
+    // [메뉴 11~14] 조회 기능
     // =================================================================
     private static void printUserInfoMenu() {
         System.out.println("\n[11. 유저 정보 출력]");
         User user = selectUser();
         if (user == null) return;
-
-        System.out.println(">> 유저 정보:");
-        System.out.println(user.toString());
+        System.out.println(">> 유저 정보:\n" + user.toString());
     }
 
-    // =================================================================
-    // [메뉴 12] 채널 정보 출력
-    // =================================================================
     private static void printChannelInfoMenu() {
         System.out.println("\n[12. 채널 정보 출력]");
         Channel channel = selectChannel();
         if (channel == null) return;
-
-        System.out.println(">> 채널 정보:");
-        System.out.println(channel.toString());
+        System.out.println(">> 채널 정보:\n" + channel.toString());
     }
 
-    // =================================================================
-    // [메뉴 13] 유저 메시지들 출력
-    // =================================================================
     private static void printUserMessagesMenu() {
         System.out.println("\n[13. 유저 작성 메시지 목록]");
         User user = selectUser();
         if (user == null) return;
-
         List<Message> msgs = messageService.findMessagesByAuthor(user.getId());
         System.out.println(">> 작성한 메시지 수: " + msgs.size() + "개");
-        if (msgs.isEmpty()) {
-            System.out.println("(메시지가 없습니다)");
-        } else {
+        if (msgs.isEmpty()) System.out.println("(메시지가 없습니다)");
+        else {
             for (Message m : msgs) {
-                // [채널명] 내용 (수정여부)
                 String edited = m.isEdited() ? " (수정됨)" : "";
                 System.out.printf(" - [%s] %s%s\n", m.getChannel().getChannelName(), m.getContent(), edited);
             }
         }
     }
 
-    // =================================================================
-    // [메뉴 14] 채널 메시지들 출력
-    // =================================================================
     private static void printChannelMessagesMenu() {
         System.out.println("\n[14. 채널 내 메시지 목록]");
         Channel channel = selectChannel();
         if (channel == null) return;
-
         List<Message> msgs = messageService.findMessagesByChannel(channel.getId());
         System.out.println(">> 채널 메시지 수: " + msgs.size() + "개");
-        if (msgs.isEmpty()) {
-            System.out.println("(메시지가 없습니다)");
-        } else {
+        if (msgs.isEmpty()) System.out.println("(메시지가 없습니다)");
+        else {
             for (Message m : msgs) {
-                // [작성자] 내용 (수정여부)
                 String edited = m.isEdited() ? " (수정됨)" : "";
                 System.out.printf(" - [%s] %s%s\n", m.getAuthor().getNickname(), m.getContent(), edited);
             }
@@ -362,7 +427,6 @@ public class JavaApplication {
             System.out.println("!! 등록된 유저가 없습니다.");
             return null;
         }
-
         System.out.println("--- 유저 목록 ---");
         for (int i = 0; i < users.size(); i++) {
             System.out.printf("%d. %s (%s)\n", (i + 1), users.get(i).getNickname(), users.get(i).getUsername());
@@ -370,11 +434,8 @@ public class JavaApplication {
         System.out.print(">> 유저 선택 (번호): ");
         try {
             int idx = Integer.parseInt(scanner.nextLine()) - 1;
-            if (idx >= 0 && idx < users.size()) {
-                return users.get(idx);
-            }
+            if (idx >= 0 && idx < users.size()) return users.get(idx);
         } catch (NumberFormatException e) {}
-
         System.out.println("!! 잘못된 선택입니다.");
         return null;
     }
@@ -385,19 +446,15 @@ public class JavaApplication {
             System.out.println("!! 등록된 채널이 없습니다.");
             return null;
         }
-
         System.out.println("--- 채널 목록 ---");
         for (int i = 0; i < channels.size(); i++) {
-            System.out.printf("%d. %s (공개:%s)\n", (i + 1), channels.get(i).getChannelName(), channels.get(i).isPublic());
+            System.out.printf("%d. %s (공개:%s)\n", (i + 1), channels.get(i).getChannelName(), channels.get(i).getChannelVisibility());
         }
         System.out.print(">> 채널 선택 (번호): ");
         try {
             int idx = Integer.parseInt(scanner.nextLine()) - 1;
-            if (idx >= 0 && idx < channels.size()) {
-                return channels.get(idx);
-            }
+            if (idx >= 0 && idx < channels.size()) return channels.get(idx);
         } catch (NumberFormatException e) {}
-
         System.out.println("!! 잘못된 선택입니다.");
         return null;
     }
@@ -419,8 +476,11 @@ public class JavaApplication {
     private static void initDummyData() {
         User u1 = userService.createUser("user1", "철수", "u1@test.com", "010-1111-1111");
         userService.createUser("user2", "영희", "u2@test.com", "010-2222-2222");
-        Channel c1 = channelService.createChannel("자유게시판", true);
-        channelService.createChannel("공지사항", false);
-        u1.joinChannel(c1);
+
+        // [수정됨] Enum 사용 (기존: true/false -> PUBLIC/PRIVATE)
+        Channel c1 = channelService.createChannel("자유게시판", Channel.ChannelVisibility.PUBLIC);
+        channelService.createChannel("공지사항", Channel.ChannelVisibility.PRIVATE);
+
+        userService.joinChannel(u1.getId(), c1.getId());
     }
 }
