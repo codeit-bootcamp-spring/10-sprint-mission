@@ -50,17 +50,27 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel updateChannelName(UUID channelId, String newName) {
+    public Channel updateChannelName(UUID channelId, UUID userId, String newName) {
         // 수정 대상 채널이 실제로 존재하는지 검색 및 검증
         Channel channel = findChannelById(channelId);
+        // 채널 권한 확인, 채널 소유자만 수정 가능
+        if (!channel.getOwner().getId().equals(userId)) {
+            throw new RuntimeException("해당 채널에 대한 권한이 없습니다.");
+        }
+
         // 채널 이름 수정
         return channel.updateChannelName(newName);
     }
 
     @Override
-    public void deleteChannel(UUID channelId) {
+    public void deleteChannel(UUID channelId, UUID userId) {
         // 삭제 대상 채널이 실제로 존재하는지 검색 및 검증
         Channel channel = findChannelById(channelId);
+        // 채널 권한 확인, 채널 소유자만 삭제 가능
+        if (!channel.getOwner().getId().equals(userId)) {
+            throw new RuntimeException("해당 채널에 대한 권한이 없습니다.");
+        }
+
         // 채널 삭제 전, 해당 채널에 가입된 모든 유저의 채널 목록에서 먼저 제거
         userService.removeChannelFromJoinedUsers(channel);
         // 모든 유저와의 관계를 정리한 후 채널 삭제, 저장소에서 제거

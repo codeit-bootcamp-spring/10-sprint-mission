@@ -96,7 +96,7 @@ public class JavaApplication {
 
         System.out.println("\n[채널 수정]");
         System.out.println("  - 2번 채널 → 22222번 채널");
-        channelService.updateChannelName(channel2.getId(), "22222번 채널");
+        channelService.updateChannelName(channel2.getId(), user2.getId(), "22222번 채널");
 
         System.out.println("\n[채널 수정 후 조회]");
         System.out.println("  • " + channelService.findChannelById(channel2.getId()));
@@ -108,7 +108,7 @@ public class JavaApplication {
 
         System.out.println("\n[채널 삭제]");
         System.out.println("  - 3번 채널");
-        channelService.deleteChannel(channel3.getId());
+        channelService.deleteChannel(channel3.getId(), user1.getId());
         System.out.println("  ✔ 삭제 완료");
 
         System.out.println("\n[채널 다건 조회 - 삭제 후]");
