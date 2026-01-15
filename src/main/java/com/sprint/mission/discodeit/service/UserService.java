@@ -17,16 +17,9 @@ public interface UserService {
 
     // Update - Profile
     User updateUserProfile(UUID userId, String newUsername, String newNickname, String newEmail, String newPhoneNumber);
-//    void updateUsername(User user, String newUsername);
-//    void updateNickname(User user, String newNickname);
-//    void updateEmail(User user, String email);
-//    void updatePhoneNumber(User user, String phoneNumber);
 
     // Update - Status
     User updateUserStatus(UUID userId, User.UserPresence newPresence, Boolean newMicrophoneIsOn, Boolean newHeadsetIsOn);
-//    void updatePresence(User user, User.UserPresence presence);
-//    void toggleMicrophone(User user, boolean isOn);
-//    void toggleHeadset(User user, boolean isOn);
 
     // Delete
     void deleteUser(UUID userId);

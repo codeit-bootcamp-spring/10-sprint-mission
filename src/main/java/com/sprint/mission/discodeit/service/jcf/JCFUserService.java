@@ -96,36 +96,6 @@ public class JCFUserService implements UserService {
         return user;
     }
 
-    // 중복 검증은 모든 유저 풀에서 검색하므로 너무 많은 조회 발생
-//    @Override
-//    public void updateUsername(User user, String newUsername) {
-//        if (user.getUsername().equals(newUsername)) return;
-//        if (findByUsername(newUsername).isPresent()) {
-//            throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + newUsername);
-//        }
-//        user.updateUsername(newUsername);
-//
-//    }
-//    @Override
-//    public void updateNickname(User user, String newNickname) {
-//        if(user.getNickname().equals(newNickname)) return;
-//        user.updateNickname(newNickname);
-//
-//    }
-//
-//    @Override
-//    public void updateEmail(User user, String email) {
-//        if (Objects.equals(user.getEmail().orElse(null), email)) return;
-//        checkDuplicateEmail(email, user.getId());
-//        user.updateEmail(email);
-//    }
-//
-//    @Override
-//    public void updatePhoneNumber(User user, String phoneNumber) {
-//        if (Objects.equals(user.getPhoneNumber().orElse(null), phoneNumber)) return;
-//        checkDuplicatePhoneNumber(phoneNumber, user.getId());
-//        user.updatePhoneNumber(phoneNumber);
-//    }
 
     // Update - Status
     @Override
@@ -142,23 +112,6 @@ public class JCFUserService implements UserService {
         return user;
     }
 
-//    @Override
-//    public void updatePresence(User user, User.UserPresence presence) {
-//        if (user.getPresence().equals(presence)) return;
-//        user.changeStatus(presence);
-//    }
-//
-//    @Override
-//    public void toggleMicrophone(User user, boolean isOn) {
-//        if (user.isMicrophoneOn() == isOn) return;
-//        user.toggleMicrophone(isOn);
-//    }
-//
-//    @Override
-//    public void toggleHeadset(User user, boolean isOn) {
-//        if (user.isHeadsetOn() == isOn) return;
-//        user.toggleHeadset(isOn);
-//    }
 
     // Delete
     @Override
@@ -195,29 +148,3 @@ public class JCFUserService implements UserService {
         return !Objects.equals(current, target);
     }
 }
-
-    // Duplicate Check
-    // 현재 중복 체크 방식은 모든 유저 풀을 확인하므로 조회가 너무 많다.
-//    private void checkDuplicateEmail(String email, UUID excludeUserId){
-//        if (email == null) return;
-//
-//        if(userMap.values().stream()
-//                .filter(u -> !u.getId().equals(excludeUserId)) // 본인 제외
-//                .anyMatch(u -> u.getEmail()
-//                        .map(e -> e.equals(email))
-//                        .orElse(false))) {
-//            throw new IllegalArgumentException("이미 사용 중인 이메일:" + email);
-//        };
-//    }
-//
-//    private void checkDuplicatePhoneNumber(String phoneNumber, UUID excludeUserId){
-//        if (phoneNumber == null) return;
-//
-//        if(userMap.values().stream()
-//                .filter(u -> !u.getId().equals(excludeUserId)) // 본인 ID 제외
-//                .anyMatch(u -> u.getPhoneNumber()
-//                        .map(e -> e.equals(phoneNumber))
-//                        .orElse(false))) {
-//            throw new IllegalArgumentException("이미 사용 중인 전화번호: " + phoneNumber);
-//        }
-//    }
