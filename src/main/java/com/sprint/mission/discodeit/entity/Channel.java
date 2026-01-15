@@ -20,11 +20,11 @@ public class Channel extends Common {
     public Set<User> getParticipants() {
         return Collections.unmodifiableSet(this.participants);
     }
-    public boolean addParticipant(User user) {
-        return participants.add(user);
+    public void addParticipant(User user) {
+        participants.add(user);
     }
-    public boolean removeParticipant(User user) {
-        return participants.remove(user);
+    public void removeParticipant(User user) {
+        participants.remove(user);
     }
 
     // messages

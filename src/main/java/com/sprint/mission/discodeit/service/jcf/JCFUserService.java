@@ -1,15 +1,27 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFUserService implements UserService {
     private final Map<UUID, User> data;
+    private MessageService messageService;
+    private ChannelService channelService;
 
     public JCFUserService() {
         this.data = new HashMap<>();
+    }
+
+    public void setMessageService(MessageService messageService) {
+        this.messageService = messageService;
+    }
+
+    public void setChannelService(ChannelService channelService) {
+        this.channelService = channelService;
     }
 
     @Override
@@ -94,10 +106,8 @@ public class JCFUserService implements UserService {
     }
 
     private void deleteProcess(User user) {
-        for (var channel: user.getJoinedChannels()) {
-            channel.removeParticipant(user);
-        }
-
+        user.getJoinedChannels().forEach(ch -> channelService.leaveChannel(ch.getId(), user.getId()));
+        user.getMessageHistory().forEach(m -> messageService.deleteMessage(m.getId()));
         data.remove(user.getId());
     }
 }

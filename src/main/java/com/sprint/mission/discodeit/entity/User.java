@@ -24,11 +24,11 @@ public class User extends Common {
     public Set<Channel> getJoinedChannels() {
         return Collections.unmodifiableSet(this.joinedChannels);
     }
-    public boolean addJoinedChannels(Channel channel) {
-        return this.joinedChannels.add(channel);
+    public void addJoinedChannels(Channel channel) {
+        this.joinedChannels.add(channel);
     }
-    public boolean removeJoinedChannels(Channel channel) {
-        return this.joinedChannels.remove(channel);
+    public void removeJoinedChannels(Channel channel) {
+        this.joinedChannels.remove(channel);
     }
 
     // messageHistory
