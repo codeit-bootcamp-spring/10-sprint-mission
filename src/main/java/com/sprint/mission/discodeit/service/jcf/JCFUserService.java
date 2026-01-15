@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -53,7 +54,25 @@ public class JCFUserService implements UserService {
     @Override
     public void deleteUser(UUID userId) {
         // 삭제 대상 유저가 실제로 존재하는지 검증
-        findUserById(userId);
+        User user = findUserById(userId);
+
+        // 채널을 소유한 상태인지 확인, 채널을 소유한 상태에선 탈퇴 불가
+        List<Channel> channels = user.getChannels();
+        for (Channel channel : channels) {
+            if (channel.getOwner().equals(user)) {
+                throw new RuntimeException("채널을 소유한 상태에서는 탈퇴를 할 수 없습니다.");
+            }
+        }
+
+        // 가입한 모든 채널에서 유저가 작성한 메시지 제거 및 유저 제거
+        for (Channel channel : channels) {
+            for (Message message : channel.getMessages()) {
+                if (message.getUser().equals(user)) {
+                    message.removeFromChannelAndUser();
+                }
+            }
+            channel.removeUser(user);
+        }
 
         // 유저 탈퇴, 저장소에서 제거
         data.remove(userId);
