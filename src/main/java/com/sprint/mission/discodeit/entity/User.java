@@ -49,11 +49,6 @@ public class User extends DiscordEntity {
         updateTime();
     }
 
-    public void updateUserId(String userId){
-        this.userId = userId;
-        updateTime();
-    }
-
     public Set<Message> getMsgList(){
         System.out.printf("%s 이 작성하신 메세지 목록입니다.%n %s %n", this.userId, this.msgList);
         return this.msgList;

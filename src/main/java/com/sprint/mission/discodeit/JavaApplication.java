@@ -4,12 +4,13 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MsgService;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.helper.MessageHelper;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMsgService;
+import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+
+import java.util.Objects;
 
 import static com.sprint.mission.discodeit.service.helper.ChannelHelper.*;
 import static com.sprint.mission.discodeit.service.helper.MessageHelper.*;
@@ -22,7 +23,8 @@ public class JavaApplication {
     public static void main(String[] args){
         ChannelService channelService = new JCFChannelService();
         UserService userService = new JCFUserService(channelService);
-        MsgService msgService = new JCFMsgService(channelService, userService);
+        channelService.setUserService(userService);
+        MessageService messageService = new JCFMessageService(channelService, userService);
 
 
 
@@ -38,15 +40,24 @@ public class JavaApplication {
         safeJoinChannel(userService, u1, ch1);
         safeJoinChannel(userService, u2, ch1);
 
+        safeUpdateUser(userService, u1.getUserId(), "호경겅ㄱ니", "WW.Nver.com");
+        System.out.println(safeReadUser(userService, u1));
+        channelService.readChannelsbyUser(u1.getUserId());
 
 
 
 
 
-        Message m1 = safeCreateMsg(msgService, "안녕하세요", ch1, u1);
-        Message m2 = safeCreateMsg(msgService, "asdgag", ch2, u1);
-        Message m3 = safeCreateMsg(msgService, "a11231g", ch3, u1);
 
-        safeReadMsg(msgService, m1);
+
+        Message m1 = safeCreateMsg(messageService, "안녕하세요", ch1, u1);
+        Message m2 = safeCreateMsg(messageService, "안녕하세요GG", ch1, u1);
+        //Message m2 = safeCreateMsg(messageService, "asdgag", ch2, u1);
+        //Message m3 = safeCreateMsg(messageService, "a11231g", ch3, u1);
+
+        safeReadMsg(messageService, m1);
+        channelService.readChannelsbyUser(u1.getUserId());
+        //messageService.readMessagebyChannel(ch1.getId());
+
     }
 }

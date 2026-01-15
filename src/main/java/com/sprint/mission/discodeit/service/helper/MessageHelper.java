@@ -3,23 +3,22 @@ package com.sprint.mission.discodeit.service.helper;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.MsgService;
+import com.sprint.mission.discodeit.service.MessageService;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public class MessageHelper {
-    public static Message safeCreateMsg(MsgService service, String context, Channel channel, User user){
+    public static Message safeCreateMsg(MessageService service, String context, Channel channel, User user){
         try{
-            return service.createMessage(context, channel, user);
+            return service.createMessage(context, channel.getId(), user.getUserId());
         } catch(IllegalStateException | NullPointerException e){
             System.out.println(e);
             return null;
         }
     }
 
-    public static Optional<Message> safeReadMsg(MsgService service, Message message){
+    public static Optional<Message> safeReadMsg(MessageService service, Message message){
         try{
             System.out.println(service.readMessage(message.getId()));
             return Optional.ofNullable(service.readMessage(message.getId()));
@@ -30,7 +29,7 @@ public class MessageHelper {
 
     }
 
-    public static Message safeUpdateMsg(MsgService service, Message message, String context){
+    public static Message safeUpdateMsg(MessageService service, Message message, String context){
         try{
             return service.updateMessage(message.getId(), context);
         } catch(NullPointerException e){
@@ -39,7 +38,7 @@ public class MessageHelper {
         }
     }
 
-    public static void safeDeleteMsg(MsgService service, Message message){
+    public static void safeDeleteMsg(MessageService service, Message message){
         try{
             service.deleteMessage(message.getId());
 

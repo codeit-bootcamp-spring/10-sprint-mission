@@ -24,7 +24,7 @@ public class UserHelper {
         }
     }
 
-    public static User safeUpdateUser(UserService service, User user, String userId, String userName, String email){
+    public static User safeUpdateUser(UserService service, String userId, String userName, String email){
         try{
             return service.updateUser(userId, userName, email );
         } catch(NullPointerException | IllegalStateException | IllegalAccessError e){
