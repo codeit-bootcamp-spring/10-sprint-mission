@@ -8,7 +8,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 //import com.sprint.mission.discodeit.service.file.FileChannelService;
 //import com.sprint.mission.discodeit.service.file.FileMessageService;
 //import com.sprint.mission.discodeit.service.file.FileUserService;
@@ -73,13 +75,18 @@ public class JavaApplication {
         channelService.printChannelMessages(dmId);
 
         System.out.println();
-        System.out.println("===달선이 보낸 메시지===");
-        userService.printUserMessages(user1.getId());
+        System.out.println("사용자 메시지 조회");
+        printUserMessage(user1.getName(), userService.getUserMessages(user1.getId()));
+
+
+
 
         System.out.println();
-        System.out.println("달선이의 채널들");
-        userService.printUserChannels(user1.getId());
-//        messageService.searchMessage(channel1.getId(), "배고파");
+        System.out.println("사용자 채널 조회");
+        printUserChannel(user1.getName(), userService.getUserChannels(user1.getId()));
+
+
+        //        messageService.searchMessage(channel1.getId(), "배고파");
 //        messageService.searchMessage(channel2.getId(), "배고파");
 //        messageService.searchMessage(channel3.getId(), "배고파");
 
@@ -93,7 +100,6 @@ public class JavaApplication {
 //        System.out.println();
 //        System.out.println(channel3);
 //        System.out.println();
-
 
 
 //        // 조회(단건, 다건)
@@ -151,4 +157,24 @@ public class JavaApplication {
 //        System.out.println("보낸 메시지 : " + messageService.findById(message4.getId()));
 //        System.out.println("메시지 리스트 : " + user3.getMessages());
     }
+    private static void printUserMessage(String userName, List<Message> messages){
+        if (!messages.isEmpty()) {
+            System.out.println("[" + userName + "님이 보낸 메시지 내역]");
+            messages.forEach(msg
+                    -> System.out.printf("- [%s] %s%n", msg.getChannel().getName(), msg.getContent()));
+        } else {
+            System.out.println(userName + "님이 보낸 메시지가 없습니다.");
+        }
+    }
+
+    private static void printUserChannel(String userName, List<Channel> channels) {
+        if (!channels.isEmpty()) {
+            System.out.println("[" + userName + "님의 채널들]");
+            channels.forEach(ch -> System.out.printf("- %s%n", ch.getName()));
+        }
+        else {
+            System.out.println(userName + "님이 보유하신 채널이 없습니다.");
+        }
+    }
 }
+

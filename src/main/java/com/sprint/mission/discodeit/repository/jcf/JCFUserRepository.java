@@ -27,14 +27,15 @@ public class JCFUserRepository implements UserRepository {
         return Optional.ofNullable(data.get(id));
     }
 
-    @Override
-    public List<User> readAll() {
-        return new ArrayList<>(data.values());
+    public Optional<User> findByName(String name) {
+        return data.values().stream()
+                .filter(u -> u.getName().equals(name))
+                .findFirst();
     }
 
     @Override
-    public void update(User user) {
-        data.put(user.getId(), user);
+    public List<User> readAll() {
+        return new ArrayList<>(data.values());
     }
 
     @Override

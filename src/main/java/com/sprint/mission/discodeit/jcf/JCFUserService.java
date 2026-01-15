@@ -20,14 +20,11 @@ public class JCFUserService implements UserService {
 
     @Override
     public User create(String name, UserStatus status) {
-        List<User> data = userRepository.readAll();
-        boolean isDuplicate = data.stream()
-                .anyMatch(user -> user.getName().equals(name));
-        if (isDuplicate) {
+        userRepository.findByName(name).ifPresent(u -> {
             throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
-        }
-        User user = new User(name, status);
-        return userRepository.save(user);
+        });
+        User newUser = new User(name, status);
+        return userRepository.save(newUser);
     }
 
     @Override
@@ -49,37 +46,19 @@ public class JCFUserService implements UserService {
         user.updateName(newName);
         user.updateStatus(newStatus);
 
-        userRepository.update(user);
-        return user;
+        return userRepository.save(user);
     }
 
     @Override
-    public void printUserMessages(UUID id) {
+    public List<Message> getUserMessages(UUID id) {
         User user = findById(id);
-        if (!user.getMessages().isEmpty()) {
-            String allMessages = user.getMessages().stream()
-                    .map(msg -> String.format("- [%s] %s",
-                            msg.getChannel().getName(),
-                            msg.getContent()))
-                    .collect(Collectors.joining("\n"));
-            System.out.println("[" + user.getName() + "님이 보낸 메시지 내역]\n" + allMessages);
-        } else {
-            System.out.println(user.getName() + "님이 보낸 메시지가 없습니다.");
-        }
+        return user.getMessages();
     }
 
     @Override
-    public void printUserChannels(UUID id) {
+    public List<Channel> getUserChannels(UUID id) {
         User user = findById(id);
-        String result = user.getChannels().stream()
-                .map(Channel::getName)
-                .collect(Collectors.joining("\n"));
-        System.out.println("[" + user.getName() + "님의 채널들]");
-        if (result.isEmpty()) {
-            System.out.println("보유 채널이 없습니다.");
-        } else {
-            System.out.println(result);
-        }
+        return user.getChannels();
     }
 
     @Override

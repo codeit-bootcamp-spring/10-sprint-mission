@@ -13,9 +13,9 @@ public interface UserRepository {
 
     public Optional<User> findById(UUID id);
 
-    public List<User> readAll();
+    public Optional<User> findByName(String name);
 
-    public void update(User user);
+    public List<User> readAll();
 
     public void delete(UUID uuid);
 
