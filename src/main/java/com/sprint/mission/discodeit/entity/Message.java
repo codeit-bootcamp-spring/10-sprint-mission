@@ -31,6 +31,13 @@ public class Message extends Entity {
         return this;
     }
 
+    public String formatForDisplay() {
+        // 메시지 출력 전용
+        return "[" + channel.getName() + "] "
+                + user.getNickname() + ": "
+                + content;
+    }
+
     @Override
     public String toString() {
         return String.format(
