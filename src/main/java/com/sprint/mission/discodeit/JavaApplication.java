@@ -45,7 +45,7 @@ public class JavaApplication {
 
         System.out.println("---수정/조회---");
         System.out.println("이름 수정 전 " + user1.getUserName());
-        user1 = userService.updateName(user1, "일");
+        user1 = userService.updateName(user1.getId(), "일");
         System.out.println("이름 수정 후 " + user1.getUserName());
 
         System.out.println("이름 수정 전 " + user2.getUserName());
@@ -59,7 +59,7 @@ public class JavaApplication {
 
         System.out.println("이메일 수정 전 " + user2.getEmail());
         try {
-            user2 = userService.updateName(user2, "");
+            user2 = userService.updateName(user2.getId(), "");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -67,14 +67,14 @@ public class JavaApplication {
 
         System.out.println("이메일 수정 전 " + user3.getEmail());
         try {
-            user3 = userService.updateName(user3, "     ");
+            user3 = userService.updateName(user3.getId(), "     ");
         } catch (Exception e) {
             System.out.println(e);
         }
 
         System.out.println("---삭제---");
         System.out.println("계정 삭제 전 전체 유저 수: " + userService.findAll().size());
-        userService.delete(user1);
+        userService.delete(user1.getId());
         System.out.println("계정 삭제 후 전체 유저 수: " + userService.findAll().size());
 
 
@@ -87,19 +87,19 @@ public class JavaApplication {
         Channel channel3 = channelService.createChannel("채널3");
 
         System.out.println("---단건조회---");
-        System.out.println(channelService.findId(channel1) + " 조회 성공");
+        System.out.println(channelService.findId(channel1.getId()) + " 조회 성공");
 
         System.out.println("---다건 조회---");
         System.out.println("전체 유저 수: " + channelService.findAll().size());
 
         System.out.println("---수정/조회---");
         System.out.println("채널명 수정 전 " + channel1.getChannelName());
-        channelService.update(channel1, "ch11111");
+        channelService.update(channel1.getId(), "ch11111");
         System.out.println("채널명 수정 후 " + channel1.getChannelName());
 
         System.out.println("채널명 수정 전 " + channel2.getChannelName());
         try {
-            channel2 = channelService.update(channel2, "");
+            channel2 = channelService.update(channel2.getId(), "");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -107,7 +107,7 @@ public class JavaApplication {
 
         System.out.println("채널명 수정 전 " + channel3.getChannelName());
         try {
-            channel3 = channelService.update(channel3, "       ");
+            channel3 = channelService.update(channel3.getId(), "       ");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -116,7 +116,7 @@ public class JavaApplication {
 
         System.out.println("---삭제---");
         System.out.println("채널 삭제 전 전체 채널 수: " + channelService.findAll().size());
-        channelService.delete(channel1);
+        channelService.delete(channel1.getId());
         System.out.println("채널 삭제 후 전체 채널 수: " + channelService.findAll().size());
 
 

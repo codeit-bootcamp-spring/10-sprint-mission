@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -32,6 +34,13 @@ public class JCFUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 계정은 존재하지 않습니다.\nID: " + id));
     }
 
+    public User findName(String name){
+        return data.stream()
+                .filter(user -> user.getUserName().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("해당 이메일이 등록되어 있지 않습니다."));
+    }
+
     public User findEmail(String email){
         return data.stream()
                 .filter(user -> user.getEmail().equals(email))
@@ -44,8 +53,8 @@ public class JCFUserService implements UserService {
         return data;
     }
 
-    public User updateName(User user, String userName){
-        User foundUser = findId(user.getId());
+    public User updateName(UUID user, String userName){
+        User foundUser = findId(user);
         if (userName == null || userName.trim().isEmpty()) {
             throw new IllegalArgumentException("이름이 비어있거나 공백입니다.");
         }
@@ -53,26 +62,33 @@ public class JCFUserService implements UserService {
         return foundUser;
     }
 
-    public User updateEmail(User user, String email){
-        User foundEmail = findEmail(user.getEmail());
+    public User updateEmail(UUID user, String email){
+        User foundEmail = findId(user);
         if (email == null || email.trim().isEmpty()) {
             throw new IllegalArgumentException("이메일이 비어있거나 공백입니다.");
         }
-        foundEmail.setUserName(email);
+        foundEmail.setEmail(email);
         return foundEmail;
     }
 
-    public void delete(User user){
-        User target = findId(user.getId());
+    public void delete(UUID user){
+        User target = findId(user);
         data.remove(target);
     }
 
 
-
     // 메세지 가져오기
+    // 특정사용자의 발행한 메세지 리스트 조회
+    // 위의 메소드를 이용해서 추린 후 거기서 특정 채널에 발행된 메세지 가져오기
+    // 메세지 전체 반환
     // 메세지 추가
     // 메세지 삭제
     // 메세지 전체삭제
+//    public List<Channel> addChannel(UUID user, UUID channel){
+//        User foundUser = findId(user);
+//        JCFChannelService foundChannel;
+//    }
+
 
     // 채널도 위와 마찬가지
 

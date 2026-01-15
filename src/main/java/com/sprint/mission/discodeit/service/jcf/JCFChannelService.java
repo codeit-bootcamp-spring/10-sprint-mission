@@ -20,7 +20,7 @@ public class JCFChannelService implements ChannelService {
         boolean isExist = data.stream()
                 .anyMatch(channel -> channel.getChannelName().equals(channelName));
         if (isExist) {
-            throw new IllegalArgumentException("이미 등록된 이메일입니다: " + channelName);
+            throw new IllegalArgumentException("이미 등록된 계정입니다. " + channelName);
         }
         Channel channel = new Channel(channelName);
         data.add(channel);
@@ -28,9 +28,9 @@ public class JCFChannelService implements ChannelService {
         return channel;
     }
 
-    public Channel findId(Channel channel){
+    public Channel findId(UUID channel){
         return data.stream()
-                .filter(user -> user.getId().equals(channel.getId()))
+                .filter(user -> user.getId().equals(channel))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("해당 채널은 존재하지 않습니다."));
     }
@@ -40,16 +40,17 @@ public class JCFChannelService implements ChannelService {
     }
 
 
-    public Channel update(Channel channel, String channelName){
+    public Channel update(UUID channel, String channelName){
         Channel foundChannel = findId(channel);
+
         if (channelName == null || channelName.trim().isEmpty()) {
             throw new IllegalArgumentException("이름이 비어있거나 공백입니다.");
         }
-        channel.setChannelName(channelName);
-        return channel;
+        foundChannel.setChannelName(channelName);
+        return foundChannel;
     }
 
-    public void delete(Channel channel){
+    public void delete(UUID channel){
         Channel target = findId(channel);
         data.remove(target);
     }

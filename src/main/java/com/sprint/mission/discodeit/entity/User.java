@@ -36,6 +36,8 @@ public class User extends Common{
         setUpdatedAt();
     }
 
+
+    // 채널, 메세지 부분
     public List<Channel> getChannelId(){
         return channelList;
     }
@@ -44,14 +46,13 @@ public class User extends Common{
         channelList.add(channel);
     }
 
+
     public List<Message> getMessageList(){
         return messageList;
     }
+
     public void addMessage(Message message){
         messageList.add(message);
     }
 
-    public void addMessages(Message message) {
-            this.messageList.add(message);
-    }
 }

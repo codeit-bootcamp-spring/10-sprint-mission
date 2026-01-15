@@ -9,16 +9,11 @@ public class Common {
 
 
     public Common(){
-        try{
-            id = UUID.randomUUID();
-        }catch(Exception e){
-            throw new RuntimeException(e);
-        }
+        id = UUID.randomUUID();
 
         createdAt = System.currentTimeMillis();
         updatedAt = createdAt;
         // id, createdAt, updatedAt을 제외한 필드는 생성자의 파라미터를 통해 초기화하세요.
-
     }
     /*
     * 각 필드를 반환하는 Getter 함수를 정의하세요.

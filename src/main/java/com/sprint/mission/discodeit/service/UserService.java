@@ -12,9 +12,9 @@ public interface UserService {
     User findEmail(String email);
     List<User> findAll();
 
-    User updateName(User user, String userName);
-    User updateEmail(User user, String email);
+    User updateName(UUID user, String userName);
+    User updateEmail(UUID user, String email);
 
-    void delete(User id);
+    void delete(UUID id);
 
 }
