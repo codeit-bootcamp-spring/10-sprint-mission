@@ -1,44 +1,42 @@
 package com.sprint.mission.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Channel extends Entity {
-    private String channelId;
-    private final List<UUID> messageUUIDs;
-    private final List<UUID> userUUIDs;
+    private final Set<UUID> messageIDs;
+    private final Set<UUID> userIDs;
 
-    public Channel(String channelId) {
-        super();
-        this.channelId = channelId;
-        this.messageUUIDs = new ArrayList<>();
-        this.userUUIDs = new ArrayList<>();
+    public Channel(String channelName) {
+        super(channelName);
+        this.messageIDs = new HashSet<>();
+        this.userIDs = new HashSet<>();
     }
 
-    @Override
-    public void update(String channelId) {
-        this.channelId = channelId;
-        updateTime();
+    public void addUserID(UUID uuid) {
+        this.userIDs.add(uuid);
     }
 
-    public void addUserUUID(UUID uuid) {
-        this.userUUIDs.add(uuid);
+    public void addMessageID(UUID uuid) {
+        this.messageIDs.add(uuid);
     }
 
-    public void addMessageUUID(UUID uuid) {
-        this.messageUUIDs.add(uuid);
+    public String getChannelName() {
+        return getValue();
     }
 
-    public String getChannelId() {
-        return channelId;
+    public Set<UUID> getMessageIDs() {
+        return Set.copyOf(messageIDs);
     }
 
-    public List<UUID> getMessageUUIDs() {
-        return List.copyOf(messageUUIDs);
+    public Set<UUID> getUserIDs() {
+        return Set.copyOf(userIDs);
     }
 
-    public List<UUID> getUserUUIDs() {
-        return List.copyOf(userUUIDs);
+    public boolean hasMessageId(UUID messageId) {
+        return this.messageIDs.contains(messageId);
+    }
+
+    public boolean hasUserId(UUID userId) {
+        return this.userIDs.contains(userId);
     }
 }

@@ -1,20 +1,26 @@
 package com.sprint.mission.entity;
 
-public class Message extends Entity {
-    private String message;
+import java.util.UUID;
 
-    public Message(String message) {
-        super();
-        this.message = message;
+public class Message extends Entity {
+    private final UUID userId;
+    private final UUID channelId;
+
+    public Message(String message, UUID userId, UUID channelId) {
+        super(message);
+        this.userId = userId;
+        this.channelId = channelId;
     }
 
     public String getMessage() {
-        return message;
+        return getValue();
     }
 
-    @Override
-    public void update(String message) {
-        this.message = message;
-        updateTime();
+    public boolean isEqualToUserId(UUID userId) {
+        return this.userId.equals(userId);
+    }
+
+    public boolean isEqualToChannelId(UUID channelId) {
+        return this.channelId.equals(channelId);
     }
 }

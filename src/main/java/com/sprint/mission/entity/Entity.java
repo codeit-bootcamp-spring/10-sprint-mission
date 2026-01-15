@@ -3,40 +3,53 @@ package com.sprint.mission.entity;
 import java.util.UUID;
 
 public abstract class Entity {
-    private final UUID uuid;
+    private final UUID id;
+    private String value;
     private final long createdAt;
     private long updatedAt;
 
-    public Entity() {
-        this.uuid = UUID.randomUUID();
-        this.createdAt = getTimestamp();
+    public Entity(String value) {
+        this.value = value;
+        this.id = UUID.randomUUID();
+        this.createdAt = getUnixTimestamp();
         this.updatedAt = createdAt;
     }
 
-    protected long getTimestamp() {
+    private long getUnixTimestamp() {
         return System.currentTimeMillis() / 1000;
     }
 
-    public abstract void update(String value);
-
-    protected void updateTime() {
-        this.updatedAt = getTimestamp();
+    protected String getValue() {
+        return value;
     }
 
-    public UUID getUuid() {
-        return uuid;
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void update(String value) {
+        this.value = value;
+        this.updatedAt = getUnixTimestamp();
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     @Override
     public int hashCode() {
-        return getUuid().hashCode();
+        return getId().hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Entity entity) {
-            return this.equals(entity);
+            return this.id.equals(entity.getId());
         }
-        return super.equals(obj);
+        throw new IllegalArgumentException("not Entity class");
     }
 }
