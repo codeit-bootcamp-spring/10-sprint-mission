@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.TargetType;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.RoleService;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -41,7 +44,6 @@ public class JCFChannelService implements ChannelService {
         Channel channel = new Channel(channelName, channelDescription);
         channels.add(channel);
         return channel;
-
     }
 
     @Override
@@ -53,42 +55,10 @@ public class JCFChannelService implements ChannelService {
     public Channel update(UUID id, String name, String desc) {
         Channel willUpdate = this.find(id);
         Optional.ofNullable(name)
-                .ifPresent(n -> willUpdate
-                        .updateChannelName(n));
+                .ifPresent(willUpdate::updateChannelName);
         Optional.ofNullable(desc)
-                .ifPresent(d -> willUpdate
-                        .updateChannelDescription(d));
+                .ifPresent(willUpdate::updateChannelDescription);
         return willUpdate;
-    }
-
-    public void userJoinChannel(UUID channelId, UUID userId, TargetType type){
-        Channel willJoinChannel = find(channelId);
-        switch (type){
-            case USER -> {
-                Optional.ofNullable(JCFUserService.getInstance().find(userId))
-                        .ifPresent(user -> willJoinChannel.addAllowedUser(user));
-            }
-            case GROUP -> {
-                Optional.ofNullable(JCFRoleGroupService.getInstance().find(userId))
-                        .ifPresent(
-                                group -> {
-                                    willJoinChannel.addAllowedUser(group);
-                                    group.addAllowedChannel(willJoinChannel);
-                                }
-                        );
-            }
-        }
-
-
-    }
-
-    public void userLeaveChannel(UUID channelId, UUID userId){
-        Channel willQuitChannel = find(channelId);
-        Optional.ofNullable(JCFRoleGroupService.getInstance().find(userId))
-                .ifPresent(group -> group.getUsers().forEach(willQuitChannel::removeAllowedUser));
-
-        Optional.ofNullable(JCFUserService.getInstance().find(userId))
-                .ifPresent(user -> willQuitChannel.removeAllowedUser(user));
     }
 
 }
