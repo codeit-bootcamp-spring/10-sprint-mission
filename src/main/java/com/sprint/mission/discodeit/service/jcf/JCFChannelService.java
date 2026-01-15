@@ -60,12 +60,22 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID uuid) {
         Channel channel = getChannel(uuid);
+
+        for (User user: channel.getParticipants()) {
+            user.removeJoinedChannels(channel);
+        }
+
         data.remove(channel.getId());
     }
 
     @Override
     public void deleteChannelByTitle(String title) {
         Channel channel = findChannelByTitle(title).orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+
+        for (User user: channel.getParticipants()) {
+            user.removeJoinedChannels(channel);
+        }
+
         data.remove(channel.getId());
     }
 
@@ -77,6 +87,11 @@ public class JCFChannelService implements ChannelService {
         if (!channel.addParticipant(user)) {
             throw new IllegalStateException("이미 참가한 참가자입니다");
         };
+        if (!user.addJoinedChannels(channel)) {
+            channel.removeParticipant(user);
+            throw new IllegalStateException("이미 참가한 참가자입니다");
+        }
+
         channel.updateUpdatedAt();
     }
 
@@ -85,9 +100,14 @@ public class JCFChannelService implements ChannelService {
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
 
-        if (!channel.removeParticipant(user)) {
+        if (!user.removeJoinedChannels(channel)) {
             throw new IllegalStateException("참여하지 않은 참가자입니다");
         }
+        if (!channel.removeParticipant(user)) {
+            user.addJoinedChannels(channel);
+            throw new IllegalStateException("참여하지 않은 참가자입니다");
+        }
+
         channel.updateUpdatedAt();
     }
 

@@ -1,6 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.*;
+
 public class User extends Common {
+    private final Set<Channel> joinedChannels;
+    private final List<Message> messageHistory;
     private String accountId;           // 계정ID, 상속받은id(UUID)와 다름, 헷갈림 주의
     private String password;
     private String name;
@@ -8,10 +12,34 @@ public class User extends Common {
 
     public User(String accountId, String password, String name, String mail) {
         super();
+        this.joinedChannels = new HashSet<>();
+        this.messageHistory = new ArrayList<>();
         this.accountId = accountId;
         this.password = password;
         this.name = name;
         this.mail = mail;
+    }
+
+    // joinedChannels
+    public Set<Channel> getJoinedChannels() {
+        return Collections.unmodifiableSet(this.joinedChannels);
+    }
+    public boolean addJoinedChannels(Channel channel) {
+        return this.joinedChannels.add(channel);
+    }
+    public boolean removeJoinedChannels(Channel channel) {
+        return this.joinedChannels.remove(channel);
+    }
+
+    // messageHistory
+    public List<Message> getMessageHistory() {
+        return Collections.unmodifiableList(this.messageHistory);
+    }
+    public void addMessageHistory(Message message) {
+        this.messageHistory.add(message);
+    }
+    public void removeMessageHistory(Message message) {
+        this.messageHistory.remove(message);
     }
 
     public String getAccountId() {
