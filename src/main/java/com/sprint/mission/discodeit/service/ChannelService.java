@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface ChannelService {
     // CRUD(생성, 읽기, 모두 읽기, 수정, 삭제 기능)
     // C. 생성: channelId와 owner 기타 등등 출력
-    Channel createChannel(User owner, Boolean isPrivate, String channelName, String channelDescription);
+    Channel createChannel(UUID ownerId, Boolean isPrivate, String channelName, String channelDescription);
 
     // R. 읽기
     // 특정 채널 정보 읽기

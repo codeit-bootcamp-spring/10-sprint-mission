@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import java.util.*;
 
 public class Channel extends BaseEntity {
-    private User owner;
+    private UUID ownerId;
     private Boolean isPrivate = false; // true = Private, false = Public
     private String channelName;
     private String channelDescription = "";
@@ -15,9 +15,8 @@ public class Channel extends BaseEntity {
     private final List<Message> channelMessagesList; // 채팅창 안의 메시지들
 
     // 생성자
-    public Channel(User owner, Boolean isPrivate, String channelName, String channelDescription) {
-        this.owner = owner; // owner 임명(생성하는 사용자 본인)
-        owner.ownChannel(this); // owner의 객체에도 반영
+    public Channel(UUID userId, Boolean isPrivate, String channelName, String channelDescription) {
+        this.ownerId = userId; // owner 임명(생성하는 사용자 본인)
         this.isPrivate = isPrivate;
         this.channelName = channelName;
         this.channelDescription = channelDescription;
@@ -31,7 +30,7 @@ public class Channel extends BaseEntity {
                 "channelId = " + getId() + ", " +
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +
-                "owner = " + owner.getId() + ", " +
+                "owner ID = " + ownerId + ", " +
                 "isPrivate = " + isPrivate + ", " +
                 "channelName = " + channelName + ", " +
 //                "channelDescription = " + channelDescription + ", " +
@@ -41,8 +40,8 @@ public class Channel extends BaseEntity {
     }
 
     // Getter
-    public User getOwner() {
-        return owner;
+    public UUID getOwner() {
+        return ownerId;
     }
 
     public Boolean getPrivate() {
@@ -86,19 +85,12 @@ public class Channel extends BaseEntity {
     }
 
     // owner 변경(+업데이트)
-    public void changeOwner(Channel channel, User owner) {
-        this.owner.removeChannelOwner(channel); // 기존 채널 주인 소유권 제거
-        this.owner = owner;
+    public void changeOwner(Channel channel, UUID ownerId) {
+//        this.owner.removeChannelOwner(channel); // 기존 채널 주인 소유권 제거
+        this.ownerId = ownerId;
         updateTime();
-        owner.ownChannel(this);
+//        owner.ownChannel(this);
     }
-
-//    // owner 삭제
-//    public void removeOwner(User user) {
-//        this.owner = null; // 임시
-//        // owner 없으면 다음 user가 owner가 되고, 더 이상 user가 존재하지 않으면 채널 폭파
-//        updateTime();
-//    }
 
     // 채널 유저
     public void addChannelUser(User user) {

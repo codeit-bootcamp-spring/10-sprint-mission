@@ -10,14 +10,16 @@ import com.sprint.mission.discodeit.validation.ValidationMethods;
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
-    private final Map<UUID, Channel> data;
+    private final Map<UUID, Channel> data; // channel DB 데이터
+    private final Map<UUID, User> userData; // user DB 데이터
     private final MessageService messageService; // 삭제 기능을 위해 추가
     // 인프라 건설 후 사람 입주의 느낌으로 이해
     // 실행: user->channel->message
     // 조립: message->channel->user
 
-    public JCFChannelService(Map<UUID, Channel> data, MessageService messageService) {
+    public JCFChannelService(Map<UUID, Channel> data, Map<UUID, User> userData, MessageService messageService) {
         this.data = data;
+        this.userData = userData;
         this.messageService = messageService;
     }
 
@@ -32,14 +34,13 @@ public class JCFChannelService implements ChannelService {
 
     // C. 생성: Channel 생성 후 Channel 객체 반환
     @Override
-    public Channel createChannel(User owner, Boolean isPrivate, String channelName, String channelDescription) {
-        // owner null 검증
-        ValidationMethods.validateObject(owner, "owner");
+    public Channel createChannel(UUID ownerId, Boolean isPrivate, String channelName, String channelDescription) {
+        // owner ID null 검증
+        ValidationMethods.validateId(ownerId);
         // channelName 검증
-        ValidationMethods.validateString(channelName, "channelName");
+        ValidationMethods.validateNullBlankString(channelName, "channelName");
 
-        Channel channel = new Channel(owner, isPrivate, channelName, channelDescription);
-        owner.joinChannel(channel);
+        Channel channel = new Channel(ownerId, isPrivate, channelName, channelDescription);
 
         data.put(channel.getId(), channel);
         return channel;
@@ -50,7 +51,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Optional<Channel> readChannelByChannelId(UUID channelId) {
         // Channel ID null 검증
-        ValidationMethods.validateChannelId(channelId);
+        ValidationMethods.validateId(channelId);
 
         return Optional.ofNullable(data.get(channelId));
     }
@@ -83,7 +84,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<User> readAllUsersByChannelId(UUID channelId) {
         // Channel ID null 검증
-        ValidationMethods.validateChannelId(channelId);
+        ValidationMethods.validateId(channelId);
 
         Channel channel = data.get(channelId);
         // channel이 null인지 확인
@@ -99,7 +100,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<Channel> searchChannelByChannelName(String partialChannelName) {
         // partialChannelName 검증
-        ValidationMethods.validateString(partialChannelName, "partialChannelName");
+        ValidationMethods.validateNullBlankString(partialChannelName, "partialChannelName");
 
         return data.values().stream()
                 .filter(channel -> channel.getChannelName().contains(partialChannelName))
@@ -110,7 +111,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<User> searchChannelUserByPartialName(UUID channelId, String partialName) {
         // Channel ID null 검증
-        ValidationMethods.validateChannelId(channelId);
+        ValidationMethods.validateId(channelId);
 
         Channel channel = data.get(channelId);
         // channel이 null인지 확인
@@ -129,7 +130,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<Message> readChannelMessageByChannelId(UUID channelId) {
         // Channel ID null 검증
-        ValidationMethods.validateChannelId(channelId);
+        ValidationMethods.validateId(channelId);
 
         Channel channel = data.get(channelId);
         // channel이 null인지 확인
@@ -144,7 +145,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<Message> searchChannelMessageByChannelIdAndWord(UUID channelId, String partialWord) {
         // Channel ID null 검증
-        ValidationMethods.validateChannelId(channelId);
+        ValidationMethods.validateId(channelId);
 
         Channel channel = data.get(channelId);
         // channel이 null인지 확인
@@ -163,18 +164,18 @@ public class JCFChannelService implements ChannelService {
     // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체와 channel 객체 존재 확인
     public static Channel validateMethods(Map<UUID, Channel> data, UUID requestId, UUID channelId) {
         // request ID null 검증
-        ValidationMethods.validateUserId(requestId);
+        ValidationMethods.validateId(requestId);
         // Channel ID `null` 검증
-        ValidationMethods.validateChannelId(channelId);
+        ValidationMethods.validateId(channelId);
 
         Channel channel = data.get(channelId);
         ValidationMethods.existChannel(channel);
 
-        User owner = channel.getOwner();
-        ValidationMethods.existUser(owner);
+//        User owner = channel.getOwner();
+//        ValidationMethods.existUser(owner);
 
         // requestId와 owner ID가 동일한지 검증
-        ValidationMethods.validateSameId(requestId, owner.getId());
+//        ValidationMethods.validateSameId(requestId, owner.getId());
 
         return channel;
     }
@@ -184,7 +185,7 @@ public class JCFChannelService implements ChannelService {
     public Channel updateChannelName(UUID requestId, UUID channelId, String channelName) {
         // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체와 channel 객체 존재 확인
         Channel channel = validateMethods(data, requestId, channelId);
-        ValidationMethods.validateString(channelName, "channelName");
+        ValidationMethods.validateNullBlankString(channelName, "channelName");
 
         channel.updateChannelName(channelName);
         return channel;
@@ -205,9 +206,9 @@ public class JCFChannelService implements ChannelService {
         Channel channel = validateMethods(data, requestId, channelId);
 
         // 존재하는 owner인지 확인
-        ValidationMethods.existUser(owner);
+//        ValidationMethods.existUser(owner);
 
-        channel.changeOwner(channel, owner);
+//        channel.changeOwner(channel, owner);
         return channel;
     }
 
@@ -234,7 +235,7 @@ public class JCFChannelService implements ChannelService {
         // 해당 채널에 참여한 user 찾아서 내보내기
         channel.getChannelUsersList().forEach(user -> user.leaveChannel(channel));
         // 해당 채널을 소유한 소유주(user)를 찾아서 owner 소유권 제거
-        channel.getOwner().removeChannelOwner(channel);
+//        channel.getOwner().removeChannelOwner(channel);
 
         data.remove(channelId);
     }
