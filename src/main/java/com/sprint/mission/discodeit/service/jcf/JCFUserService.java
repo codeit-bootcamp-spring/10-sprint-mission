@@ -42,20 +42,6 @@ public class JCFUserService implements UserService {
     }
 
     // R. 읽기
-    // 이메일+비번(로그인?)
-    @Override
-    public Optional<User> readUserByEmailAndPw(String email, String password) {
-        // email, password 검증
-        ValidationMethods.validateString(email, "email");
-        ValidationMethods.validateString(password, "password");
-
-        return data.values().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .filter(user -> user.getPassword().equals(password))
-                .findAny();
-    }
-
-    // 본인?
     @Override
     public Optional<User> findUserById(UUID userId) {
         // User ID null 검증

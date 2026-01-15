@@ -14,10 +14,7 @@ public interface UserService {
     User createUser(String email, String nickName, String userName, String password, String birthday);
 
     // R. 읽기
-    // 이메일+비번(로그인?)
-    Optional<User> readUserByEmailAndPw(String email, String password);
-    // 본인?
-    Optional<User> readUserById(UUID userId);
+    Optional<User> findUserById(UUID userId);
 
     // R. 모두 읽기
     // 모든 사용자
