@@ -34,29 +34,17 @@ public class User extends Entity {
     }
 
     public void joinChannel(Channel channel) {
-        // 가입 여부 확인, 이미 가입한 채널이라면 예외 발생
-        if (channels.contains(channel)) {
-            throw new RuntimeException("이미 가입한 채널입니다.");
-        }
-
-        // 가입 채널 추가
+        // 유저가 가입한 채널 목록에 채널 추가
         channels.add(channel);
-
         // 수정 시각 갱신
         super.update();
     }
 
     public void leaveChannel(Channel channel) {
-        // 채널 null 체크
-        if (channel == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
-
-        // 가입한 채널인 경우에만 제거 및 수정 시각 갱신
-        boolean removed = channels.remove(channel);
-        if (removed) {
-            super.update();
-        }
+        // 유저가 가입한 채널 목록에서 채널 제거
+        channels.remove(channel);
+        // 수정 시각 갱신
+        super.update();
     }
 
     public void addMessage(Message message) {
