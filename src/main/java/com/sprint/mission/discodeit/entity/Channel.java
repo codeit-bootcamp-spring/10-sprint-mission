@@ -1,12 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Channel extends BaseEntity{
     private String name;
     private String type;
     private final Set<User> users = new HashSet<>();
+    private final List<Message> messages = new ArrayList<>();
 
     public Channel(String name, String type) {
         super();
@@ -19,6 +19,12 @@ public class Channel extends BaseEntity{
     public String getType() {
         return type;
     }
+    public List<Message> getMessages() { return messages; }
+    public Set<User> getUsers() { return users; }
+
+    public void addMessage(Message message) { messages.add(message); }
+    public void addUser(User user) { users.add(user); }
+
     public void updateName(String name) {
         this.name = name;
         updateTimestamps();
@@ -27,15 +33,10 @@ public class Channel extends BaseEntity{
         this.type = type;
         updateTimestamps();
     }
-    public void addMember(User user) {
-        users.add(user);
-    }
-    public void removeMember(User user) {
-        users.remove(user);
-    }
-    public Set<User> getUsers() {
-        return users;
-    }
+
+    public void removeMessage(Message message) { messages.remove(message); }
+    public void removeUser(User user) { users.remove(user); }
+
     @Override
     public String toString() {
         return "채널[이름: " + name +

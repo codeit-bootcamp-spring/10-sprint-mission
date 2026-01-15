@@ -20,8 +20,7 @@ public class JCFUserService implements UserService {
     }
     @Override
     public User getUser(UUID id) {
-        validateUserId(id);
-        return data.get(id);
+        return validateUserId(id);
     }
     @Override
     public List<User> getAllUsers() {
@@ -29,8 +28,7 @@ public class JCFUserService implements UserService {
     }
     @Override
     public User updateUser(UUID id, String name, String email) {
-        validateUserId(id);
-        User user = data.get(id);
+        User user = validateUserId(id);
         Optional.ofNullable(name)
                 .filter(n -> !n.isBlank())
                 .ifPresent(user::updateName);
@@ -50,14 +48,8 @@ public class JCFUserService implements UserService {
         if (name == null || name.isBlank()) throw new IllegalArgumentException("이름은 필수입니다.");
         if (email == null || email.isBlank()) throw new IllegalArgumentException("이메일은 필수입니다.");
     }
-    public void validateUser(User user) {
-        if (user == null || user.getId() == null) {
-            throw new IllegalArgumentException("유저 정보가 없습니다.");
-        }
-        validateUserId(user.getId());
-    }
-    private void validateUserId(UUID id) {
-        if (id == null) throw new IllegalArgumentException("유저 ID가 없습니다.");
-        if (!data.containsKey(id)) throw new IllegalArgumentException("존재하지 않는 유저입니다.");
+    private User validateUserId(UUID id) {
+        return Optional.ofNullable(data.get(id))
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 입니다."));
     }
 }

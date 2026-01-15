@@ -1,8 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.*;
+
 public class User extends BaseEntity{
     private String name;
     private String email;
+    private final List<Message> messages = new ArrayList<>();
+    private final Set<Channel> channels = new HashSet<>();
 
     public User(String name, String email) {
         super();
@@ -15,6 +19,7 @@ public class User extends BaseEntity{
     public String getEmail() {
         return email;
     }
+
     public void updateName(String name) {
                 this.name = name;
                 updateTimestamps();
@@ -23,6 +28,20 @@ public class User extends BaseEntity{
             this.email = email;
             updateTimestamps();
     }
+
+    public List<Message> getMessages() { return messages; }
+    public Set<Channel> getChannels() { return channels; }
+
+
+    public void addMessage(Message message) { messages.add(message);
+    }
+    public void addChannel(Channel channel) {
+        this.channels.add(channel);
+    }
+
+    public void removeMessage(Message message) { this.messages.remove(message); }
+    public void removeChannel(Channel channel) { this.channels.remove(channel); }
+
     @Override
     public String toString() {
         return "유저[이름: " + name +

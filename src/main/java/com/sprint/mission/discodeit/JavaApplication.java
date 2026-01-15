@@ -26,29 +26,37 @@ public class JavaApplication {
         Channel channel1 = channelService.createChannel("채팅","chat");
         Channel channel2 = channelService.createChannel("음성","voice");
         Channel channel3 = channelService.createChannel("잡담", "chat");
+
+        //채널에 등록
+        channelService.enterChannel(user1.getId(), channel1.getId());
+        channelService.enterChannel(user2.getId(), channel1.getId());
+        channelService.enterChannel(user2.getId(), channel2.getId());
+        channelService.enterChannel(user1.getId(), channel2.getId());
+        channelService.enterChannel(user2.getId(), channel3.getId());
+        //메시지 등록
         Message message1 = messageService.createMessage(channel1.getId(), user1.getId(), "안녕하세요");
         Message message2 = messageService.createMessage(channel2.getId(), user2.getId(), "반갑습니다");
         messageService.createMessage(channel1.getId(), user2.getId(), "교이루~");
         messageService.createMessage(channel2.getId(), user1.getId(), "Hello~");
         messageService.createMessage(channel3.getId(), user2.getId(), "반갑소");
 
-        System.out.println("데이터 조회(단건)");
+        System.out.println("\n=== [상세 조회 기능 테스트] ===");
+        System.out.println("채팅채널 메시지 리스트: " + messageService.getMessagesByChannelId(channel1.getId()));
+        System.out.println("채팅채널 참가자 리스트: " + channelService.getUsersByChannelId(channel1.getId()));
+        System.out.println("최현호가 발행한 메시지 리스트: " + messageService.getMessagesByUserId(user1.getId()));
+        System.out.println("김민교가 참가한 채널 리스트: " + channelService.getChannelsByUserId(user2.getId()));
+
+        System.out.println("\n데이터 조회(단건/다건)");
         System.out.println(userService.getUser(user1.getId()));
         System.out.println(channelService.getChannel(channel1.getId()));
         System.out.println(messageService.getMessage(message2.getId()));
-        System.out.println("데이터 조회(다건)");
         System.out.println(userService.getAllUsers());
         System.out.println(channelService.getAllChannels());
         System.out.println(messageService.getAllMessages());
-        System.out.println(messageService.getMessagesByChannel(channel1.getId()));
-        System.out.println("추가기능 테스트");
-        System.out.println(messageService.getMessagesByChannel(channel1.getId()));
-        System.out.println(channelService.getChannelsByUserId(user2.getId()));
 
-
-        System.out.println("데이터 수정");
+        System.out.println("\n데이터 수정");
         userService.updateUser(user1.getId(),"김현호","def123@gmail.com");
-        channelService.updateChannel(channel1.getId(),"음성2","voice");
+        channelService.updateChannel(channel1.getId(),"소통","voice");
         messageService.updateMessage("하이요",message1.getId());
 
         System.out.println("수정된 데이터 조회");
@@ -56,20 +64,17 @@ public class JavaApplication {
         System.out.println(channelService.getAllChannels());
         System.out.println(messageService.getAllMessages());
 
-        System.out.println("데이터 삭제");
-        userService.deleteUser(user1.getId());
-        channelService.deleteChannel(channel1.getId());
+        System.out.println("\n데이터 삭제 및 퇴장");
         messageService.deleteMessage(message1.getId());
-        channelService.leaveChannel(user2.getId(),channel2.getId());
-
+        channelService.deleteChannel(channel1.getId());
+        userService.deleteUser(user1.getId());
+        messageService.leaveChannel(user2.getId(), channel2.getId());
 
         System.out.println("데이터 삭제 확인");
         System.out.println(userService.getAllUsers());
         System.out.println(channelService.getAllChannels());
         System.out.println(messageService.getAllMessages());
-        System.out.println("김민교가 속해있는 채널");
-        System.out.println(channelService.getChannelsByUserId(user2.getId()));
-
+        System.out.println("김민교가 여전히 속해있는 채널: " + channelService.getChannelsByUserId(user2.getId()));
     }
 
     private static void runValidationTest(JCFUserService userService, JCFChannelService channelService, JCFMessageService messageService) {

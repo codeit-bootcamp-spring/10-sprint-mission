@@ -22,20 +22,26 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message createMessage(UUID channelId, UUID userId, String content) {
         Channel channel = channelService.getChannel(channelId);
-        User author = userService.getUser(userId);
+        User user = userService.getUser(userId);
+
+        if (!channel.getUsers().contains(user)) {
+            throw new IllegalArgumentException("채널에 먼저 입장해야 메시지를 남길 수 있습니다.");
+        }
 
         validateMessageContent(content);
 
-        Message message = new Message(channel, author, content);
+        Message message = new Message(channel, user, content);
         data.put(message.getId(), message);
-        channelService.enterChannel(author.getId(), channel.getId());
+
+        channel.addMessage(message);
+        user.addMessage(message);
+
         return message;
     }
 
     @Override
     public Message getMessage(UUID id) {
-        validateMessageId(id);
-        return data.get(id);
+        return validateMessageId(id);
     }
 
     public List<Message> getMessagesByChannel(UUID channelId) {
@@ -46,6 +52,16 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> getAllMessages() {
         return new ArrayList<>(data.values());
+    }
+
+    @Override
+    public List<Message> getMessagesByChannelId(UUID channelId) {
+        return new ArrayList<>(channelService.getChannel(channelId).getMessages());
+    }
+
+    @Override
+    public List<Message> getMessagesByUserId(UUID userId) {
+        return new ArrayList<>(userService.getUser(userId).getMessages());
     }
 
     @Override
@@ -60,9 +76,26 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void deleteMessage(UUID id) {
-        validateMessageId(id);
+        Message message = validateMessageId(id);
+
+        message.getChannel().removeMessage(message);
+        message.getUser().removeMessage(message);
+
         data.remove(id);
     }
+
+    @Override
+    public void leaveChannel(UUID userId, UUID channelId) {
+        List<Message> userMessagesInChannel = data.values().stream()
+                .filter(m -> m.getChannel().getId().equals(channelId) && m.getUser().getId().equals(userId))
+                .toList();
+
+        userMessagesInChannel.forEach(m -> deleteMessage(m.getId()));
+
+        channelService.leaveChannel(userId, channelId);
+    }
+
+
 
     private void validateMessageContent(String content) {
         if (content == null || content.isBlank()) {
@@ -70,8 +103,8 @@ public class JCFMessageService implements MessageService {
         }
     }
 
-    private void validateMessageId(UUID id){
-        if(id == null) throw new IllegalArgumentException("메시지 ID가 없습니다.");
-        if(!data.containsKey(id)) throw new IllegalArgumentException("존재하지 않는 메시지입니다.");
+    private Message validateMessageId(UUID id){
+        return Optional.ofNullable(data.get(id))
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다"));
     }
 }
