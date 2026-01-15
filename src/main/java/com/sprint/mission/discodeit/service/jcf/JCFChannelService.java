@@ -21,9 +21,9 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel createChannel(String name, User owner) {
+    public Channel createChannel(String name, UUID ownerId) {
         // 존재하는 유저인지 검증
-        userService.findUserById(owner.getId());
+        User owner = userService.findUserById(ownerId);
         // 채널 생성
         Channel channel = new Channel(name, owner);
 

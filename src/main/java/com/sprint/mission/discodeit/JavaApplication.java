@@ -75,9 +75,9 @@ public class JavaApplication {
         System.out.println(HR);
 
         System.out.println("\n[채널 생성]");
-        Channel channel1 = channelService.createChannel("1번 채널", user1);
-        Channel channel2 = channelService.createChannel("2번 채널", user2);
-        Channel channel3 = channelService.createChannel("3번 채널", user1);
+        Channel channel1 = channelService.createChannel("1번 채널", user1.getId());
+        Channel channel2 = channelService.createChannel("2번 채널", user2.getId());
+        Channel channel3 = channelService.createChannel("3번 채널", user1.getId());
 
         System.out.println("  ✔ 채널 생성 완료 (3개)");
         System.out.println("  • " + channel1);
