@@ -22,7 +22,10 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message create(String content, User user, Channel channel){
+    public Message create(String content, UUID userId, UUID channelId){
+        User user = userService.findById(userId);
+        Channel channel = channelService.findById(channelId);
+
         Message message = new Message(content,user,channel);
         if(userService.findById(user.getId()) == null){
             throw new IllegalArgumentException("존재하지 않는 사용자 입니다.");
@@ -49,6 +52,12 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> findAll() {
         return new ArrayList<>(data.values());
+    }
+
+
+    public List<Message> findByUser(UUID userId){
+        User user = userService.findById(userId);
+        return user.getMessageList();
     }
 
     @Override

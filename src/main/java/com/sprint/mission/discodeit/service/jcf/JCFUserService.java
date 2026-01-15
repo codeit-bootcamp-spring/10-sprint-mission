@@ -37,11 +37,16 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User update(UUID id,String userName,String email,String status){
-        User user = findById(id);
-        user.setUserName(userName);
-        user.setEmail(email);
-        user.setStatus(status);
+    public User update(UUID userId,String userName,String email,String status){
+        //Optional은 값이 없을수도 있다의 의미라서 userId는 Optional을 쓰지않는다.
+        if (userId == null) {
+            throw new IllegalArgumentException("수정할 유저ID를 입력해주세요");
+        }
+        User user = findById(userId);
+        Optional.ofNullable(userName).ifPresent(user :: setUserName);//userName값이 있으면 setter
+        Optional.ofNullable(email).ifPresent(user :: setEmail);
+        Optional.ofNullable(status).ifPresent(user :: setStatus);
+
         return user;
     }
 
@@ -52,15 +57,9 @@ public class JCFUserService implements UserService {
         return user;
     }
 
-    public List<Channel> selectChannel(UUID id){
-        User user = findById(id);
-        return user.getChannelList();
-    }
-
     public List<Message> selectMessage(UUID id){
         User user = findById(id);
         return user.getMessageList();
     }
-
 
 }

@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface MessageService {
 
     //생성
-    Message create(String content, User user, Channel channel);
+    Message create(String content, UUID userId, UUID channelId);
 
     //읽기
     Message findById(UUID id);
@@ -23,5 +23,7 @@ public interface MessageService {
 
     //삭제
     Message delete(UUID id);
+
+    List<Message> findByUser(UUID userId);
 
 }

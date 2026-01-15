@@ -24,9 +24,4 @@ public interface UserService {
     //삭제
     User delete(UUID id);
 
-    //채널조회
-    List<Channel> selectChannel(UUID id);
-
-    //메시지 조회
-    List<Message> selectMessage(UUID id);
 }

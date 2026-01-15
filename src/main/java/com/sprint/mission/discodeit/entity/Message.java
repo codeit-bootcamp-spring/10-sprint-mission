@@ -29,7 +29,7 @@ public class Message extends Common {
     @Override
     public String toString() {
         return String.format(
-                "User{id=%s, 내용='%s', userId='%s', channelId='%s', 생성일자=%d, 수정일자=%d}",
+                "Message{id=%s, 내용='%s', userId='%s', channelId='%s', 생성일자=%d, 수정일자=%d}",
                 getId(),
                 content,
                 user.getId(),

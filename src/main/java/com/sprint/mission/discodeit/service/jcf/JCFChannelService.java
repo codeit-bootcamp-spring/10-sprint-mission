@@ -18,8 +18,10 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel create(String channelName, String type, User owner){
+    public Channel create(String channelName, String type, UUID ownerId){
+        User owner = userService.findById(ownerId);
         Channel channel = new Channel(channelName,type,owner);
+        channel.getUserList().add(owner);//방장을 Channel에 넣기.
         data.put(channel.getId(),channel); //data에 key value 값으로 넣음.
         return channel;
     }
@@ -37,6 +39,11 @@ public class JCFChannelService implements ChannelService {
         return new ArrayList<>(data.values());
     }
 
+    public List<Channel> findByUser(UUID userId){ //특정유저가 참여하고 있는 채널
+        User user = userService.findById(userId);
+        return user.getChannelList();
+    }
+
     @Override
     public Channel update(UUID id, String name) {
         Channel channel = findById(id);
@@ -52,25 +59,27 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public List<User> enter(UUID channelId,UUID userId){ //채널 id가 들어온다.
+    public void enter(UUID channelId,UUID userId){ //채널 id가 들어온다.
         Channel channel = findById(channelId);
         User user = userService.findById(userId);
-        channel.enter(user);
+        if(channel.getUserList().contains(user)){
+            throw new IllegalArgumentException("이미 참여하고 있는 유저입니다.");
+        }
+        channel.getUserList().add(user);
         user.addChannel(channel);
-
-        return channel.getUserList();
 
     }
 
     @Override
-    public List<User> leave(UUID channelId,UUID userId){
+    public void leave(UUID channelId,UUID userId){
         Channel channel = findById(channelId);
         User user = userService.findById(userId);
 
-        channel.leave(user);
+        if(user.equals(channel.getOwner())){
+            throw new IllegalArgumentException("방장은 퇴장할 수 없습니다.");
+        }
+        channel.getUserList().remove(user);
         user.removeChannel(channel);
-
-        return channel.getUserList();
     }
 
 }
