@@ -10,7 +10,7 @@ import java.util.*;
 
 public class JCFUserService implements UserService {
 
-    private final Map<UUID, User> userMap =  new LinkedHashMap<>();
+    private final Map<UUID, User> userMap = new LinkedHashMap<>();
 
     // 연관 도메인의 서비스
     private MessageService messageService;
@@ -34,8 +34,20 @@ public class JCFUserService implements UserService {
             throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + username);
         }
 
-        checkDuplicatePhoneNumber(phoneNumber, null);
-        checkDuplicateEmail(email, null);
+        if (userMap.values().stream()
+                .anyMatch(u -> u.getEmail()
+                        .map(e -> e.equals(email))
+                        .orElse(false))) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일:" + email);
+        }
+
+
+        if (userMap.values().stream()
+                .anyMatch(u -> u.getPhoneNumber()
+                        .map(e -> e.equals(phoneNumber))
+                        .orElse(false))) {
+            throw new IllegalArgumentException("이미 사용 중인 전화번호: " + phoneNumber);
+        }
 
         User newUser = new User(username, nickname, email, phoneNumber);
         userMap.put(newUser.getId(), newUser);
@@ -69,88 +81,84 @@ public class JCFUserService implements UserService {
 
     // Update - Profile
     @Override
-    public User updateUserProfile(UUID userId, String newUsername, String newNickname, String newEmail, String newPhoneNumber) {
+    public User updateUserProfile(UUID userId, String newUsername, String newNickname, String newEmail, String
+            newPhoneNumber) {
         User user = findById(userId);
 
-        Optional.ofNullable(newUsername)
-                .ifPresent(username -> {updateUsername(user, username);});
+        if (isValid(user.getUsername(), newUsername)) user.updateUsername(newUsername);
 
-        Optional.ofNullable(newNickname)
-                .ifPresent(nickname -> {updateNickname(user, nickname);});
+        if (isValid(user.getNickname(), newUsername)) user.updateNickname(newNickname);
 
-        Optional.ofNullable(newEmail)
-                .ifPresent(email -> {updateEmail(user, email);});
+        if (isValid(user.getEmail(), newEmail)) user.updateEmail(newEmail);
 
-        Optional.ofNullable(newPhoneNumber)
-                .ifPresent(phoneNumber -> {updatePhoneNumber(user,  phoneNumber);});
+        if (isValid(user.getPhoneNumber(), newPhoneNumber)) user.updatePhoneNumber(newPhoneNumber);
 
         return user;
     }
 
-    @Override
-    public void updateUsername(User user, String newUsername) {
-        if (user.getUsername().equals(newUsername)) return;
-        if (findByUsername(newUsername).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + newUsername);
-        }
-        user.updateUsername(newUsername);
-
-    }
-    @Override
-    public void updateNickname(User user, String newNickname) {
-        if(user.getNickname().equals(newNickname)) return;
-        user.updateNickname(newNickname);
-
-    }
-
-    @Override
-    public void updateEmail(User user, String email) {
-        if (Objects.equals(user.getEmail().orElse(null), email)) return;
-        checkDuplicateEmail(email, user.getId());
-        user.updateEmail(email);
-    }
-
-    @Override
-    public void updatePhoneNumber(User user, String phoneNumber) {
-        if (Objects.equals(user.getPhoneNumber().orElse(null), phoneNumber)) return;
-        checkDuplicatePhoneNumber(phoneNumber, user.getId());
-        user.updatePhoneNumber(phoneNumber);
-    }
+    // 중복 검증은 모든 유저 풀에서 검색하므로 너무 많은 조회 발생
+//    @Override
+//    public void updateUsername(User user, String newUsername) {
+//        if (user.getUsername().equals(newUsername)) return;
+//        if (findByUsername(newUsername).isPresent()) {
+//            throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + newUsername);
+//        }
+//        user.updateUsername(newUsername);
+//
+//    }
+//    @Override
+//    public void updateNickname(User user, String newNickname) {
+//        if(user.getNickname().equals(newNickname)) return;
+//        user.updateNickname(newNickname);
+//
+//    }
+//
+//    @Override
+//    public void updateEmail(User user, String email) {
+//        if (Objects.equals(user.getEmail().orElse(null), email)) return;
+//        checkDuplicateEmail(email, user.getId());
+//        user.updateEmail(email);
+//    }
+//
+//    @Override
+//    public void updatePhoneNumber(User user, String phoneNumber) {
+//        if (Objects.equals(user.getPhoneNumber().orElse(null), phoneNumber)) return;
+//        checkDuplicatePhoneNumber(phoneNumber, user.getId());
+//        user.updatePhoneNumber(phoneNumber);
+//    }
 
     // Update - Status
     @Override
-    public User updateUserStatus(UUID userId, User.UserPresence newPresence, Boolean newMicrophoneIsOn, Boolean newHeadsetIsOn) {
+    public User updateUserStatus(UUID userId, User.UserPresence newPresence, Boolean newMicrophoneIsOn, Boolean
+            newHeadsetIsOn) {
         User user = findById(userId);
 
-        Optional.ofNullable(newPresence)
-                .ifPresent(presence -> {updatePresence(user, presence);});
+        if (isValid(user.getPresence(), newPresence)) user.changeStatus(newPresence);
 
-        Optional.ofNullable(newMicrophoneIsOn)
-                .ifPresent(microphoneIsOn -> {toggleMicrophone(user, microphoneIsOn);});
+        if (isValid(user.isMicrophoneOn(), newMicrophoneIsOn)) user.toggleMicrophone(newMicrophoneIsOn);
 
-        Optional.ofNullable(newHeadsetIsOn)
-                .ifPresent(headsetIsOn -> {toggleHeadset(user, headsetIsOn);});
+        if (isValid(user.isHeadsetOn(), newHeadsetIsOn)) user.toggleHeadset(newHeadsetIsOn);
 
         return user;
     }
 
-    @Override
-    public void updatePresence(User user, User.UserPresence presence) {
-        if (user.getPresence().equals(presence)) return;
-        user.changeStatus(presence);
-    }
-
-    @Override
-    public void toggleMicrophone(User user, boolean isOn) {
-        if (user.isMicrophoneOn() == isOn) return;
-        user.toggleMicrophone(isOn);
-    }
-
-    @Override
-    public void toggleHeadset(User user, boolean isOn) {
-        if (user.isHeadsetOn() == isOn) return;
-        user.toggleHeadset(isOn);
-    }
+//    @Override
+//    public void updatePresence(User user, User.UserPresence presence) {
+//        if (user.getPresence().equals(presence)) return;
+//        user.changeStatus(presence);
+//    }
+//
+//    @Override
+//    public void toggleMicrophone(User user, boolean isOn) {
+//        if (user.isMicrophoneOn() == isOn) return;
+//        user.toggleMicrophone(isOn);
+//    }
+//
+//    @Override
+//    public void toggleHeadset(User user, boolean isOn) {
+//        if (user.isHeadsetOn() == isOn) return;
+//        user.toggleHeadset(isOn);
+//    }
 
     // Delete
     @Override
@@ -175,28 +183,41 @@ public class JCFUserService implements UserService {
         user.leaveChannel(channel);
     }
 
-    // Duplicate Check
-    private void checkDuplicateEmail(String email, UUID excludeUserId){
-        if (email == null) return;
-
-        if(userMap.values().stream()
-                .filter(u -> !u.getId().equals(excludeUserId)) // 본인 제외
-                .anyMatch(u -> u.getEmail()
-                        .map(e -> e.equals(email))
-                        .orElse(false))) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일:" + email);
-        };
-    }
-
-    private void checkDuplicatePhoneNumber(String phoneNumber, UUID excludeUserId){
-        if (phoneNumber == null) return;
-
-        if(userMap.values().stream()
-                .filter(u -> !u.getId().equals(excludeUserId)) // 본인 ID 제외
-                .anyMatch(u -> u.getPhoneNumber()
-                        .map(e -> e.equals(phoneNumber))
-                        .orElse(false))) {
-            throw new IllegalArgumentException("이미 사용 중인 전화번호: " + phoneNumber);
+    // Helper
+    private boolean isValid(Object current, Object target) {
+        // 1. 변경할 값(target)이 null이면 업데이트 하지 않음 (기존 Optional.ifPresent 역할)
+        if (target == null) {
+            return false;
         }
+
+        // 2. 현재 값과 다를 때만 true 반환 (업데이트 진행)
+        // Objects.equals는 내부적으로 null 체크를 해주므로 안전합니다.
+        return !Objects.equals(current, target);
     }
 }
+
+    // Duplicate Check
+    // 현재 중복 체크 방식은 모든 유저 풀을 확인하므로 조회가 너무 많다.
+//    private void checkDuplicateEmail(String email, UUID excludeUserId){
+//        if (email == null) return;
+//
+//        if(userMap.values().stream()
+//                .filter(u -> !u.getId().equals(excludeUserId)) // 본인 제외
+//                .anyMatch(u -> u.getEmail()
+//                        .map(e -> e.equals(email))
+//                        .orElse(false))) {
+//            throw new IllegalArgumentException("이미 사용 중인 이메일:" + email);
+//        };
+//    }
+//
+//    private void checkDuplicatePhoneNumber(String phoneNumber, UUID excludeUserId){
+//        if (phoneNumber == null) return;
+//
+//        if(userMap.values().stream()
+//                .filter(u -> !u.getId().equals(excludeUserId)) // 본인 ID 제외
+//                .anyMatch(u -> u.getPhoneNumber()
+//                        .map(e -> e.equals(phoneNumber))
+//                        .orElse(false))) {
+//            throw new IllegalArgumentException("이미 사용 중인 전화번호: " + phoneNumber);
+//        }
+//    }
