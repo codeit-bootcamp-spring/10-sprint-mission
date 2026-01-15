@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.MemberOperationType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 
@@ -87,29 +88,41 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 채널 참가자 초대
-    public void inviteMembers(UUID targetUserId, List<User> members) {
+    public void inviteMembers(UUID targetUserId, List<User> members, MemberOperationType memberOperationType) {
         User newUser = userService.searchUser(targetUserId);
 
-        isMemberDuplicated(targetUserId, members);
+        isMemberDuplicated(newUser, members, memberOperationType);
 
         members.add(newUser);
     }
 
     // 채널 퇴장
-    public void leaveMembers(UUID targetUserId, UUID targetChannelId, List<User> members) {
+    public void leaveMembers(UUID targetUserId, UUID targetChannelId, List<User> members, MemberOperationType memberOperationType) {
         User targetUser = userService.searchUser(targetUserId);
         searchChannel(targetChannelId);
 
-        if (!members.contains(targetUser)) {
-            throw new IllegalArgumentException("해당 채널에 존재하는 사용자가 아닙니다.");
-        }
+        isMemberDuplicated(targetUser, members, memberOperationType);
 
         members.remove(targetUser);
     }
 
     // 유효성 검사 (초대)
-    public void isMemberDuplicated(UUID targetUserId, List<User> members) {
-        if (members.stream().anyMatch(member -> member.getId().equals(targetUserId)))
-            throw new IllegalArgumentException("이미 채널에 존재하는 사용자입니다.");
+    public void isMemberDuplicated(User targetUser, List<User> members, MemberOperationType memberOperationType) {
+        boolean isMember = members.contains(targetUser);
+
+        switch (memberOperationType) {
+            case INVITE:
+                if (isMember) {
+                    throw new IllegalArgumentException("이미 채널에 존재하는 사용자입니다.");
+                }
+                break;
+            case LEAVE:
+                if (!isMember) {
+                    throw new IllegalArgumentException("해당 채널에 존재하는 사용자가 아닙니다.");
+                }
+                break;
+            default:
+                break;
+        }
     }
 }
