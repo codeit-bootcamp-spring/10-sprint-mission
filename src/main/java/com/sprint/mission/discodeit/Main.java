@@ -162,7 +162,7 @@ public class Main {
             }
         }
 
-        // 전체 조
+        // 전체 조회
         ArrayList<Channel> channels = channelService.searchChannelAll();
 
         try {   // 에상 출력: Codeit, Book Club
@@ -215,7 +215,7 @@ public class Main {
             try {       // 예상 출력: sakuya, dyoool
                 channelService.inviteMembers(user2.getId(), channel2.getMembers());
                 System.out.println("초대 테스트");
-                users.forEach(user -> System.out.println(user.getNickname()));
+                channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
             } catch (Exception e) {
                 System.err.println("[초대 실패] " + e.getMessage());
             }
@@ -225,10 +225,27 @@ public class Main {
             try {       // 이미 존재하는 사용자
                 channelService.inviteMembers(user3.getId(), channel2.getMembers());
                 System.out.println("초대 테스트");
-                users.forEach(user -> System.out.println(user.getNickname()));
+                channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
             } catch (Exception e) {
                 System.err.println("[초대 실패] " + e.getMessage());
             }
+        }
+
+        // 퇴장
+        try {       // 예상 출력: sakuya
+            channelService.leaveMembers(user2.getId(), channel2.getId(), channel2.getMembers());
+            System.out.println("퇴장 테스트");
+            channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
+        }  catch (Exception e) {
+            System.err.println("[퇴장 실패] " + e.getMessage());
+        }
+
+        try {       // 채널에 존재하지 않는 사용자
+            channelService.leaveMembers(user2.getId(), channel2.getId(), channel2.getMembers());
+            System.out.println("퇴장 테스트");
+            channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
+        }  catch (Exception e) {
+            System.err.println("[퇴장 실패] " + e.getMessage());
         }
 
         // 사용자 별 채널 리스트 조회

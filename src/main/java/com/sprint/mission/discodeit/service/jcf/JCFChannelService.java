@@ -96,6 +96,16 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 채널 퇴장
+    public void leaveMembers(UUID targetUserId, UUID targetChannelId, List<User> members) {
+        User targetUser = userService.searchUser(targetUserId);
+        searchChannel(targetChannelId);
+
+        if (!members.contains(targetUser)) {
+            throw new IllegalArgumentException("해당 채널에 존재하는 사용자가 아닙니다.");
+        }
+
+        members.remove(targetUser);
+    }
 
     // 유효성 검사 (초대)
     public void isMemberDuplicated(UUID targetUserId, List<User> members) {
