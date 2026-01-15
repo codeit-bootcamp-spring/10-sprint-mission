@@ -34,7 +34,7 @@ public class JavaApplication {
         }
 
         try{
-            userService.updateName(firstUser.getId(), "AnSeungBin");
+            userService.updateUser(firstUser.getId(), "AnSeungBin",null,null,null);
             System.out.println("수정된 이름은 " + firstUser.getName() + " 입니다. ");
         }
         catch (IllegalArgumentException e) {
@@ -42,7 +42,7 @@ public class JavaApplication {
         }
 
         try {
-            userService.updateEmail(firstUser.getId(), "asb@naver.com");
+            userService.updateUser(firstUser.getId(),null ,"asb@naver.com",null,null);
             System.out.println("수정된 이메일은 " + firstUser.getEmail() + " 입니다. ");
         } catch (IllegalArgumentException e) {
             System.out.println("이메일 변경 실패 : " + e.getMessage());
@@ -50,13 +50,13 @@ public class JavaApplication {
 
 
         try {
-            userService.updatePhoneNumber(firstUser.getId(), "010-9876-5432");
+            userService.updateUser(firstUser.getId(),null,null, "010-9876-5432",null);
             System.out.println("수정된 전화번호는 " + firstUser.getPhoneNumber() + " 입니다. ");
         } catch (IllegalArgumentException e){
             System.out.println("전화번호 변경 실패 : " + e.getMessage());
         }
         try {
-            userService.updatePassword(firstUser.getId(), "9876");
+            userService.updateUser(firstUser.getId(), null, null,null,"9876");
             System.out.println("수정된 비밀번호는 " + firstUser.getPassword() + " 입니다. ");
         } catch (IllegalArgumentException e) {
             System.out.println("비밀번호 변경 실패 : " + e.getMessage());
@@ -97,13 +97,19 @@ public class JavaApplication {
             System.out.println("채널 생성 실패 : " + e.getMessage());
         }
 
-        try {channelService.updateName(firstChannel.getId(),"경기도");
+        try {channelService.updateChannel(firstChannel.getId(),"경기도",null);
         System.out.println("수정된 채널 이름은 " + firstChannel.getName());}
         catch (IllegalArgumentException e) {
             System.out.println("채널 이름 변경 실패 : " + e.getMessage());
         }
 
-        try { channelService.updateIntro(firstChannel.getId(),"평택");
+        try {channelService.updateChannel(firstChannel.getId(),"경기도",null);
+            System.out.println("수정된 채널 이름은 " + firstChannel.getName());}
+        catch (IllegalArgumentException e) {
+            System.out.println("수정 실패 테스트 : " + e.getMessage());
+        }
+
+        try { channelService.updateChannel(firstChannel.getId(),null,"평택");
         System.out.println("수정된 채널 설명은 " + firstChannel.getIntro() + " 입니다."); }
         catch (IllegalArgumentException e) {
             System.out.println("채널 설명 변경 실패 : " + e.getMessage());

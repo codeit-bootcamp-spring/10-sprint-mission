@@ -41,41 +41,29 @@ public class JCFChannelService implements ChannelService {
     public List<Channel> findAllChannels () {return new ArrayList<>(channelList.values());}
 
     public void deleteChannel(UUID channelId){
-        Channel channel = channelList.get(channelId);
-        if(channel == null){
-            throw new IllegalArgumentException("해당 채널을 찾을 수 없습니다.");
-        }
+        Channel channel = findChannelById(channelId);
         channelList.remove(channelId);
     }
 
-    public Channel updateName (UUID channelId, String name){
-        Channel channel = channelList.get(channelId);
+    public Channel updateChannel(UUID channelId, String name, String intro) {
+        Channel channel = findChannelById(channelId);
 
-        if(channel == null){
-            throw new IllegalArgumentException("채널을 찾을 수 없습니다");
-        }
+        Optional.ofNullable(name)
+                .ifPresent(n-> {
+                    if (channel.getName().equals(n)) {
+                        throw new IllegalArgumentException("현재 사용 중인 채널 이름입니다");
+                    }
+                    channel.setName(n);
+                });
 
-        if(channel.getName().equals(name)) {
-            throw new IllegalArgumentException("현재 사용 중인 채널명입니다");
-        }
+        Optional.ofNullable(intro)
+                .ifPresent(i -> {
+                    if(channel.getIntro().equals(i)){
+                        throw new IllegalArgumentException("현재 사용 중인 채널 설명입니다");
+                    }
+                    channel.setIntro(i);
+                });
 
-        channel.setName(name);
-        channel.setUpdatedAt(System.currentTimeMillis());
-        return channel;
-    }
-
-    public Channel updateIntro (UUID channelId, String Intro){
-        Channel channel = channelList.get(channelId);
-
-        if(channel == null){
-            throw new IllegalArgumentException("채널을 찾을 수 없습니다");
-        }
-
-        if(channel.getIntro().equals(Intro)) {
-            throw new IllegalArgumentException("현재 사용 중인 채널 설명입니다");
-        }
-
-        channel.setIntro(Intro);
         channel.setUpdatedAt(System.currentTimeMillis());
         return channel;
     }
@@ -113,4 +101,7 @@ public class JCFChannelService implements ChannelService {
     public int getMessageCount(Channel channel) {
         return channel.getMessageList().size();
     }
+
+
 }
+

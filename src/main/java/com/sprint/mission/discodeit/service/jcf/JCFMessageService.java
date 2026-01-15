@@ -31,11 +31,8 @@ public class JCFMessageService implements MessageService {
         return newMessage;
     }
 
-    public Message updateMessage(UUID messaageId, String content) {
-        Message message = messageStore.get(messaageId);
-        if(message == null){
-            throw new IllegalArgumentException("해당 메세지를 찾을 수 없습니다");
-        }
+    public Message updateMessage(UUID messageId, String content) {
+        Message message = findMessageById(messageId);
 
         if(message.getContent().equals(content)){
             throw new IllegalArgumentException("수정 전 메세지와 같습니다");
@@ -73,11 +70,7 @@ public class JCFMessageService implements MessageService {
     }
 
     public void deleteMessage(UUID messageId){
-        Message message = messageStore.get(messageId);
-        if(message == null){
-            throw new IllegalArgumentException("해당 메세지를 찾을 수 없습니다");
-        }
-
+        Message message = findMessageById(messageId);
         messageStore.remove(messageId);
     }
 }

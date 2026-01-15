@@ -38,77 +38,53 @@ public class JCFUserService implements UserService {
     }
 
     public void deleteUser(UUID userId){
-        User user = userStore.get(userId);
-        if(user == null){
-            throw new IllegalArgumentException("유저를 찾을 수 없습니다");
-        }
-
+        User user = findUserById(userId);
         userStore.remove(userId);
         }
 
     public int userCount () {return userStore.size();}
 
-    public User updateName (UUID userId,String newName){
-        User user = userStore.get(userId);
+    public User updateUser(UUID userId, String name, String email, String phoneNumber, String password ){
+        User user = findUserById(userId);
 
-        if (user == null) {
-            throw new IllegalArgumentException("유저를 찾을 수 없습니다");
-        }
-        if (user.getName().equals(newName)) {
-            throw new IllegalArgumentException("현재 사용 중인 이름입니다");
-        }
+        Optional.ofNullable(name)
+                .ifPresent(n-> {
+                    if(user.getName().equals(n)){
+                        throw new IllegalArgumentException("현재 사용 중인 이름입니다");
+                    }
+                    user.setName(name);
+                });
 
-        user.setName(newName);
-        user.setUpdatedAt(System.currentTimeMillis());
+        Optional.ofNullable(email)
+                .ifPresent(e -> {
+                    if(user.getEmail().equals(e)){
+                        throw new IllegalArgumentException("다른 유저가 사용 중인 이메일입니다");
+                    }
+
+                    if (userStore.values().stream()
+                            .anyMatch(u -> !u.getId().equals(userId) && u.getEmail().equals(e))) {
+                        throw new IllegalArgumentException("다른 유저가 사용 중인 이메일입니다");
+                    }
+                    user.setEmail(email);
+                });
+
+        Optional.ofNullable(phoneNumber)
+                .ifPresent(p -> {
+                    if(user.getPhoneNumber().equals(p)){
+                        throw new IllegalArgumentException("현재 사용 중인 전화번호입니다");
+                    }
+                    user.setPhoneNumber(phoneNumber);
+                });
+
+        Optional.ofNullable(password)
+                .ifPresent(p-> {
+                    if(user.getPassword().equals(p)) {
+                        throw new IllegalArgumentException("현재 사용 중인 비밀번호입니다");
+                    }
+                    user.setPassword(password);
+                });
+
         return user;
     }
 
-    public User updateEmail (UUID userId, String newEmail) {
-        User user = userStore.get(userId);
-        if (user == null) {
-            throw new IllegalArgumentException("유저를 찾을 수 없습니다");
-        }
-
-        if(user.getEmail().equals(newEmail)){
-            throw new IllegalArgumentException("현재 사용 중인 이메일입니다");
-        }
-
-        if (userStore.values().stream()
-                .anyMatch(u -> !u.getId().equals(userId) && u.getEmail().equals(newEmail))) {
-                 throw new IllegalArgumentException("다른 유저가 사용 중인 이메일입니다");
-        }
-        user.setEmail(newEmail);
-        user.setUpdatedAt(System.currentTimeMillis());
-        return user;
-    }
-
-    public User updatePhoneNumber(UUID userId, String newPhoneNumber) {
-        User user = userStore.get(userId);
-        if(user == null) {
-            throw new IllegalArgumentException("유저를 찾을 수 없습니다");
-        }
-
-        if(user.getPhoneNumber().equals(newPhoneNumber)) {
-            throw new IllegalArgumentException("현재 사용 중인 전화번호입니다");
-        }
-
-        user.setPhoneNumber(newPhoneNumber);
-        user.setUpdatedAt(System.currentTimeMillis());
-        return user;
-    }
-
-    public User updatePassword(UUID userId, String newPassword) {
-        User user = userStore.get(userId);
-        if(user == null) {
-            throw new IllegalArgumentException("유저를 찾을 수 없습니다");
-        }
-
-        if(user.getPassword().equals(newPassword)) {
-            throw new IllegalArgumentException("현재 사용 중인 비밀번호입니다");
-        }
-
-        user.setPassword(newPassword);
-        user.setUpdatedAt(System.currentTimeMillis());
-        return user;
-    }
 }
