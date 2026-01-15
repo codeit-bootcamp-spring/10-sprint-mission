@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class User extends BaseDomain {
     // 필드
     private String name;
-    private ArrayList<Message> messageList;
+    private List<Message> messageList;
 
     // 생성자
     public User() {
@@ -31,7 +32,7 @@ public class User extends BaseDomain {
         return this.updatedAt;
     }
 
-    public ArrayList<Message> getMessageList() {
+    public List<Message> getMessageList() {
         return this.messageList;
     }
 

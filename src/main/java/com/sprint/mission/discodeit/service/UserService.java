@@ -8,9 +8,9 @@ public interface UserService {
 
     User create(String name);
 
-    Optional<User> read(UUID id);
+    User read(UUID id);
 
-    ArrayList<User> readAll();
+    List<User> readAll();
 
     User update(UUID id, String name);
 

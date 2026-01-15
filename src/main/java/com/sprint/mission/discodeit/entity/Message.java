@@ -5,11 +5,15 @@ import java.util.UUID;
 public class Message extends BaseDomain {
     // 필드
     private String msg;
+    private User user;
+    private Channel channel;
 
     // 생성자
-    public Message(String msg) {
+    public Message(String msg, User user, Channel channel) {
         super();
         this.msg = msg;
+        this.user = user;
+        this.channel = channel;
     }
 
     // 메소드
@@ -23,6 +27,22 @@ public class Message extends BaseDomain {
 
     public long getUpdatedAt() {
         return this.updatedAt;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
     }
 
     public void updateText(String msg) {

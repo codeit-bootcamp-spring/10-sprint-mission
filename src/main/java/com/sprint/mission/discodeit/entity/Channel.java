@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class Channel extends BaseDomain{
     // 필드
     private String channelName;
-    private ArrayList<User> userList;
+    private List<User> userList;
 
     // 생성자
     public Channel() {
@@ -38,7 +39,7 @@ public class Channel extends BaseDomain{
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public ArrayList<User> getUserList() {
+    public List<User> getUserList() {
         return this.userList;
     }
 
