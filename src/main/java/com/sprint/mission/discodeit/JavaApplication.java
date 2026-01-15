@@ -179,11 +179,11 @@ public class JavaApplication {
         System.out.println("\n--- 프로필 수정 ---");
         System.out.println(">> 변경할 값을 입력하세요. (변경하지 않으려면 그냥 Enter)");
 
-        System.out.printf("Username [%s]: ", user.getUsername());
+        System.out.printf("사용자명 [%s]: ", user.getUsername());
         String newUsername = scanner.nextLine().trim();
 
-        System.out.printf("이름 [%s]: ", user.getNickname());
-        String newNickname = scanner.nextLine().trim();
+        System.out.printf("별명 [%s]: ", user.getNickname());
+        String newNickname = scanner.nextLine();
 
         String currentEmail = user.getEmail().orElse("없음");
         System.out.printf("이메일 [%s]: ", currentEmail);
@@ -252,7 +252,7 @@ public class JavaApplication {
 
         System.out.print("정말 삭제하시겠습니까? (y/n): ");
         if (scanner.nextLine().trim().equalsIgnoreCase("y")) {
-            System.out.println(">> 삭제됨: " + userService.deleteUser(user.getId()));
+            System.out.println(">> 삭제됨");
         } else {
             System.out.println(">> 취소되었습니다.");
         }
@@ -304,7 +304,7 @@ public class JavaApplication {
 
         System.out.print("정말 삭제하시겠습니까? (y/n): ");
         if (scanner.nextLine().trim().equalsIgnoreCase("y")) {
-            System.out.println(">> 삭제됨: " + channelService.deleteChannel(channel.getId()));
+            System.out.println(">> 삭제됨: ");
         } else {
             System.out.println(">> 취소되었습니다.");
         }
@@ -367,7 +367,7 @@ public class JavaApplication {
             return;
         }
 
-        System.out.println(">> 삭제됨: " + messageService.deleteMessage(myMessages.get(msgIdx).getId()));
+        System.out.println(">> 삭제됨: ");
     }
 
     // =================================================================

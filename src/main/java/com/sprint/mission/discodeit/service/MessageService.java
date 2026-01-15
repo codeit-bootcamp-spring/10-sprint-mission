@@ -31,7 +31,7 @@ public interface MessageService {
     Message updateMessage(UUID messageId, String newContent);
 
     // Delete
-    Message deleteMessage(UUID messageId);
+    void deleteMessage(UUID messageId);
 
     // Delete All(유저 탈퇴, 채널 삭제 등)
     void deleteMessagesByChannelId(UUID channelId);

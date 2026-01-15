@@ -62,14 +62,13 @@ public class JCFChannelService implements ChannelService {
     }
     // Delete
     @Override
-    public Channel deleteChannel(UUID channelId) {
+    public void deleteChannel(UUID channelId) {
         Channel channel = findById(channelId);
 
         messageService.deleteMessagesByChannelId(channelId); // 채널 내 모든 메시지 삭제
         channel.getUsers().forEach(user -> {user.leaveChannel(channel);}); // 채널 내 유저에게서 채널 삭제
         channelMap.remove(channelId); // 채널 맵에서 삭제
 
-        return channel;
     }
 
 }

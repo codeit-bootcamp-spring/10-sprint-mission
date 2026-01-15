@@ -19,7 +19,7 @@ public interface ChannelService {
     Channel updateChannel(UUID channelId, String newName, Channel.ChannelVisibility newVisibility);
 
     // Delete
-    Channel deleteChannel(UUID channelId);
+    void deleteChannel(UUID channelId);
 
     // Setter
     void setMessageService(MessageService messageService);
