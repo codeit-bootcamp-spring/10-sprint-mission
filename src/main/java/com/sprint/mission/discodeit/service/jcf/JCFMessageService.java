@@ -65,7 +65,7 @@ public class JCFMessageService implements MessageService {
 
     // 메시지 수정
     @Override
-    public void updateMessage(UUID targetMessageId, String newMessage) {
+    public Message updateMessage(UUID targetMessageId, String newMessage) {
         Message targetMessage = searchMessage(targetMessageId);
 
         Optional.ofNullable(newMessage)
@@ -74,6 +74,8 @@ public class JCFMessageService implements MessageService {
                     validateDuplicateValue(targetMessage.getMessage(), message, "[메시지 변경 실패] 이전 메시지와 동일합니다.");
                     targetMessage.updateMessage(newMessage);
                 });
+
+        return targetMessage;
     }
 
     // 메시지 삭제

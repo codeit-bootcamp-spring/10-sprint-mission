@@ -39,7 +39,7 @@ public class JCFUserService implements UserService {
 
     // 사용자 정보 수정 (비밀번호, 닉네임) - 유연하게 계선
     @Override
-    public void updateUser(UUID targetUserId, String newPassword, String newNickname, UserStatusType newUserStatus) {
+    public User updateUser(UUID targetUserId, String newPassword, String newNickname, UserStatusType newUserStatus) {
         User targetUser = searchUser(targetUserId);
 
         Optional.ofNullable(newPassword)
@@ -58,6 +58,8 @@ public class JCFUserService implements UserService {
 
         Optional.ofNullable(newUserStatus)
                 .ifPresent(targetUser::updateUserStatus);
+
+        return targetUser;
     }
 
     // 사용자 삭제
