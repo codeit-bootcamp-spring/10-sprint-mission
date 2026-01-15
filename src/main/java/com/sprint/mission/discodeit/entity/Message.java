@@ -17,15 +17,21 @@ public class Message extends BaseEntity {
     }
 
     // Getter, update
-    public String getContent() {return content;}
-    public UUID getUserId() {return user.getId();}
-    public UUID getChannelId() {return channel.getId();}
+    public String getContent() {
+        return content;
+    }
+
+    public UUID getUserId() {
+        return user.getId();
+    }
+
+    public UUID getChannelId() {
+        return channel.getId();
+    }
 
     // 메세지 수정
-    public void update(String content) {
-        Optional.ofNullable(content).ifPresent(c -> {
-            this.content = c;
-            updateTimestamp();
-        });
+    public void updateContent(String content) {
+        Optional.ofNullable(content).ifPresent(c -> this.content = c);
+        updateTimestamp();
     }
 }

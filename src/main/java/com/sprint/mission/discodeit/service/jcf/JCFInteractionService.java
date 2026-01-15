@@ -55,10 +55,14 @@ public class JCFInteractionService implements InteractionService {
     public void deleteUser(UUID userId) {
         User user = userService.findById(userId);
         Objects.requireNonNull(user, "유저 객체가 유효하지 않습니다.");
-        for (Channel channel : user.getChannels())
-            channel.removeUser(user);
+
+        user.getChannels().forEach(channel -> channel.removeUser(user));
 
         userService.delete(user.getId());
+
+        // 반복문을 스트림으로 변환하기
+        // 먼저 스트림으로 만들 집합객체 : Channel user.getChannels()
+        // 각각에 대해
 
     }
 
@@ -68,12 +72,8 @@ public class JCFInteractionService implements InteractionService {
         Objects.requireNonNull(channel, "삭제할 채널 객체는 null일 수 없습니다.");
         List<Message> messagesToDelete = new ArrayList<>(messageService.findAllByChannelId(channel.getId()));
         // 리스트 복사본을 통해 삭제
-        for (Message m : messagesToDelete)
-            messageService.delete(m.getId());
-
-        for (User user : channel.getUsers()) {
-            user.leaveChannel(channel);
-        }
+        messagesToDelete.forEach(message -> messageService.delete(message.getId()));
+        channel.getUsers().forEach(user -> user.leaveChannel(channel));
 
         channelService.delete(channel.getId());
     }

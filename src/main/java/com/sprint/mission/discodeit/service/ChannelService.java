@@ -8,9 +8,14 @@ import java.util.UUID;
 
 public interface ChannelService {
     Channel create(String name, String description);
-    public void delete(UUID channelId);
+
+    void delete(UUID channelId);
+
     Channel findById(UUID id);
+
     List<Channel> findAll();
+
     Channel update(UUID id, String name, String description);
+
     List<Message> getMessageList(UUID channelId);
 }

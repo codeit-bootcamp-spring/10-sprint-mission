@@ -9,7 +9,7 @@ public class JCFUserService implements UserService {
 
     private final Map<UUID, User> users;    // 유저 전체 목록
 
-    public JCFUserService(){
+    public JCFUserService() {
         this.users = new HashMap<>();
     }
 
@@ -39,7 +39,7 @@ public class JCFUserService implements UserService {
     @Override
     public User findById(UUID userId) {
         Objects.requireNonNull(userId, "유저 Id가 유효하지 않습니다.");
-        return users.get(userId);
+        return Objects.requireNonNull(users.get(userId), "Id에 해당하는 유저가 존재하지 않습니다.");
     }
 
     @Override
@@ -50,14 +50,15 @@ public class JCFUserService implements UserService {
     @Override
     public User update(UUID userId, String name, String email, String profileImageUrl) {
         Objects.requireNonNull(userId, "유저 Id가 유효하지 않습니다.");
-
         User user = findById(userId);
         if (user == null) {
             System.out.println("수정할 유저가 존재하지 않습니다.");
             return null;
         }
 
-        user.update(name, email, profileImageUrl);
+        if (name != null) user.updateName(name);
+        if (email != null) user.updateEmail(email);
+        if (profileImageUrl != null) user.updateProfileImageUrl(profileImageUrl);
         return user;
     }
 

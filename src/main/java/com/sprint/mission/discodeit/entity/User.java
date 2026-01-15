@@ -15,7 +15,7 @@ public class User extends BaseEntity {
     private String profileImageUrl;
 
     // constructor
-    public User(String name, String email, String profileImageUrl){
+    public User(String name, String email, String profileImageUrl) {
         super();
         this.name = Objects.requireNonNull(name, "이름은 필수입니다.");
         this.email = Objects.requireNonNull(email, "이메일은 필수입니다.");
@@ -23,10 +23,21 @@ public class User extends BaseEntity {
     }
 
     // Getter, update
-    public List<Channel> getChannels() {return List.copyOf(this.channels);}     // 채널 객체를 직접 전달
-    public String getName() {return this.name;}
-    public String getEmail() {return this.email;}
-    public String getProfileImageUrl() {return this.profileImageUrl;}
+    public List<Channel> getChannels() {
+        return List.copyOf(this.channels);
+    }     // 채널 객체를 직접 전달
+
+    public String getName() {
+        return this.name;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public String getProfileImageUrl() {
+        return this.profileImageUrl;
+    }
 
     public void update(String name, String email, String profileImageUrl) {
         // 하나라도 수정 요청이 있을 때만 로직을 수행합니다.
@@ -39,6 +50,21 @@ public class User extends BaseEntity {
         }
     }
 
+    public void updateName(String name) {
+        Optional.ofNullable(name).ifPresent(n -> this.name = n);
+        updateTimestamp();
+    }
+
+    public void updateEmail(String email) {
+        Optional.ofNullable(email).ifPresent(e -> this.email = e);
+        updateTimestamp();
+    }
+
+    public void updateProfileImageUrl(String profileImageUrl) {
+        Optional.ofNullable(profileImageUrl).ifPresent(p -> this.profileImageUrl = p);
+        updateTimestamp();
+    }
+
     // 채널 참여 시 채널 목록에 채널 추가
     public void joinChannel(Channel channel) {
         if (channel == null)
@@ -46,6 +72,7 @@ public class User extends BaseEntity {
         if (!this.channels.contains(channel))
             this.channels.add(channel);
     }
+
     // 퇴장 시 삭제
     public void leaveChannel(Channel channel) {
         this.channels.remove(channel);

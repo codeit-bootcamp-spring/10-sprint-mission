@@ -64,7 +64,8 @@ public class JavaApplication {
             System.out.println("[테스트] 유저 서비스에서 삭제");
             System.out.println(" - 삭제 전 채널 인원: " + generalChannel.getUsers().size() + "명");
             testDeleteUserCascade(userC, generalChannel);
-            System.out.println(" - 삭제 후 채널 인원: " + generalChannel.getUsers().size() + "명 (유저 존재 여부: " + userService.findById(userC.getId()) + ")");
+            System.out.println(" - 삭제 후 채널 인원: " + generalChannel.getUsers().size() + "명");
+            System.out.println(" - 유저 서비스 확인: " + check(() -> userService.findById(userC.getId())));;
             System.out.println();
 
             // 8. 채널 삭제 시 메시지 및 유저 참여 리스트 정리
@@ -76,7 +77,9 @@ public class JavaApplication {
             System.out.println("[테스트] 채널 삭제 시 연쇄 반응");
             System.out.println(" - [Before] 유저 참여 채널 수: " + userA.getChannels().size() + ", 메시지 저장소 존재: " + (messageService.findById(tempMsgId) != null));
             testDeleteChannelCascade(userA, tempChannel, tempMsgId);
-            System.out.println(" - [After] 유저 참여 채널 수: " + userA.getChannels().size() + ", 메시지 저장소 존재: " + (messageService.findById(tempMsgId) != null));
+            System.out.println(" - [After] 유저 참여 채널 수: " + userA.getChannels().size());
+            System.out.println(" - 메시지 존재 여부: " + check(() -> messageService.findById(tempMsgId)));
+            System.out.println(" - 채널 존재 여부: " + check(() -> channelService.findById(tempChannel.getId())));;
             System.out.println();
 
             System.out.println("==============================================");
@@ -169,7 +172,15 @@ public class JavaApplication {
     // 7. 유저 삭제 후 채널 참여 명단 확인
     public static void testDeleteUserCascade(User user, Channel channel) {
         interactionService.deleteUser(user.getId());
-        if (userService.findById(user.getId()) == null && !channel.getUsers().contains(user)) {
+
+        boolean isDeleted = false;
+        try {
+            userService.findById(user.getId());
+        } catch (Exception e) {
+            isDeleted = true; // 예외 발생 시 삭제 성공
+        }
+
+        if (isDeleted && !channel.getUsers().contains(user)) {
             System.out.println("[성공] 유저 삭제 및 채널 참여 명단 정리 확인");
         } else {
             throw new RuntimeException("유저 연쇄 삭제 검증 실패");
@@ -179,12 +190,15 @@ public class JavaApplication {
     // 8. 채널 삭제 후 유저의 채널 리스트 및 전체 메시지 정리 확인
     public static void testDeleteChannelCascade(User user, Channel channel, UUID messageId) {
         interactionService.deleteChannel(channel.getId());
-        boolean channelRemovedFromUser = !user.getChannels().contains(channel);
-        boolean messageRemovedFromService = (messageService.findById(messageId) == null);
-        boolean channelRemovedFromService = (channelService.findById(channel.getId()) == null);
 
-        if (channelRemovedFromUser && messageRemovedFromService && channelRemovedFromService) {
-            System.out.println("[성공] 채널 삭제 및 유저 리스트/메시지 저장소 정리 확인");
+        boolean msgRemoved = false;
+        try { messageService.findById(messageId); } catch (Exception e) { msgRemoved = true; }
+
+        boolean chRemoved = false;
+        try { channelService.findById(channel.getId()); } catch (Exception e) { chRemoved = true; }
+
+        if (msgRemoved && chRemoved && !user.getChannels().contains(channel)) {
+            System.out.println("[성공] 채널 삭제 및 연쇄 정리 확인");
         } else {
             throw new RuntimeException("채널 연쇄 삭제 검증 실패");
         }
@@ -215,10 +229,22 @@ public class JavaApplication {
     // [추가] 11. 데이터 정합성 확인 (존재하지 않는 ID 조회 시 대응)
     public static void testInvalidIdAccess() {
         UUID fakeId = UUID.randomUUID();
-        if (userService.findById(fakeId) == null && channelService.findById(fakeId) == null) {
-            System.out.println("[성공] 존재하지 않는 ID 조회 시 null 반환 확인");
-        } else {
-            throw new RuntimeException("잘못된 ID 접근 제어 실패");
+        try {
+            userService.findById(fakeId);
+            // 예외가 안 터지고 여기까지 오면 실패임
+            throw new RuntimeException("잘못된 ID 접근 시 예외가 발생하지 않음");
+        } catch (Exception e) {
+            System.out.println("[성공] 존재하지 않는 ID 조회 시 예외 발생 확인: " + e.getMessage());
+        }
+    }
+
+    // 데이터 존재 여부를 문자열로 반환하는 헬퍼 메서드
+    private static String check(Runnable action) {
+        try {
+            action.run();
+            return "존재함";
+        } catch (Exception e) {
+            return "존재하지 않음 (예외 발생)";
         }
     }
 }

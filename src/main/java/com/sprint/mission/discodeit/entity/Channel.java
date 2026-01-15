@@ -19,11 +19,19 @@ public class Channel extends BaseEntity {
     }
 
     // Getter, update
-    public List<User> getUsers() {return List.copyOf(this.users);}
-    public String getName() {return name;}
-    public String getDescription() {return description;}
+    public List<User> getUsers() {
+        return List.copyOf(this.users);
+    }
 
-    public void update(String name, String description){
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void update(String name, String description) {
         if (name != null || description != null) {
             Optional.ofNullable(name).ifPresent(n -> this.name = n);
             Optional.ofNullable(description).ifPresent(d -> this.description = d);
@@ -32,8 +40,18 @@ public class Channel extends BaseEntity {
         }
     }
 
+    public void updateName(String name) {
+        Optional.ofNullable(name).ifPresent(n -> this.name = n);
+        updateTimestamp();
+    }
+
+    public void updateDescription(String description) {
+        Optional.ofNullable(description).ifPresent(d -> this.description = d);
+        updateTimestamp();
+    }
+
     // 유저 목록에 유저 추가
-    public void addUser(User user){
+    public void addUser(User user) {
         if (user == null)
             return;
         if (!this.users.contains(user))
@@ -42,7 +60,7 @@ public class Channel extends BaseEntity {
 
     // 유저 목록에서 유저 삭제
     public void removeUser(User user) {
-            users.remove(user);
+        users.remove(user);
     }
 
     // 메세지 목록에 메세지 추가 + 채널 수정 시간 갱신

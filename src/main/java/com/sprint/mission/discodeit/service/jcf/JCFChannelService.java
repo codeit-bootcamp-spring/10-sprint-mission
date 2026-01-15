@@ -38,7 +38,8 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel findById(UUID id) {
         Objects.requireNonNull(id, "채널 Id가 유효하지 않습니다.");
-        return channels.get(id);
+        return Objects.requireNonNull(channels.get(id), "Id에 해당하는 채널이 존재하지 않습니다.");
+
     }
 
     @Override
@@ -54,15 +55,17 @@ public class JCFChannelService implements ChannelService {
             System.out.println("수정하려는 채널이 존재하지 않습니다.");
             return null;
         }
-        channel.update(name, description);
+
+        if (name != null) channel.updateName(name);
+        if (description != null) channel.updateDescription(description);
         return channel;
     }
 
     @Override
-    public List<Message> getMessageList(UUID channelId){
+    public List<Message> getMessageList(UUID channelId) {
         Objects.requireNonNull(channelId, "채널 Id가 유효하지 않습니다.");
         Channel channel = findById(channelId);
-        if (channel == null){
+        if (channel == null) {
             System.out.println("메세지를 출력하려는 채널이 존재하지 않습니다.");
             return List.of();
         }

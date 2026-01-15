@@ -9,7 +9,7 @@ import java.util.*;
 public class JCFMessageService implements MessageService {
 
     // 전체 메세지 저장
-    private final Map<UUID, Message> repository = new HashMap<>();
+    private final Map<UUID, Message> Messages = new HashMap<>();
     // 채널 JCF 객체 저장
     private final ChannelService channelService;
 
@@ -27,7 +27,7 @@ public class JCFMessageService implements MessageService {
         if (!channel.getUsers().contains(user))
             throw new IllegalArgumentException("해당 채널의 멤버가 아니면 메시지를 작성할 수 없습니다.");
         Message message = new Message(content, user, channel);
-        repository.put(message.getId(), message);
+        Messages.put(message.getId(), message);
         channel.addMessage(message);
 
         return message;
@@ -36,13 +36,13 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message findById(UUID messageId) {
-        Objects.requireNonNull(messageId, "조회하려는 메시지 ID가 null입니다.");
-        return repository.get(messageId);
+        Objects.requireNonNull(messageId, "조회하려는 메시지 Id가 null입니다.");
+        return Objects.requireNonNull(Messages.get(messageId), "Id에 해당하는 메세지가 존재하지 않습니다.");
     }
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
-        Objects.requireNonNull(channelId, "조회하려는 채널 ID가 null입니다.");
+        Objects.requireNonNull(channelId, "조회하려는 채널 Id가 null입니다.");
         // 해당 채널 ID를 가진 메시지만 필터링하여 리스트로 반환
         Channel channel = channelService.findById(channelId);
         if (channel == null) {
@@ -55,16 +55,14 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message update(UUID messageId, String content) {
-        Objects.requireNonNull(messageId, "수정하려는 메시지 ID가 null입니다.");
-        Objects.requireNonNull(content, "수정할 내용이 null입니다.");
-
-        Message message = repository.get(messageId);
+        Objects.requireNonNull(messageId, "메세지 Id가 유효하지 않습니다.");
+        Message message = Messages.get(messageId);
         if (message == null) {
             System.out.println("메세지가 존재하지 않습니다.");
             return null;
         }
 
-        message.update(content);
+        if (content != null) message.updateContent(content);
         return message;
     }
 
@@ -72,7 +70,7 @@ public class JCFMessageService implements MessageService {
     public void delete(UUID messageId) {
         Objects.requireNonNull(messageId, "메세지 Id가 유효하지 않습니다.");
 
-        Message message = repository.remove(messageId);
+        Message message = Messages.remove(messageId);
         if (message == null) {
             System.out.println("삭제하려는 메세지가 존재하지 않습니다.");
             return;
