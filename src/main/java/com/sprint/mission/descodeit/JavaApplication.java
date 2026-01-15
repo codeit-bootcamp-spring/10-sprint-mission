@@ -6,6 +6,9 @@ import com.sprint.mission.descodeit.entity.User;
 import com.sprint.mission.descodeit.service.ChannelService;
 import com.sprint.mission.descodeit.service.MessageService;
 import com.sprint.mission.descodeit.service.UserService;
+import com.sprint.mission.descodeit.service.file.FileChannelService;
+import com.sprint.mission.descodeit.service.file.FileMessageService;
+import com.sprint.mission.descodeit.service.file.FileUserService;
 import com.sprint.mission.descodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.descodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.descodeit.service.jcf.JCFUserService;
@@ -14,9 +17,9 @@ import java.util.UUID;
 
 public class JavaApplication {
     public static void main(String[] args){
-        MessageService messageService = new JCFMessageService();
-        UserService userService = new JCFUserService(messageService);
-        ChannelService channelService = new JCFChannelService(userService,messageService);
+        MessageService messageService = new FileMessageService();
+        UserService userService = new FileUserService(messageService);
+        ChannelService channelService = new FileChannelService(userService,messageService);
         messageService.setDependencies(userService,channelService);
 
         // 유저 생성

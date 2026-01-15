@@ -1,4 +1,4 @@
-package com.sprint.mission.descodeit.service.jcf;
+package com.sprint.mission.descodeit.service.file;
 
 import com.sprint.mission.descodeit.entity.Channel;
 import com.sprint.mission.descodeit.entity.Message;
@@ -7,29 +7,36 @@ import com.sprint.mission.descodeit.service.ChannelService;
 import com.sprint.mission.descodeit.service.MessageService;
 import com.sprint.mission.descodeit.service.UserService;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.*;
 
-
-public class JCFChannelService implements ChannelService {
-    private final Map<UUID, Channel> data;
+public class FileChannelService implements ChannelService {
+    private Map<UUID, Channel> data;
+    private static final String CHANNEL_FILE = "data/channel.ser";
     private final UserService userService;
     private final MessageService messageService;
 
-    public JCFChannelService(UserService userService, MessageService messageService){
-        this.data = new HashMap<>();
+    public FileChannelService(UserService userService, MessageService messageService){
+        this.data = loadChannel();
         this.userService = userService;
         this.messageService = messageService;
     }
 
     @Override
     public Channel create(String name) {
+        data = loadChannel();
         Channel channel = new Channel(name);
         data.put(channel.getId(), channel);
+
+        saveChannel();
         return channel;
     }
 
     @Override
-    public Channel joinUsers(UUID channelId, UUID ... userId) {
+    public Channel joinUsers(UUID channelId, UUID... userId) {
         Channel channel = findChannel(channelId);
 
         // 유저 추가
@@ -37,20 +44,26 @@ public class JCFChannelService implements ChannelService {
                 .map(userService::findUser)
                 .forEach(channel::addUsers);
 
+        saveChannel();
         return channel;
     }
 
     @Override
     public Channel findChannel(UUID channelId) {
+        data = loadChannel();
         Channel channel = Optional.ofNullable(data.get(channelId))
                 .orElseThrow(()->new NoSuchElementException("해당 채널을 찾을 수 없습니다"));
+        saveChannel();
         return channel;
     }
 
     @Override
     public List<Channel> findAllChannel() {
+        data = loadChannel();
         System.out.println("[채널 전체 조회]");
         data.keySet().forEach(uuid -> System.out.println(data.get(uuid)));
+
+        saveChannel();
         return new ArrayList<>(data.values());
     }
 
@@ -66,6 +79,7 @@ public class JCFChannelService implements ChannelService {
                 .forEach(channel -> {channelList.add(channel);
                     System.out.println(channel);});
 
+        saveChannel();
         return channelList;
     }
 
@@ -73,6 +87,7 @@ public class JCFChannelService implements ChannelService {
     public Channel update(UUID channelId, String newName) {
         Channel channel = findChannel(channelId);
         channel.updateChannel(newName);
+        saveChannel();
         return channel;
     }
 
@@ -89,6 +104,24 @@ public class JCFChannelService implements ChannelService {
         messageList.forEach(message -> messageService.delete(message.getId()));
 
         data.remove(channelId);
+        saveChannel();
+    }
+
+    public Map<UUID, Channel> loadChannel(){
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(CHANNEL_FILE))){
+            return (Map<UUID,Channel>) ois.readObject();
+        }
+        catch(Exception e){
+            return new HashMap<>();
+        }
+    }
+
+    public void saveChannel(){
+        try(ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream(CHANNEL_FILE)))){
+            oos.writeObject(this.data);
+        }
+        catch (Exception e){
+            throw new RuntimeException(e);
+        }
     }
 }
-

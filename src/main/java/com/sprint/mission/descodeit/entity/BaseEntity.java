@@ -1,8 +1,10 @@
 package com.sprint.mission.descodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class BaseEntity {
+public class BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final UUID id;
     private final Long createdAt;
     private Long updatedAt;
