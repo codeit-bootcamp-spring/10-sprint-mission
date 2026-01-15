@@ -96,6 +96,7 @@ public class JavaApplication {
                 users.get(5).getId()
         );
 
+        //채널 단건 출력
         System.out.println("[채널 출력(단건)]");
         Channel findOneChannel = channelService.findChannel(channels.get(0).getId());
         System.out.println(ChannelView.viewChannel(findOneChannel));
@@ -121,10 +122,6 @@ public class JavaApplication {
             System.out.println(ChannelView.viewChannel(allChannel));
             System.out.println();
         }
-        //채널 단건 출력
-
-
-
 
         // ===== 메시지 작성 =====
         Message msg1 = messageService.createMessage(
