@@ -32,7 +32,7 @@ public class ValidationMethods {
     }
 
     // 객체 null 검증
-    public static void validateObject(Object obj, String objectName) {
+    public static void validateNullObject(Object obj, String objectName) {
         String message = objectName + "가 null 입니다.";
         Objects.requireNonNull(obj, message);
     }
