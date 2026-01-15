@@ -28,10 +28,8 @@ public class JCFUserService implements UserService {
     @Override
     public void delete(UUID userId) {
 
-        if (!users.containsKey(userId)) {
-            System.out.println("삭제하려는 유저가 존재하지 않습니다.");
-            return;
-        }
+        findById(userId);
+
         users.remove(userId);
     }
 
@@ -56,9 +54,9 @@ public class JCFUserService implements UserService {
             return null;
         }
 
-        if (name != null) user.updateName(name);
-        if (email != null) user.updateEmail(email);
-        if (profileImageUrl != null) user.updateProfileImageUrl(profileImageUrl);
+        Optional.ofNullable(name).ifPresent(user::updateName);
+        Optional.ofNullable(email).ifPresent(user::updateEmail);
+        Optional.ofNullable(profileImageUrl).ifPresent(user::updateProfileImageUrl);
         return user;
     }
 

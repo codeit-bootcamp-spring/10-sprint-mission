@@ -16,6 +16,4 @@ public interface ChannelService {
     List<Channel> findAll();
 
     Channel update(UUID id, String name, String description);
-
-    List<Message> getMessageList(UUID channelId);
 }

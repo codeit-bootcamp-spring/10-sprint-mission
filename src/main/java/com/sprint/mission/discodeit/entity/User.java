@@ -39,29 +39,18 @@ public class User extends BaseEntity {
         return this.profileImageUrl;
     }
 
-    public void update(String name, String email, String profileImageUrl) {
-        // 하나라도 수정 요청이 있을 때만 로직을 수행합니다.
-        if (name != null || email != null || profileImageUrl != null) {
-            Optional.ofNullable(name).ifPresent(n -> this.name = n);
-            Optional.ofNullable(email).ifPresent(e -> this.email = e);
-            Optional.ofNullable(profileImageUrl).ifPresent(p -> this.profileImageUrl = p);
-
-            updateTimestamp();
-        }
-    }
-
     public void updateName(String name) {
-        Optional.ofNullable(name).ifPresent(n -> this.name = n);
+        this.name = name;
         updateTimestamp();
     }
 
     public void updateEmail(String email) {
-        Optional.ofNullable(email).ifPresent(e -> this.email = e);
+        this.email = email;
         updateTimestamp();
     }
 
     public void updateProfileImageUrl(String profileImageUrl) {
-        Optional.ofNullable(profileImageUrl).ifPresent(p -> this.profileImageUrl = p);
+        this.profileImageUrl = profileImageUrl;
         updateTimestamp();
     }
 

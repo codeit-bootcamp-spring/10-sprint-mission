@@ -1,6 +1,4 @@
 package com.sprint.mission.discodeit.entity;
-
-import java.util.Optional;
 import java.util.UUID;
 
 public class Message extends BaseEntity {
@@ -31,7 +29,7 @@ public class Message extends BaseEntity {
 
     // 메세지 수정
     public void updateContent(String content) {
-        Optional.ofNullable(content).ifPresent(c -> this.content = c);
+        this.content = content;
         updateTimestamp();
     }
 }

@@ -1,19 +1,17 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.service.*;
 import com.sprint.mission.discodeit.service.jcf.*;
-import com.sun.jdi.VMMismatchException;
 
 import java.util.List;
 import java.util.UUID;
 
 public class JavaApplication {
 
-    private static JCFUserService userService = new JCFUserService();
-    private static JCFChannelService channelService = new JCFChannelService();
-    private static JCFMessageService messageService = new JCFMessageService(channelService);
-    private static JCFInteractionService interactionService = new JCFInteractionService(userService, channelService, messageService);
+    private static final JCFUserService userService = new JCFUserService();
+    private static final JCFChannelService channelService = new JCFChannelService();
+    private static final JCFMessageService messageService = new JCFMessageService(userService, channelService);
+    private static final JCFInteractionService interactionService = new JCFInteractionService(userService, channelService, messageService);
 
     public static void main(String[] args) {
         try {
@@ -65,7 +63,7 @@ public class JavaApplication {
             System.out.println(" - 삭제 전 채널 인원: " + generalChannel.getUsers().size() + "명");
             testDeleteUserCascade(userC, generalChannel);
             System.out.println(" - 삭제 후 채널 인원: " + generalChannel.getUsers().size() + "명");
-            System.out.println(" - 유저 서비스 확인: " + check(() -> userService.findById(userC.getId())));;
+            System.out.println(" - 유저 서비스 확인: " + check(() -> userService.findById(userC.getId())));
             System.out.println();
 
             // 8. 채널 삭제 시 메시지 및 유저 참여 리스트 정리
@@ -79,7 +77,7 @@ public class JavaApplication {
             testDeleteChannelCascade(userA, tempChannel, tempMsgId);
             System.out.println(" - [After] 유저 참여 채널 수: " + userA.getChannels().size());
             System.out.println(" - 메시지 존재 여부: " + check(() -> messageService.findById(tempMsgId)));
-            System.out.println(" - 채널 존재 여부: " + check(() -> channelService.findById(tempChannel.getId())));;
+            System.out.println(" - 채널 존재 여부: " + check(() -> channelService.findById(tempChannel.getId())));
             System.out.println();
 
             System.out.println("==============================================");
@@ -147,7 +145,7 @@ public class JavaApplication {
     // 5. 메시지 전송 및 권한(예외) 확인
     public static Message testSendMessage(User user, Channel channel, String content) {
         try {
-            Message msg = messageService.create(content, user, channel);
+            Message msg = messageService.create(content, user.getId(), channel.getId());
             if (channel.getMessages().contains(msg)) {
                 System.out.println("[성공] 메시지 전송 및 채널 반영 확인");
                 return msg;
@@ -219,7 +217,7 @@ public class JavaApplication {
 
     // 10. 채널 메시지 전체 출력 및 반환
     public static List<Message> testPrintAndGetMessages(UUID channelId) {
-        List<Message> messages = channelService.getMessageList(channelId);
+        List<Message> messages = messageService.getMessageList(channelId);
         System.out.println("--- [채널 메시지 목록] ---");
         messages.forEach(m -> System.out.println("[" + m.getUserId() + "]: " + m.getContent()));
         System.out.println("-----------------------");

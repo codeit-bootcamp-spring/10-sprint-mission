@@ -31,22 +31,13 @@ public class Channel extends BaseEntity {
         return description;
     }
 
-    public void update(String name, String description) {
-        if (name != null || description != null) {
-            Optional.ofNullable(name).ifPresent(n -> this.name = n);
-            Optional.ofNullable(description).ifPresent(d -> this.description = d);
-
-            updateTimestamp();
-        }
-    }
-
     public void updateName(String name) {
-        Optional.ofNullable(name).ifPresent(n -> this.name = n);
+        this.name = name;
         updateTimestamp();
     }
 
     public void updateDescription(String description) {
-        Optional.ofNullable(description).ifPresent(d -> this.description = d);
+        this.description = description;
         updateTimestamp();
     }
 
