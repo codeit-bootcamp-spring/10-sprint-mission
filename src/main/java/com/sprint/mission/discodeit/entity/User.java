@@ -7,8 +7,8 @@ import java.util.UUID;
 public class User extends BaseDomain {
     // 필드
     private String name;
-    private List<UUID> messageList;
-    private List<UUID> channelList;
+    private List<Message> messageList;
+    private List<Channel> channelList;
 
     // 생성자
     public User() {
@@ -37,11 +37,11 @@ public class User extends BaseDomain {
         return this.updatedAt;
     }
 
-    public List<UUID> getMessageList() {
+    public List<Message> getMessageList() {
         return this.messageList;
     }
 
-    public List<UUID> getChannelList() {
+    public List<Channel> getChannelList() {
         return this.channelList;
     }
 

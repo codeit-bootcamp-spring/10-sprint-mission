@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -31,34 +33,19 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User update(UUID id, String name) throws NoSuchElementException{
+    public User update(UUID id, String name) {
         this.read(id).updateName(name);
         return this.read(id);
     }
 
     @Override
-    public void delete(UUID id) throws NoSuchElementException{
+    public void delete(UUID id) {
         this.read(id);
         this.data.remove(id);
     }
 
     @Override
-    public void joinToChannel(UUID userId, UUID channelId) throws NoSuchElementException{
-        this.read(userId).getChannelList().add(channelId);
-    }
-
-    @Override
-    public void quitFormChannel(UUID userId, UUID channelId) throws NoSuchElementException{
-        this.read(userId).getChannelList().remove(channelId);
-    }
-
-    @Override
-    public List<UUID> readUserChannelList(UUID id) throws NoSuchElementException{
-        return this.read(id).getChannelList();
-    }
-
-    @Override
-    public List<UUID> readUserMessageList(UUID id) throws NoSuchElementException{
-        return this.read(id).getMessageList();
+    public List<User> readChannelUserList(Channel channel) {
+        return channel.getUserList();
     }
 }

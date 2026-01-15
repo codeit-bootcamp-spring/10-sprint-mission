@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.*;
 
@@ -31,34 +33,31 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel updateChannelname(UUID id, String name) throws NoSuchElementException{
+    public Channel updateChannelname(UUID id, String name) {
         this.read(id).updateChannelName(name);
         return this.read(id);
     }
 
     @Override
-    public void delete(UUID id) throws NoSuchElementException{
+    public void delete(UUID id) {
         this.read(id);
         this.data.remove(id);
     }
 
     @Override
-    public void joinUser(UUID userId, UUID channelId) throws NoSuchElementException{
-        this.read(channelId).getUserList().add(userId);
+    public void joinUser(User user, Channel channel) {
+        channel.getUserList().add(user);
+        user.getChannelList().add(channel);
     }
 
     @Override
-    public void quitUser(UUID userId, UUID channelId) throws NoSuchElementException{
-        this.read(channelId).getUserList().remove(userId);
+    public void quitUser(User user, Channel channel) {
+        channel.getUserList().remove(user);
+        user.getChannelList().remove(channel);
     }
 
     @Override
-    public List<UUID> readChannelUserList(UUID id) throws NoSuchElementException{
-        return this.read(id).getUserList();
-    }
-
-    @Override
-    public List<UUID> readChannelMessageList(UUID id) throws NoSuchElementException{
-        return this.read(id).getMessagesList();
+    public List<Channel> readUserChannelList(User user) {
+        return user.getChannelList();
     }
 }

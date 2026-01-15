@@ -43,4 +43,14 @@ public class JCFMessageService implements MessageService {
         this.read(id);
         this.data.remove(id);
     }
+
+    @Override
+    public List<Message> readUserMessageList(User user) {
+        return user.getMessageList();
+    }
+
+    @Override
+    public List<Message> readChannelMessageList(Channel channel) {
+        return channel.getMessagesList();
+    }
 }

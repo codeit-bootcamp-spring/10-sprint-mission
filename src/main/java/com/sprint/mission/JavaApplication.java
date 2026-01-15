@@ -210,40 +210,35 @@ public class JavaApplication {
         UUID userJoinTestId = jcfU1.create("참가용 테스트 유저").getId();
         UUID channelJoinTestId = jcfC1.create("참가용 테스트 채널").getId();
         try {
-            jcfC1.joinUser(userJoinTestId, channelJoinTestId);
+            jcfC1.joinUser(jcfU1.read(userJoinTestId), jcfC1.read(channelJoinTestId));
         } catch (NoSuchElementException e) {
             System.out.println("참가할 유저가 존재하지 않습니다.");
-        }
-        try {
-            jcfU1.joinToChannel(userJoinTestId, channelJoinTestId);
-        } catch (NoSuchElementException e) {
-            System.out.println("참가할 채널이 존재하지 않습니다.");
         }
 
         // 특정 채널에 발행된 메시지 목록 조회
         try {
-            System.out.println(jcfC1.readChannelMessageList(channelJoinTestId));
+            System.out.println(jcfM1.readChannelMessageList(jcfC1.read(channelJoinTestId)));
         } catch (NoSuchElementException e) {
             System.out.println();
         }
 
         // 특정 채널의 참가한 유저 목록 조회
         try {
-            System.out.println(jcfC1.readChannelUserList(channelJoinTestId));
+            System.out.println(jcfU1.readChannelUserList(jcfC1.read(channelJoinTestId)));
         } catch (NoSuchElementException e) {
             System.out.println("참가한 유저가 없습니다.");
         }
 
         // 특정 유저가 참가한 채널 목록 조회
         try {
-            System.out.println(jcfU1.readUserChannelList(userJoinTestId));
+            System.out.println(jcfC1.readUserChannelList(jcfU1.read(userJoinTestId)));
         } catch (NoSuchElementException e) {
             System.out.println("참가한 채널이 없습니다.");
         }
 
         // 특정 유저가 발행한 메시지 리스트 조회
         try {
-            System.out.println(jcfU1.readUserMessageList(userJoinTestId));
+            System.out.println(jcfM1.readUserMessageList(jcfU1.read(userJoinTestId)));
         } catch (NoSuchElementException e) {
             System.out.println("발행한 메시지가 없습니다.");
         }
