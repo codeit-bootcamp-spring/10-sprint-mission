@@ -10,7 +10,6 @@ public class Channel extends CommonEntity {
     private String channelDescription;
     private final ArrayList<User> joinedUsers = new ArrayList<>();
     private final ArrayList<Message> messages = new ArrayList<>();
-    private final ArrayList<User> users = new ArrayList<>();
 
     public Channel(ChannelType type, String channelName, String channelDescription) {
         this.type = type;
@@ -46,9 +45,5 @@ public class Channel extends CommonEntity {
 
     public List<Message> getMessages() {
         return messages;
-    }
-
-    public List<User> getUsers() {
-        return users;
     }
 }

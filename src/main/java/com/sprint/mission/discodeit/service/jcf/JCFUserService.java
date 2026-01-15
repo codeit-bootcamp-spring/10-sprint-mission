@@ -75,7 +75,7 @@ public class JCFUserService implements UserService {
 
     public  List<Channel> readChannelsByUser(UUID userId) {
         User user = readUser(userId);
-        return user.getChannels();
+        return user.getJoinedchannels();
     }
 
     private void validateDuplicationEmail(String userEmail) {

@@ -28,6 +28,9 @@ public class JCFMessageService implements MessageService {
         User user = userService.readUser(userId);
         Message message = new Message(content, channel, user);
 
+        channel.getMessages().add(message);
+        user.getMessages().add(message);
+
         list.add(message);
         return message;
     }

@@ -77,19 +77,26 @@ public class JCFChannelService implements ChannelService {
         Channel channel = readChannel(channelId);
         User user = userService.readUser(userId);
 
-        boolean alreadyJoined = channel.getJoinedUsers().stream()
+        boolean channelHasUser = channel.getJoinedUsers().stream()
                 .anyMatch(u -> userId.equals(u.getId()));
 
-        if(alreadyJoined) {
+        boolean userHasChannel = user.getJoinedChannels().stream()
+                .anyMatch(c -> channelId.equals(c.getId()));
+
+        if(channelHasUser && userHasChannel) {
             throw new IllegalArgumentException("이미 참가한 유저입니다.");
         }
+        if(channelHasUser != userHasChannel) {
+            throw new IllegalArgumentException("채널-유저 참가 상태가 불일치합니다.");
+        }
+
         channel.getJoinedUsers().add(user);
+        user.getJoinedChannels().add(channel);
     }
 
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = readChannel(channelId);
-        User user = userService.readUser(userId);
 
         boolean alreadyDeleted = channel.getJoinedUsers().stream()
                         .noneMatch(u -> userId.equals(u.getId()));
@@ -110,7 +117,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<User> readUsersByChannel(UUID channelId) {
         Channel channel = readChannel(channelId);
-        return channel.getUsers();
+        return channel.getJoinedUsers();
     }
 
     private Channel validateExistenceChannel(UUID id) {
