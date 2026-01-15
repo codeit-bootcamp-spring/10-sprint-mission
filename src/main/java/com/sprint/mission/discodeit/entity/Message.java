@@ -19,8 +19,8 @@ public class Message extends BaseEntity {
     }
 
     public void updateMessage(String content) {
-        validateMessage();
         this.content = content;
+        validateMessage();
         super.update();
     }
 

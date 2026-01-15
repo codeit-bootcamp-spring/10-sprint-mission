@@ -2,16 +2,16 @@ package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.*;
-import com.sprint.mission.discodeit.service.jcf.*;
+import com.sprint.mission.discodeit.factory.*;
 
 import java.util.UUID;
 
 public class JavaApplication {
     public static void main(String[] args) {
-        // 1. 서비스 초기화
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
-        MessageService messageService = new JCFMessageService(userService, channelService);
+        UserService userService = ServiceFactory.getUserService();
+        ChannelService channelService = ServiceFactory.getChannelService();
+        MessageService messageService = ServiceFactory.getMessageService();
+
         System.out.println(">>> [FINAL ULTIMATE SCENARIO 시작]");
         System.out.println("설정: 유저(U1, U2, U3), 채널(A: U1&U2, B: U2&U3), 인당 메시지 3개");
 
@@ -75,13 +75,13 @@ public class JavaApplication {
 
             // (1) UserService.findMyChannels & findMyMessages
             System.out.println("[유저2 검증]");
-            System.out.println("- 참여 채널 수: " + userService.findMyChannels(u2.getId()).size() + " (기대값: 2)");
-            System.out.println("- 작성 메시지 수: " + userService.findMyMessages(u2.getId()).size() + " (기대값: 3)");
+            System.out.println("- 참여 채널 수: " + channelService.findMyChannels(u2.getId()).size() + " (기대값: 2)");
+            System.out.println("- 작성 메시지 수: " + messageService.findMyMessages(u2.getId()).size() + " (기대값: 3)");
 
             // (2) ChannelService.findMembers & findMessages
             System.out.println("[채널A 검증]");
-            System.out.println("- 멤버 수: " + channelService.findMembers(channelA.getId()).size() + " (기대값: 2)");
-            System.out.println("- 메시지 수: " + channelService.findMessages(channelA.getId()).size() + " (기대값: 5)");
+            System.out.println("- 멤버 수: " + userService.findMembers(channelA.getId()).size() + " (기대값: 2)");
+            System.out.println("- 메시지 수: " + messageService.findMessages(channelA.getId()).size() + " (기대값: 5)");
 
             // ---------------------------------------------------------
             // 5. [UPDATE & POLICY] 데이터 수정 및 정책 검증
@@ -93,7 +93,7 @@ public class JavaApplication {
             runTest("E-3: 닉네임 정책(공백) 검증", "  ", () -> userService.update(u1.getId(), "  "));
 
             // [U] 메시지 수정 (내용 초과 예외 포함)
-            Message targetMsg = userService.findMyMessages(u3.getId()).get(0);
+            Message targetMsg = messageService.findMyMessages(u3.getId()).get(0);
             messageService.update(targetMsg.getId(), "수정된 메시지입니다.");
             runTest("E-4: 메시지 정책(길이) 검증", "LongText",
                     () -> messageService.update(targetMsg.getId(), "A".repeat(501)));
@@ -106,11 +106,11 @@ public class JavaApplication {
             // (1) removeMember: 유저2가 채널A에서 퇴장
             channelService.removeMember(channelA.getId(), u2.getId());
             System.out.println("Step 6-1: 유저2 채널A 퇴장 완료");
-            System.out.println("- 채널A 현재 멤버 수: " + channelService.findMembers(channelA.getId()).size() + " (기대값: 1)");
-            System.out.println("- 유저2 현재 참여 채널 수: " + userService.findMyChannels(u2.getId()).size() + " (기대값: 1)");
+            System.out.println("- 채널A 현재 멤버 수: " + userService.findMembers(channelA.getId()).size() + " (기대값: 1)");
+            System.out.println("- 유저2 현재 참여 채널 수: " + channelService.findMyChannels(u2.getId()).size() + " (기대값: 1)");
 
             // (2) delete: 메시지 삭제 및 유저 삭제
-            UUID msgId = userService.findMyMessages(u1.getId()).get(0).getId();
+            UUID msgId = messageService.findMyMessages(u1.getId()).get(0).getId();
             messageService.delete(msgId);
             System.out.println("Step 6-2: 메시지 1건 삭제 완료 (전체 메시지: " + messageService.findAll().size() + ")");
 

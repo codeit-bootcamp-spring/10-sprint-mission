@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
@@ -10,7 +9,15 @@ import java.util.List;
 import java.util.UUID;
 
 public class JCFUserService implements UserService {
+    private ChannelService channelService;
     private final List<User> users =  new ArrayList<>();
+
+    public JCFUserService() {
+    }
+
+    public void setChannelService(ChannelService channelService) {
+        this.channelService = channelService;
+    }
 
     @Override
     public User create(String userName, String userEmail) {
@@ -47,15 +54,9 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public List<Channel> findMyChannels(UUID userId) {
-        return findById(userId).getMyChannels();
+    public List<User> findMembers(UUID channelId) {
+        return channelService.findById(channelId).getMembers();
     }
-
-    @Override
-    public List<Message> findMyMessages(UUID userId) {
-        return findById(userId).getMyMessages();
-    }
-
 
     // 이메일 중복 시 예외를 던져 가입 중단 (Fail-Fast)
     private void validateDuplicateEmail(String userEmail) {

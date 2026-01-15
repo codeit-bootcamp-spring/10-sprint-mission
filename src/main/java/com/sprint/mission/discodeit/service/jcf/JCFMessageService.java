@@ -6,16 +6,14 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
-    private final List<Message> messages =  new ArrayList<>();
-
     private final UserService userService;
     private final ChannelService channelService;
+    private final List<Message> messages =  new ArrayList<>();
 
     public JCFMessageService(UserService userService, ChannelService channelService) {
         this.userService = userService;
@@ -60,5 +58,15 @@ public class JCFMessageService implements MessageService {
     public void delete(UUID uuid) {
         Message message = findById(uuid);
         messages.remove(message);
+    }
+
+    @Override
+    public List<Message> findMessages(UUID channelId) {
+        return channelService.findById(channelId).getMessages();
+    }
+
+    @Override
+    public List<Message> findMyMessages(UUID userId) {
+        return userService.findById(userId).getMyMessages();
     }
 }
