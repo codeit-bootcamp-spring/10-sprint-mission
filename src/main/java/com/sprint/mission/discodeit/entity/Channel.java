@@ -42,6 +42,12 @@ public class Channel extends Entity {
     public void addUser(User user) {
         // 채널에 가입한 유저 목록에 유저 추가
         users.add(user);
+
+        // 유저가 가입한 채널 목록에 해당 채널이 없으면 추가
+        if (!user.getChannels().contains(this)) {
+            user.joinChannel(this);
+        }
+
         // 수정 시각 갱신
         super.update();
     }
@@ -49,6 +55,12 @@ public class Channel extends Entity {
     public void removeUser(User user) {
         // 채널에 가입한 유저 목록에서 유저 제거
         users.remove(user);
+
+        // 유저가 가입한 채널 목록에 해당 채널이 있으면 제거
+        if (user.getChannels().contains(this)) {
+            user.leaveChannel(this);
+        }
+
         // 수정 시각 갱신
         super.update();
     }

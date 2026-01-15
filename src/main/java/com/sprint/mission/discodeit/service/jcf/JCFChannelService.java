@@ -83,8 +83,18 @@ public class JCFChannelService implements ChannelService {
         Channel channel = findChannelById(channelId);
         // 실제로 존재하는 유저인지 검색 및 검증
         User user = userService.findUserById(userId);
+
+        // 가입 여부 확인, 이미 존재하는 유저라면 예외 발생
+        if (channel.getUsers().contains(user)) {
+            throw new RuntimeException("이미 채널에 가입한 유저입니다.");
+        }
+        // 가입 여부 확인, 이미 가입한 채널이라면 예외 발생
+        if (user.getChannels().contains(channel)) {
+            throw new RuntimeException("이미 가입한 채널입니다.");
+        }
+
         // 채널 가입
-        joinChannel(channel, user);
+        channel.addUser(user);
     }
 
     @Override
@@ -93,8 +103,18 @@ public class JCFChannelService implements ChannelService {
         Channel channel = findChannelById(channelId);
         // 실제로 존재하는 유저인지 검색 및 검증
         User user = userService.findUserById(userId);
+
+        // 가입 여부 확인, 가입되어 있지 않은 유저라면 예외 발생
+        if (!channel.getUsers().contains(user)) {
+            throw new RuntimeException("채널에 가입되어 있지 않습니다.");
+        }
+        // 가입 여부 확인, 가입되어 있지 않은 채널이라면 예외 발생
+        if (!user.getChannels().contains(channel)) {
+            throw new RuntimeException("채널에 가입되어 있지 않습니다.");
+        }
+
         // 채널 탈퇴
-        leaveChannel(channel, user);
+        channel.removeUser(user);
     }
 
     @Override
@@ -103,43 +123,5 @@ public class JCFChannelService implements ChannelService {
         User user = userService.findUserById(userId);
         // 현재 유저가 가입한 채널 목록 반환
         return user.getChannels();
-    }
-
-    private void joinChannel(Channel channel, User user) {
-        // 실제로 존재하는 채널인지 검증
-        findChannelById(channel.getId());
-        // 가입 여부 확인, 이미 존재하는 유저라면 예외 발생
-        if (channel.getUsers().contains(user)) {
-            throw new RuntimeException("이미 채널에 가입한 유저입니다.");
-        }
-
-        // 실제로 존재하는 유저인지 검증
-        userService.findUserById(user.getId());
-        // 가입 여부 확인, 이미 가입한 채널이라면 예외 발생
-        if (user.getChannels().contains(channel)) {
-            throw new RuntimeException("이미 가입한 채널입니다.");
-        }
-
-        channel.addUser(user);
-        user.joinChannel(channel);
-    }
-
-    private void leaveChannel(Channel channel, User user) {
-        // 실제로 존재하는 채널인지 검증
-        findChannelById(channel.getId());
-        // 가입 여부 확인, 가입되어 있지 않은 유저라면 예외 발생
-        if (!channel.getUsers().contains(user)) {
-            throw new RuntimeException("채널에 가입되어 있지 않습니다.");
-        }
-
-        // 실제로 존재하는 유저인지 검증
-        userService.findUserById(user.getId());
-        // 가입 여부 확인, 가입되어 있지 않은 채널이라면 예외 발생
-        if (!user.getChannels().contains(channel)) {
-            throw new RuntimeException("채널에 가입되어 있지 않습니다.");
-        }
-
-        channel.removeUser(user);
-        user.leaveChannel(channel);
     }
 }
