@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class User extends CommonEntity {
     private String userName;
     private String userEmail;
     private String userPassword;
-
 
     public User(String userName, String userEmail, String userPassword) {
         this.userName = userName;

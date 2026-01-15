@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.Validators;
@@ -65,6 +67,7 @@ public class JCFUserService implements UserService {
         User user = validateExistenceUser(id);
         list.remove(user);
     }
+
 
     private void validateDuplicationEmail(String userEmail) {
         if(list.stream()

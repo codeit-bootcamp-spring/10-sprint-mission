@@ -1,18 +1,22 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class Channel extends CommonEntity {
     private ChannelType type;
     private String channelName;
     private String channelDescription;
+    private final ArrayList<User> joinedUsers = new ArrayList<>();
 
     public Channel(ChannelType type, String channelName, String channelDescription) {
         this.type = type;
         this.channelName = channelName;
         this.channelDescription = channelDescription;
-
     }
+
+
 
 
     public void updateChannelType(ChannelType type) {
@@ -32,5 +36,9 @@ public class Channel extends CommonEntity {
 
     public String getChannelStatus() {
         return "채널 타입: " + type + ", 채널 이름: " + channelName + ", 채널 설명: " + channelDescription;
+    }
+
+    public List<User> getJoinedUsers() {
+        return joinedUsers;
     }
 }
