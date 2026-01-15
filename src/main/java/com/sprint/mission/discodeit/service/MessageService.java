@@ -7,7 +7,7 @@ import com.sprint.mission.discodeit.entity.User;
 import java.util.*;
 
 public interface MessageService {
-    Message create(String msg, User user, Channel channel);
+    Message create(String msg, UUID userId, UUID channelId);
 
     Message read(UUID id);
 

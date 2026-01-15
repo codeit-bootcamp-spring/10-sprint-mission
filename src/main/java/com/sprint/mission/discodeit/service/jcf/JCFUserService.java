@@ -41,4 +41,24 @@ public class JCFUserService implements UserService {
         this.read(id);
         this.data.remove(id);
     }
+
+    @Override
+    public void joinToChannel(UUID userId, UUID channelId) throws NoSuchElementException{
+        this.read(userId).getChannelList().add(channelId);
+    }
+
+    @Override
+    public void quitFormChannel(UUID userId, UUID channelId) throws NoSuchElementException{
+        this.read(userId).getChannelList().remove(channelId);
+    }
+
+    @Override
+    public List<UUID> readUserChannelList(UUID id) throws NoSuchElementException{
+        return this.read(id).getChannelList();
+    }
+
+    @Override
+    public List<UUID> readUserMessageList(UUID id) throws NoSuchElementException{
+        return this.read(id).getMessageList();
+    }
 }

@@ -15,4 +15,12 @@ public interface UserService {
     User update(UUID id, String name);
 
     void delete(UUID id);
+
+    void joinToChannel(UUID userId, UUID channelId);
+
+    void quitFormChannel(UUID userId, UUID channelId);
+
+    List<UUID> readUserChannelList(UUID id);
+
+    List<UUID> readUserMessageList(UUID id);
 }

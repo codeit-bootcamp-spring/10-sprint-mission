@@ -7,18 +7,21 @@ import java.util.UUID;
 public class Channel extends BaseDomain{
     // 필드
     private String channelName;
-    private List<User> userList;
+    private List<UUID> userList;
+    private List<UUID> messagesList;
 
     // 생성자
     public Channel() {
         super();
         this.channelName = "기본 이름";
         this.userList = new ArrayList<>();
+        this.messagesList = new ArrayList<>();
     }
     public Channel(String channelName) {
         super();
         this.channelName = channelName;
         this.userList = new ArrayList<>();
+        this.messagesList = new ArrayList<>();
     }
 
     // 메소드
@@ -34,14 +37,19 @@ public class Channel extends BaseDomain{
         return updatedAt;
     }
 
+    public List<UUID> getUserList() {
+        return this.userList;
+    }
+
+    public List<UUID> getMessagesList() {
+        return this.messagesList;
+    }
+
     public void updateChannelName(String name) {
         this.channelName = name;
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public List<User> getUserList() {
-        return this.userList;
-    }
 
     public String toString() {
         return "이 채널의 id: " + this.id + "\n"

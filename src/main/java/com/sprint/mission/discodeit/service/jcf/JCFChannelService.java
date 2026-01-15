@@ -37,8 +37,28 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(UUID id) throws NoSuchElementException{
         this.read(id);
         this.data.remove(id);
+    }
+
+    @Override
+    public void joinUser(UUID userId, UUID channelId) throws NoSuchElementException{
+        this.read(channelId).getUserList().add(userId);
+    }
+
+    @Override
+    public void quitUser(UUID userId, UUID channelId) throws NoSuchElementException{
+        this.read(channelId).getUserList().remove(userId);
+    }
+
+    @Override
+    public List<UUID> readChannelUserList(UUID id) throws NoSuchElementException{
+        return this.read(id).getUserList();
+    }
+
+    @Override
+    public List<UUID> readChannelMessageList(UUID id) throws NoSuchElementException{
+        return this.read(id).getMessagesList();
     }
 }

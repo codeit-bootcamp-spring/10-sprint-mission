@@ -2,9 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface ChannelService {
@@ -17,4 +15,12 @@ public interface ChannelService {
     Channel updateChannelname(UUID id, String name);
 
     void delete(UUID id);
+
+    void joinUser(UUID userId, UUID channelId);
+
+    void quitUser(UUID userId, UUID channelId);
+
+    List<UUID> readChannelUserList(UUID id);
+
+    List<UUID> readChannelMessageList(UUID id);
 }

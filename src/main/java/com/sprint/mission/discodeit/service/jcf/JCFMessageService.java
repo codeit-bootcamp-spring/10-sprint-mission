@@ -15,8 +15,8 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message create(String msg, User user, Channel channel) {
-        Message message = new Message(msg, user, channel);
+    public Message create(String msg, UUID userId, UUID channelId) {
+        Message message = new Message(msg, userId, channelId);
         data.put(message.getId(), message);
         return message;
     }
@@ -39,7 +39,7 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(UUID id) throws NoSuchElementException{
         this.read(id);
         this.data.remove(id);
     }

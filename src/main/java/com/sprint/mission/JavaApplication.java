@@ -142,8 +142,10 @@ public class JavaApplication {
 
         // Message
         // 등록
+        User msgTestUser = new User();
+        Channel msgTestChannel = new Channel();
         JCFMessageService jcfM1 = new JCFMessageService();
-        UUID messageId1 = jcfM1.create("테스트", new User(), new Channel()).getId();
+        UUID messageId1 = jcfM1.create("테스트", msgTestUser.getId(), msgTestChannel.getId()).getId();
         JCFMessageService jcfM2 = new JCFMessageService();
 
         // 조회(단건)
@@ -198,6 +200,52 @@ public class JavaApplication {
             jcfM1.read(messageId1);
         } catch (NoSuchElementException e) {
             System.out.println("조회할 메시지가 존재하지 않습니다.");
+        }
+
+
+        System.out.println();
+
+
+        // 특정 채널에 유저 참가
+        UUID userJoinTestId = jcfU1.create("참가용 테스트 유저").getId();
+        UUID channelJoinTestId = jcfC1.create("참가용 테스트 채널").getId();
+        try {
+            jcfC1.joinUser(userJoinTestId, channelJoinTestId);
+        } catch (NoSuchElementException e) {
+            System.out.println("참가할 유저가 존재하지 않습니다.");
+        }
+        try {
+            jcfU1.joinToChannel(userJoinTestId, channelJoinTestId);
+        } catch (NoSuchElementException e) {
+            System.out.println("참가할 채널이 존재하지 않습니다.");
+        }
+
+        // 특정 채널에 발행된 메시지 목록 조회
+        try {
+            System.out.println(jcfC1.readChannelMessageList(channelJoinTestId));
+        } catch (NoSuchElementException e) {
+            System.out.println();
+        }
+
+        // 특정 채널의 참가한 유저 목록 조회
+        try {
+            System.out.println(jcfC1.readChannelUserList(channelJoinTestId));
+        } catch (NoSuchElementException e) {
+            System.out.println("참가한 유저가 없습니다.");
+        }
+
+        // 특정 유저가 참가한 채널 목록 조회
+        try {
+            System.out.println(jcfU1.readUserChannelList(userJoinTestId));
+        } catch (NoSuchElementException e) {
+            System.out.println("참가한 채널이 없습니다.");
+        }
+
+        // 특정 유저가 발행한 메시지 리스트 조회
+        try {
+            System.out.println(jcfU1.readUserMessageList(userJoinTestId));
+        } catch (NoSuchElementException e) {
+            System.out.println("발행한 메시지가 없습니다.");
         }
     }
 }
