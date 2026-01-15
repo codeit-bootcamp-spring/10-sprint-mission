@@ -213,7 +213,7 @@ public class Main {
         // 초대
         if (channel2 != null && user2 != null) {
             try {       // 예상 출력: sakuya, dyoool
-                channelService.inviteMembers(user2.getId(), channel2.getMembers());
+                channelService.inviteMembers(user2.getId(), channel2.getId(), channel2.getMembers());
                 System.out.println("초대 테스트");
                 channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
             } catch (Exception e) {
@@ -223,7 +223,7 @@ public class Main {
 
         if (channel2 != null && user3 != null) {
             try {       // 이미 존재하는 사용자
-                channelService.inviteMembers(user3.getId(), channel2.getMembers());
+                channelService.inviteMembers(user3.getId(), channel2.getId(), channel2.getMembers());
                 System.out.println("초대 테스트");
                 channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
             } catch (Exception e) {
