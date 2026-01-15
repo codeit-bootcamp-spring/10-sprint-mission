@@ -50,18 +50,6 @@ public class JCFChannelService implements ChannelService {
         return targetUser.getChannels();
     }
 
-    // 특정 채널의 참가자 리스트 조회
-    public List<User> searchUsersByChannelId(UUID channelId) {
-        searchChannel(channelId);
-
-        Channel targetChannel = channels.stream()
-                .filter(channel -> channel.getId().equals(channelId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
-
-        return targetChannel.getMembers();
-    }
-
     // 채널 정보 수정
     @Override
     public Channel updateChannel(UUID targetChannelId, String newChannelName) {
@@ -111,7 +99,7 @@ public class JCFChannelService implements ChannelService {
 
     // 유효성 검증 (초대)
     public void validateMemberExists(UUID userId, UUID channelId) {
-        List<User> currentMembers = searchUsersByChannelId(channelId);
+        List<User> currentMembers = userService.searchUsersByChannelId(channelId);
 
         if (currentMembers.stream().anyMatch(member -> member.getId().equals(userId))) {
             throw new IllegalArgumentException("이미 채널에 존재하는 사용자입니다.");
@@ -120,7 +108,7 @@ public class JCFChannelService implements ChannelService {
 
     // 유효성 검증 (퇴장)
     public void validateUserNotInChannel(UUID userId, UUID channelId) {
-        List<User> currentMembers = searchUsersByChannelId(channelId);
+        List<User> currentMembers = userService.searchUsersByChannelId(channelId);
 
         if (currentMembers.stream().noneMatch(member -> member.getId().equals(userId))) {
             throw new IllegalArgumentException("해당 채널에 존재하는 사용자가 아닙니다.");

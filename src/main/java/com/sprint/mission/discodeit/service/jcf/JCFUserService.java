@@ -1,13 +1,16 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatusType;
 import com.sprint.mission.discodeit.service.UserService;
 
+import static com.sprint.mission.discodeit.service.jcf.JCFChannelService.channels;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
 public class JCFUserService implements UserService {
@@ -35,6 +38,16 @@ public class JCFUserService implements UserService {
     @Override
     public ArrayList<User> searchUserAll() {
         return users;
+    }
+
+    // 특정 채널의 참가자 리스트 조회
+    public List<User> searchUsersByChannelId(UUID channelId) {
+        Channel targetChannel = channels.stream()
+                .filter(channel -> channel.getId().equals(channelId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+
+        return targetChannel.getMembers();
     }
 
     // 사용자 정보 수정 (비밀번호, 닉네임) - 유연하게 계선
