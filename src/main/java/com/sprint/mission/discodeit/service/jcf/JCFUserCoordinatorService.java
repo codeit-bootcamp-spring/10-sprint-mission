@@ -20,27 +20,27 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
     }
 
     @Override
-    public List<Channel> getChannels(UUID id) {
-        User user = userService.getUserById(id);
+    public List<Channel> findChannelsByUserId(UUID id) {
+        User user = userService.findUserById(id);
         return new ArrayList<>(user.getChannels());
     }
 
     @Override
-    public List<User> findAllMembers(UUID id, UUID memberId) {
-        Channel channel = getChannelByIdAndMemberId(id, memberId);
+    public List<User> findAllMembersByChannelIdAndMemberId(UUID id, UUID memberId) {
+        Channel channel = findAccessibleChannel(id, memberId);
         return new ArrayList<>(channel.getMembers());
     }
 
     @Override
     public Channel addMembers(UUID id, UUID ownerId, List<UUID> memberIds) {
         Channel channel = channelService.getChannelById(id);
-        User owner = userService.getUserById(ownerId);
+        User owner = userService.findUserById(ownerId);
         channel.checkChannelOwner(owner);//dm 걸러짐
         if(channel.getChannelType()==ChannelType.PUBLIC){
             throw new IllegalArgumentException("공개 채널에 멤버를 추가할 수 없음. 채널ID: "+ id);
         }
         List<User> newMembers= memberIds.stream()
-                .map(uid -> userService.getUserById(uid))//추가할 멤버들의 유효성
+                .map(uid -> userService.findUserById(uid))//추가할 멤버들의 유효성
                 .collect(Collectors.toList());
         channel.addMembers(newMembers);
         return channel;
@@ -48,7 +48,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
     @Override
     public Channel removeMembers(UUID id, UUID ownerId, List<UUID> memberIds) {
         Channel channel = channelService.getChannelById(id);
-        User owner = userService.getUserById(ownerId);//dm걸러짐
+        User owner = userService.findUserById(ownerId);//dm걸러짐
         channel.checkChannelOwner(owner);
         if(channel.getChannelType()==ChannelType.PUBLIC){
             throw new IllegalArgumentException("공개 채널에서 멤버를 제거할 수 없음. 채널ID: "+ id);
@@ -57,7 +57,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
             throw new IllegalArgumentException("채널 소유자는 제거될 수 없음. 소유자ID: "+ id);
         }
         List<User> members = memberIds.stream()
-                .map(uid->{User user =userService.getUserById(uid);
+                .map(uid->{User user =userService.findUserById(uid);
                     channel.checkMember(user);
                     return user;
                 })
@@ -75,15 +75,15 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
         if(memberId.equals(channel.getOwner().getId())){
             throw new IllegalArgumentException("채널 소유자는 채널에서 나갈 수 없음. 소유자ID: "+ id);
         }
-        User member =userService.getUserById(memberId);
+        User member =userService.findUserById(memberId);
         channel.checkMember(member);
         channel.removeMember(member);
         return channel;
     }
     @Override
-    public Channel getChannelByIdAndMemberId(UUID id, UUID memberId) {
+    public Channel findAccessibleChannel(UUID id, UUID memberId) {
         Channel channel = channelService.getChannelById(id);
-        User user = userService.getUserById(memberId);
+        User user = userService.findUserById(memberId);
         if(channel.getChannelType()!=ChannelType.PUBLIC){
             channel.checkMember(user);
         }
@@ -91,7 +91,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
     }
 
     @Override//디엠
-    public Channel getOrCreateDirectChannelByChatterIds(UUID senderId, UUID receiverId){
+    public Channel findOrCreateDirectChannelByChatterIds(UUID senderId, UUID receiverId){
         /*
         1. 유저의 유효성 검사하기
         2. 모든 채널에서
@@ -99,7 +99,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
         -> 멤버가 2인 채널 추출 및 반환(그룹 디엠 대비) 이 메서드는 2인용이니까...
         -> 멤버 비교해서 해당하는 채널 또는 널 반환
          */
-        User sender = userService.getUserById(senderId);//이미 삭제된 사용자와의 대화도 조회가 가능하도록
+        User sender = userService.findUserById(senderId);//이미 삭제된 사용자와의 대화도 조회가 가능하도록
         Set<UUID> chatterIdSet = new HashSet<>(Set.of(senderId,receiverId));
         Channel directChannel = channelService.findAllChannels()
                                     .stream()
@@ -115,7 +115,7 @@ public class JCFUserCoordinatorService implements UserCoordinatorService {
                                     })
                                     .findFirst().orElse(null);
         if(directChannel == null){
-            User receiver = userService.getUserById(receiverId);//삭제된사용자와의 대화가 아니면 수신지 유효성 확인
+            User receiver = userService.findUserById(receiverId);//삭제된사용자와의 대화가 아니면 수신지 유효성 확인
             directChannel = channelService.createDirectChannel(chatterIdSet.stream().toList());
         }
         return directChannel;

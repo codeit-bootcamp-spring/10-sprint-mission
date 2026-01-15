@@ -29,23 +29,23 @@ public class JCFMessageService implements MessageService {
             - 없으면 생성
         2. 채널에 메세지 보내기- 아래의 샌드 메서드 활용
          */
-        Channel channel = userCoordinatorService.getOrCreateDirectChannelByChatterIds(senderId, receiverId);
+        Channel channel = userCoordinatorService.findOrCreateDirectChannelByChatterIds(senderId, receiverId);
         Message message = send(senderId, channel.getId(), content);
         return message;
     }
 
     @Override
-    public List<Message> getDirectMessages(UUID senderId, UUID receiverId) {
-        Channel channel = userCoordinatorService.getOrCreateDirectChannelByChatterIds(senderId, receiverId);
-        return getMessagesByChannelIdAndMemberId(channel.getId(), senderId);
+    public List<Message> findDirectMessagesBySenderIdAndReceiverId(UUID senderId, UUID receiverId) {
+        Channel channel = userCoordinatorService.findOrCreateDirectChannelByChatterIds(senderId, receiverId);
+        return findMessagesByChannelIdAndMemberId(channel.getId(), senderId);
     }
 
 
     @Override
     public Message send(UUID senderId, UUID channelId, String content) {
         validateContent(content);
-        User sender =  userService.getUserById(senderId);//사실 아래에서 이미 확인해줌
-        Channel channel = userCoordinatorService.getChannelByIdAndMemberId(channelId, senderId);
+        User sender =  userService.findUserById(senderId);//사실 아래에서 이미 확인해줌
+        Channel channel = userCoordinatorService.findAccessibleChannel(channelId, senderId);
         Message message = new Message(sender,channel, content);
         data.put(message.getId(), message);
         return message;
@@ -61,8 +61,8 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> getMessagesByChannelIdAndMemberId(UUID channelId, UUID memberId) {
-        Channel channel = userCoordinatorService.getChannelByIdAndMemberId(channelId,memberId);
+    public List<Message> findMessagesByChannelIdAndMemberId(UUID channelId, UUID memberId) {
+        Channel channel = userCoordinatorService.findAccessibleChannel(channelId,memberId);
         List<Message> messages
                 = data.values()
                     .stream()
@@ -82,7 +82,7 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void delete(UUID id, UUID senderId) {
+    public void deleteByIdAndSenderId(UUID id, UUID senderId) {
         checkSender(id,senderId);
         data.remove(id);
     }
@@ -95,7 +95,7 @@ public class JCFMessageService implements MessageService {
     }
     private void checkSender(UUID messageId, UUID senderId) {
         Message message = getMessageById(messageId);
-        userCoordinatorService.getChannelByIdAndMemberId(message.getChannel().getId(), senderId);
+        userCoordinatorService.findAccessibleChannel(message.getChannel().getId(), senderId);
         if(!message.getSender().getId().equals(senderId)){
             throw new IllegalArgumentException("작성자가 아님: 사용자ID-"+senderId);
         }

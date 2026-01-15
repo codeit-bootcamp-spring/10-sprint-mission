@@ -1,6 +1,5 @@
 package com.sprint.mission;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -41,16 +40,16 @@ public class JavaApplication {
 
         // 사용자1의 정보 확인
         System.out.println("---------------특정 유저 조회--------------------- ");
-        System.out.println(userService.getUserById(userId));
+        System.out.println(userService.findUserById(userId));
         System.out.println("---------------모든 유저 조회--------------------- ");
         System.out.println(userService.findAllUsers());
 
         //유저 기본 설정
         System.out.println("------------유저 정보 수정-----------------");
         userService.updateInfo(userId, "코드잇",null,null);//이름만
-        System.out.println(userService.getUserById(userId));
+        System.out.println(userService.findUserById(userId));
         userService.updateInfo(userId, null,"abv123@codeit.com",null);//이메일만
-        System.out.println(userService.getUserById(userId));
+        System.out.println(userService.findUserById(userId));
         try {//null과 이전값의 조합으로 변경 요청하는 경우
             System.out.println("----------null과 이전값의 조합으로 변경 요청하는 경우---------------");
             userService.updateInfo(userId, null, "abv123@codeit.com", null);
@@ -74,7 +73,7 @@ public class JavaApplication {
 
         //채널 정보 조회
         System.out.println("-----------특정 채널 정보 조회----------------");
-        System.out.println(userCoordinatorService.getChannelByIdAndMemberId(channelId,userId));
+        System.out.println(userCoordinatorService.findAccessibleChannel(channelId,userId));
 
         //모든 채널 조회
         System.out.println("------------모든 채널 조회-------------");
@@ -83,11 +82,11 @@ public class JavaApplication {
         System.out.println(userService.findAllUsers());
 
         System.out.println("-----------특정 채널에 속한 유저 조회------------------");
-        System.out.println(userCoordinatorService.findAllMembers(channelId3,userId2));
+        System.out.println(userCoordinatorService.findAllMembersByChannelIdAndMemberId(channelId3,userId2));
 
         System.out.println("-------외부 사용자가 채널 유저 조회------------");
         try{
-            System.out.println(userCoordinatorService.findAllMembers(channelId3,userId));
+            System.out.println(userCoordinatorService.findAllMembersByChannelIdAndMemberId(channelId3,userId));
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
@@ -109,18 +108,18 @@ public class JavaApplication {
         channelService.updateChannelInfo(channelId2, userId,"친목방",null);
         channelService.updateChannelInfo(channelId2, userId,null,"구성원들과 친해지기 위한 채널입니다.");
         System.out.println("-----------수정된 채널 조회----------------");
-        System.out.println(userCoordinatorService.getChannelByIdAndMemberId(channelId2,userId2));
+        System.out.println(userCoordinatorService.findAccessibleChannel(channelId2,userId2));
         System.out.println("-----------채널 멤버 추가-----------");
         System.out.println(userCoordinatorService.addMembers(channelId3,userId2, List.of(userId,userId2,userId4)));
-        System.out.println(userCoordinatorService.findAllMembers(channelId3,userId2));
+        System.out.println(userCoordinatorService.findAllMembersByChannelIdAndMemberId(channelId3,userId2));
         System.out.println("---------채널 멤버가 아닌 사용자가 해당 채널 조회--------------");
         try {
-            System.out.println(userCoordinatorService.getChannelByIdAndMemberId(channelId3,userId3));
+            System.out.println(userCoordinatorService.findAccessibleChannel(channelId3,userId3));
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
         System.out.println("------4번 유저의 참여 채널 정보--------");
-        System.out.println(userCoordinatorService.getChannels(userId4));
+        System.out.println(userCoordinatorService.findChannelsByUserId(userId4));
         //메세지
         //생성
         UUID messageId = messageService.send(userId, channelId3, "안녕!!!").getId();
@@ -133,11 +132,11 @@ public class JavaApplication {
         UUID messageID4 = messageService.send(userId3, channelId2, "안녕십니wkl").getId();
         System.out.println("------------메세지 조회---------------");
         //메세지 조회
-        System.out.println(messageService.getMessagesByChannelIdAndMemberId(channelId3, userId));
+        System.out.println(messageService.findMessagesByChannelIdAndMemberId(channelId3, userId));
         //메세지 수정
         System.out.println("---------메세지 수정---------------------");
         messageService.updateMessage(userId, messageId, "굿바이!!!!");
-        System.out.println(messageService.getMessagesByChannelIdAndMemberId(channelId3,userId));
+        System.out.println(messageService.findMessagesByChannelIdAndMemberId(channelId3,userId));
         System.out.println("---------작성자가 아닌 사용자가 메세지 수정------------");
         try {
             messageService.updateMessage(userId2, messageId, "다시 안녕!!");
@@ -147,24 +146,24 @@ public class JavaApplication {
 
         System.out.println("----------멤버가 아닌 사용자가 채널의 메세지 확인-------");
         try {
-            System.out.println(messageService.getMessagesByChannelIdAndMemberId(channelId3,userId3));
+            System.out.println(messageService.findMessagesByChannelIdAndMemberId(channelId3,userId3));
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
         //메세지삭제
         System.out.println("--------------메세지 삭제------------");
-        System.out.println(messageService.getMessagesByChannelIdAndMemberId(channelId2,userId));
-        messageService.delete(messageID4, userId3);
-        System.out.println(messageService.getMessagesByChannelIdAndMemberId(channelId2,userId));
+        System.out.println(messageService.findMessagesByChannelIdAndMemberId(channelId2,userId));
+        messageService.deleteByIdAndSenderId(messageID4, userId3);
+        System.out.println(messageService.findMessagesByChannelIdAndMemberId(channelId2,userId));
         System.out.println("-------존재하지 않는 메세지 삭제------------");
         try {
-            messageService.delete(messageID4, userId3);
+            messageService.deleteByIdAndSenderId(messageID4, userId3);
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
         System.out.println("-------------작성자가 아닌 사용자가 메세지 삭제------------");
         try {
-            messageService.delete(messageID3, userId2);
+            messageService.deleteByIdAndSenderId(messageID3, userId2);
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
@@ -177,12 +176,12 @@ public class JavaApplication {
         UUID dmid = messageService.sendDirectMessage(userId2,userId,"아자차카타파하~~").getId();
         //디엠 한번에 조회
         System.out.println("-----------다이렉트 메세지 조회---------------");
-        System.out.println(messageService.getDirectMessages(userId,userId2));
+        System.out.println(messageService.findDirectMessagesBySenderIdAndReceiverId(userId,userId2));
         //디엠 수정
         System.out.println("-----------다이렉트 메세지 수정---------------");
         System.out.println(messageService.updateMessage(userId2,dmid,"아자차카!!!까지로 바꿀게~~"));
         System.out.println("-----------수정 다이렉트 메세지 목록 조회---------------");
-        System.out.println(messageService.getDirectMessages(userId,userId2));
+        System.out.println(messageService.findDirectMessagesBySenderIdAndReceiverId(userId,userId2));
         //채널 멤버 제외
         try{
             System.out.println("------소유자가 자신을 제외----------");
@@ -193,9 +192,9 @@ public class JavaApplication {
         System.out.println("---------------소유자가 비밀 채널의 멤버를 제외--------------");
         System.out.println(userCoordinatorService.removeMembers(channelId3, userId2, List.of(userId,userId4)));
         System.out.println("---------------변경된 비밀 채널의 멤버 조회--------------");
-        System.out.println(userCoordinatorService.findAllMembers(channelId3, userId2));
+        System.out.println(userCoordinatorService.findAllMembersByChannelIdAndMemberId(channelId3, userId2));
         System.out.println("---------------제외된 멤버의 채널 조회--------------");
-        System.out.println(userCoordinatorService.getChannels(userId));
+        System.out.println(userCoordinatorService.findChannelsByUserId(userId));
         //다시 멤버 복구
         userCoordinatorService.addMembers(channelId3, userId2, List.of(userId,userId4));
         //채널에서 나가기
@@ -216,20 +215,20 @@ public class JavaApplication {
         //채널 삭제
 
         System.out.println("-----------채널 삭제----------------");
-        channelService.deleteChannelById(channelId4, userId4);
+        channelService.deleteChannelByIdAndOwnerId(channelId4, userId4);
         System.out.println("-----------삭제된 채널 조회----------------");
         try {
-            System.out.println(userCoordinatorService.getChannelByIdAndMemberId(channelId4,userId4));
+            System.out.println(userCoordinatorService.findAccessibleChannel(channelId4,userId4));
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
         System.out.println("-----------채널 모두 조회----------------");
         System.out.println(channelService.findAllChannels());
         System.out.println("-------------원래 멤버였던 사용자의 정보 보기---------------");
-        System.out.println(userService.getUserById(userId4));
+        System.out.println(userService.findUserById(userId4));
         System.out.println("-----------삭제된 채널의 메세지 조회----------------");
         try {
-            System.out.println(messageService.getMessagesByChannelIdAndMemberId(channelId4,userId4));
+            System.out.println(messageService.findMessagesByChannelIdAndMemberId(channelId4,userId4));
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
@@ -240,23 +239,23 @@ public class JavaApplication {
 
         System.out.println("-----------탈퇴한 사용자 조회----------------");
         try{
-            System.out.println(userService.getUserById(userId).toString());
+            System.out.println(userService.findUserById(userId).toString());
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
         System.out.println("-------모든 사용자 조회----------");
         System.out.println(userService.findAllUsers());
         System.out.println("-----------채널 멤버 확인-----------");
-        System.out.println(userCoordinatorService.findAllMembers(channelId3, userId2));
+        System.out.println(userCoordinatorService.findAllMembersByChannelIdAndMemberId(channelId3, userId2));
         System.out.println("------------채널 정보 확인-----------");
-        System.out.println(userCoordinatorService.getChannelByIdAndMemberId(channelId3,userId2));
+        System.out.println(userCoordinatorService.findAccessibleChannel(channelId3,userId2));
         System.out.println("-----------채널 메세지 확인-----------");
-        System.out.println(messageService.getMessagesByChannelIdAndMemberId(channelId3,userId2));
+        System.out.println(messageService.findMessagesByChannelIdAndMemberId(channelId3,userId2));
         System.out.println("-----------다이렉트 메세지 조회(삭제된 유저의 디엠 상대방이 조회)---------------");
         try{
-            System.out.println(messageService.getDirectMessages(userId2,userId));//user2는 탈퇴 안하니까 메세지 확인가능
+            System.out.println(messageService.findDirectMessagesBySenderIdAndReceiverId(userId2,userId));//user2는 탈퇴 안하니까 메세지 확인가능
             System.out.println("-----------다이렉트 메세지 조회(삭제 당사자가 조회)---------------");
-            System.out.println(messageService.getDirectMessages(userId,userId2));//user1은 불가
+            System.out.println(messageService.findDirectMessagesBySenderIdAndReceiverId(userId,userId2));//user1은 불가
         }catch(Exception e){
             System.out.println(e.getMessage());
         }

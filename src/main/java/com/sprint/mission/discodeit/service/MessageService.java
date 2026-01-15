@@ -7,10 +7,10 @@ import java.util.UUID;
 
 public interface MessageService {
     Message sendDirectMessage(UUID senderId, UUID receiverId, String content);
-    List<Message> getDirectMessages(UUID senderId, UUID receiverId);
+    List<Message> findDirectMessagesBySenderIdAndReceiverId(UUID senderId, UUID receiverId);
     Message send(UUID senderId, UUID channelId, String content);
     Message updateMessage(UUID senderId, UUID Id, String content);
-    List<Message> getMessagesByChannelIdAndMemberId(UUID channelId, UUID memberId);
-    void delete(UUID id, UUID senderId);
+    List<Message> findMessagesByChannelIdAndMemberId(UUID channelId, UUID memberId);
+    void deleteByIdAndSenderId(UUID id, UUID senderId);
 
 }

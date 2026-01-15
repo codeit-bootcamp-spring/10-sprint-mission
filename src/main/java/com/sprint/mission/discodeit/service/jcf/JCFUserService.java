@@ -21,7 +21,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User updateInfo(UUID id, String userName, String email, String password) {
-        User user = getUserById(id);
+        User user = findUserById(id);
         //요청한 값이 널 또는 이전과 같은 값들로만 구성된 경우
         boolean unChanged = (userName ==null || userName.equals(user.getUserName()))
                 && (email ==null || email.equals(user.getEmail()))
@@ -43,7 +43,7 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User getUserById(UUID id) {
+    public User findUserById(UUID id) {
         validateUser(id);
         return data.get(id);
     }
@@ -56,7 +56,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public void removeUserById(UUID id) {
-        User user = getUserById(id);
+        User user = findUserById(id);
         user.removeAllChannels();
         user.setUserName("[삭제된 사용자]");
         //소유 채널 삭제 필요

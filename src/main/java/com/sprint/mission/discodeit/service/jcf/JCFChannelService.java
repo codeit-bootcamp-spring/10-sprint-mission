@@ -20,7 +20,7 @@ public class JCFChannelService implements ChannelService {
     public Channel addChannel(String name, String description, UUID ownerId, ChannelType channelType) {
         blockDirectChannel(channelType);
         validateChannelName(name);
-        Channel channel = new Channel(name, description, userService.getUserById(ownerId), channelType);
+        Channel channel = new Channel(name, description, userService.findUserById(ownerId), channelType);
         data.put(channel.getId(), channel);
         return channel;
     }
@@ -29,7 +29,7 @@ public class JCFChannelService implements ChannelService {
     public Channel updateChannelInfo(UUID id, UUID ownerId, String name, String description) {
         Channel channel = getChannelById(id);
         blockDirectChannel(channel.getChannelType());
-        User owner = userService.getUserById(ownerId);
+        User owner = userService.findUserById(ownerId);
         channel.checkChannelOwner(owner);
         if((name == null || name.equals(channel.getName())) && (description == null || description.equals(channel.getDescription()))) {
             throw new IllegalArgumentException("변경사항 없음");
@@ -53,10 +53,10 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void deleteChannelById(UUID id, UUID ownerId) {
+    public void deleteChannelByIdAndOwnerId(UUID id, UUID ownerId) {
         Channel channel = getChannelById(id);
         blockDirectChannel(channel.getChannelType());
-        User owner = userService.getUserById(ownerId);
+        User owner = userService.findUserById(ownerId);
         channel.checkChannelOwner(owner);
         channel.removeAllMembers();
         //채널 메세지 삭제 로직 필요
@@ -88,7 +88,7 @@ public class JCFChannelService implements ChannelService {
     public Channel createDirectChannel(List<UUID> chatterIdSet){
         Channel directChannel = new Channel(null,null,null,ChannelType.DIRECT);
         for(UUID chatterId : chatterIdSet){
-            directChannel.addMember(userService.getUserById(chatterId));
+            directChannel.addMember(userService.findUserById(chatterId));
         }
         data.put(directChannel.getId(), directChannel);
         return directChannel;
