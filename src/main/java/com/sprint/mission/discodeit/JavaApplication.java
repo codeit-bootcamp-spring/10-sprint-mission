@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Role;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.RoleService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -13,7 +10,7 @@ import com.sprint.mission.discodeit.service.jcf.JCFRoleService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
-import static com.sprint.mission.discodeit.entity.TargetType.ADD;
+import static com.sprint.mission.discodeit.entity.PermissionLevel.USER;
 
 public class JavaApplication {
     public static void main(String[] args) {
@@ -30,17 +27,21 @@ public class JavaApplication {
         Channel ch1 = channeldata.create("코딩", "코딩 관련해서 이야기 하는 채널");
         Channel ch2 = channeldata.create("마인크래프트", "마인크래프트 이야기 하는 채널");
 
-        Role role1 = roledata.create("USER", user1.getId(), ch1.getId());
-        Role role2 = roledata.create("USER", user2.getId(), ch1.getId());
+        Role role1 = roledata.create(USER, user1.getId(), ch1.getId());
+        Role role2 = roledata.create(USER, user2.getId(), ch1.getId());
 
         Message mes1 = messagedata.create(user1.getId(), "이게 뭐지", ch1.getId());
         Message mes2 = messagedata.create(user2.getId(), "그게 뭔데", ch1.getId());
 
         //테스팅 내용
+        ch1.printChannel();
 
-        ch1.getMessages().forEach(System.out::println);
+        roledata.delete(role1.getId());
+        ch1.printChannel();
+        //Message mes3 = messagedata.create(user1.getId(), "안보내짐?", ch1.getId());
 
-        roledata.delete(role2.getId());
-        System.out.println(ch1.getRoles());
+        messagedata.delete(mes1.getId());
+        channeldata.printChannel(ch1.getId());
+
     }
 }

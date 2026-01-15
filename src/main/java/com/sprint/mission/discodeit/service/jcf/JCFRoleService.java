@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.PermissionLevel;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.RoleService;
@@ -36,10 +37,10 @@ public class JCFRoleService implements RoleService {
     }
 
     @Override
-    public Role create(String groupName, UUID userID, UUID channelID) {
+    public Role create(PermissionLevel roleName, UUID userID, UUID channelID) {
         User user = JCFUserService.getInstance().find(userID);
         Channel channel = JCFChannelService.getInstance().find(channelID);
-        Role role = new Role(groupName, user, channel);
+        Role role = new Role(roleName, user, channel);
 
         groups.add(role); //자체 리스트에 추가하고
         user.getRoles().add(role); //유저에 등록하며
@@ -56,10 +57,4 @@ public class JCFRoleService implements RoleService {
         groups.remove(role);
     }
 
-    @Override
-    public Role updateGroupName(UUID id, String GroupName) {
-        Role role = this.find(id);
-        role.updateGroupName(GroupName);
-        return role;
-    }
 }

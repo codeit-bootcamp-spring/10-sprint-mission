@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Role;
-import com.sprint.mission.discodeit.entity.TargetType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.RoleService;
@@ -59,6 +58,11 @@ public class JCFChannelService implements ChannelService {
         Optional.ofNullable(desc)
                 .ifPresent(willUpdate::updateChannelDescription);
         return willUpdate;
+    }
+
+    public void printChannel(UUID id){
+        Channel PrintingChannel = this.find(id);
+        PrintingChannel.printChannel();
     }
 
 }

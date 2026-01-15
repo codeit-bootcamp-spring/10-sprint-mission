@@ -71,4 +71,12 @@ public class Channel extends DefaultEntity {
     public List<Role> getRoles() {
         return roles;
     }
+
+    public void printChannel(){
+        System.out.println("=========================");
+        System.out.println(this);
+        System.out.println("=========================");
+        getMessages().forEach(System.out::println);
+        System.out.println("=========================");
+    }
 }
