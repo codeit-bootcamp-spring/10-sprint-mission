@@ -4,23 +4,23 @@ import java.util.*;
 
 public class Channel extends BaseEntity {
     private UUID ownerId;
-    private Boolean isPrivate = false; // true = Private, false = Public
+    private ChannelType channelType;
     private String channelName;
-    private String channelDescription = "";
+    private String channelDescription;
 
     // 연관 관계
     // 해당 채널에 참여 중인 유저 목록
-    private final Set<User> channelUsersList; // 유저 중복 참가 불가
+    private final Set<UUID> channelMembersIds; // 유저 중복 참가 불가
     // 해당 채널에 존재하는 메시지 목록
     private final List<Message> channelMessagesList; // 채팅창 안의 메시지들
 
     // 생성자
-    public Channel(UUID userId, Boolean isPrivate, String channelName, String channelDescription) {
+    public Channel(UUID userId, ChannelType channelType, String channelName, String channelDescription) {
         this.ownerId = userId; // owner 임명(생성하는 사용자 본인)
-        this.isPrivate = isPrivate;
+        this.channelType = channelType;
         this.channelName = channelName;
         this.channelDescription = channelDescription;
-        channelUsersList = new HashSet<>();
+        channelMembersIds = new HashSet<>();
         channelMessagesList = new ArrayList<>();
     }
 
@@ -31,25 +31,21 @@ public class Channel extends BaseEntity {
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +
                 "owner ID = " + ownerId + ", " +
-                "isPrivate = " + isPrivate + ", " +
+                "channel type = " + channelType + ", " +
                 "channelName = " + channelName + ", " +
 //                "channelDescription = " + channelDescription + ", " +
-                "channelUsers = " + channelUsersList.stream().map(user -> user.getId()).toList() + ", " +
+                "channelMembersIds = " + channelMembersIds + ", " +
                 "channelMessages = " + channelMessagesList.stream().map(message -> message.getId()).toList() +
                 "}";
     }
 
     // Getter
-    public UUID getOwner() {
+    public UUID getOwnerId() {
         return ownerId;
     }
 
-    public Boolean getPrivate() {
-        return isPrivate;
-    }
-
-    public Boolean getIsPrivate() {
-        return isPrivate;
+    public ChannelType getChannelType() {
+        return channelType;
     }
 
     public String getChannelName() {
@@ -60,8 +56,8 @@ public class Channel extends BaseEntity {
         return channelDescription;
     }
 
-    public List<User> getChannelUsersList() {
-        return channelUsersList.stream().toList();
+    public List<UUID> getChannelMembersIds() {
+        return channelMembersIds.stream().toList();
     }
 
     public List<Message> getChannelMessagesList() {
@@ -74,8 +70,8 @@ public class Channel extends BaseEntity {
         updateTime();
     }
 
-    public void updateIsPrivate(Boolean isPrivate) {
-        this.isPrivate = !this.isPrivate;
+    public void updateIsChannelType(ChannelType channelType) {
+        this.channelType = channelType;
         updateTime();
     }
 
@@ -85,22 +81,22 @@ public class Channel extends BaseEntity {
     }
 
     // owner 변경(+업데이트)
-    public void changeOwner(Channel channel, UUID ownerId) {
+    public void changeOwner(Channel channelId, UUID ownerId) {
 //        this.owner.removeChannelOwner(channel); // 기존 채널 주인 소유권 제거
         this.ownerId = ownerId;
         updateTime();
 //        owner.ownChannel(this);
     }
 
-    // 채널 유저
-    public void addChannelUser(User user) {
-        this.channelUsersList.add(user);
+    // 채널 멤버 추가
+    public void addMember(UUID userId) {
+        this.channelMembersIds.add(userId);
         updateTime();
     }
 
-    // 채널 유저 삭제
-    public void removeChannelUser(User user) {
-        this.channelUsersList.remove(user);
+    // 채널 멤버 삭제
+    public void removeMember(UUID userId) {
+        this.channelMembersIds.remove(userId);
         updateTime();
     }
 

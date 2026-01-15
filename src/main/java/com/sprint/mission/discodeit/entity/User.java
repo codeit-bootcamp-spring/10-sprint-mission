@@ -13,7 +13,7 @@ public class User extends BaseEntity {
     // 해당 유저가 owner인 채널 목록
     private final Set<Channel> ownerChannelList;
     // 해당 유저가 참여 중인 채널 목록
-    private final Set<Channel> joinChannelList;
+    private final Set<UUID> joinChannelIds;
     // 해당 유저가 보낸 메시지 목록
     private final List<Message> writeMessageList;
 
@@ -26,7 +26,7 @@ public class User extends BaseEntity {
         this.birthday = birthday;
 
         ownerChannelList = new HashSet<>();
-        joinChannelList = new HashSet<>();
+        joinChannelIds = new HashSet<>();
         writeMessageList = new ArrayList<>();
     }
 
@@ -39,10 +39,10 @@ public class User extends BaseEntity {
                 "email = " + email + ", " +
                 "nickName = " + nickName + ", " +
                 "userName = " + userName + ", " +
-//                "password = " + password + ", " +
-//                "birthday = " + birthday + ", " +
+                "password = " + password + ", " +
+                "birthday = " + birthday + ", " +
                 "ownerChannelList = " + ownerChannelList.stream().map(channel -> channel.getId()).toList() + ", " +
-                "joinChannelList = " + joinChannelList.stream().map(channel -> channel.getId()).toList() + ", " +
+                "joinChannelList = " + joinChannelIds + ", " +
                 "writeMessageList = " + writeMessageList.stream().map(message -> message.getId()).toList() +
                 "}";
     }
@@ -72,8 +72,8 @@ public class User extends BaseEntity {
         return ownerChannelList.stream().toList();
     }
 
-    public List<Channel> getJoinChannelList() {
-        return joinChannelList.stream().toList();
+    public List<UUID> getJoinChannelIds() {
+        return joinChannelIds.stream().toList();
     }
 
     public List<Message> getWriteMessageList() {
@@ -120,17 +120,15 @@ public class User extends BaseEntity {
     }
 
     // 채널 참가
-    public void joinChannel(Channel channel) {
-        this.joinChannelList.add(channel);
+    public void joinChannel(UUID channelId) {
+        this.joinChannelIds.add(channelId);
         updateTime();
-        channel.addChannelUser(this);
     }
 
     // 채널 탈퇴
-    public void leaveChannel(Channel channel) {
-        this.joinChannelList.remove(channel);
+    public void leaveChannel(UUID channelId) {
+        this.joinChannelIds.remove(channelId);
         updateTime();
-        channel.removeChannelUser(this);
     }
 
     // 메시지 작성

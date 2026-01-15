@@ -18,22 +18,14 @@ public interface UserService {
 
     // R. 모두 읽기
     // 모든 사용자
-    List<User> readAllUsers();
-    // 특정 단어 검색으로 특정 사용자들 찾기
-    List<User> searchUsersByPartialName(String partialName);
+    List<User> findAllUsers();
     // 특정 사용자가 참여한 모든 채널
-    List<Channel> readUserJoinChannelsByUserId(UUID userId);
-    // 특정 사용자가 owner인 모든 채널
-    List<Channel> readUserOwnChannelsByUserId(UUID userId);
-    // 특정 사용자가 join(참여한) 채널 중에서 특정 채널 검색
-    List<Channel> findUserChannelByChannelName(UUID userId, String partialChannelName);
+    List<UUID> readJoinChannelIds(UUID userId);
     // 특정 사용자가 작성한 모든 메시지
     List<Message> readUserMessagesByUserId(UUID userId);
 
     // U. 수정
     User updateUserInfo(UUID userId, String email, String password, String userName, String nickName, String birthday);
-    User joinChannel(UUID userId, Channel channel); // 채널 참여
-    User leaveChannel(UUID userId, Channel channel); // 채널 탈퇴
 
     // D. 삭제
     void deleteUser(UUID userId);
