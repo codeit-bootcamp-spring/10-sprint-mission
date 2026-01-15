@@ -1,11 +1,16 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.entity.Channel;
 
-import java.util.*;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.ChannelService;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> channelMap = new HashMap<>();
@@ -41,8 +46,6 @@ public class JCFChannelService implements ChannelService {
         }
         validateDuplicateName(name);
 
-        // ID로 User 객체 조회 (참조 무결성 검사 겸 객체 확보)
-        // UserService가 예외를 던져주므로 null 체크 불필요
         User owner = userService.findUserByUserId(ownerId);
 
         Channel channel = new Channel(name, owner);
@@ -71,7 +74,6 @@ public class JCFChannelService implements ChannelService {
             throw new IllegalArgumentException("변경할 채널 이름이 비어있음");
         }
 
-        // 중복 이름 체크 (자기 자신 제외)
         boolean isDuplicate = channelMap.values().stream()
                 .anyMatch(ch -> !ch.getId().equals(channelId) && ch.getChannelName().equals(newChannelName));
         if (isDuplicate) {

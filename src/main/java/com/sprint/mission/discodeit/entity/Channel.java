@@ -28,7 +28,7 @@ public class Channel extends BaseEntity {
         if(channelName == null || channelName.trim().isEmpty()) {
             throw new IllegalArgumentException("채널(서버) 이름은 필수입니다.");
         }
-        // 채널 이름 관련 규칙 추가 (추후 구햔)
+        // 채널 이름 관련 규칙 추가 (추후 구현)
     }
     private void validateOwnerId(UUID ownerId) {
         if (ownerId == null) {

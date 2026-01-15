@@ -1,13 +1,17 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.*;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.ChannelService;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -41,8 +45,6 @@ public class JCFMessageService implements MessageService {
             throw new IllegalArgumentException("메시지 내용을 입력해야 함");
         }
 
-        // ID로 객체 조회 (참조 무결성 검사 + 객체 확보)
-        // 리턴된 User 객체를 받아서 저장
         User sender = userService.findUserByUserId(userId);
         Channel channel = channelService.findChannelById(channelId);
 

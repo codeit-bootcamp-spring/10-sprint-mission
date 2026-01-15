@@ -7,7 +7,7 @@ import com.sprint.mission.discodeit.entity.ChannelRole;
 import java.util.List;
 import java.util.UUID;
 
-public interface ChannelUserService {
+public interface ChannelUserRoleService {
     // Create (채널 입장)
     ChannelUserRole addChannelUser(UUID channelId, UUID userId, ChannelRole role);
 
@@ -23,4 +23,6 @@ public interface ChannelUserService {
 
     // Delete (채널 나가기 / 강퇴)
     void deleteChannelUser(UUID channelId, UUID userId);
+
+    void deleteAllAssociationsByUserId(UUID userId); // User-Delete 때문에 필요 (추후 구현)
 }

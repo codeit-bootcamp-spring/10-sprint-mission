@@ -1,17 +1,21 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelUserRole;
 import com.sprint.mission.discodeit.entity.ChannelRole;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.ChannelUserService;
-import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.*;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.ChannelUserRoleService;
+
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class JCFChannelUserService implements ChannelUserService {
+public class JCFChannelUserRoleService implements ChannelUserRoleService {
     // DB (Repository 계층 대체)
     private final Map<UUID, ChannelUserRole> channelUserMap = new HashMap<>();
 
@@ -19,7 +23,7 @@ public class JCFChannelUserService implements ChannelUserService {
     private final UserService userService;
     private final ChannelService channelService;
 
-    public JCFChannelUserService(UserService userService, ChannelService channelService) {
+    public JCFChannelUserRoleService(UserService userService, ChannelService channelService) {
         this.userService = userService;
         this.channelService = channelService;
     }

@@ -2,10 +2,10 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 public interface ChannelService {
-
     // Create
     /**
      * 채널 생성
@@ -21,7 +21,6 @@ public interface ChannelService {
      * @return 채널이 존재하면 Channel
      */
     Channel findChannelById(UUID channelId); // 메서드 네이밍 변경
-
     /**
      * 모든 채널 조회
      * @return 채널 리스트 (없으면 빈 리스트)
@@ -43,4 +42,6 @@ public interface ChannelService {
      * @param channelId 삭제할 채널 ID
      */
     void deleteChannel(UUID channelId);
+
+    void deleteChannelsByOwnerId(UUID ownerId);  // User-Delete 때문에 필요 (추후 구현)
 }

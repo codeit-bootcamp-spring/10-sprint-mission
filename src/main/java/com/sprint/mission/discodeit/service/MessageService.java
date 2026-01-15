@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 
 import java.util.*;
 
@@ -47,4 +46,6 @@ public interface MessageService {
      * @param messageId 삭제할 메시지 ID
      */
     void deleteMessage(UUID messageId);
+
+    void deleteAllMessagesByUserId(UUID userId);  // User-Delete 때문에 필요 (추후 구현)
 }
