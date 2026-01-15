@@ -1,17 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Channel extends Common {
     private final Set<User> participants;
+    private final List<Message> messages;
     private String title;
     private String description;
 
     public Channel(String title, String description) {
         super();
         this.participants = new HashSet<>();
+        this.messages = new ArrayList<>();
         this.title = title;
         this.description = description;
     }
@@ -25,6 +25,17 @@ public class Channel extends Common {
     }
     public boolean removeParticipant(User user) {
         return participants.remove(user);
+    }
+
+    // messages
+    public List<Message> getMessages() {
+        return Collections.unmodifiableList(this.messages);
+    }
+    public void addMessage(Message message) {
+        this.messages.add(message);
+    }
+    public void removeMessage(Message message) {
+        this.messages.remove(message);
     }
 
     public String getTitle() {
