@@ -47,10 +47,6 @@ public class JavaApplication {
 //        );
 //
 //        // 4. 채널별 메시지 조회
-////        System.out.println("\n=== (채널: 일반) 메시지 목록 ===");
-////        messageService.getMessagesByChannelName("일반").forEach(message ->
-////                System.out.println(message.getSender().getUserName() + ": " + message.getContent())
-////        );
 //        System.out.println("\n===(채널: 일반) 메세지 목록 ===");
 //        messageService.getMessagesByChannelName("공지사항").forEach(message->
 //                System.out.println(message.getSender().getUserName() + ": " + message.getContent()));
@@ -136,84 +132,124 @@ public class JavaApplication {
 //        //channelService.updateChannel(ch10.getId(), "공지사항");
 //            //Channel ch11 = channelService.createChannel("");
             //  서비스 생성
-            JCFUserService userService = new JCFUserService();
-            JCFChannelService channelService = new JCFChannelService();
-            JCFMessageService messageService = new JCFMessageService(userService, channelService);
+//            JCFUserService userService = new JCFUserService();
+//            JCFChannelService channelService = new JCFChannelService();
+//            JCFMessageService messageService = new JCFMessageService(userService, channelService);
+//
+//            System.out.println("\n===  User / Channel / Message 생성 ===");
+//            //  User 생성
+//            User u1 = userService.createUser("최종인", "jongin");
+//            System.out.println(" 사용자 생성: " + u1.getUserName() + " (" + u1.getId() + ")");
+//            User u2 = userService.createUser("최종인", "jongin98");
+//
+//
+//            //  Channel 생성
+//            Channel ch1 = channelService.createChannel("공지사항");
+//            System.out.println(" 채널 생성: " + ch1.getChannelName() + " (" + ch1.getId() + ")");
+//
+//              //Message 생성
+//            Message m1 = messageService.createMessage("첫 번째 메시지입니다.",u1.getId(), ch1.getId());
+//            System.out.println(" 메시지 생성: " + m1.getContent() + " (" + m1.getId() + ")");
+//
+////            Message m1 = messageService.createMessage("테스트 메세지!!!", u1, ch1);
+//
+//            System.out.println("메시지 저장 시점: " + m1.getCreatedAt());
+//            System.out.println("Map에서 꺼낸 후 시점: " + messageService.findmsgOrThrow(m1.getId()).getCreatedAt());
+//
+//            System.out.println("\n=== ID 기반 조회 (공통 find...OrThrow 메서드 테스트) ===");
+//            User foundUser = userService.findUserOrThrow(u1.getId());
+//            Channel foundChannel = channelService.findChannelOrThrow(ch1.getId());
+//            Message foundMessage = messageService.findmsgOrThrow(m1.getId());
+//
+//            System.out.println("조회된 User: " + foundUser.getUserName());
+//            System.out.println("조회된 Channel: " + foundChannel.getChannelName());
+//            System.out.println("조회된 Message: " + foundMessage.getContent());
+//
+//            System.out.println("\n===  ID 기반 수정 (update 메서드 테스트) ===");
+//            userService.updateUser(u1.getId(), "김민수", "minsu");
+//            channelService.updateChannel(ch1.getId(), "일반공지");
+//            messageService.updateMessage(m1.getId(), "수정된 메시지 내용입니다.");
+//
+//
+//            System.out.println("=== " + u1.getUserName() + "이(가) 보낸 메시지 목록 ===");
+//            UUID userId = u1.getId();
+//            List<Message> messages = messageService.getMessagesBySenderId(userId);
+//            for (Message m : messages) {
+//                System.out.println(m.getContent());
+//            }
+//
+//            System.out.println(" 사용자 이름 변경: " + userService.findUserOrThrow(u1.getId()).getUserName());
+//            System.out.println("️ 채널 이름 변경: " + channelService.findChannelOrThrow(ch1.getId()).getChannelName());
+//            System.out.println(" 메시지 내용 변경: " + messageService.findmsgOrThrow(m1.getId()).getContent());
+//
+//            System.out.println("\n=== ID 기반 삭제 (delete 메서드 테스트) ===");
+//            userService.deleteUser(u1.getId());
+//            channelService.deleteChannel(ch1.getId());
+//            messageService.deleteMessage(m1.getId());
+//
+//            System.out.println(" 모든 데이터 삭제 완료");
+//
+//            System.out.println("\n===  예외 발생 테스트 (삭제 후 조회 시도) ===");
+//            try {
+//                    userService.findUserOrThrow(u1.getId());
+//            } catch (NoSuchElementException e) {
+//                    System.out.println(" 사용자 조회 실패: " + e.getMessage());
+//            }
+//
+//            try {
+//                    channelService.findChannelOrThrow(u1.getId());
+//            } catch (NoSuchElementException e) {
+//                    System.out.println(" 채널 조회 실패: " + e.getMessage());
+//            }
+//
+//            try {
+//                    messageService.findmsgOrThrow(m1.getId());
+//            } catch (NoSuchElementException e) {
+//                    System.out.println(" 메시지 조회 실패: " + e.getMessage());
+//            }
+//
+//            System.out.println("\n 모든 공통 메서드 테스트 완료!");
 
-            System.out.println("\n===  User / Channel / Message 생성 ===");
-            //  User 생성
-            User u1 = userService.createUser("최종인", "jongin");
-            System.out.println(" 사용자 생성: " + u1.getUserName() + " (" + u1.getId() + ")");
-            User u2 = userService.createUser("최종인", "jongin98");
+        JCFUserService userService = new JCFUserService();
+        JCFChannelService channelService = new JCFChannelService();
+        JCFMessageService messageService = new JCFMessageService(userService, channelService);
 
+        User u1 = userService.createUser("홍길동", "gildong");
+        User u2 = userService.createUser("김철수", "chulsoo");
+        User u3 = userService.createUser("이영희", "younghee");
+        Channel ch1 = channelService.createChannel("공지사항");
 
-            //  Channel 생성
-            Channel ch1 = channelService.createChannel("공지사항");
-            System.out.println(" 채널 생성: " + ch1.getChannelName() + " (" + ch1.getId() + ")");
+        //참가시키기
+        u1.joinChannel(ch1);
+        u2.joinChannel(ch1);
 
-              //Message 생성
-            Message m1 = messageService.createMessage("첫 번째 메시지입니다.",u1.getId(), ch1.getId());
-            System.out.println(" 메시지 생성: " + m1.getContent() + " (" + m1.getId() + ")");
+        // 특정 채널의 참가자 조회
+        List<User> participants = channelService.getUsersInChannel(ch1.getId());
 
-//            Message m1 = messageService.createMessage("테스트 메세지!!!", u1, ch1);
+        System.out.println("[ " + ch1.getChannelName()+ " ] 참가자" );
+        for(User u : participants) {
+            System.out.println("- " + u.getAlias());
+        }
 
-            System.out.println("메시지 저장 시점: " + m1.getCreatedAt());
-            System.out.println("Map에서 꺼낸 후 시점: " + messageService.findmsgOrThrow(m1.getId()).getCreatedAt());
+        // 탈뢰 후 다시 확인
+        u2.leaveChannel(ch1);
+        System.out.println("\n📢 [" + ch1.getChannelName() + "] 참가자 (탈퇴 후):");
+        for (User u : participants) {
+            System.out.println("- " + u.getAlias());
+        }
 
-            System.out.println("\n=== ID 기반 조회 (공통 find...OrThrow 메서드 테스트) ===");
-            User foundUser = userService.findUserOrThrow(u1.getId());
-            Channel foundChannel = channelService.findChannelOrThrow(ch1.getId());
-            Message foundMessage = messageService.findmsgOrThrow(m1.getId());
+        System.out.println("===");
+        System.out.println(ch1.getParticipants());
 
-            System.out.println("조회된 User: " + foundUser.getUserName());
-            System.out.println("조회된 Channel: " + foundChannel.getChannelName());
-            System.out.println("조회된 Message: " + foundMessage.getContent());
+        // 메세지 여러개 보내보자
+        Message m1 = messageService.createMessage("첫번째 메세지 입니다.", u1.getId(), ch1.getId());
+        Message m2 = messageService.createMessage("두번째 메세지 입니다.", u1.getId(), ch1.getId());
+        Message m3 = messageService.createMessage("세번째 메세지 입니다.", u1.getId(), ch1.getId());
 
-            System.out.println("\n===  ID 기반 수정 (update 메서드 테스트) ===");
-            userService.updateUser(u1.getId(), "김민수", "minsu");
-            channelService.updateChannel(ch1.getId(), "일반공지");
-            messageService.updateMessage(m1.getId(), "수정된 메시지 내용입니다.");
+        System.out.println(userService.getMessageByUser(u1.getId()));
 
-
-            System.out.println("=== " + u1.getUserName() + "이(가) 보낸 메시지 목록 ===");
-            UUID userId = u1.getId();
-            List<Message> messages = messageService.getMessagesBySenderId(userId);
-            for (Message m : messages) {
-                System.out.println(m.getContent());
-            }
-
-            System.out.println(" 사용자 이름 변경: " + userService.findUserOrThrow(u1.getId()).getUserName());
-            System.out.println("️ 채널 이름 변경: " + channelService.findChannelOrThrow(ch1.getId()).getChannelName());
-            System.out.println(" 메시지 내용 변경: " + messageService.findmsgOrThrow(m1.getId()).getContent());
-
-            System.out.println("\n=== ID 기반 삭제 (delete 메서드 테스트) ===");
-            userService.deleteUser(u1.getId());
-            channelService.deleteChannel(ch1.getId());
-            messageService.deleteMessage(m1.getId());
-
-            System.out.println(" 모든 데이터 삭제 완료");
-
-            System.out.println("\n===  예외 발생 테스트 (삭제 후 조회 시도) ===");
-            try {
-                    userService.findUserOrThrow(u1.getId());
-            } catch (NoSuchElementException e) {
-                    System.out.println(" 사용자 조회 실패: " + e.getMessage());
-            }
-
-            try {
-                    channelService.findChannelOrThrow(u1.getId());
-            } catch (NoSuchElementException e) {
-                    System.out.println(" 채널 조회 실패: " + e.getMessage());
-            }
-
-            try {
-                    messageService.findmsgOrThrow(m1.getId());
-            } catch (NoSuchElementException e) {
-                    System.out.println(" 메시지 조회 실패: " + e.getMessage());
-            }
-
-            System.out.println("\n 모든 공통 메서드 테스트 완료!");
-
+        System.out.println(u1.getAlias()+ "가 참가한 채널 목록");
+        System.out.println(userService.getChannelsByUser(u1.getId()));
 
 
 

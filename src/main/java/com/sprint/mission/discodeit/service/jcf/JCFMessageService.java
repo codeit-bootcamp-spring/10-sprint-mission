@@ -101,5 +101,8 @@ public class JCFMessageService implements MessageService{
         return message;
     }
 
+    //추가 기능)
+    //
+
 
 }

@@ -27,6 +27,7 @@ public interface ChannelService {
 //    //id로 조회 /
 //    Channel getChannelById(UUID uuid);
 
+
     Channel findChannelOrThrow(UUID id);
 
 

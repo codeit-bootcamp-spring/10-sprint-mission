@@ -10,11 +10,12 @@ public class User extends Basic {
 
     //내가 작성한 메세지 리스트.....추가!!!?? 유지가 메세지를 작성하면.... -> 메세지에 리스트항목에도 동시에 추가되어야한다...
     private List<Message> messages = new ArrayList<>();
+    private List<Channel> joinedChannels = new ArrayList<>();
 
     public String alias; //닉네임
 
 
-// user 생성자
+    // user 생성자
     public User(String userName, String alias){
         super(); // user 만드는 메소드 ... -> ID 와 CreatedAt 할당.
         this.userName = userName;
@@ -52,6 +53,26 @@ public class User extends Basic {
             message.setSender(this); //
         }
     }
+
+    // 채널 관련!!
+    public List<Channel> getJoinedChannels() {
+        return joinedChannels;
+    }
+    // 채널 참가
+    public void joinChannel(Channel channel){
+        if(!joinedChannels.contains(channel)){
+            joinedChannels.add(channel);
+            channel.addParticipant(this);
+        }
+    }
+    // ✅ 채널 탈퇴
+    public void leaveChannel(Channel channel) {
+        if (joinedChannels.contains(channel)) {
+            joinedChannels.remove(channel);
+            channel.removeParticipant(this); // 반대쪽에서도 제거
+        }
+    }
+    // 채널 탈퇴
 
     @Override
     public String toString() {

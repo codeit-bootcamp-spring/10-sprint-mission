@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.utils.*;
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
 
+
     //인터페이스 객체 생성시 새로운 해쉬맵 할당
     public JCFChannelService() {
         this.data = new HashMap<>();
@@ -75,13 +76,16 @@ public class JCFChannelService implements ChannelService {
 
     }
 
+    // 현재 채널에 발행된 메세지 리스트 조회
     @Override
-    public List<Message> getMessageInChannel(UUID uuid){
-        Channel channel = data.get(uuid);
-        if(channel == null) {
-            return Collections.emptyList();
-        }
+    public List<Message> getMessageInChannel(UUID uuid) {
+        Channel channel = findChannelOrThrow(uuid);
         return channel.getMessages();
+    }
+    // 현재 채널에 참가한 유저 리스트 조회..
+    public List<User> getUsersInChannel(UUID uuid){
+        Channel channel = findChannelOrThrow(uuid);
+        return channel.getParticipants(); // 현재 uuid 채널의 참가자 리스트 반환.
     }
 
 

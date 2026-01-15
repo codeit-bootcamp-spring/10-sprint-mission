@@ -10,6 +10,7 @@ public class Channel extends Basic {
     // 또 추가할 것..? -> 현재 채널에 있는 메세지 리스트 정의.
     private List<Message> messages = new ArrayList<>();
     // 채널 만들고........뭐하ㅣ.. 채널 이름 변경까지만 구현
+    private List<User> participants = new ArrayList<>();
 
     public Channel(String channelName){
         super(); // 채널에도 ID 와 create 일자 생성..?
@@ -31,6 +32,31 @@ public class Channel extends Basic {
         if (!messages.contains(message)) {
             messages.add(message);
             message.setChannel(this);
+        }
+    }
+
+    public List<User> getParticipants() {
+        return participants;
+    }
+
+    // 유저-채널 관련
+    public void addParticipant(User user){
+        if(!participants.contains(user)){
+            participants.add(user);
+            // 채널의 참가자 목록에 유저 넣고 양방향 설정해줘야하므로
+            // 유저가 참가한 채널 목록에 지금 내 채널이 없으면 채널 넣어주기.
+            if(!user.getJoinedChannels().contains(this)){
+                user.getJoinedChannels().add(this);
+            }
+        }
+    }
+
+    public void removeParticipant(User user) {
+        if (participants.contains(user)) {
+            participants.remove(user);
+            if (user.getJoinedChannels().contains(this)) {
+                user.getJoinedChannels().remove(this);
+            }
         }
     }
 

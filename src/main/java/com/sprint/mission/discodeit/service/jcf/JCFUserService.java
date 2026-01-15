@@ -105,12 +105,21 @@ public class JCFUserService implements UserService {
     }
 
     // ID로 유저을 찾고, 없으면 예외.
-    public User findUserOrThrow(UUID id) {
-        User user = data.get(id);
+    public User findUserOrThrow(UUID uuid) {
+        User user = data.get(uuid);
         if (user == null) {
-            throw new NoSuchElementException("해당 유저가 존재하지 않습니다: " + id);
+            throw new NoSuchElementException("해당 유저가 존재하지 않습니다: " + uuid);
         }
         return user;
+    }
+
+    //특정 유저의 참가한 채널 리스트 조회
+    public List<Channel> getChannelsByUser(UUID uuid){
+        User user = data.get(uuid);
+        if(user==null) {
+            throw new NoSuchElementException("해당 유저가 존재하지 않습니다: " + uuid);
+        }
+        return user.getJoinedChannels();
     }
 
 }
