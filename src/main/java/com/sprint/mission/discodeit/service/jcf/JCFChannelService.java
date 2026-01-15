@@ -100,14 +100,6 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public List<User> getMembers(UUID channelId) {
-        // 유저 목록을 조회하려는 채널이 실제로 존재하는지 검색 및 검증
-        Channel channel = findChannelById(channelId);
-        // 채널에 속한 유저 목록 반환
-        return channel.getUsers();
-    }
-
-    @Override
     public List<Channel> getJoinedChannels(UUID userId) {
         // 실제로 존재하는 유저인지 검색 및 검증
         User user = userService.findUserById(userId);
