@@ -60,20 +60,11 @@ public class JCFUserService implements UserService {
     }
 
     // 특정 사용자가 참여한 모든 채널
-    public List<UUID> readJoinChannelIds(UUID userId) {
+    public List<UUID> findJoinChannelIdsByUserId(UUID userId) {
     // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
 
         return user.getJoinChannelIds().stream().toList();
-    }
-
-    // 특정 사용자가 작성한 모든 메시지
-    @Override
-    public List<Message> readUserMessagesByUserId(UUID userId) {
-        // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateAndGetUserByUserId(userId);
-
-        return user.getWriteMessageList().stream().toList();
     }
 
     // U. 수정

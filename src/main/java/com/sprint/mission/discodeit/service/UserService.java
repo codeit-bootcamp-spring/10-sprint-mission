@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
@@ -20,9 +18,7 @@ public interface UserService {
     // 모든 사용자
     List<User> findAllUsers();
     // 특정 사용자가 참여한 모든 채널
-    List<UUID> readJoinChannelIds(UUID userId);
-    // 특정 사용자가 작성한 모든 메시지
-    List<Message> readUserMessagesByUserId(UUID userId);
+    List<UUID> findJoinChannelIdsByUserId(UUID userId);
 
     // U. 수정
     User updateUserInfo(UUID userId, String email, String password, String userName, String nickName, String birthday);
