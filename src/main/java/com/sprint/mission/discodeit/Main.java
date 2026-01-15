@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class Main {
@@ -250,7 +251,7 @@ public class Main {
         // 특정 채널의 참가자 리스트 조회
         try {
             System.out.println("특정 채널의 참가자 리스트 조회 테스트");
-            ArrayList<User> channelUsers = channelService.channelUsers(channel2.getId());
+            List<User> channelUsers = channelService.channelUsers(channel2.getId());
             channelUsers.forEach(channel -> System.out.println(channel.getNickname()));
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -258,7 +259,7 @@ public class Main {
 
         try {   // 해당 채널이 존재하지 않음
             System.out.println("특정 채널의 참가자 리스트 조회 테스트");
-            ArrayList<User> channelUsers = channelService.channelUsers(channel1.getId());
+            List<User> channelUsers = channelService.channelUsers(channel1.getId());
             channelUsers.forEach(channel -> System.out.println(channel.getNickname()));
         } catch (Exception e) {
             System.err.println(e.getMessage());

@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class Channel extends BaseEntity {
     private String channelName;         // 채널 이름 (변경 가능)
     private User user;                  // 채널 소유자 (변경 불가능)
-    private ArrayList<User> members;      // 채널 참가자 (변경 가능)
+    private List<User> members;      // 채널 참가자 (변경 가능)
     private ChannelType type;           // CHAT, VOICE (변경 불가능)
 
     public Channel(String channelName, User user, ChannelType channelType) {
@@ -46,7 +47,7 @@ public class Channel extends BaseEntity {
         return user;
     }
 
-    public ArrayList<User> getMembers() {
+    public List<User> getMembers() {
         return members;
     }
 

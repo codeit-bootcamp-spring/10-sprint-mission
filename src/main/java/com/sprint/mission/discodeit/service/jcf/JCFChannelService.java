@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -52,7 +53,7 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 특정 채널의 참가자 리스트 조회
-    public ArrayList<User> channelUsers(UUID channelId) {
+    public List<User> channelUsers(UUID channelId) {
         searchChannel(channelId);
 
         Channel targetChannel = channels.stream()
@@ -85,7 +86,7 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 채널 참가자 초대
-    public void inviteMembers(UUID targetUserId, ArrayList<User> members) {
+    public void inviteMembers(UUID targetUserId, List<User> members) {
         User newUser = userService.searchUser(targetUserId);
 
         isMemberDuplicated(targetUserId, members);
@@ -96,7 +97,7 @@ public class JCFChannelService implements ChannelService {
     // 채널 퇴장
 
     // 유효성 검사 (초대)
-    public void isMemberDuplicated(UUID targetUserId, ArrayList<User> members) {
+    public void isMemberDuplicated(UUID targetUserId, List<User> members) {
         if (members.stream().anyMatch(member -> member.getId().equals(targetUserId)))
             throw new IllegalArgumentException("이미 채널에 존재하는 사용자입니다.");
     }
