@@ -9,6 +9,7 @@ public class User extends CommonEntity {
     private String userEmail;
     private String userPassword;
     private final List<Message> messages = new ArrayList<>();
+    private final List<Channel> channels = new ArrayList<>();
 
     public User(String userName, String userEmail, String userPassword) {
         this.userName = userName;
@@ -44,6 +45,9 @@ public class User extends CommonEntity {
         return messages;
     }
 
+    public List<Channel> getChannels() {
+        return channels;
+    }
 
 
 }

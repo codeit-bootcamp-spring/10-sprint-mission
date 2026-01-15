@@ -22,4 +22,6 @@ public interface UserService {
 
     List<Message> readMessagesByUser(UUID userId);
 
+    List<Channel> readChannelsByUser(UUID userId);
+
 }

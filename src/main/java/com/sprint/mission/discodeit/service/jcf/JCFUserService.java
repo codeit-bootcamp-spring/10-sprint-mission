@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
@@ -72,6 +71,11 @@ public class JCFUserService implements UserService {
     public List<Message> readMessagesByUser(UUID userId) {
         User user = readUser(userId);
         return user.getMessages();
+    }
+
+    public  List<Channel> readChannelsByUser(UUID userId) {
+        User user = readUser(userId);
+        return user.getChannels();
     }
 
     private void validateDuplicationEmail(String userEmail) {
