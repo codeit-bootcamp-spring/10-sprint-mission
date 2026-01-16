@@ -1,7 +1,6 @@
 package com.sprint.mission.entity;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 public class Message extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;

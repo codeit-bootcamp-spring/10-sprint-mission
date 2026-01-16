@@ -9,17 +9,25 @@ import java.util.UUID;
 public interface ChannelService {
     Channel create(UUID userID, String name);
 
-    Channel findById(UUID id);
+//    Channel findById(UUID id);
 
-    List<User> findByChannelId(UUID channelId);
+//    List<User> findByChannelId(UUID channelId);
 
-    List<Channel> findAll();
+//    List<Channel> findAll();
 
-    Channel update(UUID id, String name);
+    Channel update(UUID channelId, String name);
 
-    void deleteById(UUID id);
+//    void deleteById(UUID id);
 
-    Channel joinChannel(UUID userID, UUID channelId);
+    Channel joinChannel(UUID userId, UUID channelId);
 
-    Channel leaveChannel(UUID userID, UUID channelId);
+    Channel leaveChannel(UUID userId, UUID channelId);
+
+    Channel getChannelOrThrow(UUID channelId);
+
+    List<Channel> getAllChannel();
+
+    void deleteChannel(UUID channelId);
+
+    List<Channel> getUserChannels(UUID userId);
 }

@@ -3,6 +3,7 @@ package com.sprint.mission.entity;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class Channel extends BaseEntity implements Serializable {
@@ -34,6 +35,19 @@ public class Channel extends BaseEntity implements Serializable {
         users.remove(user);
     }
 
+    @Override
+    public boolean equals(Object obj) { // leaveUser에서 remove는 내부적으로 equal을 씀 때문에 파일에서 load할 때마다 새로운 객체이므로 equals, hashcode를 id 기반으로 오버라이딩 해줘야 함
+        if (this == obj) return true;
+        if (!(obj instanceof Channel)) return false;
+        Channel channel = (Channel) obj;
+        return Objects.equals(this.id, channel.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+
     private String getValidatedTrimmedName(String name) {
         validatedNameIsNotBlank(getTrimmedName(name));
         return getTrimmedName(name);
@@ -44,7 +58,7 @@ public class Channel extends BaseEntity implements Serializable {
     }
 
     public void validateMember(User user) {
-        if(!users.contains(user)){
+        if (!users.contains(user)) {
             throw new IllegalArgumentException("해당 유저가 채널에 참여하고 있지 않습니다.");
         }
     }

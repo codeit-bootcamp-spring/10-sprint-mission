@@ -9,13 +9,17 @@ import java.util.UUID;
 public interface UserService {
     User create(String name, String email);
 
-    User findById(UUID id);
+//    User findById(UUID id);
 
-    List<Channel> findByUserId(UUID userId);
+//    List<Channel> findByUserId(UUID userId);
 
-    List<User> findAll();
+    List<User> getAllUser();
 
-    User update(UUID id, String name);
+    User update(UUID userId, String name);
 
-    void deleteById(UUID id);
+    User getUserOrThrow(UUID userId);
+
+    void deleteUser(UUID userId);
+
+    List<User> getChannelUsers(UUID channelId);
 }
