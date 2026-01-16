@@ -3,6 +3,8 @@ package org.example.service.jcf;
 import org.example.entity.Channel;
 import org.example.entity.Message;
 import org.example.entity.User;
+import org.example.exception.InvalidRequestException;
+import org.example.exception.NotFoundException;
 import org.example.service.ChannelService;
 import org.example.service.MessageService;
 import org.example.service.UserService;
@@ -26,7 +28,7 @@ public class JCFMessageService implements MessageService {
     public Message create(String content, UUID senderId, UUID channelId) {
 
         if (content == null || content.isBlank()) {
-            throw new IllegalArgumentException("필드: content, 조건: null이 아니고 빈 값이 아님, 값: " + content);
+            throw new InvalidRequestException("content", "null이 아니고 빈 값이 아님", content);
         }
 
         User sender = userService.findById(senderId);
@@ -43,7 +45,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message findById(UUID messageId){
         return Optional.ofNullable(data.get(messageId))
-                .orElseThrow(()->new NoSuchElementException( "필드: id, 조건: 존재하는 메시지, 값: " + messageId));
+                .orElseThrow(()->new NotFoundException("id", "존재하는 메시지", messageId));
     }
 
     @Override
@@ -58,7 +60,7 @@ public class JCFMessageService implements MessageService {
         channelService.findById(channelId);
 
         return data.values().stream()
-                .filter(message -> !message.isDeletedAt())  // 삭제된 상태 메시지 제외
+                .filter(message -> !message.isDeletedAt())  // 삭제상태 메시지 제외
                 .filter(message -> message.getChannel().getId().equals(channelId))
                 .collect(Collectors.toList());
     }
@@ -67,7 +69,7 @@ public class JCFMessageService implements MessageService {
     public List<Message> findBySender(UUID senderId) {
 
         // 유저 존재 여부 검증
-        userService.findById(senderId); // 너무 간단한거 같은디..... 이게 맞나?
+        userService.findById(senderId);
 
         return data.values().stream()
                 .filter(message -> !message.isDeletedAt())  // 삭제된 상태 메시지 제외
@@ -91,7 +93,7 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void hardDelete(UUID messageId) {        //유저를 삭제한 경우, 메시지 자체를 삭제한 경우, 채널을 삭제한 경우.
+    public void hardDelete(UUID messageId) {
         Message message = findById(messageId);
 //        message.getChannel().getMessages().remove(message); // 채널의 메시지 리스트에서 제거 (양방향 관계 정리)
 //        message.getSender().getMessages().remove(message);

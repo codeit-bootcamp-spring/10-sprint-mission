@@ -3,6 +3,8 @@ package org.example.service.jcf;
 import org.example.entity.Channel;
 import org.example.entity.ChannelType;
 import org.example.entity.User;
+import org.example.exception.InvalidRequestException;
+import org.example.exception.NotFoundException;
 import org.example.service.ChannelService;
 import org.example.service.MessageService;
 import org.example.service.UserService;
@@ -21,7 +23,7 @@ public class JCFChannelService implements ChannelService {
         this.userService = userService;
     }
 
-    public void setMessageService(MessageService messageService) {// 추가 ?? 이게 지금 들어가야 하나?
+    public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
     }
 
@@ -29,7 +31,7 @@ public class JCFChannelService implements ChannelService {
     public Channel create(String name, String description,ChannelType type, UUID ownerId) {
         // 입력값 검증 추가
         if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("필드: name, 조건: null이 아니고 빈 값이 아님, 값: " + name);
+            throw new InvalidRequestException("name", "null이 아니고 빈 값이 아님", name);
         }
         User owner =userService.findById(ownerId);
         Channel channel = new Channel(name, description, type, owner);
@@ -41,7 +43,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel findById(UUID channelId) {
         return Optional.ofNullable(data.get(channelId))
-                .orElseThrow(()->new NoSuchElementException("필드: id, 조건: 존재하는 채널, 값: " + channelId));
+                .orElseThrow(()->new NotFoundException("id", "존재하는 채널", channelId));
     }
 
     @Override
@@ -61,7 +63,7 @@ public class JCFChannelService implements ChannelService {
         return channel;
     }
 
-    /*@Override
+    /*@Override Optional로 개선
     public Channel update(UUID channelId, String name, String description, ChannelType type) {
         Channel channel = findById(channelId);
         channel.setName(name);
@@ -91,7 +93,7 @@ public class JCFChannelService implements ChannelService {
 
         // 중복 멤버 검증 추가
         if (channel.getMembers().contains(user)) {
-            throw new IllegalArgumentException("필드: userId, 조건: 채널에 없는 유저, 값: " + userId);
+            throw new InvalidRequestException("userId", "채널에 없는 유저", userId);
         }
 //        channel.getMembers().add(user);
 //        user.getChannels().add(channel);
@@ -106,7 +108,7 @@ public class JCFChannelService implements ChannelService {
 
         // 오너는 나갈 수 없음 검증 추가
         if (channel.getOwner().getId().equals(userId)) {
-            throw new IllegalArgumentException("필드: userId, 조건: 채널 오너가 아님, 값: " + userId);
+            throw new InvalidRequestException("userId", "채널 오너가 아님", userId);
         }
 //        channel.getMembers().remove(user);
 //        user.getChannels().remove(channel);
@@ -121,8 +123,14 @@ public class JCFChannelService implements ChannelService {
 
         // 채널 멤버 검증
         if (!channel.getMembers().contains(newOwner)) {
-            throw new IllegalArgumentException("필드: newOwnerId, 조건: 채널 멤버여야 함, 값: " + newOwnerId);
+            throw new InvalidRequestException("newOwnerId", "채널 멤버여야 함", newOwnerId);
         }
         channel.updateOwner(newOwner);
+    }
+
+    @Override
+    public List<User> findMembersByChannel(UUID channelId) {
+        Channel channel = findById(channelId);
+        return channel.getMembers();
     }
 }

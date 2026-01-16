@@ -2,6 +2,7 @@ package org.example.service;
 
 import org.example.entity.Channel;
 import org.example.entity.ChannelType;
+import org.example.entity.User;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,4 +24,6 @@ public interface ChannelService {
     void addMember(UUID channelId, UUID userId);
 
     void removeMember(UUID channelId, UUID userId);
+
+    List<User> findMembersByChannel(UUID channelId);
 }

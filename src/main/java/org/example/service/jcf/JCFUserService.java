@@ -3,6 +3,7 @@ package org.example.service.jcf;
 import org.example.entity.Channel;
 import org.example.entity.Status;
 import org.example.entity.User;
+import org.example.exception.NotFoundException;
 import org.example.service.MessageService;
 import org.example.service.UserService;
 
@@ -32,7 +33,7 @@ public class JCFUserService implements UserService {
     @Override
     public User findById(UUID userId) {
         return Optional.ofNullable(data.get(userId))
-                .orElseThrow(() -> new NoSuchElementException("필드: id, 조건: 존재하는 유저, 값: " + userId));
+                .orElseThrow(() -> new NotFoundException("id", "존재하는 유저", userId));
     }
 
     @Override
@@ -55,7 +56,7 @@ public class JCFUserService implements UserService {
         return user;
     }
 
-    /*@Override
+    /*@Override optional로 개선
     public User updateProfile(UUID userId, String username, String email, String nickname) {
         User user = findById(userId);
         user.setUsername(username);
