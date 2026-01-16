@@ -72,6 +72,14 @@ public class JCFMessageService implements MessageService{
         data.remove(id);
     }
 
+    // 메시지 고정
+    @Override
+    public Message togglePin(UUID id){
+        Message message = findById(id);
+        message.togglePin();
+        return message;
+    }
+
     // 권한 확인
     private void validateAccess(UUID userId, UUID channelId) {
         // 채널 멤버 확인

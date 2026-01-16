@@ -16,5 +16,7 @@ public interface MessageService {
 
     void delete(UUID id);
 
+    Message togglePin(UUID id);
+
     List<Message> findAllByChannelId(UUID channelId, UUID userID); // 특정 채널의 메시지 목록 조회
 }

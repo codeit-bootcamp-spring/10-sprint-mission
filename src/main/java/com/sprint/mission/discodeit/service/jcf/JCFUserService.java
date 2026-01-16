@@ -32,11 +32,27 @@ public class JCFUserService implements UserService {
         return new ArrayList<>(data.values());
     }
 
-    // 유저 수정
+    // 유저 정보 수정 (이름, 닉네임, 이메일)
     @Override
     public User update(UUID id, String name, String nickname, String email){
         User user = findById(id);
         user.update(name, nickname, email);
+        return user;
+    }
+
+    // 유저 상태만 따로 수정
+    @Override
+    public User updateStatus(UUID id, String status){
+        User user = findById(id);
+        user.updateStatus(status);
+        return user;
+    }
+
+    // 비밀번호 변경
+    @Override
+    public User updatePassword(UUID id, String newPassword){
+        User user = findById(id);
+        user.updatePassword(newPassword);
         return user;
     }
 
