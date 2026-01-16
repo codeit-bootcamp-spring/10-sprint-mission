@@ -82,10 +82,8 @@ public class Channel extends BaseEntity {
 
     // owner 변경(+업데이트)
     public void changeOwner(Channel channelId, UUID ownerId) {
-//        this.owner.removeChannelOwner(channel); // 기존 채널 주인 소유권 제거
         this.ownerId = ownerId;
         updateTime();
-//        owner.ownChannel(this);
     }
 
     // 채널 멤버 추가
