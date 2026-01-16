@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,20 +9,24 @@ import java.util.UUID;
 public interface MessageService {
     // CRUD(생성, 읽기, 모두 읽기, 수정, 삭제 기능)
     // C. 생성: messageID과 내용 출력
-    Message createMessage(Channel channel, User author, String content);
+    Message createMessage(UUID channelId, UUID authorId, String content);
 
     // R. 읽기
-    // 특정 메시지 정보 읽기 by messageId
-    Optional<Message> readMessageById(UUID messageId);
+    // 특정 메시지 정보 읽기
+    Optional<Message> findMessageById(UUID messageId);
 
     // R. 모두 읽기 : 시간순으로 정렬?
     // 메시지 전체
-    List<Message> readAllMessage();
+    List<Message> findAllMessages();
+    // 특정 채널의 모든 메시지 읽어오기
+    List<Message> findChannelMessagesByChannelId(UUID channelId);
+    // 특정 사용자가 작성한 모든 메시지
+    List<Message> findUserMessagesByUserId(UUID userId);
 
     // U. 수정
     // 메시지 수정
-    Message updateMessageContent(UUID requestId, UUID messageId, String content);
+    Message updateMessageContent(UUID requestUserId, UUID messageId, String content);
 
     // D. 삭제
-    void deleteMessage(UUID requestId, UUID messageId);
+    void deleteMessage(UUID userId, UUID messageId);
 }
