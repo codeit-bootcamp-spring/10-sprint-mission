@@ -217,7 +217,7 @@ public class JavaApplication {
 
     // 10. 채널 메시지 전체 출력 및 반환
     public static List<Message> testPrintAndGetMessages(UUID channelId) {
-        List<Message> messages = messageService.getMessageList(channelId);
+        List<Message> messages = messageService.getMessageListByChannelId(channelId);
         System.out.println("--- [채널 메시지 목록] ---");
         messages.forEach(m -> System.out.println("[" + m.getUserId() + "]: " + m.getContent()));
         System.out.println("-----------------------");
