@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.service.listener.ChannelLifecycleListener;
 
 import java.util.*;
 
+// [] 검토 필요
 // Service Implementation
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> channelMap = new HashMap<UUID, Channel>();

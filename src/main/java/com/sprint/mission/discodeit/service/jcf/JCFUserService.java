@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+// [] 검토 필요
 // Service Implementation
 public class JCFUserService implements UserService {
     private final Map<UUID, User> userMap = new HashMap<UUID, User>();

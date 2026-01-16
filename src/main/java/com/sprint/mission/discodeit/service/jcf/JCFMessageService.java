@@ -88,14 +88,40 @@ public class JCFMessageService implements MessageService {
     // Delete
     @Override
     public void deleteMessage(UUID messageId) {
-        findMessageByIdOrThrow(messageId);
+        // 1 지울 메시지 객체 확보 (없으면 여기서 예외 발생)
+        Message message = findMessageByIdOrThrow(messageId);
+
+        // 2 해당 메시지가 속한 채널(방) 객체를 찾아가서, 거기 리스트에서도 삭제
+        // Message 객체가 channelId를 가지고 있으므로 이를 이용해 채널을 찾음
+        Channel channel = channelService.findChannelById(message.getChannelId());
+        channel.removeMessage(message); // Channel 엔티티의 메서드 호출
+
+        // 3. 이제 서비스 맵에서 영구 삭제
         messageMap.remove(messageId);
+        System.out.println("메시지 삭제 완료: " + message.getContent());
     }
     @Override
     public void deleteAllMessagesByUserId(UUID userId) {
-        // 메시지 Map의 값들 중 전송자(Sender)의 ID가 userId와 같은 것을 모두 삭제
-        messageMap.values().removeIf(message -> message.getSenderId().equals(userId));
-        System.out.println("해당 유저가 작성한 모든 메시지를 삭제했습니다. userId: " + userId);
+        // 1 이 유저가 쓴 모든 메시지를 먼저 찾음
+        List<Message> userMessages = messageMap.values().stream()
+                .filter(message -> message.getSenderId().equals(userId))
+                .toList(); // Java 16 이상. (이하라면 .collect(Collectors.toList()) 사용)
+
+        // 2 찾은 메시지들을 하나씩 순회하며 "채널 명부"에서 지움
+        for (Message msg : userMessages) {
+            try {
+                Channel channel = channelService.findChannelById(msg.getChannelId());
+                channel.removeMessage(msg);
+            } catch (IllegalArgumentException e) {
+                // 이미 채널이 삭제된 경우 등 예외가 발생하면 무시하고 진행
+            }
+        }
+
+        // 3 서비스 맵에서 일괄 삭제 (위에서 채널 정리를 끝냈으니 안전하게 삭제)
+        messageMap.values().removeAll(userMessages);
+
+        System.out.println("해당 유저가 작성한 모든 메시지를 삭제했습니다. userId: " + userId
+                + ", 삭제된 메시지 수: " + userMessages.size());
     }
     @Override
     public void deleteAllMessagesByChannelId(UUID channelId) {

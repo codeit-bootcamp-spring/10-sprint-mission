@@ -48,6 +48,7 @@ public class JCFChannelUserRoleService implements ChannelUserRoleService {
         // 4 데이터 정합성 맞추기 (양쪽 다 저장)
         channelUserMap.put(channelUserRole.getId(), channelUserRole);  // (1) Map에 등록
         user.addChannelUserRole(channelUserRole);  // (2) List에도 등록
+        channel.addChannelUserRole(channelUserRole); // (3) Channel 리스트에도 등록
 
         System.out.println("채널 참여 완료: " + user.getUsername() + " -> " + channel.getChannelName()
                 + " (Role: " + role + ")");
@@ -101,6 +102,7 @@ public class JCFChannelUserRoleService implements ChannelUserRoleService {
     public void deleteChannelUser(UUID channelId, UUID userId) {
         // 1. 삭제할 대상을 찾음
         ChannelUserRole channelUserRole = findChannelUser(channelId, userId);
+        channelUserRole.getChannel().removeChannelUserRole(channelUserRole);
 
         channelUserMap.remove(channelUserRole.getId());  // Map에서 제거
         User user = channelUserRole.getUser();  // 유저 객체 꺼내고
@@ -111,13 +113,19 @@ public class JCFChannelUserRoleService implements ChannelUserRoleService {
     }
     @Override
     public void deleteAllAssociationsByUserId(UUID userId) {
-        // 1 Map에서 데이터 삭제
-        // Role 맵의 값들 중 유저(User)의 ID가 userId와 같은 것을 모두 삭제
-        channelUserMap.values().removeIf(role -> role.getUser().getId().equals(userId));
+        // 1 이 유저와 관련된 모든 관계(Role)를 먼저 찾습니다.
+        List<ChannelUserRole> rolesToDelete = channelUserMap.values().stream()
+                .filter(role -> role.getUser().getId().equals(userId))
+                .toList(); // Java 16+
 
-        // 2 (선택 사항) User 객체 내부의 리스트에서도 삭제해주는 것이 완벽하지만,
-        // 어차피 User 객체 자체가 지금 삭제되는 중(UserDelete)이므로 Map에서만 지워도 충분
-        System.out.println("해당 유저의 모든 채널 참여 정보를 삭제했습니다. userId: " + userId);
+        // 2 각 관계가 속해있던 "채널"의 명부에서 이 유저를 지웁니다.
+        for (ChannelUserRole role : rolesToDelete) {
+            // 채널 객체를 가져와서 해당 Role 삭제
+            role.getChannel().removeChannelUserRole(role);
+        }
+
+        // 3 Map에서 일괄 삭제
+        channelUserMap.values().removeAll(rolesToDelete);
     }
     @Override
     public void deleteAllAssociationsByChannelId(UUID channelId) {
