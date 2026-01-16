@@ -77,4 +77,5 @@ public interface ChannelUserRoleService {
      * @param userId 탈퇴하는 유저의 UUID
      */
     void deleteAllAssociationsByUserId(UUID userId);
+    void deleteAllAssociationsByChannelId(UUID channelId);
 }

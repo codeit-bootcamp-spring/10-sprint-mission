@@ -1,17 +1,21 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.ChannelRole;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.Channel;
 
-import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.listener.ChannelLifecycleListener;
 
 import java.util.*;
 
 // Service Implementation
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> channelMap = new HashMap<UUID, Channel>();
+
+    private final List<ChannelLifecycleListener> listeners = new ArrayList<ChannelLifecycleListener>();
+    public void addListener(ChannelLifecycleListener listener) {
+        this.listeners.add(listener);
+    }
 
     // id로 Channel 객체 조회 메서드 - 해당 id의 Channel 있으면 Channel 객체 반환. 없으면 예외 발생
     private Channel findChannelByIdOrThrow(UUID channelId) {
@@ -81,8 +85,14 @@ public class JCFChannelService implements ChannelService {
     // Delete - 채널 삭제 / 채널 내 메시지 + 채널-유저 관계 해제
     @Override
     public void deleteChannel(UUID channelId) {
-        findChannelByIdOrThrow(channelId);
+        findChannelByIdOrThrow(channelId); // 존재 확인
+        for (ChannelLifecycleListener listener : listeners) {
+            listener.onChannelDelete(channelId);
+        }
+
+        // 채널 본체 삭제
         channelMap.remove(channelId);
+        System.out.println("채널 삭제 완료 (연관 데이터 정리 포함). id: " + channelId);
     }
     // Delete - 특정 채널장의 모든 채널 삭제
     @Override

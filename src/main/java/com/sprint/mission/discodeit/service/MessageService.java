@@ -62,4 +62,6 @@ public interface MessageService {
      * @param userId 탈퇴하는 유저(User)의 UUID
      */
     void deleteAllMessagesByUserId(UUID userId);
+
+    void deleteAllMessagesByChannelId(UUID channelId);
 }

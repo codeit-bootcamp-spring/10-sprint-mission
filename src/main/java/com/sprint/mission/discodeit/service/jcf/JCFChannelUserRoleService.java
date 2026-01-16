@@ -119,5 +119,21 @@ public class JCFChannelUserRoleService implements ChannelUserRoleService {
         // 어차피 User 객체 자체가 지금 삭제되는 중(UserDelete)이므로 Map에서만 지워도 충분
         System.out.println("해당 유저의 모든 채널 참여 정보를 삭제했습니다. userId: " + userId);
     }
+    @Override
+    public void deleteAllAssociationsByChannelId(UUID channelId) {
+        // 1. 해당 채널에 속한 모든 관계(Role)를 찾음
+        List<ChannelUserRole> rolesToDelete = channelUserMap.values().stream()
+                .filter(role -> role.getChannel().getId().equals(channelId))
+                .toList(); // Java 16+ (그 이하면 .collect(Collectors.toList()))
+
+        // 2. 각 유저 객체의 리스트에서도 관계 정보를 제거
+        for (ChannelUserRole role : rolesToDelete) {
+            role.getUser().removeChannelUserRole(role);
+        }
+
+        // 3. 맵에서 일괄 삭제
+        channelUserMap.values().removeAll(rolesToDelete);
+        System.out.println("채널 내 모든 참여자 관계 삭제 완료. channelId: " + channelId);
+    }
 
 }

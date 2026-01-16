@@ -91,11 +91,16 @@ public class JCFMessageService implements MessageService {
         findMessageByIdOrThrow(messageId);
         messageMap.remove(messageId);
     }
-
     @Override
     public void deleteAllMessagesByUserId(UUID userId) {
         // 메시지 Map의 값들 중 전송자(Sender)의 ID가 userId와 같은 것을 모두 삭제
         messageMap.values().removeIf(message -> message.getSenderId().equals(userId));
         System.out.println("해당 유저가 작성한 모든 메시지를 삭제했습니다. userId: " + userId);
+    }
+    @Override
+    public void deleteAllMessagesByChannelId(UUID channelId) {
+        // 메시지 맵에서 해당 채널 ID를 가진 메시지 일괄 삭제
+        messageMap.values().removeIf(msg -> msg.getChannelId().equals(channelId));
+        System.out.println("채널 내 모든 메시지 삭제 완료. channelId: " + channelId);
     }
 }

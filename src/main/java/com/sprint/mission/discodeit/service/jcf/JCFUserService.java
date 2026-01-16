@@ -15,11 +15,12 @@ import java.util.UUID;
 // Service Implementation
 public class JCFUserService implements UserService {
     private final Map<UUID, User> userMap = new HashMap<UUID, User>();
-    private final List<UserLifecycleListener> listeners = new ArrayList<UserLifecycleListener>(); // 리스너 목록 추가
 
-    public void addListener(UserLifecycleListener listener) { // 리스너 등록 메서드
+    private final List<UserLifecycleListener> listeners = new ArrayList<UserLifecycleListener>();
+    public void addListener(UserLifecycleListener listener) {
         this.listeners.add(listener);
     }
+
     // id로 User 객체 조회 메서드 - 해당 id의 User 있으면 User 객체 반환. 없으면 예외 발생
     private User findUserByIdOrThrow(UUID id) {
         if (!userMap.containsKey(id)) {

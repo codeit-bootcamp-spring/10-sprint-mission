@@ -40,23 +40,29 @@ public class JavaApplication {
         System.out.println("========== [discodeit] 서비스 기능 테스트 시작 ==========");
 
         // 1 의존성 주입 및 서비스 초기화
-        // UserService 인터페이스에는 addListener가 없으므로, JCFUserService(구현체) 타입으로 선언
         JCFUserService userService = new JCFUserService();
+        JCFChannelService channelService = new JCFChannelService();
 
-        ChannelService channelService = new JCFChannelService();
-        // 다른 서비스들은 UserService를 의존성으로 받음
         MessageService messageService = new JCFMessageService(userService, channelService);
         ChannelUserRoleService channelUserRoleService = new JCFChannelUserRoleService(userService, channelService);
 
-        // "유저가 삭제되면(Event) -> 채널과 메시지도 삭제하라(Action)"
-        UserLifecycleListener cleaner = new UserLifecycleListener() { // 익명 클래스
-            @Override
-            public void onUserDelete(UUID userId) {
-                channelService.deleteChannelsByOwnerId(userId);
-            }
+        // "유저가 삭제되면(Event) -> 관련된 모든 데이터를 청소하라(Action)"
+        UserLifecycleListener userCleaner = userId -> {
+            // 1 내가 만든 채널들 삭제
+            channelService.deleteChannelsByOwnerId(userId);
+            // 2 내가 쓴 모든 메시지 삭제
+            messageService.deleteAllMessagesByUserId(userId);
+            // 3 나의 채널 참여 기록 삭제 (유저-채널 관계)
+            channelUserRoleService.deleteAllAssociationsByUserId(userId);
         };
-        userService.addListener(cleaner);
+        userService.addListener(userCleaner);
         // userService.addListener(userId -> channelService.deleteChannelsByOwnerId(userId));
+
+        channelService.addListener(channelId -> {
+            messageService.deleteAllMessagesByChannelId(channelId); // 1 채널 내 메시지 삭제
+            channelUserRoleService.deleteAllAssociationsByChannelId(channelId); // 2 참여자 관계 삭제
+        });
+
         userService.addListener(userId -> messageService.deleteAllMessagesByUserId(userId));
         userService.addListener(userId -> channelUserRoleService.deleteAllAssociationsByUserId(userId));
 
