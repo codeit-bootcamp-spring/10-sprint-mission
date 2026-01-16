@@ -17,7 +17,7 @@ public interface UserService {
     // R. 모두 읽기
     // 모든 사용자
     List<User> findAllUsers();
-    // 특정 사용자가 참여한 모든 채널
+    // 특정 사용자가 참여한 모든 channel ids
     List<UUID> findJoinChannelIdsByUserId(UUID userId);
 
     // U. 수정
