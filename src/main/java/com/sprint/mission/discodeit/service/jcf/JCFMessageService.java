@@ -4,22 +4,23 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.DataStore;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
     private final ChannelService channelService;
     private final UserService userService;
-    private final List<Message> data;
+    private final Map<UUID, Message> data;
 
-    public JCFMessageService(ChannelService channelService, UserService userService) {
+    public JCFMessageService(ChannelService channelService, UserService userService, DataStore dataStore) {
         this.channelService = channelService;
         this.userService = userService;
-        this.data = new ArrayList<>();
+        this.data = dataStore.getMessageData();
     }
 
     @Override
@@ -29,14 +30,14 @@ public class JCFMessageService implements MessageService {
         User user = userService.findUserById(userId);
 
         // 채널에 가입된 유저만 메시지 작성 가능
-        List<Channel> joinedChannels = channelService.getJoinedChannels(userId);
+        List<Channel> joinedChannels = user.getChannels();
         if (!joinedChannels.contains(channel)) {
             throw new RuntimeException("채널에 가입되어 있지 않습니다.");
         }
 
         // 메시지 생성 및 추가
         Message message = new Message(channel, user, content);
-        data.add(message);
+        data.put(message.getId(), message);
         // 채널과 유저가 가지고 있는 메시지 목록에 추가
         message.addToChannelAndUser();
 
@@ -78,15 +79,21 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message findMessageByChannelIdAndMessageId(UUID channelId, UUID messageId) {
-        // 메시지를 조회하려는 채널이 실제로 존재하는지 검증
-        channelService.findChannelById(channelId);
+        // 메시지 조회 전, 채널이 실제로 존재하는지 검색 및 검증
+        Channel channel = channelService.findChannelById(channelId);
 
         // 메시지가 존재하지 않을 경우 예외 발생
-        return data.stream()
-                .filter(m -> m.getId().equals(messageId))
-                .filter(m -> m.getChannel().getId().equals(channelId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
+        Message message = data.get(messageId);
+        if (message == null) {
+            throw new RuntimeException("메시지가 존재하지 않습니다.");
+        }
+
+        // 채널이 맞지 않을 경우 예외 발생
+        if (!message.getChannel().equals(channel)) {
+            throw new RuntimeException("메시지가 존재하지 않습니다.");
+        }
+
+        return message;
     }
 
     @Override
@@ -103,7 +110,7 @@ public class JCFMessageService implements MessageService {
         Message message = validateMessageAccess(channelId, userId, messageId);
 
         // 메시지 삭제
-        data.remove(message);
+        data.remove(message.getId());
         // 채널과 유저가 가지고 있는 메시지 목록에서 삭제
         message.removeFromChannelAndUser();
     }
@@ -111,20 +118,25 @@ public class JCFMessageService implements MessageService {
     private Message validateMessageAccess(UUID channelId, UUID userId, UUID messageId) {
         // 메시지 조회 전, 채널이 실제로 존재하는지 검색 및 검증
         Channel channel = channelService.findChannelById(channelId);
+        User user = userService.findUserById(userId);
 
-        // getJoinedChannels() 내부에서 유저가 존재하는지 검증 후 유저가 가입한 채널 목록 조회
-        // 유저가 가입한 채널 중 해당 채널이 존재하는지 확인
-        List<Channel> joinedChannels = channelService.getJoinedChannels(userId);
+        // 채널에 가입된 유저인지 확인
+        List<Channel> joinedChannels = user.getChannels();
         if (!joinedChannels.contains(channel)) {
             throw new RuntimeException("채널에 가입되어 있지 않습니다.");
         }
 
         // 메시지가 존재하지 않을 경우 예외 발생
-        Message message = data.stream()
-                .filter(m -> m.getId().equals(messageId))
-                .filter(m -> m.getChannel().getId().equals(channelId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
+        Message message = data.get(messageId);
+        System.out.println(message);
+        if (message == null) {
+            throw new RuntimeException("메시지가 존재하지 않습니다.");
+        }
+
+        // 채널이 맞지 않을 경우 예외 발생
+        if (!message.getChannel().equals(channel)) {
+            throw new RuntimeException("메시지가 존재하지 않습니다.");
+        }
 
         // 작성자가 아닐 경우 예외 발생
         UUID writerId = message.getUser().getId();

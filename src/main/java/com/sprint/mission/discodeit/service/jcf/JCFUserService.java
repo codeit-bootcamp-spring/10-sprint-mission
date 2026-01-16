@@ -1,21 +1,22 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.DataStore;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class JCFUserService implements UserService {
+    private final DataStore dataStore;
     private final Map<UUID, User> data;
 
-    public JCFUserService() {
-        this.data = new HashMap<>();
+    public JCFUserService(DataStore dataStore) {
+        this.dataStore = dataStore;
+        this.data = dataStore.getUserData();
     }
 
     @Override
@@ -64,30 +65,10 @@ public class JCFUserService implements UserService {
             }
         }
 
-        // 가입한 모든 채널에서 유저가 작성한 메시지 제거 및 유저 제거
-        for (Channel channel : channels) {
-            for (Message message : channel.getMessages()) {
-                if (message.getUser().equals(user)) {
-                    message.removeFromChannelAndUser();
-                }
-            }
-            channel.removeUser(user);
-        }
+        // 유저 삭제를 위해 해당 유저의 관계 정리
+        dataStore.cleanupUserRelations(user);
 
-        // 유저 탈퇴, 저장소에서 제거
+        // 관계를 정리한 후 유저 삭제, 저장소에서 제거
         data.remove(userId);
-    }
-
-    @Override
-    public void removeChannelFromJoinedUsers(Channel channel) {
-        // 채널 null 체크
-        if (channel == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
-
-        // 채널 삭제 시, 해당 채널에 가입된 모든 유저를 탈퇴 처리
-        for (User user : data.values()) {
-            user.leaveChannel(channel);
-        }
     }
 }

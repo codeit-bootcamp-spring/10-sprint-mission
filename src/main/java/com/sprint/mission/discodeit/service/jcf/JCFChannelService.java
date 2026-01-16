@@ -3,21 +3,23 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.DataStore;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
     private final UserService userService;
+    private final DataStore dataStore;
     private final Map<UUID, Channel> data;
 
-    public JCFChannelService(UserService userService) {
+    public JCFChannelService(UserService userService, DataStore dataStore) {
         this.userService = userService;
-        this.data = new HashMap<>();
+        this.dataStore = dataStore;
+        this.data = dataStore.getChannelData();
     }
 
     @Override
@@ -71,9 +73,10 @@ public class JCFChannelService implements ChannelService {
             throw new RuntimeException("해당 채널에 대한 권한이 없습니다.");
         }
 
-        // 채널 삭제 전, 해당 채널에 가입된 모든 유저의 채널 목록에서 먼저 제거
-        userService.removeChannelFromJoinedUsers(channel);
-        // 모든 유저와의 관계를 정리한 후 채널 삭제, 저장소에서 제거
+        // 채널 삭제를 위해 해당 채널의 관계 정리
+        dataStore.cleanupChannelRelations(channel);
+
+        // 관계를 정리한 후 채널 삭제, 저장소에서 제거
         data.remove(channelId);
     }
 
@@ -115,14 +118,6 @@ public class JCFChannelService implements ChannelService {
 
         // 채널 탈퇴
         channel.removeUser(user);
-    }
-
-    @Override
-    public List<Channel> getJoinedChannels(UUID userId) {
-        // 실제로 존재하는 유저인지 검색 및 검증
-        User user = userService.findUserById(userId);
-        // 현재 유저가 가입한 채널 목록 반환
-        return user.getChannels();
     }
 
     @Override
