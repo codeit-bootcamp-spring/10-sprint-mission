@@ -54,10 +54,8 @@ public class JCFMessageService implements MessageService {
 
     // 메시지 아이디에 따라 해당 메시지 반환
     @Override
-    public Optional<Message> getMessageByMessageId(UUID messageId) {
-        Objects.requireNonNull(messageId, "messageId는 null일 수 없습니다");
-
-        return Optional.ofNullable(messages.get(messageId));
+    public Message getMessageByMessageId(UUID messageId) {
+        return findMessageById(messageId);
     }
 
     @Override
