@@ -122,7 +122,7 @@ public class JavaApplication {
             System.out.println();
         }
 
-        //========================================================
+        // ============================================
 
         // 메시지 생성
         Message m1 =messageService.createMessage(users.get(0), channels.get(0), "안녕하세요!");
