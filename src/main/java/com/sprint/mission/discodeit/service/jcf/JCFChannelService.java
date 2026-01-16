@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 
@@ -38,7 +39,7 @@ public class JCFChannelService implements ChannelService {
         return new ArrayList<>(data.values());
     }
 
-    // 채널 수정
+    // 채널 정보 수정
     @Override
     public Channel update(UUID id, String name, String description, boolean isPublic){
         Channel channel = findById(id);
@@ -82,10 +83,17 @@ public class JCFChannelService implements ChannelService {
         user.leaveChannel(channel);
     }
 
-    // 특정 채널에 참여한 유저 목록 조회
+    // 특정 채널의 유저 목록 조회
     @Override
     public List<User> findMembersByChannelId(UUID channelId) {
         Channel channel = findById(channelId);
         return channel.getMembers();
+    }
+
+    // 특정 채널의 메시지 목록 조회
+    @Override
+    public List<Message> findMessagesByChannelId(UUID channelId){
+        Channel channel = findById(channelId);
+        return channel.getMessages();
     }
 }

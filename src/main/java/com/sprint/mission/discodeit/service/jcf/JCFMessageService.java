@@ -11,7 +11,6 @@ import java.util.*;
 
 public class JCFMessageService implements MessageService{
     private final Map<UUID, Message> data = new HashMap<>();
-    private Map<UUID, List<Message>> channelIndex = new HashMap<>(); // 특정 채널의 메시지 조회용 인덱스
     private final UserService userService;
     private final ChannelService channelService;
 
@@ -21,38 +20,40 @@ public class JCFMessageService implements MessageService{
         this.channelService = channelService;
     }
 
+    // 메시지 생성
     @Override
     public Message create(String content, UUID userId, UUID channelId) {
         validateAccess(userId, channelId); // 권한 확인
 
-        Message newMessage = new Message(content, userService.findById(userId), channelService.findById(channelId));
-        data.put(newMessage.getId(), newMessage); // 데이터 저장
+        User author = userService.findById(userId);
+        Channel channel = channelService.findById(channelId);
 
-        channelIndex.computeIfAbsent(channelId, k -> new ArrayList<>()).add(newMessage);
+        Message newMessage = new Message(content,author, channel);
+        data.put(newMessage.getId(), newMessage);
+
+        author.addMessage(newMessage);
+        channel.addMessage(newMessage);
 
         return newMessage;
     }
 
+    // 메시지 Id로 조회
     @Override
     public Message findById(UUID id){
         Message message = data.get(id);
         if (message == null) {
-            throw new NoSuchElementException("실패: 존재하지 않는 메시지 ID");
+            throw new NoSuchElementException("실패: 존재하지 않는 메시지 ID입니다.");
         }
         return message;
     }
 
+    // 메시지 전부 조회
     @Override
     public List<Message> findAll() {
         return new ArrayList<>(data.values());
     }
 
-    @Override
-    public List<Message> findAllByChannelId(UUID channelId, UUID userId) { // 특정 채널의 메시지 조회
-        validateAccess(userId, channelId);
-        return new ArrayList<>(channelIndex.getOrDefault(channelId, Collections.emptyList()));
-    }
-
+    // 메시지 수정
     @Override
     public Message update(UUID id, String content) {
         Message message = findById(id);
@@ -60,16 +61,15 @@ public class JCFMessageService implements MessageService{
         return message;
     }
 
+    // 메시지 삭제
     @Override
     public void delete(UUID id) {
         Message message = findById(id);
-        data.remove(id); // 데이터 삭제
 
-        // channelIndex에서 삭제
-        List<Message> channelMessages = channelIndex.get(message.getChannel().getId());
-        if (channelMessages != null){
-            channelMessages.remove(message);
-        }
+        message.getUser().removeMessage(message);
+        message.getChannel().removeMessage(message);
+
+        data.remove(id);
     }
 
     // 권한 확인
@@ -78,7 +78,15 @@ public class JCFMessageService implements MessageService{
         User user = userService.findById(userId);
         Channel channel = channelService.findById(channelId);
         if (!channel.isMember(user)) {
-            throw new IllegalArgumentException("실패: 채널 멤버만 접근할 수 있음");
+            throw new IllegalArgumentException("실패: 채널 멤버만 접근할 수 있습니다.");
         }
+    }
+
+    // 특정 채널의 메시지 목록 조회
+    @Override
+    public List<Message> findAllByChannelId(UUID channelId, UUID userId) { // 특정 채널의 메시지 조회
+        validateAccess(userId, channelId);
+        Channel channel = channelService.findById(channelId);
+        return channel.getMessages();
     }
 }

@@ -12,9 +12,9 @@ public interface MessageService {
 
     List<Message> findAll();
 
-    List<Message> findAllByChannelId(UUID channelId, UUID userID); // 특정 채널의 메시지 조회
-
     Message update(UUID id, String content);
 
     void delete(UUID id);
+
+    List<Message> findAllByChannelId(UUID channelId, UUID userID); // 특정 채널의 메시지 목록 조회
 }

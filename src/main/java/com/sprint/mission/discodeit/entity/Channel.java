@@ -48,6 +48,11 @@ public class Channel extends BaseEntity {
         this.messages.add(message);
     }
 
+    // 메시지 삭제
+    public  void removeMessage(Message message){
+        this.messages.remove(message);
+    }
+
     // --- getter ---
     public String getName() { return name; }
     public String getDescription() { return description; }

@@ -58,6 +58,11 @@ public class User extends BaseEntity {
         this.myMessages.add(message);
     }
 
+    // 메시지 삭제
+    public  void removeMessage(Message message){
+        this.myMessages.remove(message);
+    }
+
     // --- getter ---
     public String getName() { return name; }
     public String getNickname() { return nickname; }
