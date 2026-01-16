@@ -17,6 +17,7 @@ public class JavaApplication {
 
         // 🔑 순환 고리 연결
         jcfMessageService.setChannelService(jcfChannelService);
+        jcfUserService.setChannelService(jcfChannelService);
 
         System.out.println("------------------- 유저 서비스 테스트 -------------------");
         System.out.println();
@@ -49,7 +50,7 @@ public class JavaApplication {
         jcfChannelService.joinChannel(testChannel.getId(), david.getId());
 
         for (var channel: jcfChannelService.getChannelList()) {
-            System.out.println(channel.getChannelName() + " 채널에 유저 추가 후: " + jcfChannelService.getUsersByChannel(channel.getId()));
+            System.out.println(channel.getChannelName() + " 채널에 유저 추가 후: " + jcfUserService.getUsersByChannel(channel.getId()));
         }
 
         System.out.println();

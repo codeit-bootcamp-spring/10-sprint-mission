@@ -10,6 +10,8 @@ public interface UserService {
 
     List<User> getUserList();
 
+    List<User> getUsersByChannel(UUID channelId);
+
     User getUserInfoByUserId(UUID userId);
 
     User updateUserName(UUID userId, String newName);
