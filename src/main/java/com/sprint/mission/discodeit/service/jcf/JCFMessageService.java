@@ -83,7 +83,7 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> getMessageList(UUID channelId) {
+    public List<Message> getMessageListByChannelId(UUID channelId) {
         Objects.requireNonNull(channelId, "채널 Id가 유효하지 않습니다.");
         Channel channel = channelService.findById(channelId);
 

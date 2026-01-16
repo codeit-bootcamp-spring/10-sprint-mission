@@ -16,5 +16,5 @@ public interface MessageService {
 
     void delete(UUID id);
 
-    List<Message> getMessageList(UUID channelId);
+    List<Message> getMessageListByChannelId(UUID channelId);
 }
