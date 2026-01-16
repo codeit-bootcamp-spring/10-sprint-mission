@@ -18,6 +18,17 @@ public class Channel extends CommonEntity {
     }
 
 
+    public String getChannelName() {
+        return channelName;
+    }
+
+    public ChannelType getChannelType() {
+        return type;
+    }
+
+    public String getChannelDescription() {
+        return channelDescription;
+    }
 
 
     public void updateChannelType(ChannelType type) {
@@ -33,10 +44,6 @@ public class Channel extends CommonEntity {
     public void updateChannelDescription(String channelDescription) {
         this.channelDescription = channelDescription;
         update();
-    }
-
-    public String getChannelStatus() {
-        return "채널 타입: " + type + ", 채널 이름: " + channelName + ", 채널 설명: " + channelDescription;
     }
 
     public List<User> getJoinedUsers() {

@@ -11,10 +11,13 @@ public class User extends CommonEntity {
     private final List<Message> messages = new ArrayList<>();
     private final List<Channel> joinedChannels = new ArrayList<>();
 
-    public User(String userName, String userEmail, String userPassword) {
+    public User(String userName, String userEmail) {
         this.userName = userName;
         this.userEmail = userEmail;
-        this.userPassword = userPassword;
+    }
+
+    public String getUserName() {
+        return userName;
     }
 
     public String getUserEmail() {
@@ -29,16 +32,6 @@ public class User extends CommonEntity {
     public void updateUserEmail(String userEmail) {
         this.userEmail = userEmail;
         update();
-    }
-
-    public void updateUserPassword(String userPassword) {
-        this.userPassword = userPassword;
-        update();
-    }
-
-
-    public String getUserStatus() {
-        return "이름: " + userName + ", 이메일: " + userEmail + ", 비번: " + userPassword;
     }
 
     public List<Message> getMessages() {

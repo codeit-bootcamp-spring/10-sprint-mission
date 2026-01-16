@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.Validators;
 
@@ -16,10 +17,10 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User createUser(String userName, String userEmail, String userPassword) {
-        Validators.validationUser(userName, userEmail, userPassword);
+    public User createUser(String userName, String userEmail) {
+        Validators.validationUser(userName, userEmail);
         validateDuplicationEmail(userEmail);
-        User user = new User(userName, userEmail, userPassword);
+        User user = new User(userName, userEmail);
         list.add(user);
         return user;
     }
@@ -35,7 +36,7 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User updateUser(UUID id, String userName, String userEmail, String userPassword) {
+    public User updateUser(UUID id, String userName, String userEmail) {
         User user = validateExistenceUser(id);
         Optional.ofNullable(userName)
                 .ifPresent(name -> {Validators.requireNotBlank(name, "userName");
@@ -46,20 +47,9 @@ public class JCFUserService implements UserService {
             validateDuplicationEmail(email);
             user.updateUserEmail(email);
         });
-        Optional.ofNullable(userPassword)
-                .ifPresent(password -> {Validators.requireNotBlank(password, "userPassword");
-            user.updateUserPassword(password);
-        });
 
         return user;
     }
-
-    public boolean isUserDeleted(UUID id) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        return list.stream()
-                .noneMatch(user -> id.equals(user.getId()));
-    }
-
 
     @Override
     public void deleteUser(UUID id) {
@@ -67,15 +57,13 @@ public class JCFUserService implements UserService {
         list.remove(user);
     }
 
-    @Override
-    public List<Message> readMessagesByUser(UUID userId) {
-        User user = readUser(userId);
-        return user.getMessages();
-    }
 
-    public  List<Channel> readChannelsByUser(UUID userId) {
-        User user = readUser(userId);
-        return user.getJoinedChannels();
+    @Override
+    public List<User> readUsersByChannel(UUID channelId) {
+        return list.stream()
+                .filter(user -> user.getJoinedChannels().stream()
+                        .anyMatch(ch -> channelId.equals(ch.getId())))
+                .toList();
     }
 
     private void validateDuplicationEmail(String userEmail) {

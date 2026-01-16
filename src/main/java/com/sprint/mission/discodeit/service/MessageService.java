@@ -12,5 +12,6 @@ public interface MessageService {
     List<Message> readAllMessage();
     Message updateMessage(UUID id, String content);
     void deleteMessage(UUID id);
-    boolean isMessageDeleted(UUID id);
+    List<Message> readMessagesByChannel(UUID channelId);
+    List<Message> readMessagesByUser(UUID userId);
 }

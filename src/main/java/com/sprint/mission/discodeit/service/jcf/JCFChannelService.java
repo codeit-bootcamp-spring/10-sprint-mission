@@ -14,11 +14,9 @@ import java.util.*;
 public class JCFChannelService implements ChannelService {
 
     final ArrayList<Channel> list;
-    private final UserService userService;
 
-    public JCFChannelService(UserService userService) {
+    public JCFChannelService() {
         this.list = new ArrayList<>();
-        this.userService = userService;
     }
 
     @Override
@@ -66,19 +64,11 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public boolean isChannelDeleted(UUID id) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        return list.stream()
-                .noneMatch(channel -> id.equals(channel.getId()));
-    }
-
-    @Override
-    public void joinChannel(UUID channelId, UUID userId) {
+    public void joinChannel(UUID channelId, User user) {
         Channel channel = readChannel(channelId);
-        User user = userService.readUser(userId);
 
         boolean alreadyJoined = channel.getJoinedUsers().stream()
-                .anyMatch(u -> userId.equals(u.getId()));
+                .anyMatch(u -> user.getId().equals(u.getId()));
 
         if (alreadyJoined) {
             throw new IllegalArgumentException("이미 참가한 유저입니다.");
@@ -89,32 +79,28 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void leaveChannel(UUID channelId, UUID userId) {
+    public void leaveChannel(UUID channelId, User user) {
         Channel channel = readChannel(channelId);
-        User user = userService.readUser(userId);
 
         boolean alreadyLeaved = channel.getJoinedUsers().stream()
-                .noneMatch(u -> userId.equals(u.getId()));
+                .noneMatch(u -> user.getId().equals(u.getId()));
 
         if (alreadyLeaved) {
-            throw new IllegalArgumentException("이미 참가한 유저입니다.");
+            throw new IllegalArgumentException("채널에 속해 있지 않은 유저입니다.");
         }
 
-        channel.getJoinedUsers().removeIf(u -> userId.equals(u.getId()));
+        channel.getJoinedUsers().removeIf(u -> user.getId().equals(u.getId()));
         user.getJoinedChannels().removeIf(c -> channelId.equals(c.getId()));
     }
 
     @Override
-    public List<Message> readMessagesByChannel(UUID channelId) {
-        Channel channel = readChannel(channelId);
-        return channel.getMessages();
+    public List<Channel> readChannelsByUser(UUID userId) {
+        return list.stream()
+                .filter(ch -> ch.getJoinedUsers().stream()
+                        .anyMatch(u -> userId.equals(u.getId())))
+                .toList();
     }
 
-    @Override
-    public List<User> readUsersByChannel(UUID channelId) {
-        Channel channel = readChannel(channelId);
-        return channel.getJoinedUsers();
-    }
 
     private Channel validateExistenceChannel(UUID id) {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");

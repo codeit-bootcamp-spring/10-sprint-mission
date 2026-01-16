@@ -66,12 +66,15 @@ public class JCFMessageService implements MessageService {
         list.removeIf(m -> id.equals(m.getId()));
     }
 
-    public boolean isMessageDeleted(UUID id) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        return list.stream()
-                .noneMatch(message -> id.equals(message.getId()));
+    public List<Message> readMessagesByChannel(UUID channelId) {
+        Channel channel = channelService.readChannel(channelId);
+        return channel.getMessages();
     }
 
+    public List<Message> readMessagesByUser(UUID userId) {
+        User user = userService.readUser(userId);
+        return user.getMessages();
+    }
 
     private Message validateExistenceMessage(UUID id) {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");

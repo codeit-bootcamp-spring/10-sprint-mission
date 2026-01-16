@@ -19,14 +19,10 @@ public interface ChannelService {
 
     void deleteChannel(UUID id);
 
-    boolean isChannelDeleted(UUID id);
+    void joinChannel(UUID channelId, User user);
 
-    void joinChannel(UUID channelId, UUID userId);
+    void leaveChannel(UUID channelId, User user);
 
-    void leaveChannel(UUID channelId, UUID userId);
-
-    List<Message> readMessagesByChannel(UUID channelId);
-
-    List<User> readUsersByChannel(UUID channelId);
+    public List<Channel> readChannelsByUser(UUID userId);
 
 }
