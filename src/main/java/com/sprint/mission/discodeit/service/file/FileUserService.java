@@ -1,21 +1,27 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class JCFUserService implements UserService {
+public class FileUserService implements UserService {
 
+    private final Path filePath;
     private final List<User> data;
 
-    public JCFUserService() {
-        this.data = new ArrayList<>();
+    public FileUserService(String path) {
+        this.filePath = Paths.get(path, "users.ser");
+        init(filePath.getParent());
+        this.data = load();
     }
 
     @Override
@@ -23,6 +29,7 @@ public class JCFUserService implements UserService {
         existsByEmail(email);
         User user = new User(username, email, password);
         data.add(user);
+        save();
         return user;
     }
 
@@ -45,7 +52,7 @@ public class JCFUserService implements UserService {
     @Override
     public List<User> findUsersByChannel(UUID channelId) {
         return data.stream().filter(user -> user.getChannels().stream()
-                .anyMatch(channel -> channel.getId().equals(channelId)))
+                        .anyMatch(channel -> channel.getId().equals(channelId)))
                 .toList();
     }
 
@@ -61,6 +68,7 @@ public class JCFUserService implements UserService {
         validatePassword(user, password);
         Optional.ofNullable(username).ifPresent(user::updateUsername);
         Optional.ofNullable(email).ifPresent(user::updateEmail);
+        save();
         return user;
     }
 
@@ -77,6 +85,7 @@ public class JCFUserService implements UserService {
             channel.leave(user);
             user.leave(channel);
         });
+        save();
         data.remove(user);
     }
 
@@ -92,6 +101,42 @@ public class JCFUserService implements UserService {
     private void validatePassword(User user, String inputPassword) {
         if (!user.getPassword().equals(inputPassword)) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+    }
+
+    private void init(Path directory) {
+        if (!Files.exists(directory)) {
+            try {
+                Files.createDirectories(directory);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void save() {
+        try (
+                FileOutputStream fos = new FileOutputStream(filePath.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(data);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private List<User> load() {
+        if (!Files.exists(filePath)) {
+            return new ArrayList<>();
+        }
+
+        try (
+                FileInputStream fis = new FileInputStream(filePath.toFile());
+                ObjectInputStream ois = new ObjectInputStream(fis)
+        ) {
+            return (List<User>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 }

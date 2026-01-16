@@ -8,12 +8,14 @@ import java.util.Set;
 public class User extends BaseEntity{
     private String username;
     private String email;
+    private String password;
     private final Set<Channel> channels;
     private final List<Message> messages;
 
-    public User(String username, String email) {
+    public User(String username, String email, String password) {
         this.username = username;
         this.email = email;
+        this.password = password;
         this.channels = new HashSet<>();
         this.messages = new ArrayList<>();
     }
@@ -24,6 +26,10 @@ public class User extends BaseEntity{
 
     public String getEmail() {
         return email;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public List<Channel> getChannels() {

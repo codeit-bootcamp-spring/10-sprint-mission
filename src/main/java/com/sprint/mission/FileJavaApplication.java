@@ -7,6 +7,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FIleChannelService;
+import com.sprint.mission.discodeit.service.file.FIleMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -14,12 +17,13 @@ import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 import java.util.List;
 import java.util.UUID;
 
-public class JavaApplication {
+public class FileJavaApplication {
 
     public static void main(String[] args) {
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
-        MessageService messageService = new JCFMessageService(channelService, userService);
+        String path = System.getProperty("user.dir") + "/data";
+        UserService userService = new FileUserService(path);
+        ChannelService channelService = new FIleChannelService(userService, path);
+        MessageService messageService = new FIleMessageService(channelService, userService, path);
 
         System.out.println("========[채널 테스트]========");
         //채널 등록 테스트
