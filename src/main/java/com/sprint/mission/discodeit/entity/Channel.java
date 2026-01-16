@@ -54,7 +54,7 @@ public class Channel extends Common {
 
     @Override
     public String toString() {
-        return String.format("채널이름: %s\t채널설명:%s", getTitle(), getDescription());
+        return String.format("'채널이름: %s / 채널설명:%s'", getTitle(), getDescription());
     }
 }
 

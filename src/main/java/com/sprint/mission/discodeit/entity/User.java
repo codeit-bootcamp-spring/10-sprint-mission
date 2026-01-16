@@ -72,6 +72,7 @@ public class User extends Common {
 
     @Override
     public String toString() {
-        return String.format("계정ID: %s\t이름: %s\t메일: %s", getAccountId(), getName(), getMail());
+        return String.format("'계정ID: %s / PW: %s / 이름: %s / 메일: %s'",
+                getAccountId(), getPassword(), getName(), getMail());
     }
 }

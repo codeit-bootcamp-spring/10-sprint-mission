@@ -29,6 +29,6 @@ public class Message extends Common {
 
     @Override
     public String toString() {
-        return String.format("채널: %s\t\t유저: %s\t채팅메세지: %s", getChannel().getTitle(), getUser().getName(), getMessage());
+        return String.format("'채널명: %s / 유저: %s / 채팅메세지: %s'", getChannel().getTitle(), getUser().getName(), getMessage());
     }
 }
