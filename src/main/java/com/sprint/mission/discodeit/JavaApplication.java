@@ -10,119 +10,295 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
+import java.util.UUID;
+
 public class JavaApplication {
+    public static class SetUp {
+        public UserService userService;
+        public ChannelService channelService;
+        public MessageService messageService;
+
+        public SetUp() {
+            userService = new JCFUserService();
+            channelService = new JCFChannelService(userService);
+            messageService = new JCFMessageService(userService, channelService);
+            ((JCFUserService)userService).setMessageService(messageService);
+            ((JCFUserService)userService).setChannelService(channelService);
+            ((JCFChannelService)channelService).setMessageService(messageService);
+        }
+    }
+
     public static void main(String[] args) {
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
-        MessageService messageService = new JCFMessageService(userService, channelService);
-        ((JCFUserService)userService).setMessageService(messageService);
-        ((JCFUserService)userService).setChannelService(channelService);
-        ((JCFChannelService)channelService).setMessageService(messageService);
-
         // --- User ---
-        System.out.println("-- User --");
-        System.out.println("<생성>");
-        userService.createUser("AAA", "aaa", "A씨", "AAA@gmail.com");
-        userService.createUser("BBB", "bbb", "B씨", "BBB@naver.com");
-        userService.createUser("CCC", "ccc", "C씨", "CCC@icloud.com");
-
-
-        System.out.println("<조회>");
-        System.out.print("  단건: ");
-        userService.findUserByAccountId("AAA").ifPresent(System.out::println);
-        System.out.print("  다건: ");
-        System.out.println(userService.findAllUsers().stream().toList());
-
-        System.out.println("<수정>");
-        userService.findUserByAccountId("AAA")
-                .ifPresent(u-> userService.updateUser(u.getId(), null, "q1w2e3!", "A말씨", "aaa@outlook.com"));
-        userService.findUserByAccountId("BBB")
-                .ifPresent(u-> userService.updateUser(u.getId(), null, "bbb", "B명씨", "bbb@hanmail.net"));
-        userService.findUserByAccountId("CCC")
-                .ifPresent(u-> userService.updateUser(u.getId(), null, "ccc", "CC씨", "seamonkey@base.net"));
-        System.out.print("  다건: ");
-        System.out.println(userService.findAllUsers().stream().toList());
-
-
-        System.out.println("<삭제>");
-        userService.findUserByAccountId("AAA")
-                .ifPresent(u-> userService.deleteUser(u.getId()));
-        System.out.print("  다건: ");
-        System.out.println(userService.findAllUsers().stream().toList());
-        System.out.println("\n\n");
-
+        userServiceCRUDTest();
 
         // --- Channel ---
-        System.out.println("-- Channel --");
-        System.out.println("<생성>");
-        channelService.createChannel("멍때리는 방", "머어어어엉~");
-        channelService.createChannel("잠자는 방", "채팅시 강퇴");
-        channelService.createChannel("두쫀쿠 헌터방", "위치 제보받아요");
-
-
-        System.out.println("<조회>");
-        System.out.print("  단건: ");
-        channelService.findChannelByTitle("멍때리는 방").ifPresent(System.out::println);
-        System.out.print("  다건: ");
-        System.out.println(channelService.findAllChannels().stream().toList());
-
-        System.out.println("<수정>");
-        channelService.findChannelByTitle("잠자는 방")
-                .ifPresent(c-> channelService.updateChannel(c.getId(), "러닝맨", "아침 6시부터 달려요"));
-        System.out.print("  다건: ");
-        System.out.println(channelService.findAllChannels().stream().toList());
-
-        System.out.println("<삭제>");
-        channelService.findChannelByTitle("멍때리는 방")
-                .ifPresent(u-> channelService.deleteChannel(u.getId()));
-        System.out.print("  다건: ");
-        System.out.println(channelService.findAllChannels().stream().toList());
-
-        System.out.println("<채널참여>");
-        channelService.findChannelByTitle("러닝맨").ifPresent(c -> {
-            User user = userService.findUserByAccountId("BBB").orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-            channelService.joinChannel(c.getId(), user.getId());
-        });
-        System.out.print("  참여자들 조회: ");
-        channelService.findChannelByTitle("러닝맨").ifPresent(c -> System.out.println(c.getParticipants()));
-        System.out.println("<채널나감>");
-        channelService.findChannelByTitle("러닝맨").ifPresent(c -> {
-            User user = userService.findUserByAccountId("BBB").orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-            channelService.leaveChannel(c.getId(), user.getId());
-        });
-        System.out.print("  참여자 빼고 다시 조회: ");
-        channelService.findChannelByTitle("러닝맨").ifPresent(c -> System.out.println(c.getParticipants()));
-        System.out.println("\n\n");
+        channelServiceCRUDTest();
 
         // --- Message ---
-        System.out.println("-- Message --");
+        messageServiceCRUDTest();
+
+        // 유저의 채널참여,채널탈퇴,계정삭제 테스트
+        joinAndLeaveChannelTestAndUserDeleteTest();
+    }
+
+    private static void userServiceCRUDTest() {
+        SetUp userTest = new SetUp();
+        System.out.println("-- User --");
+
+        // 생성
         System.out.println("<생성>");
-        User user = userService.findUserByAccountId("CCC").orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-        Channel channel1 = channelService.findChannelByTitle("러닝맨").orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
-        Channel channel2 = channelService.findChannelByTitle("두쫀쿠 헌터방").orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+        User user1 = userTest.userService.createUser("AAA", "aaa", "A씨", "AAA@gmail.com");
+        User user2 = userTest.userService.createUser("BBB", "bbb", "B씨", "BBB@naver.com");
+        User user3 = userTest.userService.createUser("CCC", "ccc", "C씨", "CCC@icloud.com");
+        try {
+            userTest.userService.createUser("AAA", "a", "A씨", "A@gmail.com");
+        } catch (Exception e) {
+            System.out.println("\t= accountId 중복체크: " + e);
+        }
+        try {
+            userTest.userService.createUser("AAAA", "a", "A씨", "AAA@gmail.com");
+        } catch (Exception e) {
+            System.out.println("\t= mail 중복체크: " + e);
+        }
 
-        Message msg1 = messageService.createMessage(channel1.getId(), user.getId(), "러닝맨 여러분들 안녕하세요");
-        Message msg2 = messageService.createMessage(channel2.getId(), user.getId(), "판매위치 제보받아요");
+        // 조회
         System.out.println("<조회>");
-        System.out.println("  단건: ");
-        System.out.printf("\t%s\n", messageService.getMessage(msg1.getId()));
-        System.out.println("  다건 조회: ");
-        System.out.printf("\t%s\n",messageService.findAllMessages());
-        System.out.println("  채널별 조회: ");
-        System.out.printf("\t%s\n", messageService.findMessagesByChannelId(channel1.getId()));
-        System.out.printf("\t%s\n", messageService.findMessagesByChannelId(channel2.getId()));
+        System.out.println("- 단일:");
+        System.out.println("\t= uuid 조회: " + userTest.userService.getUser(user1.getId()));
+        System.out.println("\t= accountId 조회: " + userTest.userService.findUserByAccountId("BBB"));
+        System.out.println("\t= mail 조회: " + userTest.userService.findUserByMail("CCC@icloud.com"));
+        System.out.println("- 다중:");
+        System.out.println(userTest.userService.findAllUsers());
 
-
+        // 수정
         System.out.println("<수정>");
-        messageService.updateMessage(msg2.getId(), "판매위치 제보 받았습니다!!!!!!!!");
-        System.out.print("  수정한 채널조회: ");
-        System.out.println(messageService.findMessagesByChannelId(channel2.getId()));
+        System.out.println("\t= 성공: " + userTest.userService.updateUser(
+                user1.getId(), null, "q1w2e3!", "A말씨", "aaa@outlook.com"));
+        try {
+            userTest.userService.updateUser(user2.getId(), "AAA", "123", "B명씨", "b_+@hanmail.net");
+        } catch (Exception e) {
+            System.out.println("\t= accountId 중복체크: " + e);
+        }
+        try {
+            userTest.userService.updateUser(user3.getId(), null, null, "CC씨", "BBB@naver.com");
+        } catch (Exception e) {
+            System.out.println("\t= mail 중복체크: " + e);
+        }
 
+        // 삭제
         System.out.println("<삭제>");
-        System.out.print("  삭제전 채널조회: ");
-        System.out.println(messageService.findMessagesByChannelId(channel1.getId()));
-        messageService.deleteMessage(msg1.getId());
-        System.out.print("  삭제한 채널조회: ");
-        System.out.println(messageService.findMessagesByChannelId(channel1.getId()));
+        System.out.print("\t= uuid 삭제: ");
+        userTest.userService.deleteUser(user1.getId());
+        System.out.println("... 성공");
+        System.out.print("\t= accountId 삭제: ");
+        userTest.userService.deleteUserByAccountId(user2.getAccountId());
+        System.out.println("... 성공");
+        System.out.print("\t= mail계정 삭제: ");
+        userTest.userService.deleteUserByMail(user3.getMail());
+        System.out.println("... 성공");
+        System.out.print("\t= accountId 삭제 에러체크: ");
+        try {
+            userTest.userService.deleteUserByAccountId("에엥");
+        } catch (Exception e) {
+            System.out.println(e + "... 성공");
+        }
+        System.out.print("\t= mail계정 삭제 에러체크: ");
+        try {
+            userTest.userService.deleteUserByMail("에엥@naver.com");
+        } catch (Exception e) {
+            System.out.println(e + "... 성공");
+        }
+        System.out.println("- 삭제 후 전체조회:");
+        System.out.println(userTest.userService.findAllUsers());
+        System.out.println();
+    }
+
+    private static void channelServiceCRUDTest() {
+        SetUp channelTest = new SetUp();
+        System.out.println("-- Channel --");
+
+        // 생성
+        System.out.println("<생성>");
+        Channel channel1 = channelTest.channelService.createChannel("멍때리는 방", "머어어어엉~");
+        Channel channel2 = channelTest.channelService.createChannel("잠자는 방", "채팅시 강퇴");
+        try {
+            channelTest.channelService.createChannel("멍때리는 방", "2번째 방");
+        } catch (Exception e) {
+            System.out.println("\ttitle 중복체크: " + e);
+        }
+
+        // 조회
+        System.out.println("<조회>");
+        System.out.println("- 단일:");
+        System.out.println("\t= uuid 조회: " + channelTest.channelService.getChannel(channel1.getId()));
+        System.out.println("\t= title 조회: " + channelTest.channelService.findChannelByTitle("잠자는 방"));
+        try {
+            channelTest.channelService.getChannel(UUID.randomUUID());
+        } catch (Exception e) {
+            System.out.println("\t= uuid 조회 에러체크: " + e);
+        }
+        try {
+            channelTest.channelService.findChannelByTitle("야구관람방");
+        } catch (Exception e) {
+            System.out.println("\t= title 조회 에러체크: " + e);
+        }
+        System.out.println("- 다중:");
+        System.out.println(channelTest.channelService.findAllChannels());
+
+        // 수정
+        System.out.println("<수정>");
+        System.out.println("\t= 성공: " + channelTest.channelService.updateChannel(
+                channel1.getId(), "런닝맨", "아침 6시부터 달려요"));
+        try {
+            channelTest.channelService.updateChannel(channel2.getId(), "런닝맨", "런닝맨 2번째 방");
+        } catch (Exception e) {
+            System.out.println("\t= title 중복체크: " + e);
+        }
+
+        // 삭제
+        System.out.println("<삭제>");
+        System.out.print("\t= uuid 삭제: ");
+        channelTest.channelService.deleteChannel(channel1.getId());
+        System.out.println("... 성공");
+        System.out.print("\t= title 삭제: ");
+        channelTest.channelService.deleteChannelByTitle("잠자는 방");
+        System.out.println("... 성공");
+        System.out.print("\t= title 삭제 에러체크: ");
+        try {
+            channelTest.channelService.deleteChannelByTitle("몬헌방");
+        } catch (Exception e) {
+            System.out.println(e + "... 성공");
+        }
+        System.out.println("- 삭제 후 전체조회:");
+        System.out.println(channelTest.channelService.findAllChannels());
+        System.out.println();
+    }
+
+    private static void messageServiceCRUDTest() {
+        SetUp messageTest = new SetUp();
+        System.out.println("-- Message --");
+
+        // 생성
+        System.out.println("<생성>");
+        User user1 = messageTest.userService.createUser("AAA", "aaa", "A씨", "AAA@gmail.com");
+        Channel channel1 = messageTest.channelService.createChannel("멍때리는 방", "머어어어엉~");
+        Channel channel2 = messageTest.channelService.createChannel("두쫀쿠 헌터방", "판매위치 제보받아요");
+
+        try {
+            messageTest.messageService.createMessage(
+                    channel1.getId(), user1.getId(), "Zz...");
+        } catch (Exception e) {
+            System.out.println("\t= 채널소속유저 검증 체크: " + e);
+        }
+        messageTest.channelService.joinChannel(channel1.getId(), user1.getId());
+        messageTest.channelService.joinChannel(channel2.getId(), user1.getId());
+        Message msg1 = messageTest.messageService.createMessage(
+                channel1.getId(), user1.getId(), "Zz...");
+        Message msg2 = messageTest.messageService.createMessage(
+                channel2.getId(), user1.getId(), "어디에 있나요. 두쫀쿠.");
+        System.out.println("\t= 성공: " + msg1);
+
+        // 조회
+        System.out.println("<조회>");
+        System.out.println("- 단일:");
+        System.out.println("\t= uuid 조회: " + messageTest.messageService.getMessage(msg1.getId()));
+        try {
+            messageTest.messageService.getMessage(UUID.randomUUID());
+        } catch (Exception e) {
+            System.out.println("\t= uuid 조회 에러체크: " + e);
+        }
+        System.out.println("\t= channel 조회: " + messageTest.messageService.findMessagesByChannelId(channel1.getId()));
+        System.out.println("- 다중:");
+        System.out.println(messageTest.messageService.findAllMessages());
+
+        // 수정
+        System.out.println("<수정>");
+        System.out.println("\t= 성공: " + messageTest.messageService.updateMessage(
+                msg2.getId(), "제보 받았습니다!"));
+
+        // 삭제
+        System.out.println("<삭제>");
+        System.out.println("\t= 삭제 전 채널조회 메세지 수: "
+                + messageTest.channelService.getChannel(channel1.getId()).getMessages().toArray().length);
+        System.out.print("\t= uuid 삭제: ");
+        messageTest.messageService.deleteMessage(msg1.getId());
+        System.out.println("... 성공");
+        System.out.println("\t= 삭제 후 채널조회 메세지 수: "
+                + messageTest.channelService.getChannel(channel1.getId()).getMessages().toArray().length);
+        System.out.println();
+    }
+
+    private static void joinAndLeaveChannelTestAndUserDeleteTest() {
+        SetUp test = new SetUp();
+        System.out.println("-- 유저의 채널참여,채널탈퇴,계정삭제 테스트 --");
+
+        Channel channel1 = test.channelService.createChannel("경도방", "2030 경도모임방입니다");
+        Channel channel2 = test.channelService.createChannel("두쫀쿠 헌터방", "두쫀쿠 위치 제보받아요");
+        User user1 = test.userService.createUser("AAA", "aaa", "A씨", "AAA@gmail.com");
+        User user2 = test.userService.createUser("BBB", "bbb", "B씨", "BBB@naver.com");
+
+        // user1 채널 참여 전
+        System.out.println("User 1(AAA) 채널 참여 전:");
+        System.out.println("\t= User1 채널참여 리스트: " + user1.getJoinedChannels());
+        System.out.println("\t= Channel1 참여된 유저: " + channel1.getParticipants());
+        System.out.println("\t= Channel2 참여된 유저: " + channel2.getParticipants());
+
+        // user1/user2 채널 참여
+        test.channelService.joinChannel(channel1.getId(), user1.getId());
+        test.channelService.joinChannel(channel2.getId(), user1.getId());
+        test.channelService.joinChannel(channel1.getId(), user2.getId());
+
+        // user1 채널 참여 후
+        System.out.println("User 1(AAA) 채널 참여 후:");
+        System.out.println("\t= User1 채널참여 리스트: " + user1.getJoinedChannels());
+        System.out.println("\t= Channel1 소속된 유저: " + channel1.getParticipants());
+        System.out.println("\t= Channel2 소속된 유저: " + channel2.getParticipants());
+
+        // user1 메세지 보내기 전
+        System.out.println("User 1(AAA) 메세지 보내기 전:");
+        System.out.println("\t= User1 보낸 메세지: " + user1.getMessageHistory());
+        System.out.println("\t= Channel1 메세지 목록: " + channel1.getMessages());
+        System.out.println("\t= Channel2 메세지 목록: " + channel2.getMessages());
+
+        // user1 메세지 전달
+        test.messageService.createMessage(channel1.getId(), user1.getId(),
+                "저도 참여 가능할까요?");
+        test.messageService.createMessage(channel1.getId(), user1.getId(),
+                "어디로 가야 하나요?");
+        test.messageService.createMessage(channel2.getId(), user1.getId(),
+                "저도 참여 가능할까요?");
+        test.messageService.createMessage(channel1.getId(), user2.getId(),
+                "호수공원으로 오세요");
+
+
+        // user1 메세지 보낸 후
+        System.out.println("User 1(AAA) 메세지 보낸 후:");
+        System.out.println("\t= User1 보낸 메세지: " + user1.getMessageHistory());
+        System.out.println("\t= Channel1 메세지 목록: " + channel1.getMessages());
+        System.out.println("\t= Channel2 메세지 목록: " + channel2.getMessages());
+
+        // channel2 삭제 전
+        System.out.println("Channel 2 삭제 전:");
+        System.out.println("\t= User1 보낸 메세지: " + user1.getMessageHistory());
+
+        // channel2 삭제
+        test.channelService.deleteChannel(channel2.getId());
+
+        // channel2 삭제 후
+        System.out.println("Channel 2 삭제 후:");
+        System.out.println("\t= User1 보낸 메세지: " + user1.getMessageHistory());
+
+        // user1 삭제 전
+        System.out.println("User 1(AAA) 삭제 전:");
+        System.out.println("\t= User1 보낸 메세지: " + user1.getMessageHistory());
+        System.out.println("\t= Channel1 소속된 유저: " + channel1.getParticipants());
+
+        // user1 삭제
+        test.userService.deleteUser(user1.getId());
+
+        // user1 삭제 후
+        System.out.println("User 1(AAA) 삭제 후:");
+        System.out.println("\t= Channel1 소속된 유저: " + channel1.getParticipants());
     }
 }
