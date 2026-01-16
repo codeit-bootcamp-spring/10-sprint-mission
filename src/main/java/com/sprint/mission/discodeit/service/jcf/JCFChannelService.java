@@ -28,9 +28,10 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel createChannel(String channelName) {
-        for (Channel channel : channels.values()) {
-            if (channel.getChannelName().equals(channelName))
-                throw new DuplicationChannelException();
+
+        if(channels.values().stream()
+                .anyMatch(channel -> channel.getChannelName().equals(channelName))){
+            throw new DuplicationChannelException();
         }
         Channel channel = new Channel(channelName);
         channels.put(channel.getId(), channel);

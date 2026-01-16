@@ -1,6 +1,9 @@
-package com.sprint.mission.discodeit.entity;
+package com.sprint.mission.discodeit;
 
 
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -93,7 +96,7 @@ public class JavaApplication {
         );
 
         //채널 단건 출력
-        System.out.println("[채널 출력(단건)]");
+        System.out.println("[채널 출력 이름 (단건)]");
         Channel findOneChannel = channelService.findChannel(channels.get(0).getId());
         System.out.println(ChannelView.viewChannel(findOneChannel));
         System.out.println();
