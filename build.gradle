@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group = 'com.sprint.mission'
@@ -17,4 +18,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+application {
+    mainClass = 'com.sprint.mission.JavaApplication'
 }
