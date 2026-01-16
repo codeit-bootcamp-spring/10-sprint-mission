@@ -26,9 +26,10 @@ public class JCFMessageService implements MessageService {
         User user = userService.findById(userId);
         Channel channel = channelService.findById(channelId);
         Message message = new Message(content,user,channel);
-
-        data.put(message.getId(),message);
         user.getMessageList().add(message);
+        channel.getMessageList().add(message);
+        data.put(message.getId(),message);
+
         return message;
 
     }
@@ -65,6 +66,17 @@ public class JCFMessageService implements MessageService {
         Message message = findById(id);
         data.remove(id);
         return message;
+    }
+
+    public void removeUser(UUID userId){
+        //삭제된 유저와 같은 유저id를 갖고있는 메시지를 지운다.
+        data.values().removeIf(Message -> Message.getUser().getId().equals(userId));
+
+    }
+
+    public void removeChannel(UUID channelId){
+        //삭제된 체널과 같은 채널id를 갖고있는 메시지를 지운다.
+        data.values().removeIf(Message -> Message.getChannel().getId().equals(channelId));
     }
 
 

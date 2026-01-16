@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class Message extends Common {
@@ -7,6 +9,7 @@ public class Message extends Common {
     private String content;
     private User user;
     private Channel channel;
+
 
     public Message(String content,User user,Channel channel){
 
@@ -17,6 +20,14 @@ public class Message extends Common {
 
     public String getContent() {
         return content;
+    }
+
+    public User getUser(){
+        return user;
+    }
+
+    public Channel getChannel(){
+        return channel;
     }
 
     //내용 수정일때 update시간 필요

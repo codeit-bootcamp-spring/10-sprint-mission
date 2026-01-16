@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
@@ -36,6 +37,7 @@ public class JCFUserService implements UserService {
         return new ArrayList<>(data.values());
     }
 
+
     @Override
     public User update(UUID userId,String userName,String email,String status){
         //Optional은 값이 없을수도 있다의 의미라서 userId는 Optional을 쓰지않는다.
@@ -55,6 +57,15 @@ public class JCFUserService implements UserService {
         User user = findById(id);
         data.remove(id);
         return user;
+    }
+
+    public void removeChannel(UUID channelId){
+        for(User user : data.values()){ //유저의 채널리스트에서 삭제된거 빼기
+            user.getChannelList().removeIf(Channel -> Channel.getId().equals(channelId));
+        }
+        for(User user : data.values()){
+            user.getMessageList().removeIf(Message -> Message.getChannel().getId().equals(channelId));
+        }
     }
 
 }

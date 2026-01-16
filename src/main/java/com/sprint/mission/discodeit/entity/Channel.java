@@ -19,6 +19,7 @@ public class Channel extends Common{
         this.type = type;
         this.owner  = owner;
         this.userList = new ArrayList<>();
+        this.messageList = new ArrayList<>();
     }
 
     public String getChannelName() {
@@ -47,6 +48,10 @@ public class Channel extends Common{
 
     public List<User> getUserList(){
         return userList;
+    }
+
+    public List<Message> getMessageList(){
+        return messageList;
     }
 
     @Override

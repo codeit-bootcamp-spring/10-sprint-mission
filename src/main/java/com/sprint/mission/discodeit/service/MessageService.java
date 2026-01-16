@@ -25,5 +25,7 @@ public interface MessageService {
     Message delete(UUID id);
 
     List<Message> findByUser(UUID userId);
+    void removeUser(UUID userId);
+    void removeChannel(UUID channelId);
 
 }

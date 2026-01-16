@@ -23,5 +23,6 @@ public interface UserService {
 
     //삭제
     User delete(UUID id);
+    void removeChannel(UUID channelId);
 
 }

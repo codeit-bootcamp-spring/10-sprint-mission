@@ -17,4 +17,6 @@ public interface ChannelService {
     void leave(UUID channelId,UUID userId);
 
     List<Channel> findByUser(UUID userId);
+    List<User> findByChannel(UUID channelId);
+    void removeUserFromAllChannel(UUID userId);
 }

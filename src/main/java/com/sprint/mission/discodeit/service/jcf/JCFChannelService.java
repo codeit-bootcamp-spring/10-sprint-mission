@@ -44,6 +44,11 @@ public class JCFChannelService implements ChannelService {
         return user.getChannelList();
     }
 
+    public List<User> findByChannel(UUID channelId){ //특정 채널에 참여하고있는 유저 목록
+        Channel channel = findById(channelId);
+        return channel.getUserList();
+    }
+
     @Override
     public Channel update(UUID id, String name) {
         Channel channel = findById(id);
@@ -80,6 +85,15 @@ public class JCFChannelService implements ChannelService {
         }
         channel.getUserList().remove(user);
         user.removeChannel(channel);
+    }
+
+    public void removeUserFromAllChannel(UUID userId){
+
+        //유저가 방장인경우 처리를 넣어줘야함.
+
+        for(Channel channel : data.values()){
+            channel.getUserList().removeIf(User -> User.getId().equals(userId));
+        }
     }
 
 }
