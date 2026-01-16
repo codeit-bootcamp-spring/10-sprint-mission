@@ -39,6 +39,12 @@ public class JCFMessageService implements MessageService {
     // 유저 아이디에 따라 메시지 리스트 반환
     @Override
     public List<Message> getMessageListByUser(UUID userId) {
+        Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
+        // 유저가 존재하지 않을 경우 예외 처리
+        if (userService.getUserInfoByUserId(userId) == null) {
+            throw new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
+        }
+
         return messages.values().stream()
                 .filter(id -> id.getSentUser().getId().equals(userId))
                 .toList();
@@ -47,6 +53,12 @@ public class JCFMessageService implements MessageService {
     // 채널 아이디에 따라 메시지 리스트 반환
     @Override
     public List<Message> getMessageListByChannel(UUID channelId) {
+        Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
+        // 채널이 존재하지 않을 경우 예외 처리
+        if (channelService.getChannelInfoById(channelId) == null) {
+            throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
+        }
+
         return messages.values().stream()
                 .filter(id -> id.getSentChannel().getId().equals(channelId))
                 .toList();
