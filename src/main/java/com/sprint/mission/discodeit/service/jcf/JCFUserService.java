@@ -30,8 +30,6 @@ public class JCFUserService implements UserService {
 
     @Override
     public List<User> getUsersByChannel(UUID channelId) {
-        Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
-
         // 채널이 존재하지 않을 경우 예외 처리
         if (channelService.getChannelInfoById(channelId) == null) {
             throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
