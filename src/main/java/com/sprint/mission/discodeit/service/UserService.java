@@ -11,5 +11,6 @@ public interface UserService {
         List<User> getUsersByChannel(UUID channelId);
         User update(UUID id, String name, String email);
         void delete(UUID id);
+        void deleteUsersInChannel(UUID channelId);
 
     }

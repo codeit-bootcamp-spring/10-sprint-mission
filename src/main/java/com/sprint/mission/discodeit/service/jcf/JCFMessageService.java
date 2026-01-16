@@ -80,6 +80,11 @@ public class JCFMessageService implements MessageService {
         data.removeIf(message -> message.getSender().getId().equals(userId));
     }
 
+    @Override
+    public void deleteMessageByChannelId(UUID channelId) {
+        data.removeIf(message -> message.getSender().getId().equals(channelId));
+    }
+
 }
 
 

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.NotFoundException;
 import com.sprint.mission.discodeit.service.UserService;
@@ -52,5 +53,14 @@ public class JCFUserService implements UserService {
     public void delete(UUID id) {
         User user = read(id);
         data.remove(user);
+    }
+
+    @Override
+    public void deleteUsersInChannel(UUID channelId) {
+        List<User> userList = getUsersByChannel(channelId);
+        for (User user : userList) {
+            user.getChannelList().removeIf(channel -> channel.getId().equals(channelId));
+        }
+
     }
 }

@@ -135,6 +135,7 @@ public class JavaApplication {
         // user의 channel 등록
         user1.joinChannel(channel1);
         user2.joinChannel(channel1);
+        user2.joinChannel(channel2);
 
         // 1-1. channel 참가자 목록(name) 조회
         List<User> userList = discordService.getUsersByChannel(channel1.getId());
@@ -156,16 +157,16 @@ public class JavaApplication {
 
 
         // -----------------------2. 유저의 채널/메시지 조회-----------------------
-        // 1-1. user의 channel 목록 조회
-        List<Channel> channels = discordService.getChannelsByUser(user1.getId());
+        // 2-1. user의 channel 목록 조회
+        List<Channel> channels = discordService.getChannelsByUser(user2.getId());
         List<String> channelNames = channels.stream()
                 .map(Channel::getName)
                 .toList();
         System.out.println("2-1. 유저의 채널 목록 조회");
-        System.out.println(user1.getName() + "의 채녈 목록: " + channelNames);
+        System.out.println(user2.getName() + "의 채녈 목록: " + channelNames);
         System.out.println();
 
-        // 1-2. user의 message 목록 조회
+        // 2-2. user의 message 목록 조회
         List<Message> userMessages = discordService.getMessagesByUser(user1.getId());
         List<String> userMessageContext =userMessages.stream()
                 .map(message -> "[" + message.getSender().getName() + "] : " + message.getText())
@@ -184,17 +185,47 @@ public class JavaApplication {
         // ---------------1. 유저 삭제 시 유저의 매세지/채널 목록에서 유저 삭제---------------
         discordService.deleteUser(user1.getId());
 
-        System.out.println("1-1. 유저 삭제 시 메시지 목록 조회");
-        List<Message> updatedMessages = discordService.getMessagesByChannel(channel1.getId());
-        System.out.println(channel1.getName() + "의 메시지 목록: " +
-                updatedMessages.stream().map(m -> "[" + m.getSender().getName() + "] : " + m.getText()).toList());
+        // 1-1. user의 channel 목록 조회
+        System.out.println("1-1. 유저1 삭제 시 채널 참가자 목록 조회");
+        List<User> userListAfterUserDelete = discordService.getUsersByChannel(channel1.getId());
+        List<String> userNamesAfterUserDelete = userListAfterUserDelete.stream()
+                .map(User::getName)
+                .toList();
+        System.out.println(channel1.getName() + "의 참가자 목록: " + userNamesAfterUserDelete);
         System.out.println();
 
-        System.out.println("1-2. 유저 삭제 시 채널 참가자 목록 조회");
-        List<User> updatedChannels = discordService.getUsersByChannel(channel1.getId());
-        System.out.println(channel1.getName() + "의 참가자 목록: " +
-                updatedChannels.stream().map(User::getName).toList());
+        // 1-2. user의 message 목록 조회
+        System.out.println("1-2. 유저1 삭제 시 메시지 목록 조회");
+        List<Message> userMessagesAfterUserDelete = discordService.getMessagesByChannel(channel1.getId());
+        List<String> userMessagesContextAfterUserDelete = userMessagesAfterUserDelete.stream()
+                .map(m -> "[" + m.getSender().getName() + "] : " + m.getText())
+                .toList();
+        System.out.println(channel1.getName() + "의 메시지 목록: " + userMessagesContextAfterUserDelete);
         System.out.println();
+
+
+        // ---------------2. 채널 삭제 시 유저의 채널 목록에서 채널/채널의 매세지 삭제---------------
+        discordService.deleteChannel(channel1.getId());
+
+        // 2-1. user의 channel 목록 조회
+        System.out.println("2-1. 채널1 삭제 시 유저의 채널 목록 조회");
+        List<Channel> channelsAfterChannelDelete = discordService.getChannelsByUser(user2.getId());
+        List<String> channelNamesAfterChannelDelete = channelsAfterChannelDelete.stream()
+                .map(Channel::getName)
+                .toList();
+        System.out.println(user2.getName() + "의 채널 목록: " + channelNamesAfterChannelDelete);
+        System.out.println();
+
+        // 2-2. user의 message 목록 조회
+        List<Message> userMessagesAfterChannelDelete = discordService.getMessagesByUser(user2.getId());
+        List<String> userMessageContextAfterChannelDelete =userMessagesAfterChannelDelete.stream()
+                .map(message -> "[" + message.getSender().getName() + "] : " + message.getText())
+                .toList();
+        System.out.println("2-2. 유저의 메시지 목록 조회");
+        System.out.println(user2.getName() + "의 메시지 목록: " + userMessageContextAfterChannelDelete);
+        System.out.println();
+        System.out.println();
+
 
         System.out.println("=== [종료] 서비스 테스트 ===");
     }
