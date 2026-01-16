@@ -56,7 +56,8 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> searchMessage(UUID channelId, String msg) {
         Channel channel = channelService.findById(channelId);
-        List<Message> messages = channel.getMessages().stream()
+        List<Message> messages = messageRespotory.readAll().stream()
+                .filter(m -> m.getChannelId().equals(channelId))
                 .filter(m -> m.getContent().contains(msg))
                 .collect(Collectors.toList());
 

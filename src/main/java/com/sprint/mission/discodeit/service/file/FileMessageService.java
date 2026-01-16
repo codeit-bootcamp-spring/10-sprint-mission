@@ -31,7 +31,6 @@ public class FileMessageService implements MessageService, ClearMemory {
         User user = userService.findById(userId);
         Channel channel = channelService.findById(channelId);
         Message message = new Message(user, channel, content);
-        channel.addMessage(message);
         channel.addUser(user);
         channelRepository.save(channel);
         return messageRepository.save(message);

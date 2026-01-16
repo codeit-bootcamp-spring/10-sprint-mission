@@ -14,7 +14,6 @@ public class Channel extends BaseEntity implements Serializable {
     private User owner; // 채널 주인
     private List<User> users;   // 채널 멤버
     private List<Message> messages; // 채널에서 주고받은 메시지들
-    private boolean isDm;
 
     public Channel(String name, IsPrivate isPrivate, User owner) {
         super(UUID.randomUUID(), System.currentTimeMillis());
@@ -85,9 +84,6 @@ public class Channel extends BaseEntity implements Serializable {
     public void updatePrivate(IsPrivate isPrivate) {
         this.isPrivate = isPrivate;
     }
-
-
-    //  + "\n대화 내용 : \n" + messages
 
     @Override
     public String toString() {

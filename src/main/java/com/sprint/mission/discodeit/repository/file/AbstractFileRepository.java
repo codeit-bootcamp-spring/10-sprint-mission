@@ -11,6 +11,11 @@ public class AbstractFileRepository <T> {
     protected AbstractFileRepository(String path) {
         this.file = new File(path);
     }
+
+    protected String getPath(){
+        return file.getPath();
+    }
+
     @SuppressWarnings("unchecked")  // Object형을 Map으로 형변환할 때 뜨는 경고 억제
     protected Map<UUID, T> load() {
         if (!file.exists()) {

@@ -61,7 +61,6 @@ public class FileChannelService implements ChannelService, ClearMemory {
         Channel channel = findById(channelId);
         User user = userService.findById(userId);
         channel.addUser(user);
-        user.addChannel(channel);
         channelRepository.save(channel);
         userRepository.save(user);
     }
@@ -74,6 +73,7 @@ public class FileChannelService implements ChannelService, ClearMemory {
                 .toList();
 
     }
+
     @Override
     public List<User> getChannelUsers(UUID channelId) {
         findById(channelId);
@@ -83,8 +83,18 @@ public class FileChannelService implements ChannelService, ClearMemory {
                 .map(Channel::getUsers)
                 .orElse(Collections.emptyList());
     }
+
     @Override
     public void delete(UUID id) {
+        findById(id);
+
+        // 채널의 메시지 삭제하기
+        List<Message> remainMessages = messageRepository.readAll().stream()
+                .filter(msg -> !msg.getChannel().getId().equals(id))
+                .toList();
+
+        messageRepository.saveAll(remainMessages);
+
         channelRepository.delete(id);
     }
 

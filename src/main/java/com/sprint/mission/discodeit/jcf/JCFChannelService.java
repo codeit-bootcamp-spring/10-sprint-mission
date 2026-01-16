@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.IsPrivate;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -13,10 +14,12 @@ import java.util.*;
 public class JCFChannelService implements ChannelService {
     private final UserService userService;
     private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
 
-    public JCFChannelService(UserService userService, ChannelRepository channelRepository) {
+    public JCFChannelService(UserService userService, ChannelRepository channelRepository, MessageRepository messageRepository) {
         this.userService = userService;
         this.channelRepository = channelRepository;
+        this.messageRepository = messageRepository;
     }
 
     @Override
@@ -59,13 +62,22 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void delete(UUID id) {
         findById(id);
+        // 채널의 메시지 삭제하기
+        List<Message> remainMessages = messageRepository.readAll().stream()
+                .filter(msg -> !msg.getChannel().getId().equals(id))
+                .toList();
+
+        messageRepository.saveAll(remainMessages);
         channelRepository.delete(id);
     }
 
     // 채널에서 주고받은 메시지 출력
     public List<Message> getChannelMessages(UUID channelId) {
         Channel channel = findById(channelId);
-        return channel.getMessages();
+        return messageRepository.readAll().stream()
+                .filter(msg -> msg.getChannelId().equals(channelId))
+                .toList();
+//        return channel.getMessages();
     }
 
     @Override

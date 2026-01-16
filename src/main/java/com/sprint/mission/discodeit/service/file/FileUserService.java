@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -75,6 +72,34 @@ public class FileUserService implements UserService, ClearMemory {
     @Override
     public void delete(UUID id) {
         findById(id);
+
+        // 사용자가 등록되어 있는 채널들
+        List<Channel> joinedChannels = channelRepository.readAll().stream()
+                .filter(ch -> ch.getUsers().stream()
+                        .anyMatch(u -> u.getId().equals(id)))
+                .toList();
+
+        for (Channel ch : joinedChannels) {
+            // 내가 방장인 채널 - 채널 자체 삭제
+            if (ch.getOwner().getId().equals(id)) {
+                channelRepository.delete(ch.getId());
+            }
+            // 참여한 채널 - 멤버 명단에서 나만 삭제
+            else {
+                ch.getUsers().removeIf(u -> u.getId().equals(id));
+                channelRepository.save(ch);
+            }
+        }
+
+        // 사용자가 작성한 메시지 삭제
+        List<Message> sendedMessages = messageRepository.readAll().stream()
+                .filter(msg -> msg.getSender().getId().equals(id))
+                .toList();
+
+        for (Message msg : sendedMessages) {
+            messageRepository.delete(msg.getId());
+        }
+
         userRepository.delete(id);
     }
 

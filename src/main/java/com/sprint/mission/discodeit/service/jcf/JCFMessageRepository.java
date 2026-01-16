@@ -1,12 +1,14 @@
-package com.sprint.mission.discodeit.repository.jcf;
+package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class JCFMessageRepository implements MessageRepository {
-    private Map<UUID, Message> data;
+    private final Map<UUID, Message> data;
 
     public JCFMessageRepository() {
         this.data = new HashMap<>();
@@ -16,6 +18,14 @@ public class JCFMessageRepository implements MessageRepository {
     public Message save(Message message) {
         data.put(message.getId(), message);
         return message;
+    }
+
+    @Override
+    public void saveAll(List<Message> messages) {
+        this.data.clear();
+        Map<UUID, Message> map = messages.stream()
+                .collect(Collectors.toMap(msg -> msg.getId(), Function.identity()));
+        this.data.putAll(map);
     }
 
     @Override
@@ -35,6 +45,6 @@ public class JCFMessageRepository implements MessageRepository {
 
     @Override
     public void clear() {
-        this.data = new HashMap<>();
+        this.data.clear();
     }
 }

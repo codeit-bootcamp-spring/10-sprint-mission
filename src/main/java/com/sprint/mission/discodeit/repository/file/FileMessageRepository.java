@@ -3,7 +3,13 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class FileMessageRepository extends AbstractFileRepository<Message> implements MessageRepository {
 
@@ -17,6 +23,12 @@ public class FileMessageRepository extends AbstractFileRepository<Message> imple
         data.put(message.getId(), message);
         writeToFile(data);
         return message;
+    }
+
+    public void saveAll(List<Message> messages) {
+        Map<UUID, Message> data = messages.stream().collect(Collectors.toMap(msg -> msg.getId(), Function.identity()));
+
+        writeToFile(data);
     }
 
     @Override

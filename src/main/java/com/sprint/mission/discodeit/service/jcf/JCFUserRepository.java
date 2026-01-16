@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.repository.jcf;
+package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -10,7 +10,7 @@ import javax.swing.text.html.Option;
 import java.util.*;
 
 public class JCFUserRepository implements UserRepository {
-    private Map<UUID, User> data;
+    private final Map<UUID, User> data;
 
     public JCFUserRepository(){
         data = new HashMap<>();
@@ -45,6 +45,6 @@ public class JCFUserRepository implements UserRepository {
 
     @Override
     public void clear(){
-        data = new HashMap<>();
+        this.data.clear();
     }
 }

@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.repository.jcf;
+package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.jcf.JCFChannelService;
@@ -7,7 +7,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import java.util.*;
 
 public class JCFChannelRepository implements ChannelRepository {
-    private Map<UUID, Channel> data;
+    private final Map<UUID, Channel> data;
 
     public JCFChannelRepository(){
         data = new HashMap<>();
@@ -36,6 +36,6 @@ public class JCFChannelRepository implements ChannelRepository {
 
     @Override
     public void clear(){
-        data = new HashMap<>();
+        this.data.clear();
     }
 }
