@@ -17,27 +17,27 @@ public class Message extends BaseEntity {
         this.deletedAt = false;
     }
     // Setters
-    public void setContent(String content) {
+    public void updateContent(String content) {
         this.content = content;
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public void setSender(User sender) {
+    public void updateSender(User sender) {
         this.sender = sender;
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public void setChannel(Channel channel) {
+    public void updateChannel(Channel channel) {
         this.channel = channel;
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public void setEditedAt(boolean editedAt) {
+    public void updateEditedAt(boolean editedAt) {
         this.editedAt = editedAt;
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public void setDeletedAt(boolean deletedAt) {
+    public void updateDeletedAt(boolean deletedAt) {
         this.deletedAt = deletedAt;
         this.updatedAt = System.currentTimeMillis();
     }

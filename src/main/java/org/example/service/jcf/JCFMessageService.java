@@ -7,9 +7,6 @@ import org.example.service.ChannelService;
 import org.example.service.MessageService;
 import org.example.service.UserService;
 
-
-
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,6 +34,7 @@ public class JCFMessageService implements MessageService {
         Message message = new Message(content,sender,channel);
         data.put(message.getId(),message);
         channel.getMessages().add(message);
+        sender.getMessages().add(message);
         return message;
     }
 
@@ -53,6 +51,10 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> findByChannel(UUID channelId) {
+
+        // 채널 존재 여부 검증
+        channelService.findById(channelId);
+
         return data.values().stream()
                 .filter(message -> !message.isDeletedAt())  // 삭제된 상태 메시지 제외
                 .filter(message -> message.getChannel().getId().equals(channelId))
@@ -61,6 +63,10 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> findBySender(UUID senderId) {
+
+        // 유저 존재 여부 검증
+        userService.findById(senderId); // 너무 간단한거 같은디..... 이게 맞나?
+
         return data.values().stream()
                 .filter(message -> !message.isDeletedAt())  // 삭제된 상태 메시지 제외
                 .filter(message -> message.getSender().getId().equals(senderId))
@@ -71,21 +77,22 @@ public class JCFMessageService implements MessageService {
     public Message update(UUID messageId, String content) {
         Message message = findById(messageId);
 
-        message.setContent(content);
-        message.setEditedAt(true);
+        message.updateContent(content);
+        message.updateEditedAt(true);
         return message;
     }
 
     @Override
     public void softDelete(UUID messageId) {
         Message message = findById(messageId);
-        message.setDeletedAt(true);
+        message.updateDeletedAt(true);
     }
 
     @Override
-    public void hardDelete(UUID messageId) {
+    public void hardDelete(UUID messageId) {        //유저를 삭제한 경우, 메시지 자체를 삭제한 경우, 채널을 삭제한 경우.
         Message message = findById(messageId);
         message.getChannel().getMessages().remove(message); // 채널의 메시지 리스트에서 제거 (양방향 관계 정리)
+        message.getSender().getMessages().remove(message);
         data.remove(messageId);
     }
 

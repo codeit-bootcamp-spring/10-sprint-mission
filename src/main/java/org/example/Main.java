@@ -3,193 +3,256 @@ package org.example;
 import org.example.entity.*;
 import org.example.service.jcf.*;
 
-import java.util.List;
+import java.util.UUID;
 
 public class Main {
 
     public static void main(String[] args) {
+
+// 서비스 초기화
         JCFUserService userService = new JCFUserService();
         JCFChannelService channelService = new JCFChannelService(userService);
         JCFMessageService messageService = new JCFMessageService(userService, channelService);
 
-        // ==================== USER CRUD ====================
-        System.out.println("[ USER CRUD ]");
+        channelService.setMessageService(messageService);
+        userService.setMessageService(messageService);
+
+// ==================== 1. 유저 3명 생성 ====================
+        System.out.println("\n[ 1. 유저 3명 생성: a, b, c ]");
         System.out.println("----------------------------------------");
 
-        // Create
-        System.out.println(">> CREATE");
-        User user1 = userService.create("alice", "alice@email.com", "pass123", "앨리스");
-        User user2 = userService.create("bob", "bob@email.com", "pass456", "밥");
-        User user3 = userService.create("charlie", "charlie@email.com", "pass789", "찰리");
-        System.out.println("   생성: " + user1.getUsername() + ", " + user2.getUsername() + ", " + user3.getUsername());
+        User a = userService.create("a", "a@test.com", "pw", "유저A");
+        User b = userService.create("b", "b@test.com", "pw", "유저B");
+        User c = userService.create("c", "c@test.com", "pw", "유저C");
 
-        // Read (단건)
-        System.out.println("\n>> READ (단건)");
-        User foundUser = userService.findById(user1.getId());
-        System.out.println("   조회: " + foundUser.getUsername() + " / " + foundUser.getEmail());
+        UUID aId = a.getId();
+        UUID bId = b.getId();
+        UUID cId = c.getId();
 
-        // Read (다건)
-        System.out.println("\n>> READ (다건)");
-        List<User> allUsers = userService.findAll();
-        System.out.println("   ACTIVE 유저 수: " + allUsers.size());
-        allUsers.forEach(u -> System.out.println("   - " + u.getUsername()));
+        System.out.println(">> 전체 유저: " + userService.findAll().stream()
+                .map(User::getUsername)
+                .toList());
 
-        // Update
-        System.out.println("\n>> UPDATE");
-        userService.update(user1.getId(), null, null, "앨리스수정", null, null);
-        User updatedUser = userService.findById(user1.getId());
-        System.out.println("   수정 후 닉네임: " + updatedUser.getNickname());
-
-        // Soft Delete
-        System.out.println("\n>> SOFT DELETE (user2 탈퇴)");
-        userService.softDelete(user2.getId());
-        System.out.println("   user2 상태: " + userService.findById(user2.getId()).getStatus());
-        System.out.println("   findAll() 결과: " + userService.findAll().size() + "명");
-
-        // Hard Delete
-        System.out.println("\n>> HARD DELETE (user3 완전 삭제)");
-        userService.hardDelete(user3.getId());
-        System.out.println("   findAll() 결과: " + userService.findAll().size() + "명");
-        System.out.print("   user3 조회: ");
-        try {
-            userService.findById(user3.getId());
-        } catch (Exception e) {
-            System.out.println("실패 - " + e.getMessage());
-        }
-
-        System.out.println();
-
-        // ==================== CHANNEL CRUD ====================
-        System.out.println("[ CHANNEL CRUD ]");
+// ==================== 2. 채널 2개 생성 ====================
+        System.out.println("\n[ 2. 채널 2개 생성: a의 채널, b의 채널 ]");
         System.out.println("----------------------------------------");
 
-        // Create
-        System.out.println(">> CREATE");
-        Channel channel1 = channelService.create("일반채널1", "일반 대화방", ChannelType.PUBLIC, user1.getId());
-        Channel channel2 = channelService.create("비밀채널1", "비밀 대화방", ChannelType.PRIVATE, user1.getId());
-        Channel channel3 = channelService.create("삭제용채널", "삭제 테스트용", ChannelType.PUBLIC, user1.getId());
-        System.out.println("   생성: " + channel1.getName() + ", " + channel2.getName() + ", " + channel3.getName());
+        Channel channelA = channelService.create("A의채널", "a가 만든 채널", ChannelType.PUBLIC, aId);
+        Channel channelB = channelService.create("B의채널", "b가 만든 채널", ChannelType.PUBLIC, bId);
 
-        // Read (단건)
-        System.out.println("\n>> READ (단건)");
-        Channel foundChannel = channelService.findById(channel1.getId());
-        System.out.println("   조회: " + foundChannel.getName() + " / " + foundChannel.getType());
+        UUID channelAId = channelA.getId();
+        UUID channelBId = channelB.getId();
 
-        // Read (다건)
-        System.out.println("\n>> READ (다건)");
-        List<Channel> allChannels = channelService.findAll();
-        System.out.println("   전체 채널 수: " + allChannels.size());
-        allChannels.forEach(c -> System.out.println("   - " + c.getName()));
+        System.out.println(">> 전체 채널: " + channelService.findAll().stream()
+                .map(Channel::getName)
+                .toList());
+        System.out.println(">> A의채널 오너: " + channelA.getOwner().getUsername());
+        System.out.println(">> B의채널 오너: " + channelB.getOwner().getUsername());
 
-        // Update
-        System.out.println("\n>> UPDATE");
-        channelService.update(channel1.getId(), "수정된채널", null, null);
-        Channel updatedChannel = channelService.findById(channel1.getId());
-        System.out.println("   수정 후 이름: " + updatedChannel.getName());
-
-        // Delete (channel3 삭제 - channel2는 메시지 테스트에 사용)
-        System.out.println("\n>> DELETE (channel3)");
-        channelService.delete(channel3.getId());
-        System.out.println("   findAll() 결과: " + channelService.findAll().size() + "개");
-        System.out.print("   channel3 조회: ");
-        try {
-            channelService.findById(channel3.getId());
-        } catch (Exception e) {
-            System.out.println("실패 - " + e.getMessage());
-        }
-
-        System.out.println();
-
-        // ==================== MESSAGE CRUD ====================
-        System.out.println("[ MESSAGE CRUD ]");
+// ==================== 3. 각 채널에 유저 3명씩 추가 ====================
+        System.out.println("\n[ 3. 각 채널에 유저 3명씩 추가 ]");
         System.out.println("----------------------------------------");
 
-        // Create (각 채널에 user1, user2가 하나씩)
-        System.out.println(">> CREATE");
-        Message msg1 = messageService.create("채널1 - alice의 메시지", user1.getId(), channel1.getId());
-        Message msg2 = messageService.create("채널1 - bob의 메시지", user2.getId(), channel1.getId());
-        Message msg3 = messageService.create("채널2 - alice의 메시지", user1.getId(), channel2.getId());
-        Message msg4 = messageService.create("채널2 - bob의 메시지", user2.getId(), channel2.getId());
-        System.out.println("   생성: 4개 메시지 (채널별 user1, user2 각 1개)");
+        channelService.addMember(channelAId, bId);
+        channelService.addMember(channelAId, cId);
+        channelService.addMember(channelBId, aId);
+        channelService.addMember(channelBId, cId);
 
-        // Read (단건)
-        System.out.println("\n>> READ (단건)");
-        Message foundMsg = messageService.findById(msg1.getId());
-        System.out.println("   조회: \"" + foundMsg.getContent() + "\"");
+        System.out.println(">> A의채널 멤버: " + channelA.getMembers().stream()
+                .map(User::getUsername)
+                .toList());
+        System.out.println(">> B의채널 멤버: " + channelB.getMembers().stream()
+                .map(User::getUsername)
+                .toList());
+        System.out.println(">> a의 채널목록: " + a.getChannels().stream()
+                .map(Channel::getName)
+                .toList());
+        System.out.println(">> b의 채널목록: " + b.getChannels().stream()
+                .map(Channel::getName)
+                .toList());
+        System.out.println(">> c의 채널목록: " + c.getChannels().stream()
+                .map(Channel::getName)
+                .toList());
 
-        // Read (다건)
-        System.out.println("\n>> READ (서비스 - findByChannel)");
-        System.out.println("   channel1: " + messageService.findByChannel(channel1.getId()).size() + "개");
-        System.out.println("   channel2: " + messageService.findByChannel(channel2.getId()).size() + "개");
+// ==================== 4. 각자 메시지 2개씩 생성 ====================
+        System.out.println("\n[ 4. 각자 메시지 2개씩 생성 (총 12개) ]");
+        System.out.println("----------------------------------------");
 
-        // Update
-        System.out.println("\n>> UPDATE");
-        messageService.update(msg1.getId(), "안녕하세요! (수정됨)");
-        Message updatedMsg = messageService.findById(msg1.getId());
-        System.out.println("   수정 후: \"" + updatedMsg.getContent() + "\"");
-        System.out.println("   수정 여부: " + updatedMsg.isEditedAt());
+        Message msgA1 = messageService.create("a의 A채널 메시지1", aId, channelAId);
+        Message msgA2 = messageService.create("a의 A채널 메시지2", aId, channelAId);
+        Message msgB1 = messageService.create("b의 A채널 메시지1", bId, channelAId);
+        Message msgB2 = messageService.create("b의 A채널 메시지2", bId, channelAId);
+        Message msgC1 = messageService.create("c의 A채널 메시지1", cId, channelAId);
+        Message msgC2 = messageService.create("c의 A채널 메시지2", cId, channelAId);
 
-        // Soft Delete
-        System.out.println("\n>> SOFT DELETE (msg2)");
-        messageService.softDelete(msg2.getId());
-        System.out.println("   findByChannel(channel1) 결과: " + messageService.findByChannel(channel1.getId()).size() + "개");
+        Message msgA3 = messageService.create("a의 B채널 메시지1", aId, channelBId);
+        Message msgA4 = messageService.create("a의 B채널 메시지2", aId, channelBId);
+        Message msgB3 = messageService.create("b의 B채널 메시지1", bId, channelBId);
+        Message msgB4 = messageService.create("b의 B채널 메시지2", bId, channelBId);
+        Message msgC3 = messageService.create("c의 B채널 메시지1", cId, channelBId);
+        Message msgC4 = messageService.create("c의 B채널 메시지2", cId, channelBId);
 
-        // Hard Delete
-        System.out.println("\n>> HARD DELETE (msg4)");
-        messageService.hardDelete(msg4.getId());
-        System.out.println("   findByChannel(channel2) 결과: " + messageService.findByChannel(channel2.getId()).size() + "개");
-        System.out.print("   msg4 조회: ");
-        try {
-            messageService.findById(msg4.getId());
-        } catch (Exception e) {
-            System.out.println("실패 - " + e.getMessage());
-        }
+        UUID msgB1Id = msgB1.getId();
 
-        // ==================== 관계 리스트 확인 ====================
-        System.out.println();
-        System.out.println("[ 관계 리스트 확인 ]");
+        System.out.println(">> A의채널 메시지: " + channelA.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println(">> B의채널 메시지: " + channelB.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println(">> 전체 메시지 수: " + messageService.findAll().size());
+        System.out.println(">> a의 메시지: " + a.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println(">> b의 메시지: " + b.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println(">> c의 메시지: " + c.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+
+// ==================== 5. B의채널에서 유저 a 내보내기 ====================
+        System.out.println("\n[ 5. B의채널에서 유저 a 내보내기 ]");
+        System.out.println("----------------------------------------");
+
+        channelService.removeMember(channelBId, aId);
+
+        System.out.println(">> B의채널 멤버: " + channelB.getMembers().stream()
+                .map(User::getUsername)
+                .toList());
+        System.out.println(">> a의 채널목록: " + a.getChannels().stream()
+                .map(Channel::getName)
+                .toList());
+        System.out.println(">> a의 메시지: " + a.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+
+// ==================== 6. B의채널 오너를 c로 변경 ====================
+        System.out.println("\n[ 6. B의채널 오너를 c로 변경 ]");
+        System.out.println("----------------------------------------");
+
+        System.out.println(">> 변경 전 B의채널 오너: " + channelB.getOwner().getUsername());
+        channelService.transferOwnership(channelBId, cId);
+        System.out.println(">> 변경 후 B의채널 오너: " + channelB.getOwner().getUsername());
+
+// ==================== 7. 유저 b의 메시지 1개 삭제 ====================
+        System.out.println("\n[ 7. 유저 b의 A채널 메시지1 삭제 ]");
+        System.out.println("----------------------------------------");
+
+        System.out.println(">> 삭제 전 b의 메시지: " + b.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println(">> 삭제 전 A의채널 메시지: " + channelA.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+
+        messageService.hardDelete(msgB1Id);
+
+        System.out.println(">> 삭제 후 b의 메시지: " + b.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println(">> 삭제 후 A의채널 메시지: " + channelA.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println(">> 전체 메시지 수: " + messageService.findAll().size());
+
+// ==================== 8. 유저 b 완전 삭제 ====================
+        System.out.println("\n[ 8. 유저 b 완전 삭제 ]");
+        System.out.println("----------------------------------------");
+
+        System.out.println(">> 삭제 전 상태");
+        System.out.println("   전체 유저: " + userService.findAll().stream()
+                .map(User::getUsername)
+                .toList());
+        System.out.println("   A의채널 멤버: " + channelA.getMembers().stream()
+                .map(User::getUsername)
+                .toList());
+        System.out.println("   B의채널 멤버: " + channelB.getMembers().stream()
+                .map(User::getUsername)
+                .toList());
+        System.out.println("   b의 메시지: " + b.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println("   전체 메시지 수: " + messageService.findAll().size());
+
+        userService.hardDelete(bId);
+
+        System.out.println("\n>> 삭제 후 상태");
+        System.out.println("   전체 유저: " + userService.findAll().stream()
+                .map(User::getUsername)
+                .toList());
+        System.out.println("   A의채널 멤버: " + channelA.getMembers().stream()
+                .map(User::getUsername)
+                .toList());
+        System.out.println("   B의채널 멤버: " + channelB.getMembers().stream()
+                .map(User::getUsername)
+                .toList());
+        System.out.println("   A의채널 메시지: " + channelA.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println("   B의채널 메시지: " + channelB.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println("   전체 메시지 수: " + messageService.findAll().size());
+
+// ==================== 9. B의채널 완전 삭제 ====================
+        System.out.println("\n[ 9. B의채널 완전 삭제 ]");
+        System.out.println("----------------------------------------");
+
+        System.out.println(">> 삭제 전 상태");
+        System.out.println("   전체 채널: " + channelService.findAll().stream()
+                .map(Channel::getName)
+                .toList());
+        System.out.println("   a의 채널목록: " + a.getChannels().stream()
+                .map(Channel::getName)
+                .toList());
+        System.out.println("   c의 채널목록: " + c.getChannels().stream()
+                .map(Channel::getName)
+                .toList());
+        System.out.println("   전체 메시지 수: " + messageService.findAll().size());
+
+        channelService.delete(channelBId);
+
+        System.out.println("\n>> 삭제 후 상태");
+        System.out.println("   전체 채널: " + channelService.findAll().stream()
+                .map(Channel::getName)
+                .toList());
+        System.out.println("   a의 채널목록: " + a.getChannels().stream()
+                .map(Channel::getName)
+                .toList());
+        System.out.println("   c의 채널목록: " + c.getChannels().stream()
+                .map(Channel::getName)
+                .toList());
+        System.out.println("   a의 메시지: " + a.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println("   c의 메시지: " + c.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println("   전체 메시지 수: " + messageService.findAll().size());
+
+// ==================== 최종 상태 ====================
+        System.out.println("\n[ 최종 상태 ]");
         System.out.println("========================================");
+        System.out.println(">> 전체 유저: " + userService.findAll().stream()
+                .map(User::getUsername)
+                .toList());
+        System.out.println(">> 전체 채널: " + channelService.findAll().stream()
+                .map(Channel::getName)
+                .toList());
+        System.out.println(">> 전체 메시지: " + messageService.findAll().stream()
+                .map(Message::getContent)
+                .toList());
+        System.out.println("\n>> A의채널 멤버: " + channelA.getMembers().stream()
+                .map(User::getUsername)
+                .toList());
+        System.out.println(">> A의채널 메시지: " + channelA.getMessages().stream()
+                .map(Message::getContent)
+                .toList());
 
-        // 1. 채널별 메시지 리스트
-        System.out.println("\n>> 채널별 메시지 리스트");
-        for (Channel c : channelService.findAll()) {
-            System.out.println("\n   [" + c.getName() + "]");
-            if (c.getMessages().isEmpty()) {
-                System.out.println("   - (메시지 없음)");
-            } else {
-                for (Message m : c.getMessages()) {
-                    String deleted = m.isDeletedAt() ? " [삭제됨]" : "";
-                    String edited = m.isEditedAt() ? " [수정됨]" : "";
-                    System.out.println("   - [" + m.getSender().getUsername() + "] " + m.getContent() + deleted + edited);
-                }
-            }
-        }
+        System.out.println("\n========================================");
+        System.out.println("[ 시나리오 테스트 완료 ]");
 
-        // 2. 유저별 채널 리스트
-        System.out.println("\n>> 유저별 채널 리스트");
-        for (User u : List.of(user1, user2)) {
-            System.out.println("\n   [" + u.getUsername() + "] - " + u.getStatus());
-            if (u.getChannels().isEmpty()) {
-                System.out.println("   - (참여 채널 없음)");
-            } else {
-                u.getChannels().forEach(c ->
-                        System.out.println("   - " + c.getName() + " (" + c.getType() + ")")
-                );
-            }
-        }
-
-        // 3. 채널별 멤버 리스트
-        System.out.println("\n>> 채널별 멤버 리스트");
-        for (Channel c : channelService.findAll()) {
-            System.out.println("\n   [" + c.getName() + "] - 오너: " + c.getOwner().getUsername());
-            if (c.getMembers().isEmpty()) {
-                System.out.println("   - (멤버 없음)");
-            } else {
-                for (User u : c.getMembers()) {
-                    String status = (u.getStatus() != Status.ACTIVE) ? " [" + u.getStatus() + "]" : "";
-                    System.out.println("   - " + u.getUsername() + status);
-                }
-            }
-        }
     }
+
 }

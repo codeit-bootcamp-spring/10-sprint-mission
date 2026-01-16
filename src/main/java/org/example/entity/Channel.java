@@ -22,33 +22,42 @@ public class Channel extends BaseEntity {
         this.owner = owner;
     }
 
+    // 연관관계 편의 메서드 유저 추가 삭제
+    public void addMember(User user) {
+        if (!this.members.contains(user)) {
+            this.members.add(user);
+            user.getChannels().add(this);
+        }
+    }
+
+
     // Setters
-    public void setName(String name) {
+    public void updateName(String name) {
         this.name = name;
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public void setDescription(String description) {
+    public void updateDescription(String description) {
         this.description = description;
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public void setType(ChannelType type) {
+    public void updateType(ChannelType type) {
         this.type = type;
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public void setMembers(List<User> members) {
+    public void updateMembers(List<User> members) {
         this.members = members;
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public void setMessages(List<Message> messages) {
+    public void updateMessages(List<Message> messages) {
         this.messages = messages;
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public void setOwner(User owner) {
+    public void updateOwner(User owner) {
         this.owner = owner;
         this.updatedAt = System.currentTimeMillis();
     }
@@ -74,4 +83,5 @@ public class Channel extends BaseEntity {
     public User getOwner() {
         return owner;
     }
+
 }

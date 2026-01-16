@@ -4,6 +4,7 @@ import org.example.entity.Channel;
 import org.example.entity.ChannelType;
 import org.example.entity.User;
 import org.example.service.ChannelService;
+import org.example.service.MessageService;
 import org.example.service.UserService;
 
 import java.util.*;
@@ -12,10 +13,16 @@ public class JCFChannelService implements ChannelService {
 
     private final Map<UUID,Channel> data;
     private final UserService userService;
+    private MessageService messageService;
+
 
     public JCFChannelService(UserService userService){
         data = new HashMap<>();
         this.userService = userService;
+    }
+
+    public void setMessageService(MessageService messageService) {// 추가 ?? 이게 지금 들어가야 하나?
+        this.messageService = messageService;
     }
 
     @Override
@@ -27,7 +34,7 @@ public class JCFChannelService implements ChannelService {
         User owner =userService.findById(ownerId);
         Channel channel = new Channel(name, description, type, owner);
         data.put(channel.getId(),channel);
-        owner.getChannels().add(channel);  // 👈 추가 필요. 이것도 양방향 동시성? ㅇㅇ 여기서 owner라고 하는게 좋나? 아니면 user라고 하는게 좋나??
+        owner.getChannels().add(channel);
         return channel;
     }
 
@@ -47,9 +54,9 @@ public class JCFChannelService implements ChannelService {
         Channel channel = findById(channelId);
 
         // null이 아닌 값만 업데이트
-        Optional.ofNullable(name).ifPresent(channel::setName);
-        Optional.ofNullable(description).ifPresent(channel::setDescription);
-        Optional.ofNullable(type).ifPresent(channel::setType);
+        Optional.ofNullable(name).ifPresent(channel::updateName);
+        Optional.ofNullable(description).ifPresent(channel::updateDescription);
+        Optional.ofNullable(type).ifPresent(channel::updateType);
 
         return channel;
     }
@@ -64,24 +71,15 @@ public class JCFChannelService implements ChannelService {
     }*/
 
     @Override
-    public void transferOwnership(UUID channelId, UUID newOwnerId) {
-        Channel channel = findById(channelId);
-        User newOwner = userService.findById(newOwnerId);
-
-        // 채널 멤버 검증
-        if (!channel.getMembers().contains(newOwner)) {
-            throw new IllegalArgumentException("필드: newOwnerId, 조건: 채널 멤버여야 함, 값: " + newOwnerId);
-        }
-        channel.setOwner(newOwner);
-    }
-
-    @Override
     public void delete(UUID channelId) {
         Channel  channel = findById(channelId);
+//      for(User member: channel.getMembers()){ member.getChannels().remove(channel);}    코드 개선
+        channel.getMembers().forEach(member->member.getChannels().remove(channel));
 
-        for(User member: channel.getMembers()){
-            member.getChannels().remove(channel);
-        }
+        // 2. 채널의 메시지 완전 삭제
+        new ArrayList<>(channel.getMessages()).forEach(message -> //추가
+                messageService.hardDelete(message.getId())
+        );
 
         data.remove(channelId);
     }
@@ -95,9 +93,10 @@ public class JCFChannelService implements ChannelService {
         if (channel.getMembers().contains(user)) {
             throw new IllegalArgumentException("필드: userId, 조건: 채널에 없는 유저, 값: " + userId);
         }
+//        channel.getMembers().add(user);
+//        user.getChannels().add(channel);
+        channel.addMember(user);  // 편의 메서드 사용
 
-        channel.getMembers().add(user);
-        user.getChannels().add(channel);
     }
 
     @Override
@@ -109,10 +108,20 @@ public class JCFChannelService implements ChannelService {
         if (channel.getOwner().getId().equals(userId)) {
             throw new IllegalArgumentException("필드: userId, 조건: 채널 오너가 아님, 값: " + userId);
         }
-
         channel.getMembers().remove(user);
         user.getChannels().remove(channel);
+    }
 
 
+    @Override
+    public void transferOwnership(UUID channelId, UUID newOwnerId) {
+        Channel channel = findById(channelId);
+        User newOwner = userService.findById(newOwnerId);
+
+        // 채널 멤버 검증
+        if (!channel.getMembers().contains(newOwner)) {
+            throw new IllegalArgumentException("필드: newOwnerId, 조건: 채널 멤버여야 함, 값: " + newOwnerId);
+        }
+        channel.updateOwner(newOwner);
     }
 }
