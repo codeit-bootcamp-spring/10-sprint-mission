@@ -23,7 +23,7 @@ public class JCFUserService implements UserService {
     public User findById(UUID id){
         User user = data.get(id);
         if (user == null){
-            throw new NoSuchElementException("실패: 존재하지 않는 유저 ID입니다.");
+            throw new NoSuchElementException("존재하지 않는 유저 ID입니다.");
         }
         return user;
     }

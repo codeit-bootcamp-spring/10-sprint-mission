@@ -42,7 +42,7 @@ public class JCFMessageService implements MessageService{
     public Message findById(UUID id){
         Message message = data.get(id);
         if (message == null) {
-            throw new NoSuchElementException("실패: 존재하지 않는 메시지 ID입니다.");
+            throw new NoSuchElementException("존재하지 않는 메시지 ID입니다.");
         }
         return message;
     }
@@ -86,7 +86,7 @@ public class JCFMessageService implements MessageService{
         User user = userService.findById(userId);
         Channel channel = channelService.findById(channelId);
         if (!channel.isMember(user)) {
-            throw new IllegalArgumentException("실패: 채널 멤버만 접근할 수 있습니다.");
+            throw new IllegalArgumentException("채널 멤버만 접근할 수 있습니다.");
         }
     }
 

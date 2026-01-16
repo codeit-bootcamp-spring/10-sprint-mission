@@ -28,7 +28,7 @@ public class JCFChannelService implements ChannelService {
     public Channel findById(UUID id){
         Channel channel = data.get(id);
         if (channel == null) {
-            throw new NoSuchElementException("실패: 존재하지 않는 채널 ID입니다.");
+            throw new NoSuchElementException("존재하지 않는 채널 ID입니다.");
         }
         return channel;
     }
@@ -76,7 +76,7 @@ public class JCFChannelService implements ChannelService {
         User user = userService.findById(userId);
 
         if (!channel.isMember(user)) {
-            throw new IllegalStateException("실패: 해당 채널의 멤버가 아닙니다.");
+            throw new IllegalStateException("해당 채널의 멤버가 아닙니다.");
         }
 
         channel.removeMember(user);
