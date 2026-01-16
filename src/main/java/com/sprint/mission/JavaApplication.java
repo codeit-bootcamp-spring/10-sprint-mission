@@ -19,8 +19,7 @@ public class JavaApplication {
         System.out.println();
 
         // UserService 테스트
-        User alice = new User("Alice");
-        jcfUserService.createUser(alice);
+        User alice = jcfUserService.createUser("Alice");
         System.out.println("Alice 추가 " + jcfUserService.getUserList());
         jcfUserService.updateUserName(alice.getId(), "Bob");
         System.out.println("Alice -> Bob 변경 " + jcfUserService.getUserList());
@@ -35,8 +34,8 @@ public class JavaApplication {
         System.out.println("------------------- 서비스 통합 테스트 -------------------");
         System.out.println();
 
-        User charlie = jcfUserService.createUser(new User("Charlie"));
-        User david = jcfUserService.createUser(new User("David"));
+        User charlie = jcfUserService.createUser("Charlie");
+        User david = jcfUserService.createUser("David");
         // ChannelService 테스트
         Channel testChannel = jcfChannelService.createChannel("Test Channel");
         Channel chatChannel = jcfChannelService.createChannel("Chat Channel");
@@ -54,9 +53,9 @@ public class JavaApplication {
         System.out.println();
 
         // MessageService 테스트
-        jcfMessageService.sendMessage(charlie, testChannel, "Hello, World!");
-        jcfMessageService.sendMessage(charlie, testChannel, "This is test");
-        jcfMessageService.sendMessage(charlie, testChannel, "for testing");
+        jcfMessageService.sendMessage(charlie.getId(), testChannel.getId(), "Hello, World!");
+        jcfMessageService.sendMessage(charlie.getId(), testChannel.getId(), "This is test");
+        jcfMessageService.sendMessage(charlie.getId(), testChannel.getId(), "for testing");
         System.out.println("메시지 전송 후: " + jcfMessageService.getAllMessages());
 
         for (var user : jcfUserService.getUserList()) {

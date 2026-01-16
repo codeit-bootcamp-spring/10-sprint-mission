@@ -6,13 +6,12 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.util.*;
 
 public class JCFUserService implements UserService {
-    private User user;
     private final Map<UUID, User> users = new HashMap<>();
 
     @Override
-    public User createUser(User newUser) {
-        this.user = newUser;
-        users.put(newUser.getId(), newUser);
+    public User createUser(String username) {
+        User user = new User(username);
+        users.put(user.getId(), user);
 
         return user;
     }
