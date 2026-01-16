@@ -24,7 +24,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User getUserInfoByUserId(UUID userId) {
-        return checkNoSuchElementException(userId);
+        return findUserById(userId);
     }
 
     // id 를 기준으로 수정
@@ -32,7 +32,7 @@ public class JCFUserService implements UserService {
     public User updateUserName(UUID userId, String newName) {
         Objects.requireNonNull(newName, "username은 null일 수 없습니다.");
 
-        User user = checkNoSuchElementException(userId);
+        User user = findUserById(userId);
 
         user.updateUsername(newName);
         return user;
@@ -40,12 +40,12 @@ public class JCFUserService implements UserService {
 
     @Override
     public void deleteUser(UUID userId) {
-        User user = checkNoSuchElementException(userId);
+        User user = findUserById(userId);
 
         users.remove(userId);
     }
 
-    private User checkNoSuchElementException(UUID userId) {
+    private User findUserById(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
 
         User user = users.get(userId);

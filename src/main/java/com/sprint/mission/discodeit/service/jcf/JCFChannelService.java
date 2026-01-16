@@ -47,7 +47,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public List<User> getUsersByChannel(UUID channelId) {
-        checkNoSuchElementException(channelId);
+        findChannelById(channelId);
 
         return channels.get(channelId).getJoinedUsers();
     }
@@ -61,7 +61,7 @@ public class JCFChannelService implements ChannelService {
     public Channel updateChannelName(UUID channelId, String newChannelName) {
         Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
 
-        Channel channel = checkNoSuchElementException(channelId);
+        Channel channel = findChannelById(channelId);
         if (channel.getChannelName().equals(newChannelName)) {
             throw new IllegalArgumentException("해당 채널의 이름이 바꿀 이름과 동일합니다.");
         }
@@ -74,7 +74,7 @@ public class JCFChannelService implements ChannelService {
     public void joinChannel(UUID channelId, UUID userID) {
         Objects.requireNonNull(userID, "userId값은 null일 수 없습니다.");
 
-        Channel channel = checkNoSuchElementException(channelId);
+        Channel channel = findChannelById(channelId);
         User user = userService.getUserInfoByUserId(userID);
 
         channel.addUser(user);
@@ -85,7 +85,7 @@ public class JCFChannelService implements ChannelService {
     public void leaveChannel(UUID channelId, UUID userID) {
         Objects.requireNonNull(userID, "userId값은 null일 수 없습니다.");
 
-        Channel channel = checkNoSuchElementException(channelId);
+        Channel channel = findChannelById(channelId);
         User user = userService.getUserInfoByUserId(userID);
 
         channel.removeUser(user.getId());
@@ -94,13 +94,13 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void deleteChannel(UUID channelId) {
-        Channel channel = checkNoSuchElementException(channelId);
+        Channel channel = findChannelById(channelId);
 
         messageService.clearChannelMessage(channelId);
         channels.remove(channelId);
     }
 
-    private Channel checkNoSuchElementException(UUID channelId) {
+    private Channel findChannelById(UUID channelId) {
         Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
 
         Channel channel = channels.get(channelId);

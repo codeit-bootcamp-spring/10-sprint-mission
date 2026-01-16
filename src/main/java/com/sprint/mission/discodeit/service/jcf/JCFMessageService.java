@@ -62,7 +62,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message updateMessage(UUID messageId, String newContent) {
-        Message message = checkNoSuchElementException(messageId);
+        Message message = findMessageById(messageId);
 
         message.updateContent(newContent);
         return message;
@@ -70,7 +70,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void deleteMessage(UUID messageId) {
-        checkNoSuchElementException(messageId);
+        findMessageById(messageId);
         Message message = messages.remove(messageId);
 
         message.getSentUser().removeSentMessage(message);
@@ -90,7 +90,7 @@ public class JCFMessageService implements MessageService {
         messageId.forEach(messages::remove);
     }
 
-    private Message checkNoSuchElementException(UUID messageId) {
+    private Message findMessageById(UUID messageId) {
         Objects.requireNonNull(messageId, "messageId는 null일 수 없습니다.");
 
         Message message = messages.get(messageId);
