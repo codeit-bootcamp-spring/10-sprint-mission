@@ -11,7 +11,7 @@ import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 public class JavaApplication {
     public static void main(String[] args) {
         JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService();
+        JCFChannelService channelService = new JCFChannelService(userService);
         JCFMessageService messageService = new JCFMessageService(userService, channelService);
 
         System.out.println("========= [1. User 도메인 테스트] =========");

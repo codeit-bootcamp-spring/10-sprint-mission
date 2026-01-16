@@ -16,16 +16,19 @@ public class Message extends BaseEntity {
         this.isPinned = false;
     }
 
+    // 메시지 수정
     public void update(String content) {
         this.content = content;
         this.isEdited = true;
         this.updated();
     }
 
-    public void togglePin() { // 메시지 고정/해제
+    // 메시지 고정/해제
+    public void togglePin() {
         this.isPinned = !this.isPinned;
     }
 
+    // --- getter ---
     public String getContent() { return content; }
     public User getUser() { return user; }
     public Channel getChannel() { return channel; }
