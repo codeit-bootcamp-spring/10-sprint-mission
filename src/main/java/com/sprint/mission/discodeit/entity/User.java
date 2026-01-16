@@ -10,8 +10,6 @@ public class User extends BaseEntity {
     private String birthday;
 
     // 연관
-    // 해당 유저가 owner인 채널 목록
-    private final Set<Channel> ownerChannelList;
     // 해당 유저가 참여 중인 채널 목록
     private final Set<UUID> joinChannelIds;
     // 해당 유저가 보낸 메시지 목록
