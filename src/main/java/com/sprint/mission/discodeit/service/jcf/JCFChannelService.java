@@ -83,7 +83,7 @@ public class JCFChannelService implements ChannelService {
         }
     }
 
-    // 특정 채널에 속한 모든 유저
+    // 특정 채널 멤버 ids 조회
     @Override
     public List<UUID> findMemberIdsByChannelId(UUID channelId) {
     // Channel ID null & channel 객체 존재 확인
@@ -91,6 +91,11 @@ public class JCFChannelService implements ChannelService {
 
         return channel.getChannelMembersIds().stream().toList();
     }
+    // 사용법(상위)
+    // List<User> members = channelService.findMemberIdsByChannelId(channel2.getId()).stream()
+    //        .map(userService::findUserById)
+    //        .flatMap(Optional::stream) // 없는 건 제거
+    //        .toList();
 
     // 특정 사용자가 owner인 모든 채널
     @Override
@@ -203,7 +208,7 @@ public class JCFChannelService implements ChannelService {
     public void deleteChannel(UUID requestId, UUID channelId) {
         // Channel ID null & channel 객체 존재 확인
         Channel channel = validateAndGetChannelByChannelId(channelId);
-
+        // 메세지 삭제는 상위에서 진행
         data.remove(channelId);
     }
 
