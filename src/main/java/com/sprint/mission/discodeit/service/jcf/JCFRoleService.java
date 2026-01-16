@@ -57,8 +57,8 @@ public class JCFRoleService implements RoleService {
         groups.remove(role);
     }
 
-    public Role update(UUID id, PermissionLevel roleName) {
-        Role role = this.find(id);
+    public Role update(UUID roleID, PermissionLevel roleName) {
+        Role role = this.find(roleID);
         role.updateGroupName(roleName);
         return role;
     }

@@ -76,4 +76,26 @@ public class JCFChannelService implements ChannelService {
         PrintingChannel.printChannel();
     }
 
+    public void updateUserRole(UUID channelID, UUID willChangeUserID, PermissionLevel roleName, UUID tryingUserID){
+        Channel channel = this.find(channelID);
+        User willChangeUser = JCFUserService.getInstance().find(willChangeUserID);
+        User tryingUser = JCFUserService.getInstance().find(tryingUserID);
+
+        Role role = channel.getRoles().stream()
+                .filter(R-> R.getUsers().equals(willChangeUser))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("User not found in channel"));
+
+        boolean isAdmin = channel.getRoles().stream()
+                .anyMatch(R-> R.getUsers().equals(tryingUser) && R.getRoleName().equals(PermissionLevel.ADMIN));
+
+        if(isAdmin){
+            JCFRoleService.getInstance().update(role.getId(), roleName);
+        }
+        else{
+            throw new RuntimeException("User not allowed to change role");
+        }
+
+    }
+
 }
