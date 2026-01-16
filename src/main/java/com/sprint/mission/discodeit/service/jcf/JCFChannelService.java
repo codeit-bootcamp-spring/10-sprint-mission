@@ -46,6 +46,13 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
+    public List<User> getUsersByChannel(UUID channelId) {
+        checkNoSuchElementException(channelId);
+
+        return channels.get(channelId).getJoinedUsers();
+    }
+
+    @Override
     public Channel getChannelInfoById(UUID channelId) {
         return channels.get(channelId);
     }

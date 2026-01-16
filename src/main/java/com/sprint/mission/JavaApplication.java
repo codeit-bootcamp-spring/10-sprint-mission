@@ -47,7 +47,11 @@ public class JavaApplication {
         jcfChannelService.joinChannel(testChannel.getId(), charlie.getId());
         jcfChannelService.joinChannel(chatChannel.getId(), charlie.getId());
         jcfChannelService.joinChannel(testChannel.getId(), david.getId());
-        System.out.println("채널에 유저 추가 후: " + jcfChannelService.getChannelList());
+
+        for (var channel: jcfChannelService.getChannelList()) {
+            System.out.println(channel.getChannelName() + " 채널에 유저 추가 후: " + jcfChannelService.getUsersByChannel(channel.getId()));
+        }
+
         System.out.println();
         // 유저 별로 참여중인 채널 확인
         for (var user: jcfUserService.getUserList()) {
