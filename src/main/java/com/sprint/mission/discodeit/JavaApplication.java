@@ -15,9 +15,10 @@ import java.util.List;
 public class JavaApplication {
 
     public static void main(String[] args) {
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
-        MessageService messageService = new JCFMessageService(channelService, userService);
+        DataStore dataStore = new DataStore();
+        UserService userService = new JCFUserService(dataStore);
+        ChannelService channelService = new JCFChannelService(userService, dataStore);
+        MessageService messageService = new JCFMessageService(channelService, userService, dataStore);
 
         final String HR = "============================================================";
         final String SR = "------------------------------------------------------------";
@@ -244,11 +245,9 @@ public class JavaApplication {
         messageService.createMessage(channel1.getId(), user1.getId(), "저는 홍길동입니다.");
 
         System.out.println("  - " + channel1.getName() + " / " + channel2.getName() + " / " + user2.getNickname() + " 메시지 생성");
-        // (원본 코드 유지) channel1에도 user2 메시지 작성
         messageService.createMessage(channel1.getId(), user2.getId(), "안녕하세요!");
         messageService.createMessage(channel1.getId(), user2.getId(), "유저별 메시지 생성 테스트입니다!");
         messageService.createMessage(channel1.getId(), user2.getId(), "저는 철수킴입니다!");
-        // channel2에도 작성
         messageService.createMessage(channel2.getId(), user2.getId(), "안녕하세요.");
         messageService.createMessage(channel2.getId(), user2.getId(), "유저별 메시지 생성 테스트입니다.");
         messageService.createMessage(channel2.getId(), user2.getId(), "저는 철수킴입니다.");
@@ -269,6 +268,134 @@ public class JavaApplication {
             List<String> byUser = messageService.readMessagesByUserId(user.getId());
             System.out.println("  총 " + byUser.size() + "개");
             byUser.forEach(s -> System.out.println("  • " + s));
+        }
+
+        // =========================================================
+        // 정합성 테스트 (채널 삭제 / 유저 삭제)
+        // =========================================================
+        System.out.println("\n" + BR);
+        System.out.println("\n" + HR);
+        System.out.println("정합성 테스트 (채널 삭제 / 유저 삭제)");
+        System.out.println(HR);
+
+        // =========================================================
+        // 채널 삭제 정합성
+        // =========================================================
+
+        System.out.println("\n[채널 삭제 테스트 전 저장소 상태]");
+        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
+        System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
+
+        System.out.println("\n- 삭제용 채널 생성 → 가입/메시지 생성 (채널+1, 메시지+1)");
+        Channel deleteChannel = channelService.createChannel("삭제 검증 채널", user1.getId());
+        messageService.createMessage(deleteChannel.getId(), user1.getId(), "삭제 검증 채널 메시지 - user1");
+
+        System.out.println("\n[채널 생성/가입 후 유저의 채널 목록 확인]");
+        System.out.println(user1);
+
+        System.out.println("\n[저장소 상태]");
+        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
+        System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
+        System.out.println("  • " + deleteChannel.getName() + " 멤버수=" + deleteChannel.getUsers().size() + " / 메시지수=" + deleteChannel.getMessages().size());
+
+        channelService.deleteChannel(deleteChannel.getId(), user1.getId());
+
+        System.out.println("\n[채널 삭제 후 저장소 상태]");
+        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
+        System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
+
+        System.out.println("\n[채널 삭제 후 유저의 채널 목록 확인]");
+        System.out.println(user1);
+
+        if (dataStore.getChannelData().containsKey(deleteChannel.getId())) {
+            System.out.println("실패: 삭제된 채널이 channelData에 남아있음");
+        }
+
+        if (user1.getChannels().contains(deleteChannel)) {
+            System.out.println("실패: user1 joinedChannels에 삭제된 채널이 남아있음");
+        }
+
+        if (user2.getChannels().contains(deleteChannel)) {
+            System.out.println("실패: user2 joinedChannels에 삭제된 채널이 남아있음");
+        }
+
+        boolean messageDataHasDeleteChannel = dataStore.getMessageData().values()
+                .stream()
+                .anyMatch(m -> m.getChannel().equals(deleteChannel));
+        if (messageDataHasDeleteChannel) {
+            System.out.println("실패: messageData에 삭제된 채널 메시지가 남아있음");
+        }
+
+        boolean user1HasDeleteChannelMsg = user1.getMessages()
+                .stream()
+                .anyMatch(m -> m.getChannel().equals(deleteChannel));
+        if (user1HasDeleteChannelMsg) {
+            System.out.println("실패: user1 메시지 목록에 삭제된 채널 메시지가 남아있음");
+        }
+
+        boolean user2HasDeleteChannelMsg = user2.getMessages()
+                .stream()
+                .anyMatch(m -> m.getChannel().equals(deleteChannel));
+        if (user2HasDeleteChannelMsg) {
+            System.out.println("실패: user2 메시지 목록에 삭제된 채널 메시지가 남아있음");
+        }
+
+        // =========================================================
+        // 유저 삭제 정합성
+        // =========================================================
+        System.out.println("\n" + SR);
+        System.out.println("\n[유저 삭제 테스트 전 저장소 상태]");
+        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
+        System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
+
+        System.out.println("\n- 삭제용 유저 생성 → 채널 가입/메시지 작성 (유저+1, 메시지+1)");
+        User deleteUser = userService.createUser("삭제 검증 유저", "delete-user@test.com");
+        channelService.joinChannel(channel1.getId(), deleteUser.getId());
+        Message deleteUserMsg1 = messageService.createMessage(channel1.getId(), deleteUser.getId(), "삭제 검증 유저 메시지 1");
+
+        System.out.println("\n[저장소 상태]");
+        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
+        System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
+
+        userService.deleteUser(deleteUser.getId());
+
+        System.out.println("\n[유저 삭제 후 저장소 상태]");
+        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
+        System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
+
+        if (dataStore.getUserData().containsKey(deleteUser.getId())) {
+            System.out.println("실패: 삭제된 유저가 userData에 남아있음");
+        }
+
+        boolean anyChannelHasDeleteUser = dataStore.getChannelData().values()
+                .stream()
+                .anyMatch(ch -> ch.getUsers().stream().anyMatch(u -> u.getId().equals(deleteUser.getId())));
+        if (anyChannelHasDeleteUser) {
+            System.out.println("실패: 채널 멤버 목록에 삭제된 유저가 남아있음");
+        }
+
+        boolean messageDataHasDeleteUser = dataStore.getMessageData().values()
+                .stream()
+                .anyMatch(m -> m.getUser().getId().equals(deleteUser.getId()));
+        if (messageDataHasDeleteUser) {
+            System.out.println("실패: messageData에 삭제된 유저가 작성한 메시지가 남아있음");
+        }
+
+        boolean anyChannelHasDeleteUserMsg = dataStore.getChannelData().values()
+                .stream()
+                .anyMatch(ch -> ch.getMessages().stream().anyMatch(m -> m.getUser().getId().equals(deleteUser.getId())));
+        if (anyChannelHasDeleteUserMsg) {
+            System.out.println("실패: 채널 메시지 목록에 삭제된 유저 메시지가 남아있음");
+        }
+
+        if (dataStore.getMessageData().containsKey(deleteUserMsg1.getId())) {
+            System.out.println("실패: deleteUserMsg1이 messageData에 남아있음");
         }
 
         System.out.println("\n" + HR);
