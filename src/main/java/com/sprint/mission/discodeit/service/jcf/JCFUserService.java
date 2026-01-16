@@ -106,8 +106,8 @@ public class JCFUserService implements UserService {
     }
 
     private void deleteProcess(User user) {
-        user.getJoinedChannels().forEach(ch -> channelService.leaveChannel(ch.getId(), user.getId()));
-        user.getMessageHistory().forEach(m -> messageService.deleteMessage(m.getId()));
+        List.copyOf(user.getJoinedChannels()).forEach(ch -> channelService.leaveChannel(ch.getId(), user.getId()));
+        List.copyOf(user.getMessageHistory()).forEach(m -> messageService.deleteMessage(m.getId()));
         data.remove(user.getId());
     }
 }
