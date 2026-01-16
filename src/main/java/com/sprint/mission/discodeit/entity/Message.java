@@ -1,20 +1,16 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 public class Message extends BaseEntity {
-    private final Channel messageChannel; // 메시지가 위치한 채널
-    private final User author; // 메시지 작성자
+    private final UUID channelId; // 메시지가 위치한 채널
+    private final UUID authorId; // 메시지 작성자
     private String content; // 메시지 내용
 
     // 생성자
-    public Message(Channel messageChannel, User author, String content) {
-        this.messageChannel = messageChannel;
-        this.author = author;
+    public Message(UUID channelId, UUID authorId, String content) {
+        this.channelId = channelId;
+        this.authorId = authorId;
         this.content = content;
     }
 
@@ -22,24 +18,24 @@ public class Message extends BaseEntity {
     public String toString() {
         return "Message{" +
                 "messageId = " + getId() + ", " +
-                "messageChannel = " + messageChannel.getId() + ", " +
+                "channelId = " + channelId + ", " +
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +
-                "author = " + author.getId() + ", " +
+                "authorId = " + authorId + ", " +
                 "content = " + content +
                 "}";
     }
 
     // Getter
-    public Channel getMessageChannel() {
-        return messageChannel;
+    public UUID getMessageChannelId() {
+        return channelId;
     }
 
-    public User getAuthor() {
-        return author;
+    public UUID getAuthorId() {
+        return authorId;
     }
 
-    public String getContent() {
+    public String getMessageContent() {
         return content;
     }
 
@@ -47,13 +43,5 @@ public class Message extends BaseEntity {
     public void updateContent(String content) {
         this.content = content;
         updateTime();
-    }
-
-    public void addUserWriteMessageList(User user, String content) {
-        // 진행 중...
-    }
-
-    public void addChannelWriteMessageList(Channel channel, String content) {
-        // 진행 중...
     }
 }

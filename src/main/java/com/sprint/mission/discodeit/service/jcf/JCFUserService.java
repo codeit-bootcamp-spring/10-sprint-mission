@@ -59,7 +59,7 @@ public class JCFUserService implements UserService {
         return new ArrayList<>(data.values());
     }
 
-    // 특정 사용자가 참여한 모든 채널
+    // 특정 사용자가 참여한 모든 channel ids
     public List<UUID> findJoinChannelIdsByUserId(UUID userId) {
     // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
@@ -70,9 +70,16 @@ public class JCFUserService implements UserService {
     // U. 수정
     // 로그인 정보를 가져온다고 가정하면 `requestUserId`와 `targetUserId`로 나눌 필요는 없음
     // email, password, userName, nickName, birthday 수정
+    @Override
     public User updateUserInfo(UUID userId, String email, String password, String userName, String nickName, String birthday) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
+        // blank 검증
+        if (email != null) ValidationMethods.validateNullBlankString(email, "email");
+        if (password != null) ValidationMethods.validateNullBlankString(password, "password");
+        if (userName != null) ValidationMethods.validateNullBlankString(userName, "userName");
+        if (nickName != null) ValidationMethods.validateNullBlankString(nickName, "nickName");
+        if (birthday != null) ValidationMethods.validateNullBlankString(birthday, "birthday");
         // email or pawword or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
         if ((email == null || user.getEmail().equals(email))
                 && (password == null || user.getPassword().equals(password))
@@ -81,6 +88,8 @@ public class JCFUserService implements UserService {
                 && (birthday == null || user.getBirthday().equals(birthday))) {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
         }
+        // 다른 사용자들의 이메일과 중복되는지 확인
+        validateDuplicateEmail(email);
 
         // filter로 중복 확인 후 업데이트(중복 확인 안하면 동일한 값을 또 업데이트함)
         Optional.ofNullable(email)
@@ -105,9 +114,11 @@ public class JCFUserService implements UserService {
     // D. 삭제
     @Override
     public void deleteUser(UUID userId) {
-        if (data.remove(userId) == null) {
-            throw new NoSuchElementException("존재하지 않는 사용자입니다.");
-        }
+        // 로그인 되어있는 user ID null / user 객체 존재 확인
+        validateUserByUserId(userId);
+
+        // channel, message 삭제는 상위에서
+        data.remove(userId);
     }
 //        // 연관 관계 정리
 //        // 해당 유저가 작성한(author) 메시지 모두 삭제
@@ -123,7 +134,11 @@ public class JCFUserService implements UserService {
 //    // owner인 채널에 존재하는 해당 유저 흔적 지우기
 
     //// validation
-    // 로그인 되어있는 user ID null / user 객체 존재 확인
+    // 로그인 되어있는 user ID null & user 객체 존재 확인
+    public void validateUserByUserId(UUID userId) {
+        findUserById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+    }
     public User validateAndGetUserByUserId(UUID userId) {
         return findUserById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));

@@ -3,15 +3,22 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> data;
-    public JCFMessageService(Map<UUID, Message> data) {
-        this.data = data;
+    private final UserService userService;
+    private final ChannelService channelService;
+
+    public JCFMessageService(UserService userService, ChannelService channelService) {
+        this.data = new HashMap<>();
+        this.userService = userService;
+        this.channelService = channelService;
     }
 
     @Override
@@ -26,72 +33,76 @@ public class JCFMessageService implements MessageService {
 
     // C. 생성(메세지 작성)
     @Override
-    public Message createMessage(Channel messageChannel, User author, String content) {
-        // author가 존재하는 user인지 확인
-        ValidationMethods.existUser(author);
-        // messageChannel이 존재하는 channel인지 확인
-        ValidationMethods.existChannel(messageChannel);
+    public Message createMessage(UUID channelId, UUID authorId, String content) {
+        // 로그인 되어있는 user ID null / user 객체 존재 확인
+        User author = validateAndGetUserByUserId(authorId);
+        // Channel ID null & channel 객체 존재 확인
+        Channel channel = validateAndGetChannelByChannelId(channelId);
         // String `null` or `blank` 검증
-        ValidationMethods.validateString(content, "content");
+        ValidationMethods.validateNullBlankString(content, "content");
 
-        Message message = new Message(messageChannel, author, content);
-
-        // author가 해당 channel에 존재하는가? or 채널 입장 자체를 막기???
-        if (!messageChannel.getChannelUsersList().contains(author)) {
-            throw new IllegalArgumentException("author는 해당 channel에 참가하지 않았습니다.");
+        // author의 channel 참여 여부 확인
+        if (!channel.getChannelMembersIds().contains(authorId)) {
+            throw new IllegalArgumentException("현재 author은 해당 channel에 참가하지 않았습니다.");
         }
 
-        // 연관
-        // channel 객체에 추가
-        messageChannel.addMessageInChannel(message);
-
-        // author(user) 객체에 추가
-        author.addMessageInUser(message);
-
+        Message message = new Message(channelId, authorId, content);
         data.put(message.getId(), message);
+        author.writeMessage(message.getId());
+        channel.addMessage(message.getId());
         return message;
     }
 
     // R. 읽기
     // 특정 메시지 정보 읽기 by messageId
     @Override
-    public Optional<Message> readMessageById(UUID messageId) {
+    public Optional<Message> findMessageById(UUID messageId) {
         // Message ID `null` 검증
-        ValidationMethods.validateMessageId(messageId);
+        ValidationMethods.validateId(messageId);
 
-        Message message = data.get(messageId);
-
-        return Optional.ofNullable(message);
+        return Optional.ofNullable(data.get(messageId));
     }
 
     // R. 모두 읽기
     // 메시지 전체
     @Override
-    public List<Message> readAllMessage() {
+    public List<Message> findAllMessages() {
         return new ArrayList<>(data.values());
     }
 
-    // U. 수정
-    public static Message validationMethods(Map<UUID, Message> data, UUID requestId, UUID messageId) {
-        // request(수정하려는 user) ID `null` 검증
-        ValidationMethods.validateUserId(requestId);
-        // Message ID `null` 검증
-        ValidationMethods.validateMessageId(messageId);
-        // request(수정하려는 user) ID와 message 작성자(user) ID가 동일한지 확인
-        ValidationMethods.validateSameId(requestId, data.get(messageId).getAuthor().getId());
+    // 특정 채널의 모든 메시지 읽어오기
+    @Override
+    public List<Message> findChannelMessagesByChannelId(UUID channelId) {
+        // Channel ID null & channel 객체 존재 확인
+        validateChannelByChannelId(channelId);
 
-        Message message = data.get(messageId);
-        ValidationMethods.existMessage(message);
-
-        return message;
+        return findAllMessages().stream()
+                .filter(message -> message.getMessageChannelId().equals(channelId))
+                .toList();
     }
+
+    // 특정 사용자가 작성한 모든 메시지
+    @Override
+    public List<Message> findUserMessagesByUserId(UUID userId) {
+        // 로그인 되어있는 user ID null / user 객체 존재 확인
+        User user = validateAndGetUserByUserId(userId);
+
+        return findAllMessages().stream()
+                .filter(message -> message.getAuthorId().equals(userId))
+                .toList();
+    }
+
+    // U. 수정
     // 메시지 수정
     @Override
-    public Message updateMessageContent(UUID requestId, UUID messageId, String content) {
-        // id null 검증 / request ID와 message 작성자(user) ID가 동일한지 확인 / message 객체 존재 확인
-        Message message = validationMethods(data, requestId, messageId);
+    public Message updateMessageContent(UUID requestUserId, UUID messageId, String content) {
+        // Message ID null & Message 객체 존재 확인
+        Message message = validateAndGetMessageByMessageId(messageId);
+        // requestUser가 해당 message를 작성한 게 맞는지 확인
+        verifyMessageAuthor(message, requestUserId);
+
         // content `null` or `blank` 검증
-        ValidationMethods.validateString(content, "content");
+        ValidationMethods.validateNullBlankString(content, "content");
 
         message.updateContent(content);
         return message;
@@ -99,16 +110,61 @@ public class JCFMessageService implements MessageService {
 
     // D. 삭제
     @Override
-    public void deleteMessage(UUID requestId, UUID messageId) {
-        // id null 검증 / request ID와 message 작성자(user) ID가 동일한지 확인 / message 객체 존재 확인
-        Message message = validationMethods(data, requestId, messageId);
+    public void deleteMessage(UUID userId, UUID messageId) {
+        // 요청자의 user ID null / user 객체 존재 확인
+        validateUserByUserId(userId);
+        // Message ID null & Message 객체 존재 확인
+        Message message = validateAndGetMessageByMessageId(messageId);
+        // Channel ID null & channel 객체 존재 확인
+        Channel channel = validateAndGetChannelByChannelId(message.getMessageChannelId());
 
-        // 연관 관계에 따른 다른 객체 리스트에서 삭제할 메세지 삭제
-        // user(author) 객체
-        message.getAuthor().removeMessageInUser(message);
-        // channel(messageChannel) 객체
-        message.getMessageChannel().removeMessageInChannel(message);
+        // message author의 id와 삭제 요청한 user id가 동일한지 확인하고
+        // 메세지가 작성된 channel의 owner와 user가 동일한지 확인해서 동일하지 않다면 exception
+        if (!message.getAuthorId().equals(userId) && !channel.getOwnerId().equals(userId)) {
+            throw new IllegalStateException("권한이 없습니다.");
+        }
 
+        User author = validateAndGetUserByUserId(message.getAuthorId());
+
+        // author 객체에 저장된 message ids 삭제
+        author.removeUserMessage(messageId);
+        // channel 객체에 저장된 message ids 삭제
+        channel.removeMessageInChannel(messageId);
         data.remove(messageId);
+    }
+
+    //// validation
+    // 로그인 되어있는 user ID null & user 객체 존재 확인
+    public void validateUserByUserId(UUID userId) {
+        userService.findUserById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+    }
+    public User validateAndGetUserByUserId(UUID userId) {
+        return userService.findUserById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+    }
+
+    // Channel ID null & channel 객체 존재 확인
+    public Channel validateAndGetChannelByChannelId(UUID channelId) {
+        return channelService.findChannelById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
+    }
+    public void validateChannelByChannelId(UUID channelId) {
+        channelService.findChannelById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
+    }
+
+    // Message ID null & channel 객체 존재 확인
+    public Message validateAndGetMessageByMessageId(UUID messageId) {
+        return findMessageById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
+    }
+
+    // message의 author와 삭제 요청한 user가 동일한지
+    public void verifyMessageAuthor(Message message, UUID userId) {
+        // message author의 id와 삭제 요청한 user id가 동일한지 확인
+        if (!message.getAuthorId().equals(userId)) {
+            throw new IllegalStateException("본인이 작성한 메세지만 수정 가능합니다.");
+        }
     }
 }

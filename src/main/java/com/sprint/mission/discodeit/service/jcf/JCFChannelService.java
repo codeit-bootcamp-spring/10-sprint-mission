@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -34,7 +33,7 @@ public class JCFChannelService implements ChannelService {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User owner = validateAndGetUserByUserId(userId);
         // channelType `null` 검증
-        ValidationMethods.validateNullObject(channelType, "channelType");
+        validateNullChannelType(channelType, "channelType");
         // channelName과 channelDescription의 `null`, `blank` 검증
         ValidationMethods.validateNullBlankString(channelName, "channelName");
         ValidationMethods.validateNullBlankString(channelDescription, "channelDescription");
@@ -42,7 +41,7 @@ public class JCFChannelService implements ChannelService {
         Channel channel = new Channel(userId, channelType, channelName, channelDescription);
         data.put(channel.getId(), channel);
         owner.joinChannel(channel.getId()); // owner는 자동 join
-        channel.addMember(owner.getId());
+        channel.addMember(owner.getId()); // owner도 member에 추가
         return channel;
     }
 
@@ -66,6 +65,8 @@ public class JCFChannelService implements ChannelService {
     // 비공개 여부에 따른 채널 목록
     @Override
     public List<Channel> findPublicOrPrivateChannel(ChannelType channelType) {
+        if (channelType == null) return findAllChannels();
+
         switch (channelType) {
             case PUBLIC -> {
                 return findAllChannels().stream()
@@ -86,7 +87,7 @@ public class JCFChannelService implements ChannelService {
     // 특정 채널 멤버 ids 조회
     @Override
     public List<UUID> findMemberIdsByChannelId(UUID channelId) {
-    // Channel ID null & channel 객체 존재 확인
+        // Channel ID null & channel 객체 존재 확인
         Channel channel = validateAndGetChannelByChannelId(channelId);
 
         return channel.getChannelMembersIds().stream().toList();
@@ -97,23 +98,43 @@ public class JCFChannelService implements ChannelService {
     //        .flatMap(Optional::stream) // 없는 건 제거
     //        .toList();
 
+    // 해당 유저가 join한 모든 채널
+    @Override
+    public List<Channel> findJoinChannelIdsByUserId(UUID userId) {
+        // 로그인 되어있는 user ID null / user 객체 존재 확인
+        validateUserByUserId(userId);
+
+        return userService.findJoinChannelIdsByUserId(userId).stream()
+                .map(id->findChannelById(id))
+                .flatMap(Optional::stream)
+                .toList();
+    }
+
     // 특정 사용자가 owner인 모든 채널
     @Override
     public List<Channel> findOwnerChannelsByUserId(UUID userId) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         validateUserByUserId(userId);
 
-        return findAllChannels().stream().filter(channel -> channel.getOwnerId().equals(userId)).toList();
+        return findAllChannels().stream()
+                .filter(channel -> channel.getOwnerId().equals(userId))
+                .toList();
     }
 
     // U. 수정
     // 로그인 정보를 가져온다고 가정하면 `requestUserId` 와 `targetUserId` 로 나눌 필요는 없음
     // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체와 channel 객체 존재 확인
+    @Override
     public Channel updateChannelInfo(UUID ownerId, UUID channelId, ChannelType channelType, String channelName, String channelDescription) {
+        // 로그인 되어있는 user ID null & user 객체 존재 확인
+        validateUserByUserId(ownerId);
         // Channel ID null & channel 객체 존재 확인
         Channel channel = validateAndGetChannelByChannelId(channelId);
         // channel owner의 user ID와 owner의 user ID가 동일한지 확인
         verifyChannelOwner(channel, ownerId);
+        // blank 검증
+        if (channelName != null) ValidationMethods.validateNullBlankString(channelName, "channelName");
+        if (channelDescription != null) ValidationMethods.validateNullBlankString(channelDescription, "channelDescription");
 
         // channelType, channelName, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
         if ((channelType == null || channel.getChannelType().equals(channelType))
@@ -137,11 +158,13 @@ public class JCFChannelService implements ChannelService {
 
     // 채널 owner 변경
     @Override
-    public Channel changeChannelOwner(UUID requestUserId, UUID channelId, UUID newOwnerId) {
+    public Channel changeChannelOwner(UUID currentUserId, UUID channelId, UUID newOwnerId) {
         // Channel ID null & channel 객체 존재 확인
         Channel channel = validateAndGetChannelByChannelId(channelId);
-        User requestUser = validateAndGetUserByUserId(requestUserId);
-        User newOwner = validateAndGetUserByUserId(newOwnerId);
+        validateUserByUserId(currentUserId);
+        validateUserByUserId(newOwnerId);
+        // channel owner의 user ID와 owner의 user ID가 동일한지 확인
+        verifyChannelOwner(channel, currentUserId);
 
         // 새롭게 owner가 된 newOwner가 해당 채널에 이미 참여한 것인지 검증
         if (!channel.getChannelMembersIds().stream()
@@ -149,14 +172,13 @@ public class JCFChannelService implements ChannelService {
             throw new IllegalStateException("참여하지 않은 채널입니다. 먼저 채널에 참가하세요.");
         }
 
-        // 이미 owner인지 확인
-        if (findOwnerChannelsByUserId(requestUserId).stream()
-                .anyMatch(c -> c.getOwnerId().equals(newOwnerId))) {
+        // newOwnerId가 이미 owner인지 확인
+        if (channel.getOwnerId().equals(newOwnerId)) {
             throw new IllegalStateException("이미 owner인 채널입니다.");
         }
 
         // 변경
-        channel.changeOwner(channel, newOwnerId);
+        channel.changeOwner(newOwnerId);
         return channel;
     }
 
@@ -205,23 +227,19 @@ public class JCFChannelService implements ChannelService {
 
     // D. 삭제
     @Override
-    public void deleteChannel(UUID requestId, UUID channelId) {
+    public void deleteChannel(UUID ownerId, UUID channelId) {
+        // 로그인 되어있는 owner ID null & user 객체 존재 확인
+        validateUserByUserId(ownerId);
         // Channel ID null & channel 객체 존재 확인
         Channel channel = validateAndGetChannelByChannelId(channelId);
+        // channel owner의 user ID와 owner의 user ID가 동일한지 확인
+        verifyChannelOwner(channel, ownerId);
+
         // 메세지 삭제는 상위에서 진행
+        // 참여했던 user 객체에서 해당 channel Id 삭제하기
+        userService.findAllUsers().forEach(u -> u.leaveChannel(channelId));
         data.remove(channelId);
     }
-
-//    // 연관 관계 정리
-//    // 해당 채널과 관련된 모든 메시지 삭제 및 채널이 보유한 메세지 리스트 연결 끊기
-//        channel.getChannelMessagesList()
-//                .forEach(message ->
-//            messageService.deleteMessage(message.getAuthor().getId(), message.getId()));
-//
-//    // 해당 채널에 참여한 user 찾아서 내보내기
-//        channel.getChannelUsersList().forEach(user -> user.leaveChannel(channel));
-//    // 해당 채널을 소유한 소유주(user)를 찾아서 owner 소유권 제거
-//        channel.getOwner().removeChannelOwner(channel);
 
     //// validation
     // 로그인 되어있는 user ID null & user 객체 존재 확인
@@ -229,10 +247,15 @@ public class JCFChannelService implements ChannelService {
         userService.findUserById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
-
     public User validateAndGetUserByUserId(UUID userId) {
         return userService.findUserById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+    }
+
+    // ChannelType null 검증
+    public void validateNullChannelType(Object obj, String channelType) {
+        String message = channelType + "가 null 입니다.";
+        Objects.requireNonNull(obj, message);
     }
 
     // Channel ID null & channel 객체 존재 확인
@@ -243,8 +266,6 @@ public class JCFChannelService implements ChannelService {
 
     // channel owner의 user ID와 owner의 user ID가 동일한지 확인
     public void verifyChannelOwner(Channel channel, UUID ownerId) {
-        // 로그인 되어있는 user ID null & user 객체 존재 확인
-        validateUserByUserId(ownerId);
         // channel owner의 user Id와 owner의 user Id 동일한지 확인
         if (!channel.getOwnerId().equals(ownerId)) {
             throw new IllegalStateException("본인의 정보만 수정 가능합니다.");
