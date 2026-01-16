@@ -68,6 +68,10 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void delete(UUID id) {
-        data.removeIf(channel -> channel.getId().equals(id));
+        Channel channel = findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
+
+        data.remove(channel);
     }
+
 }

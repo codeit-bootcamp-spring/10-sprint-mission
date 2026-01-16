@@ -21,7 +21,7 @@ public class JavaApplication {
         // 1. 서비스 구현체 생성 (List 기반)
         UserService userService = new JCFUserService();
         ChannelService channelService = new JCFChannelService();
-        MessageService messageService = new JCFMessageService();
+        MessageService messageService = new JCFMessageService(userService,channelService);
 
         // 2. User 등록
         System.out.println("=== User 등록 ===");
@@ -54,10 +54,8 @@ public class JavaApplication {
 
         //4. Message 등록
         System.out.println("\n=== Message 등록 ===");
-        Message message1 = messageService.createMessage(user1,channel1,"안녕하세요? 첫번째 메시지입니다");
-        Message message2 = messageService.createMessage(user2,channel2,"또 보네요? 두번째 메시지입니다");
-
-
+        Message message1 = messageService.createMessage(user1.getId(),channel1.getId(),"안녕하세요? 첫번째 메시지입니다");
+        Message message2 = messageService.createMessage(user2.getId(),channel2.getId(),"또 보네요? 두번째 메시지입니다");
 
 
         // 전체 Message 조회
@@ -91,7 +89,11 @@ public class JavaApplication {
 
 
         // Message 수정
-        messageService.update(message1.getId(), "수정된 두번째 메시지", user1, channel1);
+        messageService.updateMessage(
+                message1.getId(),
+                "수정된 두번째 메시지",
+                user1.getId(),
+                channel1.getId());
 
         Message updatedMessage = messageService.findById(message1.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Message not found"));

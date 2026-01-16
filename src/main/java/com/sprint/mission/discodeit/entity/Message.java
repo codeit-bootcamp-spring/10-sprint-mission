@@ -18,7 +18,7 @@ public class Message extends BaseEntity{
         this.content = content;
     }
 
-    public void update(String content, User user, Channel channel) {
+    public void updateMessage(UUID id, String content, UUID userId, UUID channelId) {
         this.content = content;
         this.user = user;
         this.channel = channel;
@@ -48,6 +48,17 @@ public class Message extends BaseEntity{
         return channel;
     }
 
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
 
     @Override
     public String toString() {

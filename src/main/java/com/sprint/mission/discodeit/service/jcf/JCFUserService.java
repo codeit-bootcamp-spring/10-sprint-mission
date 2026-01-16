@@ -38,17 +38,27 @@ public class JCFUserService implements UserService {
 
     @Override
     public User update(UUID id, String username, String email) {
-        for (User user : data) {
-            if (user.getId().equals(id)) {
-                user.update(id,username, email);
-                return user;
-            }
-        }
-        throw new IllegalArgumentException("User not found: " + id);
+        User user = data.stream()
+                .filter(u -> u.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+
+        // username이 null이 아닐 때만 수정
+        Optional.ofNullable(username).ifPresent(user::setUsername);
+
+        // email이 null이 아닐 때만 수정
+        Optional.ofNullable(email).ifPresent(user::setEmail);
+
+        user.touch();  // updatedAt 갱신
+        return user;
     }
 
     @Override
     public void delete(UUID id) {
-        data.removeIf(user -> user.getId().equals(id));
+        User user = findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
+
+        data.remove(user);
     }
+
 }
