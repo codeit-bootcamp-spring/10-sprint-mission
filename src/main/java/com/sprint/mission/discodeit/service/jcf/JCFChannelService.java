@@ -38,18 +38,16 @@ public class JCFChannelService implements ChannelService {
     public List<Channel> getChannelsByUser(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
 
+        // 유저가 존재하지 않을 경우 예외 처리
+        if (userService.getUserInfoByUserId(userId) == null) {
+            throw new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
+        }
+
         return channels.values().stream()
                 .filter(channel ->
                         channel.getJoinedUsers().stream()
                                 .anyMatch(user -> user.getId().equals(userId)))
                 .toList();
-    }
-
-    @Override
-    public List<User> getUsersByChannel(UUID channelId) {
-        findChannelById(channelId);
-
-        return channels.get(channelId).getJoinedUsers();
     }
 
     @Override
