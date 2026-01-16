@@ -9,14 +9,13 @@ import com.sprint.mission.discodeit.view.ChannelView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class JavaApplication {
     public static void main(String[] args) {
 
         JCFUserService userService = new JCFUserService();
         JCFChannelService channelService = new JCFChannelService(userService);
-        JCFMessageService messageService = new JCFMessageService(userService);
+        JCFMessageService messageService = new JCFMessageService(userService, channelService);
 
         // ===== 유저 생성 =====
         String[][] userData = {
@@ -62,12 +61,12 @@ public class JavaApplication {
 
         //====================================================================================
 
-        // ===== 채널 생성 =====
+        // 채널 생성
         String[] channelData = {"채널1", "채널2", "채널3", "채널4"};
         List<Channel> channels = new ArrayList<>();
         for (String name : channelData) channels.add(channelService.createChannel(name));
 
-        // ===== 채널 멤버 추가 =====
+        // 채널 멤버 추가
         channelService.userAddChannel(
                 channels.get(0).getId(),
                 users.get(0).getId()
@@ -160,46 +159,33 @@ public class JavaApplication {
 
         // 특정 유저가 참여중인 채널 목록 조회
         System.out.println("[특정유저가 참여중인 채널]");
-        User user = users.get(0); // 김코딩
-        Channel channel = channelService.findByUserChannel(user.getId());
-        System.out.println(user.getUserName() + "이 참여한 채널: " + channel.getChannelName());
+        User user1 = users.get(0); // 김코딩
+        Channel channel = channelService.findByUserChannel(user1.getId());
+        System.out.println(user1.getUserName() + "이 참여한 채널: " + channel.getChannelName());
         System.out.println();
-//
+
         // 특정 유저가 발행한 메시지 목록 조회
         System.out.println("[특정 유저가 발행한 메시지 목록]");
 
-        User user1 = users.get(1); // 이코딩
+        User user2 = users.get(2); // 박코딩
+        List<Message> messages = messageService.findAllByUserMessage(user2.getId());
 
-        List<Message> userMessages = messageService.findAllMessage().stream()
-                .filter(message -> message.getSender().equals(user1))
-                .toList();
+        System.out.println("[" + user2.getUserName() + "]이 발행한 메시지 목록");
 
-        System.out.println("[" + user1.getUserName() + "]" + "이 발행한 메시지 목록");
-
-        if (userMessages.isEmpty()) {
+        if (messages.isEmpty()) {
             System.out.println("(메시지 없음)");
         } else {
-            for (Message message : userMessages) {
+            for (Message message : messages) {
                 System.out.println(message);
             }
         }
-
-
-
         System.out.println();
 
-        // 특정 채널의 참가자 목록 조회
+        // 특정 채널 참가자 목록
         System.out.println("[특정 채널 참가자 목록]");
-
-        Channel channel2 = channelService.findChannel(channels.get(1).getId());
-
-        String members = channel2.getChannelUser().stream()
-                .map(User::getUserName)
-                .collect(Collectors.joining(", "));
-
-        System.out.println(
-                "[" + channel2.getChannelName() +"] " + "에 있는 멤버: " + members
-        );
+        Channel channel3 = channels.get(1); // 1채널
+        String members = channelService.findAllUserInChannel(channel3.getId());
+        System.out.println("[" + channel3.getChannelName() + "]" + "에 있는 멤버: " + members);
 
 
 

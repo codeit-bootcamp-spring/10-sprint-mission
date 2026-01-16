@@ -9,30 +9,29 @@ import com.sprint.mission.discodeit.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
 
     private final Map<UUID,Message> messages = new LinkedHashMap<>();
     private final UserService userService;
+    private final ChannelService channelService;
 
-    public JCFMessageService(UserService userService) {
+    public JCFMessageService(UserService userService,  ChannelService channelService) {
         this.userService = userService;
+        this.channelService = channelService;
     }
-
     public UserService getUserService() {
         return this.userService;
     }
 
     // 메시지 생성
-    public Message createMessage(User sender, Channel channel, String content) {
-        if (sender == null) {
-            throw new UserNotFoundException();
-        }
-        if (channel == null) {
-            throw new ChannelNotFoundException();
-        }
-        Message message = new Message(sender, channel, content);
+    public Message createMessage(User user, Channel channel, String content) {
+        userService.findUser(user.getId());
+        channelService.findChannel(channel.getId());
+
+        Message message = new Message(user, channel, content);
         messages.put(message.getId(), message);
         return message;
     }
@@ -48,6 +47,8 @@ public class JCFMessageService implements MessageService {
 
     // 채널별 메시지 조회
     public List<Message> findAllByChannelMessage(UUID channelId) {
+        channelService.findChannel(channelId);
+
         return messages.values().stream()
                 .filter(m -> m.getChannel().getId().equals(channelId))
                 .toList();
@@ -71,4 +72,16 @@ public class JCFMessageService implements MessageService {
             throw new MessageNotFoundException();
         }
     }
+
+    // 특정 유저 메시지 조회
+    public List<Message> findAllByUserMessage(UUID userId) {
+        userService.findUser(userId);
+
+        return messages.values().stream()
+                .filter(message -> message.getSender().getId().equals(userId))
+                .toList();
+    }
+
+
 }
+

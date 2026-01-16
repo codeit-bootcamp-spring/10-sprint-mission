@@ -13,11 +13,11 @@ public class JCFUserService implements UserService {
 
     @Override
     public User createUser(String userName, String userEmail) {
-        for (User user : users.values()) {
-            if (user.getUserEmail().equals(userEmail)) {
-                throw new DuplicationEmailException();
-            }
+        if (users.values().stream()
+                .anyMatch(u -> u.getUserEmail().equals(userEmail))) {
+            throw new DuplicationEmailException();
         }
+
         User user = new User(userName, userEmail);
         users.put(user.getId(), user);
         return user;

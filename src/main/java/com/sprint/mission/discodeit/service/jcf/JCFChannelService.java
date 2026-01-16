@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.exception.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class JCFChannelService implements ChannelService {
 
@@ -14,10 +15,6 @@ public class JCFChannelService implements ChannelService {
 
     public JCFChannelService(UserService userService) {
         this.userService = userService;
-    }
-
-    public UserService getUserService() {
-        return this.userService;
     }
 
     @Override
@@ -77,16 +74,30 @@ public class JCFChannelService implements ChannelService {
         if (channel == null) throw new ChannelNotFoundException();
         return channel;
     }
-
+    // 특정 사용자의 이용채널 조회
     @Override
     public Channel findByUserChannel(UUID userId) {
-        for (Channel channel : channels.values()) {
-            for (User member : channel.getChannelUser()) {
-                if (member.getId().equals(userId)) {
-                    return channel;
-                }
-            }
+        userService.findUser(userId);
+
+        return channels.values().stream()
+                .filter(channel ->
+                        channel.getChannelUser().stream()
+                                .anyMatch(user -> user.getId().equals(userId))
+                )
+                .findFirst()
+                .orElseThrow(ChannelNotFoundException::new);
+    }
+
+    // 특정채널 전체 사용자 조회
+    public String findAllUserInChannel(UUID channelId) {
+        Channel channel = findChannel(channelId);
+
+        if (channel.getChannelUser().isEmpty()) {
+            throw new UserNotInChannelException();
         }
-        throw new ChannelNotFoundException();
+
+        return channel.getChannelUser().stream()
+                .map(User::getUserName)
+                .collect(Collectors.joining(", "));
     }
 }
