@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -10,8 +8,16 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
-    private UserService userService;
+    private final UserService userService;
     private ChannelService channelService;
+
+    public JCFMessageService(UserService userService) {
+        this.userService = userService;
+    }
+
+    public void setChannelService(ChannelService channelService) {
+        this.channelService = channelService;
+    }
 
     private final Map<UUID, Message> messages = new HashMap<>();
 
@@ -64,8 +70,8 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void deleteMessage(UUID messageId) {
-        Message message = messages.remove(messageId);
         checkNoSuchElementException(messageId);
+        Message message = messages.remove(messageId);
 
         message.getSentUser().removeSentMessage(message);
     }
