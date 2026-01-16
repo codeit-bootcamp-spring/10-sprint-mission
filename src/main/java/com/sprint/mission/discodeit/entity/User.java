@@ -10,10 +10,10 @@ public class User extends BaseEntity {
     private String birthday;
 
     // 연관
-    // 해당 유저가 참여 중인 채널 목록
+    // 해당 유저가 참여 중인 채널 Ids
     private final Set<UUID> joinChannelIds;
-    // 해당 유저가 보낸 메시지 목록
-    private final List<Message> writeMessageList;
+    // 해당 유저가 보낸 메시지 Ids
+    private final List<UUID> writeMessageIds;
 
     // 생성자
     public User(String email, String userName, String nickName, String password, String birthday) {
@@ -24,7 +24,7 @@ public class User extends BaseEntity {
         this.birthday = birthday;
 
         joinChannelIds = new HashSet<>();
-        writeMessageList = new ArrayList<>();
+        writeMessageIds = new ArrayList<>();
     }
 
     @Override
@@ -38,8 +38,8 @@ public class User extends BaseEntity {
                 "userName = " + userName + ", " +
                 "password = " + password + ", " +
                 "birthday = " + birthday + ", " +
-                "joinChannelList = " + joinChannelIds + ", " +
-                "writeMessageList = " + writeMessageList.stream().map(message -> message.getId()).toList() +
+                "joinChannelIds = " + joinChannelIds + ", " +
+                "writeMessageIds = " + writeMessageIds +
                 "}";
     }
 
@@ -68,8 +68,8 @@ public class User extends BaseEntity {
         return joinChannelIds.stream().toList();
     }
 
-    public List<Message> getWriteMessageList() {
-        return writeMessageList.stream().toList();
+    public List<UUID> getWriteMessageIds() {
+        return writeMessageIds.stream().toList();
     }
 
     // update
@@ -111,16 +111,16 @@ public class User extends BaseEntity {
         updateTime();
     }
 
-    // 메시지 작성
-    public void addMessageInUser(Message message) {
-        this.writeMessageList.add(message);
+    // 메시지 작성(메세지 Ids 추가)
+    public void writeMessage(UUID messageId) {
+        this.writeMessageIds.add(messageId);
         updateTime();
 //        message.addUserWriteMessageList(this, message.getContent());
     }
 
-    // 유저가 작성한 메시지 삭제
-    public void removeMessageInUser(Message message) {
-        this.writeMessageList.remove(message);
+    // 유저가 작성한 메시지 삭제(메세지 Ids 삭제)
+    public void removeUserMessage(UUID messageId) {
+        this.writeMessageIds.remove(messageId);
         updateTime();
     }
 }
