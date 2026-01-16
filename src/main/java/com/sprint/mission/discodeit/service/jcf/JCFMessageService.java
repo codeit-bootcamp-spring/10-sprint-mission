@@ -1,42 +1,61 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.service.MessageService;
-
+import com.sprint.mission.discodeit.service.UserService;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
 
-    private final List<Message> messages = new ArrayList<>();
+    private final Map<UUID,Message> messages = new LinkedHashMap<>();
+    private final UserService userService;
+
+    public JCFMessageService(UserService userService) {
+        this.userService = userService;
+    }
+
+    public UserService getUserService() {
+        return this.userService;
+    }
 
     // 메시지 생성
-    public Message createMessage(Message message) {
-        messages.add(message);
+    public Message createMessage(User sender, Channel channel, String content) {
+        if (sender == null) {
+            throw new UserNotFoundException();
+        }
+        if (channel == null) {
+            throw new ChannelNotFoundException();
+        }
+        Message message = new Message(sender, channel, content);
+        messages.put(message.getId(), message);
         return message;
     }
 
     // 단건 조회
-    @Override
     public Message findMessage(UUID messageId) {
-        return messages.stream()
-                .filter(m -> m.getId().equals(messageId))
-                .findFirst()
-                .orElseThrow(() -> new MessageNotFoundException("해당 메시지가 존재하지 않습니다."));
+        Message message = messages.get(messageId);
+        if (message == null) {
+            throw new MessageNotFoundException();
+        }
+        return message;
     }
 
     // 채널별 메시지 조회
-    public List<Message> findAllByChannelMessage(Channel channel) {
-        return messages.stream()
-                .filter(m -> m.getChannel().equals(channel))
-                .collect(Collectors.toList());
+    public List<Message> findAllByChannelMessage(UUID channelId) {
+        return messages.values().stream()
+                .filter(m -> m.getChannel().getId().equals(channelId))
+                .toList();
     }
 
     // 전체 메시지 조회
     public List<Message> findAllMessage() {
-        return new ArrayList<>(messages);
+        return new ArrayList<>(messages.values());
     }
 
     // 메시지 수정
@@ -48,7 +67,8 @@ public class JCFMessageService implements MessageService {
 
     // 메시지 삭제
     public void deleteMessage(UUID messageId) {
-        Message message = findMessage(messageId);
-        messages.remove(message);
+        if (messages.remove(messageId) == null) {
+            throw new MessageNotFoundException();
+        }
     }
 }

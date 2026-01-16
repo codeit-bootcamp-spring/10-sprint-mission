@@ -15,7 +15,7 @@ public class JCFUserService implements UserService {
     public User createUser(String userName, String userEmail) {
         for (User user : users.values()) {
             if (user.getUserEmail().equals(userEmail)) {
-                throw new DuplicationEmailException("이미 존재하는 이메일 입니다.");
+                throw new DuplicationEmailException();
             }
         }
         User user = new User(userName, userEmail);
@@ -26,7 +26,7 @@ public class JCFUserService implements UserService {
     @Override
     public User findUser(UUID userId) {
         User user = users.get(userId);
-        if (user == null) throw new UserNotFoundException("해당되는 회원이 없습니다.");
+        if (user == null) throw new UserNotFoundException();
         return user;
     }
 
@@ -47,7 +47,7 @@ public class JCFUserService implements UserService {
         User removed = users.remove(userId);
 
         if (removed == null) {
-            throw new UserNotFoundException("해당되는 회원이 없습니다.");
+            throw new UserNotFoundException();
         }
         return removed;
     }

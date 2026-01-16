@@ -6,7 +6,7 @@ import java.util.List;
 public class Channel extends BaseEntity {
 
     private String channelName;
-    private final List<User> members = new ArrayList<>();
+    private final List<User> channelUsers = new ArrayList<>();
 
     public Channel(String channelName) {
         super();
@@ -18,25 +18,25 @@ public class Channel extends BaseEntity {
         touch();
     }
 
-    public void addMember(User user) {
-        members.add(user);
+    public void addChannelUser(User user) {
+        channelUsers.add(user);
         touch();
     }
 
-    public void removeMember(User user) {
-        members.remove(user);
+    public void removeChannelUser(User user) {
+        channelUsers.remove(user);
         touch();
     }
 
-    public boolean hasMember(User user) {
-        return members.contains(user);
+    public boolean hasChannelUser(User user) {
+        return channelUsers.contains(user);
     }
 
     public String getChannelName() {
         return channelName;
     }
 
-    public List<User> getMember() {
-        return members;
+    public List<User> getChannelUser() {
+        return channelUsers;
     }
 }

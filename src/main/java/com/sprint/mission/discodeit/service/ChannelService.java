@@ -13,11 +13,13 @@ public interface ChannelService {
 
     List<Channel> findAllChannel();
 
-    Channel memberAddChannel(UUID channelId, UUID userId);
+    Channel userAddChannel(UUID channelId, UUID userId);
 
-    Channel memberRemoveChannel(UUID channelId, UUID userId);
+    Channel userRemoveChannel(UUID channelId, UUID userId);
 
     Channel nameUpdateChannel(UUID channelId, String channelName);
 
     Channel deleteChannel(UUID channelId);
+
+    Channel findByUserChannel(UUID userId);
 }

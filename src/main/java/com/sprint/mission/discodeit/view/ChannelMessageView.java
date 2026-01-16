@@ -13,7 +13,7 @@ public class ChannelMessageView {
         StringBuilder sb = new StringBuilder();
         sb.append("[").append(channel.getChannelName()).append(" 채팅방]").append("\n");
 
-        String messagesForChannel = messageService.findAllByChannelMessage(channel).stream()
+        String messagesForChannel = messageService.findAllByChannelMessage(channel.getId()).stream()
                 .map(Message::toString)
                 .collect(Collectors.joining("\n"));
 
@@ -22,6 +22,7 @@ public class ChannelMessageView {
 
         return sb.toString();
     }
+
 
     // 서버 전체 메시지 출력
     public static String viewAllMessages(JCFMessageService messageService) {

@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
-
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
@@ -47,20 +46,20 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel memberAddChannel(UUID channelId, UUID userId) {
+    public Channel userAddChannel(UUID channelId, UUID userId) {
         Channel channel = findChannel(channelId);
         User user = userService.findUser(userId);
-        if (channel.hasMember(user)) throw new AlreadyJoinedChannelException();
-        channel.addMember(user);
+        if (channel.hasChannelUser(user)) throw new AlreadyJoinedChannelException();
+        channel.addChannelUser(user);
         return channel;
     }
 
     @Override
-    public Channel memberRemoveChannel(UUID channelId, UUID userId) {
+    public Channel userRemoveChannel(UUID channelId, UUID userId) {
         Channel channel = findChannel(channelId);
         User user = userService.findUser(userId);
-        if (!channel.hasMember(user)) throw new UserNotInChannelException();
-        channel.removeMember(user);
+        if (!channel.hasChannelUser(user)) throw new UserNotInChannelException();
+        channel.removeChannelUser(user);
         return channel;
     }
 
@@ -77,5 +76,17 @@ public class JCFChannelService implements ChannelService {
         Channel channel = channels.remove(channelId);
         if (channel == null) throw new ChannelNotFoundException();
         return channel;
+    }
+
+    @Override
+    public Channel findByUserChannel(UUID userId) {
+        for (Channel channel : channels.values()) {
+            for (User member : channel.getChannelUser()) {
+                if (member.getId().equals(userId)) {
+                    return channel;
+                }
+            }
+        }
+        throw new ChannelNotFoundException();
     }
 }

@@ -1,10 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -13,13 +9,14 @@ import com.sprint.mission.discodeit.view.ChannelView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class JavaApplication {
     public static void main(String[] args) {
 
         JCFUserService userService = new JCFUserService();
         JCFChannelService channelService = new JCFChannelService(userService);
-        JCFMessageService messageService = new JCFMessageService();
+        JCFMessageService messageService = new JCFMessageService(userService);
 
         // ===== 유저 생성 =====
         String[][] userData = {
@@ -71,27 +68,27 @@ public class JavaApplication {
         for (String name : channelData) channels.add(channelService.createChannel(name));
 
         // ===== 채널 멤버 추가 =====
-        channelService.memberAddChannel(
+        channelService.userAddChannel(
                 channels.get(0).getId(),
                 users.get(0).getId()
         );
-        channelService.memberAddChannel(
+        channelService.userAddChannel(
                 channels.get(0).getId(),
                 users.get(1).getId()
         );
-        channelService.memberAddChannel(
+        channelService.userAddChannel(
                 channels.get(1).getId(),
                 users.get(2).getId()
         );
-        channelService.memberAddChannel(
+        channelService.userAddChannel(
                 channels.get(2).getId(),
                 users.get(3).getId()
         );
-        channelService.memberAddChannel(
+        channelService.userAddChannel(
                 channels.get(3).getId(),
                 users.get(4).getId()
         );
-        channelService.memberAddChannel(
+        channelService.userAddChannel(
                 channels.get(1).getId(),
                 users.get(5).getId()
         );
@@ -126,36 +123,84 @@ public class JavaApplication {
         //========================================================
 
         // 메시지 생성
-        Message msg1 = new Message(users.get(0), channels.get(0), "안녕하세요!");
-        Message msg2 = new Message(users.get(1), channels.get(0), "반갑습니다!");
-        Message msg3 = new Message(users.get(2), channels.get(1), "채널2 첫 메시지");
+        Message m1 =messageService.createMessage(users.get(0), channels.get(0), "안녕하세요!");
+        Message m2 =messageService.createMessage(users.get(1), channels.get(0), "반갑습니다!");
+        Message m3 = messageService.createMessage(users.get(2), channels.get(1), "채널2 첫 메시지");
 
-        messageService.createMessage(msg1);
-        messageService.createMessage(msg2);
-        messageService.createMessage(msg3);
 
         // 채널별 메시지 출력
+        System.out.println("[채널별 메시지 출력]");
         for(Channel channel : channelService.findAllChannel()) {
             System.out.println(ChannelMessageView.viewMessage(channel, messageService));
             System.out.println();
         }
 
         // 전체 메시지 출력
-        System.out.println("=== 서버 전체 메시지 ===");
+        System.out.println("[서버 전체 메시지]");
         System.out.println(ChannelMessageView.viewAllMessages(messageService));
         System.out.println();
 
-        // 메시지 수정
-        messageService.updateMessage(msg2.getId(), "수정된 메시지입니다!");
+        // 메시지 수정 후 출력
+        System.out.println("[메시지 수정]");
+        Message updatedMessage = messageService.updateMessage(m2.getId(),"메시지 수정");
+        System.out.println(updatedMessage);
+        System.out.println();
 
         // 메시지 삭제
-        messageService.deleteMessage(msg1.getId());
+        messageService.deleteMessage(m1.getId());
 
         // 채널별 메시지 출력 (수정/삭제 후)
+        System.out.println("[메시지 삭제]");
         for(Channel channel : channelService.findAllChannel()) {
             System.out.println(ChannelMessageView.viewMessage(channel, messageService));
             System.out.println();
         }
+
+        //===========================================
+
+        // 특정 유저가 참여중인 채널 목록 조회
+        System.out.println("[특정유저가 참여중인 채널]");
+        User user = users.get(0); // 김코딩
+        Channel channel = channelService.findByUserChannel(user.getId());
+        System.out.println(user.getUserName() + "이 참여한 채널: " + channel.getChannelName());
+        System.out.println();
+//
+        // 특정 유저가 발행한 메시지 목록 조회
+        System.out.println("[특정 유저가 발행한 메시지 목록]");
+
+        User user1 = users.get(1); // 이코딩
+
+        List<Message> userMessages = messageService.findAllMessage().stream()
+                .filter(message -> message.getSender().equals(user1))
+                .toList();
+
+        System.out.println("[" + user1.getUserName() + "]" + "이 발행한 메시지 목록");
+
+        if (userMessages.isEmpty()) {
+            System.out.println("(메시지 없음)");
+        } else {
+            for (Message message : userMessages) {
+                System.out.println(message);
+            }
+        }
+
+
+
+        System.out.println();
+
+        // 특정 채널의 참가자 목록 조회
+        System.out.println("[특정 채널 참가자 목록]");
+
+        Channel channel2 = channelService.findChannel(channels.get(1).getId());
+
+        String members = channel2.getChannelUser().stream()
+                .map(User::getUserName)
+                .collect(Collectors.joining(", "));
+
+        System.out.println(
+                "[" + channel2.getChannelName() +"] " + "에 있는 멤버: " + members
+        );
+
 
 
 
