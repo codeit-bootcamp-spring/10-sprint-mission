@@ -43,8 +43,8 @@ public class JavaApplication {
         // UserService 인터페이스에는 addListener가 없으므로, JCFUserService(구현체) 타입으로 선언
         JCFUserService userService = new JCFUserService();
 
+        ChannelService channelService = new JCFChannelService();
         // 다른 서비스들은 UserService를 의존성으로 받음
-        ChannelService channelService = new JCFChannelService(userService);
         MessageService messageService = new JCFMessageService(userService, channelService);
         ChannelUserRoleService channelUserRoleService = new JCFChannelUserRoleService(userService, channelService);
 
@@ -173,7 +173,7 @@ public class JavaApplication {
 
         // [1] 등록 (User ID 참조 사용)
         System.out.println("1) 채널 등록");
-        Channel testChannel1_5 = channelService.createChannel("Java 스터디", testOwner5.getId());
+        Channel testChannel1_5 = channelService.createChannel("Java 스터디", testOwner5);
         System.out.println("   -> 생성 완료: " + testChannel1_5.getChannelName() + " (OwnerID: " + testChannel1_5.getOwner().getId() + ")");
 
         // [2] 조회
@@ -183,8 +183,8 @@ public class JavaApplication {
 
         User testOwner6 = userService.createUser("채널주인_testUser6");
         User testOwner7 = userService.createUser("채널주인_testUser7");
-        Channel testChannel2_6 = channelService.createChannel("testUser6의 채널", testOwner6.getId());
-        Channel testChannel3_7 = channelService.createChannel("testUser7의 채널", testOwner7.getId());
+        Channel testChannel2_6 = channelService.createChannel("testUser6의 채널", testOwner6);
+        Channel testChannel3_7 = channelService.createChannel("testUser7의 채널", testOwner7);
         List<Channel> allChannels = channelService.findAllChannels();
         System.out.println("   -> 다건 조회(총 개수): " + allChannels.size() + "개");
 
@@ -246,8 +246,8 @@ public class JavaApplication {
         // 4. 중복 생성
         System.out.print("Test 4) 중복된 채널 이름 생성: ");
         try {
-            channelService.createChannel("UniqueChannel", testOwner6.getId());
-            channelService.createChannel("UniqueChannel", testOwner7.getId()); // 이름 중복
+            channelService.createChannel("UniqueChannel", testOwner6);
+            channelService.createChannel("UniqueChannel", testOwner7); // 이름 중복
             System.out.println("❌ 실패 (중복 허용됨)");
         } catch (IllegalArgumentException e) {
             System.out.println("✅ 성공 (방어: " + e.getMessage() + ")");
@@ -263,7 +263,7 @@ public class JavaApplication {
         // (선행조건) 메시지 전송을 위한 User와 Channel 필요
         User testSender8 = userService.createUser("nomalUser8");
         User testOwner9 = userService.createUser("adminUser9"); // 방장
-        Channel testChannel4_8 = channelService.createChannel("Free-Topic", testOwner9.getId());
+        Channel testChannel4_8 = channelService.createChannel("Free-Topic", testOwner9);
 
         // [1] 등록 (내용, 작성자ID, 채널ID)
         System.out.println("1) 메시지 등록");
@@ -391,7 +391,7 @@ public class JavaApplication {
         User owner = userService.createUser("방장");
         User member = userService.createUser("일반멤버");
         User outsider = userService.createUser("외부인"); // 채널에 없는 사람
-        Channel channel = channelService.createChannel("테스트채널", owner.getId());
+        Channel channel = channelService.createChannel("테스트채널", owner);
 
         // ==========================================
         // [Happy Path] 생성 -> 조회 -> 수정 -> 삭제 -> 확인

@@ -15,6 +15,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+// [] 검토 필요
+// Service Implementation
 public class JCFMessageService implements MessageService {
     private final Map<UUID, Message> messageMap = new ConcurrentHashMap<>();
     // 의존성 (다른 서비스들)
@@ -22,22 +24,21 @@ public class JCFMessageService implements MessageService {
     private final UserService userService;
     private final ChannelService channelService;
 
-    // 생성자 주입 (Constructor Injection)
-    //   JCFMessageService가 작동하려면 UserService와 ChannelService가 반드시 필요함
+    // 생성자 주입
     public JCFMessageService(UserService userService, ChannelService channelService) {
         this.userService = userService;
         this.channelService = channelService;
     }
 
+    // id로 Channel 객체 조회 메서드 - 해당 id의 Channel 있으면 Channel 객체 반환. 없으면 예외 발생
     private Message findMessageByIdOrThrow(UUID messageId) {
         Message message = messageMap.get(messageId);
         if (message == null) {
-            throw new IllegalArgumentException("해당 ID의 메시지가 존재하지 않음 ID: " + messageId);
+            throw new IllegalArgumentException("해당 ID의 메시지가 존재하지 않습니다. id: " + messageId);
         }
         return message;
     }
 
-    // Service Implementation
     // Create
     @Override
     public Message createMessage(String content, UUID userId, UUID channelId) {
