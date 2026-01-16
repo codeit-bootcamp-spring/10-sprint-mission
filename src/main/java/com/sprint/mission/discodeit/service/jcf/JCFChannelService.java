@@ -88,7 +88,9 @@ public class JCFChannelService implements ChannelService {
     }
 
     public void removeUserFromAllChannel(UUID userId){
-
+        if (userId == null){
+            throw new IllegalArgumentException("삭제하려는 유저가 없습니다.");
+        }
         //유저가 방장인경우 처리를 넣어줘야함.
 
         for(Channel channel : data.values()){

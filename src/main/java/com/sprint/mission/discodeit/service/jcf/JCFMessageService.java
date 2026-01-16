@@ -69,12 +69,18 @@ public class JCFMessageService implements MessageService {
     }
 
     public void removeUser(UUID userId){
+        if(userId == null){
+            throw new IllegalArgumentException("삭제하려는 유저가 없습니다.");
+        }
         //삭제된 유저와 같은 유저id를 갖고있는 메시지를 지운다.
         data.values().removeIf(Message -> Message.getUser().getId().equals(userId));
 
     }
 
     public void removeChannel(UUID channelId){
+        if(channelId == null){
+            throw new IllegalArgumentException("삭제하려는 채널이 없습니다.");
+        }
         //삭제된 체널과 같은 채널id를 갖고있는 메시지를 지운다.
         data.values().removeIf(Message -> Message.getChannel().getId().equals(channelId));
     }

@@ -60,12 +60,24 @@ public class JCFUserService implements UserService {
     }
 
     public void removeChannel(UUID channelId){
-        for(User user : data.values()){ //유저의 채널리스트에서 삭제된거 빼기
-            user.getChannelList().removeIf(Channel -> Channel.getId().equals(channelId));
+        if(channelId == null){
+            throw new IllegalArgumentException("삭제하려는 채널이 없습니다.");
         }
-        for(User user : data.values()){
-            user.getMessageList().removeIf(Message -> Message.getChannel().getId().equals(channelId));
-        }
+
+        data.values().stream()
+                .forEach(user ->
+                        user.getChannelList()
+                                .removeIf(Channel ->
+                                        Channel.getId().equals(channelId)));
+
+        data.values().stream()
+                .forEach(user ->
+                        user.getMessageList()
+                                .removeIf(message ->
+                                        message.getChannel().getId().equals(channelId)
+                                )
+                );
+
     }
 
 }
