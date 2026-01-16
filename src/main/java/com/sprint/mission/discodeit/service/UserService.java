@@ -10,19 +10,16 @@ public interface UserService {
 
     User CreateUser(String userName, String email);
 
-    User findId(UUID userId);
-    User findEmail(String email);
+    User findById(UUID userId);
+    User findByEmail(String email);
     List<User> findAll();
 
-    User updateName(UUID userId, String userName);
-    User updateEmail(UUID userId, String email);
+    User update(UUID userId, String userName, String email);
 
     void delete(UUID userId);
 
     void addMessage(UUID userId, Message msg);
-    List<Message> findMessages(UUID userId);
-    List<Message> findMessagesInChannel(UUID userId, UUID channelId);
     void addChannel(UUID userId, Channel channel);
-    List<Channel> findChannels(UUID userId);
+
 
 }

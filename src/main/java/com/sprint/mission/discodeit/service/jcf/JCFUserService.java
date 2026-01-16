@@ -25,21 +25,14 @@ public class JCFUserService implements UserService {
         return user;
     }
 
-    public User findId(UUID userId){
+    public User findById(UUID userId){
         return data.stream()
                 .filter(user -> user.getId().equals(userId))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("해당 계정은 존재하지 않습니다.\nID: " + userId));
     }
 
-    public User findName(String name){
-        return data.stream()
-                .filter(user -> user.getUserName().equals(name))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("해당 이메일이 등록되어 있지 않습니다."));
-    }
-
-    public User findEmail(String email){
+    public User findByEmail(String email){
         return data.stream()
                 .filter(user -> user.getEmail().equals(email))
                 .findFirst()
@@ -51,56 +44,41 @@ public class JCFUserService implements UserService {
         return data;
     }
 
-    public User updateName(UUID userId, String userName){
-        User foundUser = findId(userId);
-        if (userName == null || userName.trim().isEmpty()) {
-            throw new IllegalArgumentException("이름이 비어있거나 공백입니다.");
-        }
-        foundUser.setUserName(userName);
+    public List<User> findUsersByChannel(UUID channelId){
+        return data.stream()
+                .filter(user -> user.getChannelList().stream().anyMatch(channel -> channel.getId().equals(channelId)))
+                .toList();
+    }
+
+    @Override
+    public User update(UUID userId, String userName, String email) {
+        User foundUser = findById(userId);
+        Optional.ofNullable(userName)
+                .filter(name -> !name.trim().isEmpty())
+                .ifPresent(foundUser::setUserName);
+
+        Optional.ofNullable(email)
+                .filter(e -> !e.trim().isEmpty())
+                .ifPresent(foundUser::setEmail);
+
         return foundUser;
     }
 
-    public User updateEmail(UUID userId, String email){
-        User foundEmail = findId(userId);
-        if (email == null || email.trim().isEmpty()) {
-            throw new IllegalArgumentException("이메일이 비어있거나 공백입니다.");
-        }
-        foundEmail.setEmail(email);
-        return foundEmail;
-    }
 
     public void addMessage(UUID userId, Message msg){
-        User foundUser = findId(userId);
+        User foundUser = findById(userId);
         foundUser.addMessage(msg);
     }
 
     public void addChannel(UUID userId, Channel channel){
-        User foundUser = findId(userId);
+        User foundUser = findById(userId);
         foundUser.addChannel(channel);
         channel.addUserList(foundUser);
     }
 
-    public List<Message> findMessages(UUID userId){
-        User foundUser = findId(userId);
-        return foundUser.getMessageList();
-    }
-
-    // 유저가 작성한 메세지 중 특정 채널에서의 메세지들
-    public List<Message> findMessagesInChannel(UUID userId, UUID channelId){
-        List<Message> messages = findMessages(userId);
-        return messages.stream()
-                .filter(message -> message.getChannel().getId().equals(channelId))
-                .toList();
-    }
-
-
-    public List<Channel> findChannels(UUID userId){
-        User user = findId(userId);
-        return user.getChannelList();
-    }
 
     public void delete(UUID userId){
-        User target = findId(userId);
+        User target = findById(userId);
         data.remove(target);
     }
 

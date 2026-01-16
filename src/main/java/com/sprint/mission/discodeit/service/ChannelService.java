@@ -13,11 +13,11 @@ public interface ChannelService {
 
     Channel findId(UUID channelId);
 
+    Channel findName(String name);
+
     List<Channel> findAll();
 
-    List<Message> findMessages(UUID channelId);
-
-    List<User> findUsers(UUID channelId);
+    List<Channel> findChannels(UUID userId);
 
     Channel update(UUID channelId, String channelName);
 

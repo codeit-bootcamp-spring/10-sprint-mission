@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,23 +13,27 @@ import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
     List<Message> data;
+    private final UserService userService;
+    private final ChannelService channelService;
 
-    public JCFMessageService(){
+    public JCFMessageService(UserService userService, ChannelService channelService){
         data = new ArrayList<>();
+        this.userService = userService;
+        this.channelService = channelService;
     }
 
-    public Message createMessage(String content, User sender, Channel channel){
-        // user, channel 둘다 예외처리해야함.
-
-        Message message = new Message(content, sender, channel);
+    public Message createMessage(String content, UUID senderId, UUID channelId){
+        User senderUser = userService.findById(senderId);
+        Channel channel = channelService.findId(channelId);
+        Message message = new Message(content, senderUser, channel);
         data.add(message);
         System.out.println("메세지 생성이 완료되었습니다.");
         return message;
     }
 
-    public Message findId(UUID msgId){
+    public Message findId(UUID massageId){
         return data.stream()
-                .filter(message -> message.getId().equals(msgId))
+                .filter(message -> message.getId().equals(massageId))
                 .findFirst()
                 .orElse(null);
     }
@@ -36,22 +42,37 @@ public class JCFMessageService implements MessageService {
         return data;
     }
 
-    public List<Message> findByChannelId(UUID channelId){
+    public List<Message> findMessagesById(UUID userId){
         return data.stream()
-                .filter(msg -> msg.getChannel().equals(channelId)) // 조건: 채널 ID가 같은가?
+                .filter(message -> message.getUser().getId().equals(userId))
                 .toList();
     }
 
-    public Message update(UUID msgId, String content){
-        Message foundMsg = findId(msgId);
+    public List<Message> findMessagesByChannel(UUID channelId){
+        return data.stream()
+                .filter(message -> message.getChannel().getId().equals(channelId))
+                .toList();
+    }
+
+    // 유저가 작성한 메세지 중 특정 채널에서의 메세지들
+    public List<Message> findMessagesByUserAndChannel(UUID userId, UUID channelId){
+        List<Message> messages = findMessagesById(userId);
+        return messages.stream()
+                .filter(message -> message.getChannel().getId().equals(channelId))
+                .toList();
+    }
+
+
+    public Message update(UUID massageId, String content){
+        Message foundMsg = findId(massageId);
         if (content == null || content.trim().isEmpty()) {
             throw new IllegalArgumentException("내용이 비어있거나 공백입니다.");
         }
         return foundMsg;
     }
 
-    public void delete(UUID msgId){
-        Message target = findId(msgId);
+    public void delete(UUID massageId){
+        Message target = findId(massageId);
         data.remove(target);
     }
 

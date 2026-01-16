@@ -5,10 +5,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private final List<Channel> data;
@@ -19,7 +16,7 @@ public class JCFChannelService implements ChannelService {
 
     public Channel createChannel(String channelName){
         if (data.stream().anyMatch(channel -> channel.getChannelName().equals(channelName))) {
-            throw new IllegalArgumentException("이미 등록된 계정입니다. " + channelName);
+            throw new IllegalArgumentException("같은 이름의 채널이 존재합니다. " + channelName);
         }
         Channel channel = new Channel(channelName);
         data.add(channel);
@@ -29,7 +26,14 @@ public class JCFChannelService implements ChannelService {
 
     public Channel findId(UUID channelID){
         return data.stream()
-                .filter(user -> user.getId().equals(channelID))
+                .filter(channel -> channel.getId().equals(channelID))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("해당 채널은 존재하지 않습니다."));
+    }
+
+    public Channel findName(String name){
+        return data.stream()
+                .filter(channel -> channel.getChannelName().equals(name))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("해당 채널은 존재하지 않습니다."));
     }
@@ -39,25 +43,19 @@ public class JCFChannelService implements ChannelService {
     }
 
 
-    // 해당 채널에서 작성된 메세지
-    public List<Message> findMessages(UUID channelId){
-        Channel channel = findId(channelId);
-        return channel.getMessageList();
+    public List<Channel> findChannels(UUID userId){
+        return data.stream()
+                .filter(channel -> channel.getUserList().stream().anyMatch(user -> user.getId().equals(userId)))
+                .toList();
     }
-    // 해당 채널의 유저
-    public List<User> findUsers(UUID channelId){
-        Channel channel = findId(channelId);
-        return channel.getUserList();
-    }
-
 
     public Channel update(UUID channelId, String channelName){
         Channel foundChannel = findId(channelId);
 
-        if (channelName == null || channelName.trim().isEmpty()) {
-            throw new IllegalArgumentException("이름이 비어있거나 공백입니다.");
-        }
-        foundChannel.setChannelName(channelName);
+        Optional.ofNullable(channelName)
+                .filter(name -> !name.trim().isEmpty())
+                .ifPresent(foundChannel::setChannelName);
+
         return foundChannel;
     }
 
@@ -65,7 +63,5 @@ public class JCFChannelService implements ChannelService {
         Channel target = findId(channelId);
         data.remove(target);
     }
-
-
 
 }
