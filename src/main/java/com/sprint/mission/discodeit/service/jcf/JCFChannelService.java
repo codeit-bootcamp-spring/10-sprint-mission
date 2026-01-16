@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -108,9 +109,8 @@ public class JCFChannelService implements ChannelService {
     }
 
     private void deleteProcess(UUID uuid, Channel channel) {
-        List<User> users = channel.getParticipants().stream().toList();
-        users.forEach(u -> leaveChannel(uuid, u.getId()));
-        channel.getMessages().forEach(m-> messageService.deleteMessage(m.getId()));
+        List.copyOf(channel.getParticipants()).forEach(u -> leaveChannel(uuid, u.getId()));
+        List.copyOf(channel.getMessages()).forEach(m -> messageService.deleteMessage(m.getId()));
         data.remove(channel.getId());
     }
 }
