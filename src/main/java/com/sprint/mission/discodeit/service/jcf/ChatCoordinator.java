@@ -49,7 +49,14 @@ public class ChatCoordinator {
         // 여기서 유효성 검사..
         User user = userService.findUserById(userId);
         Channel channel = channelService.findChannelById(channelId);
-        return messageService.createMessage(content, user.getId(), channel.getId());
+
+        // Message 생성 (서비스는 단순히 저장만 함)
+        Message message = messageService.createMessage(content, userId, channelId);
+
+        // 관계 동기화 (ChatCoordinator가 담당)
+        user.addMessage(message);
+        channel.addMessages(message);
+        return message;
     }
     // 채널에 있는 메세지들 조회
     public List<Message> getMessageInChannel(UUID channelId){

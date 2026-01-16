@@ -11,15 +11,15 @@ public class Message extends Basic{
     private UUID senderId;
     private UUID channelId;
 
-    public Message(String content, User sender, Channel channel) {
-        super(); // Message 에도 역시 각각 고유 ID, 생성 시간 할당.
-        this.messageContent = content;
-        setSender(sender);
-        setChannel(channel);
-        this.senderId = sender.getId();
-        this.channelId = channel.getId();
-
-    }
+//    public Message(String content, User sender, Channel channel) {
+//        super(); // Message 에도 역시 각각 고유 ID, 생성 시간 할당.
+//        this.messageContent = content;
+//        setSender(sender);
+//        setChannel(channel);
+//        this.senderId = sender.getId();
+//        this.channelId = channel.getId();
+//
+//    }
 
     // 추가! ID 기반 생성자 (Service에서)
     public Message(String content, UUID senderId, UUID channelId) {

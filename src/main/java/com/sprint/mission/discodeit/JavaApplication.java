@@ -131,7 +131,7 @@ public class JavaApplication {
 //        //Channel ch11 = channelService.createChannel("긴급");
 //        //channelService.updateChannel(ch10.getId(), "공지사항");
 //            //Channel ch11 = channelService.createChannel("");
-            //  서비스 생성
+        //  서비스 생성
 //            JCFUserService userService = new JCFUserService();
 //            JCFChannelService channelService = new JCFChannelService();
 //            JCFMessageService messageService = new JCFMessageService(userService, channelService);
@@ -251,7 +251,7 @@ public class JavaApplication {
 //        System.out.println(u1.getAlias()+ "가 참가한 채널 목록");
 //        System.out.println(userService.getChannelsByUser(u1.getId()));
 
-                // 서비스 생성 (의존성 주입)
+        // 서비스 생성 (의존성 주입)
 
                 JCFChannelService channelService = new JCFChannelService();
                 JCFUserService userService = new JCFUserService();
@@ -278,7 +278,7 @@ public class JavaApplication {
                 chat.sendMessage(u2.getId(), ch2.getId(), "저도 인사드립니다.");
 
                 // 유저 삭제 후 메세지와 채널 조회 삭제
-                chat.deleteUserClean(u1.getId());
+                //chat.deleteUserClean(u1.getId());
                 // 채널 삭제 후 유저가 참가한 채널리스트 조회 및 해당 채널의 메세지 조회
                 //chat.deleteChannelClean(ch1.getId());
                 System.out.println("test");
@@ -313,6 +313,6 @@ public class JavaApplication {
 
         // 삭제 확인
 
-            }
-        }
+    }
+}
 
