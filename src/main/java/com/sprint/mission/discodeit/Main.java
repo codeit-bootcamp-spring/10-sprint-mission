@@ -411,7 +411,7 @@ public class Main {
             List<Message> channelMessages = messageService.searchMessagesByChannelId(channel1.getId());
             channelMessages.forEach(message -> System.out.println(message.getMessage()));
         } catch (Exception e) {
-            System.err.println("[사용자 메시지 목록 조회 실패] " + e.getMessage());
+            System.err.println("[채널 메시지 목록 조회 실패] " + e.getMessage());
         }
 
         // 유저 삭제 -> 전체 채널 목록 및 전체 메시지 목록 연쇄 삭제
