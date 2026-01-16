@@ -32,20 +32,32 @@ public class JavaApplication {
 
         Role role1 = roledata.create(ADMIN, user1.getId(), ch1.getId());
         Role role2 = roledata.create(USER, user2.getId(), ch1.getId());
+        Role role3 = roledata.create(ADMIN, user3.getId(), ch2.getId());
 
         Message mes1 = channeldata.addMessage(ch1.getId(), user1.getId(), "이게 뭐지?");
         Message mes2 = channeldata.addMessage(ch1.getId(), user2.getId(), "그게 뭔데?");
+        Message mes3 = channeldata.addMessage(ch2.getId(), user3.getId(), "몰?루");
 
-        //테스팅 내용
-        channeldata.printChannel(ch1.getId());
+        //조회
+        System.out.println("------ 이하 단건조회 ------");
+        channeldata.find(ch1.getId()).printChannel();
+        System.out.println("------ 이하 다건조회 ------");
+        channeldata.findAll().forEach(Channel::printChannel);
 
-        channeldata.updateUserRole(ch1.getId(), user2.getId(), ADMIN, user1.getId());
 
-        messagedata.delete(mes1.getId(), user1.getId());
+        //수정
+        System.out.println("------ 이하 수정 ------");
+        channeldata.update(ch1.getId(), "코딩하는 채널", "말그대로 코딩 하는 채널");//채널정보 수정
+        messagedata.update(mes1.getId(), "이게 뭐어어어어어지?");//메시지 수정
+        userdata.update(user3.getId(), "경-단");//유저이름 수정
+        channeldata.updateUserRole(ch1.getId(), user2.getId(), ADMIN, user1.getId());//권한등급 수정
+        channeldata.findAll().forEach(Channel::printChannel);
 
-        roledata.delete(role1.getId());
-
-        channeldata.printChannel(ch1.getId());
-
+        //삭제
+        System.out.println("------ 이하 삭제 ------");
+        messagedata.delete(mes1.getId(), user1.getId());//전송된 메시지 삭제
+        roledata.delete(role2.getId());//권한 삭제
+        channeldata.delete(ch2.getId(), user3.getId());//채널 삭제
+        channeldata.findAll().forEach(Channel::printChannel);
     }
 }
