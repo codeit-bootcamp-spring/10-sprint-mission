@@ -23,8 +23,7 @@ public class JCFUserService implements UserService {
         return users.stream()
                 .filter(user -> id.equals(user.getId()))
                 .findFirst()
-                .orElseThrow(() -> {throw new RuntimeException("User not found: id = " + id);}
-                );
+                .orElseThrow(() -> new RuntimeException("User not found: id = " + id));
     }
 
     @Override

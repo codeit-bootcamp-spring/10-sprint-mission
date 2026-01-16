@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.PermissionLevel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.MessageService;
 
@@ -47,10 +48,25 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public void delete(UUID id) {
-        Message deletedMessage = find(id);
-        deletedMessage.getChannel().getMessages().remove(deletedMessage);
-        messages.remove(deletedMessage);
+    public void delete(UUID messageID, UUID userID) {
+        Message deletedMessage = find(messageID);// 삭제 대상 메시지
+        User user = JCFUserService.getInstance().find(userID); // 삭제를 시도하는 유저
+        boolean canDelete = user.equals(deletedMessage.getUser()) //삭제하려 시도하는 유저가 보낸 유저거나
+                || deletedMessage.getChannel()
+                .getRoles().stream()
+                .anyMatch(
+                        r->r.getUsers().equals(user)
+                        && r.getRoleName().equals(PermissionLevel.ADMIN)
+                ); //관리자인 경우
+
+        if(canDelete){
+            deletedMessage.getChannel().getMessages().remove(deletedMessage);
+            messages.remove(deletedMessage);
+        }
+        else{
+            throw new RuntimeException("User not allowed to delete message");
+        }
+
     }
 
     @Override

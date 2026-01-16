@@ -41,6 +41,8 @@ public class JavaApplication {
 
         roledata.update(role1.getId(), ADMIN);
 
+        messagedata.delete(mes1.getId(), user2.getId());
+
         channeldata.printChannel(ch1.getId());
 
     }

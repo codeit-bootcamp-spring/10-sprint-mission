@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.PermissionLevel;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -46,8 +47,18 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void delete(UUID id) {
-        channels.remove(find(id));
+    public void delete(UUID channelID, UUID userID) {
+        Channel channel = find(channelID);
+        User user = JCFUserService.getInstance().find(userID);
+        boolean isADMIN = channel.getRoles().stream()
+                        .anyMatch(R-> R.getRoleName().equals(PermissionLevel.ADMIN)
+                                && R.getUsers().equals(user));
+        if(isADMIN){
+            channels.remove(channel);
+        }
+        else{
+            throw new RuntimeException("User not allowed to delete channel");
+        }
     }
 
     @Override

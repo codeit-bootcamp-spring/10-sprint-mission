@@ -9,7 +9,7 @@ public interface ChannelService {
     public Channel find(UUID id);
     public Set<Channel> findAll();
     public Channel create(String channelName, String channelDescription);
-    public void delete(UUID id);
+    public void delete(UUID channelID, UUID userID);
     public Channel update(UUID id, String name, String desc);
     public void printChannel(UUID id);
 }

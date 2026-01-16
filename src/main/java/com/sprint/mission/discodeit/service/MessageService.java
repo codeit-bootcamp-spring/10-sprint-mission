@@ -9,6 +9,6 @@ public interface MessageService {
     public Message find(UUID id);
     public Set<Message> findAll();
     public Message create(UUID userID, String msg, UUID channelID);
-    public void delete(UUID id);
+    public void delete(UUID id, UUID userID);
     public Message update(UUID id, String msg);
 }
