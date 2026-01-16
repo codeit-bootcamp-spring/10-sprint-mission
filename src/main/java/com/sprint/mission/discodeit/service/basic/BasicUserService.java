@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.jcf;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -7,18 +7,20 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.ClearMemory;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Comparator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
-public class JCFUserService implements UserService {
-    UserRepository userRepository;
-    ChannelRepository channelRepository;
-    MessageRepository messageRepository;
+public class BasicUserService implements UserService, ClearMemory {
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
 
-    public JCFUserService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
+    public BasicUserService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
         this.userRepository = userRepository;
         this.channelRepository = channelRepository;
         this.messageRepository = messageRepository;
@@ -26,11 +28,12 @@ public class JCFUserService implements UserService {
 
     @Override
     public User create(String name, UserStatus status) {
-        userRepository.findByName(name).ifPresent(u -> {
-            throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
-        });
-        User newUser = new User(name, status);
-        return userRepository.save(newUser);
+        userRepository.findByName(name)
+                .ifPresent(u -> {
+                    throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
+                });
+        User user = new User(name, status);
+        return userRepository.save(user);
     }
 
     @Override
@@ -57,36 +60,40 @@ public class JCFUserService implements UserService {
 
     @Override
     public List<Message> getUserMessages(UUID id) {
-        User user = findById(id);
-        return user.getMessages();
+        findById(id);
+        return messageRepository.readAll().stream()
+                .filter(msg -> msg.getSender().getId().equals(id))
+                .sorted(Comparator.comparing(Message::getCreatedAt))
+                .toList();
     }
 
     @Override
     public List<Channel> getUserChannels(UUID id) {
-        User user = findById(id);
-        return user.getChannels();
+        findById(id);
+        return channelRepository.readAll().stream()
+                .filter(ch -> ch.getUsers().stream().anyMatch(u -> u.getId().equals(id)))
+                .toList();
     }
-
 
     @Override
     public void delete(UUID id) {
-        User user = findById(id);   // 예외 검사
+        findById(id);
 
+        // 사용자가 등록되어 있는 채널들
         List<Channel> joinedChannels = channelRepository.readAll().stream()
-                        .filter(ch -> ch.getUsers().contains(user))
-                                .toList();
-    /*
-    JCF 서비스에서는 주소값이 공유되므로 contains(user) 같은 간결한 표현이 가능하지만,
-    이를 파일 저장소 환경으로 옮길 때는 반드시 ID 기반 비교와 저장(save) 로직을 추가해야 데이터 불일치를 막을 수 있다.
-    */
+                .filter(ch -> ch.getUsers().stream()
+                        .anyMatch(u -> u.getId().equals(id)))
+                .toList();
+
         for (Channel ch : joinedChannels) {
             // 내가 방장인 채널 - 채널 자체 삭제
             if (ch.getOwner().getId().equals(id)) {
                 channelRepository.delete(ch.getId());
             }
-            // 내가 참여한 채널 - 멤버 명단에서 나만 삭제
-            else{
-                ch.getUsers().removeIf(u -> u.equals(user));
+            // 참여한 채널 - 멤버 명단에서 나만 삭제
+            else {
+                ch.getUsers().removeIf(u -> u.getId().equals(id));
+                channelRepository.save(ch);
             }
         }
 
@@ -102,4 +109,8 @@ public class JCFUserService implements UserService {
         userRepository.delete(id);
     }
 
+    @Override
+    public void clear() {
+        userRepository.clear();
+    }
 }

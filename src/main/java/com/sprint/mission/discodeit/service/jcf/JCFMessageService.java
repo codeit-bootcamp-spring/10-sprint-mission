@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.jcf;
+package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.IsPrivate;
@@ -27,10 +27,8 @@ public class JCFMessageService implements MessageService {
     public Message create(UUID userId, UUID channelId, String content) {
         User user = userService.findById(userId);
         Channel channel = channelService.findById(channelId);
-
         Message message = new Message(user, channel, content);
         channel.addMessage(message);    // 채널에 메시지 추가
-        channel.addUser(user);
         return messageRespotory.save(message);
     }
 

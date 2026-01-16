@@ -19,7 +19,7 @@ public interface MessageService {
     // Update
     Message update(UUID messageId, String newContent);
 
-    List<Message> searchMessage(UUID channelId, String msg);
+    List<Message> searchMessage(UUID channelId, String keyword);
 
     UUID sendDirectMessage(UUID senderId, UUID receiverId, String content);
 

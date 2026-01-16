@@ -1,6 +1,9 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.IsPrivate;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -8,18 +11,17 @@ import com.sprint.mission.discodeit.service.ClearMemory;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
-public class FileMessageService implements MessageService, ClearMemory {
-
+public class BasicMessageService implements MessageService, ClearMemory {
     private final UserService userService;
     private final ChannelService channelService;
     private final MessageRepository messageRepository;
     private final ChannelRepository channelRepository;
 
-    // path : 파일이름 - 메인에서 저장 위치 지정
-    public FileMessageService(UserService userService, ChannelService channelService, ChannelRepository channelRepository, MessageRepository messageRepository) {
+    public BasicMessageService(UserService userService, ChannelService channelService, MessageRepository messageRepository, ChannelRepository channelRepository) {
         this.userService = userService;
         this.channelService = channelService;
         this.messageRepository = messageRepository;
@@ -50,19 +52,19 @@ public class FileMessageService implements MessageService, ClearMemory {
     }
 
     @Override
-    public Message update(UUID id, String newContent) {
-        Message message = findById(id);
+    public Message update(UUID messageId, String newContent) {
+        Message message = findById(messageId);
         message.updateContent(newContent);
         messageRepository.save(message);
         return message;
     }
 
     @Override
-    public List<Message> searchMessage(UUID channelId, String searchContent) {
+    public List<Message> searchMessage(UUID channelId, String keyword) {
         Channel channel = channelService.findById(channelId);
         return readAll().stream()
                 .filter(msg -> msg.getChannelId().equals(channelId))
-                .filter(msg -> msg.getContent().contains(searchContent))
+                .filter(msg -> msg.getContent().contains(keyword))
                 .toList();
     }
 
@@ -77,7 +79,6 @@ public class FileMessageService implements MessageService, ClearMemory {
         messageRepository.save(message);
         return dmChannel.getId();
     }
-
     private Channel getOrCreateDMChannel(UUID user1Id, UUID user2Id) {
         User user1 = userService.findById(user1Id);
         User user2 = userService.findById(user2Id);
@@ -94,8 +95,6 @@ public class FileMessageService implements MessageService, ClearMemory {
                     return newDmChannel;
                 });
     }
-
-
     @Override
     public void delete(UUID id) {
         messageRepository.delete(id);
@@ -105,5 +104,4 @@ public class FileMessageService implements MessageService, ClearMemory {
     public void clear() {
         messageRepository.clear();
     }
-
 }
