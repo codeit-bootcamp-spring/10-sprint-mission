@@ -7,9 +7,14 @@ import java.util.Map;
 import java.util.UUID;
 
 public class JCFUserService extends JCFBaseService<User> implements UserService {
+    private static final UserService instance = new JCFUserService();
 
-    public JCFUserService() {
+    private JCFUserService() {
         super();
+    }
+
+    public static UserService getInstance() {
+        return instance;
     }
 
     public JCFUserService(Map<UUID, User> data) {

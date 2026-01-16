@@ -10,11 +10,11 @@ public abstract class JCFBaseService<T extends Entity> implements BaseService<T>
     private final Map<UUID, T> data;
     private final String idNotExistMessage = "don't exist, %s";
 
-    public JCFBaseService() {
+    protected JCFBaseService() {
         this.data = new HashMap<>();
     }
 
-    public JCFBaseService(Map<UUID, T> data) {
+    protected JCFBaseService(Map<UUID, T> data) {
         this.data = data;
     }
 

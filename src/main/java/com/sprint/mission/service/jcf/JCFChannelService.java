@@ -7,9 +7,14 @@ import java.util.Map;
 import java.util.UUID;
 
 public class JCFChannelService extends JCFBaseService<Channel> implements ChannelService {
+    private static final ChannelService instance = new JCFChannelService();
 
-    public JCFChannelService() {
+    private JCFChannelService() {
         super();
+    }
+
+    public static ChannelService getInstance() {
+        return instance;
     }
 
     public JCFChannelService(Map<UUID, Channel> data) {
