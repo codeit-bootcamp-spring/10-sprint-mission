@@ -23,7 +23,6 @@ public class User extends BaseEntity {
         this.password = password; // 해싱?
         this.birthday = birthday;
 
-        ownerChannelList = new HashSet<>();
         joinChannelIds = new HashSet<>();
         writeMessageList = new ArrayList<>();
     }
@@ -39,7 +38,6 @@ public class User extends BaseEntity {
                 "userName = " + userName + ", " +
                 "password = " + password + ", " +
                 "birthday = " + birthday + ", " +
-                "ownerChannelList = " + ownerChannelList.stream().map(channel -> channel.getId()).toList() + ", " +
                 "joinChannelList = " + joinChannelIds + ", " +
                 "writeMessageList = " + writeMessageList.stream().map(message -> message.getId()).toList() +
                 "}";
@@ -64,10 +62,6 @@ public class User extends BaseEntity {
 
     public String getBirthday() {
         return birthday;
-    }
-
-    public List<Channel> getOwnerChannelList() {
-        return ownerChannelList.stream().toList();
     }
 
     public List<UUID> getJoinChannelIds() {
@@ -102,18 +96,6 @@ public class User extends BaseEntity {
 
     public void updateBirthday(String birthday) {
         this.birthday = birthday;
-        updateTime();
-    }
-
-    // 채널 생성 시 owner에 임명될 때 연관 관계로 owner인 user의 ownerChannelList에 추가
-    public void ownChannel(Channel channel) {
-        this.ownerChannelList.add(channel);
-        updateTime();
-    }
-
-    // owner가 변경(업데이트)되거나 채널 삭제 시 소유권 제거
-    public void removeChannelOwner(Channel channel) {
-        this.ownerChannelList.remove(channel);
         updateTime();
     }
 
