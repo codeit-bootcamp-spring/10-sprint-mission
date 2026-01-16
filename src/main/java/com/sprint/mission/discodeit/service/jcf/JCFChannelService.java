@@ -13,6 +13,15 @@ public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> channels = new LinkedHashMap<>();
     private final UserService userService;
 
+    //반복되는 예외처리 메서드
+    public Channel getRequiredChannel(UUID messageId) {
+        Channel channel = channels.get(messageId);
+        if (channel == null) {
+            throw new ChannelNotFoundException();
+        }
+        return channel;
+    }
+
     public JCFChannelService(UserService userService) {
         this.userService = userService;
     }
@@ -30,11 +39,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel findChannel(UUID channelId) {
-        Channel channel = channels.get(channelId);
-        if (channel == null) {
-            throw new ChannelNotFoundException();
-        }
-        return channel;
+        return getRequiredChannel(channelId);
     }
 
     @Override
@@ -70,9 +75,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel deleteChannel(UUID channelId) {
-        Channel channel = channels.remove(channelId);
-        if (channel == null) throw new ChannelNotFoundException();
-        return channel;
+        return getRequiredChannel(channelId);
     }
     // 특정 사용자의 이용채널 조회
     @Override
