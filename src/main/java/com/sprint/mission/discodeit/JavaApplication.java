@@ -26,8 +26,8 @@ public class JavaApplication {
         DiscordService discordService = new JCFDiscordService(userService, channelService, messageService);
 
         System.out.println("=== [시작] 서비스 테스트 ===");
-        //================================ 기본 기능 ================================
-        System.out.println("==기본 기능==");
+        //=============================== 등록/조회/수정 ===============================
+        System.out.println("== 등록/조회/수정 ==");
         //---------------------------------1. user---------------------------------
         // 1-1. user 등록 및 조회
         User user1 = userService.create("박린", "lynnpark2003@ewha.ac.kr");
@@ -58,14 +58,6 @@ public class JavaApplication {
                 + "\n이메일: " + userService.read(user3.getId()).getEmail());
         System.out.println("수정 시각: " + userService.read(user3.getId()).getUpdatedAt());
 
-        // 1-4. user 정보 삭제 및 확인
-        userService.delete(user3.getId());
-        System.out.println("1-4. 유저 정보 삭제 완료");
-
-        // 1-5. user 다건 재조회로 정보 삭제 확인
-        System.out.println("1-5. 유저 다건 재조회: " + "총" + userService.readAll().size() + "명");
-
-        //NullPointerException 처리 추가 필요
         System.out.println();
 
         //---------------------------------2. channel---------------------------------
@@ -86,16 +78,7 @@ public class JavaApplication {
         channelService.update(channel2.getId(), "채널2");
         System.out.println("2-3. 채널 이름 수정 완료: " + channelService.read(channel2.getId()).getName());
         System.out.println("수정 시각: " + channelService.read(channel2.getId()).getUpdatedAt());
-
-        // 2-4. channel 정보 삭제 및 확인
-        channelService.delete(channel3.getId());
-        System.out.println("2-4. 채널 정보 삭제 완료");
-
-        // 2-5. channel 다건 재조회로 정보 삭제 확인
-        System.out.println("2-5. channel 다건 재조회: " + "총" + channelService.readAll().size() + "개");
-
         System.out.println();
-        //NullPointerException 처리 추가 필요
 
 
         //---------------------------------3. message---------------------------------
@@ -107,7 +90,7 @@ public class JavaApplication {
         System.out.println("3-1. 메시지 등록 완료: [" + user2.getName() + "] " + message2.getText());
 
         Message message3 = messageService.create(channel1.getId(), user2.getId(), "짹짹");
-        System.out.println("3-1. 메시지 등록 완료: [" + user2.getName() + "] " + message2.getText());
+        System.out.println("3-1. 메시지 등록 완료: [" + user2.getName() + "] " + message3.getText());
 
         // 3-2. message 다건 조회
         System.out.println("3-2. 메세지 다건 조회: " + "총" + messageService.readAll().size() + "개");
@@ -117,17 +100,8 @@ public class JavaApplication {
         System.out.println("3-3. 메세지 내용 수정 완료: [" + user2.getName() + "] " + messageService.read(message2.getId()).getText());
         System.out.println("수정 시각: " + messageService.read(message2.getId()).getUpdatedAt());
 
-        // 3-4. message 삭제 및 확인
-        messageService.delete(message2.getId());
-        System.out.println("3-4. 메시지 내용 삭제 완료");
-
-        // 3-5. message 다건 조회
-        System.out.println("3-5. 메세지 다건 재조회: " + "총" + messageService.readAll().size() + "개");
         System.out.println();
         System.out.println();
-
-
-
 
         //================================ 추가 기능 ================================
         System.out.println("==추가 기능==");
@@ -173,20 +147,19 @@ public class JavaApplication {
                 .toList();
         System.out.println("2-2. 유저의 메시지 목록 조회");
         System.out.println(user1.getName() + "의 메시지 목록: " + userMessageContext);
+
         System.out.println();
         System.out.println();
 
 
 
-
-
-        //================================ 심화 기능 ================================
-        System.out.println("==심화 기능==");
-        // ---------------1. 유저 삭제 시 유저의 매세지/채널 목록에서 유저 삭제---------------
+        //================================ 삭제 ================================
+        System.out.println("== 삭제 ==");
+        //---------------------------------1. user---------------------------------
         discordService.deleteUser(user1.getId());
 
         // 1-1. user의 channel 목록 조회
-        System.out.println("1-1. 유저1 삭제 시 채널 참가자 목록 조회");
+        System.out.println("1-1. 유저1 삭제 후 채널 참가자 목록 조회");
         List<User> userListAfterUserDelete = discordService.getUsersByChannel(channel1.getId());
         List<String> userNamesAfterUserDelete = userListAfterUserDelete.stream()
                 .map(User::getName)
@@ -195,7 +168,7 @@ public class JavaApplication {
         System.out.println();
 
         // 1-2. user의 message 목록 조회
-        System.out.println("1-2. 유저1 삭제 시 메시지 목록 조회");
+        System.out.println("1-2. 유저1 삭제 후 메시지 목록 조회");
         List<Message> userMessagesAfterUserDelete = discordService.getMessagesByChannel(channel1.getId());
         List<String> userMessagesContextAfterUserDelete = userMessagesAfterUserDelete.stream()
                 .map(m -> "[" + m.getSender().getName() + "] : " + m.getText())
@@ -204,11 +177,11 @@ public class JavaApplication {
         System.out.println();
 
 
-        // ---------------2. 채널 삭제 시 유저의 채널 목록에서 채널/채널의 매세지 삭제---------------
+        //---------------------------------2. channel---------------------------------
         discordService.deleteChannel(channel1.getId());
 
         // 2-1. user의 channel 목록 조회
-        System.out.println("2-1. 채널1 삭제 시 유저의 채널 목록 조회");
+        System.out.println("2-1. 채널1 삭제 후 유저의 채널 목록 조회");
         List<Channel> channelsAfterChannelDelete = discordService.getChannelsByUser(user2.getId());
         List<String> channelNamesAfterChannelDelete = channelsAfterChannelDelete.stream()
                 .map(Channel::getName)
@@ -223,6 +196,17 @@ public class JavaApplication {
                 .toList();
         System.out.println("2-2. 유저의 메시지 목록 조회");
         System.out.println(user2.getName() + "의 메시지 목록: " + userMessageContextAfterChannelDelete);
+        System.out.println();
+
+        //---------------------------------3. message--------------------------------
+        // 3-1. message 삭제 및 확인
+        System.out.println("3-1. 메세지 다건 재조회: " + "총 " + messageService.readAll().size() + "개");
+
+        messageService.delete(message2.getId());
+        System.out.println("3-2. 메시지 내용 삭제 완료");
+
+        // 3-2. message 다건 조회
+        System.out.println("3-3. 메세지 다건 재조회: " + "총 " + messageService.readAll().size() + "개");
         System.out.println();
         System.out.println();
 
