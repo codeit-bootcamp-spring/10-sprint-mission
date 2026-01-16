@@ -29,7 +29,11 @@ public class Channel extends BaseEntity {
             user.getChannels().add(this);
         }
     }
-
+    // 연관관계 편의 메서드 - 유저 제거
+    public void removeMember(User user) {
+        this.members.remove(user);
+        user.getChannels().remove(this);
+    }
 
     // Setters
     public void updateName(String name) {

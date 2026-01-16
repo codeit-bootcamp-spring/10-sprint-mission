@@ -108,8 +108,9 @@ public class JCFChannelService implements ChannelService {
         if (channel.getOwner().getId().equals(userId)) {
             throw new IllegalArgumentException("필드: userId, 조건: 채널 오너가 아님, 값: " + userId);
         }
-        channel.getMembers().remove(user);
-        user.getChannels().remove(channel);
+//        channel.getMembers().remove(user);
+//        user.getChannels().remove(channel);
+        channel.removeMember(user);// 편의 메서드 사용
     }
 
 

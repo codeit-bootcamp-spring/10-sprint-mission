@@ -33,8 +33,10 @@ public class JCFMessageService implements MessageService {
         Channel channel = channelService.findById(channelId);
         Message message = new Message(content,sender,channel);
         data.put(message.getId(),message);
-        channel.getMessages().add(message);
-        sender.getMessages().add(message);
+//        channel.getMessages().add(message);
+//        sender.getMessages().add(message);
+        message.addToChannelAndUser();
+
         return message;
     }
 
@@ -91,8 +93,9 @@ public class JCFMessageService implements MessageService {
     @Override
     public void hardDelete(UUID messageId) {        //유저를 삭제한 경우, 메시지 자체를 삭제한 경우, 채널을 삭제한 경우.
         Message message = findById(messageId);
-        message.getChannel().getMessages().remove(message); // 채널의 메시지 리스트에서 제거 (양방향 관계 정리)
-        message.getSender().getMessages().remove(message);
+//        message.getChannel().getMessages().remove(message); // 채널의 메시지 리스트에서 제거 (양방향 관계 정리)
+//        message.getSender().getMessages().remove(message);
+        message.removeFromChannelAndUser();
         data.remove(messageId);
     }
 
