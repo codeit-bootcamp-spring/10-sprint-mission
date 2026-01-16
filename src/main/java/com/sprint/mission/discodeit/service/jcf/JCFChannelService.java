@@ -40,6 +40,8 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public List<Channel> getChannelsByUser(UUID userId) {
+        // UserService와의 순환 참조를 방지하기 위해 내부에서 userService.read()를 직접 호출하지 않음.
+        // 따라서 본 메서드 호출 전, DiscordService 등 상위 레이어에서 유저 존재 여부를 먼저 검증하는 것을 권장함.
         return data.stream()
                 .filter(channel -> channel.getUserList().stream()
                         .anyMatch(user -> user.getId().equals(userId)))
