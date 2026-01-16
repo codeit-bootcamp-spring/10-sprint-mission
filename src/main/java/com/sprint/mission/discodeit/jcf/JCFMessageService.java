@@ -30,7 +30,7 @@ public class JCFMessageService implements MessageService {
 
         Message message = new Message(user, channel, content);
         channel.addMessage(message);    // 채널에 메시지 추가
-
+        channel.addUser(user);
         return messageRespotory.save(message);
     }
 
@@ -47,9 +47,9 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID messageId, String content) {
+    public Message update(UUID messageId, String newContent) {
         Message message = findById(messageId);
-        message.updateContent(content);
+        message.updateContent(newContent);
         return messageRespotory.save(message);
     }
 

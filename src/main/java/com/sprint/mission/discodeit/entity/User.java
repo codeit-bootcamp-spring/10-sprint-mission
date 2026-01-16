@@ -74,7 +74,7 @@ public class User extends BaseEntity implements Serializable {
         String channleNames = channels.stream()
                 .map(Channel::getName)
                 .collect(Collectors.joining(","));
-        return "유저명 : " + name + ", 상태 : " + status + ", 보유 채널들 : [" + channleNames + "]";
+        return "유저명 : " + name + ", 상태 : " + status;
     }
 
 

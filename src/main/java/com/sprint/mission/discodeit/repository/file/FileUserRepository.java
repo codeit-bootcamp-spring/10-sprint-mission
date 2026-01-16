@@ -8,7 +8,7 @@ import java.util.*;
 
 public class FileUserRepository extends AbstractFileRepository<User> implements UserRepository {
 
-    protected FileUserRepository(String path) {
+    public FileUserRepository(String path) {
         super(path);
     }
     @Override

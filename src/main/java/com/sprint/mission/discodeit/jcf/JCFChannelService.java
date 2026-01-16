@@ -68,4 +68,10 @@ public class JCFChannelService implements ChannelService {
         return channel.getMessages();
     }
 
+    @Override
+    public List<User> getChannelUsers(UUID channelId) {
+        Channel channel = findById(channelId);
+        return channel.getUsers();
+    }
+
 }

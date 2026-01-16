@@ -17,7 +17,7 @@ public interface MessageService {
     List<Message> readAll();
 
     // Update
-    Message update(UUID messageId, String content);
+    Message update(UUID messageId, String newContent);
 
     List<Message> searchMessage(UUID channelId, String msg);
 

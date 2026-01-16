@@ -5,6 +5,8 @@ import com.sprint.mission.discodeit.entity.IsPrivate;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.ClearMemory;
 import com.sprint.mission.discodeit.service.UserService;
@@ -15,10 +17,15 @@ import java.util.stream.Collectors;
 public class FileChannelService implements ChannelService, ClearMemory {
 
     private final UserService userService;
+    private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
-    public FileChannelService(UserService userService, ChannelRepository channelRepository) {
+    private final MessageRepository messageRepository;
+
+    public FileChannelService(UserService userService, UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
         this.channelRepository = channelRepository;
+        this.messageRepository = messageRepository;
     }
 
     @Override
@@ -54,14 +61,28 @@ public class FileChannelService implements ChannelService, ClearMemory {
         Channel channel = findById(channelId);
         User user = userService.findById(userId);
         channel.addUser(user);
-        user.getChannels().add(channel);
+        user.addChannel(channel);
+        channelRepository.save(channel);
+        userRepository.save(user);
     }
 
     public List<Message> getChannelMessages(UUID channelId) {
-        Channel channel = findById(channelId);
-        return channel.getMessages();
-    }
+        findById(channelId);
+        return messageRepository.readAll().stream()
+                .filter(msg -> msg.getChannelId().equals(channelId))
+                .sorted(Comparator.comparing(Message::getCreatedAt))
+                .toList();
 
+    }
+    @Override
+    public List<User> getChannelUsers(UUID channelId) {
+        findById(channelId);
+        return channelRepository.readAll().stream()
+                .filter(ch -> ch.getId().equals(channelId))
+                .findFirst()
+                .map(Channel::getUsers)
+                .orElse(Collections.emptyList());
+    }
     @Override
     public void delete(UUID id) {
         channelRepository.delete(id);

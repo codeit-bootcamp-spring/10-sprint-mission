@@ -68,9 +68,5 @@ public class JCFUserService implements UserService {
         userRepository.delete(id);
     }
 
-    private void validateExistence(Map<UUID, User> data, UUID id) {
-        if (!data.containsKey(id)) {
-            throw new NoSuchElementException("실패 : 존재하지 않는 사용자 ID입니다.");
-        }
-    }
+
 }

@@ -7,159 +7,108 @@ import com.sprint.mission.discodeit.jcf.JCFUserService;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 
 import java.util.List;
 import java.util.UUID;
-//import com.sprint.mission.discodeit.service.file.FileChannelService;
-//import com.sprint.mission.discodeit.service.file.FileMessageService;
-//import com.sprint.mission.discodeit.service.file.FileUserService;
 
 public class JavaApplication {
     public static void main(String[] args) {
-        // 등록
-
-        UserRepository userRepository = new JCFUserRepository();
-        JCFUserService userService = new JCFUserService(userRepository);
-        MessageRepository messageRepository = new JCFMessageRepository();
+        // 1. 초기 설정 및 초기화
 //        UserRepository userRepository = new FileUserRepository("User.ser");
-//        FileChannelService channelService = new FileChannelService("channel.ser");
-//        channelService.clear();
-//        FileUserService userService = new FileUserService(userRepository);
-//        userService.clear();
-//        FileMessageService messageService = new FileMessageService("message.ser", userService, channelService);
-//        messageService.clear();
+//        MessageRepository messageRepository = new FileMessageRepository("Message.ser");
+//        ChannelRepository channelRepository = new FileChannelRepository("Channel.ser");
+//
+//        FileUserService userService = new FileUserService(userRepository, channelRepository, messageRepository);
+//        FileChannelService channelService = new FileChannelService(userService, userRepository, channelRepository, messageRepository);
+//        FileMessageService messageService = new FileMessageService(userService, channelService, channelRepository, messageRepository);
+
+        // 1. 초기 설정 및 초기화
+        UserRepository userRepository = new JCFUserRepository();
+        MessageRepository messageRepository = new JCFMessageRepository();
         ChannelRepository channelRepository = new JCFChannelRepository();
+
+        JCFUserService userService = new JCFUserService(userRepository);
         JCFChannelService channelService = new JCFChannelService(userService, channelRepository);
         JCFMessageService messageService = new JCFMessageService(userService, channelService, messageRepository);
-        // 사용자 등록
+
+
+        // 테스트 전 깨끗하게 비우기 (파일 삭제 효과)
+//        userService.clear();
+//        channelService.clear();
+//        messageService.clear();
+
+        System.out.println("=== 1. 사용자 생성 및 중복 테스트 ===");
         User user1 = userService.create("달선", UserStatus.ONLINE);
         User user2 = userService.create("달룡", UserStatus.ONLINE);
         User user3 = userService.create("달례", UserStatus.ONLINE);
         try {
-            userService.create("달례", UserStatus.AWAY);
+            userService.create("달선", UserStatus.ONLINE);
         } catch (IllegalArgumentException e) {
-            System.out.println("중복 예외 확인 : " + e.getMessage());
+            System.out.println("중복 생성 방지 확인: " + e.getMessage());
         }
 
-        // 채널 등록
-        Channel channel1 = channelService.create("달선이 채널", IsPrivate.PUBLIC, user1.getId());
-        Channel channel2 = channelService.create("달룡이 채널", IsPrivate.PUBLIC, user2.getId());
-        Channel channel3 = channelService.create("달례 채널", IsPrivate.PUBLIC, user3.getId());
-        channelService.joinChannel(user2.getId(), channel1.getId());
-        channelService.joinChannel(user3.getId(), channel1.getId());
-        channelService.joinChannel(user1.getId(), channel3.getId());
+        System.out.println("\n=== 2. 채널 생성 및 입장 (저장 확인) ===");
+        Channel publicChannel = channelService.create("우리집", IsPrivate.PUBLIC, user1.getId());
+        channelService.joinChannel(user2.getId(), publicChannel.getId());
+        channelService.joinChannel(user3.getId(), publicChannel.getId());
 
-        // 사용자 update 확인
-//        System.out.println("\n업데이트 확인");
-//        System.out.println(user1);
-//        user1.updateStatus(UserStatus.DONOTDISTURB);
-//        userService.update(user1.getId());
-//        System.out.println(user1);
+        System.out.println("공용 채널 참여자 수: " + channelService.getChannelUsers(publicChannel.getId()).size() + "명");
 
-        // 메시지 등록
-        Message message1 = messageService.create(user1.getId(), channel1.getId(), "언니 보고싶어");
-        Message message2 = messageService.create(user2.getId(), channel2.getId(), "얘들아 배고파");
-        Message message3 = messageService.create(user3.getId(), channel3.getId(), "엄마 보고싶어");
-        Message message4 = messageService.create(user1.getId(), channel1.getId(), "아 배고파");
-        Message message5 = messageService.create(user1.getId(), channel2.getId(), "언니 배고파");
-        Message message6 = messageService.create(user3.getId(), channel2.getId(), "안녕하시개");
+        System.out.println("\n=== 3. 메시지 전송 및 순서(Sorted) 확인 ===");
+        messageService.create(user1.getId(), publicChannel.getId(), "첫 번째 메시지");
+        messageService.create(user2.getId(), publicChannel.getId(), "두 번째 메시지");
+        messageService.create(user3.getId(), publicChannel.getId(), "세 번째 메시지");
 
-        System.out.println("\n테스트");
-        UUID dmId = messageService.sendDirectMessage(user3.getId(), user1.getId(), "안녕하시개");
-        messageService.sendDirectMessage(user1.getId(), user3.getId(), "안냥하시오");
-        messageService.sendDirectMessage(user1.getId(), user3.getId(), "동상 뭐하는교");
-        messageService.sendDirectMessage(user1.getId(), user3.getId(), "오빠는 누워있지?");
-        messageService.sendDirectMessage(user3.getId(), user1.getId(), "웅 늘 그렇듯이");
+        System.out.println("[공용 채널 대화]");
+        printChannelMessage(publicChannel.getName(), channelService.getChannelMessages(publicChannel.getId()));
 
-        System.out.println();
-        System.out.println("===DM 채널 대화 내용===");
-        printChannelMessage(channelService.findById(dmId).getName(), channelService.getChannelMessages(dmId));
+        System.out.println("\n=== 4. DM(1:1) 생성 및 중복 방지 테스트 ===");
+        // 첫 번째 DM 전송 (채널 생성됨)
+        UUID dmId1 = messageService.sendDirectMessage(user1.getId(), user2.getId(), "달룡아 안녕?");
+        // 두 번째 DM 전송 (기존 채널을 찾아야 함)
+        messageService.sendDirectMessage(user2.getId(), user1.getId(), "응 달선아!");
 
-        System.out.println();
-        System.out.println("사용자 메시지 조회");
-        printUserMessage(user1.getName(), userService.getUserMessages(user1.getId()));
+        System.out.println("달선님이 속한 채널 수: " + userService.getUserChannels(user1.getId()).size());
+        // 결과가 2(공용, DM 하나)여야 합니다. 3이면 중복 생성된 것!
 
+        System.out.println("\n=== 5. 업데이트 및 파일 덮어쓰기 확인 ===");
+        System.out.println("수정 전: " + user1);
+        user1 = userService.update(user1.getId(), "대장달선", UserStatus.DONOTDISTURB);
+        // 다시 파일에서 읽어와서 확인
+        User checkUser = userService.findById(user1.getId());
+        System.out.println("수정 후(파일 재조회): " + checkUser);
 
-        System.out.println();
-        System.out.println("사용자 채널 조회");
-        printUserChannel(user1.getName(), userService.getUserChannels(user1.getId()));
+        System.out.println("\n=== 6. 검색 및 유저별 메시지 조회 ===");
+        String keyword = "배고파";
+        messageService.create(user1.getId(), publicChannel.getId(), "아 배고파!");
+        printSearchedMessage(publicChannel.getName(), keyword, messageService.searchMessage(publicChannel.getId(), keyword));
 
+        System.out.println("\n=== 7. 삭제 테스트 (신중하게!) ===");
+        System.out.println("삭제 전 유저 수: " + userService.readAll().size());
+        userService.delete(user3.getId());
+        System.out.println("삭제 후 유저 수: " + userService.readAll().size());
 
-        String searchContent = "배고파";
-        printSearchedMessage(channel1.getName(), searchContent, messageService.searchMessage(channel1.getId(), searchContent));
-        printSearchedMessage(channel2.getName(), searchContent, messageService.searchMessage(channel2.getId(), searchContent));
-        printSearchedMessage(channel3.getName(), searchContent, messageService.searchMessage(channel3.getId(), searchContent));
-
-//        userService.printUserMessages(user1.getId());
-//        userService.printUserMessages(user2.getId());
-//        userService.printUserMessages(user3.getId());
-
-//        System.out.println(channel1);
-//        System.out.println();
-//        System.out.println(channel2);
-//        System.out.println();
-//        System.out.println(channel3);
-//        System.out.println();
-
-
-//        // 조회(단건, 다건)
-//        System.out.println("=====채널 조회=====");
-//        System.out.println(channelService.findById(channel1.getId()));
-//        System.out.println(channelService.findById(channel2.getId()));
-//        System.out.println(channelService.findById(channel3.getId()));
-//        System.out.println(channelService.readAll());
-//
-//        System.out.println("=====유저 조회=====");
-//        System.out.println(userService.findById(user1.getId()));
-//        System.out.println(userService.findById(user2.getId()));
-//        System.out.println(userService.findById(user3.getId()));
-//        System.out.println(userService.readAll());
-//
-//        System.out.println("=====메시지 조회=====");
-//        System.out.println(messageService.findById(message1.getId()));
-//        System.out.println(messageService.findById(message2.getId()));
-//        System.out.println(messageService.findById(message3.getId()));
-//        System.out.println(messageService.readAll());
-//
-//        System.out.println("\n메시지 수정");
-//        System.out.println("전");
-//        System.out.println(messageService.findById(message3.getId()));
-//        System.out.println("후");
-//        message3.updateContent("엄마 나랑 놀쟈 !");
-//        messageService.update(message3.getId());
-//        System.out.println(messageService.findById(message3.getId()));
-//
-//        // 수정
-//        System.out.println("\n채널 수정 후");
-//        channel1.updateName("달선이의 롤 채널");
-//        channel1.updatePrivate(IsPrivate.PRIVATE);
-//        channelService.update(channel1.getId());
-//        System.out.println(channelService.readAll());
-////        channelService.delete(channel2.getId()); // 채널 예외 발생
-////        channelService.update(channel2);
-//
-//        // 삭제
-//
-////        User user4 = new User("달콩", UserStatus.ONLINE); // 예외 테스트
-//        System.out.println("유저 삭제 후");
-//        userService.delete(user3.getId());
-//        System.out.println(userService.readAll());
-//        user3 = userService.create("달례", UserStatus.OFFLINE); // 유저 예외 발생
-//
-//        // 심화 요구 사항
-//        System.out.println("심화 요구 사항");
-//        //Message message4 = messageService.create(user3.getId(), channel2.getId(), "오빠 놀쟈!");
-//        //Message message5 = messageService.create(user3.getId(), channel2.getId(), "언니 놀쟈!");
-////        messageService.delete(message4.getId());  // 예외 발생
-////        messageService.update(message4);
-//        System.out.println("보낸 사람 : " + userService.findById(message4.getSender().getId()));
-//        System.out.println("보낸 채널 : " + channelService.findById(message4.getChannelId()));
-//        System.out.println("보낸 메시지 : " + messageService.findById(message4.getId()));
-//        System.out.println("메시지 리스트 : " + user3.getMessages());
+        // 주의: 삭제된 유저의 메시지를 조회하면 에러가 날 수 있으므로 체크 후 진행
+        System.out.println("삭제된 유저(user3)의 메시지함 조회 시도...");
+        try {
+            List<Message> user3Msgs = userService.getUserMessages(user3.getId());
+            System.out.println("메시지 개수: " + user3Msgs.size());
+        } catch (Exception e) {
+            System.out.println("✔ 삭제된 유저 조회 시 예외 처리 확인: " + e.getMessage());
+        }
     }
+
+
+
 
     private static void printUserMessage(String userName, List<Message> messages) {
         if (!messages.isEmpty()) {
@@ -191,11 +140,12 @@ public class JavaApplication {
 
     private static void printSearchedMessage(String channelName, String searchContent, List<Message> messages) {
         if (!messages.isEmpty()) {
-            System.out.println("[" + channelName +"] 채널에 '" + searchContent + "' 내용이 포함된 메시지]");
-            messages.forEach(msg -> System.out.printf("- [%s] : %s%n",  msg.getSender().getName(), msg.getContent()));
+            System.out.println("[" + channelName + "] 채널에 '" + searchContent + "' 내용이 포함된 메시지]");
+            messages.forEach(msg -> System.out.printf("- [%s] : %s%n", msg.getSender().getName(), msg.getContent()));
         } else {
-            System.out.println("[" + channelName +"] 채널에 '" + searchContent + "' 내용이 없습니다.");
+            System.out.println("[" + channelName + "] 채널에 '" + searchContent + "' 내용이 없습니다.");
         }
     }
+
 }
 

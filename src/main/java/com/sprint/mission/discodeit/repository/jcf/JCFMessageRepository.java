@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import java.util.*;
 
 public class JCFMessageRepository implements MessageRepository {
-    private final Map<UUID, Message> data;
+    private Map<UUID, Message> data;
 
     public JCFMessageRepository() {
         this.data = new HashMap<>();
@@ -31,5 +31,10 @@ public class JCFMessageRepository implements MessageRepository {
     @Override
     public void delete(UUID id) {
         data.remove(id);
+    }
+
+    @Override
+    public void clear() {
+        this.data = new HashMap<>();
     }
 }

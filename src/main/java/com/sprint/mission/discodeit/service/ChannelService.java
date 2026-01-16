@@ -27,6 +27,8 @@ public interface ChannelService {
 
     List<Message> getChannelMessages(UUID channelId);
 
+    List<User> getChannelUsers(UUID channelId);
+
     // Delete
     void delete(UUID id);
 
