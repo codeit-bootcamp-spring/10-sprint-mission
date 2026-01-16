@@ -14,86 +14,97 @@ import java.io.ObjectOutputStream;
 import java.util.*;
 
 public class FileChannelService implements ChannelService {
-    private Map<UUID, Channel> data;
     private static final String CHANNEL_FILE = "data/channel.ser";
     private final UserService userService;
     private final MessageService messageService;
 
     public FileChannelService(UserService userService, MessageService messageService){
-        this.data = loadChannel();
         this.userService = userService;
         this.messageService = messageService;
     }
 
     @Override
     public Channel create(String name) {
-        data = loadChannel();
+        // 파일 불러오기
+        Map<UUID,Channel> data = loadChannel();
+
         Channel channel = new Channel(name);
         data.put(channel.getId(), channel);
 
-        saveChannel();
+        // 파일 저장하기
+        saveChannel(data);
         return channel;
     }
 
     @Override
     public Channel joinUsers(UUID channelId, UUID... userId) {
-        Channel channel = findChannel(channelId);
+        // 파일 불러오기
+        Map<UUID,Channel> channelData = loadChannel();
+        Channel channel = channelData.get(channelId);
+        Map<UUID, User> userData = userService.loadUser();
 
         // 유저 추가
         Arrays.stream(userId)
-                .map(userService::findUser)
+                .map(userData::get)
                 .forEach(channel::addUsers);
-
-        saveChannel();
+        // 파일 저장하기
+        userService.saveUser(userData);
+        saveChannel(channelData);
         return channel;
     }
 
     @Override
     public Channel findChannel(UUID channelId) {
-        data = loadChannel();
+        // 파일 불러오기
+        Map<UUID,Channel> data = loadChannel();
         Channel channel = Optional.ofNullable(data.get(channelId))
                 .orElseThrow(()->new NoSuchElementException("해당 채널을 찾을 수 없습니다"));
-        saveChannel();
+
         return channel;
     }
 
     @Override
     public List<Channel> findAllChannel() {
-        data = loadChannel();
+        // 파일 불러오기
+        Map<UUID,Channel> data = loadChannel();
         System.out.println("[채널 전체 조회]");
         data.keySet().forEach(uuid -> System.out.println(data.get(uuid)));
 
-        saveChannel();
+
         return new ArrayList<>(data.values());
     }
 
     @Override
     public List<Channel> findAllChannelsByUserId(UUID userId) {
+        // 파일 불러오기
+        Map<UUID,Channel> data = loadChannel();
         User user = userService.findUser(userId);
-        List<Channel> channelList = new ArrayList<>();
+        List<Channel> channelList = user.getChannelList();
 
         System.out.println("-- " + user + "가 속한 채널 조회 --");
-        Collection<Channel> dataList = new ArrayList<>(data.values());
-        dataList.stream()
-                .filter(channel -> channel.getUserList().contains(user))
-                .forEach(channel -> {channelList.add(channel);
-                    System.out.println(channel);});
+        channelList.forEach(System.out::println);
 
-        saveChannel();
         return channelList;
     }
 
     @Override
     public Channel update(UUID channelId, String newName) {
-        Channel channel = findChannel(channelId);
+        // 파일 불러오기
+        Map<UUID,Channel> data = loadChannel();
+        Channel channel = data.get(channelId);
+
         channel.updateChannel(newName);
-        saveChannel();
+
+        // 파일 저장하기
+        saveChannel(data);
         return channel;
     }
 
     @Override
     public void delete(UUID channelId) {
-        Channel channel = findChannel(channelId);
+        // 파일 불러오기
+        Map<UUID,Channel> data = loadChannel();
+        Channel channel = data.get(channelId);
 
         // 채널이 삭제될때 이 채널이 속해있는 유저의 채널리스트에서 채널 삭제
         List<User> userList = new ArrayList<>(channel.getUserList());
@@ -104,7 +115,9 @@ public class FileChannelService implements ChannelService {
         messageList.forEach(message -> messageService.delete(message.getId()));
 
         data.remove(channelId);
-        saveChannel();
+
+        // 파일 저장하기
+        saveChannel(data);
     }
 
     public Map<UUID, Channel> loadChannel(){
@@ -116,9 +129,9 @@ public class FileChannelService implements ChannelService {
         }
     }
 
-    public void saveChannel(){
+    public void saveChannel(Map<UUID, Channel> data){
         try(ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream(CHANNEL_FILE)))){
-            oos.writeObject(this.data);
+            oos.writeObject(data);
         }
         catch (Exception e){
             throw new RuntimeException(e);

@@ -12,13 +12,13 @@ import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> data;
-    private final UserService userService;
-    private final MessageService messageService;
+    private  UserService userService;
+    private  MessageService messageService;
 
     public JCFChannelService(UserService userService, MessageService messageService){
         this.data = new HashMap<>();
-        this.userService = userService;
         this.messageService = messageService;
+        this.userService = userService;
     }
 
     @Override
@@ -89,6 +89,16 @@ public class JCFChannelService implements ChannelService {
         messageList.forEach(message -> messageService.delete(message.getId()));
 
         data.remove(channelId);
+    }
+
+    @Override
+    public void saveChannel(Map<UUID, Channel> data) {
+        return;
+    }
+
+    @Override
+    public Map<UUID, Channel> loadChannel() {
+        return Map.of();
     }
 }
 

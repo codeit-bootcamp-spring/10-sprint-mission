@@ -92,6 +92,13 @@ public class JCFUserService implements UserService {
         data.remove(userId);
     }
 
+    @Override
+    public void saveUser(Map<UUID, User> data) {
+        return;
+    }
 
-
+    @Override
+    public Map<UUID, User> loadUser() {
+        return Map.of();
+    }
 }

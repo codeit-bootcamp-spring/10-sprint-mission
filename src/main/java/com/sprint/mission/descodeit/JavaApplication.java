@@ -22,6 +22,7 @@ public class JavaApplication {
         ChannelService channelService = new FileChannelService(userService,messageService);
         messageService.setDependencies(userService,channelService);
 
+
         // 유저 생성
         User user1 = userService.create("김현재");
         User user2 = userService.create("기면재");
@@ -87,7 +88,7 @@ public class JavaApplication {
         test(() -> userService.findUser(user1.getId()));
         test(() -> userService.findFriends(user2.getId()));
 
-        test(() -> messageService.delete(message1.getId()));
+        test(() -> messageService.delete(message2.getId()));
         test(() -> messageService.findMessage(message1.getId()));
 
 

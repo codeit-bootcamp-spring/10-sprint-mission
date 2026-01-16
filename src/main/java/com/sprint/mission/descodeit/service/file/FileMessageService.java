@@ -15,13 +15,10 @@ import java.util.*;
 
 public class FileMessageService implements MessageService {
     private static final String MESSAGE_FILE = "data/message.ser";
-    private Map<UUID, Message> data;
+
     private UserService userService;
     private ChannelService channelService;
 
-    public FileMessageService(){
-        data = loadMessage();
-    }
     @Override
     public void setDependencies(UserService userService, ChannelService channelService) {
         this.userService = userService;
@@ -29,40 +26,47 @@ public class FileMessageService implements MessageService {
     }
 
     public Message create(UUID userId, String text, UUID channelId) {
-        data = loadMessage();
-        User user = userService.findUser(userId);
-        Channel channel = channelService.findChannel(channelId);
+        // 파일에서 불러오기
+        Map<UUID, Message> messageData = loadMessage();
+        Map<UUID, Channel> channelData = channelService.loadChannel();
+        Map<UUID, User> userData = userService.loadUser();
+
+        User user = userData.get(userId);
+        Channel channel = channelData.get(channelId);
+
         // 메시지 객체 생성
         Message message = new Message(user, text, channel);
         // 데이터에 객체 추가
-        data.put(message.getId(), message);
-        saveMessage();
+        messageData.put(message.getId(), message);
+        saveMessage(messageData);
+        channelService.saveChannel(channelData);
+        userService.saveUser(userData);
 
         return message;
     }
 
     @Override
     public Message findMessage(UUID messageId) {
-        data = loadMessage();
+        // 파일 불러오기
+        Map <UUID, Message> data = loadMessage();
         Message message = Optional.ofNullable(data.get(messageId))
                 .orElseThrow(()-> new NoSuchElementException("해당 메시지를 찾을 수 없습니다"));
-        saveMessage();
+
         return message;
     }
 
     @Override
     public List<Message> findAllMessages() {
-        data = loadMessage();
+        Map <UUID, Message> data = loadMessage();
         System.out.println("[메세지 전체 조회]");
         data.keySet().forEach(uuid -> System.out.println(data.get(uuid)));
 
-        saveMessage();
         return new ArrayList<>(data.values());
     }
 
     @Override
     public List<Message> findMessageByKeyword(UUID channelId, String keyword) {
-        data = loadMessage();
+        Map <UUID, Message> data = loadMessage();
         Channel channel = channelService.findChannel(channelId);
         List<Message> messageList = data.values().stream()
                 .filter(message -> message.getChannel().getId().equals(channelId))
@@ -71,25 +75,30 @@ public class FileMessageService implements MessageService {
         System.out.println(channel+"채널의 " + "[" + keyword + "]를 포함한 메시지 조회");
         messageList.forEach(System.out::println);
 
-        saveMessage();
         return messageList;
     }
 
     @Override
     public List<Message> findAllMessagesByChannelId(UUID channelId) {
-        Channel channel = channelService.findChannel(channelId);
+        Map<UUID, Channel> channelData = channelService.loadChannel();
+        Channel channel = channelData.get(channelId);
 
         System.out.println("-- " + channel + "에 속한 메시지 조회 --");
         List<Message> messageList = channel.getMessageList();
         messageList.forEach(System.out::println);
 
-        saveMessage();
         return messageList;
     }
 
     @Override
     public void delete(UUID messageId) {
-        Message message = findMessage(messageId);
+        // 데이터 불러오기
+        Map <UUID, Message> data = loadMessage();
+        Message message = data.get(messageId);
+
+        if(message == null){
+            return;
+        }
 
         // 해당 메시지가 속했던 유저와 채널에서 메시지 정보 삭제
         User user = message.getUser();
@@ -100,18 +109,23 @@ public class FileMessageService implements MessageService {
 
         //데이터에서도 삭제
         data.remove(messageId);
-        saveMessage();
+        saveMessage(data);
     }
 
     @Override
     public Message update(UUID messageId,UUID requestUserId, String newText) {
-        Message message = findMessage(messageId);
+        // 파일 불러오기
+        Map <UUID, Message> data = loadMessage();
+        Message message = data.get(messageId);
+
         if(!requestUserId.equals(message.getUser().getId())){
             throw new IllegalStateException("수정할 권한이 없습니다");
         }
         message.updateMessage(newText);
         System.out.println("수정완료!");
-        saveMessage();
+
+        // 파일 저장
+        saveMessage(data);
         return message;
     }
 
@@ -124,9 +138,9 @@ public class FileMessageService implements MessageService {
         }
     }
 
-    public void saveMessage(){
+    public void saveMessage(Map<UUID, Message> data){
         try(ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream(MESSAGE_FILE)))){
-            oos.writeObject(this.data);
+            oos.writeObject(data);
         }
         catch (Exception e){
             throw new RuntimeException(e);

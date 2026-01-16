@@ -12,4 +12,6 @@ public interface UserService {
     List<User> findFriends(UUID userId);
     User update(UUID userId, String newName);
     void delete(UUID userId);
+    Map<UUID, User> loadUser();
+    void saveUser(Map<UUID, User> data);
 }
