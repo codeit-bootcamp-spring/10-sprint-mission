@@ -10,6 +10,8 @@ public interface ChannelService {
 
     List<Channel> getChannelList();
 
+    List<Channel> getChannelsByUser(UUID userId);
+
     Channel getChannelInfoById(UUID channelId);
 
     Channel updateChannelName(UUID channelId, String newChannelName);

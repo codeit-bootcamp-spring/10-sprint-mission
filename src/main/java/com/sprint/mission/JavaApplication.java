@@ -12,8 +12,11 @@ public class JavaApplication {
     public static void main(String[] args) {
 
         JCFUserService jcfUserService = new JCFUserService();
-        JCFMessageService jcfMessageService = new JCFMessageService();
+        JCFMessageService jcfMessageService = new JCFMessageService(jcfUserService);
         JCFChannelService jcfChannelService = new JCFChannelService(jcfMessageService, jcfUserService);
+
+        // 🔑 순환 고리 연결
+        jcfMessageService.setChannelService(jcfChannelService);
 
         System.out.println("------------------- 유저 서비스 테스트 -------------------");
         System.out.println();
@@ -42,8 +45,14 @@ public class JavaApplication {
         System.out.println("채널 생성 후: " + jcfChannelService.getChannelList());
         // 채널에 유저 추가
         jcfChannelService.joinChannel(testChannel.getId(), charlie.getId());
+        jcfChannelService.joinChannel(chatChannel.getId(), charlie.getId());
         jcfChannelService.joinChannel(testChannel.getId(), david.getId());
         System.out.println("채널에 유저 추가 후: " + jcfChannelService.getChannelList());
+        System.out.println();
+        // 유저 별로 참여중인 채널 확인
+        for (var user: jcfUserService.getUserList()) {
+            System.out.println(user.getUsername() + "의 참여중인 채널 조회: " + jcfChannelService.getChannelsByUser(user.getId()));
+        }
         // 채널 이름 변경
         jcfChannelService.updateChannelName(testChannel.getId(), "NMIXX Channel");
         System.out.println("채널 이름 변경 후: " + jcfChannelService.getChannelList());

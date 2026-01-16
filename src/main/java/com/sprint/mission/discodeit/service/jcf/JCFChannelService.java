@@ -35,6 +35,17 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
+    public List<Channel> getChannelsByUser(UUID userId) {
+        Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
+
+        return channels.values().stream()
+                .filter(channel ->
+                        channel.getJoinedUsers().stream()
+                                .anyMatch(user -> user.getId().equals(userId)))
+                .toList();
+    }
+
+    @Override
     public Channel getChannelInfoById(UUID channelId) {
         return channels.get(channelId);
     }
