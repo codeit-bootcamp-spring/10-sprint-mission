@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface MessageService {
     // 메시지 생성 (하지만 실제로는 객체를 등록하는 역할)
-    Message createMessage(String content, User user, Channel channel);
+    Message createMessage(String content, UUID userId, UUID channelID);
 
 
     // 메세지 조회(시스템) ID로!

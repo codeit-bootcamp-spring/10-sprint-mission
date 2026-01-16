@@ -49,7 +49,7 @@ public class ChatCoordinator {
         // 여기서 유효성 검사..
         User user = userService.findUserById(userId);
         Channel channel = channelService.findChannelById(channelId);
-        return messageService.createMessage(content, user, channel);
+        return messageService.createMessage(content, user.getId(), channel.getId());
     }
     // 채널에 있는 메세지들 조회
     public List<Message> getMessageInChannel(UUID channelId){

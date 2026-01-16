@@ -17,21 +17,15 @@ public class JCFMessageService implements MessageService{
 
     // 생성
     @Override
-    public Message createMessage(String content, User user, Channel channel) {
+    public Message createMessage(String content, UUID userId, UUID channelId) {
         //  입력값 검증
         Validation.notBlank(content, "메세지 내용");
-        if (user == null || channel == null) {
+        if (userId == null || channelId == null) {
             throw new IllegalArgumentException("sender나 channel가 null일 수 없습니다.");
         }
 
-//        // User 유효성 검사 및 조회
-//        User sender = userService.findUserById(senderId);
-//
-//        // Channel 유효성 검사 및 조회
-//        Channel channel = channelService.findChannelById(channelId);
-
         //  Message 생성 및 저장
-        Message message = new Message(content, user, channel);
+        Message message = new Message(content, userId, channelId);
         data.put(message.getId(), message);
 
         return message;
