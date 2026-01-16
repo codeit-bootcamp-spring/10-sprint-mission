@@ -277,6 +277,12 @@ public class JavaApplication {
                 chat.sendMessage(u1.getId(), ch2.getId(), "자유채팅방에 오신 걸 환영합니다!");
                 chat.sendMessage(u2.getId(), ch2.getId(), "저도 인사드립니다.");
 
+                // 유저 삭제 후 메세지와 채널 조회 삭제
+//                chat.deleteUserClean(u1.getId());
+                // 채널 삭제 후 유저가 참가한 채널리스트 조회 및 해당 채널의 메세지 조회
+                chat.deleteChannelClean(ch1.getId());
+                System.out.println("test");
+
                 // ===========================
                 // 특정 유저의 메시지 조회 테스트
                 // ===========================
@@ -287,8 +293,14 @@ public class JavaApplication {
                 // 특정 유저가 참여 중인 채널 조회 테스트
                 // ===========================
                 System.out.println("\n=== [2] 특정 유저가 참가 중인 채널 목록 ===");
-                chat.getChannelsByUser(u1.getId()).forEach(System.out::println);
-
+                try {
+                // 유저 ID를 통해 채널 목록을 가져와서 출력
+                    chat.getChannelsByUser(u1.getId()).forEach(System.out::println);
+                }
+                // 예외 발생시 경고문 출력
+                catch (Exception e) {
+                System.out.println("[경고] 해당 유저를 찾을 수 없거나 참여 중인 채널 정보를 불러올 수 없습니다.");
+                }
                 System.out.println("\n=== [3] 두 번째 유저의 채널 목록 ===");
                 chat.getChannelsByUser(u2.getId()).forEach(System.out::println);
 

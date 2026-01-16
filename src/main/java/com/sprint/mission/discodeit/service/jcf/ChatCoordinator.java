@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -59,6 +60,45 @@ public class ChatCoordinator {
     public List<Message> getMessagesByUser(UUID userId){
         User user = userService.findUserById(userId);
         return messageService.getMsgListSenderId(userId);
+    }
+
+    // 기능 추가 (유저 삭제 & 채널 삭제)
+
+    // 유저삭제시-> 그 유저가 참가중인 채널 가져오기-> 모두 퇴실
+    // -> 유저가 발행한 모든 메세지 가져오기 -> 유저가 발행한 메세지 삭제
+    // -> 마지막으로 유저 delete 실행
+    public void deleteUserClean(UUID uuid) {
+        User user = userService.findUserById(uuid);
+        // 유저가 참가중인 모든 채널에서 퇴실
+        for(Channel ch : user.getJoinedChannels()){
+            ch.removeParticipant(user);
+        }
+        // 모든 메세지 삭제
+        for(Message msg: messageService.getMsgListSenderId(uuid)){
+            messageService.deleteMessage(msg.getId());
+        }
+        //유저 삭제
+        userService.deleteUser(uuid);
+        System.out.println("유저: " + user.getAlias() + " 삭제 완료!");
+    }
+
+    // 채널 삭제 시-> 그 채널의 모든 참가자 가져오고 -> 각 유저의 joinedChannel에서
+    // 이 채널 제거-> 그 채널에 존재하는 모든 메세지 삭제...
+    // 마지막으로 그 채널도 delete.
+    public void deleteChannelClean(UUID uuid) {
+        Channel channel = channelService.findChannelById(uuid);
+        List<User> users = new ArrayList<>(channel.getParticipants());
+        for (User user : users) {
+            user.leaveChannel(channel);
+        }
+        //삭제할 체널의 메세지들도 삭제..
+        List<Message> messages = new ArrayList<>(channel.getMessages());
+        for(Message msg: messages){
+            messageService.deleteMessage(msg.getId());
+        }
+        // 채널 삭제
+        channelService.deleteChannel(uuid);
+        System.out.println("채널: " + channel.getChannelName() + " 삭제 완료!!");
     }
 
 
