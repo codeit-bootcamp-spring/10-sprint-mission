@@ -278,7 +278,7 @@ public class JavaApplication {
                 chat.sendMessage(u2.getId(), ch2.getId(), "저도 인사드립니다.");
 
                 // 유저 삭제 후 메세지와 채널 조회 삭제
-//                chat.deleteUserClean(u1.getId());
+                //chat.deleteUserClean(u1.getId());
                 // 채널 삭제 후 유저가 참가한 채널리스트 조회 및 해당 채널의 메세지 조회
                 chat.deleteChannelClean(ch1.getId());
                 System.out.println("test");
@@ -306,7 +306,12 @@ public class JavaApplication {
 
                 // 현재 채널에 참가한 유저리스트 조회
                 System.out.println("현재 채널의 유저리스트는...");
-                chat.getUsersInChannel(ch1.getId()).forEach(System.out::println);
+                chat.getUsersInChannel(ch2.getId()).forEach(System.out::println);
+                // 유저가 보낸 메세지 리스트 조회
+        System.out.println("u1 유저의 메세지 리스트 조회");
+        messageService.getMsgListSenderId(u1.getId());
+        System.out.println(channelService.getChannelAll());
+        // 삭제 확인
 
             }
         }

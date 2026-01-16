@@ -82,20 +82,25 @@ public class ChatCoordinator {
         System.out.println("유저: " + user.getAlias() + " 삭제 완료!");
     }
 
+
     // 채널 삭제 시-> 그 채널의 모든 참가자 가져오고 -> 각 유저의 joinedChannel에서
     // 이 채널 제거-> 그 채널에 존재하는 모든 메세지 삭제...
     // 마지막으로 그 채널도 delete.
     public void deleteChannelClean(UUID uuid) {
         Channel channel = channelService.findChannelById(uuid);
-        List<User> users = new ArrayList<>(channel.getParticipants());
-        for (User user : users) {
-            user.leaveChannel(channel);
-        }
+        new ArrayList<>(channel.getParticipants()).stream()
+                .forEach(user->user.leaveChannel(channel));
+        System.out.println("채널 삭제 완료");
+//        List<User> users = new ArrayList<>(channel.getParticipants());
+//        for (User user : users) {
+//            user.leaveChannel(channel);
+//        }
         //삭제할 체널의 메세지들도 삭제..
-        List<Message> messages = new ArrayList<>(channel.getMessages());
-        for(Message msg: messages){
-            messageService.deleteMessage(msg.getId());
-        }
+        new ArrayList<>(channel.getMessages()).stream()
+                .map(msg->msg.getId())
+                .forEach(msg->messageService.deleteMessage(msg));
+        System.out.println("메세지 삭제 완료");
+
         // 채널 삭제
         channelService.deleteChannel(uuid);
         System.out.println("채널: " + channel.getChannelName() + " 삭제 완료!!");
