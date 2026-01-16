@@ -5,7 +5,7 @@ import org.example.service.jcf.*;
 
 import java.util.UUID;
 
-public class Main {
+public class JavaApplication {
 
     public static void main(String[] args) {
 
