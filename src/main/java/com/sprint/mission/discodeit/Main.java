@@ -213,7 +213,7 @@ public class Main {
         // 초대
         if (channel2 != null && user2 != null) {
             try {       // 예상 출력: sakuya, dyoool
-                channelService.inviteMembers(user2.getId(), channel2.getId(), channel2.getMembers());
+                channelService.inviteMembers(user2.getId(), channel2.getId());
                 System.out.println("초대 테스트");
                 channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
             } catch (Exception e) {
@@ -223,7 +223,7 @@ public class Main {
 
         if (channel2 != null && user3 != null) {
             try {       // 이미 존재하는 사용자
-                channelService.inviteMembers(user3.getId(), channel2.getId(), channel2.getMembers());
+                channelService.inviteMembers(user3.getId(), channel2.getId());
                 System.out.println("초대 테스트");
                 channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
             } catch (Exception e) {
@@ -233,7 +233,7 @@ public class Main {
 
         // 퇴장
         try {       // 예상 출력: sakuya
-            channelService.leaveMembers(user2.getId(), channel2.getId(), channel2.getMembers());
+            channelService.leaveMembers(user2.getId(), channel2.getId());
             System.out.println("퇴장 테스트");
             channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
         }  catch (Exception e) {
@@ -241,7 +241,7 @@ public class Main {
         }
 
         try {       // 채널에 존재하지 않는 사용자
-            channelService.leaveMembers(user2.getId(), channel2.getId(), channel2.getMembers());
+            channelService.leaveMembers(user2.getId(), channel2.getId());
             System.out.println("퇴장 테스트");
             channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
         }  catch (Exception e) {
@@ -417,7 +417,7 @@ public class Main {
         // 유저 삭제 -> 전체 채널 목록 및 전체 메시지 목록 연쇄 삭제
         if (channel2 != null && user2 != null) {
             try {       // 예상 출력: sakuya, dyoool
-                channelService.inviteMembers(user2.getId(), channel2.getId(), channel2.getMembers());
+                channelService.inviteMembers(user2.getId(), channel2.getId());
                 System.out.println("특정 채널 초대 테스트");
                 channel2.getMembers().forEach(user -> System.out.println(user.getNickname()));
             } catch (Exception e) {

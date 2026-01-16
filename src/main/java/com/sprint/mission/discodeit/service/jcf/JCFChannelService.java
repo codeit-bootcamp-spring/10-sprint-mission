@@ -76,24 +76,24 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 채널 참가자 초대
-    public void inviteMembers(UUID targetUserId, UUID targetChannelId, List<User> members) {
+    public void inviteMembers(UUID targetUserId, UUID targetChannelId) {
         User newUser = userService.searchUser(targetUserId);
         Channel targetChannel = searchChannel(targetChannelId);
 
         validateMemberExists(targetUserId, targetChannelId);
 
-        members.add(newUser);
+        targetChannel.getMembers().add(newUser);
         newUser.addChannel(targetChannel);
     }
 
     // 채널 퇴장
-    public void leaveMembers(UUID targetUserId, UUID targetChannelId, List<User> members) {
+    public void leaveMembers(UUID targetUserId, UUID targetChannelId) {
         User targetUser = userService.searchUser(targetUserId);
         Channel targetChannel = searchChannel(targetChannelId);
 
         validateUserNotInChannel(targetUserId, targetChannelId);
 
-        members.remove(targetUser);
+        targetChannel.getMembers().remove(targetUser);
         targetUser.removeChannel(targetChannel);
     }
 
