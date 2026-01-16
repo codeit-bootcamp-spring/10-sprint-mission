@@ -11,4 +11,5 @@ public interface UserService {
     List<User> findAll();
     User update(UUID userId, String username);
     void delete(UUID userId);
+    List<User> findUsersByChannelId(UUID channelId);
 }

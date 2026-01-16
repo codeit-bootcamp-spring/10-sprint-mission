@@ -1,13 +1,19 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFUserService implements UserService {
-    private final Map<UUID, User> data;
+    private Map<UUID, User> data = new HashMap<>();
+    private ChannelService channelService;
 
+    public void setChannelService(ChannelService channelService) {
+        this.channelService = channelService;
+    }
     public JCFUserService() {
         this.data = new HashMap<>();
     }
@@ -39,5 +45,10 @@ public class JCFUserService implements UserService {
     public void delete(UUID userId) {
         findById(userId);
         data.remove(userId);
+    }
+
+    public List<User> findUsersByChannelId(UUID channelId) {
+        Channel channel = channelService.findById(channelId);
+        return channel.getUsers();
     }
 }

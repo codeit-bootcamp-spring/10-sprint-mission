@@ -10,6 +10,9 @@ public class ServiceFactory {
     private final MessageService messageService;
 
     private ServiceFactory() {
+        UserService userService = new JCFUserService();
+        ChannelService channelService = new JCFChannelService(userService);
+        ((JCFUserService) userService).setChannelService(channelService);
         this.userService = new JCFUserService();
         this.channelService = new JCFChannelService(userService);
         this.messageService =

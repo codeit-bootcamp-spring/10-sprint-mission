@@ -47,6 +47,9 @@ public class JCFChannelService implements ChannelService {
     public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = findById(channelId);
         User user = userService.findById(userId);
+        if (channel.getUsers().contains(user)) {
+            throw new IllegalStateException("이미 이 채널에 참여하고 있는 사용자입니다.");
+        }
         channel.addUser(user);
         user.addChannel(channel);
     }
@@ -59,9 +62,5 @@ public class JCFChannelService implements ChannelService {
         }
         channel.removeUser(user);
         user.removeChannel(channel);
-    }
-    public List<User> findUsersByChannelId(UUID channelId) {
-        Channel channel = findById(channelId);
-        return channel.getUsers();
     }
 }
