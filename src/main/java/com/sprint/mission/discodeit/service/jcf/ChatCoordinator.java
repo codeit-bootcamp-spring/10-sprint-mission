@@ -74,8 +74,11 @@ public class ChatCoordinator {
             ch.removeParticipant(user);
         }
         // 모든 메세지 삭제
-        for(Message msg: messageService.getMsgListSenderId(uuid)){
-            messageService.deleteMessage(msg.getId());
+        List<UUID> messageIds = new ArrayList<>(user.getMessage()).stream()
+                .map(msg->msg.getId())
+                .toList();
+        for(UUID messageId : messageIds){
+            messageService.deleteMessage(messageId);
         }
         //유저 삭제
         userService.deleteUser(uuid);
@@ -91,15 +94,14 @@ public class ChatCoordinator {
         new ArrayList<>(channel.getParticipants()).stream()
                 .forEach(user->user.leaveChannel(channel));
         System.out.println("채널 삭제 완료");
-//        List<User> users = new ArrayList<>(channel.getParticipants());
-//        for (User user : users) {
-//            user.leaveChannel(channel);
-//        }
+
         //삭제할 체널의 메세지들도 삭제..
-        new ArrayList<>(channel.getMessages()).stream()
+        List<UUID> messageIds = new ArrayList<>(channel.getMessages()).stream()
                 .map(msg->msg.getId())
-                .forEach(msg->messageService.deleteMessage(msg));
-        System.out.println("메세지 삭제 완료");
+                .toList();
+        for(UUID messageId : messageIds){
+            messageService.deleteMessage(messageId);
+        }
 
         // 채널 삭제
         channelService.deleteChannel(uuid);

@@ -62,7 +62,6 @@ public class JCFMessageService implements MessageService{
                 .filter(m -> m.getSender() != null
                         && m.getSender().getId().equals(senderId))
                 .toList();
-
     }
 
 
