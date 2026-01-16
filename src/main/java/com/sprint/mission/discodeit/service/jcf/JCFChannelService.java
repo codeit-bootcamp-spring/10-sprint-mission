@@ -35,6 +35,11 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
+    public Channel getChannelInfoById(UUID channelId) {
+        return channels.get(channelId);
+    }
+
+    @Override
     public Channel updateChannelName(UUID channelId, String newChannelName) {
         Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
 
