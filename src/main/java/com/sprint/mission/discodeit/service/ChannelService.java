@@ -21,20 +21,22 @@ public interface ChannelService {
     List<Channel> findAllChannels();
     // 비공개 여부에 따른 채널 목록
     List<Channel> findPublicOrPrivateChannel(ChannelType channelType);
-    // 특정 채널 멤버 조회
+    // 특정 채널 멤버 Ids 조회
     List<UUID> findMemberIdsByChannelId(UUID channelId);
+    // 해당 유저가 join한 모든 채널
+    List<Channel> findJoinChannelIdsByUserId(UUID userId);
     // 특정 사용자가 owner인 모든 채널
     List<Channel> findOwnerChannelsByUserId(UUID userId);
 
     // U. 수정
     Channel updateChannelInfo(UUID ownerId, UUID channelId, ChannelType channelType, String channelName, String channelDescription);
     // 채널 owner 변경
-    Channel changeChannelOwner(UUID requestUserId, UUID channelId, UUID newOwnerId);
+    Channel changeChannelOwner(UUID currentUserId, UUID channelId, UUID newOwnerId);
     // 채널 참여하기
     Channel joinChannel(UUID userId, UUID channelId);
     // 채널 나가기
     Channel leaveChannel(UUID userId, UUID channelId);
 
     // D. 삭제
-    void deleteChannel(UUID requestId, UUID channelId);
+    void deleteChannel(UUID ownerId, UUID channelId);
 }
