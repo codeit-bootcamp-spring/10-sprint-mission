@@ -44,6 +44,10 @@ public class JCFMessageService implements MessageService {
 
         Message newMessage = new Message(user, msg, channel);
         messages.add(newMessage);
+
+
+
+
         return newMessage;
     }
 

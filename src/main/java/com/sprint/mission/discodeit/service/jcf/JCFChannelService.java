@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.PermissionLevel;
-import com.sprint.mission.discodeit.entity.Role;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.RoleService;
 
@@ -96,6 +93,24 @@ public class JCFChannelService implements ChannelService {
             throw new RuntimeException("User not allowed to change role");
         }
 
+    }
+
+    public Message addMessage(UUID channelID, UUID userID, String msg) {
+        Message sendMessage = JCFMessageService.getInstance().create(userID, msg, channelID);
+        User user = JCFUserService.getInstance().find(userID);
+        Channel channel = this.find(channelID);
+
+        boolean isAllowedUser = user.getRoles()
+                .stream()
+                .anyMatch(g->g.getChannel().equals(channel));
+
+        if(isAllowedUser){
+            channel.getMessages().add(sendMessage);
+        }
+        else{
+            throw new RuntimeException("User not allowed to send message in this channel");
+        }
+        return sendMessage;
     }
 
 }

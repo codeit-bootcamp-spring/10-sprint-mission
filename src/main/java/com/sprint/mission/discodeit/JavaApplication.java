@@ -33,15 +33,17 @@ public class JavaApplication {
         Role role1 = roledata.create(ADMIN, user1.getId(), ch1.getId());
         Role role2 = roledata.create(USER, user2.getId(), ch1.getId());
 
-        Message mes1 = messagedata.create(user1.getId(), "이게 뭐지", ch1.getId());
-        Message mes2 = messagedata.create(user2.getId(), "그게 뭔데", ch1.getId());
+        Message mes1 = channeldata.addMessage(ch1.getId(), user1.getId(), "이게 뭐지?");
+        Message mes2 = channeldata.addMessage(ch1.getId(), user2.getId(), "그게 뭔데?");
 
         //테스팅 내용
         channeldata.printChannel(ch1.getId());
 
-        channeldata.updateUserRole(ch1.getId(), user2.getId(), ADMIN, user2.getId());
+        channeldata.updateUserRole(ch1.getId(), user2.getId(), ADMIN, user1.getId());
 
-        messagedata.delete(mes1.getId(), user2.getId());
+        messagedata.delete(mes1.getId(), user1.getId());
+
+        roledata.delete(role1.getId());
 
         channeldata.printChannel(ch1.getId());
 

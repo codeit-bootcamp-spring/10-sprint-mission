@@ -9,7 +9,6 @@ public class Message extends DefaultEntity {
         this.message = message;
         this.user = user;
         this.channel = channel;
-        channel.addMessage(this);
     }
 
     public String getMessage() {
@@ -27,14 +26,6 @@ public class Message extends DefaultEntity {
 
     public Channel getChannel() {
         return channel;
-    }
-
-    public void setChannel(Channel channel) {
-        this.updatedAt = System.currentTimeMillis();
-        this.channel = channel;
-        if(!channel.getMessages().contains(this)){
-            channel.addMessage(this);
-        }
     }
 
     public String toString() {

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.PermissionLevel;
 
 import java.util.Set;
@@ -14,4 +15,5 @@ public interface ChannelService {
     public Channel update(UUID id, String name, String desc);
     public void printChannel(UUID id);
     public void updateUserRole(UUID channelID, UUID willChangeUserID, PermissionLevel roleName, UUID tryingUserID);
+    public Message addMessage(UUID channelID, UUID userID, String msg);
 }

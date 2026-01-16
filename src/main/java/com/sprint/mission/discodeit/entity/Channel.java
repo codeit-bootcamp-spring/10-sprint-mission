@@ -36,23 +36,6 @@ public class Channel extends DefaultEntity {
         return messages;
     }
 
-    public void addMessage(Message message) {
-        boolean isAllowedUser = message.getUser()
-                .getRoles()
-                .stream()
-                .anyMatch(g->g.getChannel().equals(this));
-        if(isAllowedUser){
-            messages.add(message);
-            if(!message.getChannel().equals(this)){
-                message.setChannel(this);
-            }
-        }
-        else{
-            throw new RuntimeException("User not allowed to send message in this channel");
-        }
-
-    }
-
     public void DeleteMessage(UUID messageID) {
         messages.stream()
                 .filter(message -> messageID.equals(message.getId()))
