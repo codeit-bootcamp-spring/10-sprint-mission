@@ -46,6 +46,10 @@ public class JCFMessageService implements MessageService {
     public List<Message> findAll() {
         return new ArrayList<>(data.values());
     }
+    public List<Message> findMessagesByChannelId(UUID channelId) {
+        Channel channel = channelService.findById(channelId);
+        return channel.getMessages();
+    }
 
     public Message update(UUID messageId, String content) {
         Message message = findById(messageId);
