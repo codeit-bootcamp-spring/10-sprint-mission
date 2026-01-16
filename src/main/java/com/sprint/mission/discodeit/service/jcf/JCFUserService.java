@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -61,5 +63,19 @@ public class JCFUserService implements UserService {
     public void delete(UUID id){
         findById(id);
         data.remove(id);
+    }
+
+    // 특정 유저가 참가한 채널 목록 조회
+    @Override
+    public List<Channel> findJoinedChannelsByUserId(UUID userId){
+        User user = findById(userId);
+        return user.getJoinedChannels();
+    }
+
+    // 특정 유저가 발행한 메시지 목록 조회
+    @Override
+    public List<Message> findMessagesByUserId(UUID userId){
+        User user = findById(userId);
+        return user.getMyMessages();
     }
 }
