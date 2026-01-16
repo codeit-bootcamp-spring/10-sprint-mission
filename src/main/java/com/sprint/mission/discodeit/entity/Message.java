@@ -9,7 +9,7 @@ public class Message extends BaseDomain {
     private UUID channelId;
 
     // 생성자
-    public Message(String msg, UUID userId, UUID channelId) {
+    public Message(String msg, User user, Channel channel) {
         super();
         this.msg = msg;
         this.userId = userId;

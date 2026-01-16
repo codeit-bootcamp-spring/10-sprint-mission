@@ -44,15 +44,19 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void joinUser(User user, Channel channel) {
-        channel.getUserList().add(user);
+    public void joinUser(UUID userId, UUID channelId, JCFUserService userService, JCFChannelService channelService) {
+        User user = userService.read(userId);
+        Channel channel = channelService.read(channelId);
         user.getChannelList().add(channel);
+        channel.getUserList().add(user);
     }
 
     @Override
-    public void quitUser(User user, Channel channel) {
-        channel.getUserList().remove(user);
+    public void quitUser(UUID userId, UUID channelId, JCFUserService userService, JCFChannelService channelService) {
+        User user = userService.read(userId);
+        Channel channel = channelService.read(channelId);
         user.getChannelList().remove(channel);
+        channel.getUserList().remove(user);
     }
 
     // 특정 유저가 참가한 채널 리스트 조회

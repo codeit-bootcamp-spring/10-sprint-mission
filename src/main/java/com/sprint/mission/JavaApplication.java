@@ -142,10 +142,15 @@ public class JavaApplication {
 
         // Message
         // 등록
-        User msgTestUser = new User();
-        Channel msgTestChannel = new Channel();
+        UUID msgTestUser = jcfU1.create("메시지 테스트용 유저").getId();
+        UUID msgTestChannel = jcfC1.create("메시지 테스트용 채널").getId();
         JCFMessageService jcfM1 = new JCFMessageService();
-        UUID messageId1 = jcfM1.create("테스트", msgTestUser.getId(), msgTestChannel.getId()).getId();
+        UUID messageId1 = UUID.randomUUID();
+        try {
+            messageId1 = jcfM1.create("테스트", msgTestUser, msgTestChannel, jcfU1, jcfC1).getId();
+        } catch (NoSuchElementException e) {
+            System.out.println("메시지를 생성할 수 없습니다.");
+        }
         JCFMessageService jcfM2 = new JCFMessageService();
 
         // 조회(단건)
@@ -210,7 +215,7 @@ public class JavaApplication {
         UUID userJoinTestId = jcfU1.create("참가용 테스트 유저").getId();
         UUID channelJoinTestId = jcfC1.create("참가용 테스트 채널").getId();
         try {
-            jcfC1.joinUser(jcfU1.read(userJoinTestId), jcfC1.read(channelJoinTestId));
+            jcfC1.joinUser(userJoinTestId, channelJoinTestId, jcfU1, jcfC1);
         } catch (NoSuchElementException e) {
             System.out.println("참가할 유저가 존재하지 않습니다.");
         }
