@@ -9,13 +9,22 @@ import java.util.*;
 
 public class JCFMessageService implements MessageService {
     private final HashMap<UUID, Message> data;
+    private JCFChannelService channelService;
+    private JCFUserService userService;
 
     public JCFMessageService() {
         this.data = new HashMap<>();
+        this.channelService = new JCFChannelService();
+        this.userService = new JCFUserService();
+    }
+    public JCFMessageService(JCFChannelService channelService, JCFUserService userService) {
+        this.data = new HashMap<>();
+        this.channelService = channelService;
+        this.userService = userService;
     }
 
     @Override
-    public Message create(String msg, UUID userId, UUID channelId, JCFUserService userService, JCFChannelService channelService) {
+    public Message create(String msg, UUID userId, UUID channelId) {
         User user = userService.read(userId);
         Channel channel = channelService.read(channelId);
         Message message = new Message(msg, user, channel);
@@ -48,14 +57,14 @@ public class JCFMessageService implements MessageService {
 
     // 특정 유저가 발행한 메시지 리스트 조회
     @Override
-    public List<Message> readUserMessageList(UUID userId, JCFUserService userService) {
+    public List<Message> readUserMessageList(UUID userId) {
         User user = userService.read(userId);
         return user.getMessageList();
     }
 
     // 특정 채널의 발행된 메시지 목록 조회
     @Override
-    public List<Message> readChannelMessageList(UUID channelId, JCFChannelService channelService) {
+    public List<Message> readChannelMessageList(UUID channelId) {
         Channel channel = channelService.read(channelId);
         return channel.getMessagesList();
     }

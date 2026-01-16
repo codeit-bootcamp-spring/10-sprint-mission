@@ -1,7 +1,5 @@
 package com.sprint.mission;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -144,14 +142,14 @@ public class JavaApplication {
         // 등록
         UUID msgTestUser = jcfU1.create("메시지 테스트용 유저").getId();
         UUID msgTestChannel = jcfC1.create("메시지 테스트용 채널").getId();
-        JCFMessageService jcfM1 = new JCFMessageService();
+        JCFMessageService jcfM1 = new JCFMessageService(jcfC1, jcfU1);
         UUID messageId1 = UUID.randomUUID();
         try {
-            messageId1 = jcfM1.create("테스트", msgTestUser, msgTestChannel, jcfU1, jcfC1).getId();
+            messageId1 = jcfM1.create("테스트", msgTestUser, msgTestChannel).getId();
         } catch (NoSuchElementException e) {
             System.out.println("메시지를 생성할 수 없습니다.");
         }
-        JCFMessageService jcfM2 = new JCFMessageService();
+        JCFMessageService jcfMessageEmpty = new JCFMessageService();
 
         // 조회(단건)
         try {
@@ -167,7 +165,7 @@ public class JavaApplication {
 
         // 조회(다건)
         System.out.println(jcfM1.readAll());
-        System.out.println(jcfM2.readAll());
+        System.out.println(jcfMessageEmpty.readAll());
 
         // 수정
         try {
@@ -222,7 +220,7 @@ public class JavaApplication {
 
         // 특정 채널에 발행된 메시지 목록 조회
         try {
-            System.out.println(jcfM1.readChannelMessageList(channelJoinTestId, jcfC1));
+            System.out.println(jcfM1.readChannelMessageList(channelJoinTestId));
         } catch (NoSuchElementException e) {
             System.out.println();
         }
@@ -243,7 +241,7 @@ public class JavaApplication {
 
         // 특정 유저가 발행한 메시지 리스트 조회
         try {
-            System.out.println(jcfM1.readUserMessageList(userJoinTestId, jcfU1));
+            System.out.println(jcfM1.readUserMessageList(userJoinTestId));
         } catch (NoSuchElementException e) {
             System.out.println("발행한 메시지가 없습니다.");
         }

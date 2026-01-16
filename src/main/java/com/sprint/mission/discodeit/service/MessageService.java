@@ -1,14 +1,12 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.*;
 
 public interface MessageService {
 
-    Message create(String msg, UUID userId, UUID channelId, JCFUserService userService, JCFChannelService channelService);
+    Message create(String msg, UUID userId, UUID channelId);
 
     Message read(UUID id);
 
@@ -18,7 +16,7 @@ public interface MessageService {
 
     void delete(UUID id);
 
-    List<Message> readUserMessageList(UUID userId, JCFUserService userService);
+    List<Message> readUserMessageList(UUID userId);
 
-    List<Message> readChannelMessageList(UUID channelId, JCFChannelService channelService);
+    List<Message> readChannelMessageList(UUID channelId);
 }
