@@ -23,7 +23,7 @@ public class JCFUserService implements UserService {
     // id로 User 객체 조회 메서드 - 해당 id의 User 있으면 User 객체 반환. 없으면 예외 발생
     private User findUserByIdOrThrow(UUID id) {
         if (!userMap.containsKey(id)) {
-            throw new IllegalArgumentException("해당 id의 User가 존재하지 않습니다. (id: " + id + " )");
+            throw new IllegalArgumentException("해당 id의 User가 존재하지 않습니다. (id: " + id + ")");
         }
         return userMap.get(id);
     }
@@ -35,13 +35,12 @@ public class JCFUserService implements UserService {
         boolean isDuplicate = userMap.values().stream()
                 .anyMatch(user -> user.getUsername().equals(newUsername));
         if (isDuplicate) {
-            throw new IllegalArgumentException("이미 존재하는 유저(User) 이름입니다.: " + newUsername);
+            throw new IllegalArgumentException("이미 존재하는 유저(User) 이름입니다. username: " + newUsername);
         }
 
         User user = new User(newUsername);
         userMap.put(user.getId(), user);
 
-        System.out.println("유저 생성됨: username: " + user.getUsername() + " id: " + user.getId());
         return user;
     }
 
@@ -85,6 +84,7 @@ public class JCFUserService implements UserService {
 
         // 유저 본체 삭제
         userMap.remove(id);
-        System.out.println("유저(User) 삭제 완료하였습니다. (유저 작성 메시지, 유저 참여 중 채널 모두 삭제됨) username: " + user.getUsername() + " id: " + id);
+        System.out.println("유저(User) 삭제 완료하였습니다. (유저 작성 메시지삭제, 유저 참여 중 채널 관계 삭제)");
+        System.out.println("\tusername: " + user.getUsername() + " (id: " + id + ")");
     }
 }

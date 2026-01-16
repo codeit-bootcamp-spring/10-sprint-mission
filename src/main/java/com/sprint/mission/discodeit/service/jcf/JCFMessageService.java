@@ -96,6 +96,6 @@ public class JCFMessageService implements MessageService {
     public void deleteAllMessagesByUserId(UUID userId) {
         // 메시지 Map의 값들 중 전송자(Sender)의 ID가 userId와 같은 것을 모두 삭제
         messageMap.values().removeIf(message -> message.getSenderId().equals(userId));
-        System.out.println("해당 유저가 작성한 모든 메시지를 삭제했습니다. UserId: " + userId);
+        System.out.println("해당 유저가 작성한 모든 메시지를 삭제했습니다. userId: " + userId);
     }
 }

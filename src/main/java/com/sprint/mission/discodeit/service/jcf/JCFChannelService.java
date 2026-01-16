@@ -43,8 +43,6 @@ public class JCFChannelService implements ChannelService {
         Channel channel = new Channel(name, owner);
         channelMap.put(channel.getId(), channel);
 
-        System.out.println("채널 생성됨: " + channel.getChannelName() + " id: " + channel.getId()
-                + " owner: " + owner.getUsername() + " id: " + owner.getId());
         return channel;
     }
 
@@ -92,6 +90,6 @@ public class JCFChannelService implements ChannelService {
         // 채널 맵의 값들 중 방장(Owner)의 ID가 ownerId와 같은 것을 모두 삭제
         channelMap.values().removeIf(channel -> channel.getOwner().getId().equals(ownerId));
 
-        System.out.println("해당 유저가 방장인 모든 채널을 삭제했습니다. OwnerId: " + ownerId);
+        System.out.println("해당 유저가 채널장(Owner)인 모든 채널을 삭제했습니다. ownerId: " + ownerId);
     }
 }

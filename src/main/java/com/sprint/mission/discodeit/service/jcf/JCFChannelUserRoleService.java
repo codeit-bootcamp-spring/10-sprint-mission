@@ -117,7 +117,7 @@ public class JCFChannelUserRoleService implements ChannelUserRoleService {
 
         // 2 (선택 사항) User 객체 내부의 리스트에서도 삭제해주는 것이 완벽하지만,
         // 어차피 User 객체 자체가 지금 삭제되는 중(UserDelete)이므로 Map에서만 지워도 충분
-        System.out.println("해당 유저의 모든 채널 참여 정보를 삭제했습니다. UserId: " + userId);
+        System.out.println("해당 유저의 모든 채널 참여 정보를 삭제했습니다. userId: " + userId);
     }
 
 }
