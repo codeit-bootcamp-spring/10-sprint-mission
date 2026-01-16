@@ -23,13 +23,14 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message create(String text, UUID channelId,  UUID userId) {
-        channelService.join(channelId, userId);
+        channelService.joinChannel(channelId, userId);
+
         User user = userService.findUserById(userId);
         Channel channel = channelService.findChannelById(channelId);
+
         Message message = new Message(text, user, channel);
+
         data.add(message);
-        user.send(message);
-        channel.send(message);
         return message;
     }
 
@@ -44,13 +45,17 @@ public class JCFMessageService implements MessageService {
     //특정 채널에 발행된 메시지 리스트 조회
     @Override
     public List<Message> findMessagesByChannel(UUID channelId) {
-        return channelService.findChannelById(channelId).getMessages();
+        return data.stream()
+                .filter(message -> message.getChannel().getId().equals(channelId))
+                .toList();
     }
 
     //특정 사용자의 발행한 메시지 리스트 조회
     @Override
     public List<Message> findMessagesByUser(UUID userId) {
-        return userService.findUserById(userId).getMessages();
+        return data.stream()
+                .filter(message -> message.getUser().getId().equals(userId))
+                .toList();
     }
 
     //모든 채널의 모든 메세지리스트 반환
@@ -74,10 +79,13 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
+    public void saveOrUpdate(Message message) {
+        //동기화용 메서드
+    }
+
+    @Override
     public void delete(UUID messageId) {
         Message message = findMessage(messageId);
-        message.getUser().delete(message);
-        message.getChannel().delete(message);
         data.remove(message);
     }
 }

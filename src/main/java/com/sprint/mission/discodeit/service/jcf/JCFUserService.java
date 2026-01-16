@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -45,7 +43,7 @@ public class JCFUserService implements UserService {
     @Override
     public List<User> findUsersByChannel(UUID channelId) {
         return data.stream().filter(user -> user.getChannels().stream()
-                .anyMatch(channel -> channel.getId().equals(channelId)))
+                        .anyMatch(channel -> channel.getId().equals(channelId)))
                 .toList();
     }
 
@@ -55,7 +53,7 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, String username, String email, String password) {
+    public User update(UUID userId, String password, String username, String email) {
         existsByEmail(email);
         User user = findUserById(userId);
         validatePassword(user, password);
@@ -65,19 +63,28 @@ public class JCFUserService implements UserService {
     }
 
     @Override
+    public User updatePassword(UUID userId, String currentPassword, String newPassword) {
+        User user = findUserById(userId);
+        validatePassword(user, currentPassword);
+        user.updatePassword(newPassword);
+        return user;
+    }
+
+    @Override
     public void delete(UUID userId, String password) {
         User user = findUserById(userId);
         validatePassword(user, password);
 
-        user.getMessages().forEach(message -> {
-            message.getChannel().delete(message);
-            user.delete(message);
-        });
         user.getChannels().forEach(channel -> {
             channel.leave(user);
             user.leave(channel);
         });
         data.remove(user);
+    }
+
+    @Override
+    public void saveOrUpdate(User user) {
+        //동기화용 메서드
     }
 
     //유저 이메일 중복체크

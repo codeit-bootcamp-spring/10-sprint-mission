@@ -7,12 +7,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.file.FIleChannelService;
-import com.sprint.mission.discodeit.service.file.FIleMessageService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,8 +19,8 @@ public class FileJavaApplication {
     public static void main(String[] args) {
         String path = System.getProperty("user.dir") + "/data";
         UserService userService = new FileUserService(path);
-        ChannelService channelService = new FIleChannelService(userService, path);
-        MessageService messageService = new FIleMessageService(channelService, userService, path);
+        ChannelService channelService = new FileChannelService(userService, path);
+        MessageService messageService = new FileMessageService(channelService, userService, path);
 
         System.out.println("========[채널 테스트]========");
         //채널 등록 테스트
@@ -45,7 +42,7 @@ public class FileJavaApplication {
         System.out.println("ID로 찾은 채널 = " + idSearchChannel);
 
         //채널 수정 테스트
-        Channel updatedChannel = channelService.update(channel1.getId(), "게임 채널");
+        Channel updatedChannel = channelService.update(channel1.getId(), "게임 채널", "게임 채널입니다.");
         System.out.println("수정된 채널 = " + updatedChannel);
         System.out.println("채널 수정 시간: " + channel1.getUpdateAt());
 
@@ -82,25 +79,30 @@ public class FileJavaApplication {
         //userService.updateEmail(user1.getId(), "hello@hello.com");
 
         //유저 이메일 변경 테스트
-        User updatedEmailUser = userService.update(user1.getId(), null, "bye@bye.com", "1234");
+        User updatedEmailUser = userService.update(user1.getId(), "1234", null, "bye@bye.com");
         System.out.println("유저 이메일 변경 = " + updatedEmailUser);
 
         //유저 이름 변경 테스트
-        User updatedNameUser = userService.update(user1.getId(), "김코딩", null, "1234");
+        User updatedNameUser = userService.update(user1.getId(), "1234", "김코딩", null);
         System.out.println("유저 이름 변경 = " + updatedNameUser);
 
         //유저 이메일, 이름 모두 변경 테스트
-        User updatedUser = userService.update(user1.getId(), "이공부", "good@good.com", "1234");
+        User updatedUser = userService.update(user1.getId(), "1234", "이공부", "good@good.com");
         System.out.println("유저 이름, 이메일 변경 = " + updatedUser);
 
         //비밀번호 다르게 입력 (예외발생)
         //userService.updateUser(user1.getId(), "실패할 테스트", "dd@dd.dd", "1111");
 
+        //비밀번호 변경 테스트
+        System.out.println("변경 전 비밀번호: " + user1.getPassword());
+        userService.updatePassword(user1.getId(), "1234", "0000");
+        System.out.println("변경 후 비밀번호: " + user1.getPassword());
+
         //유저 전체 검색
         System.out.println("전체 유저 목록: " + userService.findAllUser());
 
         //유저 삭제 테스트
-        userService.delete(user1.getId(), user1.getPassword());
+        userService.delete(user1.getId(), "0000");
         System.out.println("유저 삭제 후 전체 유저 목록: " + userService.findAllUser());
 
         System.out.println();
@@ -211,7 +213,7 @@ public class FileJavaApplication {
 
         //메세지 없이 채널에 유저 참가 (테스트 채널)
         User joinUser = userService.create("관리자 C", "adminC@discodeit.com", "admincpassword");
-        channelService.join(testChannel.getId(), joinUser.getId());
+        channelService.joinChannel(testChannel.getId(), joinUser.getId());
 
         //특정 유저가 참여중인 채널 리스트 조회 (관리자C)
         List<Channel> channelsByUserId = channelService.findChannelsByUser(joinUser.getId());
@@ -224,7 +226,7 @@ public class FileJavaApplication {
         }
         System.out.println();
 
-        channelService.leave(testChannel.getId(), joinUser.getId());
+        channelService.leaveChannel(testChannel.getId(), joinUser.getId());
 
         System.out.println("삭제 후 테스트 채널에 참여 중인 유저");
         for (User user : userService.findUsersByChannel(testChannel.getId())) {
@@ -234,27 +236,21 @@ public class FileJavaApplication {
         System.out.println();
         System.out.println("========[유저 삭제 테스트]========");
         System.out.println("관리자 A 삭제 전");
-        System.out.println(adminA.getMessages());
-        System.out.println(testChannel.getMessages());
+        System.out.println(adminA.getChannels());
         userService.delete(adminA.getId(), adminA.getPassword());
         System.out.println("관리자 A 삭제 후");
         System.out.println(adminA.getChannels());
-        System.out.println(adminA.getMessages());
+
         System.out.println(testChannel.getUsers());
-        System.out.println(testChannel.getMessages());
         System.out.println(adminChannel.getUsers());
-        System.out.println(adminChannel.getMessages());
 
         System.out.println();
         System.out.println("========[채널 삭제 테스트]========");
         System.out.println("테스트 채널 삭제 전");
-        System.out.println(testChannel.getMessages());
         System.out.println(testChannel.getUsers());
         channelService.delete(testChannel.getId());
         System.out.println("테스트 채널 삭제 후");
-        System.out.println(testChannel.getMessages());
         System.out.println(testChannel.getUsers());
-        System.out.println(adminB.getMessages());
         System.out.println(adminB.getChannels());
         System.out.println(channelService.findAllChannel());
     }

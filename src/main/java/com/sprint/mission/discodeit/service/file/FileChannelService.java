@@ -12,32 +12,34 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-public class FIleChannelService implements ChannelService {
+public class FileChannelService implements ChannelService {
 
+    private static final String FILE_NAME = "channels.ser";
     private final Path filePath;
-    private final List<Channel> data;
     private final UserService userService;
 
-    public FIleChannelService(UserService userService, String path) {
-        this.filePath = Paths.get(path, "channels.ser");
+    public FileChannelService(UserService userService, String path) {
+        this.filePath = Paths.get(path, FILE_NAME);
         this.userService = userService;
         init(filePath.getParent());
-        this.data = load();
     }
 
     @Override
     public Channel create(ChannelType type, String name, String description) {
-        existsByChannelName(name);
+        List<Channel> data = load();
+        existsByChannelName(data, name);
         Channel channel = new Channel(type, name, description);
         data.add(channel);
-        save();
+        save(data);
         return channel;
     }
 
     @Override
     public Channel findChannelById(UUID channelId) {
+        List<Channel> data = load();
         return data.stream()
                 .filter(channel -> channel.getId().equals(channelId))
                 .findAny()
@@ -46,6 +48,7 @@ public class FIleChannelService implements ChannelService {
 
     @Override
     public Channel findChannelByName(String name) {
+        List<Channel> data = load();
         return data.stream()
                 .filter(channel -> channel.getChannelName().equals(name))
                 .findAny()
@@ -54,62 +57,95 @@ public class FIleChannelService implements ChannelService {
 
     @Override
     public List<Channel> findAllChannel() {
-        return new ArrayList<>(data);
+        return load();
     }
 
     //특정 사용자의 참가한 채널 리스트 조회
     @Override
     public List<Channel> findChannelsByUser(UUID userId) {
-        return userService.findUserById(userId).getChannels();
+        List<Channel> data = load();
+        return data.stream()
+                .filter(channel -> channel.getUsers().stream()
+                        .anyMatch(user -> user.getId().equals(userId)))
+                .toList();
     }
 
     @Override
-    public Channel update(UUID channelId, String name) {
-        Channel channel = findChannelById(channelId);
-        existsByChannelName(name);
-        channel.update(name);
-        save();
+    public Channel update(UUID channelId, String name, String description) {
+        List<Channel> data = load();
+        Channel channel = findInList(data, channelId);
+
+        if (name != null && !name.equals(channel.getChannelName())) {
+            existsByChannelName(data, name);
+        }
+        Optional.ofNullable(name).ifPresent(channel::updateChannelName);
+        Optional.ofNullable(description).ifPresent(channel::updateDescription);
+
+        saveOrUpdate(channel);
         return channel;
     }
 
     @Override
     public void delete(UUID channelId) {
-        Channel channel = findChannelById(channelId);
+        List<Channel> data = load();
+        Channel channel = findInList(data, channelId);
 
-        channel.getMessages().forEach(message -> {
-            message.getUser().delete(message);
-            channel.delete(message);
-        });
         channel.getUsers().forEach(user -> {
             user.leave(channel);
             channel.leave(user);
+            userService.saveOrUpdate(user);
         });
-        save();
         data.remove(channel);
+        save(data);
     }
 
     @Override
-    public void join(UUID channelId, UUID userId) {
+    public void saveOrUpdate(Channel channel) {
+        List<Channel> data = load();
+        data.removeIf(c -> c.getId().equals(channel.getId()));
+        data.add(channel);
+        save(data);
+    }
+
+    @Override
+    public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = findChannelById(channelId);
         User user = userService.findUserById(userId);
+
         channel.join(user);
         user.join(channel);
+
+        saveOrUpdate(channel);
+        userService.saveOrUpdate(user);
     }
 
     @Override
-    public void leave(UUID channelId, UUID userId) {
+    public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = findChannelById(channelId);
         User user = userService.findUserById(userId);
-        user.leave(channel);
+
         channel.leave(user);
+        user.leave(channel);
+
+        saveOrUpdate(channel);
+        userService.saveOrUpdate(user);
     }
 
+
     //채널명 중복체크
-    private void existsByChannelName(String name) {
+    private void existsByChannelName(List<Channel> data, String name) {
         boolean exist = data.stream().anyMatch(channel -> channel.getChannelName().equals(name));
         if (exist) {
             throw new IllegalArgumentException("이미 사용중인 채널명입니다: " + name);
         }
+    }
+
+    //내부에서 수정, 삭제를 위한 조회메서드
+    private Channel findInList(List<Channel> data, UUID channelId) {
+        return data.stream()
+                .filter(channel -> channel.getId().equals(channelId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
     }
 
     private void init(Path directory) {
@@ -122,7 +158,8 @@ public class FIleChannelService implements ChannelService {
         }
     }
 
-    private void save() {
+    private void save(List<Channel> data) {
+
         try (
                 FileOutputStream fos = new FileOutputStream(filePath.toFile());
                 ObjectOutputStream oos = new ObjectOutputStream(fos)

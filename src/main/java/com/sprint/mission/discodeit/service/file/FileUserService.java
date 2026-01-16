@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.file;
 
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -15,25 +14,26 @@ import java.util.UUID;
 
 public class FileUserService implements UserService {
 
+    private static final String FILE_NAME = "users.ser";
     private final Path filePath;
-    private final List<User> data;
 
     public FileUserService(String path) {
-        this.filePath = Paths.get(path, "users.ser");
+        this.filePath = Paths.get(path, FILE_NAME);
         init(filePath.getParent());
-        this.data = load();
     }
 
     @Override
     public User create(String username, String email, String password) {
-        existsByEmail(email);
+        List<User> data = load();
+        existsByEmail(data, email);
         User user = new User(username, email, password);
         data.add(user);
-        save();
+        save(data);
         return user;
     }
 
     public User findUserById(UUID userId) {
+        List<User> data = load();
         return data.stream()
                 .filter(user -> user.getId().equals(userId))
                 .findAny()
@@ -42,6 +42,7 @@ public class FileUserService implements UserService {
 
     @Override
     public User findUserByEmail(String email) {
+        List<User> data = load();
         return data.stream()
                 .filter(user -> user.getEmail().equals(email))
                 .findAny()
@@ -51,6 +52,7 @@ public class FileUserService implements UserService {
     //특정 채널에 참가한 사용자 리스트 조회
     @Override
     public List<User> findUsersByChannel(UUID channelId) {
+        List<User> data = load();
         return data.stream().filter(user -> user.getChannels().stream()
                         .anyMatch(channel -> channel.getId().equals(channelId)))
                 .toList();
@@ -58,39 +60,60 @@ public class FileUserService implements UserService {
 
     @Override
     public List<User> findAllUser() {
-        return new ArrayList<>(data);
+        return load();
     }
 
     @Override
-    public User update(UUID userId, String username, String email, String password) {
-        existsByEmail(email);
-        User user = findUserById(userId);
+    public User update(UUID userId, String password, String username, String email) {
+        List<User> data = load();
+        existsByEmail(data, email);
+
+        User user = findInList(data, userId);
         validatePassword(user, password);
+
         Optional.ofNullable(username).ifPresent(user::updateUsername);
         Optional.ofNullable(email).ifPresent(user::updateEmail);
-        save();
+
+        saveOrUpdate(user);
+        return user;
+    }
+
+    @Override
+    public User updatePassword(UUID userId, String currentPassword, String newPassword) {
+        List<User> data = load();
+        User user = findInList(data, userId);
+        validatePassword(user, currentPassword);
+        user.updatePassword(newPassword);
+        saveOrUpdate(user);
         return user;
     }
 
     @Override
     public void delete(UUID userId, String password) {
-        User user = findUserById(userId);
+        List<User> data = load();
+        User user = findInList(data, userId);
         validatePassword(user, password);
 
-        user.getMessages().forEach(message -> {
-            message.getChannel().delete(message);
-            user.delete(message);
-        });
         user.getChannels().forEach(channel -> {
             channel.leave(user);
             user.leave(channel);
+
         });
-        save();
         data.remove(user);
+        save(data);
     }
 
+    @Override
+    public void saveOrUpdate(User user) {
+        List<User> data = load();
+        data.removeIf(u -> u.getId().equals(user.getId()));
+        data.add(user);
+        save(data);
+    }
+
+
     //유저 이메일 중복체크
-    private void existsByEmail(String email) {
+    private void existsByEmail(List<User> data, String email) {
         boolean exist = data.stream().anyMatch(user -> user.getEmail().equals(email));
         if (exist) {
             throw new IllegalArgumentException("이미 사용중인 이메일입니다: " + email);
@@ -104,6 +127,14 @@ public class FileUserService implements UserService {
         }
     }
 
+    //내부에서 수정, 삭제를 위한 조회메서드
+    private User findInList(List<User> data, UUID userId) {
+        return data.stream()
+                .filter(user -> user.getId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    }
+
     private void init(Path directory) {
         if (!Files.exists(directory)) {
             try {
@@ -114,7 +145,7 @@ public class FileUserService implements UserService {
         }
     }
 
-    private void save() {
+    private void save(List<User> data) {
         try (
                 FileOutputStream fos = new FileOutputStream(filePath.toFile());
                 ObjectOutputStream oos = new ObjectOutputStream(fos)

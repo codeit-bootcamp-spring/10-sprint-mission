@@ -10,8 +10,8 @@ import java.util.*;
 
 public class JCFChannelService implements ChannelService {
 
-    private final List<Channel> data;
     private final UserService userService;
+    private final List<Channel> data;
 
     public JCFChannelService(UserService userService) {
         this.userService = userService;
@@ -50,14 +50,22 @@ public class JCFChannelService implements ChannelService {
     //특정 사용자의 참가한 채널 리스트 조회
     @Override
     public List<Channel> findChannelsByUser(UUID userId) {
-        return userService.findUserById(userId).getChannels();
+        return data.stream()
+                .filter(channel -> channel.getUsers().stream()
+                        .anyMatch(user -> user.getId().equals(userId)))
+                .toList();
     }
 
     @Override
-    public Channel update(UUID channelId, String name) {
+    public Channel update(UUID channelId, String name, String description) {
         Channel channel = findChannelById(channelId);
-        existsByChannelName(name);
-        channel.update(name);
+
+        if (name != null && !name.equals(channel.getChannelName())) {
+            existsByChannelName(name);
+        }
+
+        Optional.ofNullable(name).ifPresent(channel::updateChannelName);
+        Optional.ofNullable(description).ifPresent(channel::updateDescription);
         return channel;
     }
 
@@ -65,10 +73,6 @@ public class JCFChannelService implements ChannelService {
     public void delete(UUID channelId) {
         Channel channel = findChannelById(channelId);
 
-        channel.getMessages().forEach(message -> {
-            message.getUser().delete(message);
-            channel.delete(message);
-        });
         channel.getUsers().forEach(user -> {
             user.leave(channel);
             channel.leave(user);
@@ -77,19 +81,26 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void join(UUID channelId, UUID userId) {
+    public void saveOrUpdate(Channel channel) {
+        //동기화용 메서드
+    }
+
+    @Override
+    public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = findChannelById(channelId);
         User user = userService.findUserById(userId);
+
         channel.join(user);
         user.join(channel);
     }
 
     @Override
-    public void leave(UUID channelId, UUID userId) {
+    public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = findChannelById(channelId);
         User user = userService.findUserById(userId);
-        user.leave(channel);
+
         channel.leave(user);
+        user.leave(channel);
     }
 
     //채널명 중복체크
