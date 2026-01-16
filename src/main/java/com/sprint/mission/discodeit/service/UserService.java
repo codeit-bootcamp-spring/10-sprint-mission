@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface UserService {
     User createUser(String username, String email);
-    Optional<User> findById(UUID id);
+    User findById(UUID id);
     List<User> findAll();
 
     User update(UUID id, String username, String email);

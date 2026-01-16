@@ -20,8 +20,6 @@ public class Message extends BaseEntity{
 
     public void updateMessage(UUID id, String content, UUID userId, UUID channelId) {
         this.content = content;
-        this.user = user;
-        this.channel = channel;
         touch(); // BaseEntity의 updatedAt 갱신
     }
 
@@ -37,16 +35,18 @@ public class Message extends BaseEntity{
         return updatedAt;
     }
 
+    public Channel getChannel() {
+        return channel;
+    }
     public String getContent() {
         return content;
     }
+
     public User getUser() {
         return user;
     }
 
-    public Channel getChannel() {
-        return channel;
-    }
+
 
     public void setChannel(Channel channel) {
         this.channel = channel;

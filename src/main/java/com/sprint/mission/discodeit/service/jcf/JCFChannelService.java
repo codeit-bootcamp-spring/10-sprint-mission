@@ -13,7 +13,6 @@ public class JCFChannelService implements ChannelService {
         this.data = new ArrayList<>();
     }
 
-
     @Override
     public Channel createChannel(String name, String description) {
         Channel channel = new Channel(name, description);
@@ -22,10 +21,11 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Optional<Channel> findById(UUID id) {
+    public Channel findById(UUID id) {
         return data.stream()
                 .filter(channel -> channel.getId().equals(id))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found"+id));
     }
 
     @Override
@@ -34,43 +34,17 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public void setName(UUID id, String name) {
-
-    }
-
-    @Override
-    public void setDescription(UUID id, String description) {
-
-    }
-
-//    @Override
-//    public Channel update(UUID id, String name, String description) {
-//        for (Channel channel : data) {
-//            if (channel.getId().equals(id)) {
-//                channel.update(name, description); // Channel 엔티티의 update 메서드
-//                return channel;
-//            }
-//        }
-//        throw new IllegalArgumentException("Channel not found: " + id);
-//    }
-
-
-    @Override
     public void updateChannel(UUID id, String name, String description) {
-        Channel channel = findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
-
-        Optional.ofNullable(name).ifPresent(channel::setName);
-        Optional.ofNullable(description).ifPresent(channel::setDescription);
+        Channel channel = findById(id);
+        Optional.ofNullable(name).ifPresent(channel::updateChannelName);
+        Optional.ofNullable(description).ifPresent(channel::updateChannelDescription);
 
         channel.touch();
     }
 
     @Override
     public void delete(UUID id) {
-        Channel channel = findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
-
+        Channel channel = findById(id);
         data.remove(channel);
     }
 

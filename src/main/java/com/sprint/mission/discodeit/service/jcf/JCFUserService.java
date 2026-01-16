@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -16,7 +15,6 @@ public class JCFUserService implements UserService {
         this.data = new ArrayList<>();
     }
 
-
     @Override
     public User createUser(String username, String email) {
         User user = new User(username, email);
@@ -25,10 +23,11 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public Optional<User> findById(UUID id) {
+    public User findById(UUID id) {
         return data.stream()
-                .filter(channel -> channel.getId().equals(id))
-                .findFirst();
+                .filter(user -> user.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
     }
 
     @Override
@@ -38,10 +37,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User update(UUID id, String username, String email) {
-        User user = data.stream()
-                .filter(u -> u.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+        User user = findById(id);
 
         // username이 null이 아닐 때만 수정
         Optional.ofNullable(username).ifPresent(user::setUsername);
@@ -55,9 +51,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public void delete(UUID id) {
-        User user = findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
-
+        User user = findById(id);
         data.remove(user);
     }
 

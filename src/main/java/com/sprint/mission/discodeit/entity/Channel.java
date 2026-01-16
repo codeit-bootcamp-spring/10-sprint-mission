@@ -19,16 +19,13 @@ public class Channel extends BaseEntity{
     public void updateChannel (String name, String description) {
         this.name = name;
         this.description = description;
-        this.updatedAt = System.currentTimeMillis();
     }
-    public void setName(String name) {
+    public void updateChannelName(String name) {
         this.name = name;
-        this.updatedAt = System.currentTimeMillis();
     }
 
-    public void setDescription(String description) {
+    public void updateChannelDescription(String description) {
         this.description = description;
-        this.updatedAt = System.currentTimeMillis();
     }
 
 
