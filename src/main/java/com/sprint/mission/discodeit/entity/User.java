@@ -10,10 +10,10 @@ public class User extends BaseEntity {
     private String birthday;
 
     // 연관
-    // 해당 유저가 참여 중인 채널 Ids
-    private final Set<UUID> joinChannelIds;
-    // 해당 유저가 보낸 메시지 Ids
-    private final List<UUID> writeMessageIds;
+    // 해당 유저가 참여 중인 채널 List
+    private final List<Channel> joinChannelList;
+    // 해당 유저가 보낸 메시지 List
+    private final List<Message> writeMessageList;
 
     // 생성자
     public User(String email, String userName, String nickName, String password, String birthday) {
@@ -23,8 +23,8 @@ public class User extends BaseEntity {
         this.password = password; // 해싱?
         this.birthday = birthday;
 
-        joinChannelIds = new HashSet<>();
-        writeMessageIds = new ArrayList<>();
+        joinChannelList = new ArrayList<>();
+        writeMessageList = new ArrayList<>();
     }
 
     @Override
@@ -38,8 +38,8 @@ public class User extends BaseEntity {
                 "userName = " + userName + ", " +
                 "password = " + password + ", " +
                 "birthday = " + birthday + ", " +
-                "joinChannelIds = " + joinChannelIds + ", " +
-                "writeMessageIds = " + writeMessageIds +
+//                "joinChannelList = " + joinChannelList + ", " +
+//                "writeMessageList = " + writeMessageList +
                 "}";
     }
 
@@ -64,12 +64,12 @@ public class User extends BaseEntity {
         return birthday;
     }
 
-    public List<UUID> getJoinChannelIds() {
-        return joinChannelIds.stream().toList();
+    public List<Channel> getJoinChannelList() {
+        return joinChannelList.stream().toList();
     }
 
-    public List<UUID> getWriteMessageIds() {
-        return writeMessageIds.stream().toList();
+    public List<Message> getWriteMessageList() {
+        return writeMessageList.stream().toList();
     }
 
     // update
@@ -100,27 +100,26 @@ public class User extends BaseEntity {
     }
 
     // 채널 참가
-    public void joinChannel(UUID channelId) {
-        this.joinChannelIds.add(channelId);
+    public void joinChannel(Channel channel) {
+        this.joinChannelList.add(channel);
         updateTime();
     }
 
     // 채널 탈퇴
     public void leaveChannel(UUID channelId) {
-        this.joinChannelIds.remove(channelId);
+        this.joinChannelList.removeIf(channel -> channel.getId().equals(channelId));
         updateTime();
     }
 
-    // 메시지 작성(메세지 Ids 추가)
-    public void writeMessage(UUID messageId) {
-        this.writeMessageIds.add(messageId);
+    // 메시지 작성
+    public void writeMessage(Message message) {
+        this.writeMessageList.add(message);
         updateTime();
-//        message.addUserWriteMessageList(this, message.getContent());
     }
 
-    // 유저가 작성한 메시지 삭제(메세지 Ids 삭제)
+    // 유저가 작성한 메시지 삭제
     public void removeUserMessage(UUID messageId) {
-        this.writeMessageIds.remove(messageId);
+        this.writeMessageList.removeIf(message -> message.getId().equals(messageId));
         updateTime();
     }
 }

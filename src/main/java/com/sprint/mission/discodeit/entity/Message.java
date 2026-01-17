@@ -3,14 +3,14 @@ package com.sprint.mission.discodeit.entity;
 import java.util.UUID;
 
 public class Message extends BaseEntity {
-    private final UUID channelId; // 메시지가 위치한 채널
-    private final UUID authorId; // 메시지 작성자
+    private final Channel channel; // 메시지가 위치한 채널
+    private final User author; // 메시지 작성자
     private String content; // 메시지 내용
 
     // 생성자
-    public Message(UUID channelId, UUID authorId, String content) {
-        this.channelId = channelId;
-        this.authorId = authorId;
+    public Message(Channel channel, User author, String content) {
+        this.channel = channel;
+        this.author = author;
         this.content = content;
     }
 
@@ -18,21 +18,21 @@ public class Message extends BaseEntity {
     public String toString() {
         return "Message{" +
                 "messageId = " + getId() + ", " +
-                "channelId = " + channelId + ", " +
+                "channel = " + channel.getId() + ", " +
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +
-                "authorId = " + authorId + ", " +
+                "author = " + author.getId() + ", " +
                 "content = " + content +
                 "}";
     }
 
     // Getter
-    public UUID getMessageChannelId() {
-        return channelId;
+    public Channel getMessageChannel() {
+        return channel;
     }
 
-    public UUID getAuthorId() {
-        return authorId;
+    public User getAuthor() {
+        return author;
     }
 
     public String getMessageContent() {

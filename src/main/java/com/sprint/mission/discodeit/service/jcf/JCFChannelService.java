@@ -38,10 +38,10 @@ public class JCFChannelService implements ChannelService {
         ValidationMethods.validateNullBlankString(channelName, "channelName");
         ValidationMethods.validateNullBlankString(channelDescription, "channelDescription");
 
-        Channel channel = new Channel(userId, channelType, channelName, channelDescription);
+        Channel channel = new Channel(owner, channelType, channelName, channelDescription);
         data.put(channel.getId(), channel);
-        owner.joinChannel(channel.getId()); // owner는 자동 join
-        channel.addMember(owner.getId()); // owner도 member에 추가
+        // owner는 channel 생성 시 자동 join(channel의 member list에도 추가
+        linkMemberAndChannel(owner, channel);
         return channel;
     }
 
@@ -84,46 +84,29 @@ public class JCFChannelService implements ChannelService {
         }
     }
 
-    // 특정 채널 멤버 ids 조회
-    @Override
-    public List<UUID> findMemberIdsByChannelId(UUID channelId) {
-        // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(channelId);
-
-        return channel.getChannelMembersIds().stream().toList();
-    }
-    // 사용법(상위)
-    // List<User> members = channelService.findMemberIdsByChannelId(channel2.getId()).stream()
-    //        .map(userService::findUserById)
-    //        .flatMap(Optional::stream) // 없는 건 제거
-    //        .toList();
-
     // 해당 유저가 join한 모든 채널
     @Override
-    public List<Channel> findJoinChannelIdsByUserId(UUID userId) {
-        // 로그인 되어있는 user ID null / user 객체 존재 확인
-        validateUserByUserId(userId);
+    public List<Channel> findJoinChannelsByUserId(UUID userId) {
+        // 로그인 되어있는 user ID null & user 객체 존재 확인
+        User user = validateAndGetUserByUserId(userId);
 
-        return userService.findJoinChannelIdsByUserId(userId).stream()
-                .map(id->findChannelById(id))
-                .flatMap(Optional::stream)
-                .toList();
+        return user.getJoinChannelList();
     }
 
     // 특정 사용자가 owner인 모든 채널
     @Override
     public List<Channel> findOwnerChannelsByUserId(UUID userId) {
-        // 로그인 되어있는 user ID null / user 객체 존재 확인
+        // 로그인 되어있는 user ID null & user 객체 존재 확인
         validateUserByUserId(userId);
 
         return findAllChannels().stream()
-                .filter(channel -> channel.getOwnerId().equals(userId))
+                .filter(channel -> channel.getOwner().getId().equals(userId))
                 .toList();
     }
 
     // U. 수정
     // 로그인 정보를 가져온다고 가정하면 `requestUserId` 와 `targetUserId` 로 나눌 필요는 없음
-    // ID null 검증 / req ID와 target ID의 동일한지 확인 / user 객체와 channel 객체 존재 확인
+    // ID null 검증 & req ID와 target ID의 동일한지 확인 & user 객체와 channel 객체 존재 확인
     @Override
     public Channel updateChannelInfo(UUID ownerId, UUID channelId, ChannelType channelType, String channelName, String channelDescription) {
         // 로그인 되어있는 user ID null & user 객체 존재 확인
@@ -145,7 +128,7 @@ public class JCFChannelService implements ChannelService {
 
         Optional.ofNullable(channelType)
                 .filter(t -> !channel.getChannelType().equals(t))
-                .ifPresent(t -> channel.updateIsChannelType(t));
+                .ifPresent(t -> channel.updateChannelType(t));
         Optional.ofNullable(channelName)
                 .filter(n -> !channel.getChannelName().equals(n))
                 .ifPresent(n -> channel.updateChannelName(n));
@@ -162,23 +145,24 @@ public class JCFChannelService implements ChannelService {
         // Channel ID null & channel 객체 존재 확인
         Channel channel = validateAndGetChannelByChannelId(channelId);
         validateUserByUserId(currentUserId);
-        validateUserByUserId(newOwnerId);
+        User newOwner = validateAndGetUserByUserId(newOwnerId);
         // channel owner의 user ID와 owner의 user ID가 동일한지 확인
         verifyChannelOwner(channel, currentUserId);
 
         // 새롭게 owner가 된 newOwner가 해당 채널에 이미 참여한 것인지 검증
-        if (!channel.getChannelMembersIds().stream()
-                .anyMatch(id -> id.equals(newOwnerId))) {
+        if (!channel.getChannelMembersList().stream()
+                .anyMatch(user -> user.getId().equals(newOwnerId))) {
             throw new IllegalStateException("참여하지 않은 채널입니다. 먼저 채널에 참가하세요.");
         }
 
-        // newOwnerId가 이미 owner인지 확인
-        if (channel.getOwnerId().equals(newOwnerId)) {
+        // newOwner가 이미 owner인지 확인
+        if (channel.getOwner().getId().equals(newOwnerId)) {
             throw new IllegalStateException("이미 owner인 채널입니다.");
         }
 
         // 변경
-        channel.changeOwner(newOwnerId);
+        channel.changeOwner(newOwner);
+//        newOwner.joinChannel(channel);
         return channel;
     }
 
@@ -191,13 +175,12 @@ public class JCFChannelService implements ChannelService {
         Channel channel = validateAndGetChannelByChannelId(channelId);
 
         // 이미 참여한 채널인지 검증
-        if (channel.getChannelMembersIds().stream()
-                .anyMatch(id -> id.equals(userId))) {
+        if (channel.getChannelMembersList().stream()
+                .anyMatch(u -> u.getId().equals(userId))) {
             throw new IllegalStateException("이미 참여한 채널입니다.");
         }
 
-        channel.addMember(userId);
-        user.joinChannel(channelId);
+        linkMemberAndChannel(user, channel);
         return channel;
     }
 
@@ -210,18 +193,17 @@ public class JCFChannelService implements ChannelService {
         Channel channel = validateAndGetChannelByChannelId(channelId);
 
         // 참여한 채널인지 확인
-        if (!channel.getChannelMembersIds().stream()
-                .anyMatch(id -> id.equals(userId))) {
+        if (!channel.getChannelMembersList().stream()
+                .anyMatch(u -> u.getId().equals(userId))) {
             throw new IllegalStateException("참여하지 않은 채널입니다. 참여하지 않았으므로 나갈 수도 없습니다.");
         }
 
-        // 탈퇴하려는 채널의 owner인지 확인
-        if (channel.getOwnerId().equals(userId)) {
+        // 나가려는 채널의 owner인지 확인
+        if (channel.getOwner().getId().equals(userId)) {
             throw new IllegalStateException("이미 owner인 채널입니다. owner를 변경하고 채널에 나갈 수 있습니다.");
         }
 
-        user.leaveChannel(channelId);
-        channel.removeMember(userId);
+        unlinkMemberAndChannel(user, channel);
         return channel;
     }
 
@@ -237,12 +219,22 @@ public class JCFChannelService implements ChannelService {
 
         // 메세지 삭제는 상위에서 진행
         // 참여했던 user 객체에서 해당 channel Id 삭제하기
-        userService.findAllUsers().forEach(u -> u.leaveChannel(channelId));
+        for (User member : channel.getChannelMembersList()) {
+            unlinkMemberAndChannel(member, channel);
+        }
         data.remove(channelId);
     }
+    private void linkMemberAndChannel(User user, Channel channel) {
+        channel.addMember(user);
+        user.joinChannel(channel);
+    }
+    private void unlinkMemberAndChannel(User user, Channel channel) {
+        user.leaveChannel(channel.getId());
+        channel.removeMember(user.getId());
+    }
 
-    //// validation
-    // 로그인 되어있는 user ID null & user 객체 존재 확인
+    // validation
+    //로그인 되어있는 user ID null & user 객체 존재 확인
     public void validateUserByUserId(UUID userId) {
         userService.findUserById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
@@ -267,8 +259,8 @@ public class JCFChannelService implements ChannelService {
     // channel owner의 user ID와 owner의 user ID가 동일한지 확인
     public void verifyChannelOwner(Channel channel, UUID ownerId) {
         // channel owner의 user Id와 owner의 user Id 동일한지 확인
-        if (!channel.getOwnerId().equals(ownerId)) {
-            throw new IllegalStateException("본인의 정보만 수정 가능합니다.");
+        if (!channel.getOwner().getId().equals(ownerId)) {
+            throw new IllegalStateException("채널 owner만 수행 가능합니다.");
         }
     }
 }

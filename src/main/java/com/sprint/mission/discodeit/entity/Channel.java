@@ -3,25 +3,25 @@ package com.sprint.mission.discodeit.entity;
 import java.util.*;
 
 public class Channel extends BaseEntity {
-    private UUID ownerId;
+    private User owner;
     private ChannelType channelType;
     private String channelName;
     private String channelDescription;
 
     // 연관 관계
-    // 해당 채널에 참여 중인 유저 Ids
-    private final Set<UUID> channelMembersIds; // 유저 중복 참가 불가
-    // 해당 채널에 존재하는 메시지 Ids
-    private final List<UUID> channelMessagesIds; // 채팅창 안의 메시지들
+    // 해당 채널에 참여 중인 유저 List
+    private final List<User> channelMembersList;
+    // 해당 채널에 존재하는 메시지 List
+    private final List<Message> channelMessagesList; // 채팅창 안의 메시지들
 
     // 생성자
-    public Channel(UUID userId, ChannelType channelType, String channelName, String channelDescription) {
-        this.ownerId = userId; // owner 임명(생성하는 사용자 본인)
+    public Channel(User user, ChannelType channelType, String channelName, String channelDescription) {
+        this.owner = user; // owner 임명(생성하는 사용자 본인)
         this.channelType = channelType;
         this.channelName = channelName;
         this.channelDescription = channelDescription;
-        channelMembersIds = new HashSet<>();
-        channelMessagesIds = new ArrayList<>();
+        channelMembersList = new ArrayList<>();
+        channelMessagesList = new ArrayList<>();
     }
 
     @Override
@@ -30,18 +30,18 @@ public class Channel extends BaseEntity {
                 "channelId = " + getId() + ", " +
 //                "createdAt = " + getCreatedAt() + ", " +
 //                "updatedAt = " + getUpdatedAt() + ", " +
-                "owner ID = " + ownerId + ", " +
+                "owner = " + owner.getId() + ", " +
                 "channel type = " + channelType + ", " +
                 "channelName = " + channelName + ", " +
 //                "channelDescription = " + channelDescription + ", " +
-                "channelMembersIds = " + channelMembersIds + ", " +
-                "channelMessagesIds = " + channelMessagesIds +
+//                "channelMembersList = " + channelMembersList + ", " +
+//                "channelMessagesList = " + channelMessagesList +
                 "}";
     }
 
     // Getter
-    public UUID getOwnerId() {
-        return ownerId;
+    public User getOwner() {
+        return owner;
     }
 
     public ChannelType getChannelType() {
@@ -56,12 +56,12 @@ public class Channel extends BaseEntity {
         return channelDescription;
     }
 
-    public List<UUID> getChannelMembersIds() {
-        return channelMembersIds.stream().toList();
+    public List<User> getChannelMembersList() {
+        return channelMembersList.stream().toList();
     }
 
-    public List<UUID> getChannelMessagesList() {
-        return channelMessagesIds.stream().toList();
+    public List<Message> getChannelMessagesList() {
+        return channelMessagesList.stream().toList();
     }
 
     // update
@@ -70,7 +70,7 @@ public class Channel extends BaseEntity {
         updateTime();
     }
 
-    public void updateIsChannelType(ChannelType channelType) {
+    public void updateChannelType(ChannelType channelType) {
         this.channelType = channelType;
         updateTime();
     }
@@ -81,32 +81,32 @@ public class Channel extends BaseEntity {
     }
 
     // owner 변경(+업데이트)
-    public void changeOwner(UUID ownerId) {
-        this.ownerId = ownerId;
+    public void changeOwner(User owner) {
+        this.owner = owner;
         updateTime();
     }
 
-    // 채널 멤버 Ids 추가
-    public void addMember(UUID userId) {
-        this.channelMembersIds.add(userId);
+    // 채널 멤버 추가
+    public void addMember(User user) {
+        this.channelMembersList.add(user);
         updateTime();
     }
 
-    // 채널 멤버 Ids 삭제
+    // 채널 멤버 삭제
     public void removeMember(UUID userId) {
-        this.channelMembersIds.remove(userId);
+        this.channelMembersList.removeIf(user -> user.getId().equals(userId));
         updateTime();
     }
 
-    // 채널에 메시지 Ids 추가
-    public void addMessage(UUID messageId) {
-        this.channelMessagesIds.add(messageId);
+    // 채널에 메시지 추가
+    public void addMessage(Message message) {
+        this.channelMessagesList.add(message);
         updateTime();
     }
 
-    // 채널에서 메시지 Ids 삭제
+    // 채널에서 메시지 삭제
     public void removeMessageInChannel(UUID messageId) {
-        this.channelMessagesIds.remove(messageId);
+        this.channelMessagesList.removeIf(message -> message.getId().equals(messageId));
         updateTime();
     }
 

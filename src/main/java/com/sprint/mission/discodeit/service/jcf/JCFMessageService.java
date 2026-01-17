@@ -42,14 +42,15 @@ public class JCFMessageService implements MessageService {
         ValidationMethods.validateNullBlankString(content, "content");
 
         // author의 channel 참여 여부 확인
-        if (!channel.getChannelMembersIds().contains(authorId)) {
+        if (!channel.getChannelMembersList().stream()
+                .anyMatch(user -> user.getId().equals(authorId))) {
             throw new IllegalArgumentException("현재 author은 해당 channel에 참가하지 않았습니다.");
         }
 
-        Message message = new Message(channelId, authorId, content);
+        Message message = new Message(channel, author, content);
+
         data.put(message.getId(), message);
-        author.writeMessage(message.getId());
-        channel.addMessage(message.getId());
+        linkMessage(author, channel, message);
         return message;
     }
 
@@ -77,7 +78,7 @@ public class JCFMessageService implements MessageService {
         validateChannelByChannelId(channelId);
 
         return findAllMessages().stream()
-                .filter(message -> message.getMessageChannelId().equals(channelId))
+                .filter(message -> message.getMessageChannel().getId().equals(channelId))
                 .toList();
     }
 
@@ -85,10 +86,10 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> findUserMessagesByUserId(UUID userId) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateAndGetUserByUserId(userId);
+        validateUserByUserId(userId);
 
         return findAllMessages().stream()
-                .filter(message -> message.getAuthorId().equals(userId))
+                .filter(message -> message.getAuthor().getId().equals(userId))
                 .toList();
     }
 
@@ -116,21 +117,31 @@ public class JCFMessageService implements MessageService {
         // Message ID null & Message 객체 존재 확인
         Message message = validateAndGetMessageByMessageId(messageId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(message.getMessageChannelId());
+        Channel channel = validateAndGetChannelByChannelId(message.getMessageChannel().getId());
 
         // message author의 id와 삭제 요청한 user id가 동일한지 확인하고
         // 메세지가 작성된 channel의 owner와 user가 동일한지 확인해서 동일하지 않다면 exception
-        if (!message.getAuthorId().equals(userId) && !channel.getOwnerId().equals(userId)) {
+        if (!message.getAuthor().getId().equals(userId) && !channel.getOwner().getId().equals(userId)) {
             throw new IllegalStateException("권한이 없습니다.");
         }
 
-        User author = validateAndGetUserByUserId(message.getAuthorId());
+        User author = validateAndGetUserByUserId(message.getAuthor().getId());
 
-        // author 객체에 저장된 message ids 삭제
-        author.removeUserMessage(messageId);
-        // channel 객체에 저장된 message ids 삭제
-        channel.removeMessageInChannel(messageId);
+        unlinkMessage(author, channel, message);
         data.remove(messageId);
+    }
+
+    public void linkMessage(User author, Channel channel, Message message) {
+        // author(user)의 writeMessageList에 message 객체 저장
+        author.writeMessage(message);
+        // channel의 channelMessagesList에 message 객체 저장
+        channel.addMessage(message);
+    }
+    public void unlinkMessage(User author, Channel channel, Message message) {
+        // author(user)의 writeMessageList에 저장된 message 객체 삭제
+        author.removeUserMessage(message.getId());
+        // channel의 channelMessagesList에 저장된 message 객체 삭제
+        channel.removeMessageInChannel(message.getId());
     }
 
     //// validation
@@ -163,7 +174,7 @@ public class JCFMessageService implements MessageService {
     // message의 author와 삭제 요청한 user가 동일한지
     public void verifyMessageAuthor(Message message, UUID userId) {
         // message author의 id와 삭제 요청한 user id가 동일한지 확인
-        if (!message.getAuthorId().equals(userId)) {
+        if (!message.getAuthor().getId().equals(userId)) {
             throw new IllegalStateException("본인이 작성한 메세지만 수정 가능합니다.");
         }
     }

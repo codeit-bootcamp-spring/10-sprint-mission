@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
@@ -59,16 +57,8 @@ public class JCFUserService implements UserService {
         return new ArrayList<>(data.values());
     }
 
-    // 특정 사용자가 참여한 모든 channel ids
-    public List<UUID> findJoinChannelIdsByUserId(UUID userId) {
-    // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateAndGetUserByUserId(userId);
-
-        return user.getJoinChannelIds().stream().toList();
-    }
-
     // U. 수정
-    // 로그인 정보를 가져온다고 가정하면 `requestUserId`와 `targetUserId`로 나눌 필요는 없음
+    // 로그인 정보를 가져온다고 가정하면 `requestUserId` 와 `targetUserId` 로 나눌 필요는 없음
     // email, password, userName, nickName, birthday 수정
     @Override
     public User updateUserInfo(UUID userId, String email, String password, String userName, String nickName, String birthday) {
@@ -80,7 +70,7 @@ public class JCFUserService implements UserService {
         if (userName != null) ValidationMethods.validateNullBlankString(userName, "userName");
         if (nickName != null) ValidationMethods.validateNullBlankString(nickName, "nickName");
         if (birthday != null) ValidationMethods.validateNullBlankString(birthday, "birthday");
-        // email or pawword or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
+        // email or password or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
         if ((email == null || user.getEmail().equals(email))
                 && (password == null || user.getPassword().equals(password))
                 && (nickName == null || user.getNickName().equals(nickName))
@@ -88,15 +78,16 @@ public class JCFUserService implements UserService {
                 && (birthday == null || user.getBirthday().equals(birthday))) {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
         }
-        // 다른 사용자들의 이메일과 중복되는지 확인
-        validateDuplicateEmail(email);
+
+        // 다른 사용자들의 이메일과 중복되는지 확인 후 이메일 업데이트
+        if (email != null && !user.getEmail().equals(email)) {
+            validateDuplicateEmailForUpdate(userId, email);
+            user.updateEmail(email);
+        }
 
         // filter로 중복 확인 후 업데이트(중복 확인 안하면 동일한 값을 또 업데이트함)
-        Optional.ofNullable(email)
-                .filter(e -> !user.getEmail().equals(e)) // !false(중복 아닌 값) -> true
-                .ifPresent(e -> user.updateEmail(e));
         Optional.ofNullable(password)
-                .filter(p -> !user.getPassword().equals(p))
+                .filter(p -> !user.getPassword().equals(p)) // !false(중복 아닌 값) -> true
                 .ifPresent(p -> user.updatePassword(p));
         Optional.ofNullable(nickName)
                 .filter(n -> !user.getNickName().equals(n))
@@ -120,18 +111,6 @@ public class JCFUserService implements UserService {
         // channel, message 삭제는 상위에서
         data.remove(userId);
     }
-//        // 연관 관계 정리
-//        // 해당 유저가 작성한(author) 메시지 모두 삭제
-//        user.getWriteMessageList()
-//                .forEach(message ->
-//                        messageService.deleteMessage(message.getAuthor().getId(), message.getId()));
-//        // 해당 유저가 owner인 모든 채널 삭제하기 + 채널 관련 삭제
-//        user.getOwnerChannelList()
-//                .forEach(channel ->
-//                        channelService.deleteChannel(user.getId(), channel.getId()));
-//    // 참여 채널에 존재하는 해당 유저 흔적 지우기
-//        user.getJoinChannelList().forEach(channel -> channel.removeChannelUser(user));
-//    // owner인 채널에 존재하는 해당 유저 흔적 지우기
 
     //// validation
     // 로그인 되어있는 user ID null & user 객체 존재 확인
@@ -145,11 +124,16 @@ public class JCFUserService implements UserService {
     }
 
     // email 중복 확인
-    private void validateDuplicateEmail(String email) {
+    private void validateDuplicateEmail(String newEmail) {
         if (this.data.values().stream()
-                .anyMatch(user -> user.getEmail().equals(email))) {
+                .anyMatch(user -> user.getEmail().equals(newEmail))) {
             throw new IllegalArgumentException("동일한 email이 존재합니다");
         }
-
+    }
+    private void validateDuplicateEmailForUpdate(UUID userId, String newEmail) {
+        if (this.data.values().stream()
+                .anyMatch(user -> !user.getId().equals(userId) && user.getEmail().equals(newEmail))) {
+            throw new IllegalArgumentException("동일한 email이 존재합니다");
+        }
     }
 }
