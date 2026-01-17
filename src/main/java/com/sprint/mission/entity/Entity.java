@@ -1,16 +1,19 @@
 package com.sprint.mission.entity;
 
-import java.util.Objects;
 import java.util.UUID;
 
-public abstract class Entity {
+public abstract class Entity<T extends Entity<T>> {
     private final UUID id;
-    private String value;
     private final long createdAt;
     private long updatedAt;
 
-    public Entity(String value) {
-        this.value = Objects.requireNonNull(value);
+    protected Entity(Entity<T> obj) {
+        this.id = obj.getId();
+        this.createdAt = obj.getCreatedAt();
+        this.updatedAt = obj.getUpdatedAt();
+    }
+
+    public Entity() {
         this.id = UUID.randomUUID();
         this.createdAt = getUnixTimestamp();
         this.updatedAt = createdAt;
@@ -20,9 +23,11 @@ public abstract class Entity {
         return System.currentTimeMillis() / 1000;
     }
 
-    protected String getValue() {
-        return value;
+    protected void updateTime() {
+        this.updatedAt = getUnixTimestamp();
     }
+
+    public abstract T copy();
 
     public long getCreatedAt() {
         return createdAt;
@@ -32,10 +37,7 @@ public abstract class Entity {
         return updatedAt;
     }
 
-    public void update(String value) {
-        this.value = value;
-        this.updatedAt = getUnixTimestamp();
-    }
+    public abstract void update(String value);
 
     public UUID getId() {
         return id;
@@ -43,12 +45,12 @@ public abstract class Entity {
 
     @Override
     public int hashCode() {
-        return getId().hashCode();
+        return id.hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Entity entity) {
+        if (obj instanceof Entity<?> entity) {
             return this.id.equals(entity.getId());
         }
         throw new IllegalArgumentException("not Entity class");

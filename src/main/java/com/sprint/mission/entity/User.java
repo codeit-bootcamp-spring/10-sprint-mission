@@ -1,42 +1,80 @@
 package com.sprint.mission.entity;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
-public class User extends Entity {
-    private final Set<UUID> channelIDs;
-    private final Set<UUID> messageIDs;
+public class User extends Entity<User> {
+    private String userName;
+    private final EntityManager<Channel> channelsById;
+    private final EntityManager<Message> messagesById;
+
+    private User(User obj) {
+        super(obj);
+        this.userName = obj.userName;
+        this.channelsById = obj.channelsById;
+        this.messagesById = obj.messagesById;
+    }
 
     public User(String userName) {
-        super(userName);
-        this.channelIDs = new HashSet<>();
-        this.messageIDs = new HashSet<>();
+        super();
+        this.userName = Objects.requireNonNull(userName);
+        this.channelsById = new EntityManager<>();
+        this.messagesById = new EntityManager<>();
     }
 
-    public void addChannelID(UUID uuid) {
-        this.channelIDs.add(uuid);
+    @Override
+    public User copy() {
+        return new User(this);
     }
 
-    public void addMessageID(UUID uuid) {
-        this.messageIDs.add(uuid);
+    @Override
+    public void update(String userName) {
+        this.userName = userName;
+        updateTime();
+    }
+
+    public void addChannel(Channel channel) {
+        this.channelsById.add(channel);
+    }
+
+    public void addMessage(Message message) {
+        this.messagesById.add(message);
+    }
+
+    public void removeChannel(UUID channelId) {
+        channelsById.remove(channelId);
+    }
+
+    public void removeMessage(UUID messageId) {
+        messagesById.remove(messageId);
     }
 
     public String getUserName() {
-        return getValue();
+        return userName;
     }
 
-    public Set<UUID> getChannelIDs() {
-        return Set.copyOf(channelIDs);
+    public Channel getChannel(UUID channelId) {
+        return channelsById.get(channelId);
     }
 
-    public Set<UUID> getMessageIDs() {
-        return Set.copyOf(messageIDs);
+    public Map<UUID, Channel> getChannelsById(UUID channelId, UUID... channelIDs) {
+        return channelsById.getEntitiesById(channelId, channelIDs);
     }
 
-    public boolean hasChannelId(UUID channelId) {
-        return this.channelIDs.contains(channelId);
+    public Message getMessage(UUID messageId) {
+        return messagesById.get(messageId);
     }
 
-    public boolean hasMessageId(UUID messageId) {
-        return this.messageIDs.contains(messageId);
+    public Map<UUID, Message> getMessagesById(UUID messageID, UUID... messageIDs) {
+        return messagesById.getEntitiesById(messageID, messageIDs);
+    }
+
+    public boolean hasChannel(UUID channelId) {
+        return this.channelsById.hasEntity(channelId);
+    }
+
+    public boolean hasMessage(UUID messageId) {
+        return this.messagesById.hasEntity(messageId);
     }
 }

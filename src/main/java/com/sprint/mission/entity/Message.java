@@ -3,25 +3,45 @@ package com.sprint.mission.entity;
 import java.util.Objects;
 import java.util.UUID;
 
-public class Message extends Entity {
-    private final UUID userId;
-    private final UUID channelId;
+public class Message extends Entity<Message> {
+    private final User user;
+    private final Channel channel;
+    private String content;
 
-    public Message(UUID userId, UUID channelId, String message) {
-        super(message);
-        this.userId = Objects.requireNonNull(userId);
-        this.channelId = Objects.requireNonNull(channelId);
+    private Message(Message obj) {
+        super(obj);
+        this.user = obj.user;
+        this.channel = obj.channel;
+        this.content = obj.content;
     }
 
-    public String getMessage() {
-        return getValue();
+    public Message(User user, Channel channel, String content) {
+        super();
+        this.user = Objects.requireNonNull(user);
+        this.channel = Objects.requireNonNull(channel);
+        this.content = Objects.requireNonNull(content);
     }
 
-    public boolean isEqualToUserId(UUID userId) {
-        return this.userId.equals(userId);
+    @Override
+    public Message copy() {
+        return new Message(this);
     }
 
-    public boolean isEqualToChannelId(UUID channelId) {
-        return this.channelId.equals(channelId);
+    @Override
+    public void update(String content) {
+        this.content = content;
+        updateTime();
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public boolean isAuthoredBy(UUID userId) {
+        return this.user.getId().equals(userId);
+    }
+
+    public boolean isPostedIn(UUID channelId) {
+        return this.channel.getId().equals(channelId);
     }
 }
