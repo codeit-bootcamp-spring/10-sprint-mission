@@ -93,14 +93,27 @@ public class JCFChannelService implements ChannelService {
 
         // 채널 본체 삭제
         channelMap.remove(channelId);
-        System.out.println("채널 삭제 완료 (연관 데이터 정리 포함). id: " + channelId);
+        System.out.println("[3] 채널 삭제 완료 (연관 데이터 정리 포함). id: " + channelId);
     }
     // Delete - 특정 채널장의 모든 채널 삭제
     @Override
     public void deleteChannelsByOwnerId(UUID ownerId) {
-        // 채널 맵의 값들 중 방장(Owner)의 ID가 ownerId와 같은 것을 모두 삭제
-        channelMap.values().removeIf(channel -> channel.getOwner().getId().equals(ownerId));
+        // 1 삭제 대상 채널 ID들을 먼저 수집
+        List<UUID> targetChannelIds = channelMap.values().stream()
+                .filter(ch -> ch.getOwner().getId().equals(ownerId))
+                .map(Channel::getId)
+                .toList();
+        List<String> targetChannelNames = new ArrayList<String>();
 
-        System.out.println("해당 유저가 채널장(Owner)인 모든 채널을 삭제했습니다. ownerId: " + ownerId);
+        // 2 각 채널에 대해 정석적인 삭제 메서드 호출 (리스너 트리거)
+        for (UUID channelId : targetChannelIds) {
+            targetChannelNames.add(findChannelByIdOrThrow(channelId).getChannelName());
+            deleteChannel(channelId);
+        }
+
+        System.out.println("\t- [4] 방장(Owner) 탈퇴로 인한 채널 일괄 삭제 완료. 삭제된 채널 수: " + targetChannelIds.size());
+        for (String channelName : targetChannelNames) {
+            System.out.println("\t\tchannelName: " + channelName + "channelId");
+        }
     }
 }

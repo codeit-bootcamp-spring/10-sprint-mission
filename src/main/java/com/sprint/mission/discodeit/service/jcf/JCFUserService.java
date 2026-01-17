@@ -76,17 +76,17 @@ public class JCFUserService implements UserService {
 
     // Delete - 사용자 삭제 / 유저 탈퇴 / 유저가 탈퇴한다. / 시스템 관리자가 해당 유저를 삭제시킨다.
     @Override
-    public void deleteUser(UUID id) {
+    public void deleteUser(UUID id) {  // (2)
         User user = findUserByIdOrThrow(id);
 
         // 삭제 이벤트 전파 (다른 서비스들에게 알림)
-        for (UserLifecycleListener listener : listeners) {
+        for (UserLifecycleListener listener : listeners) { // (3)
             listener.onUserDelete(id);
         }
 
         // 유저 본체 삭제
         userMap.remove(id);
-        System.out.println("유저(User) 삭제 완료하였습니다. (유저 작성 메시지삭제, 유저 참여 중 채널 관계 삭제)");
-        System.out.println("\tusername: " + user.getUsername() + " (id: " + id + ")");
+        System.out.println("\t- [6] 유저(User) 삭제 완료하였습니다." +
+                "\n\t\t(유저 작성 메시지 삭제, 유저 참여 중 채널 관계 삭제, 유저가 Owner인 채널 삭제)");
     }
 }

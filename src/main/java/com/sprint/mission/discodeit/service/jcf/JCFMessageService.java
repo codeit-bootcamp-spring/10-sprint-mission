@@ -8,17 +8,13 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.ChannelService;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 // [] 검토 필요
 // Service Implementation
 public class JCFMessageService implements MessageService {
-    private final Map<UUID, Message> messageMap = new ConcurrentHashMap<>();
+    private final Map<UUID, Message> messageMap = new HashMap<>();
     // 의존성 (다른 서비스들)
     // 메시지를 만들 때 유저와 채널의 존재 여부를 확인하기 위해 필요
     private final UserService userService;
@@ -48,6 +44,12 @@ public class JCFMessageService implements MessageService {
 
         User sender = userService.findUserByUserId(userId);
         Channel channel = channelService.findChannelById(channelId);
+
+        boolean isMember = channel.getChannelUserRoles().stream()
+                .anyMatch(role -> role.getUser().getId().equals(userId));
+        if (!isMember) {
+            throw new IllegalArgumentException("해당 채널에 참여하지 않은 유저는 메시지를 보낼 수 없습니다.");
+        }
 
         Message message = new Message(content, sender, channel);
         messageMap.put(message.getId(), message);
@@ -105,28 +107,27 @@ public class JCFMessageService implements MessageService {
         // 1 이 유저가 쓴 모든 메시지를 먼저 찾음
         List<Message> userMessages = messageMap.values().stream()
                 .filter(message -> message.getSenderId().equals(userId))
-                .toList(); // Java 16 이상. (이하라면 .collect(Collectors.toList()) 사용)
+                .toList();
 
-        // 2 찾은 메시지들을 하나씩 순회하며 "채널 명부"에서 지움
+        // 2 찾은 메시지들을 하나씩 순회하며 채널 명부에서 지움
         for (Message msg : userMessages) {
             try {
                 Channel channel = channelService.findChannelById(msg.getChannelId());
                 channel.removeMessage(msg);
             } catch (IllegalArgumentException e) {
-                // 이미 채널이 삭제된 경우 등 예외가 발생하면 무시하고 진행
+                // 이미 채널이 삭제된 경우 등 예외가 발생하면 무시하고 진행 (수정 필요)
             }
         }
 
         // 3 서비스 맵에서 일괄 삭제 (위에서 채널 정리를 끝냈으니 안전하게 삭제)
         messageMap.values().removeAll(userMessages);
 
-        System.out.println("해당 유저가 작성한 모든 메시지를 삭제했습니다. userId: " + userId
-                + ", 삭제된 메시지 수: " + userMessages.size());
+        System.out.println("\t- [5] 해당 유저가 작성한 모든 메시지를 삭제했습니다.");
     }
     @Override
     public void deleteAllMessagesByChannelId(UUID channelId) {
         // 메시지 맵에서 해당 채널 ID를 가진 메시지 일괄 삭제
         messageMap.values().removeIf(msg -> msg.getChannelId().equals(channelId));
-        System.out.println("채널 내 모든 메시지 삭제 완료. channelId: " + channelId);
+        System.out.println("[1] 채널 내 모든 메시지 삭제 완료. channelId: " + channelId);
     }
 }

@@ -50,32 +50,31 @@ public class JCFChannelUserRoleService implements ChannelUserRoleService {
         user.addChannelUserRole(channelUserRole);  // (2) List에도 등록
         channel.addChannelUserRole(channelUserRole); // (3) Channel 리스트에도 등록
 
-        System.out.println("채널 참여 완료: " + user.getUsername() + " -> " + channel.getChannelName()
-                + " (Role: " + role + ")");
         return channelUserRole;
     }
 
     // Read
+    // 특정 채널의 모든 유저 조회
     @Override
     public List<User> findUsersByChannelId(UUID channelId) {
-        // 채널 존재 확인
-        channelService.findChannelById(channelId);
+        Channel channel = channelService.findChannelById(channelId);
 
-        // 해당 채널ID를 가진 ChannelUser들을 찾아서 -> 그 안의 User 객체만 추출하여 리스트로 반환
-        return channelUserMap.values().stream()
-                .filter(cu -> cu.getChannel().getId().equals(channelId))
+        // 채널 객체 내 리스트 활용
+        return channel.getChannelUserRoles().stream()
                 .map(ChannelUserRole::getUser)
                 .collect(Collectors.toList());
     }
     @Override
+    // 특정 채널에 특정 유저 조회
     public ChannelUserRole findChannelUser(UUID channelId, UUID userId) {
-        // 스트림을 사용하여 (채널ID + 유저ID)가 모두 일치하는 ChannelUser 객체 찾기
+        // (채널ID + 유저ID)가 모두 일치하는 ChannelUser 객체 찾기
         return channelUserMap.values().stream()
                 .filter(cu -> cu.getChannel().getId().equals(channelId) &&
                         cu.getUser().getId().equals(userId))
                 .findFirst() // 찾으면 Optional 반환
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널에 참여하지 않은 사용자입니다."));
     }
+    // 특정 유저가 참가하고 있는 채널 리스트 반환
     @Override
     public List<Channel> findChannelsByUserId(UUID userId) {
         return channelUserMap.values().stream()
@@ -113,12 +112,12 @@ public class JCFChannelUserRoleService implements ChannelUserRoleService {
     }
     @Override
     public void deleteAllAssociationsByUserId(UUID userId) {
-        // 1 이 유저와 관련된 모든 관계(Role)를 먼저 찾습니다.
+        // 1 이 유저와 관련된 모든 관계(Role)를 먼저 찾음
         List<ChannelUserRole> rolesToDelete = channelUserMap.values().stream()
                 .filter(role -> role.getUser().getId().equals(userId))
                 .toList(); // Java 16+
 
-        // 2 각 관계가 속해있던 "채널"의 명부에서 이 유저를 지웁니다.
+        // 2 각 관계가 속해있던 "채널"의 명부에서 이 유저를 지움
         for (ChannelUserRole role : rolesToDelete) {
             // 채널 객체를 가져와서 해당 Role 삭제
             role.getChannel().removeChannelUserRole(role);
@@ -141,7 +140,7 @@ public class JCFChannelUserRoleService implements ChannelUserRoleService {
 
         // 3. 맵에서 일괄 삭제
         channelUserMap.values().removeAll(rolesToDelete);
-        System.out.println("채널 내 모든 참여자 관계 삭제 완료. channelId: " + channelId);
+        System.out.println("[2] 채널 내 모든 참여자 관계 삭제 완료. channelId: " + channelId);
     }
 
 }

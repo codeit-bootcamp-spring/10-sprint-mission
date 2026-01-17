@@ -44,7 +44,7 @@ public class Channel extends BaseEntity {
         return owner;
     }
     public List<Message> getMessages() {
-        return messages;
+        return new ArrayList<>(messages); // 복사본 반환
     }
     public List<ChannelUserRole> getChannelUserRoles() {
         return channelUserRoles;
