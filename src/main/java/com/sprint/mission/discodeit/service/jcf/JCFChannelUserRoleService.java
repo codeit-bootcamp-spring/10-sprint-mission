@@ -28,6 +28,7 @@ public class JCFChannelUserRoleService implements ChannelUserRoleService {
     }
 
     // Create
+    // [] 채널-유저 관계 생성 -> 채널 생성, 채널 삭제 등의 이벤트 발생시 자동으로 호출 (-> 되게 다른 서비스에서 수정 필요)
     @Override
     public ChannelUserRole addChannelUser(UUID channelId, UUID userId, ChannelRole role) {
         // 1 유효성 검사 (존재하는 채널/유저인지 확인)

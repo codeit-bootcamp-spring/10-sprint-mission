@@ -30,7 +30,7 @@ public class JCFMessageService implements MessageService {
     private Message findMessageByIdOrThrow(UUID messageId) {
         Message message = messageMap.get(messageId);
         if (message == null) {
-            throw new IllegalArgumentException("해당 ID의 메시지가 존재하지 않습니다. id: " + messageId);
+            throw new IllegalArgumentException("해당 id의 메시지가 존재하지 않습니다. messageId: " + messageId);
         }
         return message;
     }
@@ -59,11 +59,12 @@ public class JCFMessageService implements MessageService {
     }
 
     // Read
+    // 특정 메시지 단건 조회
     @Override
     public Message findMessageById(UUID messageId) {
         return findMessageByIdOrThrow(messageId);
     }
-
+    // 특정 채널의 전체 메시지 조회
     @Override
     public List<Message> findAllMessagesByChannelId(UUID channelId) {
         channelService.findChannelById(channelId);
@@ -74,6 +75,8 @@ public class JCFMessageService implements MessageService {
                 .sorted(Comparator.comparing(Message::getCreatedAt)) // 작성 시간 순 정렬
                 .collect(Collectors.toList());
     }
+    // 특정 유저가 작성한 전체 메시지 조회
+    // 특정 유저가 특정 채널에서 보낸 메시지 조회
 
     // Update
     @Override
@@ -89,6 +92,7 @@ public class JCFMessageService implements MessageService {
 
     // Delete
     @Override
+    // 특정 메시지 삭제
     public void deleteMessage(UUID messageId) {
         // 1 지울 메시지 객체 확보 (없으면 여기서 예외 발생)
         Message message = findMessageByIdOrThrow(messageId);
@@ -102,8 +106,8 @@ public class JCFMessageService implements MessageService {
         messageMap.remove(messageId);
         System.out.println("메시지 삭제 완료: " + message.getContent());
     }
+    // 특정 유저가 작성한 모든 메시지 삭제 - 유저 삭제 -> 유저가 작성한 모든 메시지 삭제
     @Override
-    // 유저가 작성한 모든 메시지 삭제
     public void deleteAllMessagesByUserId(UUID userId) { // (4)
         // 1 이 유저가 쓴 모든 메시지를 찾음
         List<Message> userMessages = messageMap.values().stream()
@@ -125,6 +129,7 @@ public class JCFMessageService implements MessageService {
         System.out.println("[5] 해당 유저가 작성한 모든 메시지를 삭제했습니다." +
                 "\n\tusername: " + userService.findUserByUserId(userId).getUsername() );
     }
+    // 특정 채널 내 모든 메시지 삭제 - 유저가 OWNER인 채널 삭제 -> 해당 채널 내 모든 메시지 삭제
     @Override
     public void deleteAllMessagesByChannelId(UUID channelId) { // (3-1-1)
         // 메시지 맵에서 해당 채널 ID를 가진 메시지 일괄 삭제
