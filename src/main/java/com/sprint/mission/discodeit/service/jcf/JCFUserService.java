@@ -17,6 +17,7 @@ import java.util.UUID;
 public class JCFUserService implements UserService {
     private final Map<UUID, User> userMap = new HashMap<UUID, User>();
 
+    // listeners 리스트 안에 userCleaner 코드 담김
     private final List<UserLifecycleListener> listeners = new ArrayList<UserLifecycleListener>();
     public void addListener(UserLifecycleListener listener) {
         this.listeners.add(listener);
@@ -76,17 +77,19 @@ public class JCFUserService implements UserService {
 
     // Delete - 사용자 삭제 / 유저 탈퇴 / 유저가 탈퇴한다. / 시스템 관리자가 해당 유저를 삭제시킨다.
     @Override
-    public void deleteUser(UUID id) {  // (2)
-        User user = findUserByIdOrThrow(id);
+    public void deleteUser(UUID id) {  // (1)
+        User user = findUserByIdOrThrow(id); // 삭제할 유저 찾기
 
         // 삭제 이벤트 전파 (다른 서비스들에게 알림)
-        for (UserLifecycleListener listener : listeners) { // (3)
-            listener.onUserDelete(id);
+        for (UserLifecycleListener listener : listeners) { // (2)
+            listener.onUserDelete(id); // (3), (4), (5)
         }
 
-        // 유저 본체 삭제
+        // 유저 본체 삭제 / 리스너 작업이 끝나야 도달
         userMap.remove(id);
-        System.out.println("\t- [6] 유저(User) 삭제 완료하였습니다." +
-                "\n\t\t(유저 작성 메시지 삭제, 유저 참여 중 채널 관계 삭제, 유저가 Owner인 채널 삭제)");
+        System.out.println("[7] 유저(User) 삭제 완료하였습니다." +
+                "\n\t유저가 Owner인 채널 삭제([1]~[4])" +
+                ", 유저가 작성한 모든 메시지 삭제([5])" +
+                ", 유저가 참여하고 있는 모든 채널-유저 관계 삭제([6])");
     }
 }

@@ -85,35 +85,36 @@ public class JCFChannelService implements ChannelService {
 
     // Delete - 채널 삭제 / 채널 내 메시지 + 채널-유저 관계 해제
     @Override
-    public void deleteChannel(UUID channelId) {
-        findChannelByIdOrThrow(channelId); // 존재 확인
+    public void deleteChannel(UUID channelId) { // (3-1)
+        findChannelByIdOrThrow(channelId); // 채널 존재 확인
         for (ChannelLifecycleListener listener : listeners) {
-            listener.onChannelDelete(channelId);
+            listener.onChannelDelete(channelId);  // (3-1-1), (3-1-2)
         }
 
         // 채널 본체 삭제
         channelMap.remove(channelId);
-        System.out.println("[3] 채널 삭제 완료 (연관 데이터 정리 포함). id: " + channelId);
+        System.out.println("\t[3] 채널 삭제 완료 (채널 삭제 준비 단계 1, 2 수행 완료 후 채널 삭제)." +
+                "\n\t\tchannel-id: " + channelId);
     }
     // Delete - 특정 채널장의 모든 채널 삭제
     @Override
-    public void deleteChannelsByOwnerId(UUID ownerId) {
-        // 1 삭제 대상 채널 ID들을 먼저 수집
+    public void deleteChannelsByOwnerId(UUID ownerId) { // (3)
+        // 1 삭제 대상 channelId를 targetChannelIds에 저장
         List<UUID> targetChannelIds = channelMap.values().stream()
                 .filter(ch -> ch.getOwner().getId().equals(ownerId))
                 .map(Channel::getId)
                 .toList();
         List<String> targetChannelNames = new ArrayList<String>();
 
-        // 2 각 채널에 대해 정석적인 삭제 메서드 호출 (리스너 트리거)
+        // 2 각 채널에 대해 삭제 메서드 호출
         for (UUID channelId : targetChannelIds) {
             targetChannelNames.add(findChannelByIdOrThrow(channelId).getChannelName());
-            deleteChannel(channelId);
+            deleteChannel(channelId);  // (3-1)
         }
 
-        System.out.println("\t- [4] 방장(Owner) 탈퇴로 인한 채널 일괄 삭제 완료. 삭제된 채널 수: " + targetChannelIds.size());
+        System.out.println("[4] 방장(Owner) 탈퇴로 인한 채널 -> 전체 삭제 완료. 삭제된 채널 수: " + targetChannelIds.size());
         for (String channelName : targetChannelNames) {
-            System.out.println("\t\tchannelName: " + channelName + "channelId");
+            System.out.println("\tchannelName: " + channelName);
         }
     }
 }

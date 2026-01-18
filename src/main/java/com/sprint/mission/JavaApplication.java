@@ -35,18 +35,19 @@ public class JavaApplication {
         // 유저 삭제 시 -> 관련 데이터 모두 정리
         UserLifecycleListener userCleaner = userId -> {
             // 내가 Owner인 채널들 삭제 (채널 삭제 시 내부 리스너가 동작하여 -> 그 채널의 메시지/참여정보도 삭제됨)
-            channelService.deleteChannelsByOwnerId(userId);
+            channelService.deleteChannelsByOwnerId(userId); // (3)
             // 내가 작성한 모든 메시지 삭제
-            messageService.deleteAllMessagesByUserId(userId);
+            messageService.deleteAllMessagesByUserId(userId); // (4)
             // 나의 채널 참여 관계 삭제
-            channelUserRoleService.deleteAllAssociationsByUserId(userId);
+            channelUserRoleService.deleteAllAssociationsByUserId(userId); // (5)
         };
         userService.addListener(userCleaner);
 
         // 채널 삭제 시 -> 채널 내 데이터 정리
+        // 채널 내 메시지 삭제 + 채널-유저 참여 관계 삭제
         channelService.addListener(channelId -> { // 익명 함수
-            messageService.deleteAllMessagesByChannelId(channelId); // 채널 내 메시지 삭제
-            channelUserRoleService.deleteAllAssociationsByChannelId(channelId); // 채널 참여자 (Channel-User)관계 목록 삭제
+            messageService.deleteAllMessagesByChannelId(channelId); // 채널 내 메시지 삭제 // (3-2)
+            channelUserRoleService.deleteAllAssociationsByChannelId(channelId); // 채널 참여자 (Channel-User)관계 목록 삭제 // (3-3)
         });
 
         // 도메인별 테스트 실행
@@ -112,35 +113,44 @@ public class JavaApplication {
 
             System.out.println("\t--- [삭제 검증을 위한 데이터 준비] ---");
             // 1 유저가 소유한 채널 생성 (유저 삭제 시 이 채널도 삭제되어야 함)
-            Channel user1Channel = channelService.createChannel("testUser1_채널", updatedUser1);
-            System.out.println("\t(준비1 - 유저 소유 채널 생성) channelName: " + user1Channel.getChannelName() + " (id: " + user1Channel.getId() + ")");
+            Channel user1Channel = channelService.createChannel("1번_유저_이름바꿈 님의 채널", updatedUser1);
+            System.out.println("\t(준비1 - 유저 소유 채널 생성) channelName: " + user1Channel.getChannelName()
+                    + "\n\t\t(channel-id: " + user1Channel.getId() + ")"
+            );
 
             // 2. 유저가 해당 채널에 참여 (메시지를 쓰기 위함)
+            // 채널 생성시 자동으로 Owner가 되도록 수정 (추후 구현)
             ChannelUserRole createdRole =
                 channelUserRoleService.addChannelUser(user1Channel.getId(), updatedUser1.getId(), ChannelRole.OWNER);
 
             System.out.println("\t(준비2 - 채널 참여 완료) username: " + updatedUser1.getUsername()
-                + " -> " + user1Channel.getChannelName() + " (id: " + user1Channel.getId() + ")"
-                + " (Role: " + ChannelRole.OWNER + " (id: " + createdRole.getId() + ")");
+                + " -> " + user1Channel.getChannelName() + "\n\t\t(channel-id: " + user1Channel.getId() + ")"
+                + "\n\t\t(user-Role: " + ChannelRole.OWNER + ")");
 
             // 3. 유저가 메시지 작성 (유저 삭제/채널 삭제 시 이 메시지도 삭제되어야 함)
             Message user1Msg = messageService.createMessage("나 삭제되면 이 메시지도 사라지나요?", updatedUser1.getId(), user1Channel.getId());
             System.out.println("\t(준비3 - 유저가 메시지 작성 완료)");
             System.out.println("\t\tusername: " + updatedUser1.getUsername()
                     + "\n\t\tcontent: " + user1Msg.getContent()
-                    + "\n\t\tid: " + user1Msg.getId()
-                    + "\n\t\tupdatedAt: " + user1Msg.getUpdatedAt() );
+                    + "\n\t\tmessage-id: " + user1Msg.getId()
+                    + "\n\t\tmessage-updatedAt: " + user1Msg.getUpdatedAt() );
             System.out.println("\t----------------------------------");
 
         userService.deleteUser(testUser1.getId()); // (1)
 
-        // [6] 조회를 통해 삭제되었는지 확인 (예외 발생 시 성공)
+        // [6-1] User 단건 조회를 통해 삭제되었는지 확인 (예외 발생 시 성공)
         System.out.println("6) 조회를 통해 삭제되었는지 확인");
         try {
             userService.findUserByUserId(testUser1.getId());
-            System.out.println("   -> [실패] 삭제되지 않음! 유저가 여전히 존재함.");
+            System.out.println("\t-> [실패] 삭제되지 않음! 유저가 여전히 존재함.");
         } catch (IllegalArgumentException e) {
-            System.out.println("   -> [성공] 조회 실패 / 예상된 에러: " + e.getMessage());
+            System.out.println("\t-> [성공] 조회 실패 / 예상된 에러: " + e.getMessage());
+        }
+        // [6-2] User 전체 조회를 통해 삭제되었는지 확인
+        allUsers = userService.findAllUsers();
+        System.out.println("\t\t-> [전체 유저 조회]: " + allUsers.size() + "명");
+        for(User u : allUsers) {
+            System.out.println("\tusername: " + u.getUsername() + " (id: " + u.getId() + ")");
         }
 
         // === [Unhappy Path] ===
@@ -187,106 +197,106 @@ public class JavaApplication {
     // =================================================================
     // 2. Channel 도메인 테스트
     // =================================================================
-//    private static void printChannelCreated(Channel channel) {
-//        System.out.println("\t-> [채널 생성 완료] channelName: " + channel.getChannelName()
-//                + "\n\t\t(id: " + channel.getId() + ")"
-//                + "\n\t\t(ownerId: " + channel.getOwner().getId() + ")");
-//    }
-//    private static void testChannelDomain(ChannelService channelService, UserService userService) {
-//        printSection("2. ChannelService 테스트");
-//        // === [Happy Path] ===
-//        System.out.println("2.1 Happy Path");
-//
-//        // [0] (선행조건) 채널 생성을 위한 방장(User) 필요
-//        System.out.println("0) 채널 생성을 위한 Owner(User) 생성");
-//        User testOwner1= userService.createUser("Owner_testUser1");
-//        printUserCreated(testOwner1);
-//
-//        // [1] 등록
-//        System.out.println("1) 등록 / 채널 생성 / [Create]");
-//        Channel testChannel1 = channelService.createChannel("testOwner1의 채널", testOwner1);
-//        printChannelCreated(testChannel1);
-//
-//        // [2] 조회
-//        System.out.println("2) 조회(단건, 다건) / [Read]");
-//        Channel foundChannel = channelService.findChannelById(testChannel1.getId());
-//        System.out.println("\t-> [특정 채널 조회] channelName: " + foundChannel.getChannelName() + " (id: " + foundChannel.getId() + ")");
-//
-//        System.out.println("\t(전체 채널 조회를 위한 유저 및 채널 생성)");
-//        User testOwner2 = userService.createUser("Owner_testUser2"); printUserCreated(testOwner2);
-//        User testOwner3 = userService.createUser("Owner_testUser3"); printUserCreated(testOwner3);
-//        Channel testChannel2 = channelService.createChannel("testOwner2의 채널", testOwner2); printChannelCreated(testChannel2);
-//        Channel testChannel3 = channelService.createChannel("testOwner3의 채널", testOwner3); printChannelCreated(testChannel3);
-//        List<Channel> allChannels = channelService.findAllChannels();
-//        System.out.println("\t-> [전체 채널 조회]: " + allChannels.size() + "개");
-//        for(Channel ch : allChannels){
-//            System.out.println("\tchannelName: " + ch.getChannelName() + " (id: " + ch.getId() + ")");
-//        }
-//
-//        // [3] 수정
-//        System.out.println("3) 수정 / 채널 이름 수정 / [Update]");
-//        channelService.updateChannel(testChannel1.getId(), "testOwner1의 채널_이름 수정");
-//
-//        // [4] 수정된 데이터 조회
-//        System.out.println("4) 수정된 데이터 조회");
-//        Channel updatedChannel = channelService.findChannelById(testChannel1.getId());
-//        System.out.println("\t-> [채널 이름 수정 완료] channelName: " + updatedChannel.getChannelName() + " (id: " + updatedChannel.getId() + ")");
-//
-//        // [5] 삭제
-//        System.out.println("5) 삭제 / 채널 삭제 / [Delete]");
-//        channelService.deleteChannel(testChannel1.getId());
-//        System.out.println("\t-> 삭제 요청 완료");
-//
-//        // [6] 삭제 확인
-//        System.out.println("6) 조회를 통해 삭제되었는지 확인");
-//        try {
-//            channelService.findChannelById(testChannel1.getId());
-//            System.out.println("   -> [실패] 삭제되지 않음.");
-//        } catch (IllegalArgumentException e) {
-//            System.out.println("   -> [성공] 조회 실패 (예상된 에러: " + e.getMessage() + ")");
-//        }
-//
-//        // === [Unhappy Path] ===
-//        System.out.println("2.2 Unhappy Path");
-//
-//        // 1. 없는 걸 조회
-//        System.out.print("Test 1) 존재하지 않는 채널 조회: ");
-//        try {
-//            channelService.findChannelById(UUID.randomUUID());
-//            System.out.println("실패");
-//        } catch (IllegalArgumentException e) {
-//            System.out.println("성공 (방어: " + e.getMessage() + ")");
-//        }
-//
-//        // 2. 없는 걸 수정
-//        System.out.print("Test 2) 존재하지 않는 채널 수정: ");
-//        try {
-//            channelService.updateChannel(UUID.randomUUID(), "Hacking");
-//            System.out.println("실패");
-//        } catch (IllegalArgumentException e) {
-//            System.out.println("성공 (방어: " + e.getMessage() + ")");
-//        }
-//
-//        // 3. 없는 걸 삭제
-//        System.out.print("Test 3) 존재하지 않는 채널 삭제: ");
-//        try {
-//            channelService.deleteChannel(UUID.randomUUID());
-//            System.out.println("실패");
-//        } catch (IllegalArgumentException e) {
-//            System.out.println("성공 (방어: " + e.getMessage() + ")");
-//        }
-//
-//        // 4. 중복 생성
-//        System.out.print("Test 4) 중복된 채널 이름 생성: ");
-//        try {
-//            channelService.createChannel("UniqueChannel", testOwner2);
-//            channelService.createChannel("UniqueChannel", testOwner3); // 이름 중복
-//            System.out.println("실패 (중복 허용됨)");
-//        } catch (IllegalArgumentException e) {
-//            System.out.println("성공 (방어: " + e.getMessage() + ")");
-//        }
-//    }
-//
+    private static void printChannelCreated(Channel channel) {
+        System.out.println("\t-> [채널 생성 완료] channelName: " + channel.getChannelName()
+                + "\n\t\t(id: " + channel.getId() + ")"
+                + "\n\t\t(ownerId: " + channel.getOwner().getId() + ")");
+    }
+    private static void testChannelDomain(ChannelService channelService, UserService userService) {
+        printSection("2. ChannelService 테스트");
+        // === [Happy Path] ===
+        System.out.println("2.1 Happy Path");
+
+        // [0] (선행조건) 채널 생성을 위한 방장(User) 필요
+        System.out.println("0) 채널 생성을 위한 Owner(User) 생성");
+        User testOwner1= userService.createUser("Owner_testUser1");
+        printUserCreated(testOwner1);
+
+        // [1] 등록
+        System.out.println("1) 등록 / 채널 생성 / [Create]");
+        Channel testChannel1 = channelService.createChannel("testOwner1의 채널", testOwner1);
+        printChannelCreated(testChannel1);
+
+        // [2] 조회
+        System.out.println("2) 조회(단건, 다건) / [Read]");
+        Channel foundChannel = channelService.findChannelById(testChannel1.getId());
+        System.out.println("\t-> [특정 채널 조회] channelName: " + foundChannel.getChannelName() + " (id: " + foundChannel.getId() + ")");
+
+        System.out.println("\t(전체 채널 조회를 위한 유저 및 채널 생성)");
+        User testOwner2 = userService.createUser("Owner_testUser2"); printUserCreated(testOwner2);
+        User testOwner3 = userService.createUser("Owner_testUser3"); printUserCreated(testOwner3);
+        Channel testChannel2 = channelService.createChannel("testOwner2의 채널", testOwner2); printChannelCreated(testChannel2);
+        Channel testChannel3 = channelService.createChannel("testOwner3의 채널", testOwner3); printChannelCreated(testChannel3);
+        List<Channel> allChannels = channelService.findAllChannels();
+        System.out.println("\t-> [전체 채널 조회]: " + allChannels.size() + "개");
+        for(Channel ch : allChannels){
+            System.out.println("\tchannelName: " + ch.getChannelName() + " (id: " + ch.getId() + ")");
+        }
+
+        // [3] 수정
+        System.out.println("3) 수정 / 채널 이름 수정 / [Update]");
+        channelService.updateChannel(testChannel1.getId(), "testOwner1의 채널_이름 수정");
+
+        // [4] 수정된 데이터 조회
+        System.out.println("4) 수정된 데이터 조회");
+        Channel updatedChannel = channelService.findChannelById(testChannel1.getId());
+        System.out.println("\t-> [채널 이름 수정 완료] channelName: " + updatedChannel.getChannelName() + " (id: " + updatedChannel.getId() + ")");
+
+        // [5] 삭제
+        System.out.println("5) 삭제 / 채널 삭제 / [Delete]");
+        channelService.deleteChannel(testChannel1.getId());
+        System.out.println("\t-> 삭제 요청 완료");
+
+        // [6] 삭제 확인
+        System.out.println("6) 조회를 통해 삭제되었는지 확인");
+        try {
+            channelService.findChannelById(testChannel1.getId());
+            System.out.println("   -> [실패] 삭제되지 않음.");
+        } catch (IllegalArgumentException e) {
+            System.out.println("   -> [성공] 조회 실패 (예상된 에러: " + e.getMessage() + ")");
+        }
+
+        // === [Unhappy Path] ===
+        System.out.println("2.2 Unhappy Path");
+
+        // 1. 없는 걸 조회
+        System.out.print("Test 1) 존재하지 않는 채널 조회: ");
+        try {
+            channelService.findChannelById(UUID.randomUUID());
+            System.out.println("실패");
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 2. 없는 걸 수정
+        System.out.print("Test 2) 존재하지 않는 채널 수정: ");
+        try {
+            channelService.updateChannel(UUID.randomUUID(), "Hacking");
+            System.out.println("실패");
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 3. 없는 걸 삭제
+        System.out.print("Test 3) 존재하지 않는 채널 삭제: ");
+        try {
+            channelService.deleteChannel(UUID.randomUUID());
+            System.out.println("실패");
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 4. 중복 생성
+        System.out.print("Test 4) 중복된 채널 이름 생성: ");
+        try {
+            channelService.createChannel("UniqueChannel", testOwner2);
+            channelService.createChannel("UniqueChannel", testOwner3); // 이름 중복
+            System.out.println("실패 (중복 허용됨)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (방어: " + e.getMessage() + ")");
+        }
+    }
+
 //    // =================================================================
 //    // 3. Message 도메인 테스트
 //    // =================================================================

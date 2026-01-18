@@ -103,8 +103,9 @@ public class JCFMessageService implements MessageService {
         System.out.println("메시지 삭제 완료: " + message.getContent());
     }
     @Override
-    public void deleteAllMessagesByUserId(UUID userId) {
-        // 1 이 유저가 쓴 모든 메시지를 먼저 찾음
+    // 유저가 작성한 모든 메시지 삭제
+    public void deleteAllMessagesByUserId(UUID userId) { // (4)
+        // 1 이 유저가 쓴 모든 메시지를 찾음
         List<Message> userMessages = messageMap.values().stream()
                 .filter(message -> message.getSenderId().equals(userId))
                 .toList();
@@ -119,15 +120,17 @@ public class JCFMessageService implements MessageService {
             }
         }
 
-        // 3 서비스 맵에서 일괄 삭제 (위에서 채널 정리를 끝냈으니 안전하게 삭제)
+        // 3 Map(저장소)에서 일괄 삭제
         messageMap.values().removeAll(userMessages);
-
-        System.out.println("\t- [5] 해당 유저가 작성한 모든 메시지를 삭제했습니다.");
+        System.out.println("[5] 해당 유저가 작성한 모든 메시지를 삭제했습니다." +
+                "\n\tusername: " + userService.findUserByUserId(userId).getUsername() );
     }
     @Override
-    public void deleteAllMessagesByChannelId(UUID channelId) {
+    public void deleteAllMessagesByChannelId(UUID channelId) { // (3-1-1)
         // 메시지 맵에서 해당 채널 ID를 가진 메시지 일괄 삭제
         messageMap.values().removeIf(msg -> msg.getChannelId().equals(channelId));
-        System.out.println("[1] 채널 내 모든 메시지 삭제 완료. channelId: " + channelId);
+        System.out.println("\t\t[1] 채널 내 모든 메시지 삭제 완료. (채널 삭제 사전 작업 1)" +
+                "\n\t\t\t channelId: " + channelId
+        );
     }
 }
