@@ -1,154 +1,127 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelUserRole;
-import com.sprint.mission.discodeit.entity.ChannelRole;
+import com.sprint.mission.discodeit.entity.*;
 
-import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.ChannelUserRoleService;
+import com.sprint.mission.discodeit.service.*;
 
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class JCFChannelUserRoleService implements ChannelUserRoleService {
-    private final Map<UUID, ChannelUserRole> channelUserRoleMap = new HashMap<>();
-    // 의존성
+    private final Map<UUID, ChannelUserRole> channelUserRoleDB = new HashMap<>();
+
     private final UserService userService;
     private final ChannelService channelService;
 
-    // 생성자 주입
     public JCFChannelUserRoleService(UserService userService, ChannelService channelService) {
         this.userService = userService;
         this.channelService = channelService;
     }
 
-    // Create
-    // [] 채널-유저 관계 생성 -> 채널 생성, 채널 삭제 등의 이벤트 발생시 자동으로 호출 (-> 되게 다른 서비스에서 수정 필요)
+    // TODO: 채널-유저 관계 생성 -> 채널 생성 이벤트 발생시 자동으로 호출 (-> 이벤트리스너 사용 or Setter 주입)
     @Override
     public ChannelUserRole addChannelUser(UUID channelId, UUID userId, ChannelRole role) {
-        // 1 유효성 검사 (존재하는 채널/유저인지 확인)
         Channel channel = channelService.findChannelById(channelId);
         User user = userService.findUserByUserId(userId);
 
-        // 2 채널 중복 참여 검사
-        boolean isAlreadyJoined = channelUserRoleMap.values().stream()
-                .anyMatch(cu -> cu.getChannel().getId().equals(channelId) &&
-                        cu.getUser().getId().equals(userId));
+        boolean isAlreadyJoined = channelUserRoleDB.values().stream()
+                .anyMatch(cu -> cu.getChannel().getId().equals(channelId)
+                        && cu.getUser().getId().equals(userId));
         if (isAlreadyJoined) {
-            throw new IllegalArgumentException("이미 채널에 참여 중인 사용자");
+            throw new IllegalArgumentException("이미 채널에 참여 중인 사용자입니다.");
         }
 
-        // 3 ChannelUser 생성 및 저장
         ChannelUserRole channelUserRole = new ChannelUserRole(channel, user, role);
 
-        // 4 데이터 정합성 맞추기 (양쪽 다 저장)
-        channelUserRoleMap.put(channelUserRole.getId(), channelUserRole);  // (1) Map에 등록
-        user.addChannelUserRole(channelUserRole);  // (2) List에도 등록
-        channel.addChannelUserRole(channelUserRole); // (3) Channel 리스트에도 등록
+        channelUserRoleDB.put(channelUserRole.getId(), channelUserRole);
+        user.addChannelUserRole(channelUserRole);
+        channel.addChannelUserRole(channelUserRole);
 
         return channelUserRole;
     }
 
-    // Read
-    // 특정 채널의 모든 유저 조회
     @Override
     public List<User> findUsersByChannelId(UUID channelId) {
         Channel channel = channelService.findChannelById(channelId);
 
-        // 채널 객체 내 리스트 활용
         return channel.getChannelUserRoles().stream()
                 .map(ChannelUserRole::getUser)
                 .collect(Collectors.toList());
     }
     @Override
-    // 특정 채널에 특정 유저 조회
+    // TODO: 현재 가장 먼저 찾는 하나의 값만 반환하고 있음 -> 전체 값 List로 반환하도록 수정
     public ChannelUserRole findChannelUser(UUID channelId, UUID userId) {
-        // (채널ID + 유저ID)가 모두 일치하는 ChannelUser 객체 찾기
-        return channelUserRoleMap.values().stream()
-                .filter(cu -> cu.getChannel().getId().equals(channelId) &&
-                        cu.getUser().getId().equals(userId))
-                .findFirst() // 찾으면 Optional 반환
-                .orElseThrow(() -> new IllegalArgumentException("해당 채널에 참여하지 않은 사용자입니다."));
+        return channelUserRoleDB.values().stream()
+                .filter(cu -> cu.getChannel().getId().equals(channelId)
+                        && cu.getUser().getId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널에 참여하지 않은 사용자입니다."
+                        + "\nchannelId: " + channelId + "\nuserId: " + userId));
     }
-    // 특정 유저가 참가하고 있는 채널 리스트 반환
     @Override
     public List<Channel> findChannelsByUserId(UUID userId) {
-        return channelUserRoleMap.values().stream()
+        return channelUserRoleDB.values().stream()
                 .filter(role -> role.getUser().getId().equals(userId))
                 .map(ChannelUserRole::getChannel)
                 .collect(Collectors.toList());
     }
 
-    // Update
     @Override
     public ChannelUserRole updateChannelRole(UUID channelId, UUID userId, ChannelRole newRole) {
-        // 1. 수정할 대상을 찾음 (위에서 만든 Read 메서드 재사용)
         ChannelUserRole channelUserRole = findChannelUser(channelId, userId);
+        ChannelRole role = findChannelUser(channelId, userId).getChannelRole();
 
-        // 2. 데이터 수정 (ChannelUser 엔티티 내부에 updateRole 메서드가 있어야 함)
         channelUserRole.updateRole(newRole);
-
-        System.out.println("권한 수정 완료: " + channelUserRole.getUser().getUsername() + " -> " + newRole);
+        System.out.println("권한 수정 완료되었습니다.\n"
+                + channelUserRole.getUser().getUsername() + ": " + role + " -> " + newRole);
         return channelUserRole;
     }
 
-    // Delete
     @Override
-    public void deleteChannelUser(UUID channelId, UUID userId) {
-        // 1. 삭제할 대상을 찾음
+    public void deleteChannelUserAssociation(UUID channelId, UUID userId) {
         ChannelUserRole channelUserRole = findChannelUser(channelId, userId);
+
         channelUserRole.getChannel().removeChannelUserRole(channelUserRole);
+        channelUserRole.getUser().removeChannelUserRole(channelUserRole);
+        channelUserRoleDB.remove(channelUserRole.getId());
 
-        channelUserRoleMap.remove(channelUserRole.getId());  // Map에서 제거
-        User user = channelUserRole.getUser();  // 유저 객체 꺼내고
-        user.removeChannelUserRole(channelUserRole);  // 그 유저에게 삭제 명령
-
-        System.out.println("채널 탈퇴 완료: " + channelUserRole.getUser().getUsername()
-                + " (채널: " + channelUserRole.getChannel().getChannelName() + ")");
+        System.out.println("채널 탈퇴 완료되었습니다.\n"
+                + "channelName: " + channelUserRole.getChannel().getChannelName() + ")");
     }
     @Override
-    public void deleteAllAssociationsByUserId(UUID userId) { // (5)
-        // 1 이 유저와 관련된 모든 관계(Role)를 먼저 찾음
-        List<ChannelUserRole> rolesToDelete = channelUserRoleMap.values().stream()
+    public void deleteAllAssociationsByUserId(UUID userId) {
+        List<ChannelUserRole> rolesToDelete = channelUserRoleDB.values().stream()
                 .filter(role -> role.getUser().getId().equals(userId))
-                .toList(); // Java 16+
+                .toList();
 
-        // 2 각 관계가 속해있던 "채널"의 명부에서 이 유저를 지움
+        // 유저 쪽 삭제
         for (ChannelUserRole role : rolesToDelete) {
-            // 채널 객체를 가져와서 해당 Role 삭제
             role.getChannel().removeChannelUserRole(role);
         }
 
-        // 3 Map에서 일괄 삭제
-        channelUserRoleMap.values().removeAll(rolesToDelete);
+        // 매핑테이블 쪽 삭제
+        channelUserRoleDB.values().removeAll(rolesToDelete);
         System.out.println("[6] 해당 유저의 채널-유저 관계 삭제 완료되었습니다." +
                 "\n\tuserId: " + userId);
     }
     @Override
-    // 채널 참여자 (Channel-User) 관계 목록 삭제
-    public void deleteAllAssociationsByChannelId(UUID channelId) { // (3-1-2)
-        // 1 해당 채널에 속한 삭제할 모든 관계(Role)를 찾음
-        List<ChannelUserRole> rolesToDelete = channelUserRoleMap.values().stream()
+    public void deleteAllAssociationsByChannelId(UUID channelId) {
+        List<ChannelUserRole> rolesToDelete = channelUserRoleDB.values().stream()
                 .filter(role -> role.getChannel().getId().equals(channelId))
                 .toList();
 
-        // 2 각 유저 객체의 리스트에서도 관계 정보를 제거
+        // 채널 쪽 삭제
         for (ChannelUserRole role : rolesToDelete) {
             role.getUser().removeChannelUserRole(role);
         }
 
-        // 3 Map에서 일괄 삭제
-        channelUserRoleMap.values().removeAll(rolesToDelete);
+        // 매핑테이블 쪽 삭제
+        channelUserRoleDB.values().removeAll(rolesToDelete);
         System.out.println("\t\t[2] 채널 내 모든 참여자 관계 삭제 완료. (채널 삭제 사전 작업 2)" +
                 "\n\t\t\tchannelId: " + channelId);
         for (ChannelUserRole role : rolesToDelete) {
-            System.out.println("\t\t\tuserId: " + role.getUser().getId() + " / role: " + role.getRole() + " 관계 삭제되었습니다.");
+            System.out.println("\t\t\tuserId: " + role.getUser().getId()
+                    + "\n\t\t\trole: " + role.getChannelRole() + " 관계 삭제되었습니다.");
         }
     }
-
 }

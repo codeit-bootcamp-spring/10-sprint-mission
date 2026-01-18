@@ -1,115 +1,82 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.*;
 
-import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.*;
 import com.sprint.mission.discodeit.service.listener.ChannelLifecycleListener;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
-// [] 검토 필요
-// Service Implementation
 public class JCFChannelService implements ChannelService {
-    private final Map<UUID, Channel> channelMap = new HashMap<UUID, Channel>();
+    private final Map<UUID, Channel> channelDB = new HashMap<>();
 
-    private final List<ChannelLifecycleListener> listeners = new ArrayList<ChannelLifecycleListener>();
+    private final List<ChannelLifecycleListener> listeners = new ArrayList<>();
     public void addListener(ChannelLifecycleListener listener) {
-        this.listeners.add(listener);
+        listeners.add(listener);
     }
 
-    // id로 Channel 객체 조회 메서드 - 해당 id의 Channel 있으면 Channel 객체 반환. 없으면 예외 발생
-    private Channel findChannelByIdOrThrow(UUID channelId) {
-        if (!channelMap.containsKey(channelId)) {
-            throw new IllegalArgumentException("해당 ID의 채널이 존재하지 않습니다. id: " + channelId);
-        }
-        return channelMap.get(channelId);
-    }
-    // 채널 이름 중복 여부 판단 메서드 - 채널 이름 중복되면 예외 발생
     private void validateDuplicateName(String channelName) {
-        // 이름이 같은 채널을 찾아서 Optional<Channel> 형태로 반환
-        Optional<Channel> duplicateChannel = channelMap.values().stream()
+        Optional<Channel> duplicateChannel = channelDB.values().stream()
                 .filter(ch -> ch.getChannelName().equals(channelName))
                 .findFirst();
         if (duplicateChannel.isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 채널 이름입니다. channelName: " + channelName
-                    + " id: " + duplicateChannel.get().getId());
+            throw new IllegalArgumentException("이미 존재하는 채널 이름입니다. (channelName: " + channelName + " )");
         }
     }
 
-    // Create - 채널 생성 / 채널장(서버장)인 Owner 필수 (유저 없는 채널 존재 불가능)
     @Override
     public Channel createChannel(String name, User owner) {
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("채널 이름은 필수");
-        }
         validateDuplicateName(name);
 
         Channel channel = new Channel(name, owner);
-        channelMap.put(channel.getId(), channel);
+        channelDB.put(channel.getId(), channel);
 
         return channel;
     }
 
-    // Read - 채널 단건 조회 / 특정 채널 조회 (채널 가입 등을 위한 검색)
     @Override
     public Channel findChannelById(UUID channelId) {
-        return findChannelByIdOrThrow(channelId);
+        if(!channelDB.containsKey(channelId)) {
+            throw new IllegalArgumentException("해당 id의 채널이 존재하지 않습니다. (channelId: " + channelId + " )");
+        }
+        return channelDB.get(channelId);
     }
-    // Read - 모든 채널 조회 / 전체 채널 조회 (채널 가입 등을 위한 탐색창)
     @Override
     public List<Channel> findAllChannels() {
-        return new ArrayList<>(channelMap.values());
+        return new ArrayList<>(channelDB.values());
     }
 
-    // Update - 채널 이름 수정
     @Override
     public Channel updateChannel(UUID channelId, String newChannelName) {
-        Channel channel = findChannelByIdOrThrow(channelId);
-
-        if (newChannelName == null || newChannelName.trim().isEmpty()) {
-            throw new IllegalArgumentException("변경할 채널 이름이 비어있습니다.");
-        }
-
-        Optional<Channel> duplicateChannel = channelMap.values().stream()
-                .filter(ch -> !ch.getId().equals(channelId) && ch.getChannelName().equals(newChannelName))
-                .findFirst();
-        if (duplicateChannel.isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 채널 이름입니다. channelName: " + newChannelName
-                    + " id: " + duplicateChannel.get().getId());
-        }
-
+        Channel channel = findChannelById(channelId);
+        validateDuplicateName(newChannelName);
         channel.updateChannelName(newChannelName);
         return channel;
     }
 
-    // Delete - 채널 삭제 / 채널 내 메시지 + 채널-유저 관계 해제
     @Override
-    public void deleteChannel(UUID channelId) { // (3-1)
-        findChannelByIdOrThrow(channelId); // 채널 존재 확인
+    public void deleteChannel(UUID channelId) {
+        findChannelById(channelId);
         for (ChannelLifecycleListener listener : listeners) {
-            listener.onChannelDelete(channelId);  // (3-1-1), (3-1-2)
+            listener.onChannelDelete(channelId);
         }
 
-        // 채널 본체 삭제
-        channelMap.remove(channelId);
-        System.out.println("\t[3] 채널 삭제 완료 (채널 삭제 준비 단계 1, 2 수행 완료 후 채널 삭제)." +
-                "\n\t\tchannel-id: " + channelId);
+        channelDB.remove(channelId);
+        System.out.println("\t[3] 채널 삭제 완료 (채널 삭제 준비 단계 1, 2 수행 완료 후 채널 삭제 완료)." +
+                "\n\t\tchannelId: " + channelId);
     }
-    // Delete - 특정 채널장의 모든 채널 삭제
     @Override
-    public void deleteChannelsByOwnerId(UUID ownerId) { // (3)
-        // 1 삭제 대상 channelId를 targetChannelIds에 저장
-        List<UUID> targetChannelIds = channelMap.values().stream()
+    public void deleteChannelsByOwnerId(UUID ownerId) {
+        List<UUID> targetChannelIds = channelDB.values().stream()
                 .filter(ch -> ch.getOwner().getId().equals(ownerId))
                 .map(Channel::getId)
                 .toList();
-        List<String> targetChannelNames = new ArrayList<String>();
+        List<String> targetChannelNames = new ArrayList<>();
 
-        // 2 각 채널에 대해 삭제 메서드 호출
         for (UUID channelId : targetChannelIds) {
-            targetChannelNames.add(findChannelByIdOrThrow(channelId).getChannelName());
-            deleteChannel(channelId);  // (3-1)
+            targetChannelNames.add(findChannelById(channelId).getChannelName());
+            deleteChannel(channelId);
         }
 
         System.out.println("[4] 방장(Owner) 탈퇴로 인한 채널 -> 전체 삭제 완료. 삭제된 채널 수: " + targetChannelIds.size());

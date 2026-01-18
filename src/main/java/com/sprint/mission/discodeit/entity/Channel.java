@@ -1,80 +1,52 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Channel extends BaseEntity {
-    // === 1 필드 ===
-    // id, createdAt, updatedAt 상속 받음
     private String channelName;
-    private User owner ; // owner는 변경 가능하므로 final 사용 x
-    private List<Message> messages = new ArrayList<>(); // 1. 채널에 작성된 메시지 목록
-    private List<ChannelUserRole> channelUserRoles = new ArrayList<>(); // 2. 채널에 참여 중인 유저(Role 포함) 목록
+    private User owner;
+    private final List<Message> messages = new ArrayList<>();
+    private final List<ChannelUserRole> channelUserRoles = new ArrayList<>();
 
-    // === 2 생성자 ===
-    // BaseEntity() 상속 받음
-    public Channel(String channelName, User ownerUser) {
-        super(); // id, createdAt, updatedAt -> 생성자로 초기화;
+    public Channel(String channelName, User owner) {
+        super();
         validateChannelName(channelName);
-        validateOwnerId(ownerUser.getId());
+        validateOwnerId(owner.getId());
 
         this.channelName = channelName;
-        this.owner = ownerUser;
+        this.owner = owner;
     }
 
-    // === 3 비즈니스 로직 ===
     private void validateChannelName(String channelName) {
-        if(channelName == null || channelName.trim().isEmpty()) {
-            throw new IllegalArgumentException("채널(서버) 이름은 필수입니다.");
+        if (channelName == null || channelName.trim().isEmpty()) {
+            throw new IllegalArgumentException("channelName은 null 이거나 비어있을 수 없습니다.");
         }
-        // 채널 이름 관련 규칙 추가 (추후 구현)
     }
     private void validateOwnerId(UUID ownerId) {
-        if (ownerId == null) {
-            throw new IllegalArgumentException("채널 소유자(Owner ID)는 필수입니다.");
+        if(ownerId==null) {
+            throw new IllegalArgumentException("채널 소유자(OWNER)는 필수로 존재해야 합니다.");
         }
     }
 
-    // === 4 Getter ===
-    public String getChannelName() {
-        return channelName;
-    }
-    public User getOwner() {
-        return owner;
-    }
-    public List<Message> getMessages() {
-        return new ArrayList<>(messages); // 복사본 반환
-    }
-    public List<ChannelUserRole> getChannelUserRoles() {
-        return channelUserRoles;
-    }
-    // getId(), getCreatedAt(), getUpdatedAt()은 상속 받음
+    public String getChannelName() { return this.channelName; }
+    public User getOwner() { return this.owner; }
+    public List<Message> getMessages() { return new ArrayList<>(messages); }
+    public List<ChannelUserRole> getChannelUserRoles() { return new ArrayList<>(channelUserRoles); }
 
-    // === 5 update ===
-    public void updateChannelName(String newChannelName) {
-        this.channelName = newChannelName;
+    public void updateChannelName(String channelName) {
+        this.channelName = channelName;
         this.updateTimestamp();
     }
     public void updateOwner(User newOwner) {
         validateOwnerId(newOwner.getId());
         if(this.owner.getId().equals(newOwner.getId())) {
-            return;
+            throw new IllegalArgumentException("본인을 제외한 새로운 OWNER을 지정해야 합니다.");
         }
         this.owner = newOwner;
         this.updateTimestamp();
     }
-    public void addMessage(Message message) { // 채널에 메시지 추가
-        this.messages.add(message);
-    }
-    public void removeMessage(Message message) { // 채널에서 메시지 제거
-        this.messages.remove(message);
-    }
-    public void addChannelUserRole(ChannelUserRole role) { // 채널에 사용자(Role) 추가
-        this.channelUserRoles.add(role);
-    }
-    public void removeChannelUserRole(ChannelUserRole role) { // 채널에서 사용자(Role) 제거
-        this.channelUserRoles.remove(role);
-    }
-    // updateTimestamp()는 상속받음
+    public void addMessage(Message message) { this.messages.add(message); }
+    public void removeMessage(Message message) { this.messages.remove(message); }
+    public void addChannelUserRole(ChannelUserRole channelUserRole) { this.channelUserRoles.add(channelUserRole); }
+    public void removeChannelUserRole(ChannelUserRole channelUserRole) { this.channelUserRoles.remove(channelUserRole); }
 }
