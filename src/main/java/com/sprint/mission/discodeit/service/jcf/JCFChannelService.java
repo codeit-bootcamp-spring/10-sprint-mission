@@ -50,7 +50,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel getChannelInfoById(UUID channelId) {
-        return channels.get(channelId);
+        return findChannelById(channelId);
     }
 
     @Override
