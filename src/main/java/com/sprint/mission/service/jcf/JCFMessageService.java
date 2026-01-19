@@ -13,10 +13,10 @@
 //public class JCFMessageService implements MessageService {
 //    private final UserService userService;
 //    private final ChannelService channelService;
-//    private final Map<UUID, Message> messages;
+//    private final Map<UUID, Message> data;
 //
 //    public JCFMessageService(UserService userService, ChannelService channelService) {
-//        this.messages = new HashMap<>();
+//        this.data = new HashMap<>();
 //        this.userService = userService;
 //        this.channelService = channelService;
 //    }
@@ -28,31 +28,31 @@
 //
 //        Message message = new Message(user, channel, content);
 //
-//        messages.put(message.getId(), message);
+//        data.put(message.getId(), message);
 //        return message;
 //    }
 //
 //    @Override
 //    public Message findById(UUID messageId) {
 //        validateMessageExists(messageId);
-//        return messages.get(messageId);
+//        return data.get(messageId);
 //    }
 //
 //    @Override
 //    public List<Message> findAll() {
-//        return new ArrayList<>(messages.values());
+//        return new ArrayList<>(data.values());
 //    }
 //
 //    @Override
 //    public List<Message> findByChannelId(UUID channelId) {
-//        return messages.values().stream()
+//        return data.values().stream()
 //                .filter(message -> message.getChannel().getId().equals(channelId))
 //                .collect(Collectors.toList());
 //    }
 //
 //    @Override
 //    public List<Message> findByUserIdAndChannelId(UUID userId, UUID channelId) {
-//        return messages.values().stream()
+//        return data.values().stream()
 //                .filter(message ->
 //                        message.getUser().getId().equals(userId) && message.getChannel().getId().equals(channelId))
 //                .collect(Collectors.toList());
@@ -70,11 +70,11 @@
 //    public void deleteById(UUID userId, UUID messageId) {
 //        validateMessageExists(messageId);
 //        validateAuthentication(findById(messageId), userId);
-//        messages.remove(messageId);
+//        data.remove(messageId);
 //    }
 //
 //    private void validateMessageExists(UUID id) {
-//        if (!messages.containsKey(id)) {
+//        if (!data.containsKey(id)) {
 //            throw new IllegalArgumentException("메시지가 존재하지 않습니다.");
 //        }
 //    }

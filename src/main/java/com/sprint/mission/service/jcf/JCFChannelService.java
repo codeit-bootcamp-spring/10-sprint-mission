@@ -9,10 +9,10 @@
 //
 //public class JCFChannelService implements ChannelService {
 //    private final UserService userService;
-//    private final Map<UUID, Channel> channels;
+//    private final Map<UUID, Channel> data;
 //
 //    public JCFChannelService(UserService userService) {
-//        this.channels = new HashMap<>();
+//        this.data = new HashMap<>();
 //        this.userService = userService;
 //    }
 //
@@ -24,7 +24,7 @@
 //
 //        owner.joinChannel(channel);
 //
-//        channels.put(channel.getId(), channel);
+//        data.put(channel.getId(), channel);
 //        return channel;
 //    }
 //
@@ -36,7 +36,7 @@
 //    @Override
 //    public List<Channel> findAll() {
 //        // 리스트나 맵, 셋을 넘겨줄 땐 내부 요소 보호를 위해 얕은복사
-//        return new ArrayList<>(channels.values());
+//        return new ArrayList<>(data.values());
 //    }
 //
 //    @Override
@@ -56,7 +56,7 @@
 //    @Override
 //    public void deleteById(UUID id) {
 //        validateChannelExists(id);
-//        channels.remove(id);
+//        data.remove(id);
 //    }
 //
 //    @Override
@@ -82,19 +82,19 @@
 //    }
 //
 //    private void validateChannelExists(UUID id) {
-//        if (!channels.containsKey(id)) {
+//        if (!data.containsKey(id)) {
 //            throw new IllegalArgumentException("채널이 존재하지 않습니다.");
 //        }
 //    }
 //
 //    private Channel getChannelOrThrow(UUID id) {
 //        validateChannelExists(id);
-//        return channels.get(id);
+//        return data.get(id);
 //    }
 //
 //    private void validateUpdateChannelNameNotExist(UUID id, String name) {
 //        String trimmedName = name.trim();
-//        boolean exist = channels.values().stream()
+//        boolean exist = data.values().stream()
 //                .anyMatch(channel -> channel.getName().equals(trimmedName) &&
 //                        !channel.getId().equals(id));
 //
