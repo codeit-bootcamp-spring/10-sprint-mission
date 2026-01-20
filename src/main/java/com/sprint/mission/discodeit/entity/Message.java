@@ -22,12 +22,7 @@ public class Message extends BaseEntity {
 
     @Override
     public String toString() {
-        return "Message{" +
-                "id=" + getId() +
-                ", user=" + user +
-                ", channel=" + channel +
-                ", content='" + content + '\'' +
-                '}';
+        return "Message{" + "id=" + getId() + ", user=" + user + ", channel=" + channel + ", content='" + content + '\'' + '}';
     }
     public User getUser() {
         return user;

@@ -24,5 +24,6 @@ public abstract class BaseEntity {
     public Long getUpdatedAt() {
         return updatedAt;
     }
-
+    void updateUpdatedAt() {
+    }
 }
