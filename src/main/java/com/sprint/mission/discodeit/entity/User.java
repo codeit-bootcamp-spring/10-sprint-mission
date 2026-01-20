@@ -6,15 +6,19 @@ import java.util.UUID;
 
 public class User extends BaseEntity {
     private String username;
+    private String email;
+    private transient String password;
     // 채널 참여 내역과 메시지 전송 내역을 기록하는 필드
     private List<Channel> joinedChannels;
     private List<Message> sentMessages;
 
-    public User(String username) {
+    public User(String username, String email, String password) {
         // id 자동생성 및 초기화
         super();
-        // username 초기화
+        // 필드 초기화
         this.username = username;
+        this.email = email;
+        this.password = password;
         // 참여한 채널들과 보낸 메세지들
         this.joinedChannels = new ArrayList<>();
         this.sentMessages = new ArrayList<>();
@@ -23,6 +27,8 @@ public class User extends BaseEntity {
     public String getUsername() {
         return username;
     }
+
+    public String getEmail() { return email; }
 
     // username 수정 메서드
     public void updateUsername(String username) {
@@ -61,6 +67,7 @@ public class User extends BaseEntity {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", username='" + username + '\'' +
+                ", email=" + email +
                 '}';
     }
 }
