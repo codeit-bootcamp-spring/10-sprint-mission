@@ -3,15 +3,18 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
-    private final Map<UUID, Channel> data = new HashMap<>();
-    private final JCFUserService userService;
+    private final ChannelRepository channelRepository;
+    private final UserService userService;
 
-    public JCFChannelService(JCFUserService userService) {
+    public JCFChannelService(ChannelRepository channelRepository, UserService userService) {
+        this.channelRepository = channelRepository;
         this.userService = userService;
     }
 
@@ -19,24 +22,20 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel create(String name, String description, String type, boolean isPublic) {
         Channel newChannel = new Channel(name, description, type, isPublic);
-        data.put(newChannel.getId(), newChannel);
-        return newChannel;
+        return channelRepository.save(newChannel);
     }
 
     // 채널 ID로 조회
     @Override
     public Channel findById(UUID id){
-        Channel channel = data.get(id);
-        if (channel == null) {
-            throw new NoSuchElementException("존재하지 않는 채널 ID입니다.");
-        }
-        return channel;
+        return channelRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널 ID입니다."));
     }
 
     // 채널 전부 조회
     @Override
     public List<Channel> findAll(){
-        return new ArrayList<>(data.values());
+        return channelRepository.findAll();
     }
 
     // 채널 정보 수정
@@ -44,14 +43,14 @@ public class JCFChannelService implements ChannelService {
     public Channel update(UUID id, String name, String description, boolean isPublic){
         Channel channel = findById(id);
         channel.update(name, description, isPublic);
-        return channel;
+        return channelRepository.save(channel);
     }
 
     // 채널 삭제
     @Override
     public void delete(UUID id){
-        findById(id);
-        data.remove(id);
+        Channel channel = findById(id);
+        channelRepository.delete(channel);
     }
 
     // 채널 참가
@@ -66,8 +65,9 @@ public class JCFChannelService implements ChannelService {
 
         channel.addMember(user);
         user.addJoinedChannel(channel);
-    }
 
+        channelRepository.save(channel);
+    }
 
     // 채널 탈퇴
     @Override
@@ -81,6 +81,8 @@ public class JCFChannelService implements ChannelService {
 
         channel.removeMember(user);
         user.leaveChannel(channel);
+
+        channelRepository.save(channel);
     }
 
     // 특정 채널의 유저 목록 조회
