@@ -123,11 +123,11 @@ public class JavaApplication {
     public static void main(String[] args) {
 
         // =========================
-        // Repository 초기화
+        // Repository 초기화 (File)
         // =========================
-        UserRepository userRepository = new JCFUserRepository();
-        ChannelRepository channelRepository = new JCFChannelRepository();
-        MessageRepository messageRepository = new JCFMessageRepository();
+        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+        MessageRepository messageRepository = new FileMessageRepository();
 
         // =========================
         // Service 초기화 (Basic)
@@ -136,7 +136,11 @@ public class JavaApplication {
                 new BasicUserService(userRepository, channelRepository);
 
         ChannelService channelService =
-                new BasicChannelService(userRepository, channelRepository, messageRepository);
+                new BasicChannelService(
+                        userRepository,
+                        channelRepository,
+                        messageRepository
+                );
 
         MessageService messageService =
                 new BasicMessageService(
@@ -148,7 +152,7 @@ public class JavaApplication {
         // =========================
         // 유저 서비스 테스트
         // =========================
-        System.out.println("===== 유저 서비스 테스트 =====");
+        System.out.println("===== 유저 서비스 테스트 (File) =====");
 
         User alice = userService.createUser(
                 "Alice",
@@ -175,7 +179,7 @@ public class JavaApplication {
         // =========================
         // 채널 서비스 테스트
         // =========================
-        System.out.println("===== 채널 서비스 테스트 =====");
+        System.out.println("===== 채널 서비스 테스트 (File) =====");
 
         Channel noticeChannel = channelService.createChannel("공지 채널");
         Channel chatChannel = channelService.createChannel("잡담 채널");
@@ -210,7 +214,7 @@ public class JavaApplication {
         // =========================
         // 메시지 서비스 테스트
         // =========================
-        System.out.println("===== 메시지 서비스 테스트 =====");
+        System.out.println("===== 메시지 서비스 테스트 (File) =====");
 
         Message m1 = messageService.sendMessage(
                 bob.getId(),
@@ -254,7 +258,7 @@ public class JavaApplication {
         // =========================
         // 채널 삭제 테스트
         // =========================
-        System.out.println("===== 채널 삭제 테스트 =====");
+        System.out.println("===== 채널 삭제 테스트 (File) =====");
 
         channelService.deleteChannel(noticeChannel.getId());
 
