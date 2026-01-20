@@ -463,123 +463,143 @@ public class JavaApplication {
     // =================================================================
     // 4. ChannelUserRole(채널-유저 관계 + Role) 도메인 테스트
     // =================================================================
-    private static void testChannelUserRoleDomain(ChannelUserRoleService channelUserService,
+    private static void testChannelUserRoleDomain(ChannelUserRoleService channelUserRoleService,
                                                   ChannelService channelService,
                                                   UserService userService) {
-        // 외부 서비스에 보여지는 서비스가 아니라, 내부적으로 User, Channel 간의 관계를 위한 서비스 이므로 CRUD 중 R만 외부에 노출됨
-        // Create -> 내부적으로 유저가 채널을 생성할 때, 유저가 채널에 참여할 때 발생함
-        // Update -> 내부적으로 유저 권한이 변경될 때, 유저가 채널 탈퇴 등을 할 때 발생함
-        // Delete -> 내부적으로 다른 것 삭제할 때 연동해서 삭제됨
-        printSection("4. ChannelUser 서비스 테스트");
+        printSection("4. ChannelUserRole 서비스 테스트");
 
         // [0] 테스트 데이터 준비
         System.out.println("0) 데이터 준비");
-        User owner = userService.createUser("방장");
+        User owner = userService.createUser("방장_유저");
+        User user1 = userService.createUser("참여자1");
+        User user2 = userService.createUser("참여자2");
+        User outsider = userService.createUser("외부인"); // 채널에 참여하지 않을 유저
 
-        User member = userService.createUser("일반멤버");
-        User outsider = userService.createUser("외부인"); // 채널에 없는 사람
-        Channel channel = channelService.createChannel("테스트채널", owner);
+        printUserCreated(owner);
+        printUserCreated(user1);
+        printUserCreated(user2);
 
-        // ==========================================
-        // [Happy Path] 생성 -> 조회 -> 수정 -> 삭제 -> 확인
-        // ==========================================
-        printSubSection("Happy Path");
+        Channel channel1 = channelService.createChannel("테스트채널1", owner);
+        printChannelCreated(channel1);
 
-        // [1] 생성 (Create) - 채널 입장
-        System.out.println("1) 생성 (채널 입장)");
-        channelUserService.addChannelUser(channel.getId(), member.getId(), ChannelRole.MEMBER);
-        // 검증 1: 유저 객체의 리스트에 잘 들어갔는지?
-        boolean inUserList = member.getChannelUserRoles().stream()
-                .anyMatch(r -> r.getChannel().getId().equals(channel.getId()));
-        // 검증 2: 서비스의 Map에 잘 들어갔는지?
-        // (Map은 private이므로, 조회 메서드인 findChannelUser를 호출해서 에러가 안 나면 있는 것으로 판단)
-        boolean inServiceMap;
-        try {
-            channelUserService.findChannelUser(channel.getId(), member.getId());
-            inServiceMap = true; // 에러 안 나고 조회되면 성공
-        } catch (IllegalArgumentException e) {
-            inServiceMap = false; // "해당 채널에 참여하지 않은 사용자" 에러가 나면 실패
-        }
-        System.out.println("\t-> 입장 결과 (User List): " + (inUserList ? "성공" : "실패"));
-        System.out.println("\t-> 입장 결과 (Service Map): " + (inServiceMap ? "성공" : "실패"));
+        // === [Happy Path] ===
+        System.out.println("4.1 Happy Path");
+
+        // [1] 등록 (Create) - 채널 입장
+        System.out.println("1) 등록 / 채널 입장 / [Create]");
+        // 방장 입장 (Role: OWNER)
+        channelUserRoleService.addChannelUser(channel1.getId(), owner.getId(), ChannelRole.OWNER);
+        // 유저1 입장 (Role: MEMBER)
+        channelUserRoleService.addChannelUser(channel1.getId(), user1.getId(), ChannelRole.MEMBER);
+        // 유저2 입장 (Role: MEMBER)
+        channelUserRoleService.addChannelUser(channel1.getId(), user2.getId(), ChannelRole.MEMBER);
+
+        System.out.println("\t-> [채널 입장 완료] "
+                + "\n\t\t- " + owner.getUsername() + " (OWNER)"
+                + "\n\t\t- " + user1.getUsername() + " (MEMBER)"
+                + "\n\t\t- " + user2.getUsername() + " (MEMBER)");
 
         // [2] 조회 (Read)
-        System.out.println("2) 조회");
-        ChannelUserRole roleInfo = channelUserService.findChannelUser(channel.getId(), member.getId());
-        System.out.println("\t-> 조회된 권한: " + roleInfo.getChannelRole());
+        System.out.println("2) 조회(단건, 다건) / [Read]");
 
-        // [3] 수정 (Update) - 권한 변경 (MEMBER -> ADMINISTRATOR 위임 등)
-        System.out.println("3) 수정 (권한 변경)");
-        channelUserService.updateChannelRole(channel.getId(), member.getId(), ChannelRole.ADMIN); // 예: 방장 위임
+        // [2-1] 단건 조회 (findChannelUser) - 특정 유저의 권한 확인
+        ChannelUserRole foundRole = channelUserRoleService.findChannelUser(channel1.getId(), user1.getId());
+        System.out.println("\t-> [단건 조회] 유저: " + foundRole.getUser().getUsername()
+                + ", 현재 권한: " + foundRole.getChannelRole());
+
+        // [2-2] 채널 내 참여자 목록 조회 (findUsersByChannelId)
+        List<User> participants = channelUserRoleService.findUsersByChannelId(channel1.getId());
+        System.out.println("\t-> [채널 참여자 목록 조회] 총 " + participants.size() + "명");
+        for (User u : participants) {
+            System.out.println("\t\t- " + u.getUsername());
+        }
+
+        // [2-3] 유저가 참여 중인 채널 목록 조회 (findChannelsByUserId)
+        System.out.println("\t-> [특정 유저의 가입 채널 목록 조회]");
+        // 테스트를 위해 채널 하나 더 생성 및 참여
+        Channel channel2 = channelService.createChannel("테스트채널2", owner);
+        channelUserRoleService.addChannelUser(channel2.getId(), user1.getId(), ChannelRole.MEMBER); // user1이 channel2에도 참여
+
+        List<Channel> myChannels = channelUserRoleService.findChannelsByUserId(user1.getId());
+        System.out.println("\t\t[" + user1.getUsername() + "]님은 총 " + myChannels.size() + "개의 채널에 참여 중입니다.");
+        for (Channel ch : myChannels) {
+            System.out.println("\t\t- " + ch.getChannelName());
+        }
+
+        // [3] 수정 (Update) - 권한 변경
+        System.out.println("3) 수정 / 권한 변경 / [Update]");
+        // user1의 권한을 MEMBER -> ADMIN으로 변경
+        channelUserRoleService.updateChannelRole(channel1.getId(), user1.getId(), ChannelRole.ADMIN);
 
         // 수정 확인
-        ChannelUserRole updatedRole = channelUserService.findChannelUser(channel.getId(), member.getId());
-        System.out.println("\t-> 변경된 권한: " + updatedRole.getChannelRole());
+        ChannelUserRole updatedRole = channelUserRoleService.findChannelUser(channel1.getId(), user1.getId());
+        System.out.println("\t-> [권한 변경 확인] " + updatedRole.getUser().getUsername()
+                + " : " + updatedRole.getChannelRole());
 
         // [4] 삭제 (Delete) - 채널 탈퇴
-        System.out.println("4) 삭제 (채널 탈퇴)");
-        channelUserService.deleteChannelUserAssociation(channel.getId(), member.getId());
-        System.out.println("\t-> 탈퇴 요청 완료");
+        System.out.println("4) 삭제 / 채널 탈퇴 / [Delete]");
+        // user2 탈퇴
+        channelUserRoleService.deleteChannelUserAssociation(channel1.getId(), user2.getId());
+        System.out.println("\t-> [탈퇴 완료] " + user2.getUsername() + "가 " + channel1.getChannelName() + "에서 나갔습니다.");
 
-        // [5] 삭제 확인 (Read Fail)
-        System.out.println("5) 삭제 확인 (조회 시도)");
+        // [5] 삭제 확인
+        System.out.println("5) 삭제 확인");
         try {
-            channelUserService.findChannelUser(channel.getId(), member.getId());
-            System.out.println("\t-> [실패] 삭제되지 않음 (여전히 조회됨)");
+            channelUserRoleService.findChannelUser(channel1.getId(), user2.getId());
+            System.out.println("\t-> [실패] 탈퇴한 유저가 여전히 조회됨.");
         } catch (IllegalArgumentException e) {
             System.out.println("\t-> [성공] 조회 실패 (예상된 에러: " + e.getMessage() + ")");
         }
-        boolean isStillJoined = member.getChannelUserRoles().stream()
-                .anyMatch(r -> r.getChannel().getId().equals(channel.getId()));
+
+        // 유저의 가입 채널 목록에서도 사라졌는지 확인
+        List<Channel> user2Channels = channelUserRoleService.findChannelsByUserId(user2.getId());
+        boolean isStillJoined = user2Channels.stream().anyMatch(ch -> ch.getId().equals(channel1.getId()));
         if (!isStillJoined) {
-            System.out.println("\t-> [성공] 유저 개인 리스트에서도 삭제됨");
+            System.out.println("\t-> [성공] 유저의 가입 채널 목록에서도 정상적으로 제거됨.");
         } else {
-            System.out.println("\t-> [실패] 유저 개인 리스트에 데이터가 남아있음");
+            System.out.println("\t-> [실패] 유저의 가입 채널 목록에 데이터가 남아있음.");
         }
 
-//        // ==========================================
-//        // 예외 상황 테스트
-//        // ==========================================
-//        printSubSection("Unhappy Path");
-//
-//        // 1. 없는 걸 조회 (가입 안 한 사람 조회)
-//        System.out.print("Test 1) 가입하지 않은 유저 조회: ");
-//        try {
-//            channelUserService.findChannelUser(channel.getId(), outsider.getId());
-//            System.out.println("실패 (예외 안 터짐)");
-//        } catch (IllegalArgumentException e) {
-//            System.out.println("성공 (방어: " + e.getMessage() + ")");
-//        }
-//
-//        // 2. 없는 걸 수정 (가입 안 한 사람 권한 변경)
-//        System.out.print("Test 2) 가입하지 않은 유저 권한 수정: ");
-//        try {
-//            channelUserService.updateChannelRole(channel.getId(), outsider.getId(), ChannelRole.OWNER);
-//            System.out.println("실패 (예외 안 터짐)");
-//        } catch (IllegalArgumentException e) {
-//            System.out.println("성공 (방어: " + e.getMessage() + ")");
-//        }
-//
-//        // 3. 없는 걸 삭제 (가입 안 한 사람 강퇴)
-//        System.out.print("Test 3) 가입하지 않은 유저 삭제 시도: ");
-//        try {
-//            channelUserService.deleteChannelUser(channel.getId(), outsider.getId());
-//            System.out.println("실패 (예외 안 터짐)");
-//        } catch (IllegalArgumentException e) {
-//            System.out.println("성공 (방어: " + e.getMessage() + ")");
-//        }
-//
-//        // 4. 중복 생성 (이미 가입했는데 또 가입)
-//        System.out.print("Test 4) 중복 가입 시도: ");
-//        try {
-//            // 다시 가입 시키고 (Happy)
-//            channelUserService.addChannelUser(channel.getId(), member.getId(), ChannelRole.MEMBER);
-//            // 또 가입 시도 (Unhappy)
-//            channelUserService.addChannelUser(channel.getId(), member.getId(), ChannelRole.MEMBER);
-//            System.out.println("실패 (중복 가입됨)");
-//        } catch (IllegalArgumentException e) {
-//            System.out.println("성공 (방어: " + e.getMessage() + ")");
-//        }
+
+        // === [Unhappy Path] ===
+        System.out.println("4.2 Unhappy Path");
+
+        // 1. 참여하지 않은 유저 조회
+        System.out.print("Test 1) 참여하지 않은 유저 조회: ");
+        try {
+            channelUserRoleService.findChannelUser(channel1.getId(), outsider.getId());
+            System.out.println("실패 (예외가 발생하지 않음)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 2. 참여하지 않은 유저 권한 수정
+        System.out.print("Test 2) 참여하지 않은 유저 권한 수정: ");
+        try {
+            channelUserRoleService.updateChannelRole(channel1.getId(), outsider.getId(), ChannelRole.ADMIN);
+            System.out.println("실패 (예외가 발생하지 않음)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 3. 참여하지 않은 유저 탈퇴(삭제) 시도
+        System.out.print("Test 3) 참여하지 않은 유저 탈퇴 시도: ");
+        try {
+            channelUserRoleService.deleteChannelUserAssociation(channel1.getId(), outsider.getId());
+            System.out.println("실패 (예외가 발생하지 않음)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (방어: " + e.getMessage() + ")");
+        }
+
+        // 4. 중복 가입 시도
+        System.out.print("Test 4) 중복 가입 시도: ");
+        try {
+            // user1은 이미 channel1에 있음
+            channelUserRoleService.addChannelUser(channel1.getId(), user1.getId(), ChannelRole.MEMBER);
+            System.out.println("실패 (중복 가입이 허용됨)");
+        } catch (IllegalArgumentException e) {
+            System.out.println("성공 (방어: " + e.getMessage() + ")");
+        }
     }
 
     // 콘솔 구분선 출력 메서드

@@ -86,7 +86,7 @@ public class JCFChannelUserRoleService implements ChannelUserRoleService {
         channelUserRoleDB.remove(channelUserRole.getId());
 
         System.out.println("채널 탈퇴 완료되었습니다.\n"
-                + "channelName: " + channelUserRole.getChannel().getChannelName() + ")");
+                + "channelName: " + channelUserRole.getChannel().getChannelName());
     }
     @Override
     public void deleteAllAssociationsByUserId(UUID userId) {
