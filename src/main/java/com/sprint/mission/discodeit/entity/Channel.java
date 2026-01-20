@@ -57,13 +57,10 @@ public class Channel extends Common{
     @Override
     public String toString() {
         return String.format(
-                "Channel{id=%s, channelName='%s', type='%s', ownerId='%s', 생성일자=%d, 수정일자=%d}",
-                getId(),
+                "\n(채널명:%s, 타입:%s, 방장:%s)\n",
                 channelName,
                 type,
-                owner.getId(),
-                getCreatedAt(),
-                getUpdatedAt()
+                owner.getUserName()
         );
     }
 

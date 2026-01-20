@@ -40,13 +40,10 @@ public class Message extends Common {
     @Override
     public String toString() {
         return String.format(
-                "Message{id=%s, 내용='%s', userId='%s', channelId='%s', 생성일자=%d, 수정일자=%d}",
-                getId(),
+                "\n(내용: %s, 유저명:%s, 채널명: %s)\n",
                 content,
-                user.getId(),
-                channel.getId(),
-                getCreatedAt(),
-                getUpdatedAt()
+                user.getUserName(),
+                channel.getChannelName()
         );
     }
 

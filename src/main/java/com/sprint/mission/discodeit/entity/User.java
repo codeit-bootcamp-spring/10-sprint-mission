@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class User extends Common{
+public class User extends Common implements Serializable {
 
     private String userName;
     private String email;
@@ -25,7 +26,6 @@ public class User extends Common{
         return userName;
     }
 
-    //이름 변경
     public void setUserName(String userName) {
         this.userName = userName;
         setUpdatedAt();
@@ -58,13 +58,9 @@ public class User extends Common{
     @Override
     public String toString() {
         return String.format(
-                "User{id=%s, username='%s', email='%s', status='%s', 생성일자=%d, 수정일자=%d}",
-                getId(),
-                userName,
-                email,
-                status,
-                getCreatedAt(),
-                getUpdatedAt()
+                "[유저명:%s]",
+                userName
+
         );
     }
 
