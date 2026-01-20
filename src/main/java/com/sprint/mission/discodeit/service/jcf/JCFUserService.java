@@ -8,7 +8,7 @@ import java.util.*;
 
 public class JCFUserService implements UserService {
     private ChannelService channelService;
-    private final Map<UUID, User> users = new HashMap<>();
+    private final Map<UUID, User> data = new HashMap<>();
 
     public void setChannelService(ChannelService channelService) {
         this.channelService = channelService;
@@ -17,14 +17,14 @@ public class JCFUserService implements UserService {
     @Override
     public User createUser(String username) {
         User user = new User(username);
-        users.put(user.getId(), user);
+        data.put(user.getId(), user);
 
         return user;
     }
 
     @Override
     public List<User> getUserList() {
-        return users.values().stream()
+        return data.values().stream()
                 .toList();
     }
 
@@ -35,7 +35,7 @@ public class JCFUserService implements UserService {
             throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
         }
 
-        return users.values().stream()
+        return data.values().stream()
                 .filter(user -> user.getJoinedChannels().stream()
                         .anyMatch(channel -> channel.getId().equals(channelId)))
                 .toList();
@@ -61,13 +61,13 @@ public class JCFUserService implements UserService {
     public void deleteUser(UUID userId) {
         User user = findUserById(userId);
 
-        users.remove(userId);
+        data.remove(userId);
     }
 
     private User findUserById(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null일 수 없습니다.");
 
-        User user = users.get(userId);
+        User user = data.get(userId);
 
         if (user == null) {
             throw new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
