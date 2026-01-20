@@ -52,7 +52,7 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(password)
                 .filter(n -> !n.equals(user.getPassword()))
                 .ifPresent(p -> user.setPassword(p));
-        userRepository.update(user);
+        userRepository.save(user);
         return user;
     }
 

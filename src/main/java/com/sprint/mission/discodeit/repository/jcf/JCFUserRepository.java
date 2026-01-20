@@ -15,11 +15,6 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> update(User user) {
-        return Optional.ofNullable(data.put(user.getId(), user));
-    }
-
-    @Override
     public Optional<User> findById(UUID id) {
         return Optional.ofNullable(data.get(id));
     }

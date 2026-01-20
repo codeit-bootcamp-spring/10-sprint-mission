@@ -17,11 +17,6 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Optional<Channel> update(Channel channel) {
-        return Optional.ofNullable(data.put(channel.getId(),channel));
-    }
-
-    @Override
     public Optional<Channel> findById(UUID id) {
         return Optional.ofNullable(data.get(id));
     }

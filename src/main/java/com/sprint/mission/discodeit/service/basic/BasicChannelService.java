@@ -50,7 +50,7 @@ public class BasicChannelService implements ChannelService {
         Optional.ofNullable(description)
                 .filter(d -> !d.equals(channel.getDescription()))
                 .ifPresent(d -> channel.setDescription(d));
-        channelRepository.update(channel);
+        channelRepository.save(channel);
         return channel;
     }
 

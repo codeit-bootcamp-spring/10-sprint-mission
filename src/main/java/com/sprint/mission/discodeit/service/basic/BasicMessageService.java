@@ -52,7 +52,7 @@ public class BasicMessageService implements MessageService {
         checkSender(id,senderId);
         Message message = getMessageById(id);
         message.setContent(content);
-        messageRepository.update(message);
+        messageRepository.save(message);
         return message;
     }
 
