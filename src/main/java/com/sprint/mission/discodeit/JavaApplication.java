@@ -27,13 +27,13 @@ public class JavaApplication {
         //---------------------------------1. user---------------------------------
         // 1-1. user 등록 및 조회
         User user1 = userService.createUser("전창현", "ckdgus12@gmail.com");
-        System.out.println("1-1. 유저 등록 완료: " + userService.readUser(user1.getId()).getUserName());
+        System.out.println("1-1. 유저 등록 완료: " + user1.getUserName());
 
         User user2 = userService.createUser("이한수", "gkstn13@naver.com");
-        System.out.println("1-1. 유저 등록 완료: " + userService.readUser(user2.getId()).getUserName());
+        System.out.println("1-1. 유저 등록 완료: " + user2.getUserName());
 
         User user3 = userService.createUser("이백호", "qorgh@kongju.ac.kr");
-        System.out.println("1-1. 유저 등록 완료: " + userService.readUser(user3.getId()).getUserName());
+        System.out.println("1-1. 유저 등록 완료: " + user3.getUserName());
         System.out.println();
 
         // 1-2. user 다건 조회
@@ -41,22 +41,22 @@ public class JavaApplication {
         System.out.println();
 
         // 1-3. user 정보 수정 및 조회
-        userService.updateUser(user1.getId(), "김수한", "suhan78@gmail.com");
-        System.out.println("1-3-1. 유저 정보 수정 완료: " + "\n이름: " + userService.readUser(user1.getId()).getUserName()
-                + "\n이메일: " + userService.readUser(user1.getId()).getUserEmail());
-        System.out.println("수정 시각: " + userService.readUser(user1.getId()).getUpdatedAt());
+        User updatedUser1 = userService.updateUser(user1.getId(), "김수한", "suhan78@gmail.com");
+        System.out.println("1-3-1. 유저 정보 수정 완료: " + "\n이름: " + updatedUser1.getUserName()
+                + "\n이메일: " + updatedUser1.getUserEmail());
+        System.out.println("수정 시각: " + updatedUser1.getUpdatedAt());
         System.out.println();
 
-        userService.updateUser(user2.getId(), "정몽주", null);
-        System.out.println("1-3-2. 유저 이름 수정 완료: " + "\n이름: " + userService.readUser(user2.getId()).getUserName()
-                + "\n이메일: " + userService.readUser(user2.getId()).getUserEmail());
-        System.out.println("수정 시각: " + userService.readUser(user2.getId()).getUpdatedAt());
+        User updatedUser2 = userService.updateUser(user2.getId(), "정몽주", null);
+        System.out.println("1-3-2. 유저 이름 수정 완료: " + "\n이름: " + updatedUser2.getUserName()
+                + "\n이메일: " + updatedUser2.getUserEmail());
+        System.out.println("수정 시각: " + updatedUser2.getUpdatedAt());
         System.out.println();
 
-        userService.updateUser(user3.getId(), null, "backho@naver.com");
-        System.out.println("1-3-3. 유저 이메일 수정 완료: " + "\n이름: " + userService.readUser(user3.getId()).getUserName()
-                + "\n이메일: " + userService.readUser(user3.getId()).getUserEmail());
-        System.out.println("수정 시각: " + userService.readUser(user3.getId()).getUpdatedAt());
+        User updatedUser3 = userService.updateUser(user3.getId(), null, "backho@naver.com");
+        System.out.println("1-3-3. 유저 이메일 수정 완료: " + "\n이름: " + updatedUser3.getUserName()
+                + "\n이메일: " + updatedUser3.getUserEmail());
+        System.out.println("수정 시각: " + updatedUser3.getUpdatedAt());
         System.out.println();
 
         // 1-4. user 정보 삭제 및 확인
@@ -71,16 +71,16 @@ public class JavaApplication {
         //---------------------------------2. channel---------------------------------
         // 2-1. channel 등록 및 조회
         Channel channel1 = channelService.createChannel(ChannelType.PUBLIC,"채널1", "채널1 입니다.");
-        System.out.println("2-1. 채널 등록 완료: " + channelService.readChannel(channel1.getId()).getChannelType() + " "
-                + channelService.readChannel(channel1.getId()).getChannelName());
+        System.out.println("2-1. 채널 등록 완료: " + channel1.getChannelType() + " "
+                + channel1.getChannelName());
 
         Channel channel2 = channelService.createChannel(ChannelType.PRIVATE,"채널2", "채널2 입니다.");
-        System.out.println("2-1. 채널 등록 완료: " + channelService.readChannel(channel2.getId()).getChannelType() + " "
-                + channelService.readChannel(channel2.getId()).getChannelName());
+        System.out.println("2-1. 채널 등록 완료: " + channel2.getChannelType() + " "
+                + channel2.getChannelName());
 
         Channel channel3 = channelService.createChannel(ChannelType.PUBLIC,"채널3", "채널3 입니다.");
-        System.out.println("2-1. 채널 등록 완료: " + channelService.readChannel(channel3.getId()).getChannelType() + " "
-                + channelService.readChannel(channel3.getId()).getChannelName());
+        System.out.println("2-1. 채널 등록 완료: " + channel3.getChannelType() + " "
+                + channel3.getChannelName());
         System.out.println();
 
         // 2-2. user 다건 조회
@@ -88,19 +88,19 @@ public class JavaApplication {
         System.out.println();
 
         // 2-3. channel 정보 수정 및 조회
-        channelService.updateChannel(channel1.getId(), ChannelType.PRIVATE,null, null);
-        System.out.println("2-3. 채널1 타입 수정 완료: " + channelService.readChannel(channel1.getId()).getChannelType());
-        System.out.println("수정 시각: " + channelService.readChannel(channel1.getId()).getUpdatedAt());
+        Channel updatedChannel1 = channelService.updateChannel(channel1.getId(), ChannelType.PRIVATE,null, null);
+        System.out.println("2-3. 채널1 타입 수정 완료: " + updatedChannel1.getChannelType());
+        System.out.println("수정 시각: " + updatedChannel1.getUpdatedAt());
         System.out.println();
 
-        channelService.updateChannel(channel2.getId(), null,"채널10", null);
-        System.out.println("2-3. 채널2 이름 수정 완료: " + channelService.readChannel(channel2.getId()).getChannelName());
-        System.out.println("수정 시각: " + channelService.readChannel(channel2.getId()).getUpdatedAt());
+        Channel updatedChannel2 = channelService.updateChannel(channel2.getId(), null,"채널10", null);
+        System.out.println("2-3. 채널2 이름 수정 완료: " + updatedChannel2.getChannelName());
+        System.out.println("수정 시각: " + updatedChannel2.getUpdatedAt());
         System.out.println();
 
-        channelService.updateChannel(channel3.getId(), null,null, "채널3을 수정했습니다.");
-        System.out.println("2-3. 채널3 설명 수정 완료: " + channelService.readChannel(channel3.getId()).getChannelDescription());
-        System.out.println("수정 시각: " + channelService.readChannel(channel3.getId()).getUpdatedAt());
+        Channel updatedChannel3 = channelService.updateChannel(channel3.getId(), null,null, "채널3을 수정했습니다.");
+        System.out.println("2-3. 채널3 설명 수정 완료: " + updatedChannel3.getChannelDescription());
+        System.out.println("수정 시각: " + updatedChannel3.getUpdatedAt());
         System.out.println();
 
         // 2-4. channel 정보 삭제 및 확인
@@ -129,9 +129,9 @@ public class JavaApplication {
         System.out.println();
 
         // 3-3. message 수정 및 조회
-        messageService.updateMessage(message2.getId(), "안녕히가세요");
-        System.out.println("3-3. 메세지 내용 수정 완료: [" + user2.getUserName() + "] " + messageService.readMessage(message2.getId()).getContent());
-        System.out.println("수정 시각: " + messageService.readMessage(message2.getId()).getUpdatedAt());
+        Message updatedMessage2 = messageService.updateMessage(message2.getId(), "안녕히가세요");
+        System.out.println("3-3. 메세지 내용 수정 완료: [" + user2.getUserName() + "] " + updatedMessage2.getContent());
+        System.out.println("수정 시각: " + updatedMessage2.getUpdatedAt());
         System.out.println();
         // 3-4. message 삭제 및 확인
         messageService.deleteMessage(message3.getId());

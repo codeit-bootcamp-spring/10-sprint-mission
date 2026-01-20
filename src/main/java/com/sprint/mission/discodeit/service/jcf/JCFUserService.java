@@ -18,43 +18,43 @@ public class JCFUserService implements UserService {
 
     @Override
     public User createUser(String userName, String userEmail) {
-        Validators.validationUser(userName, userEmail);
-        validateDuplicationEmail(userEmail);
+        Validators.validationUser(userName, userEmail); // 비즈니스 로직
+        validateDuplicationEmail(userEmail); // 비즈니스 로직
         User user = new User(userName, userEmail);
-        list.add(user);
+        list.add(user); // 저장 로직
         return user;
     }
 
     @Override
     public User readUser(UUID id) {
-        return validateExistenceUser(id);
+        return validateExistenceUser(id); // 비즈니스 로직
     }
 
     @Override
     public List<User> readAllUser() {
         return list;
-    }
+    } // 저장 로직
 
     @Override
     public User updateUser(UUID id, String userName, String userEmail) {
-        User user = validateExistenceUser(id);
+        User user = validateExistenceUser(id); // 비즈니스 로직
         Optional.ofNullable(userName)
                 .ifPresent(name -> {Validators.requireNotBlank(name, "userName");
             user.updateUserName(name);
-        });
+        }); //비즈니스 로직 + 저장 로직
         Optional.ofNullable(userEmail)
                 .ifPresent(email -> {Validators.requireNotBlank(email, "userEmail");
             validateDuplicationEmail(email);
             user.updateUserEmail(email);
-        });
+        }); // 비즈니스 로직 + 저장 로직
 
         return user;
     }
 
     @Override
     public void deleteUser(UUID id) {
-        User user = validateExistenceUser(id);
-        list.remove(user);
+        User user = validateExistenceUser(id); //비즈니스 로직
+        list.remove(user); // 저장 로직
     }
 
 
@@ -64,21 +64,21 @@ public class JCFUserService implements UserService {
                 .filter(user -> user.getJoinedChannels().stream()
                         .anyMatch(ch -> channelId.equals(ch.getId())))
                 .toList();
-    }
+    } // 비즈니스 로직 + 저장 로직
 
     private void validateDuplicationEmail(String userEmail) {
         if(list.stream()
                 .anyMatch(user -> userEmail.equals(user.getUserEmail()))) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
-    }
+    } // 비즈니스 로직 + 저장 로직
 
 
     private User validateExistenceUser(UUID id) {
-        Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
+        Validators.requireNonNull(id, "id는 null이 될 수 없습니다."); // 비즈니스 로직
         return list.stream()
                 .filter(user -> id.equals(user.getId()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("유저 id가 존재하지 않습니다."));
-    }
+    } // 비즈니스 로직 + 저장 로직
 }
