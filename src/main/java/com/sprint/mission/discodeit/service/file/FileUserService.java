@@ -27,7 +27,8 @@ public class FileUserService implements UserService {
 
     // constructor
     public FileUserService() {
-        this.userData = new ArrayList<>();
+        init();
+        loadData();
     }
 
     // 디렉토리 체크
@@ -43,9 +44,6 @@ public class FileUserService implements UserService {
 
     // 저장 (직렬화)
     void saveData() {
-
-        init();
-
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(storeFile.toFile()))) {
 
             oos.writeObject(userData);
@@ -58,9 +56,7 @@ public class FileUserService implements UserService {
     }
 
     // 로드 (역직렬화)
-    private void loadData() {
-        init();
-
+    void loadData() {
         // 파일이 없으면: 첫 실행이므로 빈 리스트 유지
         if (!Files.exists(storeFile)) {
             userData = new ArrayList<>();
@@ -85,6 +81,7 @@ public class FileUserService implements UserService {
     // User 등록
     @Override
     public User create(String name) {
+        loadData();
         User user = new User(name);
         this.userData.add(user);
         saveData();
@@ -94,7 +91,7 @@ public class FileUserService implements UserService {
     // 단건 조회
     @Override
     public User find(UUID userID){
-
+        loadData();
         return userData.stream()
                 .filter(user -> user.getId().equals(userID))
                 .findFirst()
@@ -104,7 +101,7 @@ public class FileUserService implements UserService {
     // 다건 조회
     @Override
     public List<User> findAll(){
-
+        loadData();
         return userData;
     }
 
@@ -117,6 +114,11 @@ public class FileUserService implements UserService {
         return user;
     }
 
+    @Override
+    public void update(){
+        saveData();
+}
+
     // User 삭제
     @Override
     public void deleteUser(UUID userID){
@@ -126,11 +128,11 @@ public class FileUserService implements UserService {
 
         User user = find(userID);
 
-        // User가 보낸 Message 삭제 , messageService 내부에서 saveData()
+        // User가 보낸 Message 삭제 , messageService 내부에서 loadData() 및 saveData()
         List<Message> messageList = new ArrayList<>(user.getMessageList());
         messageList.forEach(message -> messageService.deleteMessage(message.getId()));
 
-        // Channel에서 User 탈퇴 및 User가 가입한 channel에서 User 탈퇴 , 양방향 삭제를 해줘야 객체가 완전히 지워짐 ??
+        // Channel에서 User 탈퇴 및 User가 가입한 channel에서 User 탈퇴 , channelService 내부에서 loadData() 및 saveData()
         List<Channel> channels = new ArrayList<>(user.getChannels());
         channels.forEach(channel -> {
             channelService.leaveChannel(user.getId(), channel.getId()); // channelService 내부에서 변경사항 저장

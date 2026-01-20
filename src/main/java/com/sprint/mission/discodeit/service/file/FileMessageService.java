@@ -25,7 +25,8 @@ public class FileMessageService implements MessageService {
 
     // 생성자
     public FileMessageService() {
-        this.messageData = new HashMap<>();
+        init();
+        loadData();
     }
 
     // 디렉 체크
@@ -41,8 +42,6 @@ public class FileMessageService implements MessageService {
 
     // 저장 (직렬화)
     void saveData() {
-        init();
-
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(storeFile.toFile()))) {
             oos.writeObject(messageData);
         } catch (IOException e) {
@@ -52,8 +51,6 @@ public class FileMessageService implements MessageService {
 
     // 로드 (역직렬화)
     private void loadData() {
-        init();
-
         // 파일이 없으면: 첫 실행이므로 빈 리스트 유지
         if (!Files.exists(storeFile)) {
             messageData = new HashMap<>();
@@ -67,7 +64,6 @@ public class FileMessageService implements MessageService {
         }
     }
 
-
     // Setter
     public void setChannelService(ChannelService FileChannelService) {
         this.FileChannelService = FileChannelService;
@@ -80,6 +76,7 @@ public class FileMessageService implements MessageService {
     //생성
     @Override
     public Message create(String contents, UUID userID, UUID channelID) {
+        loadData();
         // Service 예외
         if (FileUserService == null) {
             throw new IllegalStateException("UserService is not set. Call setUserService() before using create().");
@@ -88,7 +85,7 @@ public class FileMessageService implements MessageService {
             throw new IllegalStateException("ChannelService is not set. Call setChannelService() before using create().");
         }
 
-        // sender, channel 존재하는 지 check
+        // sender, channel 존재하는 지 check , 각 서비스 내부에서 최신으로 loadData()
         User sender = FileUserService.find(userID);
         Channel channel = FileChannelService.find(channelID);
 
@@ -100,14 +97,9 @@ public class FileMessageService implements MessageService {
         sender.addMessage(msg);
         channel.addMessage(msg);
 
-        if (FileUserService instanceof FileUserService fus) {
-            fus.saveData();
-        }
 
-        if (FileChannelService instanceof FileChannelService fcs) {
-            fcs.saveData();
-        }
-
+        FileUserService.update();
+        FileChannelService.update();
         saveData();
         return msg;
     }
@@ -115,24 +107,22 @@ public class FileMessageService implements MessageService {
     // 조회
     @Override
     public Message find(UUID messageID) {
-        Message message = messageData.get(messageID);
-
-        if (message == null){
-            throw new IllegalArgumentException("Message Not Found: "+messageID);
-        }
-
-        return message;
+        loadData();
+        return messageData.values().stream()
+                .filter(m -> m.getId().equals(messageID)) // equals 비교
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Message Not Found: " + messageID));
     }
-
     // 전체 조회
     @Override
     public List<Message> findAll() {
+        loadData();
         return messageData.values().stream().toList();
     }
 
     // 수정
     @Override
-    public Message update(UUID messageID, String contents) {
+    public Message updateName(UUID messageID, String contents) {
         if (messageID == null) {
             throw new IllegalArgumentException("id must not be null");
         }
@@ -142,24 +132,29 @@ public class FileMessageService implements MessageService {
         return msg;
     }
 
+    @Override
+    public void update() {
+        saveData();
+    }
+
     // 삭제
     @Override
     public void deleteMessage(UUID messageID) {
         Message msg = find(messageID);
-        User sender = msg.getSender();
-        Channel channel = msg.getChannel();
+
+        UUID senderID = msg.getSender().getId();
+        UUID channelID = msg.getChannel().getId();
+
+        User sender = FileUserService.find(senderID);
+        Channel channel = FileChannelService.find(channelID);
 
         // sender, channel의 messageList에서 msg 삭제 , 여기도 userService, channelService의 saveData...
         sender.removeMessage(msg);
         channel.removeMessage(msg);
 
-        if (FileUserService instanceof FileUserService fus) {
-            fus.saveData();
-        }
+        FileUserService.update();
 
-        if (FileChannelService instanceof FileChannelService fcs) {
-            fcs.saveData();
-        }
+        FileChannelService.update();
 
         // message 완전 삭제
         messageData.remove(messageID);
@@ -168,6 +163,7 @@ public class FileMessageService implements MessageService {
 
     // channel 전체 메시지 조회
     public List<String> findMessagesByChannel (UUID channelID){
+        loadData();
         // channelService 예외처리
         if (FileChannelService == null) {
             throw new IllegalStateException("ChannelService is not set. Call setChannelService() before using create().");
@@ -181,11 +177,13 @@ public class FileMessageService implements MessageService {
 
     // User 전체 메시지 조회
     public List<String> findMessagesByUser (UUID userID){
+        loadData();
         // userService 예외처리
         if (FileUserService == null) {
             throw new IllegalStateException("UserService is not set. Call setUserService() before using create().");
         }
 
+        // service 내부에서 최신으로 loadData()
         User user = FileUserService.find(userID);
         return user.getMessageList().stream()
                 .map(Message::getContents)

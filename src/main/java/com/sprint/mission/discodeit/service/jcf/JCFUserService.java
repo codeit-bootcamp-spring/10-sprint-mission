@@ -20,6 +20,7 @@ public class JCFUserService implements UserService {
 
     // constructor
     public JCFUserService() {
+        // [저장]
         this.userData = new ArrayList<>();
     }
 
@@ -31,64 +32,71 @@ public class JCFUserService implements UserService {
 
     public void setChannelService(ChannelService channelService) {this.channelService = channelService;}
 
-    // User 등록
+    // User 등록 , 저장 로직
     @Override
     public User create(String name) {
         User user = new User(name);
+        // [저장]
         this.userData.add(user);
+
         return user;
     }
 
-    // 단건 조회
+    // 단건 조회, 비즈니스 로직
     @Override
     public User find(UUID userID){
+        // [저장]
         return userData.stream()
                 .filter(user -> user.getId().equals(userID))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
     }
 
-    // 다건 조회
+    // 다건 조회, 비즈니스 로직
     @Override
     public List<User> findAll(){
+        // [저장]
         return userData;
     }
 
-    // User 수정
+    // User 수정, 비즈니스 로직
     @Override
     public User updateName(UUID id, String name){
+        // [저장]
         User user = find(id);
+        // [비즈니스]
         user.updateName(name);
         return user;
     }
 
-    // User 삭제
+    // User 삭제 , 저장 로직
     @Override
     public void deleteUser(UUID userID){
         if (messageService == null) {
             throw new IllegalStateException("MessageService is not set in JCFUserService");
         }
-
+        // [저장]
         User user = find(userID);
 
-        // User가 보낸 Message 삭제
+        // [비즈니스] User가 보낸 Message 삭제
         List<Message> messageList = new ArrayList<>(user.getMessageList());
         messageList.forEach(message -> messageService.deleteMessage(message.getId()));
 
-        // Channel에서 User 탈퇴 및 User가 가입한 channel에서 User 탈퇴 , 양방향 삭제를 해줘야 객체가 완전히 지워짐 ??
+        // [비즈니스] Channel에서 User 탈퇴 및 User가 가입한 channel에서 User 탈퇴 , 양방향 삭제를 해줘야 객체가 완전히 지워짐 ??
         List<Channel> channels = new ArrayList<>(user.getChannels());
         channels.forEach(channel -> {
             channel.removeMember(user);
             user.leaveChannel(channel);
         });
 
-        // userData에서 user 완전 삭제
+        // [저장] userData에서 user 완전 삭제
         userData.remove(user);
     }
 
-    // User가 가입한 전체 Channel 조회
+    // User가 가입한 전체 Channel 조회 , 비즈니스 로직
     @Override
     public List<String> findJoinedChannels(UUID userID){
+        // [저장]
         User user = find(userID);
         return user.getChannels().stream()
                 .map(Channel::getName)

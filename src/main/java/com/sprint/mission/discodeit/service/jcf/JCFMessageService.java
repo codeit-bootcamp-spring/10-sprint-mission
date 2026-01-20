@@ -74,7 +74,7 @@ public class JCFMessageService implements MessageService {
 
     // 수정
     @Override
-    public Message update(UUID messageID, String contents) {
+    public Message updateName(UUID messageID, String contents) {
         if (messageID == null) {
             throw new IllegalArgumentException("id must not be null");
         }
