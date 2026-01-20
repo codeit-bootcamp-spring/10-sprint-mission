@@ -32,16 +32,8 @@ public class FileChannelRepository implements ChannelRepository {
 
     @Override
     public Channel save(Channel channel) {
-        File file = new File(dirPath.toFile(), channel.getId().toString() + ".ser");
-        try (
-                FileOutputStream fos = new FileOutputStream(file);
-                ObjectOutputStream oos = new ObjectOutputStream(fos)
-        ) {
-            oos.writeObject(channel);
-            return channel;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        writeToFile(channel);
+        return channel;
     }
 
     @Override
@@ -85,5 +77,15 @@ public class FileChannelRepository implements ChannelRepository {
         }
     }
 
-
+    private void writeToFile(Channel channel) {
+        File file = new File(dirPath.toFile(), channel.getId().toString() + ".ser");
+        try (
+                FileOutputStream fos = new FileOutputStream(file);
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(channel);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

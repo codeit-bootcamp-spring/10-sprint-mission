@@ -32,16 +32,8 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public User save(User user) {
-        File file = new File(dirPath.toFile(), user.getId().toString() + ".ser");
-        try (
-                FileOutputStream fos = new FileOutputStream(file);
-                ObjectOutputStream oos = new ObjectOutputStream(fos)
-        ) {
-            oos.writeObject(user);
-            return user;
-        } catch (IOException e) {
-            throw new RuntimeException("유저 데이터 저장 실패", e);
-        }
+        writeToFile(user);
+        return user;
     }
 
     @Override
@@ -82,6 +74,18 @@ public class FileUserRepository implements UserRepository {
         File file = new File(dirPath.toFile(), user.getId().toString() + ".ser");
         if (file.exists()) {
             file.delete();
+        }
+    }
+
+    private void writeToFile(User user) {
+        File file = new File(dirPath.toFile(), user.getId().toString() + ".ser");
+        try (
+                FileOutputStream fos = new FileOutputStream(file);
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(user);
+        } catch (IOException e) {
+            throw new RuntimeException("유저 데이터 저장 실패", e);
         }
     }
 }

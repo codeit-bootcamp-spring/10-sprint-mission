@@ -32,16 +32,8 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public Message save(Message message) {
-        File file = new File(dirPath.toFile(), message.getId().toString() + ".ser");
-        try (
-                FileOutputStream fos = new FileOutputStream(file);
-                ObjectOutputStream oos = new ObjectOutputStream(fos)
-        ) {
-            oos.writeObject(message);
-            return message;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        writeToFile(message);
+        return message;
     }
 
     @Override
@@ -82,6 +74,18 @@ public class FileMessageRepository implements MessageRepository {
         File file = new File(dirPath.toFile(), message.getId().toString() + ".ser");
         if (file.exists()) {
             file.delete();
+        }
+    }
+
+    private void writeToFile(Message message) {
+        File file = new File(dirPath.toFile(), message.getId().toString() + ".ser");
+        try (
+                FileOutputStream fos = new FileOutputStream(file);
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(message);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }

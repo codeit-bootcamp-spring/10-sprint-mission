@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -82,14 +83,14 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId, String password) {
-        User user = findUserById(userId);
+        User user = userRepository.findUserById(userId);
         validatePassword(user, password);
 
-        user.getChannels().forEach(channel -> {
-            channel.leave(user);
-            user.leave(channel);
-            channelRepository.save(channel);
-        });
+        List<Channel> channels = new ArrayList<>(user.getChannels());
+
+        leaveUserFromChannels(user, channels);
+
+        channels.forEach(channelRepository::save);
 
         userRepository.delete(user);
     }
@@ -107,6 +108,13 @@ public class BasicUserService implements UserService {
     private void validatePassword(User user, String inputPassword) {
         if (!user.getPassword().equals(inputPassword)) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+    }
+
+    private void leaveUserFromChannels(User user, List<Channel> channels) {
+        for (Channel channel : channels) {
+            channel.leave(user);
+            user.leave(channel);
         }
     }
 }

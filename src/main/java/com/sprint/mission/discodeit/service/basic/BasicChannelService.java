@@ -74,13 +74,13 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public void delete(UUID channelId) {
-        Channel channel = findChannelById(channelId);
+        Channel channel = channelRepository.findChannelById(channelId);
 
-        channel.getUsers().forEach(user -> {
-            user.leave(channel);
-            channel.leave(user);
-            userRepository.save(user);
-        });
+        List<User> users = new ArrayList<>(channel.getUsers());
+
+        leaveChannelFromUsers(channel, users);
+
+        users.forEach(userRepository::save);
 
         channelRepository.delete(channel);
     }
@@ -114,6 +114,13 @@ public class BasicChannelService implements ChannelService {
                 .anyMatch(channel -> channel.getChannelName().equals(name));
         if (exist) {
             throw new IllegalArgumentException("이미 사용중인 채널명입니다: " + name);
+        }
+    }
+
+    private void leaveChannelFromUsers(Channel channel, List<User> users) {
+        for (User user : users) {
+            channel.leave(user);
+            user.leave(channel);
         }
     }
 }
