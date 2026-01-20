@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.*;
 
 public class Channel extends Common {
+    private static final long serialVersionUID = 1L;
     private final Set<User> participants;
     private final List<Message> messages;
     private String title;

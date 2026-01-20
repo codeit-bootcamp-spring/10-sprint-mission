@@ -1,12 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.*;
 
 public class User extends Common {
+    private static final long serialVersionUID = 1L;
     private final Set<Channel> joinedChannels;
     private final List<Message> messageHistory;
     private String accountId;           // 계정ID, 상속받은id(UUID)와 다름, 헷갈림 주의
-    private String password;
+    private transient String password;
     private String name;
     private String mail;
 
