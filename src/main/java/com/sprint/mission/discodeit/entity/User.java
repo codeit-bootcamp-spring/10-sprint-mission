@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class User extends CommonEntity {
+public class User extends CommonEntity implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private String userName;
     private String userEmail;
     private String userPassword;
