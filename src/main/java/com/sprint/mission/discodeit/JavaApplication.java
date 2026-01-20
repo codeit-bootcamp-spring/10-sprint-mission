@@ -6,6 +6,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -18,32 +21,50 @@ public class JavaApplication {
         public ChannelService channelService;
         public MessageService messageService;
 
-        public SetUp() {
+        public SetUp() {}
+
+        public SetUp withJCF() {
             userService = new JCFUserService();
             channelService = new JCFChannelService(userService);
             messageService = new JCFMessageService(userService, channelService);
             ((JCFUserService)userService).setMessageService(messageService);
             ((JCFUserService)userService).setChannelService(channelService);
             ((JCFChannelService)channelService).setMessageService(messageService);
+            return this;
+        }
+
+        public SetUp withFile() {
+            userService = new FileUserService();
+            channelService = new FileChannelService(userService);
+            messageService = new FileMessageService(userService, channelService);
+//            ((FileUserService)userService).setMessageService(messageService);
+//            ((FileUserService)userService).setChannelService(channelService);
+//            ((FileChannelService)channelService).setMessageService(messageService);
+            return this;
         }
     }
 
     public static void main(String[] args) {
         // --- User ---
-        userServiceCRUDTest();
+//        userServiceCRUDTest("File");
 
         // --- Channel ---
-        channelServiceCRUDTest();
+//        channelServiceCRUDTest("File");
 
         // --- Message ---
-        messageServiceCRUDTest();
+        messageServiceCRUDTest("File");
 
-        // 유저의 채널참여,채널탈퇴,계정삭제 테스트
-        joinAndLeaveChannelTestAndUserDeleteTest();
+//        // 유저의 채널참여,채널탈퇴,계정삭제 테스트
+//        joinAndLeaveChannelTestAndUserDeleteTest();
     }
 
-    private static void userServiceCRUDTest() {
-        SetUp userTest = new SetUp();
+    private static void userServiceCRUDTest(String impl) {
+        SetUp userTest;
+        if(impl.equals("File")) {
+            userTest = new SetUp().withFile();
+        } else {
+            userTest = new SetUp().withJCF();
+        }
         System.out.println("-- User --");
 
         // 생성
@@ -114,8 +135,13 @@ public class JavaApplication {
         System.out.println();
     }
 
-    private static void channelServiceCRUDTest() {
-        SetUp channelTest = new SetUp();
+    private static void channelServiceCRUDTest(String impl) {
+        SetUp channelTest;
+        if(impl.equals("File")) {
+            channelTest = new SetUp().withFile();
+        } else {
+            channelTest = new SetUp().withJCF();
+        }
         System.out.println("-- Channel --");
 
         // 생성
@@ -175,8 +201,13 @@ public class JavaApplication {
         System.out.println();
     }
 
-    private static void messageServiceCRUDTest() {
-        SetUp messageTest = new SetUp();
+    private static void messageServiceCRUDTest(String impl) {
+        SetUp messageTest;
+        if(impl.equals("File")) {
+            messageTest = new SetUp().withFile();
+        } else {
+            messageTest = new SetUp().withJCF();
+        }
         System.out.println("-- Message --");
 
         // 생성
