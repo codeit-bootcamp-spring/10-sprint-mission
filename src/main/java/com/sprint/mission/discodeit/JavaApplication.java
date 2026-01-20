@@ -4,6 +4,12 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -30,29 +36,36 @@ public class JavaApplication {
          * c1에 작성된 메세지 : m1 , m2 , m3
          */
         // 유저 생성 및 유저 정보 수정 테스트
-        userCreateUpdateTest();
+//        userCreateUpdateTest();
+
         // 채널 생성 및 채널 정보 수정 테스트
-        channelCreateUpdateTest();
+//        channelCreateUpdateTest();
+
         // 유저의 채널 참가 후, 채널 owner 교체, 탈퇴 테스트
-        channelJoinLeaveTest();
+//        channelJoinLeaveTest();
+
         // 메세지 생성 및 메세지 정보 수정 테스트
-        messageCreateUpdateTest();
+//        messageCreateUpdateTest();
+
         // 메세지 삭제
-        deleteMessageTest();
+//        deleteMessageTest();
+
         // 채널 삭제
-        deleteChannelTest();
+//        deleteChannelTest();
+
         // 유저 삭제
-        deleteUserTest();
+//        deleteUserTest();
 
     }
 
     static void userCreateUpdateTest() {
-        UserService userService = new JCFUserService();
+        UserRepository userRepo = new JCFUserRepository();
+        UserService userService = new JCFUserService(userRepo);
         System.out.println("\n========== 유저 생성 u1, u2, u3 ==========");
         User u1 = userService.createUser("u1@email.com", "u1", "u1Nick", "1111", "20000101");
         User u2 = userService.createUser("u2@email.com", "u2", "u2Nick", "2222", "20000202");
         User u3 = userService.createUser("u3@email.com", "u3", "u3Nick", "3333", "20000303");
-        System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getId()).toList());
+        System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
 
         System.out.println("\n========== 유저 정보 수정 테스트: u2 정보 수정 ==========");
         System.out.println("[전]u2 기본 정보 = " + userService.findUserById(u2.getId()).orElseThrow());
@@ -72,23 +85,23 @@ public class JavaApplication {
     }
 
     static void channelCreateUpdateTest() {
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
+        UserRepository userRepo = new JCFUserRepository();
+        ChannelRepository channelRepo = new JCFChannelRepository();
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
         System.out.println("\n========== 유저 생성 u1, u2, u3 ==========");
         User u1 = userService.createUser("u1@email.com", "u1", "u1Nick", "1111", "20000101");
         User u2 = userService.createUser("u2@email.com", "u2", "u2Nick", "2222", "20000202");
         User u3 = userService.createUser("u3@email.com", "u3", "u3Nick", "3333", "20000303");
+        System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
 
         System.out.println("\n========== 채널 생성 c1, c2, c3 ==========");
         Channel c1 = channelService.createChannel(u1.getId(), ChannelType.PUBLIC, "c1u1PUBLIC", "c1Desu1PUBLIC");
         Channel c2 = channelService.createChannel(u2.getId(), ChannelType.PUBLIC, "c2u2PUBLIC", "c2Desu2PUBLIC");
         Channel c3 = channelService.createChannel(u1.getId(), ChannelType.PRIVATE, "c3u1PRIVATE", "c3Desu1PRIVATE");
-        Channel c1Load = channelService.findChannelById(c1.getId()).orElseThrow();
-        Channel c2Load = channelService.findChannelById(c2.getId()).orElseThrow();
-        Channel c3Load = channelService.findChannelById(c3.getId()).orElseThrow();
-        System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getId()).toList());
-        System.out.println("channel1의 owner ID = " + c1Load.getOwner().getId() + " / channel2의 owner ID = " + c2Load.getOwner().getId() + " / channel3의 owner ID = " + c3Load.getOwner().getId());
-        System.out.println("channel1의 channel memberList = " + c1Load.getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel2의 channel member list = " + c2Load.getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel3의 channel member list = " + c3Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
+        System.out.println("channel1의 owner ID = " + channelService.findChannelById(c1.getId()).orElseThrow().getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).orElseThrow().getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).orElseThrow().getOwner().getId());
+        System.out.println("channel1의 channel memberList = " + channelService.findChannelById(c1.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel2의 channel member list = " + channelService.findChannelById(c2.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
         System.out.println("user1의 join channelList = " + u1.getJoinChannelList().stream().map(c -> c.getId()).toList());
 
         System.out.println("\n========== 채널 정보 수정 테스트: c2 수정 ==========");
@@ -115,38 +128,28 @@ public class JavaApplication {
     }
 
     static void channelJoinLeaveTest() {
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
+        UserRepository userRepo = new JCFUserRepository();
+        ChannelRepository channelRepo = new JCFChannelRepository();
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
         System.out.println("\n========== 유저 생성 u1, u2, u3 ==========");
         User u1 = userService.createUser("u1@email.com", "u1", "u1Nick", "1111", "20000101");
         User u2 = userService.createUser("u2@email.com", "u2", "u2Nick", "2222", "20000202");
         User u3 = userService.createUser("u3@email.com", "u3", "u3Nick", "3333", "20000303");
-        // user 기본 정보 로드
-        User u1Load = userService.findUserById(u1.getId()).orElseThrow();
-        User u2Load = userService.findUserById(u2.getId()).orElseThrow();
-        User u3Load = userService.findUserById(u3.getId()).orElseThrow();
-
-        System.out.println("u1의 ID = " + u1.getId());
-        System.out.println("u2의 ID = " + u2.getId());
-        System.out.println("u3의 ID = " + u3.getId());
+        System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
 
         System.out.println("\n========== 채널 생성 c1, c2, c3 ==========");
         Channel c1 = channelService.createChannel(u1.getId(), ChannelType.PUBLIC, "c1u1PUBLIC", "c1Desu1PUBLIC");
         Channel c2 = channelService.createChannel(u2.getId(), ChannelType.PUBLIC, "c2u2PUBLIC", "c2Desu2PUBLIC");
         Channel c3 = channelService.createChannel(u1.getId(), ChannelType.PRIVATE, "c3u1PRIVATE", "c3Desu1PRIVATE");
-        // channel 기본 정보 로드
-        Channel c1Load = channelService.findChannelById(c1.getId()).orElseThrow();
-        Channel c2Load = channelService.findChannelById(c2.getId()).orElseThrow();
-        Channel c3Load = channelService.findChannelById(c3.getId()).orElseThrow();
-
-        System.out.println("channel3의 ID = " + c3.getId());
+        System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
 
         System.out.println("\n========== u2가 c3에 참여 ==========");
-        System.out.println("[전]user2의 join channelList = " + u2Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[전]channel3의 channel member list = " + c3Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[전]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[전]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
         channelService.joinChannel(u2.getId(), c3.getId());
-        System.out.println("[후]user2의 join channelList = " + u2Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[후]channel3의 channel member list = " + c3Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[후]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[후]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
         try {
             System.out.print("user가 이미 해당 채널에 참여된 상태일 때: ");
             channelService.joinChannel(u2.getId(), c2.getId());
@@ -155,9 +158,9 @@ public class JavaApplication {
         }
 
         System.out.println("\n========== 채널 owner 수정 테스트: c3 owner(u1)을 u2로 변경 ==========");
-        System.out.println("[전]channel1의 owner ID = " + c1Load.getOwner().getId() + " / channel2의 owner ID = " + c2Load.getOwner().getId() + " / channel3의 owner ID = " + c3Load.getOwner().getId());
+        System.out.println("[전]channel1의 owner ID = " + channelService.findChannelById(c1.getId()).orElseThrow().getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).orElseThrow().getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).orElseThrow().getOwner().getId());
         channelService.changeChannelOwner(u1.getId(), c3.getId(), u2.getId());
-        System.out.println("[후]channel1의 owner ID = " + c1Load.getOwner().getId() + " / channel2의 owner ID = " + c2Load.getOwner().getId() + " / channel3의 owner ID = " + c3Load.getOwner().getId());
+        System.out.println("[후]channel1의 owner ID = " + channelService.findChannelById(c1.getId()).orElseThrow().getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).orElseThrow().getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).orElseThrow().getOwner().getId());
         try {
             System.out.print("owner로 바꾸려는 user가 미참여 채널일 때: ");
             channelService.changeChannelOwner(u1.getId(), c1.getId(), u2.getId());
@@ -166,40 +169,33 @@ public class JavaApplication {
         }
 
         System.out.println("\n========== u1이 c3에서 나가기 ==========");
-        System.out.println("[전]user1의 join channelList = " + u1Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[전]user2의 join channelList = " + u2Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[전]channel3의 channel member list = " + c3Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[전]user1의 join channelList = " + userService.findUserById(u1.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[전]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[전]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
         channelService.leaveChannel(u1.getId(), c3.getId());
-        System.out.println("[후]user1의 join channelList = " + u1Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[후]user2의 join channelList = " + u2Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[후]channel3의 channel member list = " + c3Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[후]user1의 join channelList = " + userService.findUserById(u1.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[후]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[후]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
     }
 
     static void messageCreateUpdateTest() {
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
-        MessageService messageService = new JCFMessageService(userService, channelService);
+        UserRepository userRepo = new JCFUserRepository();
+        ChannelRepository channelRepo = new JCFChannelRepository();
+        MessageRepository messageRepo = new JCFMessageRepository();
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         System.out.println("\n========== 유저 생성 u1, u2, u3 ==========");
         User u1 = userService.createUser("u1@email.com", "u1", "u1Nick", "1111", "20000101");
         User u2 = userService.createUser("u2@email.com", "u2", "u2Nick", "2222", "20000202");
         User u3 = userService.createUser("u3@email.com", "u3", "u3Nick", "3333", "20000303");
-        // user 기본 정보 로드
-        User u1Load = userService.findUserById(u1.getId()).orElseThrow();
-        User u2Load = userService.findUserById(u2.getId()).orElseThrow();
-        User u3Load = userService.findUserById(u3.getId()).orElseThrow();
-
-        System.out.println("u1의 ID = " + u1.getId() + ", u2의 ID = " + u2.getId() + ", u3의 ID = " + u3.getId());
+        System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
 
         System.out.println("\n========== 채널 생성 c1, c2, c3 ==========");
         Channel c1 = channelService.createChannel(u1.getId(), ChannelType.PUBLIC, "c1u1PUBLIC", "c1Desu1PUBLIC");
         Channel c2 = channelService.createChannel(u2.getId(), ChannelType.PUBLIC, "c2u2PUBLIC", "c2Desu2PUBLIC");
         Channel c3 = channelService.createChannel(u1.getId(), ChannelType.PRIVATE, "c3u1PRIVATE", "c3Desu1PRIVATE");
-        // channel 기본 정보 로드
-        Channel c1Load = channelService.findChannelById(c1.getId()).orElseThrow();
-        Channel c2Load = channelService.findChannelById(c2.getId()).orElseThrow();
-        Channel c3Load = channelService.findChannelById(c3.getId()).orElseThrow();
-
-        System.out.println("c1의 ID = " + c1.getId() + ", c2의 ID = " + c2.getId() + ", c3의 ID = " + c3.getId());
+        System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
 
         System.out.println("\n========== u2가 c1에 참여 ==========");
         channelService.joinChannel(u2.getId(), c1.getId());
@@ -210,61 +206,62 @@ public class JavaApplication {
         Message m1 = messageService.createMessage(c1.getId(), u1.getId(), "m1c1u1");
         Message m2 = messageService.createMessage(c1.getId(), u1.getId(), "m2c1u1");
         Message m3 = messageService.createMessage(c1.getId(), u2.getId(), "m3c1u2");
-        Message m1Load = messageService.findMessageById(m1.getId()).orElseThrow();
-        Message m2Load = messageService.findMessageById(m2.getId()).orElseThrow();
-        Message m3Load = messageService.findMessageById(m3.getId()).orElseThrow();
         try {
             System.out.print("u3가 참여하지 않은 c2 채널에서 메세지를 작성: ");
             Message m4 = messageService.createMessage(c2.getId(), u3.getId(), "m4c2u2");
         } catch (IllegalArgumentException e) {
             System.out.println(e);
         }
-        System.out.println("m1의 ID : " + m1Load.getId() + ", m1의 authorId: " + m1Load.getAuthor().getId() + ", m1의 channel ID: " + m1Load.getMessageChannel().getId());
-        System.out.println("m2의 ID : " + m2Load.getId() + ", m2의 authorId: " + m2Load.getAuthor().getId() + ", m2의 channel ID: " + m2Load.getMessageChannel().getId());
-        System.out.println("m3의 ID : " + m3Load.getId() + ", m3의 authorId: " + m3Load.getAuthor().getId() + ", m3의 channel ID: " + m3Load.getMessageChannel().getId());
+        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).orElseThrow().getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).orElseThrow().getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).orElseThrow().getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).orElseThrow().getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).orElseThrow().getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).orElseThrow().getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).orElseThrow().getMessageChannel().getId());
         System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
 
         System.out.println("\n========== 메세지 정보 수정 테스트: m2 수정 ==========");
-        System.out.println("[전]m2의 content = " + m2Load.getMessageContent());
+        System.out.println("[전]m2의 content = " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageContent());
         messageService.updateMessageContent(u1.getId(), m2.getId(), "[update]m2c1u1");
-        System.out.println("[후]m2의 content = " + m2Load.getMessageContent());
+        System.out.println("[후]m2의 content = " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageContent());
     }
 
     static void deleteMessageTest() {
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
-        MessageService messageService = new JCFMessageService(userService, channelService);
+        UserRepository userRepo = new JCFUserRepository();
+        ChannelRepository channelRepo = new JCFChannelRepository();
+        MessageRepository messageRepo = new JCFMessageRepository();
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         System.out.println("\n========== 유저 생성 u1, u2, u3 ==========");
         User u1 = userService.createUser("u1@email.com", "u1", "u1Nick", "1111", "20000101");
         User u2 = userService.createUser("u2@email.com", "u2", "u2Nick", "2222", "20000202");
         User u3 = userService.createUser("u3@email.com", "u3", "u3Nick", "3333", "20000303");
-
-        System.out.println("u1의 ID = " + u1.getId() + ", u2의 ID = " + u2.getId() + ", u3의 ID = " + u3.getId());
+        System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
 
         System.out.println("\n========== 채널 생성 c1, c2, c3 ==========");
         Channel c1 = channelService.createChannel(u1.getId(), ChannelType.PUBLIC, "c1u1PUBLIC", "c1Desu1PUBLIC");
         Channel c2 = channelService.createChannel(u2.getId(), ChannelType.PUBLIC, "c2u2PUBLIC", "c2Desu2PUBLIC");
         Channel c3 = channelService.createChannel(u1.getId(), ChannelType.PRIVATE, "c3u1PRIVATE", "c3Desu1PRIVATE");
-        Channel c1Load = channelService.findChannelById(c1.getId()).orElseThrow();
-
-        System.out.println("c1의 ID = " + c1.getId() + ", c2의 ID = " + c2.getId() + ", c3의 ID = " + c3.getId());
+        System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
 
         System.out.println("\n========== u2가 c1에 참여 ==========");
         channelService.joinChannel(u2.getId(), c1.getId());
-        System.out.println("c1 참여 유저 = " + c1Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("c1 참여 유저 = " + channelService.findChannelById(c1.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
 
         System.out.println("\n========== 메세지 생성 m1, m2, m3 ==========");
         // message 생성
         Message m1 = messageService.createMessage(c1.getId(), u1.getId(), "m1c1u1");
         Message m2 = messageService.createMessage(c1.getId(), u1.getId(), "m2c1u1");
         Message m3 = messageService.createMessage(c1.getId(), u2.getId(), "m3c1u2");
-        Message m1Load = messageService.findMessageById(m1.getId()).orElseThrow();
-        Message m2Load = messageService.findMessageById(m2.getId()).orElseThrow();
-        Message m3Load = messageService.findMessageById(m3.getId()).orElseThrow();
-
-        System.out.println("m1의 ID : " + m1Load.getId() + ", m1의 authorId: " + m1Load.getAuthor().getId() + ", m1의 channel ID: " + m1Load.getMessageChannel().getId());
-        System.out.println("m2의 ID : " + m2Load.getId() + ", m2의 authorId: " + m2Load.getAuthor().getId() + ", m2의 channel ID: " + m2Load.getMessageChannel().getId());
-        System.out.println("m3의 ID : " + m3Load.getId() + ", m3의 authorId: " + m3Load.getAuthor().getId() + ", m3의 channel ID: " + m3Load.getMessageChannel().getId());
+        Message m4 = messageService.createMessage(c3.getId(), u1.getId(), "m4c3u1");
+        Message m5 = messageService.createMessage(c2.getId(), u2.getId(), "m5c2u2");
+        try {
+            System.out.print("u3가 참여하지 않은 c2 채널에서 메세지 m6을 작성: ");
+            Message m6 = messageService.createMessage(c2.getId(), u3.getId(), "m4c2u2");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e);
+        }
+        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).orElseThrow().getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).orElseThrow().getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).orElseThrow().getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).orElseThrow().getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).orElseThrow().getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).orElseThrow().getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).orElseThrow().getMessageChannel().getId());
         System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
 
         System.out.println("\n========== 메세지 m2 삭제 ==========");
@@ -288,50 +285,48 @@ public class JavaApplication {
     }
 
     static void deleteChannelTest() {
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
-        MessageService messageService = new JCFMessageService(userService, channelService);
+        UserRepository userRepo = new JCFUserRepository();
+        ChannelRepository channelRepo = new JCFChannelRepository();
+        MessageRepository messageRepo = new JCFMessageRepository();
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         System.out.println("\n========== 유저 생성 u1, u2, u3 ==========");
         User u1 = userService.createUser("u1@email.com", "u1", "u1Nick", "1111", "20000101");
         User u2 = userService.createUser("u2@email.com", "u2", "u2Nick", "2222", "20000202");
         User u3 = userService.createUser("u3@email.com", "u3", "u3Nick", "3333", "20000303");
-        // user 기본 정보 로드
-        User u1Load = userService.findUserById(u1.getId()).orElseThrow();
-        User u2Load = userService.findUserById(u2.getId()).orElseThrow();
-        User u3Load = userService.findUserById(u3.getId()).orElseThrow();
-
-        System.out.println("u1의 ID = " + u1.getId() + ", u2의 ID = " + u2.getId() + ", u3의 ID = " + u3.getId());
+        System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
 
         System.out.println("\n========== 채널 생성 c1, c2, c3 ==========");
         Channel c1 = channelService.createChannel(u1.getId(), ChannelType.PUBLIC, "c1u1PUBLIC", "c1Desu1PUBLIC");
         Channel c2 = channelService.createChannel(u2.getId(), ChannelType.PUBLIC, "c2u2PUBLIC", "c2Desu2PUBLIC");
         Channel c3 = channelService.createChannel(u1.getId(), ChannelType.PRIVATE, "c3u1PRIVATE", "c3Desu1PRIVATE");
-        // channel 기본 정보 로드
-        Channel c1Load = channelService.findChannelById(c1.getId()).orElseThrow();
-        Channel c2Load = channelService.findChannelById(c2.getId()).orElseThrow();
-        Channel c3Load = channelService.findChannelById(c3.getId()).orElseThrow();
-
-        System.out.println("c1의 ID = " + c1.getId() + ", c2의 ID = " + c2.getId() + ", c3의 ID = " + c3.getId());
+        System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
 
         System.out.println("\n========== u2가 c1에 참여 ==========");
         channelService.joinChannel(u2.getId(), c1.getId());
-        System.out.println("c1 참여 유저 = " + c1Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("c1 참여 유저 = " + channelService.findChannelById(c1.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
 
         System.out.println("\n========== 메세지 생성 m1, m2, m3 ==========");
         // message 생성
         Message m1 = messageService.createMessage(c1.getId(), u1.getId(), "m1c1u1");
         Message m2 = messageService.createMessage(c1.getId(), u1.getId(), "m2c1u1");
         Message m3 = messageService.createMessage(c1.getId(), u2.getId(), "m3c1u2");
-//        Message m4 = messageService.createMessage(c3.getId(), u1.getId(), "m4c3u1");
-//        Message m5 = messageService.createMessage(c2.getId(), u2.getId(), "m5c2u2");
-        Message m1Load = messageService.findMessageById(m1.getId()).orElseThrow();
-        Message m2Load = messageService.findMessageById(m2.getId()).orElseThrow();
-        Message m3Load = messageService.findMessageById(m3.getId()).orElseThrow();
-
-        System.out.println("m1의 ID : " + m1Load.getId() + ", m1의 authorId: " + m1Load.getAuthor().getId() + ", m1의 channel ID: " + m1Load.getMessageChannel().getId());
-        System.out.println("m2의 ID : " + m2Load.getId() + ", m2의 authorId: " + m2Load.getAuthor().getId() + ", m2의 channel ID: " + m2Load.getMessageChannel().getId());
-        System.out.println("m3의 ID : " + m3Load.getId() + ", m3의 authorId: " + m3Load.getAuthor().getId() + ", m3의 channel ID: " + m3Load.getMessageChannel().getId());
+        Message m4 = messageService.createMessage(c3.getId(), u1.getId(), "m4c3u1");
+        Message m5 = messageService.createMessage(c2.getId(), u2.getId(), "m5c2u2");
+        try {
+            System.out.print("u3가 참여하지 않은 c2 채널에서 메세지를 작성: ");
+            Message m6 = messageService.createMessage(c2.getId(), u3.getId(), "m4c2u2");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e);
+        }
+        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).orElseThrow().getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).orElseThrow().getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).orElseThrow().getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).orElseThrow().getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).orElseThrow().getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).orElseThrow().getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m4의 ID : " + messageService.findMessageById(m4.getId()).orElseThrow().getId() + ", m4의 authorId: " + messageService.findMessageById(m4.getId()).orElseThrow().getAuthor().getId() + ", m4의 channel ID: " + messageService.findMessageById(m4.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m5의 ID : " + messageService.findMessageById(m5.getId()).orElseThrow().getId() + ", m5의 authorId: " + messageService.findMessageById(m5.getId()).orElseThrow().getAuthor().getId() + ", m5의 channel ID: " + messageService.findMessageById(m5.getId()).orElseThrow().getMessageChannel().getId());
         System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
+
 
         System.out.println("\n========== channel1 삭제 및 삭제 후 데이터 조회 ==========");
         System.out.println(channelService.findChannelById(c1.getId()));
@@ -352,30 +347,23 @@ public class JavaApplication {
     }
 
     static void deleteUserTest() {
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
-        MessageService messageService = new JCFMessageService(userService, channelService);
+        UserRepository userRepo = new JCFUserRepository();
+        ChannelRepository channelRepo = new JCFChannelRepository();
+        MessageRepository messageRepo = new JCFMessageRepository();
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         System.out.println("\n========== 유저 생성 u1, u2, u3 ==========");
         User u1 = userService.createUser("u1@email.com", "u1", "u1Nick", "1111", "20000101");
         User u2 = userService.createUser("u2@email.com", "u2", "u2Nick", "2222", "20000202");
         User u3 = userService.createUser("u3@email.com", "u3", "u3Nick", "3333", "20000303");
-        // user 기본 정보 로드
-        User u1Load = userService.findUserById(u1.getId()).orElseThrow();
-        User u2Load = userService.findUserById(u2.getId()).orElseThrow();
-        User u3Load = userService.findUserById(u3.getId()).orElseThrow();
-
-        System.out.println("u1의 ID = " + u1.getId() + ", u2의 ID = " + u2.getId() + ", u3의 ID = " + u3.getId());
+        System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
 
         System.out.println("\n========== 채널 생성 c1, c2, c3 ==========");
         Channel c1 = channelService.createChannel(u1.getId(), ChannelType.PUBLIC, "c1u1PUBLIC", "c1Desu1PUBLIC");
         Channel c2 = channelService.createChannel(u2.getId(), ChannelType.PUBLIC, "c2u2PUBLIC", "c2Desu2PUBLIC");
         Channel c3 = channelService.createChannel(u1.getId(), ChannelType.PRIVATE, "c3u1PRIVATE", "c3Desu1PRIVATE");
-        // channel 기본 정보 로드
-        Channel c1Load = channelService.findChannelById(c1.getId()).orElseThrow();
-        Channel c2Load = channelService.findChannelById(c2.getId()).orElseThrow();
-        Channel c3Load = channelService.findChannelById(c3.getId()).orElseThrow();
-
-        System.out.println("c1의 ID = " + c1.getId() + ", c2의 ID = " + c2.getId() + ", c3의 ID = " + c3.getId());
+        System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
 
         System.out.println("\n========== u2가 c1, c3에 참여 ==========");
         channelService.joinChannel(u2.getId(), c1.getId());
@@ -389,14 +377,19 @@ public class JavaApplication {
         Message m1 = messageService.createMessage(c1.getId(), u1.getId(), "m1c1u1");
         Message m2 = messageService.createMessage(c1.getId(), u1.getId(), "m2c1u1");
         Message m3 = messageService.createMessage(c1.getId(), u2.getId(), "m3c1u2");
-        Message m1Load = messageService.findMessageById(m1.getId()).orElseThrow();
-        Message m2Load = messageService.findMessageById(m2.getId()).orElseThrow();
-        Message m3Load = messageService.findMessageById(m3.getId()).orElseThrow();
-
-        System.out.println("m1의 ID : " + m1Load.getId() + ", m1의 authorId: " + m1Load.getAuthor().getId() + ", m1의 channel ID: " + m1Load.getMessageChannel().getId());
-        System.out.println("m2의 ID : " + m2Load.getId() + ", m2의 authorId: " + m2Load.getAuthor().getId() + ", m2의 channel ID: " + m2Load.getMessageChannel().getId());
-        System.out.println("m3의 ID : " + m3Load.getId() + ", m3의 authorId: " + m3Load.getAuthor().getId() + ", m3의 channel ID: " + m3Load.getMessageChannel().getId());
-        System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
+        Message m4 = messageService.createMessage(c3.getId(), u1.getId(), "m4c3u1");
+        Message m5 = messageService.createMessage(c2.getId(), u2.getId(), "m5c2u2");
+        try {
+            System.out.print("u3가 참여하지 않은 c2 채널에서 메세지를 작성: ");
+            Message m6 = messageService.createMessage(c2.getId(), u3.getId(), "m4c2u2");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e);
+        }
+        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).orElseThrow().getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).orElseThrow().getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).orElseThrow().getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).orElseThrow().getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).orElseThrow().getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).orElseThrow().getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m4의 ID : " + messageService.findMessageById(m4.getId()).orElseThrow().getId() + ", m4의 authorId: " + messageService.findMessageById(m4.getId()).orElseThrow().getAuthor().getId() + ", m4의 channel ID: " + messageService.findMessageById(m4.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m5의 ID : " + messageService.findMessageById(m5.getId()).orElseThrow().getId() + ", m5의 authorId: " + messageService.findMessageById(m5.getId()).orElseThrow().getAuthor().getId() + ", m5의 channel ID: " + messageService.findMessageById(m5.getId()).orElseThrow().getMessageChannel().getId());
 
         System.out.println("\n========== user1 삭제 ==========");
         System.out.println("[전]전체 user list = " + userService.findAllUsers().stream().map(u -> u.getUserName() + ": " + u.getId()).toList());
