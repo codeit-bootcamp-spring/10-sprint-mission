@@ -82,11 +82,6 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public void update(User user) {
-        save(user);
-    }
-
-    @Override
     public User updatePassword(UUID userId, String currentPassword, String newPassword) {
         User user = findUserById(userId);
         validatePassword(user, currentPassword);
@@ -104,7 +99,7 @@ public class FileUserService implements UserService {
         new ArrayList<>(user.getChannels()).forEach(channel -> {
             channel.leave(user);
             user.leave(channel);
-            //todo ChannelService의 .ser파일들을 수정할 수 없음
+            //ChannelService의 .ser파일들을 수정할 수 없음
         });
 
         File file = new File(dirPath.toFile(), user.getId().toString() + ".ser");

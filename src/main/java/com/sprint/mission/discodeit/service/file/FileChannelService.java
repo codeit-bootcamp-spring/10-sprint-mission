@@ -91,7 +91,7 @@ public class FileChannelService implements ChannelService {
         new ArrayList<>(channel.getUsers()).forEach(user -> {
             user.leave(channel);
             channel.leave(user);
-            //todo UserService의 .ser파일들을 수정할 수 없음
+            //UserService의 .ser파일들을 수정할 수 없음
         });
 
         File file = new File(dirPath.toFile(), channelId.toString() + ".ser");
@@ -109,7 +109,7 @@ public class FileChannelService implements ChannelService {
         user.join(channel);
 
         save(channel);
-        userService.update(user);
+        //UserService의 .ser파일들을 수정할 수 없음
     }
 
     @Override
@@ -121,15 +121,7 @@ public class FileChannelService implements ChannelService {
         user.leave(channel);
 
         save(channel);
-        userService.update(user);
-    }
-
-    @Override
-    public boolean isUserInChannel(UUID channelId, UUID userId) {
-        Channel channel = findChannelById(channelId);
-
-        return channel.getUsers().stream()
-                .anyMatch(user -> user.getId().equals(userId));
+        //UserService의 .ser파일들을 수정할 수 없음
     }
 
     private void existsByChannelName(String name) {

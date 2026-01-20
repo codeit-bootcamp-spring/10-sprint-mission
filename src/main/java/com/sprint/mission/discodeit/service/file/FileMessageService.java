@@ -36,12 +36,15 @@ public class FileMessageService implements MessageService {
 
     @Override
     public Message create(String text, UUID channelId, UUID userId) {
-        if (!channelService.isUserInChannel(channelId, userId)) {
-            throw new IllegalArgumentException("채널에 참여하지 않은 유저는 메시지를 보낼 수 없습니다.");
-        }
-
         User user = userService.findUserById(userId);
         Channel channel = channelService.findChannelById(channelId);
+
+        boolean isMember = channel.getUsers().stream()
+                .anyMatch(u -> u.getId().equals(userId));
+
+        if (!isMember) {
+            throw new IllegalArgumentException("채널에 참여하지 않아 메시지를 보낼 수 없습니다.");
+        }
 
         Message message = new Message(text, user, channel);
 

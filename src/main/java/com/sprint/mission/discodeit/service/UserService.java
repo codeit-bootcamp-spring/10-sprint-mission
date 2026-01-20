@@ -12,7 +12,6 @@ public interface UserService {
     List<User> findUsersByChannel(UUID channelId);
     List<User> findAllUser();
     User update(UUID userId, String password, String username, String email);
-    void update(User user);
     User updatePassword(UUID userId, String currentPassword, String newPassword);
     void delete(UUID userId, String password);
 }

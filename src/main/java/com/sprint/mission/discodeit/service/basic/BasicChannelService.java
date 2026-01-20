@@ -1,42 +1,44 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-public class JCFChannelService implements ChannelService {
+public class BasicChannelService implements ChannelService {
 
-    private final UserService userService;
-    private final List<Channel> data;
+    private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
 
-    public JCFChannelService(UserService userService) {
-        this.userService = userService;
-        this.data = new ArrayList<>();
+    public BasicChannelService(ChannelRepository channelRepository, UserRepository userRepository) {
+        this.channelRepository = channelRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public Channel create(ChannelType type, String name, String description) {
         existsByChannelName(name);
         Channel channel = new Channel(type, name, description);
-        data.add(channel);
+        channelRepository.save(channel);
         return channel;
     }
 
     @Override
     public Channel findChannelById(UUID channelId) {
-        return data.stream()
-                .filter(channel -> channel.getId().equals(channelId))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+        return channelRepository.findChannelById(channelId);
     }
 
     @Override
     public Channel findChannelByName(String name) {
-        return data.stream()
+        return channelRepository.findAllChannel().stream()
                 .filter(channel -> channel.getChannelName().equals(name))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
@@ -44,13 +46,12 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public List<Channel> findAllChannel() {
-        return new ArrayList<>(data);
+        return channelRepository.findAllChannel();
     }
 
-    //특정 사용자의 참가한 채널 리스트 조회
     @Override
     public List<Channel> findChannelsByUser(UUID userId) {
-        return data.stream()
+        return channelRepository.findAllChannel().stream()
                 .filter(channel -> channel.getUsers().stream()
                         .anyMatch(user -> user.getId().equals(userId)))
                 .toList();
@@ -58,7 +59,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public Channel update(UUID channelId, String name, String description) {
-        Channel channel = findChannelById(channelId);
+        Channel channel = channelRepository.findChannelById(channelId);
 
         if (name != null && !name.equals(channel.getChannelName())) {
             existsByChannelName(name);
@@ -66,6 +67,8 @@ public class JCFChannelService implements ChannelService {
 
         Optional.ofNullable(name).ifPresent(channel::updateChannelName);
         Optional.ofNullable(description).ifPresent(channel::updateDescription);
+
+        channelRepository.save(channel);
         return channel;
     }
 
@@ -73,34 +76,42 @@ public class JCFChannelService implements ChannelService {
     public void delete(UUID channelId) {
         Channel channel = findChannelById(channelId);
 
-        new ArrayList<>(channel.getUsers()).forEach(user -> {
+        channel.getUsers().forEach(user -> {
             user.leave(channel);
             channel.leave(user);
+            userRepository.save(user);
         });
-        data.remove(channel);
+
+        channelRepository.delete(channel);
     }
 
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
-        Channel channel = findChannelById(channelId);
-        User user = userService.findUserById(userId);
+        Channel channel = channelRepository.findChannelById(channelId);
+        User user = userRepository.findUserById(userId);
 
         channel.join(user);
         user.join(channel);
+
+        channelRepository.save(channel);
+        userRepository.save(user);
     }
 
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
-        Channel channel = findChannelById(channelId);
-        User user = userService.findUserById(userId);
+        Channel channel = channelRepository.findChannelById(channelId);
+        User user = userRepository.findUserById(userId);
 
         channel.leave(user);
         user.leave(channel);
+
+        channelRepository.save(channel);
+        userRepository.save(user);
     }
 
-    //채널명 중복체크
     private void existsByChannelName(String name) {
-        boolean exist = data.stream().anyMatch(channel -> channel.getChannelName().equals(name));
+        boolean exist = channelRepository.findAllChannel().stream()
+                .anyMatch(channel -> channel.getChannelName().equals(name));
         if (exist) {
             throw new IllegalArgumentException("이미 사용중인 채널명입니다: " + name);
         }

@@ -212,26 +212,6 @@ public class JCFJavaApplication {
 
         System.out.println("관리자 채널 메세지 삭제 후: " + messageService.findMessagesByChannel(adminChannel.getId()));
 
-        System.out.println();
-        System.out.println("========[유저 삭제 테스트]========");
-        System.out.println("관리자 A 삭제 전");
-        System.out.println(adminA.getChannels());
-        userService.delete(adminA.getId(), adminA.getPassword());
-        System.out.println("관리자 A 삭제 후");
-        System.out.println(adminA.getChannels());
 
-        System.out.println(testChannel.getUsers());
-        System.out.println(adminChannel.getUsers());
-
-        System.out.println();
-        System.out.println("========[채널 삭제 테스트]========");
-        System.out.println("테스트 채널 삭제 전");
-        System.out.println(testChannel.getUsers());
-        channelService.delete(testChannel.getId());
-
-        System.out.println("테스트 채널 삭제 후");
-        System.out.println(testChannel.getUsers());
-        System.out.println(adminB.getChannels());
-        System.out.println(channelService.findAllChannel());
     }
 }
