@@ -8,9 +8,6 @@ import java.util.UUID;
 
 public interface UserRepository<K,V> {
 
-    public User create(User user);
-    public User findById(UUID id);
-    public List<User> findAll();
-    public User update();
-    public void delete(UUID id);
+    //"저장 로직" 과 관련된 기능을 도메인 모델 별 인터페이스로 선언하세요.
+
 }

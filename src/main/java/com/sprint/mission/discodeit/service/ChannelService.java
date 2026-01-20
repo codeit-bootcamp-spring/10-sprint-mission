@@ -15,6 +15,7 @@ public interface ChannelService {
     Channel delete(UUID channelId);
     void enter(UUID channelId,UUID userId);
     void leave(UUID channelId,UUID userId);
+    void save();
 
     List<Channel> findByUser(UUID userId);
     List<User> findByChannel(UUID channelId);

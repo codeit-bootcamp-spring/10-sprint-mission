@@ -87,6 +87,11 @@ public class JCFChannelService implements ChannelService {
         user.removeChannel(channel);
     }
 
+    @Override
+    public void save() {
+
+    }
+
     public void removeUserFromAllChannel(UUID userId){
         if (userId == null){
             throw new IllegalArgumentException("삭제하려는 유저가 없습니다.");

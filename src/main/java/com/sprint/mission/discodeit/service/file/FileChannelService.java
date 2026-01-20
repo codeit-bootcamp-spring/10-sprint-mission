@@ -21,10 +21,12 @@ public class FileChannelService implements ChannelService {
 
     @Override
     public Channel create(String channelName, String type, UUID ownerId){
+        load();
         User owner = userService.findById(ownerId);
         Channel channel = new Channel(channelName,type,owner);
         channel.getUserList().add(owner);//방장을 Channel에 넣기.
         owner.getChannelList().add(channel); //채널을 user에 넣기.
+        userService.save();
         data.put(channel.getId(),channel); //data에 key value 값으로 넣음.
         save();
         return channel;
@@ -32,6 +34,7 @@ public class FileChannelService implements ChannelService {
 
     @Override
     public Channel findById(UUID id){
+        load();
         if(data.get(id) == null){
             throw new IllegalArgumentException("채널이 없습니다.");
         }
@@ -40,6 +43,7 @@ public class FileChannelService implements ChannelService {
 
     @Override
     public List<Channel> findAll() {
+        load();
         return new ArrayList<>(data.values());
     }
 
@@ -64,8 +68,9 @@ public class FileChannelService implements ChannelService {
     //채널이 삭제되면, User의 해당 채널이 삭제된다./메세지의 해당 채널이 삭제된다.
     @Override
     public Channel delete(UUID channelId) {
+        load();
         Channel channel = findById(channelId);
-        userService.removeChannel(channelId);//사용자측에서 해당 channelId 삭제
+        userService.removeChannel(channelId);//사용자측에서 해당 channelId 삭제(removeChannel내 영속화 o)
         data.remove(channelId);
         save();
         return channel;
@@ -80,6 +85,7 @@ public class FileChannelService implements ChannelService {
         }
         channel.getUserList().add(user);
         user.addChannel(channel);
+        userService.save();
         save();
 
     }
@@ -94,10 +100,12 @@ public class FileChannelService implements ChannelService {
         }
         channel.getUserList().remove(user);
         user.removeChannel(channel);
+        userService.save();
         save();
     }
 
     public void removeUserFromAllChannel(UUID userId){
+        load();
         if (userId == null){
             throw new IllegalArgumentException("삭제하려는 유저가 없습니다.");
         }

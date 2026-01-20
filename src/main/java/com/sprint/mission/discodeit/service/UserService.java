@@ -20,6 +20,7 @@ public interface UserService {
 
     //수정
     User update(UUID id,String userName,String email, String status);
+    void save();
 
     //삭제
     User delete(UUID id);

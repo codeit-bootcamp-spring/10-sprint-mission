@@ -53,6 +53,11 @@ public class JCFUserService implements UserService {
     }
 
     @Override
+    public void save() {
+
+    }
+
+    @Override
     public User delete(UUID id){
         User user = findById(id);
         data.remove(id);

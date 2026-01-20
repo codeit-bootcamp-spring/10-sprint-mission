@@ -19,29 +19,35 @@ public class FileUserService implements UserService {
 
     @Override
     public User create(String userName,String email, String status){
+        load();
         User user = new User(userName,email,status);
         data.put(user.getId(),user);
         save();//생성된 객체가 추가되어 파일로 만들어진다.
+
 
         return user;
     }
 
     @Override
     public User findById(UUID id){
+        load();
         if(data.get(id) == null){
             throw new IllegalArgumentException("해당 id의 유저가 없습니다.");
         }
+
         return data.get(id);
     }
 
     @Override
     public List<User> findAll(){
+        load();
         return new ArrayList<>(data.values());
     }
 
 
     @Override
     public User update(UUID userId,String userName,String email,String status){
+        load();
         //Optional은 값이 없을수도 있다의 의미라서 userId는 Optional을 쓰지않는다.
         if (userId == null) {
             throw new IllegalArgumentException("수정할 유저ID를 입력해주세요");
@@ -58,9 +64,11 @@ public class FileUserService implements UserService {
 
     @Override
     public User delete(UUID id){
+        load();
         User user = findById(id);
         data.remove(id);
         save();
+
         return user;
     }
 
@@ -114,4 +122,5 @@ public class FileUserService implements UserService {
             return new HashMap<>();
         }
     }
+
 }

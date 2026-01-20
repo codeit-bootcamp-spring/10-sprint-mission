@@ -25,6 +25,7 @@ public class FileMessageService implements MessageService {
 
     @Override
     public Message create(String content, UUID userId, UUID channelId){
+        load();
         User user = userService.findById(userId);
         Channel channel = channelService.findById(channelId);
         if (!user.getChannelList().contains(channel)) {
@@ -33,7 +34,9 @@ public class FileMessageService implements MessageService {
 
         Message message = new Message(content,user,channel);
         user.getMessageList().add(message);
+        userService.save();
         channel.getMessageList().add(message);
+        channelService.save();
         data.put(message.getId(),message);
 
         save();
@@ -44,6 +47,7 @@ public class FileMessageService implements MessageService {
 
     @Override
     public Message findById(UUID id){
+        load();
         if(data.get(id) == null){
             throw  new IllegalArgumentException("메시지가 존재하지 않습니다.");
         }
@@ -53,6 +57,7 @@ public class FileMessageService implements MessageService {
     //특정 User의 모든 메세지 목록
     @Override
     public List<Message> findAll() {
+        load();
         return new ArrayList<>(data.values());
     }
 
@@ -64,6 +69,7 @@ public class FileMessageService implements MessageService {
 
     @Override
     public Message update(UUID id,String content){
+        load();
         Message message = findById(id);
         message.setContent(content);
         save();
@@ -72,14 +78,17 @@ public class FileMessageService implements MessageService {
 
     @Override
     public Message delete(UUID id) {
+        load();
         Message message = findById(id);
         message.getUser().getMessageList().remove(message);
+        userService.save();
         data.remove(id);
         save();
         return message;
     }
 
     public void removeUser(UUID userId){
+        load();
         if(userId == null){
             throw new IllegalArgumentException("삭제하려는 유저가 없습니다.");
         }
@@ -90,6 +99,7 @@ public class FileMessageService implements MessageService {
     }
 
     public void removeChannel(UUID channelId){
+        load();
         if(channelId == null){
             throw new IllegalArgumentException("삭제하려는 채널이 없습니다.");
         }
