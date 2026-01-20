@@ -133,7 +133,11 @@ public class JavaApplication {
         // Service 초기화 (Basic)
         // =========================
         UserService userService =
-                new BasicUserService(userRepository, channelRepository);
+                new BasicUserService(
+                        userRepository,
+                        channelRepository,
+                        messageRepository
+                );
 
         ChannelService channelService =
                 new BasicChannelService(
