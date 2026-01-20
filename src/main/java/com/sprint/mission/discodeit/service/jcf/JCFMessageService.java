@@ -20,14 +20,14 @@ public class JCFMessageService implements MessageService {
         this.channelService = channelService;
     }
 
-    private final Map<UUID, Message> messages = new HashMap<>();
+    private final Map<UUID, Message> data = new HashMap<>();
 
     @Override
     public Message sendMessage(UUID userId, UUID channelId, String content) {
         User userInfo = userService.getUserInfoByUserId(userId);
         Message message = new Message(userInfo, channelService.getChannelInfoById(channelId), content);
         // 메시지 생성 및 리스트에 추가
-        messages.put(message.getId(), message);
+        data.put(message.getId(), message);
         userInfo.updateSentMessages(message);
 
         return message;
@@ -35,7 +35,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> getAllMessages() {
-        return messages.values().stream().toList();
+        return data.values().stream().toList();
     }
 
     // 유저 아이디에 따라 메시지 리스트 반환
@@ -47,7 +47,7 @@ public class JCFMessageService implements MessageService {
             throw new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
         }
 
-        return messages.values().stream()
+        return data.values().stream()
                 .filter(id -> id.getSentUser().getId().equals(userId))
                 .toList();
     }
@@ -61,7 +61,7 @@ public class JCFMessageService implements MessageService {
             throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
         }
 
-        return messages.values().stream()
+        return data.values().stream()
                 .filter(id -> id.getSentChannel().getId().equals(channelId))
                 .toList();
     }
@@ -83,14 +83,14 @@ public class JCFMessageService implements MessageService {
     @Override
     public void deleteMessage(UUID messageId) {
         findMessageById(messageId);
-        Message message = messages.remove(messageId);
+        Message message = data.remove(messageId);
 
         message.getSentUser().removeSentMessage(message);
     }
 
     @Override
     public void clearChannelMessage(UUID channelId) {
-        List<UUID> messageId = messages.values().stream()
+        List<UUID> messageId = data.values().stream()
                         .filter(message -> message.getSentChannel().getId().equals(channelId))
                         .map(Message::getId)
                         .toList();
@@ -99,13 +99,13 @@ public class JCFMessageService implements MessageService {
             throw new NoSuchElementException("해당 채널에 메시지가 없습니다");
         }
 
-        messageId.forEach(messages::remove);
+        messageId.forEach(data::remove);
     }
 
     private Message findMessageById(UUID messageId) {
         Objects.requireNonNull(messageId, "messageId는 null일 수 없습니다.");
 
-        Message message = messages.get(messageId);
+        Message message = data.get(messageId);
 
         if (message == null) {
             throw new NoSuchElementException("해당 id를 가진 메시지가 존재하지 않습니다.");
