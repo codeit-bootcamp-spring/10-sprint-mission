@@ -61,6 +61,10 @@ public class JavaApplication3 {
         Channel channel = setupChannel(channelService);
 
         // 2. 테스트
+
+        // 채널 내 유저 유효섬 검증에 따른 채널 가입
+        userService.joinChannel(user.getId(), channel.getId());
+
         messageCreateTest(messageService, channel, user);
     }
 }

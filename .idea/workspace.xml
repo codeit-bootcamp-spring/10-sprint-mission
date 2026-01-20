@@ -5,8 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e250045b-4cec-4d3c-8448-3ba5a11b2cd2" name="변경" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication4.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication2.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication2.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication3.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication3.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/entity/BaseEntity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/entity/BaseEntity.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -76,10 +79,11 @@
     "vue.rearranger.settings.migration": "true",
     "애플리케이션.JavaApplication.executor": "Run",
     "애플리케이션.JavaApplication2.executor": "Run",
-    "애플리케이션.JavaApplication3.executor": "Run"
+    "애플리케이션.JavaApplication3.executor": "Run",
+    "애플리케이션.JavaApplication4.executor": "Run"
   }
 }]]></component>
-  <component name="RunManager" selected="애플리케이션.JavaApplication3">
+  <component name="RunManager" selected="애플리케이션.JavaApplication2">
     <configuration name="JavaApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.JavaApplication" />
       <module name="10-sprint-mission.main" />
@@ -119,11 +123,25 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="JavaApplication4" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.sprint.mission.discodeit.JavaApplication4" />
+      <module name="10-sprint-mission.main" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.sprint.mission.discodeit.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="애플리케이션.JavaApplication3" />
-        <item itemvalue="애플리케이션.JavaApplication" />
         <item itemvalue="애플리케이션.JavaApplication2" />
+        <item itemvalue="애플리케이션.JavaApplication" />
+        <item itemvalue="애플리케이션.JavaApplication4" />
+        <item itemvalue="애플리케이션.JavaApplication3" />
       </list>
     </recent_temporary>
   </component>
@@ -151,7 +169,7 @@
       <workItem from="1768493400937" duration="2306000" />
       <workItem from="1768737342933" duration="347000" />
       <workItem from="1768816590953" duration="35000" />
-      <workItem from="1768867672333" duration="25821000" />
+      <workItem from="1768867672333" duration="28982000" />
     </task>
     <servers />
   </component>
