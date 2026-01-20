@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
@@ -99,8 +100,8 @@ public class JavaApplication {
     }
 
     private static void channelServiceTest() {
-        JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService();
+        FileUserService userService = new FileUserService();
+        FileChannelService channelService = new FileChannelService();
         userService.setChannelService(channelService);
         channelService.setUserService(userService);
 
@@ -112,7 +113,7 @@ public class JavaApplication {
         channelService.joinChannel(channel1.getId(), user2.getId());
         // 단건 조회
         Channel result = channelService.getChannel(channel1.getId());
-        if(result.getId().equals(channel1.getId())) System.out.println("단건 조회 테스트 성공");
+        if(result.equals(channel1)) System.out.println("단건 조회 테스트 성공");
         else System.out.println("단건 조회 테스트 실패");
 
         // 다건 조회
@@ -121,36 +122,38 @@ public class JavaApplication {
         else System.out.println("다건 조회 테스트 실패");
 
         // 수정
-        Channel updatedChannel = channelService.updateChannel(channel1.getId(), "channel1_수정됨", ChannelType.PRIVATE, "수정된 description");
-        if(updatedChannel.getId().equals(channel1.getId())
-        && updatedChannel.getChannelName().equals(channel1.getChannelName()))
+        channel2 = channelService.updateChannel(channel2.getId(), "channel2_수정됨", ChannelType.PRIVATE, "수정된 description");
+        Channel updatedChannel = channelService.getChannel(channel2.getId());
+        if(channel2.equals(updatedChannel)
+        && channel2.getChannelName().equals(updatedChannel.getChannelName()))
             System.out.println("수정 테스트 성공");
         else
             System.out.println("수정 테스트 실패");
 
         // 수정 된 데이터 조회
-        System.out.printf("수정된 channel1 이름 : %s, 채널타입 : %s, 설명 : %s%n"
-                , channel1.getChannelName(), channel1.getChannelType(), channel1.getDescription());
+        System.out.printf("수정된 channel2 이름 : %s, 채널타입 : %s, 설명 : %s%n"
+                , channel2.getChannelName(), channel2.getChannelType(), channel2.getDescription());
 
         // 삭제
-        channelService.deleteChannel(channel2.getId());
-        if(channelService.getAllChannels().size() == 1)
+        int prevSize = channelService.getAllChannels().size();
+        channelService.deleteChannel(channel1.getId());
+        if(channelService.getAllChannels().size() == prevSize - 1)
             System.out.println("삭제 테스트 성공");
         else
             System.out.println("삭제 테스트 실패");
 
         // 조회를 통해 삭제되었는지 확인
         System.out.println("남은 채널들");
-        channelService.getAllChannels()
-                .stream()
-                .forEach(
-                        c -> System.out.println("id : " + c.getId() + ", name : " + c.getChannelName())
-                );
+        try {
+            channelService.getChannel(channel1.getId());
+        } catch (NoSuchElementException e) {
+            System.out.println("channel1 삭제 성공하여 조회x");
+        }
 
         // 채널 중복 테스트
+        Channel channel3 = channelService.createChannel("channel3", ChannelType.PUBLIC, "channel3 description 중복");
         try {
-            channelService.createChannel("channel2", ChannelType.PUBLIC, "channel2 description 중복");
-            channelService.createChannel("channel2", ChannelType.PUBLIC, "channel2 description 중복");
+            channelService.createChannel("channel3", ChannelType.PUBLIC, "channel3 description 중복");
             System.out.println("중복 처리 테스트 실패");
         } catch (IllegalStateException e) {
             System.out.println("중복 처리 테스트 성공");
@@ -158,11 +161,17 @@ public class JavaApplication {
 
         // 없는 채널 조회
         try {
-            Channel notFound = channelService.getChannel(java.util.UUID.randomUUID());
+            channelService.getChannel(java.util.UUID.randomUUID());
             System.out.println("없는 채널 조회 테스트 실패");
         } catch (NoSuchElementException e) {
             System.out.println("없는 채널 조회 테스트 성공");
         }
+
+        // 반복테스트를 위해 제거
+        channelService.deleteChannel(channel2.getId());
+        channelService.deleteChannel(channel3.getId());
+        userService.deleteUser(user1.getId());
+        userService.deleteUser(user2.getId());
     }
 
     private static void messageServiceTest() {
