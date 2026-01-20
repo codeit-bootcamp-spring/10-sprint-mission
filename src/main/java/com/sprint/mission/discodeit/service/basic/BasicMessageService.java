@@ -32,8 +32,12 @@ public class BasicMessageService implements MessageService {
     public Message sendMessage(UUID userId, UUID channelId, String content) {
         User user = findUserOrThrow(userId);
         Channel channel = findChannelOrThrow(channelId);
+        Message message = messageRepository.save(new Message(user, channel, content));
+        // 영속화
+        userRepository.save(user);
+        channelRepository.save(channel);
 
-        return messageRepository.save(new Message(user, channel, content));
+        return message;
     }
 
     @Override
@@ -91,6 +95,7 @@ public class BasicMessageService implements MessageService {
         }
 
         messageRepository.deleteByChannelId(channelId);
+        channelRepository.save(findChannelOrThrow(channelId));
     }
 
     private Message findMessageOrThrow(UUID messageId) {
