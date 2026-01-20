@@ -4,6 +4,13 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileObjectStore;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -21,7 +28,7 @@ import java.util.UUID;
 
 public class FileIOTestJavaApplication {
     public static void main(String[] args) {
-        System.out.println("========== 테스트 시작 ==========");
+        System.out.println("==================== 테스트 시작 ====================");
         /** 기본 세팅 (테스트 유저/채널/메세지 생성 시 아래와 같이 생성)
          * 테스트 유저(3명) : u1 , u2 , u3
          * 테스트 채널(3개) : c1 , c2 , c3
@@ -56,16 +63,16 @@ public class FileIOTestJavaApplication {
         deleteMessageTest();
         loadMessage();
 
-        // 채널 삭제
+         // 채널 삭제
         m2Add(); // 앞에서 삭제한 m2 채우기
-        deleteChannelTest(); // c1 삭제
+        deleteChannelTest(); // 채널 c1 삭제
         loadChannel();
         loadMessage();
 
         // 유저 삭제
         c1Add(); // 앞에서 삭제한 채널 채우기
         messageCreateUpdateTest(); // 앞에서 삭제한 메세지 채우기
-        deleteUserTest(); // u1 삭제
+        deleteUserTest(); // 유저 u1 삭제
         loadUser();
         loadChannel();
         loadMessage();
@@ -74,9 +81,12 @@ public class FileIOTestJavaApplication {
 
     // User
     static void userCreateUpdateTest() {
-        System.out.println("========== 유저 생성 및 유저 정보 수정 테스트 시작 ==========");
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
+        System.out.println("\n==================== 유저 생성 및 유저 정보 수정 테스트 시작 ====================");
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData(); // 파일에 있는 데이터 로드
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
         System.out.println("\n========== 유저 생성 u1, u2, u3 ==========");
         User u1 = userService.createUser("u1@email.com", "u1", "u1Nick", "1111", "20000101");
         User u2 = userService.createUser("u2@email.com", "u2", "u2Nick", "2222", "20000202");
@@ -112,32 +122,39 @@ public class FileIOTestJavaApplication {
     }
 
     static void loadUser() {
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData(); // 파일에 있는 데이터 로드
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
     }
 
     // Channel
     static void channelCreateUpdateTest() {
-        System.out.println("========== 채널 생성 및 채널 정보 수정 테스트 시작 ==========");
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
-        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+        System.out.println("\n==================== 채널 생성 및 채널 정보 수정 테스트 시작 ====================");
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+//        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData();
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
         User u3 = userService.findUserByEmailAndPassword("u3@email.com", "3333").orElseThrow();
+        System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
 
         System.out.println("\n========== 채널 생성 c1, c2, c3 ==========");
         Channel c1 = channelService.createChannel(u1.getId(), ChannelType.PUBLIC, "c1u1PUBLIC", "c1Desu1PUBLIC");
         Channel c2 = channelService.createChannel(u2.getId(), ChannelType.PUBLIC, "c2u2PUBLIC", "c2Desu2PUBLIC");
         Channel c3 = channelService.createChannel(u1.getId(), ChannelType.PRIVATE, "c3u1PRIVATE", "c3Desu1PRIVATE");
-        Channel c1Load = channelService.findChannelById(c1.getId()).orElseThrow();
-        Channel c2Load = channelService.findChannelById(c2.getId()).orElseThrow();
-        Channel c3Load = channelService.findChannelById(c3.getId()).orElseThrow();
         System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
-        System.out.println("channel1의 channel memberList = " + c1Load.getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel2의 channel member list = " + c2Load.getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel3의 channel member list = " + c3Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("channel1의 owner ID = " + channelService.findChannelById(c1.getId()).orElseThrow().getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).orElseThrow().getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).orElseThrow().getOwner().getId());
+        System.out.println("channel1의 channel memberList = " + channelService.findChannelById(c1.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel2의 channel member list = " + channelService.findChannelById(c2.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
         System.out.println("user1의 join channelList = " + u1.getJoinChannelList().stream().map(c -> c.getId()).toList());
 
         System.out.println("\n========== 채널 정보 수정 테스트: c2 수정 ==========");
@@ -164,35 +181,33 @@ public class FileIOTestJavaApplication {
     }
 
     static void channelJoinLeaveTest() {
-        System.out.println("========== 유저의 채널 참가 후, 채널 owner 교체, 탈퇴 테스트 시작 ==========");
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
-        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+        System.out.println("\n==================== 유저의 채널 참가 후, 채널 owner 교체, 탈퇴 테스트 시작 ====================");
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+//        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData();
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
         User u3 = userService.findUserByEmailAndPassword("u3@email.com", "3333").orElseThrow();
-        // user 기본 정보 로드
-        User u1Load = userService.findUserById(u1.getId()).orElseThrow();
-        User u2Load = userService.findUserById(u2.getId()).orElseThrow();
-        User u3Load = userService.findUserById(u3.getId()).orElseThrow();
         System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
 
         System.out.println("\n========== 채널 Load c1, c2, c3 ==========");
         Channel c1 = channelService.findAllChannels().stream().filter(c -> c.getChannelName().equals("c1u1PUBLIC")).findFirst().orElseThrow();
         Channel c2 = channelService.findAllChannels().stream().filter(c -> c.getChannelName().equals("[update]c2u2PRIVATE")).findFirst().orElseThrow();
         Channel c3 = channelService.findAllChannels().stream().filter(c -> c.getChannelName().equals("c3u1PRIVATE")).findFirst().orElseThrow();
-        Channel c1Load = channelService.findChannelById(c1.getId()).orElseThrow();
-        Channel c2Load = channelService.findChannelById(c2.getId()).orElseThrow();
-        Channel c3Load = channelService.findChannelById(c3.getId()).orElseThrow();
         System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
 
         System.out.println("\n========== u2가 c3에 참여 ==========");
-        System.out.println("[전]user2의 join channelList = " + u2Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[전]channel3의 channel member list = " + c3Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[전]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[전]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
         channelService.joinChannel(u2.getId(), c3.getId());
-        System.out.println("[후]user2의 join channelList = " + u2Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[후]channel3의 channel member list = " + c3Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[후]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[후]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
         try {
             System.out.print("user가 이미 해당 채널에 참여된 상태일 때: ");
             channelService.joinChannel(u2.getId(), c2.getId());
@@ -201,9 +216,9 @@ public class FileIOTestJavaApplication {
         }
 
         System.out.println("\n========== 채널 owner 수정 테스트: c3 owner(u1)을 u2로 변경 ==========");
-        System.out.println("[전]channel1의 owner ID = " + c1Load.getOwner().getId() + " / channel2의 owner ID = " + c2Load.getOwner().getId() + " / channel3의 owner ID = " + c3Load.getOwner().getId());
+        System.out.println("[전]channel1의 owner ID = " + channelService.findChannelById(c1.getId()).orElseThrow().getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).orElseThrow().getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).orElseThrow().getOwner().getId());
         channelService.changeChannelOwner(u1.getId(), c3.getId(), u2.getId());
-        System.out.println("[후]channel1의 owner ID = " + c1Load.getOwner().getId() + " / channel2의 owner ID = " + c2Load.getOwner().getId() + " / channel3의 owner ID = " + c3Load.getOwner().getId());
+        System.out.println("[후]channel1의 owner ID = " + channelService.findChannelById(c1.getId()).orElseThrow().getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).orElseThrow().getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).orElseThrow().getOwner().getId());
         try {
             System.out.print("owner로 바꾸려는 user가 미참여 채널일 때: ");
             channelService.changeChannelOwner(u1.getId(), c1.getId(), u2.getId());
@@ -212,19 +227,24 @@ public class FileIOTestJavaApplication {
         }
 
         System.out.println("\n========== u1이 c3에서 나가기 ==========");
-        System.out.println("[전]user1의 join channelList = " + u1Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[전]user2의 join channelList = " + u2Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[전]channel3의 channel member list = " + c3Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[전]user1의 join channelList = " + userService.findUserById(u1.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[전]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[전]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
         channelService.leaveChannel(u1.getId(), c3.getId());
-        System.out.println("[후]user1의 join channelList = " + u1Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[후]user2의 join channelList = " + u2Load.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[후]channel3의 channel member list = " + c3Load.getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[후]user1의 join channelList = " + userService.findUserById(u1.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[후]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[후]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
     }
 
     static void loadChannel() {
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
-        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+//        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData();
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
         System.out.println("\n========== 채널 Load c1, c2, c3 ==========");
         System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
 
@@ -240,11 +260,18 @@ public class FileIOTestJavaApplication {
     }
 
     static void messageCreateUpdateTest() {
-        System.out.println("========== 메세지 생성 및 메세지 정보 수정 테스트 테스트 시작 ==========");
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
-        ChannelService channelService = new FileChannelService(fileDataStore, userService);
-        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+        System.out.println("\n==================== 메세지 생성 및 메세지 정보 수정 테스트 테스트 시작 ====================");
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+//        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+//        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData();
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
+        MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
@@ -285,20 +312,34 @@ public class FileIOTestJavaApplication {
     }
 
     static void loadMessage() {
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
-        ChannelService channelService = new FileChannelService(fileDataStore, userService);
-        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+//        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+//        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData();
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
+        MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         System.out.println("\n========== 메세지 Load m1, m2, m3 ==========");
         System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getMessageChannel().getId() + "): " + message.getMessageContent()).toList());
     }
 
     static void deleteMessageTest() {
-        System.out.println("========== m2 메세지 삭제 테스트 시작 ==========");
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
-        ChannelService channelService = new FileChannelService(fileDataStore, userService);
-        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+        System.out.println("\n==================== m2 메세지 삭제 테스트 시작 ====================");
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+//        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+//        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData();
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
+        MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
@@ -342,11 +383,18 @@ public class FileIOTestJavaApplication {
     }
 
     static void deleteChannelTest() {
-        System.out.println("========== c1 채널 삭제 테스트 시작 ==========");
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
-        ChannelService channelService = new FileChannelService(fileDataStore, userService);
-        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+        System.out.println("\n==================== c1 채널 삭제 테스트 시작 ====================");
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+//        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+//        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData();
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
+        MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
@@ -389,11 +437,18 @@ public class FileIOTestJavaApplication {
     }
 
     static void deleteUserTest() {
-        System.out.println("========== u1 유저 삭제 테스트 시작 ==========");
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
-        ChannelService channelService = new FileChannelService(fileDataStore, userService);
-        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+        System.out.println("\n==================== u1 유저 삭제 테스트 시작 ====================");
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+//        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+//        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData();
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
+        MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
@@ -489,10 +544,17 @@ public class FileIOTestJavaApplication {
     }
 
     public static void m2Add() {
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
-        ChannelService channelService = new FileChannelService(fileDataStore, userService);
-        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+//        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+//        MessageService messageService = new FileMessageService(fileDataStore, userService, channelService);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData();
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
+        MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         Channel c1 = channelService.findAllChannels().stream().filter(c -> c.getChannelName().equals("c1u1PUBLIC")).findFirst().orElseThrow();
         // message 생성
@@ -502,9 +564,16 @@ public class FileIOTestJavaApplication {
         System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getMessageChannel().getId() + "): " + message.getMessageContent()).toList());        System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
     }
     public static void c1Add() {
-        FileDataStore fileDataStore = FileDataStore.loadData();
-        UserService userService = new FileUserService(fileDataStore);
-        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+//        FileDataStore fileDataStore = FileDataStore.loadData();
+//        UserService userService = new FileUserService(fileDataStore);
+//        ChannelService channelService = new FileChannelService(fileDataStore, userService);
+        FileObjectStore fileObjectStore = FileObjectStore.loadData();
+        UserRepository userRepo = new FileUserRepository(fileObjectStore);
+        ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
+        MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
+        UserService userService = new JCFUserService(userRepo);
+        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
         Channel c1 = channelService.createChannel(u1.getId(), ChannelType.PUBLIC, "c1u1PUBLIC", "c1Desu1PUBLIC");
