@@ -234,6 +234,7 @@ public class FileChannelService implements ChannelService {
         // [저장]
         Channel channel = find(channelID);
         return channel.getMembersList().stream()
+                .map(user -> fileUserService.find(user.getId()))
                 .map(User::getName)
                 .collect(Collectors.toList());
     }

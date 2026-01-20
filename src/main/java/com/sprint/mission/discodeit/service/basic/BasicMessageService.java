@@ -52,7 +52,6 @@ public class BasicMessageService implements MessageService {
 
         // [저장]
         Message message = new Message(contents, sender, channel);
-        messageRepository.save(message);
 
         // [비즈니스]
         sender.addMessage(message);
@@ -61,18 +60,12 @@ public class BasicMessageService implements MessageService {
         // [저장]
         userRepository.save(sender);
         channelRepository.save(channel);
-        return message;
+        return  messageRepository.save(message);
     }
 
     @Override
     public Message find(UUID messageID) {
-        Message message = messageRepository.find(messageID);
-
-        if (message == null) {
-            throw new IllegalArgumentException("Message Not Found: "+messageID);
-        }
-
-        return message;
+        return messageRepository.find(messageID);
     }
 
     @Override
@@ -89,8 +82,7 @@ public class BasicMessageService implements MessageService {
         // [저장]
         Message msg = messageRepository.find(messageID);
         msg.updateContents(contents);
-        messageRepository.save(msg);
-        return msg;
+        return messageRepository.save(msg);
     }
 
     @Override
@@ -108,7 +100,7 @@ public class BasicMessageService implements MessageService {
         sender.removeMessage(msg);
         channel.removeMessage(msg);
 
-        messageRepository.removeMessage(msg);
+        messageRepository.deleteMessage(msg);
         userRepository.save(sender);
         channelRepository.save(channel);
     }

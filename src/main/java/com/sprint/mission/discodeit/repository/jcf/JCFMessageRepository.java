@@ -30,12 +30,7 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void addMessage(Message message) {
-        messageData.put(message.getId(), message);
-    }
-
-    @Override
-    public void removeMessage(Message message) {
+    public void deleteMessage(Message message) {
         messageData.remove(message.getId());
     }
 

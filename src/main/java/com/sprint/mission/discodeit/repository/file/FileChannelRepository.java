@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class FileChannelRepository implements ChannelRepository {
+    // 필드
     private final Path basePath = Path.of("data/channel");
     private final Path storeFile = basePath.resolve("channel.ser");
     private List<Channel> channelData;
@@ -72,16 +73,9 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void addChannel(Channel channel) {
+    public void deleteChannel(Channel channel) {
         loadData();
-        channelData.add(channel);
-        saveData();
-    }
-
-    @Override
-    public void removeChannel(Channel channel) {
-        loadData();
-        channelData.remove(channel);
+        channelData.removeIf(ch -> ch.getId().equals(channel.getId()));
         saveData();
     }
 

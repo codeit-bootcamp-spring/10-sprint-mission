@@ -43,8 +43,7 @@ public class BasicChannelService implements ChannelService {
     public Channel create(String name) {
         Channel channel = new Channel(name);
         // [저장]
-        channelRepository.addChannel(channel);
-        return channel;
+        return channelRepository.save(channel);
     }
 
     @Override
@@ -59,11 +58,11 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel updateName(UUID channelID, String name) {
+        // [저장] , 조회
         Channel channel = channelRepository.find(channelID);
+        // 비즈니스
         channel.updateName(name);
-        // [저장]
-        channelRepository.save(channel);
-        return channel;
+        return channelRepository.save(channel);
     }
 
     @Override
@@ -77,7 +76,7 @@ public class BasicChannelService implements ChannelService {
         // [비즈니스]
         List<User> members = new ArrayList<>(channel.getMembersList());
 
-        // [비즈니스]
+        // [비즈니스], 여기 삭제가 잘 되려나 ??
         members.forEach(user -> user.leaveChannel(channel));
 
         // [비즈니스]
@@ -85,7 +84,7 @@ public class BasicChannelService implements ChannelService {
         messageList.forEach(message -> messageService.deleteMessage(message.getId()));
 
         // [저장]
-        channelRepository.removeChannel(channel);
+        channelRepository.deleteChannel(channel);
     }
 
     @Override
@@ -94,7 +93,7 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalStateException("UserService is not set in BasicChannelService");
         }
 
-        // [저장]
+        // [저장], 조회
         Channel channel = find(channelID);
         User user = userService.find(userID);
 
@@ -162,7 +161,7 @@ public class BasicChannelService implements ChannelService {
 //            throw new IllegalArgumentException("User is not in this channel." + channelID);
 //        }
 //
-//        // [비즈니스]
+//        // [비즈니스], 아마 불러온 객체라 삭제가 잘 안될 것 같은데
 //        user.leaveChannel(channel);
 //        channel.removeMember(user);
 //

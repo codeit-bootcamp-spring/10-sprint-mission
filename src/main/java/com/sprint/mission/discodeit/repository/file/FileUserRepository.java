@@ -17,8 +17,6 @@ public class FileUserRepository implements UserRepository {
     private final Path storeFile = basePath.resolve("user.ser");
 
     private List<User> userData;
-    private MessageService messageService;
-    private ChannelService channelService;
 
     // constructor
     public FileUserRepository() {
@@ -82,14 +80,7 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public void addUser(User user) {
-        loadData();
-        userData.add(user);
-        saveData();
-    }
-
-    @Override
-    public void removeUser(User user) {
+    public void deleteUser(User user) {
         loadData();
         userData.removeIf(u -> u.getId().equals(user.getId()));
         saveData();

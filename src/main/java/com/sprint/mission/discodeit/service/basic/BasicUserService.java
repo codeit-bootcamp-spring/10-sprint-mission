@@ -42,8 +42,7 @@ public class BasicUserService implements UserService {
     @Override
     public User create(String name) {
         User user = new User(name);
-        userRepository.addUser(user);
-        return user;
+        return userRepository.save(user);
     }
 
     @Override
@@ -61,8 +60,7 @@ public class BasicUserService implements UserService {
         User user = userRepository.find(userID);
         user.updateName(name);
         // [저장] 변경사항 저장
-        userRepository.save(user);
-        return user;
+        return userRepository.save(user);
     }
 
     @Override
@@ -94,7 +92,7 @@ public class BasicUserService implements UserService {
         }
 
         // [저장]
-        userRepository.removeUser(user);
+        userRepository.deleteUser(user);
     }
 
     @Override

@@ -26,8 +26,11 @@ public class Factory {
     private final UserService userService;
     private final ChannelService channelService;
     private final MessageService messageService;
-
+    private String mode;
     public Factory(String mode) {
+        mode = mode.toLowerCase();
+        this.mode = mode;
+
         switch (mode) {
             case "jcf" -> {
                 this.userService = new JCFUserService();
@@ -83,5 +86,9 @@ public class Factory {
 
     public MessageService getMessageService() {
         return messageService;
+    }
+
+    public String getMode() {
+        return mode;
     }
 }

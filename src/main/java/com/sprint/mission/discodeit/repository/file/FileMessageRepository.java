@@ -58,7 +58,6 @@ public class FileMessageRepository implements MessageRepository {
     }
     @Override
     public Message find(UUID messageID) {
-        System.out.println("******");
         loadData();
         return messageData.values().stream()
                 .filter(message -> message.getId().equals(messageID))
@@ -73,14 +72,7 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void addMessage(Message message) {
-        loadData();
-        messageData.put(message.getId(), message);
-        saveData();
-    }
-
-    @Override
-    public void removeMessage(Message message) {
+    public void deleteMessage(Message message) {
         loadData();
         messageData.remove(message.getId());
         saveData();

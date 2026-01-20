@@ -8,10 +8,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -19,7 +16,7 @@ import java.util.UUID;
 public class JavaApplication {
     public static void main(String[] args) {
         // Service 생성 !!
-        Factory factory = new Factory("basic-file");
+        Factory factory = new Factory("JCF");
         UserService userService = factory.getUserService();
         ChannelService channelService = factory.getChannelService();
         MessageService messageService = factory.getMessageService();
@@ -158,7 +155,7 @@ public class JavaApplication {
         System.out.println("User findAll: " + userService.findAll());
         System.out.println("Channel find(ch1): " + channelService.find(ch1.getId()));
         System.out.println("Channel findAll: " + channelService.findAll());
-//        System.out.println("Message find(msg2): " + messageService.find(msg2.getId()));
+        System.out.println("Message find(msg2): " + messageService.find(msg2.getId()));
         System.out.println("Message findAll: " + messageService.findAll() + "\n");
 
         // ============================================================
@@ -225,7 +222,7 @@ public class JavaApplication {
         System.out.println("After deleteChannel(ch2):");
         System.out.println("  Total channels: " + channelService.findAll().size());
         System.out.println("  Total messages: " + messageService.findAll().size());
-        // Message가 비지 않음 ...
+        // Message가 비지 않음 ... -> ch2가 삭제되서 객체 최신화를 못함 .. 여기 체크
         System.out.println("  Ch2 messageList empty? " + ch2.getMessageList().isEmpty());
 
         user1 = userService.find(user1.getId());
@@ -284,48 +281,52 @@ public class JavaApplication {
         System.out.println("User4 joined channels: " + userService.findJoinedChannels(user4.getId()) + "\n");
 
         // ============================================================
-        // 15. 직렬화 확인 - Channel
+        // 15. 직렬화 확인 - Channel , file, basic-file 일 경우에만 실행되도록
         // ============================================================
-        System.out.println("=== [15] Serialization Check - Channel ===");
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("data/channel/channel.ser"))) {
-            List<Channel> channels = (List<Channel>) ois.readObject();
-            System.out.println("Channels loaded: " + channels.size());
-            channels.forEach(ch -> System.out.println("  id=" + ch.getId() + ", name=" + ch.getName()
-                    + ", members=" + ch.getMembersList().size() + ", messages=" + ch.getMessageList().size()));
-        } catch (Exception e) {
-            System.out.println("Channel serialization failed: " + e.getMessage());
-        }
-        System.out.println();
+        if (factory.getMode().equals("file") || factory.getMode().equals("basic-file")) {
+            System.out.println("=== [15] Serialization Check - Channel ===");
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("data/channel/channel.ser"))) {
+                List<Channel> channels = (List<Channel>) ois.readObject();
+                System.out.println("Channels loaded: " + channels.size());
+                channels.forEach(ch -> System.out.println("  id=" + ch.getId() + ", name=" + ch.getName()
+                        + ", members=" + ch.getMembersList().size() + ", messages=" + ch.getMessageList().size()));
+            } catch (Exception e) {
+                System.out.println("Channel serialization failed: " + e.getMessage());
+            }
+            System.out.println();
 
-        // ============================================================
-        // 16. 직렬화 확인 - User
-        // ============================================================
-        System.out.println("=== [16] Serialization Check - User ===");
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("data/user/user.ser"))) {
-            List<User> users = (List<User>) ois.readObject();
-            System.out.println("Users loaded: " + users.size());
-            users.forEach(u -> System.out.println("  id=" + u.getId() + ", name=" + u.getName()
-                    + ", channels=" + u.getChannels().size() + ", messages=" + u.getMessageList().size()));
-        } catch (Exception e) {
-            System.out.println("User serialization failed: " + e.getMessage());
-        }
-        System.out.println();
+            // ============================================================
+            // 16. 직렬화 확인 - User
+            // ============================================================
+            System.out.println("=== [16] Serialization Check - User ===");
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("data/user/user.ser"))) {
+                List<User> users = (List<User>) ois.readObject();
+                System.out.println("Users loaded: " + users.size());
+                users.forEach(u -> System.out.println("  id=" + u.getId() + ", name=" + u.getName()
+                        + ", channels=" + u.getChannels().size() + ", messages=" + u.getMessageList().size()));
+            } catch (Exception e) {
+                System.out.println("User serialization failed: " + e.getMessage());
+            }
+            System.out.println();
 
-        // ============================================================
-        // 17. 직렬화 확인 - Message
-        // ============================================================
-        System.out.println("=== [17] Serialization Check - Message ===");
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("data/message/message.ser"))) {
-            Map<UUID, Message> messages = (Map<UUID, Message>) ois.readObject();
-            System.out.println("Messages loaded: " + messages.size());
-            messages.values().forEach(m -> System.out.println("  id=" + m.getId() + ", sender=" + m.getSender().getName()
-                    + ", channel=" + m.getChannel().getName() + ", content=" + m.getContents()));
-        } catch (Exception e) {
-            System.out.println("Message serialization failed: " + e.getMessage());
+            // ============================================================
+            // 17. 직렬화 확인 - Message
+            // ============================================================
+            System.out.println("=== [17] Serialization Check - Message ===");
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("data/message/message.ser"))) {
+                Map<UUID, Message> messages = (Map<UUID, Message>) ois.readObject();
+                System.out.println("Messages loaded: " + messages.size());
+                messages.values().forEach(m -> System.out.println("  id=" + m.getId() + ", sender=" + m.getSender().getName()
+                        + ", channel=" + m.getChannel().getName() + ", content=" + m.getContents()));
+            } catch (Exception e) {
+                System.out.println("Message serialization failed: " + e.getMessage());
+            }
+
+            System.out.println("\n========================================");
+            System.out.println("===== TEST END =====");
+            System.out.println("========================================");
+
         }
 
-        System.out.println("\n========================================");
-        System.out.println("===== TEST END =====");
-        System.out.println("========================================");
     }
 }
