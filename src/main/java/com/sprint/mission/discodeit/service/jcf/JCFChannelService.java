@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
@@ -10,21 +11,13 @@ import com.sprint.mission.discodeit.validation.ValidationMethods;
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
-    private final Map<UUID, Channel> data; // channel DB 데이터
+    //    private final Map<UUID, Channel> data; // channel DB 데이터
+    private final ChannelRepository channelRepository;
     private final UserService userService;
 
-    public JCFChannelService(UserService userService) {
-        this.data = new HashMap<>();
+    public JCFChannelService(ChannelRepository channelRepository, UserService userService) {
+        this.channelRepository = channelRepository;
         this.userService = userService;
-    }
-
-    @Override
-    public String toString() {
-        return "JCFChannelService{" +
-//                "data = " + data + ", " +
-                "data key = " + data.keySet() + ", " +
-                "data value = " + data.values() +
-                '}';
     }
 
     // C. 생성: Channel 생성 후 Channel 객체 반환
@@ -33,13 +26,13 @@ public class JCFChannelService implements ChannelService {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User owner = validateAndGetUserByUserId(userId);
         // channelType `null` 검증
-        validateNullChannelType(channelType, "channelType");
+        validateNullChannelType(channelType);
         // channelName과 channelDescription의 `null`, `blank` 검증
         ValidationMethods.validateNullBlankString(channelName, "channelName");
         ValidationMethods.validateNullBlankString(channelDescription, "channelDescription");
 
         Channel channel = new Channel(owner, channelType, channelName, channelDescription);
-        data.put(channel.getId(), channel);
+        channelRepository.save(channel);
         // owner는 channel 생성 시 자동 join(channel의 member list에도 추가
         linkMemberAndChannel(owner, channel);
         return channel;
@@ -52,14 +45,14 @@ public class JCFChannelService implements ChannelService {
         // Channel ID null 검증
         ValidationMethods.validateId(channelId);
 
-        return Optional.ofNullable(data.get(channelId));
+        return channelRepository.findById(channelId);
     }
 
     // R. 모두 읽기
     // 채널 목록 전체
     @Override
     public List<Channel> findAllChannels() {
-        return new ArrayList<>(data.values());
+        return channelRepository.findAll();
     }
 
     // 비공개 여부에 따른 채널 목록
@@ -222,7 +215,7 @@ public class JCFChannelService implements ChannelService {
         for (User member : channel.getChannelMembersList()) {
             unlinkMemberAndChannel(member, channel);
         }
-        data.remove(channelId);
+        channelRepository.delete(channelId);
     }
     private void linkMemberAndChannel(User user, Channel channel) {
         channel.addMember(user);
@@ -245,9 +238,9 @@ public class JCFChannelService implements ChannelService {
     }
 
     // ChannelType null 검증
-    public void validateNullChannelType(Object obj, String channelType) {
-        String message = channelType + "가 null 입니다.";
-        Objects.requireNonNull(obj, message);
+    public void validateNullChannelType(ChannelType channelType) {
+        String message = "channelType이 null 입니다.";
+        Objects.requireNonNull(channelType, message);
     }
 
     // Channel ID null & channel 객체 존재 확인

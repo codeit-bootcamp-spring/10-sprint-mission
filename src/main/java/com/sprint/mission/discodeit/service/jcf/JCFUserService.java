@@ -1,26 +1,18 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 
 import java.util.*;
 
 public class JCFUserService implements UserService {
-    private final Map<UUID, User> data;
+//    private final Map<UUID, User> data; // 이제 데이터를 userRepository에 저장하므로 , 미사용
+    private final UserRepository userRepository;
 
-    public JCFUserService() {
-        this.data = new HashMap<>();
-    }
-
-    @Override
-    public String toString() {
-        return "JCFUserService{" +
-//                "data = " + data + ", " +
-                "data key = " + data.keySet() + ", " +
-                "data values = " + data.values() + ", " +
-                "data size = " + data.size() +
-                '}';
+    public JCFUserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     // C. 생성: User 생성 후 User 객체 반환
@@ -37,7 +29,7 @@ public class JCFUserService implements UserService {
         ValidationMethods.validateNullBlankString(birthday, "birthday");
 
         User user = new User(email, userName, nickName, password, birthday);
-        data.put(user.getId(), user);
+        userRepository.save(user);
         return user;
     }
 
@@ -47,21 +39,22 @@ public class JCFUserService implements UserService {
         // User ID null 검증
         ValidationMethods.validateId(userId);
 
-        return Optional.ofNullable(data.get(userId));
+        return userRepository.findById(userId);
     }
 
     @Override
     public Optional<User> findUserByEmailAndPassword(String email, String password) {
-        return this.data.values().stream()
-                .filter(u -> u.getEmail().equals(email) && u.getPassword().equals(password))
-                .findFirst();
+        ValidationMethods.validateNullBlankString(email, "email");
+        ValidationMethods.validateNullBlankString(password, "password");
+
+        return userRepository.findByEmailAndPassword(email, password);
     }
 
     // R. 모두 읽기
     // 모든 사용자
     @Override
     public List<User> findAllUsers() {
-        return new ArrayList<>(data.values());
+        return userRepository.findAll();
     }
 
     // U. 수정
@@ -116,7 +109,7 @@ public class JCFUserService implements UserService {
         validateUserByUserId(userId);
 
         // channel, message 삭제는 상위에서
-        data.remove(userId);
+        userRepository.delete(userId);
     }
 
     //// validation
@@ -130,16 +123,15 @@ public class JCFUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
 
-    // email 중복 확인
+    // email이 이미 존재하는지 확인
     private void validateDuplicateEmail(String newEmail) {
-        if (this.data.values().stream()
-                .anyMatch(user -> user.getEmail().equals(newEmail))) {
+        if (userRepository.existByEmail(newEmail)) {
             throw new IllegalArgumentException("동일한 email이 존재합니다");
         }
     }
+    // 나를 제외한 이메일 중에 중복된 값이 있는지 확인
     private void validateDuplicateEmailForUpdate(UUID userId, String newEmail) {
-        if (this.data.values().stream()
-                .anyMatch(user -> !user.getId().equals(userId) && user.getEmail().equals(newEmail))) {
+        if (userRepository.isEmailUsedByOther(userId, newEmail)) {
             throw new IllegalArgumentException("동일한 email이 존재합니다");
         }
     }

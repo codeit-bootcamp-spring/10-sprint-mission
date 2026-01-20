@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -11,24 +12,15 @@ import com.sprint.mission.discodeit.validation.ValidationMethods;
 import java.util.*;
 
 public class JCFMessageService implements MessageService {
-    private final Map<UUID, Message> data;
+//    private final Map<UUID, Message> data;
+    private final MessageRepository messageRepository;
     private final UserService userService;
     private final ChannelService channelService;
 
-    public JCFMessageService(UserService userService, ChannelService channelService) {
-        this.data = new HashMap<>();
+    public JCFMessageService(MessageRepository messageRepository, UserService userService, ChannelService channelService) {
+        this.messageRepository = messageRepository;
         this.userService = userService;
         this.channelService = channelService;
-    }
-
-    @Override
-    public String toString() {
-        return "JCFMessageService{" +
-//                "data = " + data + ", " +
-                "data key = " + data.keySet() + ", " +
-                "data value = " + data.values() + ", " +
-                "data size = " + data.size() + ", " +
-                '}';
     }
 
     // C. 생성(메세지 작성)
@@ -49,7 +41,7 @@ public class JCFMessageService implements MessageService {
 
         Message message = new Message(channel, author, content);
 
-        data.put(message.getId(), message);
+        messageRepository.save(message);
         linkMessage(author, channel, message);
         return message;
     }
@@ -61,14 +53,14 @@ public class JCFMessageService implements MessageService {
         // Message ID `null` 검증
         ValidationMethods.validateId(messageId);
 
-        return Optional.ofNullable(data.get(messageId));
+        return messageRepository.findById(messageId);
     }
 
     // R. 모두 읽기
     // 메시지 전체
     @Override
     public List<Message> findAllMessages() {
-        return new ArrayList<>(data.values());
+        return messageRepository.findAll();
     }
 
     // 특정 채널의 모든 메시지 읽어오기
@@ -128,7 +120,7 @@ public class JCFMessageService implements MessageService {
         User author = validateAndGetUserByUserId(message.getAuthor().getId());
 
         unlinkMessage(author, channel, message);
-        data.remove(messageId);
+        messageRepository.delete(messageId);
     }
 
     public void linkMessage(User author, Channel channel, Message message) {
