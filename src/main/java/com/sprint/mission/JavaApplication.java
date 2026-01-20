@@ -2,10 +2,22 @@ package com.sprint.mission;
 
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserCoordinatorService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
@@ -24,24 +36,45 @@ public class JavaApplication {
     public static void main(String[] args) {
 
         //UserService userService = new JCFUserService();
-        UserService userService = new FileUserService();
+        //UserService userService = new FileUserService();
         //ChannelService channelService = new JCFChannelService(userService);
-        ChannelService channelService = new FileChannelService(userService);
+        //ChannelService channelService = new FileChannelService(userService);
+        //UserCoordinatorService userCoordinatorService = new JCFUserCoordinatorService(userService, channelService);
+        //MessageService messageService = new FileMessageService(userService,userCoordinatorService);
+
+        //jcf레포버전
+        /*
+        UserRepository userRepository = new JCFUserRepository();
+        ChannelRepository channelRepository = new JCFChannelRepository();
+        MessageRepository messageRepository = new JCFMessageRepository();
+        UserService userService = new BasicUserService(userRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository,userService,messageRepository);
         UserCoordinatorService userCoordinatorService = new JCFUserCoordinatorService(userService, channelService);
-        MessageService messageService = new FileMessageService(userService,userCoordinatorService);
+        MessageService messageService = new BasicMessageService(messageRepository, userCoordinatorService, userService);
+        */
+        //file레포 버전
+        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+        MessageRepository messageRepository = new FileMessageRepository();
+        UserService userService = new BasicUserService(userRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository,userService,messageRepository);
+        UserCoordinatorService userCoordinatorService = new JCFUserCoordinatorService(userService, channelService);
+        MessageService messageService = new BasicMessageService(messageRepository, userCoordinatorService, userService);
+
         //사용자
         //생성
 
         System.out.println("-----------------사용자 생성-------------------");
         try{
-            userService.signUp("김코드","ab123@codeit.com", "ab123").getId();
-            userService.signUp("이코드","cd123@codeit.com", "ab123").getId();
-            userService.signUp("박코드","ef123@codeit.com", "ab123").getId();
-            userService.signUp("최코드","gh123@codeit.com", "ab123").getId();
+            userService.signUp("김코드","ab123@codeit.com", "ab123");
+            userService.signUp("이코드","cd123@codeit.com", "ab123");
+            userService.signUp("박코드","ef123@codeit.com", "ab123");
+            userService.signUp("최코드","gh123@codeit.com", "ab123");
 
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
+
         UUID userId;
         try{
             userId = userService.signIn("ab123@codeit.com", "ab123").getId();
@@ -289,10 +322,6 @@ public class JavaApplication {
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
-
-
-
-
 
     }
 }
