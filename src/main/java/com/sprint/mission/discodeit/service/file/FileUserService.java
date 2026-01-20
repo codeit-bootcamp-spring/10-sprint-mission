@@ -11,30 +11,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class FileUserService implements UserService {
 
-    private static final String FILE_NAME = "users.ser";
-    private final Path filePath;
+    private static final String ROOT_PATH = System.getProperty("user.dir") + "/data";
+    private final Path dirPath;
 
-    public FileUserService(String path) {
-        this.filePath = Paths.get(path, FILE_NAME);
-        init(filePath.getParent());
+    public FileUserService() {
+        this(ROOT_PATH);
+    }
+
+    public FileUserService(String rootPath) {
+        this.dirPath = Paths.get(rootPath, "user");
+        init();
     }
 
     @Override
     public User create(String username, String email, String password) {
-        List<User> data = load();
-        existsByEmail(data, email);
+        existsByEmail(email);
         User user = new User(username, email, password);
-        data.add(user);
-        save(data);
+        save(user);
         return user;
     }
 
     public User findUserById(UUID userId) {
-        List<User> data = load();
-        return data.stream()
+        return load().stream()
                 .filter(user -> user.getId().equals(userId))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
@@ -42,8 +44,7 @@ public class FileUserService implements UserService {
 
     @Override
     public User findUserByEmail(String email) {
-        List<User> data = load();
-        return data.stream()
+        return load().stream()
                 .filter(user -> user.getEmail().equals(email))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
@@ -52,8 +53,7 @@ public class FileUserService implements UserService {
     //특정 채널에 참가한 사용자 리스트 조회
     @Override
     public List<User> findUsersByChannel(UUID channelId) {
-        List<User> data = load();
-        return data.stream().filter(user -> user.getChannels().stream()
+        return load().stream().filter(user -> user.getChannels().stream()
                         .anyMatch(channel -> channel.getId().equals(channelId)))
                 .toList();
     }
@@ -65,56 +65,57 @@ public class FileUserService implements UserService {
 
     @Override
     public User update(UUID userId, String password, String username, String email) {
-        List<User> data = load();
-        existsByEmail(data, email);
+        existsByEmail(email);
 
-        User user = findInList(data, userId);
+        User user = findUserById(userId);
         validatePassword(user, password);
+
+        if (email != null && !email.equals(user.getEmail())) {
+            existsByEmail(email);
+        }
 
         Optional.ofNullable(username).ifPresent(user::updateUsername);
         Optional.ofNullable(email).ifPresent(user::updateEmail);
 
-        saveOrUpdate(user);
+        save(user);
         return user;
     }
 
     @Override
+    public void update(User user) {
+        save(user);
+    }
+
+    @Override
     public User updatePassword(UUID userId, String currentPassword, String newPassword) {
-        List<User> data = load();
-        User user = findInList(data, userId);
+        User user = findUserById(userId);
         validatePassword(user, currentPassword);
         user.updatePassword(newPassword);
-        saveOrUpdate(user);
+        save(user);
         return user;
     }
 
     @Override
     public void delete(UUID userId, String password) {
-        List<User> data = load();
-        User user = findInList(data, userId);
+
+        User user = findUserById(userId);
         validatePassword(user, password);
 
-        user.getChannels().forEach(channel -> {
+        new ArrayList<>(user.getChannels()).forEach(channel -> {
             channel.leave(user);
             user.leave(channel);
-
+            //todo ChannelService의 .ser파일들을 수정할 수 없음
         });
-        data.remove(user);
-        save(data);
-    }
 
-    @Override
-    public void saveOrUpdate(User user) {
-        List<User> data = load();
-        data.removeIf(u -> u.getId().equals(user.getId()));
-        data.add(user);
-        save(data);
+        File file = new File(dirPath.toFile(), user.getId().toString() + ".ser");
+        if (file.exists()) {
+            file.delete();
+        }
     }
-
 
     //유저 이메일 중복체크
-    private void existsByEmail(List<User> data, String email) {
-        boolean exist = data.stream().anyMatch(user -> user.getEmail().equals(email));
+    private void existsByEmail(String email) {
+        boolean exist = load().stream().anyMatch(user -> user.getEmail().equals(email));
         if (exist) {
             throw new IllegalArgumentException("이미 사용중인 이메일입니다: " + email);
         }
@@ -127,46 +128,48 @@ public class FileUserService implements UserService {
         }
     }
 
-    //내부에서 수정, 삭제를 위한 조회메서드
-    private User findInList(List<User> data, UUID userId) {
-        return data.stream()
-                .filter(user -> user.getId().equals(userId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
-    }
-
-    private void init(Path directory) {
-        if (!Files.exists(directory)) {
+    private void init() {
+        if (!Files.exists(dirPath)) {
             try {
-                Files.createDirectories(directory);
+                Files.createDirectories(dirPath);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("유저 데이터 폴더 생성 실패", e);
             }
         }
     }
 
-    private void save(List<User> data) {
+    private void save(User user) {
+        File file = new File(dirPath.toFile(), user.getId().toString() + ".ser");
         try (
-                FileOutputStream fos = new FileOutputStream(filePath.toFile());
+                FileOutputStream fos = new FileOutputStream(file);
                 ObjectOutputStream oos = new ObjectOutputStream(fos)
         ) {
-            oos.writeObject(data);
+            oos.writeObject(user);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("유저 데이터 저장 실패", e);
         }
     }
 
     private List<User> load() {
-        if (!Files.exists(filePath)) {
+        if(!Files.exists(dirPath)) {
             return new ArrayList<>();
         }
-
-        try (
-                FileInputStream fis = new FileInputStream(filePath.toFile());
-                ObjectInputStream ois = new ObjectInputStream(fis)
-        ) {
-            return (List<User>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
+        try {
+            List<User> list = Files.list(dirPath)
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            Object data = ois.readObject();
+                            return (User) data;
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+            return list;
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

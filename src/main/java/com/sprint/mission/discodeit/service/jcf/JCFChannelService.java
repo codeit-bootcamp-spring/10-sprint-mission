@@ -73,16 +73,11 @@ public class JCFChannelService implements ChannelService {
     public void delete(UUID channelId) {
         Channel channel = findChannelById(channelId);
 
-        channel.getUsers().forEach(user -> {
+        new ArrayList<>(channel.getUsers()).forEach(user -> {
             user.leave(channel);
             channel.leave(user);
         });
         data.remove(channel);
-    }
-
-    @Override
-    public void saveOrUpdate(Channel channel) {
-        //동기화용 메서드
     }
 
     @Override
@@ -101,6 +96,14 @@ public class JCFChannelService implements ChannelService {
 
         channel.leave(user);
         user.leave(channel);
+    }
+
+    @Override
+    public boolean isUserInChannel(UUID channelId, UUID userId) {
+        Channel channel = findChannelById(channelId);
+
+        return channel.getUsers().stream()
+                .anyMatch(user -> user.getId().equals(userId));
     }
 
     //채널명 중복체크

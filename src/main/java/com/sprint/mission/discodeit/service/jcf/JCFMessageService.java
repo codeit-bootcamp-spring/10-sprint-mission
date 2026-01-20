@@ -23,7 +23,9 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message create(String text, UUID channelId,  UUID userId) {
-        channelService.joinChannel(channelId, userId);
+        if (!channelService.isUserInChannel(channelId, userId)) {
+            throw new IllegalArgumentException("채널에 참여하지 않은 유저는 메시지를 보낼 수 없습니다.");
+        }
 
         User user = userService.findUserById(userId);
         Channel channel = channelService.findChannelById(channelId);
@@ -65,7 +67,7 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message findMessage(UUID messageId) {
+    public Message findMessageById(UUID messageId) {
         return data.stream().filter(message -> message.getId().equals(messageId))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메세지 아이디입니다."));
@@ -73,19 +75,14 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message update(UUID messageId, String text) {
-        Message message = findMessage(messageId);
+        Message message = findMessageById(messageId);
         message.update(text);
         return message;
     }
 
     @Override
-    public void saveOrUpdate(Message message) {
-        //동기화용 메서드
-    }
-
-    @Override
     public void delete(UUID messageId) {
-        Message message = findMessage(messageId);
+        Message message = findMessageById(messageId);
         data.remove(message);
     }
 }

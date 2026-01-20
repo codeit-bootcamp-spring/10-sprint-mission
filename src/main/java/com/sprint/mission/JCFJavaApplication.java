@@ -121,6 +121,10 @@ public class JCFJavaApplication {
         userService.create("관리자 B", "adminB@discodeit.com", "adminbpassword");
         User adminB = userService.findUserByEmail("adminB@discodeit.com");
 
+        channelService.joinChannel(testChannel.getId(), adminA.getId());
+        channelService.joinChannel(adminChannel.getId(), adminA.getId());
+        channelService.joinChannel(testChannel.getId(), adminB.getId());
+
         //관리자 A가 테스트 채널에 메세지 2번, 관리자 채널에 메세지 1번 전송
         Message message1 = messageService.create("첫번째 메세지 전송 테스트입니다.", testChannel.getId(), adminA.getId());
 
@@ -129,7 +133,7 @@ public class JCFJavaApplication {
         Message message3 = messageService.create("여기는 관리자 채널입니다.", adminChannel.getId(), adminA.getId());
 
         //메세지 Id로 메세지 조회
-        Message foundMessage = messageService.findMessage(message3.getId());
+        Message foundMessage = messageService.findMessageById(message3.getId());
         System.out.println("메세지 ID로 찾은 메세지 = " + foundMessage);
 
         //특정 채널의 특정 유저의 메세지 조회 - 테스트 채널, 관리자 A
@@ -209,33 +213,9 @@ public class JCFJavaApplication {
         System.out.println("관리자 채널 메세지 삭제 후: " + messageService.findMessagesByChannel(adminChannel.getId()));
 
         System.out.println();
-        System.out.println("========[채널 참가, 탈퇴 테스트]========");
-
-        //메세지 없이 채널에 유저 참가 (테스트 채널)
-        User joinUser = userService.create("관리자 C", "adminC@discodeit.com", "admincpassword");
-        channelService.joinChannel(testChannel.getId(), joinUser.getId());
-
-        //특정 유저가 참여중인 채널 리스트 조회 (관리자C)
-        List<Channel> channelsByUserId = channelService.findChannelsByUser(joinUser.getId());
-        System.out.println("관리자 C가 참여중인 채널: " + channelsByUserId);
-
-        //메세지 없이 유저 탈퇴
-        System.out.println("삭제 전 테스트 채널에 참여 중인 유저");
-        for (User user : userService.findUsersByChannel(testChannel.getId())) {
-            System.out.println(user);
-        }
-        System.out.println();
-
-        channelService.leaveChannel(testChannel.getId(), joinUser.getId());
-
-        System.out.println("삭제 후 테스트 채널에 참여 중인 유저");
-        for (User user : userService.findUsersByChannel(testChannel.getId())) {
-            System.out.println(user);
-        }
-
-        System.out.println();
         System.out.println("========[유저 삭제 테스트]========");
         System.out.println("관리자 A 삭제 전");
+        System.out.println(adminA.getChannels());
         userService.delete(adminA.getId(), adminA.getPassword());
         System.out.println("관리자 A 삭제 후");
         System.out.println(adminA.getChannels());

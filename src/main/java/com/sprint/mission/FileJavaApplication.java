@@ -17,10 +17,9 @@ import java.util.UUID;
 public class FileJavaApplication {
 
     public static void main(String[] args) {
-        String path = System.getProperty("user.dir") + "/data";
-        UserService userService = new FileUserService(path);
-        ChannelService channelService = new FileChannelService(userService, path);
-        MessageService messageService = new FileMessageService(channelService, userService, path);
+        UserService userService = new FileUserService();
+        ChannelService channelService = new FileChannelService(userService);
+        MessageService messageService = new FileMessageService(channelService, userService);
 
         System.out.println("========[채널 테스트]========");
         //채널 등록 테스트
@@ -94,9 +93,12 @@ public class FileJavaApplication {
         //userService.updateUser(user1.getId(), "실패할 테스트", "dd@dd.dd", "1111");
 
         //비밀번호 변경 테스트
+        System.out.println("비밀번호 변경 전 유저ID: " + user1.getId());
         System.out.println("변경 전 비밀번호: " + user1.getPassword());
         userService.updatePassword(user1.getId(), "1234", "0000");
-        System.out.println("변경 후 비밀번호: " + user1.getPassword());
+        User passwordChangedUser = userService.findUserById(user1.getId());
+        System.out.println("비밀번호 변경 된 유저ID: " + passwordChangedUser.getId());
+        System.out.println("변경 후 비밀번호: " + passwordChangedUser.getPassword());
 
         //유저 전체 검색
         System.out.println("전체 유저 목록: " + userService.findAllUser());
@@ -121,6 +123,10 @@ public class FileJavaApplication {
         userService.create("관리자 B", "adminB@discodeit.com", "adminbpassword");
         User adminB = userService.findUserByEmail("adminB@discodeit.com");
 
+        channelService.joinChannel(testChannel.getId(), adminA.getId());
+        channelService.joinChannel(adminChannel.getId(), adminA.getId());
+        channelService.joinChannel(testChannel.getId(), adminB.getId());
+
         //관리자 A가 테스트 채널에 메세지 2번, 관리자 채널에 메세지 1번 전송
         Message message1 = messageService.create("첫번째 메세지 전송 테스트입니다.", testChannel.getId(), adminA.getId());
 
@@ -129,7 +135,7 @@ public class FileJavaApplication {
         Message message3 = messageService.create("여기는 관리자 채널입니다.", adminChannel.getId(), adminA.getId());
 
         //메세지 Id로 메세지 조회
-        Message foundMessage = messageService.findMessage(message3.getId());
+        Message foundMessage = messageService.findMessageById(message3.getId());
         System.out.println("메세지 ID로 찾은 메세지 = " + foundMessage);
 
         //특정 채널의 특정 유저의 메세지 조회 - 테스트 채널, 관리자 A
