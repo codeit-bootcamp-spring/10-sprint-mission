@@ -52,4 +52,9 @@ public class JCFUserService implements UserService {
         user.updateUserName(newUserName);
         return user;
     }
+
+    @Override
+    public User update(User user) {
+        return null;
+    }
 }

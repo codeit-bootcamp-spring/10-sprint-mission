@@ -11,4 +11,5 @@ public interface MessageService {
     public Message create(UUID userID, String msg, UUID channelID);
     public void delete(UUID id, UUID userID);
     public Message update(UUID id, String msg);
+    public Message update(Message message);
 }

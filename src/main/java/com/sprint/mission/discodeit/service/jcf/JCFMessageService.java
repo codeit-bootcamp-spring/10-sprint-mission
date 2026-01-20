@@ -79,4 +79,9 @@ public class JCFMessageService implements MessageService {
         message.updateMessage(msg);
         return message;
     }
+
+    @Override
+    public Message update(Message message) {
+        return null;
+    }
 }

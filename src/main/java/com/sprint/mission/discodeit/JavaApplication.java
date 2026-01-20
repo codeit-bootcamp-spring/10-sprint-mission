@@ -5,6 +5,10 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.RoleService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileRoleService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFRoleService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
@@ -12,16 +16,20 @@ import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import com.sprint.mission.discodeit.entity.PermissionLevel;
 
+import java.io.IOException;
+import java.util.Set;
+import java.util.UUID;
+
 import static com.sprint.mission.discodeit.entity.PermissionLevel.ADMIN;
 import static com.sprint.mission.discodeit.entity.PermissionLevel.USER;
 
 public class JavaApplication {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         //생성
-        UserService userdata = JCFUserService.getInstance();
-        ChannelService channeldata = JCFChannelService.getInstance();
-        MessageService messagedata = JCFMessageService.getInstance();
-        RoleService roledata = JCFRoleService.getInstance();
+        UserService userdata = new FileUserService(true);
+        ChannelService channeldata = new FileChannelService(true);
+        MessageService messagedata = new FileMessageService(true);
+        RoleService roledata = new FileRoleService(true);
 
         User user1 = userdata.create("초시");
         User user2 = userdata.create("초코");
@@ -44,7 +52,6 @@ public class JavaApplication {
         System.out.println("------ 이하 다건조회 ------");
         channeldata.findAll().forEach(Channel::printChannel);
 
-
         //수정
         System.out.println("------ 이하 수정 ------");
         channeldata.update(ch1.getId(), "코딩하는 채널", "말그대로 코딩 하는 채널");//채널정보 수정
@@ -54,10 +61,10 @@ public class JavaApplication {
         channeldata.findAll().forEach(Channel::printChannel);
 
         //삭제
-        System.out.println("------ 이하 삭제 ------");
-        messagedata.delete(mes1.getId(), user1.getId());//전송된 메시지 삭제
-        roledata.delete(role2.getId());//권한 삭제
-        channeldata.delete(ch2.getId(), user3.getId());//채널 삭제
-        channeldata.findAll().forEach(Channel::printChannel);
+        //System.out.println("------ 이하 삭제 ------");
+        //messagedata.delete(mes1.getId(), user1.getId());//전송된 메시지 삭제
+        //roledata.delete(role2.getId());//권한 삭제
+        //channeldata.delete(ch2.getId(), user3.getId());//채널 삭제
+        //channeldata.findAll().forEach(Channel::printChannel);
     }
 }

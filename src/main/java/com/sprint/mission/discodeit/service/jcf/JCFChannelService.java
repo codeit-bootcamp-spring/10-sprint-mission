@@ -68,6 +68,11 @@ public class JCFChannelService implements ChannelService {
         return willUpdate;
     }
 
+    @Override
+    public Channel update(Channel channel) {
+        return null;
+    }
+
     public void printChannel(UUID id){
         Channel PrintingChannel = this.find(id);
         PrintingChannel.printChannel();
