@@ -1,7 +1,6 @@
 package com.sprint.mission;
 
 import com.sprint.mission.entity.Channel;
-import com.sprint.mission.entity.Message;
 import com.sprint.mission.entity.User;
 import com.sprint.mission.repository.ChannelRepository;
 import com.sprint.mission.repository.MessageRepository;
@@ -9,9 +8,6 @@ import com.sprint.mission.repository.UserRepository;
 import com.sprint.mission.repository.file.FileChannelRepository;
 import com.sprint.mission.repository.file.FileMessageRepository;
 import com.sprint.mission.repository.file.FileUserRepository;
-import com.sprint.mission.repository.jcf.JCFChannelRepository;
-import com.sprint.mission.repository.jcf.JCFMessageRepository;
-import com.sprint.mission.repository.jcf.JCFUserRepository;
 import com.sprint.mission.service.ChannelService;
 import com.sprint.mission.service.MessageService;
 import com.sprint.mission.service.UserService;
@@ -23,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -42,11 +37,11 @@ public class JavaApplication {
         ChannelRepository channelRepository = new FileChannelRepository(channelDirectory);
         MessageRepository messageRepository = new FileMessageRepository(messageDirectory);
 
-        UserService userService = new BasicUserService(userRepository);
+        UserService userService = new BasicUserService(userRepository, channelRepository);
         ChannelService channelService = new BasicChannelService(channelRepository, userRepository, userService);
         MessageService messageService = new BasicMessageService(messageRepository, userService, channelService);
 
-        // 유저 테스트 =================================================
+        /* // 유저 테스트 =================================================
 
         // 파일로 저장하기 때문에 처음 실행을 제외한 실행 시 이미 있는 유저 예외처리를 막기 위해 주석처리
         // 유저 생성
@@ -154,7 +149,7 @@ public class JavaApplication {
         Message message4 = messageService.getMessageOrThrow(UUID.fromString("b2f59762-3da4-40db-b79b-6f2c6c639522"));
         Message message6 = messageService.getMessageOrThrow(UUID.fromString("5d71ac87-859d-44b4-9d6f-7658664d8a4b"));
 
-         // 메시지 단건 조회 -> 이미 수정을 한 번 해서 "메시지1 수정입니다."라고 출력
+        // 메시지 단건 조회 -> 이미 수정을 한 번 해서 "메시지1 수정입니다."라고 출력
         Message findMessage1 = messageService.getMessageOrThrow(message1.getId());
         System.out.printf("찾은 메시지1의 내용: %s%n", findMessage1.getContent());
 
@@ -188,7 +183,26 @@ public class JavaApplication {
                                 " 메시지 내용: " + message.getContent())
                 .collect(Collectors.joining(" / ", "\n채널 1에 속한 유저1의 메시지 내용\n[", "]")));
 
-        System.out.println("=".repeat(50));
+        System.out.println("=".repeat(50)); */
+
+        // 유저의 이름이 바뀌면 채널에서도 해당 유저의 이름이 바뀌는지 테스트
+        Channel channel1 = channelService.getChannelOrThrow(UUID.fromString("2054292b-d28a-4271-af0e-2f625c8874ae"));
+
+        User user6 = userService.create("6번유저", "user6@test.com");
+        System.out.println("변경 전 유저6 이름: " + user6.getName());
+
+        channelService.joinChannel(user6.getId(), channel1.getId());
+
+        System.out.println(userService.getChannelUsers(channel1.getId()).stream()
+                .map(User::getName)
+                .collect(Collectors.joining(", ", "변경 전 채널의 속한 유저들: [", "]")));
+
+        userService.update(user6.getId(), "6번유저 수정");
+        System.out.println("변경 후 유저6 이름: " + userService.getUserOrThrow(user6.getId()).getName());
+
+        System.out.println(userService.getChannelUsers(channel1.getId()).stream()
+                .map(User::getName)
+                .collect(Collectors.joining(", ", "변경 후 채널의 속한 유저들: [", "]")));
 
         // ===================== JCF 구현 ===================== //
 /*

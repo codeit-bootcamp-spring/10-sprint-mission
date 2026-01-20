@@ -1,10 +1,7 @@
 package com.sprint.mission.entity;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class User extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -31,6 +28,15 @@ public class User extends BaseEntity implements Serializable {
     public void updateName(String name) {
         this.name = getValidatedTrimmedInput(name);
         touch();
+    }
+
+    public void updateChannel(UUID channelId, String name){
+        for (Channel channel : channels) {
+            if (channel.getId().equals(channelId)) {
+                channel.updateName(name);
+                break;
+            }
+        }
     }
 
     private String getValidatedTrimmedInput(String input) {

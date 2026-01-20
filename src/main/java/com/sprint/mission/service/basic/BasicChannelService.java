@@ -37,6 +37,11 @@ public class BasicChannelService implements ChannelService {
         validateChangeChannelNameNotDuplicate(channelId, name);
         channel.updateName(name);
 
+        List<User> users = userRepository.findByChannelId(channelId);
+        for (User user : users) {
+            user.updateChannel(channelId, name);
+            userRepository.save(user);
+        }
         return channelRepository.save(channel);
     }
 

@@ -1,6 +1,8 @@
 package com.sprint.mission.service.basic;
 
+import com.sprint.mission.entity.Channel;
 import com.sprint.mission.entity.User;
+import com.sprint.mission.repository.ChannelRepository;
 import com.sprint.mission.repository.UserRepository;
 import com.sprint.mission.service.UserService;
 
@@ -9,9 +11,11 @@ import java.util.UUID;
 
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
 
-    public BasicUserService(UserRepository userRepository) {
+    public BasicUserService(UserRepository userRepository, ChannelRepository channelRepository) {
         this.userRepository = userRepository;
+        this.channelRepository = channelRepository;
     }
 
     @Override
@@ -26,6 +30,11 @@ public class BasicUserService implements UserService {
         validateChangeNameExist(userId, name);
         user.updateName(name);
 
+        List<Channel> channels = channelRepository.findByUserId(userId);
+        for (Channel channel : channels) {
+            channel.updateUser(userId, name);
+            channelRepository.save(channel);
+        }
         return userRepository.save(user);
     }
 
