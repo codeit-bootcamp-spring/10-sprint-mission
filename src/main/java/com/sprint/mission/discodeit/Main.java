@@ -11,9 +11,9 @@ import java.util.UUID;
 
 public class Main {
     public static void main(String[] args) {
-        final JCFUserService userService = new JCFUserService();
-        final JCFChannelService channelService = new JCFChannelService();
-        final JCFMessageService messageService = new JCFMessageService();
+        final JCFUserService userService = JCFUserService.getInstance();
+        final JCFChannelService channelService = JCFChannelService.getInstance();
+        final JCFMessageService messageService = JCFMessageService.getInstance();
 
         // 사용자 테스트 (현재 user2, user3 유효)
         User user1 = null;
@@ -56,7 +56,7 @@ public class Main {
         }
 
         // 전체 조회
-        ArrayList<User> users = userService.searchUserAll();
+        List<User> users = userService.searchUserAll();
 
         try {   // 에상 출력: Lee Dyol, dyoool, tokuno
             System.out.println("전체 조회 테스트");
@@ -163,7 +163,7 @@ public class Main {
         }
 
         // 전체 조회
-        ArrayList<Channel> channels = channelService.searchChannelAll();
+        List<Channel> channels = channelService.searchChannelAll();
 
         try {   // 에상 출력: Codeit, Book Club
             System.out.println("전체 조회 테스트");
@@ -333,7 +333,7 @@ public class Main {
         }
 
         // 전체 조회
-        ArrayList<Message> messages = messageService.searchMessageAll();
+        List<Message> messages = messageService.searchMessageAll();
 
         try {   // 예상 출력: 안녕하세요, 안녕 못하네요
             System.out.println("전체 조회 테스트");

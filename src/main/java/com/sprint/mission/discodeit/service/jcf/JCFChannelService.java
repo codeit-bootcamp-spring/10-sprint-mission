@@ -13,8 +13,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
-    public static final ArrayList<Channel> channels = new ArrayList<>();        // 사용자 한 명당 가지는 채널
-    private final JCFUserService userService = new JCFUserService();
+    private final List<Channel> data;           // 사용자 한 명당 가지는 채널
+    private static final JCFChannelService channelService = new JCFChannelService();
+
+    JCFUserService userService = JCFUserService.getInstance();
+
+    public JCFChannelService(){
+        this.data = new ArrayList<>();
+    }
+
+    public static JCFChannelService getInstance(){
+        return channelService;
+    }
 
     // 채널 생성
     @Override
@@ -22,7 +32,7 @@ public class JCFChannelService implements ChannelService {
         User owner = userService.searchUser(userId);
 
         Channel newChannel = new Channel(channelName, owner, channelType);
-        channels.add(newChannel);
+        data.add(newChannel);
         owner.addChannel(newChannel);
 
         return newChannel;
@@ -31,7 +41,7 @@ public class JCFChannelService implements ChannelService {
     // 채널 단건 조회
     @Override
     public Channel searchChannel(UUID targetChannelId) {
-        return channels.stream()
+        return data.stream()
                 .filter(channel -> channel.getId().equals(targetChannelId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
@@ -39,8 +49,8 @@ public class JCFChannelService implements ChannelService {
 
     // 채널 다건 조회
     @Override
-    public ArrayList<Channel> searchChannelAll() {
-        return channels;
+    public List<Channel> searchChannelAll() {
+        return data;
     }
 
     // 특정 유저가 참가한 채널 리스트 조회
@@ -72,7 +82,7 @@ public class JCFChannelService implements ChannelService {
 
         targetChannel.getMembers().forEach(member -> {member.removeChannel(targetChannel);});
 
-        channels.remove(targetChannel);
+        data.remove(targetChannel);
     }
 
     // 채널 참가자 초대

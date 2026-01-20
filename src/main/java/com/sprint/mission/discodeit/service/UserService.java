@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatusType;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
@@ -11,7 +11,7 @@ public interface UserService {
 
     public User searchUser(UUID userId);
 
-    public ArrayList<User> searchUserAll();
+    public List<User> searchUserAll();
 
     public User updateUser(UUID userId, String newPassword, String newNickname, UserStatusType newUserStatus);
 

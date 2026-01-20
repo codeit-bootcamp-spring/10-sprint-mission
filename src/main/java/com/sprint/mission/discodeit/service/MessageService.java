@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.MessageType;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public interface MessageService {
@@ -11,7 +11,7 @@ public interface MessageService {
 
     public Message searchMessage(UUID targetMessageId);
 
-    public ArrayList<Message> searchMessageAll();
+    public List<Message> searchMessageAll();
 
     public Message updateMessage(UUID targetMessageId, String newMessage);
 

@@ -13,12 +13,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
-    public static final ArrayList<Message> messages = new ArrayList<>();      // 한 채널에서
-    private final JCFUserService userService = new JCFUserService();
-    private final ChannelService channelService = new JCFChannelService();
+    private final List<Message> data;                     // 한 채널에서
+    private static final JCFMessageService messageService = new JCFMessageService();
+
+    JCFUserService userService = JCFUserService.getInstance();
+    ChannelService channelService = JCFChannelService.getInstance();
+
+    public JCFMessageService() {
+        this.data = new ArrayList<>();
+    }
+
+    public static JCFMessageService getInstance() {
+        return messageService;
+    }
 
     // 메시지 생성
     @Override
@@ -27,7 +36,7 @@ public class JCFMessageService implements MessageService {
         Channel targetChannel = channelService.searchChannel(channelId);
 
         Message newMessage = new Message(message, sender, targetChannel, type);
-        messages.add(newMessage);
+        data.add(newMessage);
         sender.addMessage(newMessage);
         targetChannel.addMessage(newMessage);
 
@@ -37,7 +46,7 @@ public class JCFMessageService implements MessageService {
     // 메시지 단건 조회
     @Override
     public Message searchMessage(UUID targetMessageId) {
-        return messages.stream()
+        return data.stream()
                 .filter(message -> message.getId().equals(targetMessageId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
@@ -45,8 +54,8 @@ public class JCFMessageService implements MessageService {
 
     // 메시지 전체 조회
     @Override
-    public ArrayList<Message> searchMessageAll() {
-        return messages;
+    public List<Message> searchMessageAll() {
+        return data;
     }
 
     // 특정 유저가 발행한 메시지 다건 조회
@@ -85,6 +94,6 @@ public class JCFMessageService implements MessageService {
 
         targetMessage.getUser().removeMessage(targetMessage);
         targetMessage.getChannel().removeMessage(targetMessage);
-        messages.remove(targetMessage);
+        data.remove(targetMessage);
     }
 }
