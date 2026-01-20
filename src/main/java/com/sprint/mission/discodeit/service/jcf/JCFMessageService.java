@@ -32,6 +32,10 @@ public class JCFMessageService implements MessageService {
         User author = userService.findById(authorId);
         Channel channel = channelService.findById(channelId);
 
+        if (!author.getChannels().contains(channel)) {
+            throw new IllegalStateException("해당 채널에 가입되지 않은 유저는 메시지를 보낼 수 없습니다.");
+        }
+
         Message message = new Message(content, author, channel);
 
         data.put(message.getId(), message); // 모든 메시지가 전역적으로 저장됨

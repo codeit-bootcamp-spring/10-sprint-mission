@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e250045b-4cec-4d3c-8448-3ba5a11b2cd2" name="변경" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication3.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/basic/BasicChannelService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/basic/BasicMessageService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/basic/BasicUserService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/file/FileUserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/service/file/FileUserService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication3.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sprint/mission/discodeit/JavaApplication3.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -79,7 +75,8 @@
     "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
     "vue.rearranger.settings.migration": "true",
     "애플리케이션.JavaApplication.executor": "Run",
-    "애플리케이션.JavaApplication2.executor": "Run"
+    "애플리케이션.JavaApplication2.executor": "Run",
+    "애플리케이션.JavaApplication3.executor": "Run"
   }
 }]]></component>
   <component name="RunManager" selected="애플리케이션.JavaApplication3">
@@ -154,7 +151,7 @@
       <workItem from="1768493400937" duration="2306000" />
       <workItem from="1768737342933" duration="347000" />
       <workItem from="1768816590953" duration="35000" />
-      <workItem from="1768867672333" duration="25059000" />
+      <workItem from="1768867672333" duration="25821000" />
     </task>
     <servers />
   </component>

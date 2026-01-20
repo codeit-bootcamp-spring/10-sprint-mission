@@ -30,6 +30,7 @@ public class FileChannelRepository implements ChannelRepository {
     private Path getFilePath(UUID id) {
         return DIRECTORY.resolve(id.toString() + ".ser");
     }
+
     @Override
     public Channel save(Channel channel) {
         Path filePath = getFilePath(channel.getId());
