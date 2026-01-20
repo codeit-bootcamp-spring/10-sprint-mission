@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
@@ -14,12 +15,15 @@ import java.util.UUID;
 public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
 
     public BasicChannelService(
             UserRepository userRepository,
-            ChannelRepository channelRepository) {
+            ChannelRepository channelRepository,
+            MessageRepository messageRepository) {
         this.userRepository = userRepository;
         this.channelRepository = channelRepository;
+        this.messageRepository = messageRepository;
     }
 
     @Override
@@ -83,6 +87,7 @@ public class BasicChannelService implements ChannelService {
     public void deleteChannel(UUID channelId) {
         findChannelOrThrow(channelId);
         channelRepository.deleteById(channelId);
+        messageRepository.deleteByChannelId(channelId);
     }
 
     private Channel findChannelOrThrow(UUID channelId) {
