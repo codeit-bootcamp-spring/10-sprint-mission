@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MessageRepository {
-
-
-
-
+    Message save(Message message);
+    Message findById(UUID messageId);
+    List<Message> findAll();
+    void delete(UUID messageId);
 
 }
