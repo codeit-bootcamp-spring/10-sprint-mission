@@ -1,11 +1,15 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class User extends BaseEntity {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private String username;
-    private String password;
+    private transient String password;
     private String email;
     private List<Channel> myChannels = new ArrayList<>();
     private List<Message> myMessages = new ArrayList<>();

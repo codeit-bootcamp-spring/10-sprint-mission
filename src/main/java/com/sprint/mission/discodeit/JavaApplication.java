@@ -6,6 +6,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -15,11 +18,16 @@ import java.util.UUID;
 
 public class JavaApplication {
     public static void main(String[] args) {
+        // 임시 조치
+        deleteFile("users.dat");
+        deleteFile("channels.dat");
+        deleteFile("messages.dat");
+
         System.out.println("========== 디스코드잇 서비스 테스트 시작 ==========\n");
 
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
-        MessageService messageService = new JCFMessageService(userService, channelService);
+        UserService userService = new FileUserService();
+        ChannelService channelService = new FileChannelService(userService);
+        MessageService messageService = new FileMessageService(userService, channelService);
 
         // ========== User 기능 테스트 ==========
         System.out.println("========== User 기능 테스트 ==========\n");
@@ -362,5 +370,15 @@ public class JavaApplication {
         System.out.println("총 메시지 수: " + allMessages.size() + "개");
 
         System.out.println("\n========== 모든 테스트 종료 ==========");
+
+
+    }
+
+    private static void deleteFile(String fileName) {
+        java.io.File file = new java.io.File(fileName);
+        if (file.exists()) {
+            file.delete();
+        }
     }
 }
+
