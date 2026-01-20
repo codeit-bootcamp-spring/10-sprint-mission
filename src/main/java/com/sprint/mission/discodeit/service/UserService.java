@@ -14,11 +14,7 @@ public interface UserService {
 
     List<User> findAll();
 
-    User update(UUID id, String name, String nickname, String email);
-
-    User updateStatus(UUID id, String status);
-
-    User updatePassword(UUID id, String newPassword);
+    User update(UUID id, String name, String nickname, String email, String status, String password);
 
     void delete(UUID id);
 

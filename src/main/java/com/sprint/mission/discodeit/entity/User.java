@@ -23,15 +23,25 @@ public class User extends BaseEntity {
         this.status = "OFFLINE";
     }
 
-    // 유저 정보 수정 (이름, 닉네임, 이메일)
-    public void update(String name, String nickname, String email) {
+    // 유저 이름 수정
+    public void updateName(String name) {
         this.name = name;
-        this.nickname = nickname;
-        this.email = email;
-        this.updated(); // BaseEntity의 시간 갱신
+        this.updated();
     }
 
-    // 유저 상태만 따로 수정
+    // 유저 닉네임 수정
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+        this.updated();
+    }
+
+    // 유저 이메일 수정
+    public void updateEmail(String email) {
+        this.email = email;
+        this.updated();
+    }
+
+    // 유저 상태 수정
     public void updateStatus(String status) {
         this.status = status;
         this.updated();
