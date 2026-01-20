@@ -1,5 +1,6 @@
 package com.sprint.mission.entity;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +8,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class EntityManager<T extends Entity<T>> {
+public class EntityManager<T extends Entity<T>> implements Serializable {
+    private static final long serialVersionUID = 20260120L;
     private final Map<UUID, T> data = new HashMap<>();
 
     public void add(T entity) {

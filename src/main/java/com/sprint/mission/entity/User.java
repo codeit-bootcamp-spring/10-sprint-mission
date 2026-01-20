@@ -77,4 +77,9 @@ public class User extends Entity<User> {
     public boolean hasMessage(UUID messageId) {
         return this.messagesById.hasEntity(messageId);
     }
+
+    @Override
+    public String toString() {
+        return String.format("user name: %s\n%s", userName, super.toString());
+    }
 }

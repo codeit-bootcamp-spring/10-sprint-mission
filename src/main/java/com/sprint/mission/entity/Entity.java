@@ -1,8 +1,11 @@
 package com.sprint.mission.entity;
 
+import java.io.Serializable;
+import java.util.Date;
 import java.util.UUID;
 
-public abstract class Entity<T extends Entity<T>> {
+public abstract class Entity<T extends Entity<T>> implements Serializable {
+    private static final long serialVersionUID = 20260120L;
     private final UUID id;
     private final long createdAt;
     private long updatedAt;
@@ -21,6 +24,10 @@ public abstract class Entity<T extends Entity<T>> {
 
     private long getUnixTimestamp() {
         return System.currentTimeMillis() / 1000;
+    }
+
+    private Date convertToDate(long unixTimestamp) {
+        return new Date(unixTimestamp * 1000);
     }
 
     protected void updateTime() {
@@ -53,6 +60,12 @@ public abstract class Entity<T extends Entity<T>> {
         if (obj instanceof Entity<?> entity) {
             return this.id.equals(entity.getId());
         }
-        throw new IllegalArgumentException("not Entity class");
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("id: %s, created: %s, last updated: %s",
+                id, convertToDate(createdAt), convertToDate(updatedAt));
     }
 }

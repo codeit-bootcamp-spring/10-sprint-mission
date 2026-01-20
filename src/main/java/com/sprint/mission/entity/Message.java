@@ -44,4 +44,9 @@ public class Message extends Entity<Message> {
     public boolean isPostedIn(UUID channelId) {
         return this.channel.getId().equals(channelId);
     }
+
+    @Override
+    public String toString() {
+        return String.format("content: %s\n%s", content, super.toString());
+    }
 }

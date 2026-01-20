@@ -76,4 +76,9 @@ public class Channel extends Entity<Channel> {
     public boolean hasUser(UUID userId) {
         return this.usersByID.hasEntity(userId);
     }
+
+    @Override
+    public String toString() {
+        return String.format("channel name: %s\n%s", channelName, super.toString());
+    }
 }
