@@ -17,7 +17,7 @@ public class BasicChannelService implements ChannelService {
     private MessageService messageService;
     private UserService userService;
 
-    // 생성자를 통해 레포지토리 주입 (DI)
+    // 생성자를 통해 레포지토리 주입
     public BasicChannelService(ChannelRepository channelRepository) {
         this.channelRepository = channelRepository;
     }
@@ -26,7 +26,6 @@ public class BasicChannelService implements ChannelService {
     public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
     }
-
     public void setUserService(UserService userService) {
         this.userService = userService;
     }
@@ -57,7 +56,6 @@ public class BasicChannelService implements ChannelService {
     public Channel updateChannel(UUID channelId, String newName, String description, Channel.ChannelType newVisibility) {
         Channel channel = findById(channelId);
 
-        // 기존 FileChannelService의 Optional 업데이트 로직 유지
         Optional.ofNullable(newName)
                 .filter(name -> !name.equals(channel.getChannelName()))
                 .ifPresent(channel::updateName);
@@ -70,25 +68,21 @@ public class BasicChannelService implements ChannelService {
                 .filter(v -> v != channel.getChannelVisibility())
                 .ifPresent(channel::updateVisibility);
 
-        // 변경사항 저장 (저장 로직 위임)
         return channelRepository.save(channel);
     }
 
     @Override
     public void deleteChannel(UUID channelId) {
-        // 1. 존재 여부 확인 (레포지토리 기능 활용)
         if (!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("Channel with id " + channelId + " does not exist");
         }
 
         Channel channel = findById(channelId);
 
-        // 2. 비즈니스 로직: 연관된 메시지 삭제
         if (messageService != null) {
             messageService.deleteMessagesByChannelId(channelId);
         }
 
-        // 3. 비즈니스 로직: 가입된 유저들에게서 채널 정보 제거 (Cascade 처리)
         if (userService != null) {
             channel.getUsers().forEach(user -> {
                 user.leaveChannel(channel);
@@ -96,7 +90,6 @@ public class BasicChannelService implements ChannelService {
             });
         }
 
-        // 4. 저장 로직: 실제 저장소에서 채널 삭제 위임
         channelRepository.deleteById(channelId);
     }
 }

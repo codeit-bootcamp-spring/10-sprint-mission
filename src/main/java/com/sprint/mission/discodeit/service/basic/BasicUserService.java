@@ -24,7 +24,6 @@ public class BasicUserService implements UserService {
     public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
     }
-
     public void setChannelService(ChannelService channelService) {
         this.channelService = channelService;
     }
@@ -80,12 +79,10 @@ public class BasicUserService implements UserService {
     public void deleteUser(UUID userId) {
         User user = findById(userId);
 
-        // 연관된 메시지 삭제 (비즈니스 로직)
         if (messageService != null) {
             messageService.deleteMessagesByAuthorId(userId);
         }
 
-        // 가입된 채널에서 탈퇴 처리 (비즈니스 로직)
         if (channelService != null) {
             user.getChannels().forEach(channel -> {
                 user.leaveChannel(channel);
@@ -93,7 +90,6 @@ public class BasicUserService implements UserService {
             });
         }
 
-        // 실제 저장소에서 유저 삭제 (저장 로직 위임)
         userRepository.deleteById(userId);
     }
 
@@ -124,7 +120,7 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
     }
 
-    // Helper: 값 변경 여부 확인
+    // Helper
     private boolean isValid(Object current, Object target) {
         if (target == null) return false;
         return !Objects.equals(current, target);
