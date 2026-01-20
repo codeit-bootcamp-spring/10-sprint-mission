@@ -23,4 +23,8 @@ public interface MessageService {
 
     // 해당 channel Id를 가진 채널의 메시지 목록을 반환
     List<Message> getMessagesByChannelId(UUID channelId);
+
+    void loadData();
+
+    void saveData();
 }

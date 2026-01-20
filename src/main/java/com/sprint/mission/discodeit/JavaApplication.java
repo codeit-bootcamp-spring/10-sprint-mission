@@ -6,21 +6,33 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
-import java.sql.SQLOutput;
 import java.util.UUID;
 
 public class JavaApplication {
     public static void main(String[] args) {
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService();
-        MessageService messageService = new JCFMessageService(userService,channelService);
+////        JCFService
+//        UserService userService = new JCFUserService();
+//        ChannelService channelService = new JCFChannelService();
+//        MessageService messageService = new JCFMessageService(userService,channelService);
+//        userService.setChannelService(channelService);
+//        userService.setMessageService(messageService);
+//        channelService.setMessageService(messageService);
+
+        //FileService
+        UserService userService = new FileUserService();
+        ChannelService channelService = new FileChannelService();
+        MessageService messageService = new FileMessageService(userService,channelService);
         userService.setChannelService(channelService);
         userService.setMessageService(messageService);
         channelService.setMessageService(messageService);
+
         // 유저
         User user1 = userService.createUser("장동규");
         UUID user1Id = user1.getId();
@@ -93,9 +105,12 @@ public class JavaApplication {
         }
         
         // 채널 입장
-        user1.joinChannel(channel1);// 장동규 -> 스터디 채널
-        user2.joinChannel(channel1);// 이정민 -> 스터디 채널
-        user3.joinChannel(channel2);// 곽인성 -> 게임 채널
+//        user1.joinChannel(channel1);// 장동규 -> 스터디 채널
+//        user2.joinChannel(channel1);// 이정민 -> 스터디 채널
+//        user3.joinChannel(channel2);// 곽인성 -> 게임 채널
+        userService.joinChannel(user1.getId(),channel1Id);
+        userService.joinChannel(user2.getId(),channel1Id);
+        userService.joinChannel(user3.getId(),channel2Id);
 
         // 채널 조회
         System.out.println("\n==모든 채널==");
@@ -213,10 +228,15 @@ public class JavaApplication {
         Channel dogChannel = channelService.createChannel("강아지 채널");
         Channel soccerChannel = channelService.createChannel("축구 채널");
 
-        user5.joinChannel(catChannel); // 고양이 채널
-        user5.joinChannel(dogChannel); // 강아지 채널
-        user5.joinChannel(soccerChannel); // 축구 채널
-        user5.joinChannel(channel1); // 스터디 채널
+//        user5.joinChannel(catChannel); // 고양이 채널
+//        user5.joinChannel(dogChannel); // 강아지 채널
+//        user5.joinChannel(soccerChannel); // 축구 채널
+//        user5.joinChannel(channel1); // 스터디 채널
+        userService.joinChannel(user5.getId(), catChannel.getId());
+        userService.joinChannel(user5.getId(), dogChannel.getId());
+        userService.joinChannel(user5.getId(), soccerChannel.getId());
+        userService.joinChannel(user5.getId(), channel1.getId());
+
 
         Message message3 = messageService.createMessage(user5.getId(),"고양이 귀여워요",catChannel.getId());
         Message message4 = messageService.createMessage(user5.getId(),"고양이 좋아요",catChannel.getId());

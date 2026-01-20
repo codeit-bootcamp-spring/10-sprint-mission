@@ -27,4 +27,8 @@ public interface ChannelService {
     List<Channel> getChannelsByUserId(UUID userId);
 
     void setMessageService(MessageService messageService);
+
+    void loadData();
+
+    void saveData();
 }

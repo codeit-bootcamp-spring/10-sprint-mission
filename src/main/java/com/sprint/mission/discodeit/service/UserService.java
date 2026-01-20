@@ -29,4 +29,10 @@ public interface UserService {
     void setChannelService(ChannelService channelService);
 
     void setMessageService(MessageService messageService);
+
+    void joinChannel(UUID userId, UUID channelId);
+
+    void loadData();
+
+    void saveData();
 }

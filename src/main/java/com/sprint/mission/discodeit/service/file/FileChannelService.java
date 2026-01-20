@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -7,29 +7,38 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.Validator;
 
+import java.io.*;
 import java.util.*;
 
-public class JCFChannelService implements ChannelService {
-    private final Map<UUID, Channel> channels;
+public class FileChannelService implements ChannelService {
+    private Map<UUID, Channel> data = new HashMap<UUID, Channel>();
     private MessageService messageService;
 
-    public JCFChannelService() {
-        channels = new HashMap<>();
+    public FileChannelService() {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./channels.ser"))) {
+            data = (Map<UUID, Channel>) ois.readObject();
+        }catch (IOException | ClassNotFoundException e) {
+            System.out.println(e.getMessage());
+            data = new HashMap<>();
+        }
+        saveData();
     }
 
-    // 외부에서 객체를 받는 것 보다는 메소드 내부에서 객체 생성해서 반환
     @Override
     public Channel createChannel(String channelName) {
+        loadData();
         Validator.validateNotNull(channelName, "생성하고자하는 채널의 채널명이 null일 수 없음");
         Validator.validateNotBlank(channelName, "생성하고자하는 채널의 채널명이 빈문자열일 수 없음");
         Channel channel = new Channel(channelName.trim());
-        channels.put(channel.getId(), channel);
+        data.put(channel.getId(), channel);
+        saveData();
         return channel;
     }
 
     @Override
     public Channel findById(UUID id) {
-        Channel channel = channels.get(id);
+        loadData();
+        Channel channel = data.get(id);
         if (channel == null) {
             throw new IllegalStateException("해당 id의 채널을 찾을 수 없음");
         }
@@ -38,21 +47,24 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public List<Channel> findAll() {
-        return new ArrayList<>(channels.values());
+        loadData();
+        return new ArrayList<>(data.values());
     }
 
     @Override
     public Channel updateById(UUID id, String newChannelName) {
+        loadData();
         Validator.validateNotNull(newChannelName, "업데이트하고자 하는 채널의 채널명이 null일 수 없음");
         Validator.validateNotBlank(newChannelName, "업데이트하고자 하는 채널의 채널명이 빈 문자열일 수 없음");
         Channel targetChannel = findById(id);
         targetChannel.setChannelName(newChannelName.trim());
+        saveData();
         return targetChannel;
     }
 
-    // 채널 삭제시 참여 중인 유저와 작성된 메시지들과의 연관데이터도 제거
     @Override
     public void deleteById(UUID id) {
+        loadData();
         Channel channel = findById(id);
         // 채널에 참여 중인 유저 리스트
         List<User> users = channel.getJoinedUsers().stream().toList();
@@ -67,13 +79,14 @@ public class JCFChannelService implements ChannelService {
             messageService.deleteById(message.getId());
             message.getUser().removeMessage(message, channel);
         }
-        channels.remove(id);
+        data.remove(id);
+        saveData();
     }
 
-    // 해당 user Id를 가진 유저가 속한 채널 목록을 반환
     @Override
     public List<Channel> getChannelsByUserId(UUID userId) {
-        return channels.values().stream()
+        loadData();
+        return data.values().stream()
                 .filter(channel ->
                         channel.getJoinedUsers().stream()
                                 .anyMatch(user -> user.getId().equals(userId)))
@@ -85,13 +98,19 @@ public class JCFChannelService implements ChannelService {
         this.messageService = messageService;
     }
 
-    @Override
     public void loadData() {
-
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./channels.ser"))) {
+            data = (Map<UUID, Channel>) ois.readObject();
+        }catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
-    @Override
     public void saveData() {
-
+        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("./channels.ser"))){
+            oos.writeObject(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
