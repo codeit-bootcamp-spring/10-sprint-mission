@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class Basic {
+public class Basic implements Serializable {
+
+    private static final long serialVersionUID = 1L;
     // 공통 도메인 작업 위치.
     protected final UUID id;
     protected final Long createdAt;

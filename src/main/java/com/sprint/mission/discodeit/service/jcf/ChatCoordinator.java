@@ -46,16 +46,15 @@ public class ChatCoordinator {
 
     // 메세지 관련 서비스
     public Message sendMessage(UUID userId, UUID channelId, String content){
-        // 여기서 유효성 검사..
-        User user = userService.findUserById(userId);
-        Channel channel = channelService.findChannelById(channelId);
-
-        // Message 생성 (서비스는 단순히 저장만 함)
+        // 메세지 생성
         Message message = messageService.createMessage(content, userId, channelId);
+        // 객체 동기화
+        message.setSender(userService.findUserById(userId));
+        message.setChannel(channelService.findChannelById(channelId));
 
-        // 관계 동기화 (ChatCoordinator가 담당)
-        user.addMessage(message);
-        channel.addMessages(message);
+        // 메모리에 다시 반영. (서비스는 단순히 저장)
+        messageService.updateMessage(message.getId(), message.getContent());
+
         return message;
     }
     // 채널에 있는 메세지들 조회

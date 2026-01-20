@@ -4,6 +4,9 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.jcf.*;
+import com.sprint.mission.discodeit.service.file.*;
+import com.sprint.mission.discodeit.repository.jcf.*;
+import com.sprint.mission.discodeit.service.jcf.*;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -253,66 +256,104 @@ public class JavaApplication {
 
         // 서비스 생성 (의존성 주입)
 
-                JCFChannelService channelService = new JCFChannelService();
-                JCFUserService userService = new JCFUserService();
-                JCFMessageService messageService = new JCFMessageService();
+//                JCFChannelService channelService = new JCFChannelService();
+//                JCFUserService userService = new JCFUserService();
+//                JCFMessageService messageService = new JCFMessageService();
+//
+//                //유저 채널 협력 클래스
+//                ChatCoordinator chat = new ChatCoordinator(userService,channelService, messageService);
+//                // 유저 2명 생성
+//                User u1 = userService.createUser("최종인", "jongin");
+//                User u2 = userService.createUser("김코딩", "kim");
+//
+//                // 채널 2개 생성
+//                Channel ch1 = channelService.createChannel("공지사항");
+//                Channel ch2 = channelService.createChannel("자유채팅");
+//
+//                // 유저들을 채널에 참가시킴 (양방향 연동됨)
+//                u1.joinChannel(ch1);
+//                u1.joinChannel(ch2);
+//                u2.joinChannel(ch2);
+//
+//                // 메시지 생성 (유저-채널 관계 반영됨)
+//                chat.sendMessage(u1.getId(), ch1.getId(), "안녕하세요, 공지사항 채널입니다.");
+//                chat.sendMessage(u1.getId(), ch2.getId(), "자유채팅방에 오신 걸 환영합니다!");
+//                chat.sendMessage(u2.getId(), ch2.getId(), "저도 인사드립니다.");
+//
+//                // 유저 삭제 후 메세지와 채널 조회 삭제
+//                //chat.deleteUserClean(u1.getId());
+//                // 채널 삭제 후 유저가 참가한 채널리스트 조회 및 해당 채널의 메세지 조회
+//                //chat.deleteChannelClean(ch1.getId());
+//                System.out.println("test");
+//
+//                // ===========================
+//                // 특정 유저의 메시지 조회 테스트
+//                // ===========================
+//                System.out.println("=== [1] 특정 유저가 보낸 메시지 조회 ===");
+//                messageService.getMsgListSenderId(u1.getId()).forEach(System.out::println);
+//
+//                // ===========================
+//                // 특정 유저가 참여 중인 채널 조회 테스트
+//                // ===========================
+//                System.out.println("\n=== [2] 특정 유저가 참가 중인 채널 목록 ===");
+//                try {
+//                // 유저 ID를 통해 채널 목록을 가져와서 출력
+//                    chat.getChannelsByUser(u1.getId()).forEach(System.out::println);
+//                }
+//                // 예외 발생시 경고문 출력
+//                catch (Exception e) {
+//                System.out.println("[경고] 해당 유저를 찾을 수 없거나 참여 중인 채널 정보를 불러올 수 없습니다.");
+//                }
+//                System.out.println("\n=== [3] 두 번째 유저의 채널 목록 ===");
+//                chat.getChannelsByUser(u2.getId()).forEach(System.out::println);
+//
+//                // 현재 채널에 참가한 유저리스트 조회
+//                System.out.println("현재 채널의 유저리스트는...");
+//                chat.getUsersInChannel(ch2.getId()).forEach(System.out::println);
+//                // 유저가 보낸 메세지 리스트 조회
+//        System.out.println("u1 유저의 메세지 리스트 조회");
+//        messageService.getMsgListSenderId(u1.getId());
 
-                //유저 채널 협력 클래스
-                ChatCoordinator chat = new ChatCoordinator(userService,channelService, messageService);
-                // 유저 2명 생성
-                User u1 = userService.createUser("최종인", "jongin");
-                User u2 = userService.createUser("김코딩", "kim");
 
-                // 채널 2개 생성
-                Channel ch1 = channelService.createChannel("공지사항");
-                Channel ch2 = channelService.createChannel("자유채팅");
+        // 파일 서비스 테스트!
+//
+//                UserService userService = new FileUserService();
+//                ChannelService channelService = new FileChannelService();
+//                MessageService messageService = new FileMessageService();
+//
+//                // ✅ 기존 메인 코드 그대로 실행 가능!
+//                User u1 = userService.createUser("최종인", "jongin");
+//                Channel ch1 = channelService.createChannel("공지사항");
+//                messageService.createMessage("안녕하세요!", u1.getId(), ch1.getId());
+//
+//                System.out.println("저장된 유저 수: " + userService.getUserAll().size());
+//                System.out.println("저장된 채널 수: " + channelService.getChannelAll().size());
+//                System.out.println("저장된 메시지 수: " + messageService.getMessageAll().size());
 
-                // 유저들을 채널에 참가시킴 (양방향 연동됨)
-                u1.joinChannel(ch1);
-                u1.joinChannel(ch2);
-                u2.joinChannel(ch2);
+        // ✅ 저장소 객체 생성
+        JCFUserRepository userRepo = new JCFUserRepository();
+        JCFChannelRepository channelRepo = new JCFChannelRepository();
+        JCFMessageRepository messageRepo = new JCFMessageRepository();
 
-                // 메시지 생성 (유저-채널 관계 반영됨)
-                chat.sendMessage(u1.getId(), ch1.getId(), "안녕하세요, 공지사항 채널입니다.");
-                chat.sendMessage(u1.getId(), ch2.getId(), "자유채팅방에 오신 걸 환영합니다!");
-                chat.sendMessage(u2.getId(), ch2.getId(), "저도 인사드립니다.");
+        // ✅ 서비스에 저장소 주입
+        JCFUserService userService = new JCFUserService(userRepo);
+        JCFChannelService channelService = new JCFChannelService(channelRepo);
+        JCFMessageService messageService = new JCFMessageService(messageRepo);
+        ChatCoordinator chat = new ChatCoordinator(userService, channelService, messageService);
 
-                // 유저 삭제 후 메세지와 채널 조회 삭제
-                //chat.deleteUserClean(u1.getId());
-                // 채널 삭제 후 유저가 참가한 채널리스트 조회 및 해당 채널의 메세지 조회
-                //chat.deleteChannelClean(ch1.getId());
-                System.out.println("test");
+        // ✅ 예시 실행
+        var user = userService.createUser("최종인", "jongin");
+        var ch = channelService.createChannel("공지사항");
+        var msg = chat.sendMessage(user.getId(), ch.getId(), "안녕하세요!");
 
-                // ===========================
-                // 특정 유저의 메시지 조회 테스트
-                // ===========================
-                System.out.println("=== [1] 특정 유저가 보낸 메시지 조회 ===");
-                messageService.getMsgListSenderId(u1.getId()).forEach(System.out::println);
+        System.out.println("메시지 저장 성공: " + msg);
 
-                // ===========================
-                // 특정 유저가 참여 중인 채널 조회 테스트
-                // ===========================
-                System.out.println("\n=== [2] 특정 유저가 참가 중인 채널 목록 ===");
-                try {
-                // 유저 ID를 통해 채널 목록을 가져와서 출력
-                    chat.getChannelsByUser(u1.getId()).forEach(System.out::println);
-                }
-                // 예외 발생시 경고문 출력
-                catch (Exception e) {
-                System.out.println("[경고] 해당 유저를 찾을 수 없거나 참여 중인 채널 정보를 불러올 수 없습니다.");
-                }
-                System.out.println("\n=== [3] 두 번째 유저의 채널 목록 ===");
-                chat.getChannelsByUser(u2.getId()).forEach(System.out::println);
+        System.out.println("=== 저장소 확인 ===");
+        System.out.println("유저 목록: " + userRepo.findAll());
+        System.out.println("채널 목록: " + channelRepo.findAll());
+        System.out.println("메시지 목록: " + messageRepo.findAll());
 
-                // 현재 채널에 참가한 유저리스트 조회
-                System.out.println("현재 채널의 유저리스트는...");
-                chat.getUsersInChannel(ch2.getId()).forEach(System.out::println);
-                // 유저가 보낸 메세지 리스트 조회
-        System.out.println("u1 유저의 메세지 리스트 조회");
-        messageService.getMsgListSenderId(u1.getId());
+            }
+        }
 
-        // 삭제 확인
-
-    }
-}
 

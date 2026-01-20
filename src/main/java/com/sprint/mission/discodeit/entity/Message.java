@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-public class Message extends Basic{
+public class Message extends Basic implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private String messageContent;
     private User sender; // 보내는 사람을 User 타입으로 받음.

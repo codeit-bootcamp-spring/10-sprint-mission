@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.lang.annotation.Inherited;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Channel extends Basic {
+
+public class Channel extends Basic implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String channelName;
     // 채널에서 리스트로 user 넣어주면.... 채널 누르면...
     // 또 추가할 것..? -> 현재 채널에 있는 메세지 리스트 정의.
