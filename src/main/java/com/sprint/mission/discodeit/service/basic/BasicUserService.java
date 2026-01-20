@@ -1,63 +1,56 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Stream;
 
-public class FileUserService extends BaseFileService<User> implements UserService {
+public class BasicUserService implements UserService {
 
+    private final UserRepository userRepository;
     private MessageService messageService;
     private ChannelService channelService;
 
-    // Setter 주입, 순환 참조 문제 회피
+    // 생성자를 통해 레포지토리 주입
+    public BasicUserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    // 서비스 간 순환 참조 방지를 위한 Setter 주입
     public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
     }
+
     public void setChannelService(ChannelService channelService) {
         this.channelService = channelService;
     }
 
-    public FileUserService(Path directory) {
-        super(directory);
-    }
-
-    @Override
-    public void save(User user) {
-        super.save(user);
-    }
-
     @Override
     public User createUser(String username, String nickname, String email, String phoneNumber) {
-        // 사용자 명이 null이거나 비었는지는 엔티티에서 검증함
         User newUser = new User(username, nickname, email, phoneNumber);
-        save(newUser);
-
-        return newUser;
+        return userRepository.save(newUser);
     }
 
     @Override
     public User findById(UUID userId) {
-        return super.findById(userId);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("유저를 찾을 수 없습니다: " + userId));
     }
 
     @Override
     public Optional<User> findByUsername(String username) {
-        return findAll().stream().
-                filter(u -> u.getUsername().equals(username)).findFirst();
+        return userRepository.findAll().stream()
+                .filter(u -> u.getUsername().equals(username))
+                .findFirst();
     }
 
     @Override
     public List<User> findAll() {
-        return super.findAll();
+        return userRepository.findAll();
     }
 
     @Override
@@ -65,12 +58,11 @@ public class FileUserService extends BaseFileService<User> implements UserServic
         User user = findById(userId);
 
         if (isValid(user.getUsername(), newUsername)) user.updateUsername(newUsername);
-        if (isValid(user.getNickname(), newUsername)) user.updateNickname(newNickname);
-        if (isValid(user.getEmail(), newEmail)) user.updateEmail(newEmail);
-        if (isValid(user.getPhoneNumber(), newPhoneNumber)) user.updatePhoneNumber(newPhoneNumber);
-        save(user);
+        if (isValid(user.getNickname(), newNickname)) user.updateNickname(newNickname);
+        if (isValid(user.getEmail().orElse(null), newEmail)) user.updateEmail(newEmail);
+        if (isValid(user.getPhoneNumber().orElse(null), newPhoneNumber)) user.updatePhoneNumber(newPhoneNumber);
 
-        return user;
+        return userRepository.save(user);
     }
 
     @Override
@@ -80,47 +72,59 @@ public class FileUserService extends BaseFileService<User> implements UserServic
         if (isValid(user.getPresence(), newPresence)) user.changeStatus(newPresence);
         if (isValid(user.isMicrophoneOn(), newMicrophoneIsOn)) user.toggleMicrophone(newMicrophoneIsOn);
         if (isValid(user.isHeadsetOn(), newHeadsetIsOn)) user.toggleHeadset(newHeadsetIsOn);
-        save(user);
 
-        return user;
+        return userRepository.save(user);
     }
 
     @Override
     public void deleteUser(UUID userId) {
         User user = findById(userId);
-        messageService.deleteMessagesByAuthorId(userId);
-        user.getChannels().forEach(channel -> {
-            user.leaveChannel(channel);
-            channelService.save(channel);
-                });
-        Path filePath = getFilePath(userId);
-        try {
-            Files.deleteIfExists(filePath);
-        } catch (IOException e) {
-            throw new RuntimeException("유저 파일 삭제 실패: " + userId, e);
+
+        // 연관된 메시지 삭제 (비즈니스 로직)
+        if (messageService != null) {
+            messageService.deleteMessagesByAuthorId(userId);
         }
+
+        // 가입된 채널에서 탈퇴 처리 (비즈니스 로직)
+        if (channelService != null) {
+            user.getChannels().forEach(channel -> {
+                user.leaveChannel(channel);
+                channelService.save(channel);
+            });
+        }
+
+        // 실제 저장소에서 유저 삭제 (저장 로직 위임)
+        userRepository.deleteById(userId);
     }
 
     @Override
     public void joinChannel(UUID userId, UUID channelId) {
         User user = findById(userId);
         Channel channel = channelService.findById(channelId);
-        user.joinChannel(channel);
-        channelService.save(channel);
-        save(user);
 
+        user.joinChannel(channel);
+
+        channelService.save(channel);
+        userRepository.save(user);
     }
 
     @Override
     public void leaveChannel(UUID userId, UUID channelId) {
         User user = findById(userId);
         Channel channel = channelService.findById(channelId);
+
         user.leaveChannel(channel);
+
         channelService.save(channel);
-        save(user);
+        userRepository.save(user);
     }
 
-    // Helper
+    @Override
+    public void save(User user) {
+        userRepository.save(user);
+    }
+
+    // Helper: 값 변경 여부 확인
     private boolean isValid(Object current, Object target) {
         if (target == null) return false;
         return !Objects.equals(current, target);
