@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Message extends Common {
+public class Message extends Common implements Serializable {
 
     private String content;
     private User user;
@@ -40,7 +41,7 @@ public class Message extends Common {
     @Override
     public String toString() {
         return String.format(
-                "\n(내용: %s, 유저명:%s, 채널명: %s)\n",
+                "[내용: %s, 유저명:%s, 채널명: %s]",
                 content,
                 user.getUserName(),
                 channel.getChannelName()
