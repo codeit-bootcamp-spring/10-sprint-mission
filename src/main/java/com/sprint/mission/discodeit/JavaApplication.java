@@ -1,16 +1,15 @@
+/*
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.jcf.ChannelService;
+import com.sprint.mission.discodeit.service.jcf.MessageService;
+import com.sprint.mission.discodeit.service.jcf.UserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
-
-import java.util.Objects;
 
 import static com.sprint.mission.discodeit.service.helper.ChannelHelper.*;
 import static com.sprint.mission.discodeit.service.helper.MessageHelper.*;
@@ -61,3 +60,4 @@ public class JavaApplication {
 
     }
 }
+*/

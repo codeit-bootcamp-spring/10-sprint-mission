@@ -1,8 +1,13 @@
 package com.sprint.mission.discodeit.entity;
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.UUID; // UUID 타입을 사용하기 위해 임포트
 
 
-public abstract class DiscordEntity {
+public abstract class DiscordEntity implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private final UUID id;
     private final Long createdAt;
     protected Long updatedAt;

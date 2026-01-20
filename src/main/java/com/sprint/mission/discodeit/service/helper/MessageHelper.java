@@ -3,12 +3,18 @@ package com.sprint.mission.discodeit.service.helper;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.jcf.ChannelService;
+import com.sprint.mission.discodeit.service.jcf.MessageService;
+import com.sprint.mission.discodeit.service.jcf.UserService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 public class MessageHelper {
+
+
+
     public static Message safeCreateMsg(MessageService service, String context, Channel channel, User user){
         try{
             return service.createMessage(context, channel.getId(), user.getUserId());

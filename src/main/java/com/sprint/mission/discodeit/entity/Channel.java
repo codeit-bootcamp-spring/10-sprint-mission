@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,7 +16,7 @@ public class Channel extends DiscordEntity {
     private String content;
     private Set<User> userList;
 
-
+    // 생성자
     public Channel(CHANNEL_TYPE channelType, String name, String content){
         this.channelType = channelType;
         this.channelName = name;
@@ -23,6 +24,8 @@ public class Channel extends DiscordEntity {
         this.userList = new HashSet<>();
         updateTime();
     }
+
+
 
     public String getName(){
         return this.channelName;

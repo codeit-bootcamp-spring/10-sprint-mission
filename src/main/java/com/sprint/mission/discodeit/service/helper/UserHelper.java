@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.helper;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.jcf.UserService;
 
 public class UserHelper {
     public static User safeCreateUser(UserService service, String name, String email, String userID){

@@ -1,6 +1,5 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.*;
@@ -14,4 +13,5 @@ public interface UserService {
     public ArrayList<User> readAllUsers();
     public void joinChannel(String userID, UUID channelID);
     public void exitChannel(String userID, UUID channelID);
+    public void save();
 }

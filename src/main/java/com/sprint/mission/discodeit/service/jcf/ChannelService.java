@@ -1,9 +1,7 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -18,6 +16,8 @@ public interface ChannelService {
     public Set<Channel> readChannelsbyUser(String userID);
     public void userJoin(String userID, UUID channelID);
     public void userLeave(String userID, UUID channelID);
+    public void deleteChannelbyName(String name);
+    public void save();
 
 
 

@@ -2,8 +2,6 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.utils.CheckValidation;
 
 
@@ -114,6 +112,16 @@ public class JCFChannelService implements ChannelService {
         User user = userService.readUser(userID);
         channel.getUsers().remove(user);
         user.getChannelList().remove(channel);
+
+    }
+
+    @Override
+    public void deleteChannelbyName(String name) {
+
+    }
+
+    @Override
+    public void save() {
 
     }
 
