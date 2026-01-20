@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class User extends BaseEntity {
-
+public class User extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     private List<Channel> channels;
     private String userName;
     private String email;
@@ -79,6 +80,7 @@ public class User extends BaseEntity {
         List<String> channelNames = channels.stream().map(c->c.getName()).toList();
         return "이름: " + userName
                 +"\n이메일"+ email
+                +"id"+getId()
                 +"\n참여 채널: "+channelNames
                 +"\n생성: "+getCreatedAt()
                 + "\n마지막 수정: "+getUpdatedAt()+"\n";

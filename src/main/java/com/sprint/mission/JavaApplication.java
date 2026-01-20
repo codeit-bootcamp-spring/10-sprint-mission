@@ -1,10 +1,14 @@
 package com.sprint.mission;
 
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserCoordinatorService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserCoordinatorService;
@@ -19,17 +23,35 @@ import java.util.UUID;
 public class JavaApplication {
     public static void main(String[] args) {
 
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService(userService);
+        //UserService userService = new JCFUserService();
+        UserService userService = new FileUserService();
+        //ChannelService channelService = new JCFChannelService(userService);
+        ChannelService channelService = new FileChannelService(userService);
         UserCoordinatorService userCoordinatorService = new JCFUserCoordinatorService(userService, channelService);
-        MessageService messageService = new JCFMessageService(userService,userCoordinatorService);
+        MessageService messageService = new FileMessageService(userService,userCoordinatorService);
         //사용자
         //생성
+
         System.out.println("-----------------사용자 생성-------------------");
-        UUID userId = userService.signUp("김코드","ab123@codeit.com", "ab123").getId();
-        UUID userId2 = userService.signUp("이코드","cd123@codeit.com", "ab123").getId();
-        UUID userId3 = userService.signUp("박코드","ef123@codeit.com", "ab123").getId();
-        UUID userId4 = userService.signUp("최코드","gh123@codeit.com", "ab123").getId();
+        try{
+            userService.signUp("김코드","ab123@codeit.com", "ab123").getId();
+            userService.signUp("이코드","cd123@codeit.com", "ab123").getId();
+            userService.signUp("박코드","ef123@codeit.com", "ab123").getId();
+            userService.signUp("최코드","gh123@codeit.com", "ab123").getId();
+
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+        UUID userId;
+        try{
+            userId = userService.signIn("ab123@codeit.com", "ab123").getId();
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+            userId = userService.signIn("abv123@codeit.com", "ab123").getId();
+        }
+        UUID userId2 = userService.signIn("cd123@codeit.com", "ab123").getId();
+        UUID userId3 = userService.signIn("ef123@codeit.com", "ab123").getId();
+        UUID userId4 = userService.signIn("gh123@codeit.com", "ab123").getId();
 
         System.out.println("------------동일한 이메일로 계정 생성----------------");
         try{
@@ -45,17 +67,24 @@ public class JavaApplication {
         System.out.println(userService.findAllUsers());
 
         //유저 기본 설정
-        System.out.println("------------유저 정보 수정-----------------");
-        userService.updateInfo(userId, "코드잇",null,null);//이름만
-        System.out.println(userService.findUserById(userId));
-        userService.updateInfo(userId, null,"abv123@codeit.com",null);//이메일만
-        System.out.println(userService.findUserById(userId));
+        try{
+            System.out.println("------------유저 정보 수정-----------------");
+            userService.updateInfo(userId, "코드잇",null,null);//이름만
+            System.out.println(userService.findUserById(userId));
+            userService.updateInfo(userId, null,"abv123@codeit.com",null);//이메일만
+            System.out.println(userService.findUserById(userId));
+        }catch(Exception e){
+            System.out.println(e.getMessage());
+        }
+
         try {//null과 이전값의 조합으로 변경 요청하는 경우
             System.out.println("----------null과 이전값의 조합으로 변경 요청하는 경우---------------");
             userService.updateInfo(userId, null, "abv123@codeit.com", null);
         }catch (Exception e){
             System.out.println(e.getMessage());
         }
+
+
 
         //채널 만들기
         System.out.println("------------채널 생성----------------");
@@ -120,6 +149,7 @@ public class JavaApplication {
         }
         System.out.println("------4번 유저의 참여 채널 정보--------");
         System.out.println(userCoordinatorService.findChannelsByUserId(userId4));
+
         //메세지
         //생성
         UUID messageId = messageService.send(userId, channelId3, "안녕!!!").getId();
@@ -259,6 +289,7 @@ public class JavaApplication {
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
+
 
 
 

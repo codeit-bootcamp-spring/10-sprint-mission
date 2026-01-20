@@ -1,15 +1,16 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.io.*;
 import java.util.*;
 
-public class JCFUserService implements UserService {
-
-    private final Map<UUID, User> data;
-    //set, map, list 모두 가능하지만, 해당 요소를 빨리 찾기 위해서는 맵이 가장 적절하다고 판단
-    public JCFUserService() { data = new HashMap<>();}
+public class FileUserService implements UserService {
+    private final FileBasicService<User> data;
+    public FileUserService() {
+        data = new FileBasicService<>("users");
+    }
 
     @Override
     public User signUp(String userName,String email, String password) {
@@ -18,12 +19,15 @@ public class JCFUserService implements UserService {
         data.put(user.getId(), user);
         return user;
     }
-
     @Override
     public User signIn(String email, String password) {
-        return null;
+        User user = data.values().stream()
+                .filter(u -> u.getEmail().equals(email) && u.getPassword().equals(password)).findFirst().orElse(null);
+        if(user == null){
+            throw new NoSuchElementException("유효하지 않은 이메일 또는 비밀번호");
+        }
+        return user;
     }
-
     @Override
     public User updateInfo(UUID id, String userName, String email, String password) {
         User user = findUserById(id);
@@ -39,11 +43,14 @@ public class JCFUserService implements UserService {
                 .ifPresent(n->user.setUserName(n));
         Optional.ofNullable(email)
                 .filter(n -> !n.equals(user.getEmail()))
-                .ifPresent(e -> user.setEmail(e));
+                .ifPresent(e ->{
+                    validateEmail(email);
+                    user.setEmail(e);
+                });
         Optional.ofNullable(password)
                 .filter(n -> !n.equals(user.getPassword()))
                 .ifPresent(p -> user.setPassword(p));
-
+        data.put(user.getId(), user);
         return user;
     }
 
@@ -83,4 +90,5 @@ public class JCFUserService implements UserService {
             throw new NoSuchElementException("유효하지 않은 사용자ID: "+id);
         }
     }
+
 }
