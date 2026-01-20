@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class User extends CommonEntity{
+    private static final long serialVersionUID = 1L;
     private String userName;
-    private String password;
+    private transient String password;
     private String email;
     private final List<Channel> channels = new ArrayList<>();
     private final List<Message> messages = new ArrayList<>();

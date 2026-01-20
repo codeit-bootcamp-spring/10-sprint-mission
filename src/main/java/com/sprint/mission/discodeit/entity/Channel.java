@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Channel extends CommonEntity{
+    private static final long serialVersionUID = 1L;
     private String channelName;
     private ChannelType channelType;
     private String description;
