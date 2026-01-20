@@ -50,6 +50,13 @@ public class JCFUserService implements UserService {
         return Optional.ofNullable(data.get(userId));
     }
 
+    @Override
+    public Optional<User> findUserByEmailAndPassword(String email, String password) {
+        return this.data.values().stream()
+                .filter(u -> u.getEmail().equals(email) && u.getPassword().equals(password))
+                .findFirst();
+    }
+
     // R. 모두 읽기
     // 모든 사용자
     @Override

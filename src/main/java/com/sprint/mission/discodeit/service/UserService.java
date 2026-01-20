@@ -13,6 +13,7 @@ public interface UserService {
 
     // R. 읽기
     Optional<User> findUserById(UUID userId);
+    Optional<User> findUserByEmailAndPassword(String email, String password);
 
     // R. 모두 읽기
     // 모든 사용자
