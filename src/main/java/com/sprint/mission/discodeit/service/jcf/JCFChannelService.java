@@ -14,7 +14,7 @@ import java.util.UUID;
 public class JCFChannelService implements ChannelService {
     private final MessageService messageService;
     private final UserService userService;
-    private final Map<UUID, Channel> channels = new HashMap<>();
+    private final Map<UUID, Channel> data = new HashMap<>();
 
     public JCFChannelService(MessageService messageService, UserService userService) {
         this.messageService = messageService;
@@ -24,14 +24,14 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel createChannel(String channelName) {
         Channel channel = new Channel(channelName);
-        channels.put(channel.getId(), channel);
+        data.put(channel.getId(), channel);
 
         return channel;
     }
 
     @Override
     public List<Channel> getChannelList() {
-        return channels.values().stream().toList();
+        return data.values().stream().toList();
     }
 
     @Override
@@ -41,7 +41,7 @@ public class JCFChannelService implements ChannelService {
             throw new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
         }
 
-        return channels.values().stream()
+        return data.values().stream()
                 .filter(channel ->
                         channel.getJoinedUsers().stream()
                                 .anyMatch(user -> user.getId().equals(userId)))
@@ -93,13 +93,13 @@ public class JCFChannelService implements ChannelService {
         Channel channel = findChannelById(channelId);
 
         messageService.clearChannelMessage(channelId);
-        channels.remove(channelId);
+        data.remove(channelId);
     }
 
     private Channel findChannelById(UUID channelId) {
         Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
 
-        Channel channel = channels.get(channelId);
+        Channel channel = data.get(channelId);
 
         if (channel == null) {
             throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
