@@ -3,18 +3,21 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
+//import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+//import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
+//import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
 
 import java.util.List;
 
 
 public class JavaApplication {
     public static void main(String[] args) {
-        JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService(userService);
-        JCFMessageService messageService = new JCFMessageService(userService, channelService);
+        FileUserService userService = new FileUserService();
+        FileChannelService channelService = new FileChannelService();
+        FileMessageService messageService = new FileMessageService();
 
         System.out.println("========= [1. User 도메인 테스트] =========");
         // 1. 등록
@@ -90,8 +93,8 @@ public class JavaApplication {
 
         System.out.println("\n========= [3. Message 도메인 테스트] =========");
         // 1. 등록
-        channel2.addMember(user2);
-        channel2.addMember(user3);
+        channelService.join(channel2.getId(), user2.getId());
+        channelService.join(channel2.getId(), user3.getId());
         Message message1 = messageService.create("안녕하세요!", user2.getId(), channel2.getId());
         Message message2 = messageService.create("반갑습니다!", user3.getId(), channel2.getId());
         System.out.println("[등록] message1, message2 메시지 생성 완료");
@@ -175,5 +178,6 @@ public class JavaApplication {
 
 
         System.out.println("\n===== 모든 서비스 테스트 완료 =====");
+
     }
 }

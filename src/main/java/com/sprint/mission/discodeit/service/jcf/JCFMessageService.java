@@ -37,7 +37,7 @@ public class JCFMessageService implements MessageService{
         return newMessage;
     }
 
-    // 메시지 Id로 조회
+    // 메시지 ID로 조회
     @Override
     public Message findById(UUID id){
         Message message = data.get(id);

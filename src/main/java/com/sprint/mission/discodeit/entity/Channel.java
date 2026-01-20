@@ -1,10 +1,15 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Channel extends BaseEntity {
+public class Channel extends BaseEntity implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
     private String name;
     private String description;
     private String type;        // 채팅 채널(TEXT), 공지 채널(ANNOUNCEMENT), 음성 채널(VOICE)
