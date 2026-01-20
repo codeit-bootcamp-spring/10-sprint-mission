@@ -98,6 +98,7 @@ public class JCFMessageService implements MessageService {
         ValidationMethods.validateNullBlankString(content, "content");
 
         message.updateContent(content);
+        messageRepository.save(message);
         return message;
     }
 

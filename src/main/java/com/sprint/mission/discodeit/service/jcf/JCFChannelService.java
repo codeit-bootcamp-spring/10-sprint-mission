@@ -32,9 +32,10 @@ public class JCFChannelService implements ChannelService {
         ValidationMethods.validateNullBlankString(channelDescription, "channelDescription");
 
         Channel channel = new Channel(owner, channelType, channelName, channelDescription);
-        channelRepository.save(channel);
+
         // owner는 channel 생성 시 자동 join(channel의 member list에도 추가
         linkMemberAndChannel(owner, channel);
+        channelRepository.save(channel);
         return channel;
     }
 
@@ -129,6 +130,7 @@ public class JCFChannelService implements ChannelService {
                 .filter(d -> !channel.getChannelDescription().equals(d))
                 .ifPresent(d -> channel.updateChannelDescription(d));
 
+        channelRepository.save(channel);
         return channel;
     }
 
@@ -155,6 +157,7 @@ public class JCFChannelService implements ChannelService {
 
         // 변경
         channel.changeOwner(newOwner);
+        channelRepository.save(channel);
 //        newOwner.joinChannel(channel);
         return channel;
     }
@@ -174,6 +177,7 @@ public class JCFChannelService implements ChannelService {
         }
 
         linkMemberAndChannel(user, channel);
+        channelRepository.save(channel);
         return channel;
     }
 
@@ -197,6 +201,7 @@ public class JCFChannelService implements ChannelService {
         }
 
         unlinkMemberAndChannel(user, channel);
+        channelRepository.save(channel);
         return channel;
     }
 

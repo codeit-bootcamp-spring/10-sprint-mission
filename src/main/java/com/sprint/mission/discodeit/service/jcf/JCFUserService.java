@@ -98,7 +98,7 @@ public class JCFUserService implements UserService {
         Optional.ofNullable(birthday)
                 .filter(b -> !user.getBirthday().equals(b))
                 .ifPresent(b -> user.updateBirthday(b));
-
+        userRepository.save(user);
         return user;
     }
 
