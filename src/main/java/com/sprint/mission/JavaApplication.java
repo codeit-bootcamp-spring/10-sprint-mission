@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
@@ -143,7 +144,6 @@ public class JavaApplication {
             System.out.println("삭제 테스트 실패");
 
         // 조회를 통해 삭제되었는지 확인
-        System.out.println("남은 채널들");
         try {
             channelService.getChannel(channel1.getId());
         } catch (NoSuchElementException e) {
@@ -175,9 +175,9 @@ public class JavaApplication {
     }
 
     private static void messageServiceTest() {
-        JCFMessageService messageService = new JCFMessageService();
-        JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService();
+        FileMessageService messageService = new FileMessageService();
+        FileUserService userService = new FileUserService();
+        FileChannelService channelService = new FileChannelService();
         userService.setChannelService(channelService);
         userService.setMessageService(messageService);
         channelService.setUserService(userService);
@@ -189,7 +189,7 @@ public class JavaApplication {
         Message message2 = messageService.createMessage("message2 content", user1, channel1);
         // 단건 조회
         Message result = messageService.getMessage(message1.getId());
-        if(result.getId().equals(message1.getId())) System.out.println("단건 조회 테스트 성공");
+        if(result.equals(message1)) System.out.println("단건 조회 테스트 성공");
         else System.out.println("단건 조회 테스트 실패");
 
         // 다건 조회
@@ -198,39 +198,45 @@ public class JavaApplication {
         else System.out.println("다건 조회 테스트 실패");
 
         // 수정
-        Message updatedMessage = messageService.updateMessage(message1.getId(), "message1 content updated");
-        if(updatedMessage.getId().equals(message1.getId())
-                && updatedMessage.getContent().equals(message1.getContent()))
+        message2 = messageService.updateMessage(message2.getId(), "message2 content updated");
+        Message updatedMessage = messageService.getMessage(message2.getId());
+        System.out.println(message2.getContent());
+        System.out.println(updatedMessage.getContent());
+        if(message2.equals(updatedMessage)
+                && message2.getContent().equals(updatedMessage.getContent()))
             System.out.println("수정 테스트 성공");
         else
             System.out.println("수정 테스트 실패");
 
         // 수정 된 데이터 조회
-        System.out.printf("수정된 message1 내용 : %s\n", updatedMessage.getContent());
+        System.out.printf("수정된 message2 내용 : %s\n", updatedMessage.getContent());
 
         // 삭제
-        messageService.deleteMessage(message2.getId());
-        if(messageService.getAllMessages().size() == 1)
+        int prevSize = messageService.getAllMessages().size();
+        messageService.deleteMessage(message1.getId());
+        if(messageService.getAllMessages().size() == prevSize - 1)
             System.out.println("삭제 테스트 성공");
         else
             System.out.println("삭제 테스트 실패");
 
         // 조회를 통해 삭제되었는지 확인
-        System.out.println("남은 메세지들");
-        messageService.getAllMessages()
-                .stream()
-                .forEach(
-                        m -> System.out.println("content : " + m.getContent()
-                                + ", channel : " + m.getChannel().getChannelName() + ", sender name : " + m.getSender().getUserName())
-                );
-
+        try {
+            messageService.getMessage(message1.getId());
+        } catch (NoSuchElementException e) {
+            System.out.println("message1 삭제 성공하여 조회x");
+        }
         // 없는 메세지 조회
         try {
-            Message notFound = messageService.getMessage(java.util.UUID.randomUUID());
+            messageService.getMessage(java.util.UUID.randomUUID());
             System.out.println("없는 메세지 조회 테스트 실패");
         } catch (NoSuchElementException e) {
             System.out.println("없는 메세지 조회 테스트 성공");
         }
+
+        // 반복테스트를 위해 제거
+        userService.deleteUser(user1.getId());
+        channelService.deleteChannel(channel1.getId());
+        messageService.deleteMessage(message2.getId());
     }
 
     private static void deleteUserTest() {
