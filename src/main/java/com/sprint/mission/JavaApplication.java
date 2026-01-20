@@ -5,10 +5,12 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
+import java.io.*;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -29,7 +31,7 @@ public class JavaApplication {
     }
 
     private static void userServiceTest() {
-        UserService userService = new JCFUserService();
+        UserService userService = new FileUserService();
         User user1 = userService.createUser("user1", "1234", "");
         User user2 = userService.createUser("user2", "4567", "");
 
@@ -46,9 +48,10 @@ public class JavaApplication {
             System.out.println("다건 조회 테스트 실패");
 
         // 수정
-        User user2Updated = userService.updateUser(user2.getId(), "user2_수정", "45678", "user2email");
-        if (user2Updated.getUserName().equals(user2.getUserName())
-        && user2Updated.getEmail().equals(user2.getEmail()))
+        user2 = userService.updateUser(user2.getId(), "user2_수정", "45678", "user2email");
+        User user2Updated = userService.getUser(user2.getId());
+        if (user2.getUserName().equals(user2Updated.getUserName())
+                && user2.getEmail().equals(user2Updated.getEmail()))
             System.out.println("수정 테스트 성공");
         else
             System.out.println("수정 테스트 실패");
@@ -59,23 +62,23 @@ public class JavaApplication {
                 user2Updated.getPassword(), user2Updated.getEmail());
 
         // 삭제
+        int prevSize = userService.getAllUsers().size();
         userService.deleteUser(user1.getId());
-        if(userService.getAllUsers().size() == 1)
+        if(userService.getAllUsers().size() == prevSize - 1)
             System.out.println("삭제 테스트 성공");
         else
             System.out.println("삭제 테스트 실패");
 
         // 조회를 통해 삭제되었는지 확인
-        System.out.println("남은 유저들");
-        userService.getAllUsers()
-                .stream()
-                .forEach(
-                        u -> System.out.println("id : " + u.getId() + ", name : " + u.getUserName())
-                );
+        try {
+            userService.getUser(user1.getId());
+        } catch (NoSuchElementException e) {
+            System.out.println("user1 삭제 성공하여 조회x");
+        }
 
         // 중복 생성
+        User user3 = userService.createUser("user3", "4567", "");
         try {
-            userService.createUser("user3", "4567", "");
             userService.createUser("user3", "4567", "");
             System.out.println("중복 처리 테스트 실패");
         } catch (IllegalStateException e) {
@@ -89,6 +92,10 @@ public class JavaApplication {
         } catch (NoSuchElementException e) {
             System.out.println("없는 사용자 조회 테스트 성공");
         }
+
+        // 반복테스트를 위해 제거
+        userService.deleteUser(user2.getId());
+        userService.deleteUser(user3.getId());
     }
 
     private static void channelServiceTest() {
