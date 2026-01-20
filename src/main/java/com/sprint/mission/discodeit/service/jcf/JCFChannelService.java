@@ -8,7 +8,7 @@ import java.util.*;
 
 public class JCFChannelService implements ChannelService {
 
-    private final Map<UUID, Channel> channelMap = new HashMap<>();
+    private final Map<UUID, Channel> data = new HashMap<>();
 
     // 연관 도메인 서비스
     private MessageService messageService;
@@ -18,12 +18,17 @@ public class JCFChannelService implements ChannelService {
         this.messageService = messageService;
     }
 
+    @Override
+    public void save(Channel channel) {
+        data.put(channel.getId(), channel);
+    }
+
     // Create
     @Override
-    public Channel createChannel(String name, String description, Channel.ChannelVisibility visibility) {
+    public Channel createChannel(String name, String description, Channel.ChannelType visibility) {
         // 엔티티에서 빈 이름의 채널 확인함
         Channel newChannel = new Channel(name, description, visibility);
-        channelMap.put(newChannel.getId(), newChannel);
+        data.put(newChannel.getId(), newChannel);
 
         return newChannel;
     }
@@ -31,7 +36,7 @@ public class JCFChannelService implements ChannelService {
     // Read
     @Override
     public Channel findById(UUID channelId) {
-        Channel channel = channelMap.get(channelId);
+        Channel channel = data.get(channelId);
 
         if (channel == null) {
             throw new NoSuchElementException("채널을 찾을 수 없습니다: " + channelId);
@@ -42,12 +47,12 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public List<Channel> findAll() {
-        return new ArrayList<>(channelMap.values());
+        return new ArrayList<>(data.values());
     }
 
     // Update
     @Override
-    public Channel updateChannel(UUID channelId, String newName, String description, Channel.ChannelVisibility newVisibility) {
+    public Channel updateChannel(UUID channelId, String newName, String description, Channel.ChannelType newVisibility) {
         Channel channel = findById(channelId);
 
         Optional.ofNullable(newName)
@@ -71,7 +76,7 @@ public class JCFChannelService implements ChannelService {
 
         messageService.deleteMessagesByChannelId(channelId); // 채널 내 모든 메시지 삭제
         channel.getUsers().forEach(user -> {user.leaveChannel(channel);}); // 채널 내 유저에게서 채널 삭제
-        channelMap.remove(channelId); // 채널 맵에서 삭제
+        data.remove(channelId); // 채널 맵에서 삭제
 
     }
 

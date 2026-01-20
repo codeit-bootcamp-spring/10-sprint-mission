@@ -27,4 +27,5 @@ public interface UserService {
     // Logic
     void joinChannel(UUID userId, UUID channelId);
     void leaveChannel(UUID userId, UUID channelId);
+    void save(User user);
 }

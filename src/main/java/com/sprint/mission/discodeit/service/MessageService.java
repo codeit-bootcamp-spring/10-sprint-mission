@@ -8,10 +8,6 @@ import java.util.UUID;
 
 public interface MessageService {
 
-    // Setter
-    void setUserService(UserService userService);
-    void setChannelService(ChannelService channelService);
-
     // Create
     Message sendMessage(UUID authorId, UUID channelId, String content);
 

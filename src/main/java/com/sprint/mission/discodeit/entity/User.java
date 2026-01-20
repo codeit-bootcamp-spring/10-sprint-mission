@@ -1,8 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.service.file.Identifiable;
+
+import java.io.Serializable;
 import java.util.*;
 
-public class User extends BaseEntity {
+public class User extends BaseEntity implements Serializable, Identifiable {
+    private static final long serialVersionUID = 1L;
 
     public enum UserPresence {
         ONLINE,
@@ -98,14 +102,14 @@ public class User extends BaseEntity {
     }
 
     // Channel Control
-    public void  joinChannel(Channel channel) {
+    public void joinChannel(Channel channel) {
         if (this.channels.contains(channel)) {
             return;
         }
         this.channels.add(channel);
         channel.addUser(this);
     }
-    public void  leaveChannel(Channel channel) {
+    public void leaveChannel(Channel channel) {
         if (!this.channels.contains(channel)) {
             return;
         }
@@ -125,6 +129,16 @@ public class User extends BaseEntity {
     }
     public List<Message> getMessages() {
         return new ArrayList<>(this.messages);
+    }
+    public void updateMessageInList(Message updatedMessage) {
+        for (int i = 0; i < this.messages.size(); i++) {
+            // 리스트를 돌며 ID가 같은 메시지를 찾습니다.
+            if (this.messages.get(i).getId().equals(updatedMessage.getId())) {
+                // 해당 인덱스의 메시지 객체를 수정된 객체로 교체합니다.
+                this.messages.set(i, updatedMessage);
+                return;
+            }
+        }
     }
 
     // toString

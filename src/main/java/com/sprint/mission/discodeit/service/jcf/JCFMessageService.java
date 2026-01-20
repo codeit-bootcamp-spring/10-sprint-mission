@@ -8,11 +8,10 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class JCFMessageService implements MessageService {
 
-    private final Map<UUID, Message> messageMap = new LinkedHashMap<>();
+    private final Map<UUID, Message> data = new LinkedHashMap<>();
 
     // 연관 도메인의 서비스
     private UserService userService;
@@ -35,7 +34,7 @@ public class JCFMessageService implements MessageService {
 
         Message message = new Message(content, author, channel);
 
-        messageMap.put(message.getId(), message); // 모든 메시지가 전역적으로 저장됨
+        data.put(message.getId(), message); // 모든 메시지가 전역적으로 저장됨
         channel.addMessage(message); // 채널 마다 메시지가 저장됨
         author.addMessage(message); // 유저 마다 메시지가 저장됨
 
@@ -79,7 +78,7 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message findById(UUID messageId) {
-        Message message = messageMap.get(messageId);
+        Message message = data.get(messageId);
 
         if (message == null) {
             throw new NoSuchElementException("메시지를 찾을 수 없습니다.: " + messageId);
@@ -108,7 +107,7 @@ public class JCFMessageService implements MessageService {
         message.getChannel().removeMessage(message);// 채널이 가지고 있는 메시지 리스트에서 삭제
         message.getAuthor().removeMessage(message); // 유저가 가지고 있는 메시지 리스트에서 삭제
 
-        messageMap.remove(messageId); // 전역 메시지 맵에서 삭제, 만약 이 부분을 제거하면 소프트 delete가 된다.
+        data.remove(messageId); // 전역 메시지 맵에서 삭제, 만약 이 부분을 제거하면 소프트 delete가 된다.
     }
 
     // 회원 탈퇴, 채널 삭제 등 메시지 전체 삭제

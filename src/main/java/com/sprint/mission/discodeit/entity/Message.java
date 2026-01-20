@@ -1,9 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.service.file.Identifiable;
+
+import java.io.Serializable;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Message extends BaseEntity {
+public class Message extends BaseEntity implements Serializable, Identifiable {
+    private static final long serialVersionUID = 1L;
+
     private String content;
     private boolean isEdited;
 
@@ -52,6 +57,7 @@ public class Message extends BaseEntity {
             updateTimestamp();
         }
     }
+
 
     // validation
     private void validationContent(String content){

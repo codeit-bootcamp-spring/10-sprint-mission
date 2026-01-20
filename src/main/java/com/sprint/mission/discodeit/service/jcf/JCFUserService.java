@@ -10,7 +10,7 @@ import java.util.*;
 
 public class JCFUserService implements UserService {
 
-    private final Map<UUID, User> userMap = new LinkedHashMap<>();
+    private final Map<UUID, User> data = new LinkedHashMap<>();
 
     // 연관 도메인의 서비스
     private MessageService messageService;
@@ -25,6 +25,11 @@ public class JCFUserService implements UserService {
         this.channelService = channelService;
     }
 
+    @Override
+    public void save(User user) {
+        data.put(user.getId(), user);
+    }
+
     // Create
     @Override
     public User createUser(String username, String nickname, String email, String phoneNumber) {
@@ -34,7 +39,7 @@ public class JCFUserService implements UserService {
             throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + username);
         }
 
-        if (userMap.values().stream()
+        if (data.values().stream()
                 .anyMatch(u -> u.getEmail()
                         .map(e -> e.equals(email))
                         .orElse(false))) {
@@ -42,7 +47,7 @@ public class JCFUserService implements UserService {
         }
 
 
-        if (userMap.values().stream()
+        if (data.values().stream()
                 .anyMatch(u -> u.getPhoneNumber()
                         .map(e -> e.equals(phoneNumber))
                         .orElse(false))) {
@@ -50,7 +55,7 @@ public class JCFUserService implements UserService {
         }
 
         User newUser = new User(username, nickname, email, phoneNumber);
-        userMap.put(newUser.getId(), newUser);
+        data.put(newUser.getId(), newUser);
 
         return newUser;
     }
@@ -58,7 +63,7 @@ public class JCFUserService implements UserService {
     // Read
     @Override
     public User findById(UUID userId) {
-        User user = userMap.get(userId);
+        User user = data.get(userId);
         if (user == null) {
             throw new NoSuchElementException("사용자를 찾을 수 없습니다: " + userId);
         }
@@ -69,14 +74,14 @@ public class JCFUserService implements UserService {
     @Override
     public Optional<User> findByUsername(String username) {
         // Map의 값(Values)들을 Stream으로 순회하며 찾기
-        return userMap.values().stream()
+        return data.values().stream()
                 .filter(user -> user.getUsername().equals(username))
                 .findFirst();
     }
 
     @Override
     public List<User> findAll() {
-        return new ArrayList<>(userMap.values());
+        return new ArrayList<>(data.values());
     }
 
     // Update - Profile
@@ -119,7 +124,7 @@ public class JCFUserService implements UserService {
         User user = findById(userId);
         messageService.deleteMessagesByAuthorId(userId);
         user.getChannels().forEach(user::leaveChannel);
-        userMap.remove(userId);
+        data.remove(userId);
     }
 
     @Override

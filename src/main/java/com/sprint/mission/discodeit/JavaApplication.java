@@ -96,9 +96,9 @@ public class JavaApplication {
         String visibilityInput = scanner.nextLine().trim();
 
         // 1번이나 엔터, 그 외 입력은 모두 PUBLIC으로 처리
-        Channel.ChannelVisibility visibility = Channel.ChannelVisibility.PUBLIC; // 기본값
+        Channel.ChannelType visibility = Channel.ChannelType.PUBLIC; // 기본값
         if (visibilityInput.equals("2") || visibilityInput.equalsIgnoreCase("PRIVATE")) {
-            visibility = Channel.ChannelVisibility.PRIVATE;
+            visibility = Channel.ChannelType.PRIVATE;
         }
 
         Channel channel = channelService.createChannel(name, description, visibility);
@@ -280,12 +280,12 @@ public class JavaApplication {
         System.out.printf("공개 여부 [%s] (1.PUBLIC / 2.PRIVATE): ", channel.getChannelVisibility());
         String visibilityInput = scanner.nextLine().trim();
 
-        Channel.ChannelVisibility newVisibility = null;
+        Channel.ChannelType newVisibility = null;
         if (!visibilityInput.isEmpty()) {
             if (visibilityInput.equals("1") || visibilityInput.equalsIgnoreCase("PUBLIC")) {
-                newVisibility = Channel.ChannelVisibility.PUBLIC;
+                newVisibility = Channel.ChannelType.PUBLIC;
             } else if (visibilityInput.equals("2") || visibilityInput.equalsIgnoreCase("PRIVATE")) {
-                newVisibility = Channel.ChannelVisibility.PRIVATE;
+                newVisibility = Channel.ChannelType.PRIVATE;
             } else {
                 System.out.println("!! 잘못된 입력입니다. 공개 여부는 변경되지 않습니다.");
             }
@@ -485,8 +485,8 @@ public class JavaApplication {
         userService.createUser("user2", "영희", "u2@test.com", "010-2222-2222");
 
         // [수정됨] Enum 사용 (기존: true/false -> PUBLIC/PRIVATE)
-        Channel c1 = channelService.createChannel("자유게시판", "모두가 자유롭게 이야기 할 수 있는 공간입니다.", Channel.ChannelVisibility.PUBLIC);
-        channelService.createChannel("공지사항", "", Channel.ChannelVisibility.PRIVATE);
+        Channel c1 = channelService.createChannel("자유게시판", "모두가 자유롭게 이야기 할 수 있는 공간입니다.", Channel.ChannelType.PUBLIC);
+        channelService.createChannel("공지사항", "", Channel.ChannelType.PRIVATE);
 
         userService.joinChannel(u1.getId(), c1.getId());
     }

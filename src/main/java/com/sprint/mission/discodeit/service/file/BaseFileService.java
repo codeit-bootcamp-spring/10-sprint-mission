@@ -12,23 +12,23 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public abstract class BaseFileService<T extends Serializable & Identifiable> {
-    protected final Path directory;
+    protected final Path DIRECTORY;
 
-    protected BaseFileService(Path directory) {
-        this.directory = directory;
+    protected BaseFileService(Path DIRECTORY) {
+        this.DIRECTORY = DIRECTORY;
         init();
     }
 
     private void init() {
         try {
-            Files.createDirectories(directory);
+            Files.createDirectories(DIRECTORY);
         } catch (IOException e) {
-            throw new RuntimeException("저장소 초기화 실패: " + directory, e);
+            throw new RuntimeException("저장소 초기화 실패: " + DIRECTORY, e);
         }
     }
 
     protected Path getFilePath(UUID id) {
-        return directory.resolve(id.toString() + ".ser");
+        return DIRECTORY.resolve(id.toString() + ".ser");
     }
 
     protected void save(T data) {
@@ -49,7 +49,7 @@ public abstract class BaseFileService<T extends Serializable & Identifiable> {
 
     // 공통 findAll 구현
     public List<T> findAll() {
-        try (Stream<Path> stream = Files.list(directory)) {
+        try (Stream<Path> stream = Files.list(DIRECTORY)) {
             return stream
                     .filter(path -> path.toString().endsWith(".ser"))
                     .map(this::load)
