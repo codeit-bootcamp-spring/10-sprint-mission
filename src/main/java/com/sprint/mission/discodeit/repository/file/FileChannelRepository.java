@@ -28,7 +28,7 @@ public class FileChannelRepository implements ChannelRepository {
 
         if(data
                 .stream()
-                .noneMatch(c -> channel.getId().equals(c.getId()))){
+                .anyMatch(c -> channel.getId().equals(c.getId()))){
             throw new IllegalStateException("중복되는 채널입니다.");
         }
 
@@ -55,10 +55,11 @@ public class FileChannelRepository implements ChannelRepository {
         return List.copyOf(this.data);
     }
 
-    @Override
     public List<Channel> load() {
-        this.data.clear();
-        this.data.addAll(SaveLoadUtil.load(path));
+        List<Channel> loaded = SaveLoadUtil.load(path);
+        if(loaded != null){
+            this.data.addAll(loaded);
+        }
         return this.data;
     }
 

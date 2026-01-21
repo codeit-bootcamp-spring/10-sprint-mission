@@ -39,7 +39,7 @@ public class JCFChannelRepository implements ChannelRepository {
         return this.data;
     }
 
-    @Override
+
     public List<Channel> load() {
         return this.data;
     }

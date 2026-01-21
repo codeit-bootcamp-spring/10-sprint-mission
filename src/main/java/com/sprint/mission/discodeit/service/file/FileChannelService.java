@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.service.jcf.ChannelService;
 import com.sprint.mission.discodeit.service.jcf.UserService;
 import com.sprint.mission.discodeit.utils.CheckValidation;
@@ -19,6 +20,8 @@ public class FileChannelService implements ChannelService {
     public FileChannelService(){
         this.data = SaveLoadUtil.load(path);
     }
+
+
 
     @Override
     public Channel createChannel(String name, String content, Channel.CHANNEL_TYPE type) {
@@ -88,14 +91,12 @@ public class FileChannelService implements ChannelService {
         Channel channel = readChannel(uuid);
 
         // 유저-채널 관계 끊기 (양방향이면 둘 다 정리)
-        // userService가 세팅되지 않았으면 최소한 채널만 삭제
-        if (userService != null) {
-            for (User u : new HashSet<>(channel.getUsers())) {
-                u.getChannelList().remove(channel);
-            }
-            channel.getUsers().clear();
-            userService.save(); // 유저 파일에도 반영
-        }
+        channel.getUsers().forEach(u -> {
+            u.getChannelList().remove(channel);
+            userService.save(u);
+        });
+
+        channel.getUsers().clear();
 
         data.remove(channel);
         save();
@@ -125,11 +126,13 @@ public class FileChannelService implements ChannelService {
         // 중복 참가 방지
         if (user.getChannelList().contains(channel)) return;
 
-        user.getChannelList().add(channel);
-        channel.getUsers().add(user);
 
-        userService.save();
-        save();
+        user.getChannelList().add(channel); // 유저의 채널 리스트에 해당 채널 추가
+
+        channel.getUsers().add(user); // 채널의 유저 리스트에 해당 유저 추가
+
+        userService.save(user); // 유저 서비스를 통해 유저 영속화
+        save(); // 채널 영속화
     }
 
     @Override
@@ -143,11 +146,11 @@ public class FileChannelService implements ChannelService {
         Channel channel = readChannel(channelID);
         User user = userService.readUser(userID);
 
-        user.getChannelList().remove(channel);
-        channel.getUsers().remove(user);
+        user.getChannelList().remove(channel); // 해당 유저의 채널 리스트에서 해당 채널을 삭제
+        channel.getUsers().remove(user); // 해당 채널의 유저 리스트에서 해당 유저를 삭제
 
-        userService.save();
-        save();
+        userService.save(user); // 유저 서비스를 통해 수정된 유저를 영속화
+        save(); // 채널 영속화
     }
 
     @Override
@@ -159,11 +162,19 @@ public class FileChannelService implements ChannelService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("해당 채널은 존재하지 않습니다."));
 
-        deleteChannel(channel.getId());
+        deleteChannel(channel.getId()); // deleteChannel 메소드 내에서 관계 정리 및 영속화 동작함.
+    }
+
+    // 서비스의 data를 path 경로에 영속화하는 메소드
+    public void save(){
+        SaveLoadUtil.save(data,path);
     }
 
     @Override
-    public void save() {
-        SaveLoadUtil.save(data,path);
+    public void save(Channel channel) {
+        // 파일 서비스에서는 구현 불필요?
+        // jcf에서 사용.
     }
+
+
 }

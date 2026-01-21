@@ -14,5 +14,8 @@ public interface MessageService {
     public List<Message> readMessagebyChannel(UUID channelID);
     public Message updateMessage(UUID uuid, String context); // 업데이트
     public void deleteMessage(UUID uuid); // 삭제
-    public ArrayList<Message> readAllMessage(); // 모두 조회
+    public List<Message> readAllMessage(); // 모두 조회
+    public void save(Message message);
+    public void setUserService(UserService userService);
+    public void setChannelService(ChannelService channelService);
 }

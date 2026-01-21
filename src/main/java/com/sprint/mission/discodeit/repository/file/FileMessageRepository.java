@@ -29,7 +29,7 @@ public class FileMessageRepository implements MessageRepository {
 
         if(data
                 .stream()
-                .noneMatch(m -> message.getId().equals(m.getId()))){
+                .anyMatch(m -> message.getId().equals(m.getId()))){
             throw new IllegalStateException("중복되는 메시지입니다.");
         }
 
@@ -49,10 +49,12 @@ public class FileMessageRepository implements MessageRepository {
         return List.copyOf(data);
     }
 
-    @Override
+
     public List<Message> load() {
-        this.data.clear();
-        this.data.addAll(SaveLoadUtil.load(path));
+        List<Message> loaded = SaveLoadUtil.load(path);
+        if(loaded != null){
+            this.data.addAll(loaded);
+        }
         return this.data;
     }
 

@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 public class User extends DiscordEntity {
 
@@ -11,14 +9,14 @@ public class User extends DiscordEntity {
     private String email;
     private String userId;
     private Set<Channel> channelList; // 유저가 현재 가입되어 있는 채널의 목록
-    private Set<Message> msgList;
+    private List<Message> messageList;
 
     public User(String userName, String email, String userId){
         this.userName = userName;
         this.email = email;
         this.userId = userId;
         this.channelList = new HashSet<>();
-        this.msgList = new HashSet<>();
+        this.messageList = new ArrayList<>();
         updateTime();
     }
 
@@ -49,18 +47,18 @@ public class User extends DiscordEntity {
         updateTime();
     }
 
-    public Set<Message> getMsgList(){
-        System.out.printf("%s 이 작성하신 메세지 목록입니다.%n %s %n", this.userId, this.msgList);
-        return this.msgList;
+    public List<Message> getMessageList(){
+        System.out.printf("%s 이 작성하신 메세지 목록입니다.%n %s %n", this.userId, this.messageList);
+        return this.messageList;
     }
 
     public void addMsg(Message msg){
-            this.msgList.add(msg);
+            this.messageList.add(msg);
             updateTime();
         }
 
     public void deleteMsg(Message msg){
-           this.msgList.remove(msg);
+           this.messageList.remove(msg);
            updateTime();
         }
 

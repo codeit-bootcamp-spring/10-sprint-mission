@@ -15,7 +15,7 @@ public class BasicUserService implements UserService {
     private ChannelService channelService;
 
     public BasicUserService(UserRepository userRepository){
-        userRepository = userRepository;
+        this.userRepository = userRepository;
     }
 
     public void setChannelService(ChannelService channelService){
@@ -80,20 +80,17 @@ public class BasicUserService implements UserService {
         // 유저 읽어오기
         User user = readUser(userID);
 
-        // 유저가 속해있던 채널은 해당 유저를 kick.
-        user.getChannelList().forEach(t-> t.kickUser(user));
+        // 채널 서비스로부터 모든 채널을 읽어들이고, 해당 유저가 가입했다면 해당 유저를 채널의 유저리스트에서 삭제 및 유저 영속화
+        channelService.readAllChannels()
+                        .forEach(c -> {c.getUsers().removeIf(u -> userID.equals(u.getUserId()));
+                        channelService.save(c);});
 
-        // 유저가 가지고 있던 channelList는 초기화.
-        user.getChannelList().clear();
-
-        // data에서 제거
-        channelService.save();
         userRepository.delete(user);
     }
 
     @Override
-    public ArrayList<User> readAllUsers() {
-        return List.copyOf(userRepository.findAll());
+    public List<User> readAllUsers() {
+        return userRepository.findAll();
     }
 
     @Override
@@ -112,7 +109,7 @@ public class BasicUserService implements UserService {
         channel.getUsers().add(user);
 
         userRepository.save(user);
-        channelService.save();
+        channelService.save(channel);
     }
 
 
@@ -128,10 +125,11 @@ public class BasicUserService implements UserService {
         channel.getUsers().removeIf(u -> userID.equals(u.getUserId()));
 
         userRepository.save(user);
-        channelService.save();
+        channelService.save(channel);
     }
 
     @Override
-    public void save() {
+    public void save(User user) {
+        userRepository.save(user);
     }
 }

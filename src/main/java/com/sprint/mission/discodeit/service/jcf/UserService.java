@@ -10,8 +10,9 @@ public interface UserService {
     public Set<User> readUsersbyChannel(UUID channelID);
     public User updateUser(String userId, String name, String email);
     public void deleteUser(String userID);
-    public ArrayList<User> readAllUsers();
+    public List<User> readAllUsers();
     public void joinChannel(String userID, UUID channelID);
     public void exitChannel(String userID, UUID channelID);
-    public void save();
+    public void save(User user);
+    public void setChannelService(ChannelService channelService);
 }

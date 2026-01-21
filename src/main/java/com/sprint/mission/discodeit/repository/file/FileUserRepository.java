@@ -28,8 +28,8 @@ public class FileUserRepository implements UserRepository {
 
         if(data
                 .stream()
-                .noneMatch(u -> user.getId().equals(u.getId()))){
-            throw new IllegalStateException("중복되는 채널입니다.");
+                .anyMatch(u -> user.getId().equals(u.getId()))){
+            throw new IllegalStateException("중복되는 유저입니다.");
         }
 
         data.add(user);
@@ -53,11 +53,14 @@ public class FileUserRepository implements UserRepository {
         return List.copyOf(data);
     }
 
-    @Override
+
     public List<User> load() {
-        this.data.clear();
-        this.data.addAll(SaveLoadUtil.load(path));
+        List<User> loaded = SaveLoadUtil.load(path);
+        if(loaded != null){
+            this.data.addAll(loaded);
+        }
         return this.data;
+
     }
 
     @Override

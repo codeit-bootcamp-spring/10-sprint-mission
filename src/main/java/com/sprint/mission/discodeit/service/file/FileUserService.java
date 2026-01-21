@@ -139,8 +139,7 @@ public class FileUserService implements UserService {
     // 해당 data 리스트에 존재하는 모든 유저를 읽어옵니다.
     @Override
     public ArrayList<User> readAllUsers() {
-        reload();
-        System.out.println(data);
+        System.out.println();
         return (ArrayList<User>) data;
     }
 
@@ -175,7 +174,7 @@ public class FileUserService implements UserService {
 
         // 채널 서비스를 이용하여 해당 채널의 유저리스트에 해당 유저를 추가
         channelService.userJoin(user.getUserId(), channel.getId());
-        channelService.save();
+        channelService.save(channel);
 
         System.out.printf("%s 님이 %s 채널에 입장했습니다.%n", user.getUserId(), channel.getName());
 
@@ -193,9 +192,19 @@ public class FileUserService implements UserService {
         channel.getUsers().remove(user); // 입력받은 채널의 userList에서도 연결을 끊습니다.
 
         save();
-        channelService.save();
+        channelService.save(channel);
 
         System.out.printf("%s 님이 %s 채널에서 퇴장했습니다.%n", user.getUserId(), channel.getName());
+    }
+
+    @Override
+    public void save(User user) {
+        SaveLoadUtil.save(data,path);
+    }
+
+    @Override
+    public void setChannelService(ChannelService channelService) {
+
     }
 
 

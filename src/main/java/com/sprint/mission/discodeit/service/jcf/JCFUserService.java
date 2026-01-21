@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
 
 import java.util.*;
 
@@ -9,6 +10,7 @@ public class JCFUserService implements UserService {
 
     public List<User> data = new ArrayList<>();
     ChannelService channelService;
+    UserRepository userRepository;
 
     public JCFUserService(ChannelService channelService){
         this.channelService = channelService;
@@ -148,7 +150,12 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public void save() {
+    public void save(User user) {
+        userRepository.save(user);
+    }
+
+    @Override
+    public void setChannelService(ChannelService channelService) {
 
     }
 

@@ -12,6 +12,6 @@ public interface ChannelRepository {
     public void save(Channel channel);
     public Channel findByID(UUID uuid);
     public List<Channel> findAll();
-    public List<Channel> load();
+
     public Channel delete(Channel channel);
 }

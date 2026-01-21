@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.utils.CheckValidation;
 
 import java.util.*;
@@ -14,13 +15,15 @@ public class JCFMessageService implements MessageService {
     List<Message> data = new ArrayList<>();
     ChannelService channelService;
     UserService userService;
+    MessageRepository messageRepository;
 
 
     // 메시지 서비스 생성자입니다.
     // 메시지라는 객체 자체가 유저와 채널에 의존적인 객체이기 때문에,
     // 메시지 서비스 생성 시 원활한 상호작용과 관계 관리를 위해
     // 채널 서비스, 유저 서비스를 주입받아야 합니다.
-    public JCFMessageService(ChannelService jcfChannel, UserService jcfUser){
+    public JCFMessageService(MessageRepository messageRepository, ChannelService jcfChannel, UserService jcfUser){
+        this.messageRepository = messageRepository;
         this.channelService = jcfChannel;
         this.userService = jcfUser;
     }
@@ -108,6 +111,21 @@ public class JCFMessageService implements MessageService {
     public ArrayList<Message> readAllMessage() {
         data.forEach(System.out::println);
         return (ArrayList<Message>) data;
+    }
+
+    @Override
+    public void save(Message message) {
+        messageRepository.save(message);
+    }
+
+    @Override
+    public void setUserService(UserService userService) {
+
+    }
+
+    @Override
+    public void setChannelService(ChannelService channelService) {
+
     }
 
 

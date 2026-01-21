@@ -128,10 +128,27 @@ public class FileMessageService implements MessageService {
 
 
     @Override
-    public ArrayList<Message> readAllMessage() {
+    public List<Message> readAllMessage() {
 
         data.forEach(System.out::println);
         return (ArrayList<Message>) data;
+    }
+
+    @Override
+    public void save(Message message) {
+        // FileService는 구현 필요 x?
+        // JCF 구현체만 필요?
+
+    }
+
+    @Override
+    public void setUserService(UserService userService) {
+
+    }
+
+    @Override
+    public void setChannelService(ChannelService channelService) {
+
     }
 
 }

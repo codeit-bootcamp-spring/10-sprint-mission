@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+
 import com.sprint.mission.discodeit.service.jcf.ChannelService;
 import com.sprint.mission.discodeit.service.jcf.MessageService;
 import com.sprint.mission.discodeit.service.jcf.UserService;
@@ -50,7 +50,14 @@ public class BasicMessageService implements MessageService {
         }
 
         Message message = new Message(context, channel, user); // 검증이 마치게 되면 도메인 모델 생성.
-        messageRepository.save(message);
+
+        channel.getMessageList().add(message); // 채널의 메시지 리스트에 해당 메시지를 add
+        user.getMessageList().add(message); // 유저의 메시지 리스트에 해당 메시지를 add
+
+        channelService.save(channel); // 메시지 리스트가 업데이트된 채널을 영속화
+        userService.save(user); // 메시지 리스트가 업데이트된 유저를 영속화
+
+        messageRepository.save(message); // 메시지 레포를 통해 해당 메시지를 영속화
         return message;
     }
 
@@ -102,5 +109,10 @@ public class BasicMessageService implements MessageService {
     @Override
     public ArrayList<Message> readAllMessage() {
         return (ArrayList<Message>) List.copyOf(messageRepository.findAll());
+    }
+
+    @Override
+    public void save(Message message) {
+        messageRepository.save(message);
     }
 }

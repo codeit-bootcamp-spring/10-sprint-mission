@@ -10,6 +10,5 @@ public interface UserRepository {
     public void save(User user);
     public User findByID(String userID);
     public List<User> findAll();
-    public List<User> load();
     public User delete(User user);
 }

@@ -10,6 +10,6 @@ public interface MessageRepository {
     public void save(Message message);
     public Message findByID(UUID uuid);
     public List<Message> findAll();
-    public List<Message> load();
+
     public Message delete(Message message);
 }

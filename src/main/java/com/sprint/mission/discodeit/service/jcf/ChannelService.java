@@ -17,7 +17,8 @@ public interface ChannelService {
     public void userJoin(String userID, UUID channelID);
     public void userLeave(String userID, UUID channelID);
     public void deleteChannelbyName(String name);
-    public void save();
+    public void save(Channel channel);
+
 
 
 

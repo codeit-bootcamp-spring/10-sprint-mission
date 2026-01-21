@@ -31,7 +31,7 @@ public class JCFMessageRepository implements MessageRepository {
         return this.data;
     }
 
-    @Override
+
     public List<Message> load() {
         return this.data;
     }

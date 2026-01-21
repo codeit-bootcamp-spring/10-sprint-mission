@@ -75,6 +75,10 @@ public class BasicChannelService implements ChannelService {
         // 관계 정리(비즈니스 로직)
         channel.getUsers().clear();
 
+        userService.readUsersbyChannel(uuid)
+                .forEach(u -> {u.getChannelList().remove(channel);
+                                    userService.save(u);});
+
         // 저장소에서 삭제
         channelRepository.delete(channel);
     }
@@ -98,15 +102,22 @@ public class BasicChannelService implements ChannelService {
         Channel channel = readChannel(channelID);
         User user = userService.readUser(userID);
 
+        // 이미 유저가 해당 채널에 조인되어 있는가를 체크
         boolean alreadyJoined = user.getChannelList().stream()
                 .anyMatch(c -> channelID.equals(c.getId()));
+
+        // 이미 조인된 상태면 리턴.
         if (alreadyJoined) return;
 
+        // 해당 유저의 채널 리스트에 해당 채널을 추가.
         user.getChannelList().add(channel);
+
+        // 해당 채널의 유저 리스트에도 해당 유저를 추가.
         channel.getUsers().add(user);
 
-        // user는 userService가 저장
-        userService.save();
+        // user는 userService가 저장 -> userService 내부적으로 userRepo의 save 및 persist 동작
+        userService.save(user);
+
         // channel은 repository로 저장
         channelRepository.save(channel);
     }
@@ -119,17 +130,23 @@ public class BasicChannelService implements ChannelService {
         Channel channel = readChannel(channelID);
         User user = userService.readUser(userID);
 
+        // 해당 채널의 유저 리스트에 해당 유저가 존재한다면 유저 리스트에서 해당 유저를 삭제
         channel.getUsers().removeIf(u -> user.getId().equals(u.getId()));
+
+        // 해당 유저의 채널 리스트에 해당 채널이 존재한다면 채널 리스트에서 해당 채널을 삭제
         user.getChannelList().removeIf(c -> channelID.equals(c.getId()));
 
+        // 수정된 채널을 영속화
         channelRepository.save(channel);
-        userService.save();
+        // 수정된 유저를 영속화
+        userService.save(user);
     }
 
     @Override
     public void deleteChannelbyName(String name) {
         Objects.requireNonNull(name, "유효하지 않은 채널 이름입니다.");
 
+        // 채널 이름으로 채널을 가져옴.
         Channel target = channelRepository.findAll().stream()
                 .filter(c -> name.equals(c.getName()))
                 .findFirst()
@@ -137,16 +154,17 @@ public class BasicChannelService implements ChannelService {
 
         UUID channelID = target.getId();
 
+        // 유저 서비스를 통해 모든 유저의 채널 리스트를 뒤지고, 해당 이름을 가진 채널을 채널 리스트에서 삭제 및 유저 객체 영속화.
         userService.readAllUsers()
-                        .forEach(u -> u.getChannelList().removeIf(c -> channelID.equals(c.getId())));
+                        .forEach(u -> {u.getChannelList().removeIf(c -> channelID.equals(c.getId()));
+                        userService.save(u);});
 
-        userService.save();
-
+        // 해당 채널을 삭제 및 영속화
         channelRepository.delete(target);
     }
 
     @Override
-    public void save() {
-
+    public void save(Channel channel) {
+        channelRepository.save(channel);
     }
 }
