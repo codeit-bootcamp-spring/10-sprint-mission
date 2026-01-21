@@ -28,9 +28,12 @@ public class BasicMessageService implements MessageService {
     public Message createMessage(String content, UUID channelId, UUID userId) {
         Channel channel = channelRepository.findById(channelId)
                                            .orElseThrow(() -> new IllegalArgumentException("해당 채널이 없습니다"));
-
         User user = userRepository.findById(userId)
                                   .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다"));
+
+        if (!channel.getParticipants().contains(user)) {
+            throw new IllegalArgumentException("채널에 참여하지 않은 사용자는 메시지를 작성할 수 없습니다.");
+        }
 
         Message newMessage = new Message(content, channel, user);
 

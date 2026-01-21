@@ -53,6 +53,7 @@ public class JCFChannelService implements ChannelService {
         channelMap.remove(id);
     }
 
+    @Override
     public Channel updateChannel(UUID id, String channelName){
         Channel targetChannel = findChannelByChannelId(id);
         targetChannel.updateChannelInfo(channelName);
