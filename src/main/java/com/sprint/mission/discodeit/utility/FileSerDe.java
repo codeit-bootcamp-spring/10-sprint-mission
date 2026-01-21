@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.utility;
 
 import com.sprint.mission.discodeit.entity.Common;
 
