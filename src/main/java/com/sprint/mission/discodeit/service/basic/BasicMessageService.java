@@ -62,34 +62,63 @@ public class BasicMessageService implements MessageService {
     @Override
     public Message updateMessage(String content, UUID id) {
         Message message = getMessage(id);
-        Optional.ofNullable(content).filter(c -> !c.isBlank()).ifPresent(message::updateContent);
+        Optional.ofNullable(content)
+                .filter(c -> !c.isBlank())
+                .ifPresent(message::updateContent);
+
         messageRepository.save(message);
-        User user = message.getUser();
-        if(user != null){
-            user.removeMessage(message);
-            user.addMessage(message);
-            userRepository.save(user);
+
+        User msgUser = message.getUser();
+        if (msgUser != null && msgUser.getId() != null) {
+            User user = userRepository.findById(msgUser.getId())
+                    .orElse(null);
+
+            if (user != null) {
+                user.getMessages().removeIf(m -> m != null && id.equals(m.getId()));
+                user.getMessages().add(message);
+
+                userRepository.save(user);
+            }
         }
-        Channel channel = message.getChannel();
-        if(channel != null){
-            channel.removeMessage(message);
-            channel.addMessage(message);
-            channelRepository.save(channel);
+
+        Channel msgChannel = message.getChannel();
+        if (msgChannel != null && msgChannel.getId() != null) {
+            Channel channel = channelRepository.findById(msgChannel.getId())
+                    .orElse(null);
+
+            if (channel != null) {
+                channel.getMessages().removeIf(m -> m != null && id.equals(m.getId()));
+                channel.getMessages().add(message);
+
+                channelRepository.save(channel);
+            }
         }
+
         return message;
     }
 
     @Override
     public void deleteMessage(UUID id) {
         Message message = getMessage(id);
-        User user = message.getUser();
-        Channel channel = message.getChannel();
 
-        if (channel != null) { channel.removeMessage(message); }
-        if (user != null) { user.removeMessage(message); }
+        if (message.getChannel() != null) {
+            UUID channelId = message.getChannel().getId();
+            channelRepository.findById(channelId).ifPresent(channel -> {
+                // iterator 충돌 방지 및 ID 기반 삭제
+                channel.getMessages().removeIf(m -> m.getId().equals(id));
+                channelRepository.save(channel);
+            });
+        }
+
+        if (message.getUser() != null) {
+            UUID userId = message.getUser().getId();
+            userRepository.findById(userId).ifPresent(user -> {
+                user.getMessages().removeIf(m -> m.getId().equals(id));
+                userRepository.save(user);
+            });
+        }
+
         messageRepository.delete(id);
-        if (channel != null) { channelRepository.save(channel); }
-        if (user != null) { userRepository.save(user); }
     }
 
     @Override

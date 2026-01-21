@@ -8,6 +8,11 @@ import java.util.*;
 
 public class FileMessageRepository implements MessageRepository {
     private final String FILE_PATH = "messages.dat";
+    private final Map<UUID, Message> cache;
+
+    public FileMessageRepository(){
+        this.cache = loadData();
+    }
 
     private Map<UUID, Message> loadData(){
         File file = new File(FILE_PATH);
@@ -19,9 +24,9 @@ public class FileMessageRepository implements MessageRepository {
         }
     }
 
-    private void saveData(Map<UUID, Message> data){
+    private void saveData(){
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))){
-            oos.writeObject(data);
+            oos.writeObject(cache);
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -29,25 +34,23 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public void save(Message message) {
-        Map<UUID, Message> data = loadData();
-        data.put(message.getId(), message);
-        saveData(data);
+        cache.put(message.getId(), message);
+        saveData();
     }
 
     @Override
     public Optional<Message> findById(UUID id) {
-        return Optional.ofNullable(loadData().get(id));
+        return Optional.ofNullable(cache.get(id));
     }
 
     @Override
     public List<Message> findAll() {
-        return new ArrayList<>(loadData().values());
+        return new ArrayList<>(cache.values());
     }
 
     @Override
     public void delete(UUID id) {
-        Map<UUID, Message> data = loadData();
-        data.remove(id);
-        saveData(data);
+        cache.remove(id);
+        saveData();
     }
 }

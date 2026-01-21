@@ -8,7 +8,10 @@ import java.util.*;
 
 public class FileChannelRepository implements ChannelRepository {
     private final String FILE_PATH = "channels.dat";
-
+    private final Map<UUID, Channel> cache;
+    public FileChannelRepository(){
+        this.cache = loadData();
+    }
     private Map<UUID, Channel> loadData(){
         File file = new File(FILE_PATH);
         if(!file.exists()) return new HashMap<>();
@@ -19,9 +22,9 @@ public class FileChannelRepository implements ChannelRepository {
         }
     }
 
-    private void saveData(Map<UUID, Channel> data){
+    private void saveData(){
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))){
-            oos.writeObject(data);
+            oos.writeObject(cache);
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -29,25 +32,23 @@ public class FileChannelRepository implements ChannelRepository {
 
     @Override
     public void save(Channel channel) {
-        Map<UUID, Channel> data = loadData();
-        data.put(channel.getId(), channel);
-        saveData(data);
+        cache.put(channel.getId(), channel);
+        saveData();
     }
 
     @Override
     public Optional<Channel> findById(UUID id) {
-        return Optional.ofNullable(loadData().get(id));
+        return Optional.ofNullable(cache.get(id));
     }
 
     @Override
     public List<Channel> findAll() {
-        return new ArrayList<>(loadData().values());
+        return new ArrayList<>(cache.values());
     }
 
     @Override
     public void delete(UUID id) {
-        Map<UUID, Channel> data = loadData();
-        data.remove(id);
-        saveData(data);
+        cache.remove(id);
+        saveData();
     }
 }

@@ -69,13 +69,18 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID id) {
         Channel channel = getChannel(id);
+
         if(messageService != null) {
             messageService.getMessagesByChannelId(id).forEach(m -> messageService.deleteMessage(m.getId()));
         }
-        new ArrayList<>(channel.getUsers()).forEach(user -> {
-            user.removeChannel(channel);
-            userRepository.save(user);
+
+        new ArrayList<>(channel.getUsers()).forEach(u -> {
+            userRepository.findById(u.getId()).ifPresent(user -> {
+                user.getChannels().removeIf(c -> c != null && id.equals(c.getId()));
+                userRepository.save(user);
+            });
         });
+
         channelRepository.delete(id);
     }
 
@@ -94,16 +99,16 @@ public class BasicChannelService implements ChannelService {
     public void leaveChannel(UUID userId, UUID channelId) {
         User user = userService.getUser(userId);
         Channel channel = getChannel(channelId);
-        if (!channel.getUsers().contains(user)) throw new IllegalArgumentException("참가하고 있지 않은 채널입니다.");
 
         if (messageService != null) {
-            channel.getMessages().stream()
-                    .filter(m -> m.getUser().equals(user))
-                    .toList()
+            new ArrayList<>(channel.getMessages()).stream()
+                    .filter(m -> m.getUser().getId().equals(userId))
                     .forEach(m -> messageService.deleteMessage(m.getId()));
         }
-        channel.removeUser(user);
-        user.removeChannel(channel);
+
+        channel.getUsers().removeIf(u -> u.getId().equals(userId));
+        user.getChannels().removeIf(c -> c.getId().equals(channelId));
+
         channelRepository.save(channel);
         userRepository.save(user);
     }

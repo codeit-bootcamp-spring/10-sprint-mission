@@ -49,26 +49,36 @@ public class BasicUserService implements UserService {
         User user = getUser(id);
         Optional.ofNullable(name).filter(n -> !n.isBlank()).ifPresent(user::updateName);
         Optional.ofNullable(email).filter(e -> !e.isBlank()).ifPresent(user::updateEmail);
+
         userRepository.save(user);
-        user.getChannels().forEach(channel -> {
-            channel.removeUser(user);
-            channel.addUser(user);
-            channelRepository.save(channel);
+
+        new ArrayList<>(user.getChannels()).forEach(c -> {
+            channelRepository.findById(c.getId()).ifPresent(channel -> {
+                channel.getUsers().removeIf(u -> u != null && id.equals(u.getId()));
+                channel.addUser(user); // 수정된 최신 user 객체 주입
+                channelRepository.save(channel);
+            });
         });
-        user.getMessages().forEach(messageRepository::save);
+        new ArrayList<>(user.getMessages()).forEach(messageRepository::save);
+
         return user;
     }
 
     @Override
     public void deleteUser(UUID id) {
         User user = getUser(id);
+
         if(messageService != null) {
             new ArrayList<>(user.getMessages()).forEach(m -> messageService.deleteMessage(m.getId()));
         }
-        new ArrayList<>(user.getChannels()).forEach(channel -> {
-            channel.removeUser(user);
-            channelRepository.save(channel);
+
+        new ArrayList<>(user.getChannels()).forEach(c -> {
+            channelRepository.findById(c.getId()).ifPresent(channel -> {
+                channel.getUsers().removeIf(u -> u != null && id.equals(u.getId()));
+                channelRepository.save(channel);
+            });
         });
+
         userRepository.delete(id);
     }
 

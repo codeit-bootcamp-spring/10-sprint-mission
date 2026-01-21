@@ -8,6 +8,10 @@ import java.util.*;
 
 public class FileUserRepository implements UserRepository {
     private final String FILE_PATH = "users.dat";
+    private final Map<UUID, User> cache;
+    public FileUserRepository(){
+        cache = loadData();
+    }
 
     private Map<UUID, User> loadData(){
         File file = new File(FILE_PATH);
@@ -19,34 +23,32 @@ public class FileUserRepository implements UserRepository {
         }
     }
 
-    private void saveData(Map<UUID, User> data){
+    private void saveData(){
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))){
-            oos.writeObject(data);
+            oos.writeObject(cache);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     @Override
     public void save(User user) {
-        Map<UUID, User> data = loadData();
-        data.put(user.getId(), user);
-        saveData(data);
+        cache.put(user.getId(), user);
+        saveData();
     }
 
     @Override
     public Optional<User> findById(UUID id) {
-        return Optional.ofNullable(loadData().get(id));
+        return Optional.ofNullable(cache.get(id));
     }
 
     @Override
     public List<User> findAll() {
-        return new ArrayList<>(loadData().values());
+        return new ArrayList<>(cache.values());
     }
 
     @Override
     public void delete(UUID id) {
-        Map<UUID, User> data = loadData();
-        data.remove(id);
-        saveData(data);
+        cache.remove(id);
+        saveData();
     }
 }
