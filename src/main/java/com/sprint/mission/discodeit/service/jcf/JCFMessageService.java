@@ -84,10 +84,8 @@ public class JCFMessageService implements MessageService {
         Channel channel = channelService.findChannelById(channelId);
 
         // 메시지가 존재하지 않을 경우 예외 발생
-        Message message = messageRepository.findMessageByMessageId(messageId);
-        if (message == null) {
-            throw new RuntimeException("메시지가 존재하지 않습니다.");
-        }
+        Message message = messageRepository.findMessageByMessageId(messageId)
+                .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
 
         // 채널이 맞지 않을 경우 예외 발생
         if (!message.getChannel().equals(channel)) {
@@ -129,10 +127,8 @@ public class JCFMessageService implements MessageService {
         }
 
         // 메시지가 존재하지 않을 경우 예외 발생
-        Message message = messageRepository.findMessageByMessageId(messageId);
-        if (message == null) {
-            throw new RuntimeException("메시지가 존재하지 않습니다.");
-        }
+        Message message = messageRepository.findMessageByMessageId(messageId)
+                .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
 
         // 채널이 맞지 않을 경우 예외 발생
         if (!message.getChannel().equals(channel)) {

@@ -27,16 +27,12 @@ public class BasicMessageService implements MessageService {
     @Override
     public Message createMessage(UUID channelId, UUID userId, String content) {
         // 존재하는 유저인지 검색 및 검증
-        Channel channel = channelRepository.findChannelById(channelId);
-        if (channel == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
+        Channel channel = channelRepository.findChannelById(channelId)
+                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
 
         // 존재하는 유저인지 검색 및 검증
-        User user = userRepository.findUserById(userId);
-        if (user == null) {
-            throw new RuntimeException("유저가 존재하지 않습니다.");
-        }
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // 채널에 가입된 유저만 메시지 작성 가능
         if (!channel.getUsers().contains(user)) {
@@ -59,10 +55,8 @@ public class BasicMessageService implements MessageService {
     @Override
     public List<String> readMessagesByChannelId(UUID channelId) {
         // 메시지를 조회하려는 채널이 존재하는지 검증
-        Channel channel = channelRepository.findChannelById(channelId);
-        if (channel == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
+        Channel channel = channelRepository.findChannelById(channelId)
+                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
 
         // 해당 채널의 모든 메시지를 반환
         return channel.getMessages()
@@ -74,10 +68,8 @@ public class BasicMessageService implements MessageService {
     @Override
     public List<String> readMessagesByUserId(UUID userId) {
         // 메시지를 조회하려는 유저가 존재하는지 검증
-        User user = userRepository.findUserById(userId);
-        if (user == null) {
-            throw new RuntimeException("유저가 존재하지 않습니다.");
-        }
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // 해당 유저가 작성한 모든 메시지를 반환
         return user.getMessages()
@@ -89,10 +81,8 @@ public class BasicMessageService implements MessageService {
     @Override
     public List<Message> findMessagesByChannelId(UUID channelId) {
         // 메시지를 조회하려는 채널이 존재하는지 검증
-        Channel channel = channelRepository.findChannelById(channelId);
-        if (channel == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
+        Channel channel = channelRepository.findChannelById(channelId)
+                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
 
         // 해당 채널의 모든 메시지 정보를 반환
         return channel.getMessages();
@@ -101,18 +91,12 @@ public class BasicMessageService implements MessageService {
     @Override
     public Message findMessageByChannelIdAndMessageId(UUID channelId, UUID messageId) {
         // 존재하는 채널인지 검색 및 검증
-        Channel channel = channelRepository.findChannelById(channelId);
-        if (channel == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
+        Channel channel = channelRepository.findChannelById(channelId)
+                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
 
         // 메시지가 존재하지 않거나 채널이 일치하지 않을 경우 예외 발생
-        Message message = messageRepository.findMessageByMessageId(messageId);
-        if (message == null || !message.getChannel().equals(channel)) {
-            throw new RuntimeException("메시지가 존재하지 않습니다.");
-        }
-
-        return message;
+        return messageRepository.findMessageByMessageId(messageId)
+                .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
     }
 
     @Override
@@ -145,16 +129,12 @@ public class BasicMessageService implements MessageService {
 
     private Message validateMessageAccess(UUID channelId, UUID userId, UUID messageId) {
         // 존재하는 채널인지 검색 및 검증
-        Channel channel = channelRepository.findChannelById(channelId);
-        if (channel == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
+        Channel channel = channelRepository.findChannelById(channelId)
+                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
 
         // 존재하는 유저인지 검색 및 검증
-        User user = userRepository.findUserById(userId);
-        if (user == null) {
-            throw new RuntimeException("유저가 존재하지 않습니다.");
-        }
+        User user = userRepository.findUserById(userId)
+                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // 채널에 가입된 유저인지 확인
         if (!user.getChannels().contains(channel)) {
@@ -162,8 +142,9 @@ public class BasicMessageService implements MessageService {
         }
 
         // 메시지가 존재하지 않거나 채널이 일치하지 않을 경우 예외 발생
-        Message message = messageRepository.findMessageByMessageId(messageId);
-        if (message == null || !message.getChannel().equals(channel)) {
+        Message message = messageRepository.findMessageByMessageId(messageId)
+                .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
+        if (!message.getChannel().equals(channel)) {
             throw new RuntimeException("메시지가 존재하지 않습니다.");
         }
 

@@ -35,11 +35,8 @@ public class BasicUserService implements UserService {
 
     @Override
     public User findUserById(UUID userId) {
-        User user = userRepository.findUserById(userId);
-        if (user == null) {
-            throw new RuntimeException("유저가 존재하지 않습니다.");
-        }
-        return user;
+        return userRepository.findUserById(userId)
+                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
     }
 
     @Override

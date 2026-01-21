@@ -1,25 +1,27 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.consistency.JCFConsistencyManager;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
-    private final JCFConsistencyManager jcfConsistencyManager;
     private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
     private final UserService userService;
 
-    public JCFChannelService(JCFConsistencyManager jcfConsistencyManager,
-                             ChannelRepository channelRepository,
+    public JCFChannelService(ChannelRepository channelRepository,
+                             MessageRepository messageRepository,
                              UserService userService) {
-        this.jcfConsistencyManager = jcfConsistencyManager;
         this.channelRepository = channelRepository;
+        this.messageRepository = messageRepository;
         this.userService = userService;
     }
 
@@ -37,12 +39,8 @@ public class JCFChannelService implements ChannelService {
     @Override
     public Channel findChannelById(UUID channelId) {
         // 존재하는 채널인지 검색 및 검증, 존재하지 않으면 예외 발생
-        Channel channel = channelRepository.findChannelById(channelId);
-        if (channel == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
-
-        return channel;
+        return channelRepository.findChannelById(channelId)
+                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
     }
 
     @Override
@@ -73,8 +71,15 @@ public class JCFChannelService implements ChannelService {
             throw new RuntimeException("해당 채널에 대한 권한이 없습니다.");
         }
 
-        // 채널 삭제를 위해 해당 채널의 관계 정리
-        jcfConsistencyManager.cleanupChannelRelations(channel);
+        // 채널에 속한 메시지 수집
+        List<Message> messages = new ArrayList<>(channel.getMessages());
+        // 메시지를 가지고 있는 채널과 유저의 메시지 목록에서 제거
+        messages.forEach(Message::removeFromChannelAndUser);
+        // 메시지 저장소에서 메시지 제거
+        messages.forEach(m -> messageRepository.deleteMessage(m.getId()));
+        // 채널에 가입된 모든 유저 탈퇴 처리
+        List<User> users = new ArrayList<>(channel.getUsers());
+        users.forEach(u -> u.leaveChannel(channel));
 
         // 관계를 정리한 후 채널 삭제, 저장소에서 제거
         channelRepository.deleteChannel(channel.getId());
