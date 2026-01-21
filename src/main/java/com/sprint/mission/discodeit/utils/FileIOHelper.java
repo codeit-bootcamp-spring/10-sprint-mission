@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,6 +85,24 @@ public class FileIOHelper {
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
             throw new RuntimeException("파일 삭제를 실패하였습니다. filePath: " + filePath, e);
+        }
+    }
+
+    public static void flushData() {
+        try {
+            if (!Files.exists(BASE_DIRECTORY)) return;
+
+            Files.walk(BASE_DIRECTORY)
+                    .sorted(Comparator.reverseOrder()) // 자식 먼저 삭제
+                    .forEach(path -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        } catch (IOException e) {
+            throw new RuntimeException("파일 삭제를 실패하였습니다. filePath: " + BASE_DIRECTORY, e);
         }
     }
 }

@@ -14,11 +14,14 @@ import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.utils.FileIOHelper;
 
 import java.util.List;
 
 public class JavaApplication {
     public static void main(String[] args) {
+        FileIOHelper.flushData();
+
         UserRepository userRepository = new FileUserRepository();
         ChannelRepository channelRepository = new FileChannelRepository();
         MessageRepository messageRepository = new FileMessageRepository();
@@ -92,6 +95,7 @@ public class JavaApplication {
         //메세지 삭제
         try {
             messageService.deleteMessage(user1.getId(), message1.getId());
+            messageService.findMessageByMessageId(message1.getId());
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -115,6 +119,7 @@ public class JavaApplication {
         //유저 삭제 성공
         try {
             userService.deleteUser(user3.getId());
+            userService.findUserByUserID(user3.getId());
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -134,6 +139,7 @@ public class JavaApplication {
         //채널 삭제
         try {
             channelService.deleteChannel(user1.getId(), channel.getId());
+            channelService.findChannelByChannelId(channel.getId());
         } catch (Exception e) {
             System.out.println(e);
         }
