@@ -3,10 +3,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFMessageRepository implements MessageRepository {
     final Map<UUID, Message> messageData;
@@ -16,12 +13,8 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message find(UUID messageID) {
-        Message message = messageData.get(messageID);
-        if (message == null) {
-            throw new IllegalArgumentException("Message Not Found: "+messageID);
-        }
-        return message;
+    public Optional<Message> find(UUID messageID) {
+        return Optional.ofNullable(messageData.get(messageID));
     }
 
     @Override

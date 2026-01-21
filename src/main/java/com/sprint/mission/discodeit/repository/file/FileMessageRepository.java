@@ -6,16 +6,13 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class FileMessageRepository implements MessageRepository {
     private Map<UUID, Message> messageData;
 
-    private final Path basePath = Path.of("data/message");
-    private final Path storeFile = basePath.resolve("message.ser");
+    private static final Path BASE_PATH = Path.of("data/message");
+    private static final Path STORE_FILE = BASE_PATH.resolve("message.ser");
 
     public FileMessageRepository() {
         init();
@@ -25,8 +22,8 @@ public class FileMessageRepository implements MessageRepository {
     // 디렉 체크
     private void init() {
         try {
-            if (!Files.exists(basePath)) {
-                Files.createDirectories(basePath);
+            if (!Files.exists(BASE_PATH)) {
+                Files.createDirectories(BASE_PATH);
             }
         } catch (IOException e) {
             System.out.println("Directory creation failed." + e.getMessage());
@@ -35,7 +32,7 @@ public class FileMessageRepository implements MessageRepository {
 
     // 저장 (직렬화)
     void saveData() {
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(storeFile.toFile()))) {
+        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(STORE_FILE.toFile()))) {
             oos.writeObject(messageData);
         } catch (IOException e) {
             throw new RuntimeException("Data save failed." + e.getMessage());
@@ -45,24 +42,23 @@ public class FileMessageRepository implements MessageRepository {
     // 로드 (역직렬화)
     private void loadData() {
         // 파일이 없으면: 첫 실행이므로 빈 리스트 유지
-        if (!Files.exists(storeFile)) {
+        if (!Files.exists(STORE_FILE)) {
             messageData = new HashMap<>();
             return;
         }
 
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(storeFile.toFile()))){
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(STORE_FILE.toFile()))){
             messageData = (Map<UUID, Message>) ois.readObject();
         } catch (Exception e){
             throw new RuntimeException("Data load failed." + e.getMessage());
         }
     }
     @Override
-    public Message find(UUID messageID) {
+    public Optional<Message> find(UUID messageID) {
         loadData();
         return messageData.values().stream()
                 .filter(message -> message.getId().equals(messageID))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Message Not Found: " + messageID));
+                .findFirst();
     }
 
     @Override

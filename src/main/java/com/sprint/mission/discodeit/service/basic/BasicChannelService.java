@@ -10,9 +10,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class BasicChannelService implements ChannelService {
     // 필드
@@ -48,7 +46,8 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel find(UUID id) {
-        return channelRepository.find(id);
+        return channelRepository.find(id)
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
     }
 
     @Override
@@ -59,9 +58,41 @@ public class BasicChannelService implements ChannelService {
     @Override
     public Channel updateName(UUID channelID, String name) {
         // [저장] , 조회
-        Channel channel = channelRepository.find(channelID);
+        Channel channel = channelRepository.find(channelID)
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
         // 비즈니스
         channel.updateName(name);
+        channelRepository.save(channel);
+
+        Set<UUID> userIds = new HashSet<>();
+        // user에서도 변경된 이름으로 save되어야 함.
+        for (User user : channel.getMembersList()) {
+            for (Channel c : user.getChannels()) {
+                if (c.getId().equals(channelID)) {
+                    c.updateName(name);
+                    userIds.add(user.getId());
+                    break;
+                }
+            }
+        }
+        // 변경사항 저장 -> find에서 load하고
+        for (UUID userId : userIds) {
+            userRepository.save(userRepository.find(userId).get());
+        }
+
+        Set<UUID> messageIds = new HashSet<>();
+
+
+        for (Message message : channel.getMessageList()) {
+            message.getChannel().updateName(name);
+            messageIds.add(message.getId());
+        }
+
+        // 변경사항 저장
+        for (UUID messageId : messageIds) {
+            messageRepository.save(messageRepository.find(messageId).get());
+        }
+
         return channelRepository.save(channel);
     }
 
@@ -178,10 +209,11 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<String> findMembers(UUID channelID) {
-        Channel channel = channelRepository.find(channelID);
+        Channel channel = channelRepository.find(channelID)
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
         // userService의 find로 user 객체 최신화 필요
         return channel.getMembersList().stream()
-                .map(user -> userRepository.find(user.getId()))
+                .map(user -> userService.find(user.getId()))
                 .map(User::getName)
                 .collect(java.util.stream.Collectors.toList());
     }

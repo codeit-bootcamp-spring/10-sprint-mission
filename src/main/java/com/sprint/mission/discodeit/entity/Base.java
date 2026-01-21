@@ -37,11 +37,6 @@ public abstract class Base implements Serializable {
         this.updatedAt = System.currentTimeMillis();
     }
 
-    // other
-    public void update(){
-        this.updatedAt = System.currentTimeMillis();
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

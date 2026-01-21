@@ -33,6 +33,6 @@ public class Message extends Base  {
     // Setter
     public void updateContents(String contents) {
         this.contents = contents;
-        update();
+        updateUpdatedAt();
     }
 }

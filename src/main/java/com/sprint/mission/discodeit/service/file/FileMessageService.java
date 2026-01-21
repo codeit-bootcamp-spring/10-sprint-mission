@@ -89,6 +89,11 @@ public class FileMessageService implements MessageService {
         User sender = FileUserService.find(userID);
         Channel channel = FileChannelService.find(channelID);
 
+        // sender가 해당 channel의 member인지 check
+        if (!channel.getMembersList().contains(sender)) {
+            throw new IllegalArgumentException("User is not in this channel." + channelID);
+        }
+
         // create
         Message msg = new Message(contents, sender, channel);
         messageData.put(msg.getId(), msg);

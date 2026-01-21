@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFUserRepository implements UserRepository {
@@ -15,11 +16,10 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User find(UUID userID) {
+    public Optional<User> find(UUID userID) {
         return userData.stream()
                 .filter(user -> user.getId().equals(userID))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
+                .findFirst();
     }
 
     @Override

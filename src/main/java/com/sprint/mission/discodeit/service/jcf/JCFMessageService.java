@@ -44,6 +44,11 @@ public class JCFMessageService implements MessageService {
         User sender = userService.find(userID);
         Channel channel = channelService.find(channelID);
 
+        // sender가 해당 channel의 member인지 check
+        if (!channel.getMembersList().contains(sender)) {
+            throw new IllegalArgumentException("User is not in this channel." + channelID);
+        }
+
         // create
         Message msg = new Message(contents, sender, channel);
         messageData.put(msg.getId(), msg);

@@ -33,22 +33,27 @@ public class Channel extends Base  {
     // setter
     public void updateName(String name) {
         this.name = name;
+        updateUpdatedAt();
     }
 
     // other
     public void addMember(User member){
         membersList.add(member);
+        updateUpdatedAt();
     }
 
     public void removeMember(User member) {
         membersList.remove(member);
+        updateUpdatedAt();
     }
 
     public void addMessage(Message msg){
         messageList.add(msg);
+        updateUpdatedAt();
     }
 
     public void removeMessage(Message msg){
         messageList.remove(msg);
+        updateUpdatedAt();
     }
 }

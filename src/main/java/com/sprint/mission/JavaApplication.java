@@ -16,7 +16,7 @@ import java.util.UUID;
 public class JavaApplication {
     public static void main(String[] args) {
         // Service 생성 !!
-        Factory factory = new Factory("JCF");
+        Factory factory = new Factory("basic-file");
         UserService userService = factory.getUserService();
         ChannelService channelService = factory.getChannelService();
         MessageService messageService = factory.getMessageService();
@@ -167,6 +167,8 @@ public class JavaApplication {
 
         channelService.updateName(ch1.getId(), "CODEIT_10");
         System.out.println("Ch1 updated name: " + channelService.find(ch1.getId()).getName());
+        System.out.println("user2 channels: " + userService.find(user2.getId()).getChannels().stream()
+        .map(Channel::getName).toList());
 
         messageService.updateName(msg2.getId(), "My name is DAVID");
         System.out.println("Msg2 updated contents: " + messageService.find(msg2.getId()).getContents() + "\n");
@@ -175,6 +177,8 @@ public class JavaApplication {
         // 11. DELETE 테스트 - User 삭제
         // ============================================================
 
+
+        // find 수정하니 문제 발생
         user3 = userService.find(user3.getId());
         ch1 = channelService.find(ch1.getId());
 

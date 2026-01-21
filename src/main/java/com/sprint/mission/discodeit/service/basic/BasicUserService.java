@@ -10,9 +10,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class BasicUserService implements UserService {
     // 필드
@@ -47,7 +45,8 @@ public class BasicUserService implements UserService {
 
     @Override
     public User find(UUID id) {
-        return userRepository.find(id);
+        return userRepository.find(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
     }
 
     @Override
@@ -57,8 +56,34 @@ public class BasicUserService implements UserService {
 
     @Override
     public User updateName(UUID userID, String name) {
-        User user = userRepository.find(userID);
+        User user = userRepository.find(userID)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
         user.updateName(name);
+
+        Set<UUID> channelIDs = new HashSet<>();
+
+        for (Channel channel : user.getChannels()) {
+            for (User u : channel.getMembersList()){
+                if (u.getId().equals(userID)) {
+                    u.updateName(name);
+                    channelIDs.add(channel.getId());
+                }
+            }
+        }
+
+        for (UUID channelID : channelIDs) {
+            channelService.updateName(channelID, name);
+        }
+
+        Set<UUID> messageIDs = new HashSet<>();
+        for (Message message : user.getMessageList()) {
+            message.getSender().updateName(name);
+            messageIDs.add(message.getId());
+        }
+
+        for (UUID messageID : messageIDs) {
+            messageRepository.save(messageRepository.find(messageID).get());
+        }
         // [저장] 변경사항 저장
         return userRepository.save(user);
     }
@@ -70,7 +95,8 @@ public class BasicUserService implements UserService {
         }
 
         // [저장]
-        User user = userRepository.find(userID);
+        User user = userRepository.find(userID)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
 
         // [비즈니스] : 진짜 유저가 보낸 메시지만 삭제하도록
         List<Message> messages = new ArrayList<>(user.getMessageList());
