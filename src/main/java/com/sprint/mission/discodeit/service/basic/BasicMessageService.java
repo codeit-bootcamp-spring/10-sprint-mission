@@ -26,11 +26,11 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public Message createMessage(String content, UUID channelId, UUID userId) {
-        Channel channel = channelRepository.findById(channelId);
-        User user = userRepository.findById(userId);
+        Channel channel = channelRepository.findById(channelId)
+                                           .orElseThrow(() -> new IllegalArgumentException("해당 채널이 없습니다"));
 
-        if(channel == null) throw new IllegalArgumentException("채널을 찾을 수 없습니다.");
-        if(user == null) throw new IllegalArgumentException("유저를 찾을 수 없습니다.");
+        User user = userRepository.findById(userId)
+                                  .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다"));
 
         Message newMessage = new Message(content, channel, user);
 
@@ -47,17 +47,18 @@ public class BasicMessageService implements MessageService {
     @Override
     public void deleteMessage(UUID id) {
         Message targetMessage = findMessageById(id);
-        User user = userRepository.findById(targetMessage.getUser().getId());
-        Channel channel = channelRepository.findById(targetMessage.getChannel().getId());
+        User user = userRepository.findById(targetMessage.getUser().getId())
+                                  .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다"));
+        Channel channel = channelRepository.findById(targetMessage.getChannel().getId())
+                                           .orElseThrow(() -> new IllegalArgumentException("해당 채널이 없습니다"));
 
-        if (user != null) {
-            user.getMyMessages().remove(targetMessage);
-            userRepository.save(user);
-        }
-        if (channel != null) {
-            channel.getChannelMessages().remove(targetMessage);
-            channelRepository.save(channel);
-        }
+
+        user.getMyMessages().remove(targetMessage);
+        userRepository.save(user);
+
+        channel.getChannelMessages().remove(targetMessage);
+        channelRepository.save(channel);
+
 
         messageRepository.delete(id);
         System.out.println("메시지 삭제 완료: " + targetMessage.getContent());
@@ -65,11 +66,8 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public Message findMessageById(UUID id) {
-        Message message = messageRepository.findById(id);
-        if (message == null) {
-            throw new IllegalArgumentException("해당 메시지가 없습니다.");
-        }
-        return message;
+        return messageRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 없습니다."));
     }
 
     @Override
@@ -77,6 +75,23 @@ public class BasicMessageService implements MessageService {
         Message targetMessage = findMessageById(id);
         targetMessage.updateContent(newContent);
         messageRepository.save(targetMessage);
+
+        User author = userRepository.findById(targetMessage.getUser().getId())
+                                    .orElseThrow(() -> new IllegalArgumentException("해당 유저가 없습니다"));;
+        // 작성자의 메시지 리스트에서 해당 메시지를 찾아 최신 내용으로 교체
+        author.getMyMessages().replaceAll(m -> m.equals(targetMessage) ? targetMessage : m);
+        userRepository.save(author);
+
+
+        // 소속 채널의 메시지 목록 업데이트
+        Channel channel = channelRepository.findById(targetMessage.getChannel().getId())
+                                           .orElseThrow(() -> new IllegalArgumentException("해당 채널이 없습니다"));;
+
+        // 채널의 메시지 리스트에서 해당 메시지를 찾아 최신 내용으로 교체
+        channel.getChannelMessages().replaceAll(m -> m.equals(targetMessage) ? targetMessage : m);
+        channelRepository.save(channel);
+
+
         System.out.println("메시지가 수정되었습니다");
         return targetMessage;
     }

@@ -45,9 +45,9 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findById(UUID id) {
+    public Optional<Channel> findById(UUID id) {
         load();
-        return channelMap.get(id);
+        return Optional.ofNullable(channelMap.get(id));
     }
 
     @Override

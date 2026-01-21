@@ -23,6 +23,14 @@ public class Message extends BaseEntity {
         return content;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
+
     public void updateContent(String newContent){
         this.content = newContent;
         super.setUpdatedAt(System.currentTimeMillis());

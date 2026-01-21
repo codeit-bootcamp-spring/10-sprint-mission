@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -10,10 +12,13 @@ import java.util.*;
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
 
-    public BasicUserService(UserRepository userRepository, ChannelRepository channelRepository) {
+    public BasicUserService(UserRepository userRepository, ChannelRepository channelRepository,
+                            MessageRepository messageRepository) {
         this.userRepository = userRepository;
         this.channelRepository = channelRepository;
+        this.messageRepository = messageRepository;
     }
 
     @Override
@@ -26,11 +31,8 @@ public class BasicUserService implements UserService {
 
     @Override
     public User findUserById(UUID id) {
-        User user = userRepository.findById(id);
-        if (user == null) {
-            throw new IllegalArgumentException("해당 유저가 없습니다.");
-        }
-        return user;
+        return userRepository.findById(id)
+                             .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다"));
     }
 
     @Override
@@ -70,6 +72,22 @@ public class BasicUserService implements UserService {
         });
 
         userRepository.save(targetUser);
+        targetUser.getMyChannels().stream()
+                  .map(channel -> channelRepository.findById(channel.getId())) // ID로 최신 채널 조회
+                  .flatMap(Optional::stream)   // 존재하는 채널만 필터링
+                  .forEach(realChannel -> {
+                      // 작성자 정보 갱신
+                      realChannel.getParticipants().replaceAll(p -> p.equals(targetUser) ? targetUser : p);
+                      channelRepository.save(realChannel);        // 채널 저장
+                  });
+
+        // 작성자 정보 갱신
+        messageRepository.findByUserId(id).forEach(msg -> {
+            msg.setUser(targetUser);  // 작성자 교체
+            messageRepository.save(msg);
+        });
+
+        System.out.println("유저 정보 수정 및 연관 데이터 동기화 완료");
 
         return targetUser;
     }

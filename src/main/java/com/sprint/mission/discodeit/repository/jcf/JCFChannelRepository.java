@@ -17,8 +17,8 @@ public class JCFChannelRepository implements ChannelRepository {
         channelMap.remove(id);
     }
 
-    public Channel findById(UUID id) {
-        return channelMap.get(id);
+    public Optional<Channel> findById(UUID id) {
+        return Optional.ofNullable(channelMap.get(id));
     }
 
     public List<Channel> findAll(){

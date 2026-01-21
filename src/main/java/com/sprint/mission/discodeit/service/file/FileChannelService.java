@@ -26,16 +26,14 @@ public class FileChannelService implements ChannelService {
 
     @Override
     public Channel findChannelByChannelId(UUID id){
-        Channel channel = channelRepository.findById(id);
-        if (channel == null) {
-            throw new IllegalArgumentException("해당 채널이 없습니다.");
-        }
-        return channel;
+        return channelRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("해당 채널을 찾을다 수 없습니다"));
     }
 
     @Override
     public List<Channel> findChannelByUserId(UUID userID){
-        User user = userRepository.findById(userID);
+        User user = userRepository.findById(userID)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다"));
         return user.getMyChannels();
     }
 
@@ -65,7 +63,8 @@ public class FileChannelService implements ChannelService {
     @Override
     public void joinChannel(UUID userID, UUID channelID) {
         Channel targetChannel = findChannelByChannelId(channelID);
-        User targetUser = userRepository.findById(userID);
+        User targetUser = userRepository.findById(userID)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다"));
 
         if(targetChannel.getParticipants().stream()
                         .anyMatch(participant -> participant.getId().equals(userID))){
@@ -86,7 +85,8 @@ public class FileChannelService implements ChannelService {
     @Override
     public void leaveChannel(UUID userID, UUID channelID) {
         Channel targetChannel = findChannelByChannelId(channelID);
-        User targetUser = userRepository.findById(userID);
+        User targetUser = userRepository.findById(userID)
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다"));
 
         if (!targetChannel.getParticipants().contains(targetUser)) {
             throw new IllegalArgumentException("채널에 참여중이지 않습니다.");

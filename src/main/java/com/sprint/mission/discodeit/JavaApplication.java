@@ -135,8 +135,8 @@ public class JavaApplication {
         ChannelRepository jcfChannelRepo = new JCFChannelRepository();
         MessageRepository jcfMessageRepo = new JCFMessageRepository();
 
-        UserService jcfUserService = new BasicUserService(jcfUserRepo, jcfChannelRepo);
-        ChannelService jcfChannelService = new BasicChannelService(jcfUserRepo,jcfChannelRepo);
+        UserService jcfUserService = new BasicUserService(jcfUserRepo, jcfChannelRepo, jcfMessageRepo);
+        ChannelService jcfChannelService = new BasicChannelService(jcfUserRepo,jcfChannelRepo, jcfMessageRepo);
         MessageService jcfMessageService = new BasicMessageService(jcfMessageRepo, jcfChannelRepo, jcfUserRepo);
 
         // 테스트 실행
@@ -150,8 +150,8 @@ public class JavaApplication {
         ChannelRepository fileChannelRepo = new FileChannelRepository();
         MessageRepository fileMessageRepo = new FileMessageRepository();
 
-        UserService fileUserService = new BasicUserService(fileUserRepo, fileChannelRepo);
-        ChannelService fileChannelService = new BasicChannelService(fileUserRepo, fileChannelRepo);
+        UserService fileUserService = new BasicUserService(fileUserRepo, fileChannelRepo, fileMessageRepo);
+        ChannelService fileChannelService = new BasicChannelService(fileUserRepo, fileChannelRepo, fileMessageRepo);
         MessageService fileMessageService = new BasicMessageService(fileMessageRepo, fileChannelRepo, fileUserRepo);
 
         // 테스트 실행

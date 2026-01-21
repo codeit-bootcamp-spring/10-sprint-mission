@@ -27,11 +27,8 @@ public class FileUserService implements UserService {
 
     @Override
     public User findUserById(UUID id) {
-        User user = userRepository.findById(id);
-        if (user == null) {
-            throw new IllegalArgumentException("해당 유저가 없습니다.");
-        }
-        return user;
+        return userRepository.findById(id)
+                             .orElseThrow(() -> new IllegalArgumentException("해당 유저를 다찾을 수 없습니다"));
     }
 
     @Override

@@ -21,8 +21,10 @@ public class FileMessageService implements MessageService {
     private final UserRepository userRepository = new FileUserRepository();
 
     public Message createMessage(String content, UUID channelId, UUID userId){
-        Channel channel = channelRepository.findById(channelId);
-        User user = userRepository.findById(userId);
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다"));
 
         Message newMessage = new Message(content, channel, user);
 
@@ -49,11 +51,8 @@ public class FileMessageService implements MessageService {
     }
 
     public Message findMessageById(UUID id){
-        Message message = messageRepository.findById(id);
-        if (message == null) {
-            throw new IllegalArgumentException("해당 메시지가 없습니다.");
-        }
-        return message;
+        return messageRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("메시지를 찾을 수 없습니다"));
     }
 
     public Message updateMessage(UUID id, String newContent){
@@ -69,12 +68,8 @@ public class FileMessageService implements MessageService {
 
     public void deleteMessage(UUID id){
         Message targetMessage = findMessageById(id);
-        User user = userRepository.findById(targetMessage.getUser().getId());
-
-        if (user != null) {
-            user.getMyMessages().remove(targetMessage);
-            userRepository.save(user);
-        }
+        userRepository.findById(targetMessage.getUser().getId())
+                      .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다"));
 
         messageRepository.delete(id);
         System.out.println("메시지 삭제 완료: " + targetMessage.getContent());
