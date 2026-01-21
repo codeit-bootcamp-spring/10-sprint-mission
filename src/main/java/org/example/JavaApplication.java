@@ -1,6 +1,21 @@
 package org.example;
 
 import org.example.entity.*;
+import org.example.repository.ChannelRepository;
+import org.example.repository.MessageRepository;
+import org.example.repository.UserRepository;
+import org.example.repository.file.FileChannelRepository;
+import org.example.repository.file.FileMessageRepository;
+import org.example.repository.file.FileUserRepository;
+import org.example.repository.jcf.JCFChannelRepository;
+import org.example.repository.jcf.JCFMessageRepository;
+import org.example.repository.jcf.JCFUserRepository;
+import org.example.service.ChannelService;
+import org.example.service.MessageService;
+import org.example.service.UserService;
+import org.example.service.basic.BasicChannelService;
+import org.example.service.basic.BasicMessageService;
+import org.example.service.basic.BasicUserService;
 import org.example.service.file.FileChannelService;
 import org.example.service.file.FileMessageService;
 import org.example.service.file.FileUserService;
@@ -11,24 +26,22 @@ import java.util.UUID;
 public class JavaApplication {
 
     public static void main(String[] args) {
+        // 바꾸기 가능
+//        UserRepository userRepository = new JCFUserRepository();
+//        ChannelRepository channelRepository = new JCFChannelRepository();
+//        MessageRepository messageRepository = new JCFMessageRepository();
 
-        // 서비스 초기화
-        /*JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService(userService);
-        JCFMessageService messageService = new JCFMessageService(userService, channelService);
+         UserRepository userRepository = new FileUserRepository();
+         ChannelRepository channelRepository = new FileChannelRepository();
+         MessageRepository messageRepository = new FileMessageRepository();
 
-        channelService.setMessageService(messageService);
-        userService.setMessageService(messageService);*/
-// 1. 순환 의존성 없는 것 먼저
-        FileUserService userService = new FileUserService();
-
-// 2. 부분 생성
-        FileChannelService channelService = new FileChannelService(userService);
-        FileMessageService messageService = new FileMessageService(userService, channelService);
-
-// 3. Setter로 나머지 주입
-        userService.setMessageService(messageService);
-        channelService.setMessageService(messageService);
+        // ==================== BasicService 초기화 ====================
+        UserService userService = new BasicUserService(
+                userRepository, channelRepository, messageRepository);
+        ChannelService channelService = new BasicChannelService(
+                channelRepository, userRepository, messageRepository);
+        MessageService messageService = new BasicMessageService(
+                messageRepository, userRepository, channelRepository);
 
         // ==================== 1. 등록 테스트 ====================
         System.out.println("\n[ 1. 등록 테스트 ]");
