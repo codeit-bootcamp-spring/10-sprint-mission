@@ -1,40 +1,41 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
-public class JCFUserService implements UserService {
+//2026.01.20 비즈니스 로직 구현 update 부터..
+public class BasicUserService implements UserService {
 
-    private final Map<UUID, User> data;
+    private final UserRepository userRepository;
 
-    public JCFUserService(){
-        this.data = new HashMap<>();
+    public BasicUserService(UserRepository userRepository){
+        this.userRepository = userRepository;
     }
 
     @Override
     public User create(String userName,String email, String status){
         User user = new User(userName,email,status);
-        data.put(user.getId(),user);
-
-        return user;
+        return userRepository.save(user);
     }
 
     @Override
     public User findById(UUID id){
-        if(data.get(id) == null){
+        User user = userRepository.findById(id);
+        if(user == null){
             throw new IllegalArgumentException("해당 id의 유저가 없습니다.");
         }
-        return data.get(id);
+        return user;
     }
 
     @Override
     public List<User> findAll(){
-        return new ArrayList<>(data.values());
+        return userRepository.findAll();
     }
 
 
@@ -60,29 +61,34 @@ public class JCFUserService implements UserService {
     @Override
     public User delete(UUID id){
         User user = findById(id);
-        data.remove(id);
+        userRepository.delete(id);
         return user;
     }
 
-    public void removeChannel(UUID channelId){
-        if(channelId == null){
-            throw new IllegalArgumentException("삭제하려는 채널이 없습니다.");
-        }
-
-        data.values().stream()
-                .forEach(user ->
-                        user.getChannelList()
-                                .removeIf(Channel ->
-                                        Channel.getId().equals(channelId)));
-
-        data.values().stream()
-                .forEach(user ->
-                        user.getMessageList()
-                                .removeIf(message ->
-                                        message.getChannel().getId().equals(channelId)
-                                )
-                );
+    @Override
+    public void removeChannel(UUID channelId) {
 
     }
+
+//    public void removeChannel(UUID channelId){
+//        if(channelId == null){
+//            throw new IllegalArgumentException("삭제하려는 채널이 없습니다.");
+//        }
+//
+//        data.values().stream()
+//                .forEach(user ->
+//                        user.getChannelList()
+//                                .removeIf(Channel ->
+//                                        Channel.getId().equals(channelId)));
+//
+//        data.values().stream()
+//                .forEach(user ->
+//                        user.getMessageList()
+//                                .removeIf(message ->
+//                                        message.getChannel().getId().equals(channelId)
+//                                )
+//                );
+//
+//    }
 
 }
