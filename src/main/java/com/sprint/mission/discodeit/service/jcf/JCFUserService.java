@@ -23,6 +23,7 @@ public class JCFUserService implements UserService {
     public JCFUserService(UserRepository userRepo) {
         this.userRepo = userRepo;
         //this.data = new HashMap<>();
+        //이제 서비스층에선 직접 data 받지 않고, UserRepository에서 직접 HashMap으로 받게 이관!!!
     }
     //JCF UserService 인스턴스마다 자기만의 data 저장소를 가지게 되고,
     // 인터페이스의 약속(UserService의 메서드 정의)은 그대로 따름.
@@ -60,13 +61,10 @@ public class JCFUserService implements UserService {
 
     // ID로 유저을 조회
     public User findUserById(UUID uuid) {
-        User user = userRepo.findById(uuid);
-        // User user = data.get(uuid);
-        if (user == null) {
-            throw new NoSuchElementException("해당 유저가 존재하지 않습니다: " + uuid);
-        }
-        return user;
+        return userRepo.findById(uuid)
+                .orElseThrow(() -> new NoSuchElementException("해당 ID의 유저가 없습니다: " + uuid));
     }
+
 
     // 해당 이름을 갖는 유저리스트 반환으로 변경.(동명이인때문)
     public List<User> getUserByName(String userName) {
@@ -91,12 +89,14 @@ public class JCFUserService implements UserService {
     // 갱신
     @Override
     public User updateUser(UUID uuid, String newName, String newAlias) {
-        User existing = userRepo.findById(uuid); //findUserById(uuid);
+
 
         // 빈칸 or null 검사
         Validation.notBlank(newName, "이름");
         Validation.notBlank(newAlias, "별명");
 
+        User existing = userRepo.findById(uuid)
+                .orElseThrow(() -> new NoSuchElementException("수정할 유저가 없습니다: " + uuid));
         // 별명 중복 검사 추가
         List<User> allUsers = userRepo.findAll();
         Validation.noDuplicate(
@@ -115,7 +115,8 @@ public class JCFUserService implements UserService {
     // 유저 정보 삭제
     @Override
     public void deleteUser(UUID uuid) {
-        findUserById(uuid);
+        userRepo.findById(uuid)
+                .orElseThrow(() -> new NoSuchElementException("삭제할 유저가 없습니다: " + uuid));
         userRepo.delete(uuid);
     }
 

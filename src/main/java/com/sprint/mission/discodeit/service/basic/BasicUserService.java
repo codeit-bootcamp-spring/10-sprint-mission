@@ -56,24 +56,27 @@ public class BasicUserService implements UserService {
     }
     @Override
     public User findUserById(UUID id) {
-        User user = userRepository.findById(id);
-        if (user == null) {
-            throw new NoSuchElementException("해당 ID의 유저가 없습니다: " + id);
-        }
-        return user;
+        return userRepository.findById(id)
+                .orElseThrow(()->
+                        new NoSuchElementException("해당 ID의 유저가 없습니다: "+ id));
     }
 
 
 
     @Override
     public void deleteUser(UUID uuid){
+        //  없는 ID면 예외
+        userRepository.findById(uuid)
+                .orElseThrow(() -> new NoSuchElementException("삭제할 유저가 없습니다: " + uuid));
         userRepository.delete(uuid);
     }
+
     @Override
     public User updateUser(UUID uuid, String newName, String newAlias) {
-        User existing = userRepository.findById(uuid);
         Validation.notBlank(newName, "이름");
         Validation.notBlank(newAlias, "별명");
+        User existing = userRepository.findById(uuid)
+                .orElseThrow(() -> new NoSuchElementException("수정할 유저가 없습니다: " + uuid));
 
         existing.changeUserName(newName);
         existing.changeAlias(newAlias);

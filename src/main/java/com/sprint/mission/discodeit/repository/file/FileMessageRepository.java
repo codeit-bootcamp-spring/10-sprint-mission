@@ -27,8 +27,9 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findById(UUID id) {
-        return data.get(id);
+    public Optional<Message> findById(UUID id) {
+
+        return Optional.ofNullable(data.get(id));
     }
 
     @Override

@@ -6,6 +6,6 @@ import java.util.*;
 public interface MessageRepository {
     void save(Message message);
     void delete(UUID id);
-    Message findById(UUID id);
+    Optional<Message> findById(UUID id);
     List<Message> findAll();
 }

@@ -22,8 +22,9 @@ public class FileChannelRepository implements ChannelRepository {
         data.remove(id);
     }
     @Override
-    public Channel findById(UUID id){
-        return data.get(id);
+    public Optional<Channel> findById(UUID id){
+
+        return Optional.ofNullable(data.get(id));
     }
     @Override
     public List<Channel> findAll() {

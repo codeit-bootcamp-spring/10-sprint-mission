@@ -49,11 +49,8 @@ public class JCFChannelService implements ChannelService {
     //id로 채널 조회 후 없으면 예외
     @Override
     public Channel findChannelById(UUID id) {
-        Channel channel = channelRepo.findById(id); //data.get(id);
-        if (channel == null) {
-            throw new NoSuchElementException("해당 채널이 존재하지 않습니다: " + id);
-        }
-        return channel;
+        return channelRepo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다: " + id));
     }
     // 채널명으로 조회
     @Override
@@ -70,17 +67,16 @@ public class JCFChannelService implements ChannelService {
     // 채널 업데이트
     @Override
     public Channel updateChannel(UUID uuid, String newName) {
-        Channel existing = findChannelById(uuid);
-        // 만약 변경하려는 이름이 이미 존재한다면,
+        Validation.notBlank(newName, "채널 이름");
+        Channel existing = channelRepo.findById(uuid)
+                .orElseThrow(() -> new NoSuchElementException("수정할 채널이 없습니다: " + uuid));
+
         Validation.noDuplicate(
-                channelRepo.findAll(),//data.values(),
-                ch->ch.getChannelName().equals(newName),
-                "이미 존재하는 채널명입니다." + newName
+                channelRepo.findAll(),
+                ch -> ch.getChannelName().equals(newName) && !ch.getId().equals(uuid),
+                "이미 존재하는 채널명입니다: " + newName
         );
-//        if (data.values().stream()
-//                .anyMatch(ch -> ch.getChannelName().equals(newName))) {
-//            throw new IllegalArgumentException("이미 존재하는 채널명니다." + newName);
-//        }
+
         existing.update(newName);
         channelRepo.save(existing);
         return existing;
@@ -90,9 +86,9 @@ public class JCFChannelService implements ChannelService {
     //삭제
     @Override
     public void deleteChannel(UUID uuid) {
-        findChannelById(uuid);
+        channelRepo.findById(uuid)
+                .orElseThrow(() -> new NoSuchElementException("삭제할 채널이 없습니다: " + uuid));
         channelRepo.delete(uuid);
-        //data.remove(uuid);
     }
 
 }

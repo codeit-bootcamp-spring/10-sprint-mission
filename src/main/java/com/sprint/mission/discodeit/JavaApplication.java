@@ -1,14 +1,14 @@
 package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.repository.file.*;
-
-import com.sprint.mission.discodeit.service.basic.BasicChannelService;
-import com.sprint.mission.discodeit.service.basic.BasicMessageService;
-import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.*;
+import com.sprint.mission.discodeit.service.basic.*;
 import com.sprint.mission.discodeit.service.jcf.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import static java.nio.file.Files.deleteIfExists;
 
@@ -357,61 +357,352 @@ public class JavaApplication {
 //        var channelRepo = new JCFChannelRepository();
 //        var messageRepo = new JCFMessageRepository();
 
-        //  실행 시 기존 데이터 파일 삭제 (테스트용 초기화)
+//        //  실행 시 기존 데이터 파일 삭제 (테스트용 초기화)
         deleteIfExists(Path.of("users.dat"));
         deleteIfExists(Path.of("channels.dat"));
         deleteIfExists(Path.of("messages.dat"));
-        // 파일 기반 저장소 생성 (영속성 있는 Repository)
-        FileUserRepository userRepo = new FileUserRepository();
-        FileChannelRepository channelRepo = new FileChannelRepository();
-        FileMessageRepository messageRepo = new FileMessageRepository();
+//        // 파일 기반 저장소 생성 (영속성 있는 Repository)
+//        FileUserRepository userRepo = new FileUserRepository();
+//        FileChannelRepository channelRepo = new FileChannelRepository();
+//        FileMessageRepository messageRepo = new FileMessageRepository();
+//
+//        // Basic 서비스 계층 (Repository 의존)
+//        BasicUserService userService = new BasicUserService(userRepo);
+//        BasicChannelService channelService = new BasicChannelService(channelRepo);
+//        BasicMessageService messageService = new BasicMessageService(messageRepo);
+//
+//        ChatCoordinator chat = new ChatCoordinator(userService,channelService,messageService);
+//
+//
+//        // 테스트 시작
+//        System.out.println("=== Basic + FileRepository 테스트 시작 ===");
+//
+//        User user = userService.createUser("김수빈", "subin");
+//        User user2 = userService.createUser("최종인", "jongin");
+//        Channel channel = channelService.createChannel("긴급");
+//
+//        System.out.println("생성된 유저: " + user.getAlias());
+//        System.out.println("생성된 채널: " + channel.getChannelName());
+//
+//        Message message = chat.sendMessage(user.getId(), channel.getId(), "파일 기반 저장 테스트!");
+//        System.out.println("메시지 전송 성공: " + message);
+//
+//        // 저장된 파일 위치 출력
+//        System.out.println("\n=== 저장된 파일 경로 ===");
+//        System.out.println("유저 파일: " + new java.io.File("users.dat").getAbsolutePath());
+//        System.out.println("채널 파일: " + new java.io.File("channels.dat").getAbsolutePath());
+//        System.out.println("메시지 파일: " + new java.io.File("messages.dat").getAbsolutePath());
+//
+//        // 저장소 복원 테스트 (파일에서 다시 로드)
+//        FileUserRepository userRepoReloaded = new FileUserRepository();
+//        FileChannelRepository channelRepoReloaded = new FileChannelRepository();
+//        FileMessageRepository messageRepoReloaded = new FileMessageRepository();
+//
+//        System.out.println("\n=== 파일에서 복원된 데이터 ===");
+//        System.out.println("유저 목록: " + userRepoReloaded.findAll());
+//        System.out.println("채널 목록: " + channelRepoReloaded.findAll());
+//        System.out.println("메시지 목록: " + messageRepoReloaded.findAll());
+//
+//        // 채널 다시 삭제!! (테스트 재 실행 위해서)
+//
+//        //userRepoReloaded.delete(user.getId());
+//        userService.updateUser(user.getId(),"최토리", "Torie");
+//        System.out.println("채널 목록: " + channelRepoReloaded.findAll());
+//
+//        System.out.println("삭제 후 유저 목록: " + userRepoReloaded.findAll());
 
-        // Basic 서비스 계층 (Repository 의존)
-        BasicUserService userService = new BasicUserService(userRepo);
-        BasicChannelService channelService = new BasicChannelService(channelRepo);
-        BasicMessageService messageService = new BasicMessageService(messageRepo);
+//        System.out.println("=========================================");
+//        System.out.println("Discodeit File Repository Test");
+//        System.out.println("=========================================");
+//
+//        //1차 실행 (데이터 생성/수정/삭제 후 저장)
+//        // FileRepository 들
+//        UserRepository userRepository = new FileUserRepository();
+//        ChannelRepository channelRepository = new FileChannelRepository();
+//        MessageRepository messageRepository = new FileMessageRepository();
+//        // 업캐스팅
+//        // Basic Service (repo 주입)
+//        UserService userService = new BasicUserService(userRepository);
+//        ChannelService channelService = new BasicChannelService(channelRepository);
+//        MessageService messageService = new BasicMessageService(messageRepository);
+//
+//        //Coordinator
+//        ChatCoordinator chat = new ChatCoordinator(userService, channelService, messageService);
+//
+//        // 유저, 채널 생성
+//        User u1 = userService.createUser("종인", "jongin");
+//        User u2 = userService.createUser("수빈", "subin");
+//
+//        Channel c1 = channelService.createChannel("공지사항");
+//        Channel c2 = channelService.createChannel("긴급");
+//
+//        System.out.println("Created Users: " + u1.getUserName() + "(" + u1.getAlias() + "), " + u2.getUserName() + "(" + u2.getAlias() + ")");
+//        System.out.println("Created Channels: " + c1.getChannelName() + ", " + c2.getChannelName());
+//
+//        // 채널 참가 (repo.save() 필수)
+//        chat.joinChannel(u1.getId(), c1.getId());
+//        chat.joinChannel(u2.getId(), c1.getId());
+//        chat.joinChannel(u1.getId(), c2.getId());
+//        userRepository.save(u1);
+//        userRepository.save(u2);
+//        channelRepository.save(c1);
+//        channelRepository.save(c2);
+//
+//        System.out.println("Joined Channel saved.");
+//
+//        // 메세지 전송
+//        Message m1 = chat.sendMessage(u1.getId(), c1.getId(), "안녕하세요");
+//        Message m2 = chat.sendMessage(u2.getId(), c1.getId(), "반가워요");
+//        Message m3 = chat.sendMessage(u1.getId(), c2.getId(), "여긴 긴급 공지방입니다.");
+//        userRepository.save(u1);
+//        userRepository.save(u2);
+//        channelRepository.save(c1);
+//        channelRepository.save(c2);
+//
+//        System.out.println("Messages saved. m1=" + m1.getId() + ", m2=" +m2.getId());
+//
+//        // ----수정 테스트----
+//        //유저
+//        userService.updateUser(u2.getId(), "훈인(수정)" , "hunin");
+//        System.out.println("Updated user u2 -> name/alias changed");
+//        // 채널 이름 수정
+//        channelService.updateChannel(c2.getId(), "music-room");
+//        System.out.println("Updated channel c2 -> music-room");
+//        // 메세지 내용 수정
+//        messageService.updateMessage(m2.getId(),"반가워요!!!(수정)");
+//        System.out.println("Updated message m2 content");
+//        //따로 저장안해도 업데이트하면 자동 저징됨.
+//
+//        // --- 삭제 테스트 ---
+//        chat.deleteUserClean(u1.getId());
+//        //u1이 빠진 채널 상태를 파일에 반영
+//        Channel reC1 = channelService.findChannelById(c1.getId());
+//        Channel reC2 = channelService.findChannelById(c2.getId());
+//        channelRepository.save(reC1);
+//        channelRepository.save(reC2);
+//        System.out.println("reload from file");
+//        // "재실행"처럼 repo/service/coordinator를 새로 만든다 (파일에서 로드됨)
+//        UserRepository userRepo2 = new FileUserRepository();
+//        ChannelRepository channelRepo2 = new FileChannelRepository();
+//        MessageRepository messageRepo2 = new FileMessageRepository();
+//
+//        UserService userService2 = new BasicUserService(userRepo2);
+//        ChannelService channelService2 = new BasicChannelService(channelRepo2);
+//        MessageService messageService2 = new BasicMessageService(messageRepo2);
+//
+//        ChatCoordinator coordinator2 = new ChatCoordinator(userService2, channelService2, messageService2);
+//
+//        // --- (1) 전체 목록 출력 ---
+//        System.out.println("\n[Reloaded Users]");
+//        for (User u : userService2.getUserAll()) {
+//            System.out.println(
+//                    "- " + u.getId()
+//                            + " | " + u.getUserName() + " (" + u.getAlias() + ")"
+//                            + " | joinedChannels=" + (u.getJoinedChannels() == null ? 0 : u.getJoinedChannels().size())
+//                            + " | messages=" + (u.getMessages() == null ? 0 : u.getMessages().size())
+//            );
+//        }
+//
+//        System.out.println("\n[Reloaded Channels]");
+//        for (Channel c : channelService2.getChannelAll()) {
+//            System.out.println(
+//                    "- " + c.getId()
+//                            + " | " + c.getChannelName()
+//                            + " | participants=" + (c.getParticipants() == null ? 0 : c.getParticipants().size())
+//                            + " | messages=" + (c.getMessages() == null ? 0 : c.getMessages().size())
+//            );
+//        }
+//
+//
+//        System.out.println("\n[Reloaded Messages]");
+//        for (Message m : messageService2.getMessageAll()) {
+//            System.out.println(
+//                    "- " + m.getId()
+//                            + " | " + m1.getSender()
+//                            + " -> " + m1.getChannel()
+//                            + " | " + m1.getContent()
+//            );
+//        }
+//        System.out.println("\n[Reloaded Messages]");
+//        for (Message m : messageService.getMessageAll()) {
+//            System.out.println(
+//                    "- " + m.getId()
+//                            + " | " + m2.getSender()
+//                            + " -> " + m2.getChannel()
+//                            + " | " + m2.getContent()
+//            );
+//        }
+//
+//
+//        // --- (2) 재로딩 후 추가 작업: 남은 유저가 채널에 메시지 보내기 ---
+//        // u1은 삭제됐으니 u2만 남아있을 가능성이 큼
+//        User u2Reloaded = userService2.getUserByAlias("hunin");
+//        // c2는 "music-room"으로 바뀌었음
+//        Channel musicRoom = channelService2.getChannelByName("music-room");
+//
+//        // join 상태가 파일에 남아있을 수도/없을 수도 있는데,
+//        // 확실히 테스트하려면 다시 join 시키고 저장
+//        coordinator2.joinChannel(u2Reloaded.getId(), musicRoom.getId());
+//        userRepo2.save(u2Reloaded);
+//        channelRepo2.save(musicRoom);
+//
+//        Message m4 = coordinator2.sendMessage(u2Reloaded.getId(), musicRoom.getId(), "재로딩 후에도 잘 되나요?");
+//        userRepo2.save(u2Reloaded);
+//        channelRepo2.save(musicRoom);
+//
+//        System.out.println("\nAdded message after reload: " + m4.getId());
+//
+//        // --- (3) 재로딩 후 삭제 테스트: 특정 메시지 삭제 ---
+//        messageService2.deleteMessage(m4.getId());
+//        System.out.println("Deleted message m4 after reload");
+//
+//        // 삭제 반영은 messageRepo2.delete에서 저장까지 하므로 끝.
+//        // 유저/채널의 messages 리스트가 직렬화로 함께 저장된 구조라면
+//        // 그쪽도 정리하고 싶을 수 있으니(선택) 아래처럼 추가로 저장 가능:
+//        // userRepo2.save(u2Reloaded);
+//        // channelRepo2.save(musicRoom);
+//
+//        System.out.println("\n[FINAL CHECK: Reload again]");
+//        MessageRepository messageRepo3 = new FileMessageRepository();
+//        System.out.println("Messages count after deletion (reloaded): " + messageRepo3.findAll().size());
+//
+//        System.out.println("\n=====================================");
+//        System.out.println(" Discodeit File Repository Test End   ");
+//        System.out.println("=====================================");
+        // 1) Repo/Service/Coordinator 준비 (FileRepository 사용)
+        UserRepository userRepo = new FileUserRepository();
+        ChannelRepository channelRepo = new FileChannelRepository();
+        MessageRepository messageRepo = new FileMessageRepository();
 
-        ChatCoordinator chat = new ChatCoordinator(userService,channelService,messageService);
+        UserService userService = new BasicUserService(userRepo);
+        ChannelService channelService = new BasicChannelService(channelRepo);
+        MessageService messageService = new BasicMessageService(messageRepo);
 
+        BasicChatCoordinator coordinator = new BasicChatCoordinator(
+                userService, channelService, messageService,
+                userRepo, channelRepo, messageRepo
+        );
 
-        // 테스트 시작
-        System.out.println("=== Basic + FileRepository 테스트 시작 ===");
+        System.out.println("===== START (FileRepository Basic Test) =====");
 
-        User user = userService.createUser("김수빈", "subin");
-        User user2 = userService.createUser("최종인", "jongin");
-        Channel channel = channelService.createChannel("긴급");
+        // =========================================
+        // [CREATE] 유저/채널 생성 -> 바로 출력
+        // =========================================
+        User u1 = userService.createUser("유지", "yuji");
+        User u2 = userService.createUser("민수", "minsu");
 
-        System.out.println("생성된 유저: " + user.getAlias());
-        System.out.println("생성된 채널: " + channel.getChannelName());
+        Channel c1 = channelService.createChannel("general");
+        Channel c2 = channelService.createChannel("music");
 
-        Message message = chat.sendMessage(user.getId(), channel.getId(), "파일 기반 저장 테스트!");
-        System.out.println("메시지 전송 성공: " + message);
+        System.out.println("\n[AFTER CREATE]");
+        printUsers(userService.getUserAll());
+        printChannels(channelService.getChannelAll());
 
-        // 저장된 파일 위치 출력
-        System.out.println("\n=== 저장된 파일 경로 ===");
-        System.out.println("유저 파일: " + new java.io.File("users.dat").getAbsolutePath());
-        System.out.println("채널 파일: " + new java.io.File("channels.dat").getAbsolutePath());
-        System.out.println("메시지 파일: " + new java.io.File("messages.dat").getAbsolutePath());
+        // =========================================
+        // [JOIN] 채널 입장 -> 바로 출력
+        // =========================================
+        coordinator.joinChannel(u1.getId(), c1.getId());
+        coordinator.joinChannel(u2.getId(), c1.getId());
+        coordinator.joinChannel(u1.getId(), c2.getId());
 
-        // 저장소 복원 테스트 (파일에서 다시 로드)
-        FileUserRepository userRepoReloaded = new FileUserRepository();
-        FileChannelRepository channelRepoReloaded = new FileChannelRepository();
-        FileMessageRepository messageRepoReloaded = new FileMessageRepository();
+        System.out.println("\n[AFTER JOIN]");
+        System.out.println("general participants: " + channelService.findChannelById(c1.getId()).getParticipants());
+        System.out.println("music participants: " + channelService.findChannelById(c2.getId()).getParticipants());
+        System.out.println("u1 joinedChannels: " + userService.findUserById(u1.getId()).getJoinedChannels());
+        System.out.println("u2 joinedChannels: " + userService.findUserById(u2.getId()).getJoinedChannels());
 
-        System.out.println("\n=== 파일에서 복원된 데이터 ===");
-        System.out.println("유저 목록: " + userRepoReloaded.findAll());
-        System.out.println("채널 목록: " + channelRepoReloaded.findAll());
-        System.out.println("메시지 목록: " + messageRepoReloaded.findAll());
+        // =========================================
+        // [SEND MESSAGE] 메시지 전송 -> 바로 출력
+        // =========================================
+        Message m1 = coordinator.sendMessage(u1.getId(), c1.getId(), "안녕하세요!");
+        Message m2 = coordinator.sendMessage(u2.getId(), c1.getId(), "반가워요 :)");
 
-        // 채널 다시 삭제!! (테스트 재 실행 위해서)
-        userRepoReloaded.delete(user.getId());
-        System.out.println("채널 목록: " + channelRepoReloaded.findAll());
-        System.out.println("삭제 후 유저 목록: " + userRepoReloaded.findAll());
+        System.out.println("\n[AFTER SEND MESSAGE]");
+        System.out.println("Messages in general:");
+        for (Message m : coordinator.getMessagesInChannel(c1.getId())) {
+            // sender/channel이 세팅되어 있다고 가정(지금 메모리 기준 출력)
+            System.out.println("- " + m.getSender().getAlias() + ": " + m.getContent() + " (id=" + m.getId() + ")");
+        }
 
+        // =========================================
+        // [UPDATE] 유저/채널/메시지 수정 -> 바로 출력
+        // =========================================
+        userService.updateUser(u2.getId(), "민수(수정)", "minsu2");
+        channelService.updateChannel(c2.getId(), "music-room");
+        messageService.updateMessage(m2.getId(), "반가워요!!(수정)");
 
+        // 수정된 객체 파일 반영(중요: user/channel/message 그래프 변경 저장)
+        userRepo.save(userService.findUserById(u2.getId()));
+        channelRepo.save(channelService.findChannelById(c2.getId()));
+        messageRepo.save(messageService.getMessageById(m2.getId()));
+
+        System.out.println("\n[AFTER UPDATE]");
+        System.out.println("Updated user2: "
+                + userService.findUserById(u2.getId()).getUserName()
+                + " (" + userService.findUserById(u2.getId()).getAlias() + ")");
+        System.out.println("Updated channel2: " + channelService.findChannelById(c2.getId()).getChannelName());
+
+        System.out.println("Messages in general (after update):");
+        for (Message m : coordinator.getMessagesInChannel(c1.getId())) {
+            System.out.println("- " + m.getSender().getAlias() + ": " + m.getContent() + " (id=" + m.getId() + ")");
+        }
+
+        // =========================================
+        // [LEAVE] 채널 퇴장 -> 바로 출력
+        // =========================================
+        coordinator.leaveChannel(u1.getId(), c2.getId());
+
+        System.out.println("\n[AFTER LEAVE]");
+        System.out.println("music-room participants: " + channelService.findChannelById(c2.getId()).getParticipants());
+        System.out.println("u1 joinedChannels: " + userService.findUserById(u1.getId()).getJoinedChannels());
+
+        // =========================================
+        // [DELETE] 메시지 삭제 -> 바로 출력
+        // =========================================
+        messageService.deleteMessage(m1.getId());
+
+        System.out.println("\n[AFTER DELETE m1]");
+        System.out.println("All messages (repo 기준):");
+        for (Message m : messageService.getMessageAll()) {
+            System.out.println("- " + m.getId() + " | " + m.getContent());
+        }
+
+        // =========================================
+        // [DELETE] 채널 삭제 -> 바로 출력
+        // =========================================
+        channelService.deleteChannel(c2.getId());
+        System.out.println("\n[AFTER DELETE channel2]");
+        printChannels(channelService.getChannelAll());
+
+        // =========================================
+        // [DELETE] 유저 삭제 -> 바로 출력
+        // =========================================
+        userService.deleteUser(u2.getId());
+        System.out.println("\n[AFTER DELETE user2]");
+        printUsers(userService.getUserAll());
+
+        System.out.println("\n===== END =====");
     }
 
+    private static void printUsers(List<User> users) {
+        System.out.println("Users:");
+        for (User u : users) {
+            System.out.println("- " + u.getId() + " | " + u.getUserName() + " (" + u.getAlias() + ")");
+        }
+    }
+
+    private static void printChannels(List<Channel> channels) {
+        System.out.println("Channels:");
+        for (Channel c : channels) {
+            System.out.println("- " + c.getId() + " | " + c.getChannelName());
+        }
+    }
 }
+
+
+
+
+
 
 
 
