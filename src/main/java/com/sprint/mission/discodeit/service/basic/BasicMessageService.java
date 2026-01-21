@@ -27,66 +27,14 @@ public class BasicMessageService {
 
         Message message = new Message(requester, channel, content);
 
-        syncMessageToAllCopies(requester.getId(), channel.getId(), message);
-        userRepository.save(message.getSender());
-        channelRepository.save(message.getChannel());
+        requester.addMessage(message);
+        userRepository.save(requester);
+
+        channel.addMessage(message);
+        channelRepository.save(channel);
+
         messageRepository.save(message);
-
         return message;
-    }
-
-    private void syncMessageToAllCopies(UUID senderId, UUID channelId, Message message) {
-        // 1) Channel 복사본 전체 중 channelId가 같은 것들에 메시지 반영
-        for (Channel c : channelRepository.findAll()) {
-            if (!c.getId().equals(channelId)) continue;
-
-            // 채널 자체 메시지 갱신
-            safeAddMessageToChannel(c, message);
-
-            // 채널 내부 유저 복사본 중 sender도 갱신 (channel.users 안의 sender 복사본)
-            for (User u : c.getMembers()) {
-                if (u.getId().equals(senderId)) {
-                    safeAddMessageToUser(u, message);
-                }
-            }
-
-            channelRepository.save(c);
-        }
-
-        // 2) User 복사본 전체 중 senderId가 같은 것들에 메시지 반영
-        for (User u : userRepository.findAll()) {
-            if (!u.getId().equals(senderId)) continue;
-
-            // 유저 자체 메시지 갱신
-            safeAddMessageToUser(u, message);
-
-            // 유저 내부 채널 복사본 중 channel도 갱신 (user.channels 안의 channel 복사본)
-            for (Channel c : u.getChannels()) {
-                if (c.getId().equals(channelId)) {
-                    safeAddMessageToChannel(c, message);
-                }
-            }
-
-            userRepository.save(u);
-        }
-    }
-
-    private void safeAddMessageToChannel(Channel channel, Message message) {
-        boolean exists = channel.getMessages().stream()
-                .anyMatch(m -> m.getId().equals(message.getId()));
-
-        if (!exists) {
-            channel.getMessages().add(message);
-        }
-    }
-
-    private void safeAddMessageToUser(User user, Message message) {
-        boolean exists = user.getMessages().stream()
-                .anyMatch(m -> m.getId().equals(message.getId()));
-
-        if (!exists) {
-            user.getMessages().add(message);
-        }
     }
 
     public Message findMessageByMessageId(UUID id) {
@@ -105,9 +53,19 @@ public class BasicMessageService {
         message.validateOwner(requester);
         message.updateContent(content);
 
-        userRepository.save(message.getSender());
-        channelRepository.save(message.getChannel());
         messageRepository.save(message);
+
+        User sender = findUserByUserID(message.getSender().getId());
+        Channel channel = findChannelByChannelId(message.getChannel().getId());
+
+        sender.getMessages().removeIf(m -> m.getId().equals(messageId));
+        sender.getMessages().add(message);
+
+        channel.getMessages().removeIf(m -> m.getId().equals(messageId));
+        channel.getMessages().add(message);
+
+        userRepository.save(sender);
+        channelRepository.save(channel);
 
         return message;
     }

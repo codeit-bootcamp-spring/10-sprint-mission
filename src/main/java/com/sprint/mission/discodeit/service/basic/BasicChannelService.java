@@ -68,7 +68,6 @@ public class BasicChannelService {
         channel.addMember(member);
         member.addChannel(channel);
 
-
         channel.getMembers().stream().forEach(user -> userRepository.save(user));
         channel.getMessages().stream().forEach(message -> messageRepository.save(message));
 
