@@ -36,25 +36,25 @@ public class JCFJavaApplication {
          * c1에 작성된 메세지 : m1 , m2 , m3
          */
         // 유저 생성 및 유저 정보 수정 테스트
-//        userCreateUpdateTest();
+        userCreateUpdateTest();
 
         // 채널 생성 및 채널 정보 수정 테스트
-//        channelCreateUpdateTest();
+        channelCreateUpdateTest();
 
         // 유저의 채널 참가 후, 채널 owner 교체, 탈퇴 테스트
-//        channelJoinLeaveTest();
+        channelJoinLeaveTest();
 
         // 메세지 생성 및 메세지 정보 수정 테스트
-//        messageCreateUpdateTest();
+        messageCreateUpdateTest();
 
         // 메세지 삭제
-//        deleteMessageTest();
+        deleteMessageTest();
 
         // 채널 삭제
-//        deleteChannelTest();
+        deleteChannelTest();
 
         // 유저 삭제
-//        deleteUserTest();
+        deleteUserTest();
     }
 
     static void userCreateUpdateTest() {
@@ -68,7 +68,7 @@ public class JCFJavaApplication {
         System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
 
         System.out.println("\n========== 유저 정보 수정 테스트: u2 정보 수정 ==========");
-        System.out.println("[전]u2 기본 정보 = " + userService.findUserById(u2.getId()).orElseThrow());
+        System.out.println("[전]u2 기본 정보 = " + userService.findUserById(u2.getId()));
         userService.updateUserInfo(u2.getId(), null, null, "[update]u2", null, null);
         userService.updateUserInfo(u2.getId(), "u2u2@gmail.com", "3333", null, null, null);
 //        try { // 하나씩 테스트해야 함.
@@ -81,7 +81,7 @@ public class JCFJavaApplication {
 //        } catch (IllegalArgumentException e) {
 //            System.out.println(e);
 //        }
-        System.out.println("[후]u2 기본 정보 = " + userService.findUserById(u2.getId()).orElseThrow());
+        System.out.println("[후]u2 기본 정보 = " + userService.findUserById(u2.getId()));
     }
 
     static void channelCreateUpdateTest() {
@@ -103,8 +103,8 @@ public class JCFJavaApplication {
         Channel c2 = channelService.createChannel(u2.getId(), ChannelType.PUBLIC, "c2u2PUBLIC", "c2Desu2PUBLIC");
         Channel c3 = channelService.createChannel(u1.getId(), ChannelType.PRIVATE, "c3u1PRIVATE", "c3Desu1PRIVATE");
         System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
-        System.out.println("channel1의 owner ID = " + channelService.findChannelById(c1.getId()).orElseThrow().getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).orElseThrow().getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).orElseThrow().getOwner().getId());
-        System.out.println("channel1의 channel memberList = " + channelService.findChannelById(c1.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel2의 channel member list = " + channelService.findChannelById(c2.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("channel1의 owner ID = " + channelService.findChannelById(c1.getId()).getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).getOwner().getId());
+        System.out.println("channel1의 channel memberList = " + channelService.findChannelById(c1.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel2의 channel member list = " + channelService.findChannelById(c2.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList() + " / channel3의 channel member list = " + channelService.findChannelById(c3.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList());
         System.out.println("user1의 join channelList = " + u1.getJoinChannelList().stream().map(c -> c.getId()).toList());
 
         System.out.println("\n========== 채널 정보 수정 테스트: c2 수정 ==========");
@@ -115,9 +115,9 @@ public class JCFJavaApplication {
         }
         System.out.println("[전]PUBLIC channel list = " + channelService.findPublicOrPrivateChannel(ChannelType.PUBLIC).stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
         System.out.println("[전]PRIVATE channel list = " + channelService.findPublicOrPrivateChannel(ChannelType.PRIVATE).stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[전]channel2의 기본 정보 = " + channelService.findChannelById(c2.getId()).orElseThrow());
+        System.out.println("[전]channel2의 기본 정보 = " + channelService.findChannelById(c2.getId()));
         channelService.updateChannelInfo(u2.getId(), c2.getId(), ChannelType.PRIVATE, "[update]c2u2PRIVATE", null);
-        System.out.println("[후]channel2의 기본 정보 = " + channelService.findChannelById(c2.getId()).orElseThrow());
+        System.out.println("[후]channel2의 기본 정보 = " + channelService.findChannelById(c2.getId()));
         System.out.println("[후]PUBLIC channel list = " + channelService.findPublicOrPrivateChannel(ChannelType.PUBLIC).stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
         System.out.println("[후]PRIVATE channel list = " + channelService.findPublicOrPrivateChannel(ChannelType.PRIVATE).stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
 //        try {
@@ -151,11 +151,11 @@ public class JCFJavaApplication {
         System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
 
         System.out.println("\n========== u2가 c3에 참여 ==========");
-        System.out.println("[전]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[전]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[전]user2의 join channelList = " + userService.findUserById(u2.getId()).getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[전]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList());
         channelService.joinChannel(u2.getId(), c3.getId());
-        System.out.println("[후]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[후]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[후]user2의 join channelList = " + userService.findUserById(u2.getId()).getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[후]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList());
         try {
             System.out.print("user가 이미 해당 채널에 참여된 상태일 때: ");
             channelService.joinChannel(u2.getId(), c2.getId());
@@ -164,9 +164,9 @@ public class JCFJavaApplication {
         }
 
         System.out.println("\n========== 채널 owner 수정 테스트: c3 owner(u1)을 u2로 변경 ==========");
-        System.out.println("[전]channel1의 owner ID = " + channelService.findChannelById(c1.getId()).orElseThrow().getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).orElseThrow().getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).orElseThrow().getOwner().getId());
+        System.out.println("[전]channel1의 owner ID = " + channelService.findChannelById(c1.getId()).getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).getOwner().getId());
         channelService.changeChannelOwner(u1.getId(), c3.getId(), u2.getId());
-        System.out.println("[후]channel1의 owner ID = " + channelService.findChannelById(c1.getId()).orElseThrow().getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).orElseThrow().getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).orElseThrow().getOwner().getId());
+        System.out.println("[후]channel1의 owner ID = " + channelService.findChannelById(c1.getId()).getOwner().getId() + " / channel2의 owner ID = " + channelService.findChannelById(c2.getId()).getOwner().getId() + " / channel3의 owner ID = " + channelService.findChannelById(c3.getId()).getOwner().getId());
         try {
             System.out.print("owner로 바꾸려는 user가 미참여 채널일 때: ");
             channelService.changeChannelOwner(u1.getId(), c1.getId(), u2.getId());
@@ -175,13 +175,13 @@ public class JCFJavaApplication {
         }
 
         System.out.println("\n========== u1이 c3에서 나가기 ==========");
-        System.out.println("[전]user1의 join channelList = " + userService.findUserById(u1.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[전]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[전]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[전]user1의 join channelList = " + userService.findUserById(u1.getId()).getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[전]user2의 join channelList = " + userService.findUserById(u2.getId()).getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[전]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList());
         channelService.leaveChannel(u1.getId(), c3.getId());
-        System.out.println("[후]user1의 join channelList = " + userService.findUserById(u1.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[후]user2의 join channelList = " + userService.findUserById(u2.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[후]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("[후]user1의 join channelList = " + userService.findUserById(u1.getId()).getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[후]user2의 join channelList = " + userService.findUserById(u2.getId()).getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
+        System.out.println("[후]channel3의 channel member list = " + channelService.findChannelById(c3.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList());
     }
 
     static void messageCreateUpdateTest() {
@@ -222,15 +222,15 @@ public class JCFJavaApplication {
         } catch (IllegalArgumentException e) {
             System.out.println(e);
         }
-        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).orElseThrow().getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).orElseThrow().getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).orElseThrow().getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).orElseThrow().getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).orElseThrow().getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).orElseThrow().getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).getMessageChannel().getId());
+        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).getMessageChannel().getId());
+        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).getMessageChannel().getId());
         System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
 
         System.out.println("\n========== 메세지 정보 수정 테스트: m2 수정 ==========");
-        System.out.println("[전]m2의 content = " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageContent());
+        System.out.println("[전]m2의 content = " + messageService.findMessageById(m2.getId()).getMessageContent());
         messageService.updateMessageContent(u1.getId(), m2.getId(), "[update]m2c1u1");
-        System.out.println("[후]m2의 content = " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageContent());
+        System.out.println("[후]m2의 content = " + messageService.findMessageById(m2.getId()).getMessageContent());
     }
 
     static void deleteMessageTest() {
@@ -258,7 +258,7 @@ public class JCFJavaApplication {
 
         System.out.println("\n========== u2가 c1에 참여 ==========");
         channelService.joinChannel(u2.getId(), c1.getId());
-        System.out.println("c1 참여 유저 = " + channelService.findChannelById(c1.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("c1 참여 유저 = " + channelService.findChannelById(c1.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList());
 
         System.out.println("\n========== 메세지 생성 m1, m2, m3 ==========");
         // message 생성
@@ -273,9 +273,9 @@ public class JCFJavaApplication {
         } catch (IllegalArgumentException e) {
             System.out.println(e);
         }
-        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).orElseThrow().getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).orElseThrow().getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).orElseThrow().getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).orElseThrow().getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).orElseThrow().getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).orElseThrow().getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).getMessageChannel().getId());
+        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).getMessageChannel().getId());
+        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).getMessageChannel().getId());
         System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
 
         System.out.println("\n========== 메세지 m2 삭제 ==========");
@@ -323,7 +323,7 @@ public class JCFJavaApplication {
 
         System.out.println("\n========== u2가 c1에 참여 ==========");
         channelService.joinChannel(u2.getId(), c1.getId());
-        System.out.println("c1 참여 유저 = " + channelService.findChannelById(c1.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
+        System.out.println("c1 참여 유저 = " + channelService.findChannelById(c1.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList());
 
         System.out.println("\n========== 메세지 생성 m1, m2, m3 ==========");
         // message 생성
@@ -338,11 +338,11 @@ public class JCFJavaApplication {
         } catch (IllegalArgumentException e) {
             System.out.println(e);
         }
-        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).orElseThrow().getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).orElseThrow().getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).orElseThrow().getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).orElseThrow().getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).orElseThrow().getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).orElseThrow().getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m4의 ID : " + messageService.findMessageById(m4.getId()).orElseThrow().getId() + ", m4의 authorId: " + messageService.findMessageById(m4.getId()).orElseThrow().getAuthor().getId() + ", m4의 channel ID: " + messageService.findMessageById(m4.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m5의 ID : " + messageService.findMessageById(m5.getId()).orElseThrow().getId() + ", m5의 authorId: " + messageService.findMessageById(m5.getId()).orElseThrow().getAuthor().getId() + ", m5의 channel ID: " + messageService.findMessageById(m5.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).getMessageChannel().getId());
+        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).getMessageChannel().getId());
+        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).getMessageChannel().getId());
+        System.out.println("m4의 ID : " + messageService.findMessageById(m4.getId()).getId() + ", m4의 authorId: " + messageService.findMessageById(m4.getId()).getAuthor().getId() + ", m4의 channel ID: " + messageService.findMessageById(m4.getId()).getMessageChannel().getId());
+        System.out.println("m5의 ID : " + messageService.findMessageById(m5.getId()).getId() + ", m5의 authorId: " + messageService.findMessageById(m5.getId()).getAuthor().getId() + ", m5의 channel ID: " + messageService.findMessageById(m5.getId()).getMessageChannel().getId());
         System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
 
 
@@ -355,7 +355,13 @@ public class JCFJavaApplication {
         System.out.println("===== [채널 삭제 시작] =====");
         deleteChannel(u1.getId(), c1.getId(), channelService, messageService);
         System.out.println("===== [채널 삭제 종료] =====");
-        System.out.println(channelService.findChannelById(c1.getId()));
+        try {
+            System.out.println(channelService.findChannelById(c1.getId()));
+        } catch (NoSuchElementException e) {
+            System.out.print("채널 삭제됨: ");
+            System.out.println(e);
+        }
+
 //        System.out.println("[후]channel1의 member list = " + channelService.findChannelById(c1.getId()).orElseThrow().getChannelMembersList().stream().map(m -> m.getId()).toList());
         System.out.println("[후]channel1의 member list = " + c1.getChannelMembersList().stream().map(m -> m.getId()).toList());
 //        System.out.println("[후]user1의 join channel list = " + userService.findUserById(u1.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
@@ -407,11 +413,11 @@ public class JCFJavaApplication {
         } catch (IllegalArgumentException e) {
             System.out.println(e);
         }
-        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).orElseThrow().getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).orElseThrow().getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).orElseThrow().getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).orElseThrow().getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).orElseThrow().getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).orElseThrow().getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m4의 ID : " + messageService.findMessageById(m4.getId()).orElseThrow().getId() + ", m4의 authorId: " + messageService.findMessageById(m4.getId()).orElseThrow().getAuthor().getId() + ", m4의 channel ID: " + messageService.findMessageById(m4.getId()).orElseThrow().getMessageChannel().getId());
-        System.out.println("m5의 ID : " + messageService.findMessageById(m5.getId()).orElseThrow().getId() + ", m5의 authorId: " + messageService.findMessageById(m5.getId()).orElseThrow().getAuthor().getId() + ", m5의 channel ID: " + messageService.findMessageById(m5.getId()).orElseThrow().getMessageChannel().getId());
+        System.out.println("m1의 ID : " + messageService.findMessageById(m1.getId()).getId() + ", m1의 authorId: " + messageService.findMessageById(m1.getId()).getAuthor().getId() + ", m1의 channel ID: " + messageService.findMessageById(m1.getId()).getMessageChannel().getId());
+        System.out.println("m2의 ID : " + messageService.findMessageById(m2.getId()).getId() + ", m2의 authorId: " + messageService.findMessageById(m2.getId()).getAuthor().getId() + ", m2의 channel ID: " + messageService.findMessageById(m2.getId()).getMessageChannel().getId());
+        System.out.println("m3의 ID : " + messageService.findMessageById(m3.getId()).getId() + ", m3의 authorId: " + messageService.findMessageById(m3.getId()).getAuthor().getId() + ", m3의 channel ID: " + messageService.findMessageById(m3.getId()).getMessageChannel().getId());
+        System.out.println("m4의 ID : " + messageService.findMessageById(m4.getId()).getId() + ", m4의 authorId: " + messageService.findMessageById(m4.getId()).getAuthor().getId() + ", m4의 channel ID: " + messageService.findMessageById(m4.getId()).getMessageChannel().getId());
+        System.out.println("m5의 ID : " + messageService.findMessageById(m5.getId()).getId() + ", m5의 authorId: " + messageService.findMessageById(m5.getId()).getAuthor().getId() + ", m5의 channel ID: " + messageService.findMessageById(m5.getId()).getMessageChannel().getId());
 
         System.out.println("\n========== user1 삭제 ==========");
         System.out.println("[전]전체 user list = " + userService.findAllUsers().stream().map(u -> u.getUserName() + ": " + u.getId()).toList());
@@ -425,7 +431,13 @@ public class JCFJavaApplication {
         System.out.println("[후]전체 channel List = " + channelService.findAllChannels().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
         System.out.println("[후]channel1의 member list = " + c1.getChannelMembersList().stream().map(m -> m.getUserName() + ": " + m.getId()).toList());
         System.out.println("[후]전체 message list = " + messageService.findAllMessages().stream().map(m -> m.getMessageContent() + ": " + m.getId()).toList());
-        System.out.println("u1 조회 = " + userService.findUserById(u1.getId()));
+        try {
+            System.out.println("u1 조회 = " + userService.findUserById(u1.getId()));
+        } catch (NoSuchElementException e) {
+            System.out.print("유저 삭제됨: ");
+            System.out.println(e);
+        }
+
     }
 
     // 채널 삭제 메소드
@@ -439,7 +451,7 @@ public class JCFJavaApplication {
 
         // 해당 user가 channel의 owner인지 확인을 위해 if문으로 예외 검사하기!!
         try {
-            Channel channel = channelService.findChannelById(channelId).orElseThrow();
+            Channel channel = channelService.findChannelById(channelId);
             if (!channel.getOwner().getId().equals(ownerId)) {
                 throw new IllegalStateException("채널 삭제는 채널 owner만 수행 가능합니다.");
             }
