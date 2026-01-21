@@ -55,6 +55,12 @@ public class BasicUserService implements UserService {
         User user = findUserInfoById(userId);
         user.updateUsername(newName);
         userRepository.save(user);
+
+        // 메시지 파일 업데이트
+        updateMessagesUsername(userId, newName);
+        // 채널 파일 업데이트
+        updateChannelsUsername(userId, newName);
+
         return user;
     }
 
@@ -69,5 +75,31 @@ public class BasicUserService implements UserService {
 
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다."));
+    }
+
+    private void updateMessagesUsername(UUID userId, String newName) {
+        messageRepository.findAll().stream()
+                .filter(message -> message.getSentUser().getId().equals(userId))
+                .forEach(message -> {
+                    message.getSentUser().updateUsername(newName);
+                    messageRepository.save(message);
+                });
+    }
+
+    private void updateChannelsUsername(UUID userId, String newName) {
+        channelRepository.findAll().forEach( channel -> {
+            boolean updated = false;
+
+            for (User joinedUser : channel.getJoinedUsers()) {
+                if (joinedUser.getId().equals(userId)) {
+                    joinedUser.updateUsername(newName);
+                    updated = true;
+                }
+            }
+            // 갱신 되면 저장
+            if (updated) {
+                channelRepository.save(channel);
+            }
+        });
     }
 }

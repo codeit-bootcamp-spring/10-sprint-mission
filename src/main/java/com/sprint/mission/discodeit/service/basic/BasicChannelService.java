@@ -56,6 +56,10 @@ public class BasicChannelService implements ChannelService {
         Channel channel = findChannelOrThrow(channelId);
         channel.updateChannelName(newChannelName);
         channelRepository.save(channel);
+        // 채널에 참여한 사용자쪽 파일 갱신
+        updateUserChannelName(channelId, newChannelName);
+        // 채널에 전송한 메시지쪽 파일 갱신
+        updateMessageChannelName(channelId, newChannelName);
         return channel;
     }
 
@@ -104,5 +108,31 @@ public class BasicChannelService implements ChannelService {
         return userRepository.findById(userId)
                 .orElseThrow(() ->
                         new NoSuchElementException("해당 id를 가진 사용자가 존재하지 않습니다."));
+    }
+
+    private void updateUserChannelName(UUID channelId, String newName) {
+        userRepository.findAll().forEach(user -> {
+            boolean updated = false;
+
+            for (Channel joinedChannel : user.getJoinedChannels()) {
+                if (joinedChannel.getId().equals(channelId)) {
+                    joinedChannel.updateChannelName(newName);
+                    updated = true;
+                }
+            }
+
+            if (updated) {
+                userRepository.save(user);
+            }
+        });
+    }
+
+    private void updateMessageChannelName(UUID channelId, String newName) {
+        messageRepository.findAll().stream()
+                .filter(message -> message.getSentChannel().getId().equals(channelId))
+                .forEach(message -> {
+                    message.getSentChannel().updateChannelName(newName);
+                    messageRepository.save(message);
+                });
     }
 }

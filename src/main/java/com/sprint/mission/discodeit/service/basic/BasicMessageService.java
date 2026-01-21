@@ -73,6 +73,10 @@ public class BasicMessageService implements MessageService {
         Message message = findMessageOrThrow(messageId);
         message.updateContent(newContent);
         messageRepository.save(message);
+        // 보낸 사용자쪽 파일 갱신
+        User sender = message.getSentUser();
+        userRepository.save(sender);
+
         return message;
     }
 
@@ -93,6 +97,13 @@ public class BasicMessageService implements MessageService {
         if (messageIds.isEmpty()) {
             throw new NoSuchElementException("해당 채널에 보낸 메시지가 없습니다.");
         }
+
+        // 보낸 사용자쪽 파일 갱신
+        userRepository.findAll().forEach(user -> {
+            user.getSentMessages()
+                    .removeIf(message -> message.getSentChannel().getId().equals(channelId));
+            userRepository.save(user);
+        });
 
         messageRepository.deleteByChannelId(channelId);
         channelRepository.save(findChannelOrThrow(channelId));
