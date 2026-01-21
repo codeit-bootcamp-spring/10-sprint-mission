@@ -1,40 +1,40 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class JCFMessageService implements MessageService {
-    private final HashMap<UUID, Message> messages = new HashMap<>();
+public class JCFMessageRepository implements MessageRepository {
+    private final HashMap<UUID, Message> data = new HashMap<>();
 
     @Override
     public void save(Message message) {
-        messages.put(message.getId(), message);
+        data.put(message.getId(), message);
     }
 
     @Override
     public Optional<Message> findById(UUID id) {
-        return Optional.ofNullable(messages.get(id));
+        return Optional.ofNullable(data.get(id));
     }
 
     @Override
     public List<Message> findAll() {
-        return List.copyOf(messages.values());
+        return List.copyOf(data.values());
     }
 
     @Override
     public void delete(Message message) {
-        messages.remove(message.getId());
+        data.remove(message.getId());
     }
 
     public void deleteByUser(User user) {
-        List<Message> targets = messages.values().stream()
+        List<Message> targets = data.values().stream()
                 .filter(m -> m.getSender().equals(user))
                 .toList();
 
@@ -42,7 +42,7 @@ public class JCFMessageService implements MessageService {
     }
 
     public void deleteByChannel(Channel channel) {
-        List<Message> targets = messages.values().stream()
+        List<Message> targets = data.values().stream()
                 .filter(m -> m.getChannel().equals(channel))
                 .toList();
 

@@ -1,10 +1,10 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.*;
 
-public interface UserService {
+public interface UserRepository {
     void save(User user);
 
     Optional<User> findById(UUID id);

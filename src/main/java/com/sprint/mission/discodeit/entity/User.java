@@ -75,6 +75,7 @@ public class User extends BaseEntity {
 
     public void addChannel(Channel channel) {
         channels.add(channel);
+
         markUpdated();
     }
 
@@ -82,15 +83,12 @@ public class User extends BaseEntity {
         if (!messages.contains(message)) {
             messages.add(message);
         }
+
+        if (message.getSender() != this) {
+            message.addUser(this);
+        }
+
         markUpdated();
-    }
-
-    public Message sendMessage(Channel channel, String content) {
-        channel.validateChannelMember(this);
-
-        Message message = new Message(this, channel, content);
-
-        return message;
     }
 
     public void clear() {
@@ -122,8 +120,7 @@ public class User extends BaseEntity {
         return channels.contains(channel);
     }
 
-
-    public void validateOwner() {
+    public void validateChannelOwner() {
         for (Channel channel : channels) {
             if (channel.isOwner(this)) {
                 throw new IllegalArgumentException("소유한 채널있어 유저 삭제가 불가능합니다. userId: " + this.getId());

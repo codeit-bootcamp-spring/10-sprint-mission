@@ -51,6 +51,10 @@ public class Channel extends BaseEntity {
         if (!messages.contains(message)) {
             messages.add(message);
         }
+
+        if (message.getChannel() != this) {
+            message.addChannel(this);
+        }
         markUpdated();
     }
 
@@ -59,7 +63,7 @@ public class Channel extends BaseEntity {
             removeMember(member);
         }
 
-        for(Message message : new ArrayList<>(messages)) {
+        for (Message message : new ArrayList<>(messages)) {
             message.detachFromUser();
         }
 
@@ -78,7 +82,6 @@ public class Channel extends BaseEntity {
 
     public void removeMessage(Message message) {
         messages.remove(message);
-
         markUpdated();
     }
 
