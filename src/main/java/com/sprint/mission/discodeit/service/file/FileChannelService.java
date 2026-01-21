@@ -65,7 +65,6 @@ public class FileChannelService implements ChannelService {
         Channel updateChannel = this.findById(channelId);
 
         updateChannel.updateName(name);
-        updateChannel.updateUpdatedAt(System.currentTimeMillis());
         channelFileIo.save(channelId, updateChannel);
 
         return updateChannel;

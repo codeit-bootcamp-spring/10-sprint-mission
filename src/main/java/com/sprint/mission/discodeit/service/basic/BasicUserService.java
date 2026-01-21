@@ -64,7 +64,6 @@ public class BasicUserService implements UserService {
             .ifPresent(updatedUser::updateEmail);
         Optional.ofNullable(user.getPhoneNumber())
             .ifPresent(updatedUser::updatePhoneNumber);
-        updatedUser.updateUpdatedAt(System.currentTimeMillis());
 
         userRepository.save(updatedUser);
 

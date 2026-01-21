@@ -61,7 +61,6 @@ public class BasicChannelService implements ChannelService {
         Channel updateChannel = this.findById(channelId);
 
         updateChannel.updateName(name);
-        updateChannel.updateUpdatedAt(System.currentTimeMillis());
         channelRepository.save(updateChannel);
 
         return updateChannel;

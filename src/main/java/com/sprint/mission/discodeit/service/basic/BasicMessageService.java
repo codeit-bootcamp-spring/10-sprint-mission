@@ -90,7 +90,6 @@ public class BasicMessageService implements MessageService {
         Message message = messageRepository.findById(messageId);
 
         message.updateText(text);
-        message.updateUpdatedAt(System.currentTimeMillis());
         messageRepository.save(message);
 
         return message;

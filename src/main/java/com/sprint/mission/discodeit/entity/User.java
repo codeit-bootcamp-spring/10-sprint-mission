@@ -47,18 +47,22 @@ public class User extends Base {
 
     public void updateNickName(String nickName) {
         this.nickName = nickName;
+        updateUpdatedAt(System.currentTimeMillis());
     }
 
     public void updateUserName(String userName) {
         this.userName = userName;
+        updateUpdatedAt(System.currentTimeMillis());
     }
 
     public void updateEmail(String email) {
         this.email = email;
+        updateUpdatedAt(System.currentTimeMillis());
     }
 
     public void updatePhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+        updateUpdatedAt(System.currentTimeMillis());
     }
 
     public void addChannel(Channel channel) {
@@ -82,11 +86,11 @@ public class User extends Base {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof User user)) return false;
-        return Objects.equals(id, user.id);
+        return Objects.equals(getId(), user.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hashCode(getId());
     }
 }
