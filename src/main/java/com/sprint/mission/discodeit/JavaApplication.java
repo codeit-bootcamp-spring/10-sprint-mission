@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.consistency.FileConsistencyManager;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -10,6 +9,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -19,6 +21,9 @@ import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
+import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
+import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
+import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -49,23 +54,23 @@ public class JavaApplication {
         init(channelDir);
         init(messageDir);
 
+        // ==========================저장소==========================
 //        UserRepository userRepository = new JCFUserRepository();
 //        ChannelRepository channelRepository = new JCFChannelRepository();
 //        MessageRepository messageRepository = new JCFMessageRepository();
-
+//
         UserRepository userRepository = new FileUserRepository(userDir);
         ChannelRepository channelRepository = new FileChannelRepository(channelDir);
         MessageRepository messageRepository = new FileMessageRepository(messageDir);
 
-//        ConsistencyManager consistencyManager = new ConsistencyManager(userRepository, channelRepository, messageRepository);
-//        UserService userService = new JCFUserService(consistencyManager, userRepository);
-//        ChannelService channelService = new JCFChannelService(consistencyManager, channelRepository, userService);
+        // ==========================서비스==========================
+//        UserService userService = new JCFUserService(userRepository, messageRepository);
+//        ChannelService channelService = new JCFChannelService(channelRepository, messageRepository, userService);
 //        MessageService messageService = new JCFMessageService(messageRepository, channelService, userService);
-
-//        FileConsistencyManager fileConsistencyManager = new FileConsistencyManager(userRepository, channelRepository, messageRepository);
-//        UserService userService = new FileUserService(fileConsistencyManager, userRepository);
-//        ChannelService channelService = new FileChannelService(fileConsistencyManager, channelRepository, userService);
-//        MessageService messageService = new FileMessageService(fileConsistencyManager, messageRepository, channelService, userService);
+//
+//        UserService userService = new FileUserService(userRepository, channelRepository, messageRepository);
+//        ChannelService channelService = new FileChannelService(userRepository, channelRepository, messageRepository);
+//        MessageService messageService = new FileMessageService(userRepository, channelRepository, messageRepository);
 
         UserService userService = new BasicUserService(userRepository, channelRepository, messageRepository);
         ChannelService channelService = new BasicChannelService(userRepository, channelRepository, messageRepository);
