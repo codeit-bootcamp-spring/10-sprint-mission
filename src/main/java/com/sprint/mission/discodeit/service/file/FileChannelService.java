@@ -44,7 +44,7 @@ public class FileChannelService implements ChannelService {
                 ObjectInputStream ois = new ObjectInputStream(fis)) {
             return (Channel) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("채널을 가져오는데 실패했습니다.");
         }
     }
 
@@ -62,13 +62,13 @@ public class FileChannelService implements ChannelService {
                                 Channel channel = (Channel) ois.readObject();
                                 return channel;
                             } catch (IOException | ClassNotFoundException e) {
-                                throw new RuntimeException(e);
+                                throw new RuntimeException("모든 채널을 가져오는데 실패했습니다.");
                             }
                         })
                         .toList();
                 return channels;
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("모든 채널을 가져오는데 실패했습니다.");
             }
         } else {
             return new ArrayList<>();
@@ -100,7 +100,7 @@ public class FileChannelService implements ChannelService {
         try {
             Files.delete(channelPath);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("채널을 삭제하는데 실패했습니다.");
         }
     }
 
@@ -136,7 +136,7 @@ public class FileChannelService implements ChannelService {
         ) {
             oos.writeObject(channel);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("채널을 저장하는데 실패했습니다.");
         }
     }
 

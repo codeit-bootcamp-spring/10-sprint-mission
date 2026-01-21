@@ -45,7 +45,7 @@ public class FileUserService implements UserService {
             User user = (User) ois.readObject();
             return user;
         } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("유저를 가져오는데 실패했습니다.");
         }
     }
 
@@ -63,13 +63,13 @@ public class FileUserService implements UserService {
                                 User user = (User) ois.readObject();
                                 return user;
                             } catch (IOException | ClassNotFoundException e) {
-                                throw new RuntimeException(e);
+                                throw new RuntimeException("모든 유저를 가져오는데 실패했습니다.");
                             }
                         })
                         .toList();
                 return users;
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("모든 유저를 가져오는데 실패했습니다.");
             }
         } else {
             return new ArrayList<>();
@@ -101,7 +101,7 @@ public class FileUserService implements UserService {
         try {
             Files.delete(userPath);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("유저를 삭제하는데 실패했습니다.");
         }
     }
 
@@ -117,7 +117,7 @@ public class FileUserService implements UserService {
         ) {
             oos.writeObject(user);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("유저를 저장하는데 실패했습니다.");
         }
     }
 

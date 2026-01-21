@@ -42,7 +42,7 @@ public class FileMessageService implements MessageService {
              ObjectInputStream ois = new ObjectInputStream(fis)) {
             return (Message) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("메세지를 가져오는데 실패했습니다.");
         }
     }
 
@@ -60,13 +60,13 @@ public class FileMessageService implements MessageService {
                                 Message message = (Message) ois.readObject();
                                 return message;
                             } catch (IOException | ClassNotFoundException e) {
-                                throw new RuntimeException(e);
+                                throw new RuntimeException("모든 메세지를 가져오는데 실패했습니다.");
                             }
                         })
                         .toList();
                 return messages;
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("모든 메세지를 가져오는데 실패했습니다.");
             }
         } else {
             return new ArrayList<>();
@@ -98,7 +98,7 @@ public class FileMessageService implements MessageService {
         try {
             Files.delete(messagePath);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("메세지를 삭제하는데 실패했습니다.");
         }
     }
 
@@ -114,7 +114,7 @@ public class FileMessageService implements MessageService {
         ) {
             oos.writeObject(message);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("메세지를 저장하는데 실패했습니다.");
         }
     }
 }
