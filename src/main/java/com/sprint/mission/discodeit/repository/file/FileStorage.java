@@ -2,7 +2,12 @@ package com.sprint.mission.discodeit.repository.file;
 
 import java.io.*;
 import java.util.*;
-
+/**
+ - 파일 기반의 객체 영속화 저장소
+ - Serializable 객체를 파일에 저장 및 로드
+ - 맵의 put, remove등의 메서드를 파일저장과 함께 구현
+ - 레포지토리에서 해당 객체로 선언하여 사용
+ */
 public class FileStorage<T extends Serializable> {
     private String filePath;
     private final Map<UUID, T> data;
