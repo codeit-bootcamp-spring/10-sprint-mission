@@ -1,0 +1,83 @@
+package com.sprint.mission.discodeit.service.basic;
+
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
+
+import java.util.*;
+
+public class BasicMessageService implements MessageService {
+    private final MessageRepository messageRepository;
+    private final UserService userService;
+    private final ChannelService channelService;
+
+    public BasicMessageService(MessageRepository messageRepository, UserService userService, ChannelService channelService) {
+        this.messageRepository = messageRepository;
+        this.userService = userService;
+        this.channelService = channelService;
+    }
+
+    @Override
+    public Message createMessage(UUID channelId, UUID userId, String content) {
+        Channel channel = channelService.getChannel(channelId);
+        User user = userService.getUser(userId);
+
+        if (!channel.getUsers().contains(user)) {
+            throw new IllegalArgumentException("채널에 먼저 입장해야 메시지를 남길 수 있습니다.");
+        }
+        validateMessageContent(content);
+        Message message = new Message(channel, user, content);
+        messageRepository.save(message);
+        
+        channel.addMessage(message);
+        user.addMessage(message);
+        return message;
+    }
+
+    @Override
+    public Message getMessage(UUID id) {
+        return messageRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
+    }
+
+    @Override
+    public List<Message> getAllMessages() {
+        return messageRepository.findAll();
+    }
+
+    @Override
+    public Message updateMessage(String content, UUID id) {
+        Message message = getMessage(id);
+        Optional.ofNullable(content).filter(c -> !c.isBlank()).ifPresent(message::updateContent);
+        messageRepository.save(message);
+        return message;
+    }
+
+    @Override
+    public void deleteMessage(UUID id) {
+        Message message = getMessage(id);
+        message.getChannel().removeMessage(message);
+        message.getUser().removeMessage(message);
+        messageRepository.delete(id);
+    }
+
+    @Override
+    public List<Message> getMessagesByChannelId(UUID channelId) {
+        return new ArrayList<>(channelService.getChannel(channelId).getMessages());
+    }
+
+    @Override
+    public List<Message> getMessagesByUserId(UUID userId) {
+        return new ArrayList<>(userService.getUser(userId).getMessages());
+    }
+
+    private void validateMessageContent(String content) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("내용을 다시 입력해주세요");
+        }
+    }
+}

@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class User extends BaseEntity{
+public class User extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String name;
     private String email;
     private final List<Message> messages = new ArrayList<>();

@@ -3,15 +3,40 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 public class JavaApplication {
     public static void main(String[] args) {
-        JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService(userService);
-        JCFMessageService messageService = new JCFMessageService(userService, channelService);
+//        UserRepository userRepository = new JCFUserRepository();
+//        ChannelRepository channelRepository = new JCFChannelRepository();
+//        MessageRepository messageRepository = new JCFMessageRepository();
+        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+        MessageRepository messageRepository = new FileMessageRepository();
+
+        BasicUserService userService = new BasicUserService(userRepository);
+        BasicChannelService channelService = new BasicChannelService(channelRepository, userRepository, userService);
+        BasicMessageService messageService = new BasicMessageService(messageRepository, userService, channelService);
         channelService.setMessageService(messageService);
         userService.setMessageService(messageService);
         System.out.println("=== 정상 흐름 테스트 ===");
@@ -20,7 +45,7 @@ public class JavaApplication {
         System.out.println("\n=== 유효성 검증 실패 테스트 ===");
         runValidationTest(userService, channelService, messageService);
     }
-    private static void runTest(JCFUserService userService, JCFChannelService channelService, JCFMessageService messageService){
+    private static void runTest(UserService userService, ChannelService channelService, MessageService messageService){
         System.out.println("데이터 등록");
         User user1 = userService.createUser("최현호","abc123@gmail.com");
         User user2 = userService.createUser("김민교","qqq123@gmail.com");
@@ -78,7 +103,7 @@ public class JavaApplication {
         System.out.println("김민교가 여전히 속해있는 채널: " + channelService.getChannelsByUserId(user2.getId()));
     }
 
-    private static void runValidationTest(JCFUserService userService, JCFChannelService channelService, JCFMessageService messageService) {
+    private static void runValidationTest(UserService userService, ChannelService channelService, MessageService messageService) {
         try {
             System.out.print("[테스트 1] 이름 없이 유저 생성: ");
             userService.createUser("", "test@test.com");
