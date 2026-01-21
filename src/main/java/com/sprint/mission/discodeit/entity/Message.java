@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class Message extends BaseEntity{
+public class Message extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private User user;
     private Channel channel;
@@ -16,11 +18,6 @@ public class Message extends BaseEntity{
         this.user = user;
         this.channel = channel;
         this.content = content;
-    }
-
-    public void updateMessage(UUID id, String content, UUID userId, UUID channelId) {
-        this.content = content;
-        touch(); // BaseEntity의 updatedAt 갱신
     }
 
     public UUID getId() {
