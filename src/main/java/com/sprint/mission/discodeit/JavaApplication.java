@@ -34,9 +34,9 @@ public class JavaApplication {
         ChannelRepository channelRepository = new FileChannelRepository();
         MessageRepository messageRepository = new FileMessageRepository();
 
-        BasicUserService userService = new BasicUserService(userRepository);
-        BasicChannelService channelService = new BasicChannelService(channelRepository, userRepository, userService);
-        BasicMessageService messageService = new BasicMessageService(messageRepository, userService, channelService);
+        BasicUserService userService = new BasicUserService(userRepository, channelRepository, messageRepository);
+        BasicChannelService channelService = new BasicChannelService(userRepository, channelRepository, messageRepository, userService);
+        BasicMessageService messageService = new BasicMessageService(userRepository, channelRepository, messageRepository, userService, channelService);
         channelService.setMessageService(messageService);
         userService.setMessageService(messageService);
         System.out.println("=== 정상 흐름 테스트 ===");

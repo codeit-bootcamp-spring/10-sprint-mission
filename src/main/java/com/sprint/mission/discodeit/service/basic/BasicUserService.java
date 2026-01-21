@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -9,10 +11,14 @@ import java.util.*;
 
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
     private MessageService messageService;
 
-    public BasicUserService(UserRepository userRepository) {
+    public BasicUserService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
         this.userRepository = userRepository;
+        this.channelRepository = channelRepository;
+        this.messageRepository = messageRepository;
     }
 
     public void setMessageService(MessageService messageService) {
@@ -44,6 +50,12 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(name).filter(n -> !n.isBlank()).ifPresent(user::updateName);
         Optional.ofNullable(email).filter(e -> !e.isBlank()).ifPresent(user::updateEmail);
         userRepository.save(user);
+        user.getChannels().forEach(channel -> {
+            channel.removeUser(user);
+            channel.addUser(user);
+            channelRepository.save(channel);
+        });
+        user.getMessages().forEach(messageRepository::save);
         return user;
     }
 
@@ -53,7 +65,10 @@ public class BasicUserService implements UserService {
         if(messageService != null) {
             new ArrayList<>(user.getMessages()).forEach(m -> messageService.deleteMessage(m.getId()));
         }
-        user.getChannels().forEach(channel -> channel.removeUser(user));
+        new ArrayList<>(user.getChannels()).forEach(channel -> {
+            channel.removeUser(user);
+            channelRepository.save(channel);
+        });
         userRepository.delete(id);
     }
 

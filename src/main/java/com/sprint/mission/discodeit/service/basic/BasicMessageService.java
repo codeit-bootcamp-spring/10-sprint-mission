@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -11,11 +13,15 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.util.*;
 
 public class BasicMessageService implements MessageService {
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
     private final UserService userService;
     private final ChannelService channelService;
 
-    public BasicMessageService(MessageRepository messageRepository, UserService userService, ChannelService channelService) {
+    public BasicMessageService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository, UserService userService, ChannelService channelService) {
+        this.userRepository = userRepository;
+        this.channelRepository = channelRepository;
         this.messageRepository = messageRepository;
         this.userService = userService;
         this.channelService = channelService;
@@ -31,10 +37,14 @@ public class BasicMessageService implements MessageService {
         }
         validateMessageContent(content);
         Message message = new Message(channel, user, content);
-        messageRepository.save(message);
-        
+
         channel.addMessage(message);
         user.addMessage(message);
+
+        messageRepository.save(message);
+        channelRepository.save(channel);
+        userRepository.save(user);
+
         return message;
     }
 
@@ -54,15 +64,32 @@ public class BasicMessageService implements MessageService {
         Message message = getMessage(id);
         Optional.ofNullable(content).filter(c -> !c.isBlank()).ifPresent(message::updateContent);
         messageRepository.save(message);
+        User user = message.getUser();
+        if(user != null){
+            user.removeMessage(message);
+            user.addMessage(message);
+            userRepository.save(user);
+        }
+        Channel channel = message.getChannel();
+        if(channel != null){
+            channel.removeMessage(message);
+            channel.addMessage(message);
+            channelRepository.save(channel);
+        }
         return message;
     }
 
     @Override
     public void deleteMessage(UUID id) {
         Message message = getMessage(id);
-        message.getChannel().removeMessage(message);
-        message.getUser().removeMessage(message);
+        User user = message.getUser();
+        Channel channel = message.getChannel();
+
+        if (channel != null) { channel.removeMessage(message); }
+        if (user != null) { user.removeMessage(message); }
         messageRepository.delete(id);
+        if (channel != null) { channelRepository.save(channel); }
+        if (user != null) { userRepository.save(user); }
     }
 
     @Override

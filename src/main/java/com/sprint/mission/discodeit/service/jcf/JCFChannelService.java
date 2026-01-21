@@ -81,6 +81,7 @@ public class JCFChannelService implements ChannelService {
 
         channel.addUser(user);
         user.addChannel(channel);
+
     }
 
     @Override

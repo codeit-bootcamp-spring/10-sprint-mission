@@ -28,4 +28,17 @@ public class Message extends BaseEntity implements Serializable {
                 ", 작성자: " + user.getName() +
                 ", 내용: " + content +"]";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Message message = (Message) o;
+        return java.util.Objects.equals(getId(), message.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(getId());
+    }
 }

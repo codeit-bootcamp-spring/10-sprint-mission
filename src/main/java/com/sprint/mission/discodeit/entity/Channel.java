@@ -44,4 +44,17 @@ public class Channel extends BaseEntity implements Serializable {
         return "채널[이름: " + name +
                 ", 타입: " + type + "]";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Channel channel = (Channel) o;
+        return java.util.Objects.equals(getId(), channel.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(getId());
+    }
 }
