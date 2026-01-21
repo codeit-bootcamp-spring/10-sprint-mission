@@ -14,11 +14,12 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public abstract class FileSerDe<T extends Common> {
-    public void save(String filePath, T data) {
+    public T save(String filePath, T data) {
         Path file = checkDirectory(filePath).resolve(String.format("%s.ser", data.getId()));
 
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file.toFile()))) {
             oos.writeObject(data);
+            return data;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

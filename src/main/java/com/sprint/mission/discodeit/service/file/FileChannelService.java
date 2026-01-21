@@ -67,6 +67,12 @@ public class FileChannelService extends FileSerDe<Channel> implements ChannelSer
     }
 
     @Override
+    public Channel updateChannel(Channel newChannel) {
+        newChannel.updateUpdatedAt();
+        return save(CHANNEL_DATA_DIRECTORY, newChannel);
+    }
+
+    @Override
     public void deleteChannel(UUID uuid) {
         Channel channel = getChannel(uuid);
         deleteProcess(uuid, channel);
@@ -83,15 +89,17 @@ public class FileChannelService extends FileSerDe<Channel> implements ChannelSer
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
 
-        if (channel.getParticipants().contains(user)) {
+        if (channel.getParticipants().stream()
+                .anyMatch(u -> Objects.equals(u.getId(), user.getId()))) {
             throw new IllegalStateException("이미 참가한 참가자입니다");
         }
-        channel.addParticipant(user);
-        user.addJoinedChannels(channel);
 
+        channel.addParticipant(user);
         channel.updateUpdatedAt();
-        user.updateUpdatedAt();
         this.save(CHANNEL_DATA_DIRECTORY, channel);
+
+        user.addJoinedChannels(channel);
+        userService.updateUser(user);
     }
 
     @Override
@@ -99,13 +107,17 @@ public class FileChannelService extends FileSerDe<Channel> implements ChannelSer
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
 
-        if (!channel.getParticipants().contains(user)) {
+        if (channel.getParticipants().stream()
+                .noneMatch(u -> Objects.equals(u.getId(), user.getId()))) {
             throw new IllegalStateException("참여하지 않은 참가자입니다");
         }
-        user.removeJoinedChannels(channel);
-        channel.removeParticipant(user);
 
+        channel.removeParticipant(user);
         channel.updateUpdatedAt();
+        this.save(CHANNEL_DATA_DIRECTORY, channel);
+
+        user.removeJoinedChannels(channel);
+        userService.updateUser(user);
     }
 
     private void validateDuplicateTitle(String title) {

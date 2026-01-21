@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -65,6 +64,11 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
+    public Channel updateChannel(Channel newChannel) {
+        return updateChannel(newChannel.getId(), null, null);
+    }
+
+    @Override
     public void deleteChannel(UUID uuid) {
         Channel channel = getChannel(uuid);
         deleteProcess(uuid, channel);
@@ -81,13 +85,16 @@ public class JCFChannelService implements ChannelService {
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
 
-        if (channel.getParticipants().contains(user)) {
+        if (channel.getParticipants().stream()
+                .anyMatch(u -> Objects.equals(u.getId(), user.getId()))) {
             throw new IllegalStateException("이미 참가한 참가자입니다");
         }
-        channel.addParticipant(user);
-        user.addJoinedChannels(channel);
 
+        channel.addParticipant(user);
         channel.updateUpdatedAt();
+
+        user.addJoinedChannels(channel);
+        user.updateUpdatedAt();
     }
 
     @Override
@@ -95,13 +102,16 @@ public class JCFChannelService implements ChannelService {
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
 
-        if (!channel.getParticipants().contains(user)) {
+        if (channel.getParticipants().stream()
+                .noneMatch(u -> Objects.equals(u.getId(), user.getId()))) {
             throw new IllegalStateException("참여하지 않은 참가자입니다");
         }
-        user.removeJoinedChannels(channel);
-        channel.removeParticipant(user);
 
+        channel.removeParticipant(user);
         channel.updateUpdatedAt();
+
+        user.removeJoinedChannels(channel);
+        user.updateUpdatedAt();
     }
 
     private void validateDuplicateTitle(String title) {

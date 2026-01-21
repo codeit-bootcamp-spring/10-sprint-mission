@@ -34,8 +34,7 @@ public class FileUserService extends FileSerDe<User> implements UserService {
         });
 
         User user = new User(accountId, password, name, mail);
-        save(USER_DATA_DIRECTORY, user);
-        return user;
+        return save(USER_DATA_DIRECTORY, user);
     }
 
     @Override
@@ -75,9 +74,13 @@ public class FileUserService extends FileSerDe<User> implements UserService {
         Optional.ofNullable(name).ifPresent(user::updateName);
         Optional.ofNullable(mail).ifPresent(user::updateMail);
         user.updateUpdatedAt();
+        return save(USER_DATA_DIRECTORY, user);
+    }
 
-        save(USER_DATA_DIRECTORY, user);
-        return user;
+    @Override
+    public User updateUser(User newUser) {
+        newUser.updateUpdatedAt();
+        return save(USER_DATA_DIRECTORY, newUser);
     }
 
     @Override
