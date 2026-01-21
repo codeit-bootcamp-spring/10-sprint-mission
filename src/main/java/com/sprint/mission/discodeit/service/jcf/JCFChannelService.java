@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.Validators;
@@ -12,19 +14,19 @@ import com.sprint.mission.discodeit.util.Validators;
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
+    private final ChannelRepository channelRepository;
+    private final UserService userService;
 
-    final ArrayList<Channel> list;
-
-    public JCFChannelService() {
-        this.list = new ArrayList<>();
+    public JCFChannelService(ChannelRepository channelRepository, UserService userService) {
+        this.channelRepository = channelRepository;
+        this.userService = userService;
     }
 
     @Override
     public Channel createChannel(ChannelType type, String channelName, String channelDescription) {
             Validators.validationChannel(type, channelName, channelDescription);
             Channel channel = new Channel(type, channelName, channelDescription);
-            list.add(channel);
-            return channel;
+            return channelRepository.save(channel);
     }
 
     @Override
@@ -34,7 +36,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public List<Channel> readAllChannel() {
-        return list;
+        return channelRepository.findAll();
     }
 
     @Override
@@ -60,12 +62,14 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID id) {
         Channel channel = readChannel(id);
-        list.remove(channel);
+        channelRepository.deleteById(id);
     }
 
     @Override
     public void joinChannel(UUID channelId, User user) {
         Channel channel = readChannel(channelId);
+        User persistedUser = userService.readUser(user.getId());
+
 
         boolean alreadyJoined = channel.getJoinedUsers().stream()
                 .anyMatch(u -> user.getId().equals(u.getId()));
@@ -75,12 +79,13 @@ public class JCFChannelService implements ChannelService {
         }
 
         channel.getJoinedUsers().add(user);
-        user.getJoinedChannels().add(channel);
+        persistedUser.getJoinedChannels().add(channel);
     }
 
     @Override
     public void leaveChannel(UUID channelId, User user) {
         Channel channel = readChannel(channelId);
+        User persistedUser = userService.readUser(user.getId());
 
         boolean alreadyLeaved = channel.getJoinedUsers().stream()
                 .noneMatch(u -> user.getId().equals(u.getId()));
@@ -90,12 +95,12 @@ public class JCFChannelService implements ChannelService {
         }
 
         channel.getJoinedUsers().removeIf(u -> user.getId().equals(u.getId()));
-        user.getJoinedChannels().removeIf(c -> channelId.equals(c.getId()));
+        persistedUser.getJoinedChannels().removeIf(c -> channelId.equals(c.getId()));
     }
 
     @Override
     public List<Channel> readChannelsByUser(UUID userId) {
-        return list.stream()
+        return channelRepository.findAll().stream()
                 .filter(ch -> ch.getJoinedUsers().stream()
                         .anyMatch(u -> userId.equals(u.getId())))
                 .toList();
@@ -104,9 +109,7 @@ public class JCFChannelService implements ChannelService {
 
     private Channel validateExistenceChannel(UUID id) {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        return list.stream()
-                .filter(channel -> id.equals(channel.getId()))
-                .findFirst()
+        return channelRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("채널 id가 존재하지 않습니다."));
     }
 }
