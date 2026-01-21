@@ -50,7 +50,6 @@ public class BasicChannelService implements ChannelService {
     public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = channelRepository.findById(channelId);
         if (channel != null) {
-            // channel.addMember(userId); // 엔티티의 메서드 호출
             channelRepository.update(channel);
         }
     }
@@ -59,7 +58,6 @@ public class BasicChannelService implements ChannelService {
     public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = channelRepository.findById(channelId);
         if (channel != null) {
-            // channel.removeMember(userId);
             channelRepository.update(channel);
         }
     }
