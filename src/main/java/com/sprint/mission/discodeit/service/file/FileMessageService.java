@@ -26,14 +26,16 @@ public class FileMessageService extends FileSerDe<Message> implements MessageSer
         User user = userService.getUser(userId);
 
         // 참여여부 확인
-        if (!channel.getParticipants().contains(user)) {
+        if (channel.getParticipants().stream().noneMatch(u -> Objects.equals(u.getId(), user.getId()))) {
             throw new IllegalStateException("채널에 소속되지 않은 유저입니다.");
         }
 
         Message msg = new Message(channel, user, message);
-        save(MESSAGE_DATA_DIRECTORY, msg);
+        this.save(MESSAGE_DATA_DIRECTORY, msg);
         channel.addMessage(msg);
+        channelService.updateChannel(channel);
         user.addMessageHistory(msg);
+        userService.updateUser(user);
 
         return msg;
     }
@@ -72,11 +74,13 @@ public class FileMessageService extends FileSerDe<Message> implements MessageSer
     @Override
     public void deleteMessage(UUID uuid) {
         Message msg = getMessage(uuid);
-        Channel channel = msg.getChannel();
-        User user = msg.getUser();
+        Channel channel = channelService.getChannel(msg.getChannel().getId());
+        User user = userService.getUser(msg.getUser().getId());
 
         user.removeMessageHistory(msg);
+        userService.updateUser(user);
         channel.removeMessage(msg);
+        channelService.updateChannel(channel);
         delete(MESSAGE_DATA_DIRECTORY, uuid);
     }
 }

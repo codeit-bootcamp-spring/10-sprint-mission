@@ -27,7 +27,7 @@ public class JCFMessageService implements MessageService {
         User user = userService.getUser(userId);
 
         // 참여여부 확인
-        if (!channel.getParticipants().contains(user)) {
+        if (channel.getParticipants().stream().noneMatch(u -> Objects.equals(u.getId(), user.getId()))) {
             throw new IllegalStateException("채널에 소속되지 않은 유저입니다.");
         }
 

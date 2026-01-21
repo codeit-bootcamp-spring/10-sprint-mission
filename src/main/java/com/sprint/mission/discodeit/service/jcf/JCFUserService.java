@@ -80,6 +80,11 @@ public class JCFUserService implements UserService {
     }
 
     @Override
+    public User updateUser(User newUser) {
+        return updateUser(newUser.getId(), null, null, null, null);
+    }
+
+    @Override
     public void deleteUser(UUID uuid) {
         User user = getUser(uuid);
         deleteProcess(user);
