@@ -32,6 +32,7 @@ public class JavaApplication {
         userService.setChannelService(channelService);
         userService.setMessageService(messageService);
         channelService.setMessageService(messageService);
+        channelService.setUserService(userService);
 
         // 유저
         User user1 = userService.createUser("장동규");

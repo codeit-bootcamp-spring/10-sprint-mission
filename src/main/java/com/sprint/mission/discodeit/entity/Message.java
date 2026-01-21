@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Message extends BaseEntity implements Serializable {
@@ -51,5 +52,16 @@ public class Message extends BaseEntity implements Serializable {
                 ", user=" + user.getUserName() +
                 ", channel=" + channel.getChannelName() +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Message message)) return false;
+        return Objects.equals(this.getId(), message.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(this.getId());
     }
 }

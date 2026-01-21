@@ -42,6 +42,10 @@ public class FileMessageService implements MessageService {
         }
         Message message = new Message(user, content, channel);
         user.addMessage(message, channel);
+        userService.saveData();
+        channel.addMessage(message);
+        channelService.saveData();
+
         data.put(message.getId(), message);
         saveData();
         return message;
@@ -82,7 +86,11 @@ public class FileMessageService implements MessageService {
         User user = message.getUser();
 
         channel.removeMessage(message);
+        channelService.saveData();
+        saveData();
+
         user.removeMessage(message, channel);
+        userService.saveData();
         data.remove(id);
         saveData();
     }
@@ -92,7 +100,7 @@ public class FileMessageService implements MessageService {
         loadData();
         User user = userService.findById(userId);
         return data.values().stream()
-                .filter(message -> message.getUser() == user)
+                .filter(message -> message.getUser().equals(user))
                 .toList();
     }
 
@@ -101,7 +109,7 @@ public class FileMessageService implements MessageService {
         loadData();
         Channel channel = channelService.findById(channelId);
         return data.values().stream()
-                .filter(message -> message.getChannel()==channel)
+                .filter(message -> message.getChannel().equals(channel))
                 .toList();
     }
 

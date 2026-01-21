@@ -28,6 +28,8 @@ public interface ChannelService {
 
     void setMessageService(MessageService messageService);
 
+    void setUserService(UserService userService);
+
     void loadData();
 
     void saveData();

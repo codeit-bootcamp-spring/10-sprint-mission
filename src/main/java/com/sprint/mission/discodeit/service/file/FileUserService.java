@@ -72,18 +72,24 @@ public class FileUserService implements UserService {
         loadData();
         User user = findById(id);
         // 유저가 참여중인 channel 리스트
-        List<Channel> channels = user.getChannels().stream().toList();
+//        List<Channel> channels = user.getChannels().stream().toList();
+        List<Channel> channels = channelService.getChannelsByUserId(id);
         // 유저가 작성했던 message 리스트
-        List<Message> messages = user.getMessages().stream().toList();
+//        List<Message> messages = user.getMessages().stream().toList();
+        List<Message> messages = messageService.getMessagesByUserId(id);
         // 참여중인 채널의 유저리스트에서 유저를 제거
         for (Channel channel : channels) {
             channel.removeJoinedUser(user);
         }
+        channelService.saveData();
+        saveData();
         // 작성했던 메시지가 포함된 채널의 메시지 리스트에서 메시지를 제거
         for (Message message : messages) {
             message.getChannel().removeMessage(message);
             messageService.deleteById(message.getId());
         }
+        messageService.saveData();
+        channelService.saveData();
         data.remove(id);
         saveData();
     }

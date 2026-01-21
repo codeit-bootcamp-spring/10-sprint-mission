@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.Validator;
 
 import java.util.*;
@@ -12,6 +13,7 @@ import java.util.*;
 public class JCFChannelService implements ChannelService {
     private final Map<UUID, Channel> channels;
     private MessageService messageService;
+    private UserService userService;
 
     public JCFChannelService() {
         channels = new HashMap<>();
@@ -83,6 +85,11 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
+    }
+
+    @Override
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     @Override

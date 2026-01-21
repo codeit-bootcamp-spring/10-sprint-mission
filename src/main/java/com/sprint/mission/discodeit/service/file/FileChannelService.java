@@ -5,14 +5,16 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.Validator;
 
 import java.io.*;
 import java.util.*;
 
 public class FileChannelService implements ChannelService {
-    private Map<UUID, Channel> data = new HashMap<UUID, Channel>();
+    private Map<UUID, Channel> data;
     private MessageService messageService;
+    private UserService userService;
 
     public FileChannelService() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./channels.ser"))) {
@@ -67,18 +69,24 @@ public class FileChannelService implements ChannelService {
         loadData();
         Channel channel = findById(id);
         // 채널에 참여 중인 유저 리스트
-        List<User> users = channel.getJoinedUsers().stream().toList();
+//        List<User> users = channel.getJoinedUsers().stream().toList();
+        List<User> users = userService.getUsersByChannelId(id);
         // 채널에 남겨진 메시지 리스트
-        List<Message> messages = channel.getMessageList().stream().toList();
+//        List<Message> messages = channel.getMessageList().stream().toList();
+        List<Message> messages = messageService.getMessagesByChannelId(id);
         // 유저 객체의 채널 리스트에서 채널 삭제
         for (User user : users) {
             user.leaveChannel(channel);
         }
+        userService.saveData();
+        saveData();
         // 메시지 삭제
         for (Message message : messages) {
             messageService.deleteById(message.getId());
             message.getUser().removeMessage(message, channel);
         }
+        userService.saveData();
+        messageService.saveData();
         data.remove(id);
         saveData();
     }
@@ -96,6 +104,11 @@ public class FileChannelService implements ChannelService {
     @Override
     public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
+    }
+
+    @Override
+    public void setUserService(UserService userService) {
+        this.userService = userService;
     }
 
     public void loadData() {
