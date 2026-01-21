@@ -18,6 +18,7 @@ public class FileChannelService extends FileSerDe<Channel> implements ChannelSer
     private MessageService messageService;
 
     public FileChannelService(UserService userService) {
+        super(Channel.class);
         this.userService = userService;
     }
 
@@ -36,7 +37,7 @@ public class FileChannelService extends FileSerDe<Channel> implements ChannelSer
 
     @Override
     public Channel getChannel(UUID uuid) {
-        return load(CHANNEL_DATA_DIRECTORY, uuid, Channel.class)
+        return load(CHANNEL_DATA_DIRECTORY, uuid)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
     }
 
@@ -49,7 +50,7 @@ public class FileChannelService extends FileSerDe<Channel> implements ChannelSer
 
     @Override
     public List<Channel> findAllChannels() {
-        return loadAll(CHANNEL_DATA_DIRECTORY, Channel.class);
+        return loadAll(CHANNEL_DATA_DIRECTORY);
     }
 
     @Override

@@ -17,7 +17,9 @@ public class FileUserService extends FileSerDe<User> implements UserService {
     private MessageService messageService;
     private ChannelService channelService;
 
-    public FileUserService() {}
+    public FileUserService() {
+        super(User.class);
+    }
 
     public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
@@ -40,25 +42,25 @@ public class FileUserService extends FileSerDe<User> implements UserService {
 
     @Override
     public User getUser(UUID uuid) {
-        return load(USER_DATA_DIRECTORY, uuid, User.class)
+        return load(USER_DATA_DIRECTORY, uuid)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
     }
 
     @Override
     public Optional<User> findUserByAccountId(String accountId) {
-        return loadAll(USER_DATA_DIRECTORY, User.class).stream()
+        return loadAll(USER_DATA_DIRECTORY).stream()
                 .filter(u -> Objects.equals(u.getAccountId(), accountId)).findFirst();
     }
 
     @Override
     public Optional<User> findUserByMail(String mail) {
-        return loadAll(USER_DATA_DIRECTORY, User.class).stream()
+        return loadAll(USER_DATA_DIRECTORY).stream()
                 .filter(u -> Objects.equals(u.getMail(), mail)).findFirst();
     }
 
     @Override
     public List<User> findAllUsers() {
-        return loadAll(USER_DATA_DIRECTORY, User.class);
+        return loadAll(USER_DATA_DIRECTORY);
     }
 
     @Override
