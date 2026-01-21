@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Message extends BaseEntity implements Serializable, Identifiable {
+public class Message extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     private String content;

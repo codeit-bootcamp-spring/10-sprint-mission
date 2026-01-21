@@ -5,7 +5,7 @@ import com.sprint.mission.discodeit.service.file.Identifiable;
 import java.io.Serializable;
 import java.util.*;
 
-public class User extends BaseEntity implements Serializable, Identifiable {
+public class User extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     public enum UserPresence {
