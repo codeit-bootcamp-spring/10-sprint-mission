@@ -35,7 +35,10 @@ public class JCFChannelService implements ChannelService {
         // 유저 추가
         Arrays.stream(userId)
                 .map(userService::findUser)
-                .forEach(channel::addUsers);
+                .forEach(user -> {
+                    channel.addUsers(user.getId());
+                    user.addChannel(channelId);
+                });
 
         return channel;
     }
@@ -60,7 +63,7 @@ public class JCFChannelService implements ChannelService {
         List<Channel> channelList = new ArrayList<>();
 
         System.out.println("-- " + user + "가 속한 채널 조회 --");
-        Collection<Channel> dataList = new ArrayList<>(data.values());
+        List<Channel> dataList = new ArrayList<>(data.values());
         dataList.stream()
                 .filter(channel -> channel.getUserList().contains(user))
                 .forEach(channel -> {channelList.add(channel);
@@ -81,24 +84,24 @@ public class JCFChannelService implements ChannelService {
         Channel channel = findChannel(channelId);
 
         // 채널이 삭제될때 이 채널이 속해있는 유저의 채널리스트에서 채널 삭제
-        List<User> userList = new ArrayList<>(channel.getUserList());
-        userList.forEach(user -> user.getChannelList().remove(channel));
+        List<UUID> userList = new ArrayList<>(channel.getUserList());
+        userList.stream().map(userService::findUser).forEach(user -> user.getChannelList().remove(channelId));
 
         // 채널이 삭제될때 채널에 속해있던 메시지들 전부 삭제
-        List<Message> messageList = new ArrayList<>(channel.getMessageList());
-        messageList.forEach(message -> messageService.delete(message.getId()));
+        List<UUID> messageList = new ArrayList<>(channel.getMessageList());
+        messageList.stream().map(messageService::findMessage).forEach(message -> {
+            messageService.delete(message.getId());
+            // 유저에서도 메시지 삭제
+            User author = userService.findUser(message.getUserId());
+            author.getMessageList().remove(message.getId());
+        });
 
         data.remove(channelId);
     }
 
     @Override
-    public void saveChannel(Map<UUID, Channel> data) {
-        return;
-    }
-
-    @Override
-    public Map<UUID, Channel> loadChannel() {
-        return Map.of();
+    public void save(Channel channel) {
+        data.put(channel.getId(), channel);
     }
 }
 

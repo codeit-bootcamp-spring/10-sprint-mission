@@ -6,9 +6,9 @@ import java.util.UUID;
 
 public class User extends BaseEntity{
     private String name;
-    private final List<Message> messageList;
-    private final List<Channel> channelList;
-    private final List<User> friendsList;
+    private final List<UUID> messageList;
+    private final List<UUID> channelList;
+    private final List<UUID> friendsList;
 
     public User(String name){
         this.name = name;
@@ -21,35 +21,32 @@ public class User extends BaseEntity{
         return name;
     }
 
-    public List<Message> getMessageList(){
+    public List<UUID> getMessageList(){
         return messageList;
     }
 
-    public List<Channel> getChannelList(){
+    public List<UUID> getChannelList(){
         return channelList;
     }
 
-    public List<User> getFriendsList(){
+    public List<UUID> getFriendsList(){
         return friendsList;
     }
-    public void addChannel(Channel channel){
-        this.channelList.add(channel);
-        if(!channel.getUserList().contains(this)){
-            channel.addUsers(this);
+    public void addChannel(UUID channdId){
+        if(!this.getChannelList().contains(channdId)){
+            this.getChannelList().add(channdId);
         }
     }
 
-    public void addMessage(Message message){
-        this.messageList.add(message);
-        if(message.getUser() != this){
-            message.addUser(this);
+    public void addMessage(UUID messaageId){
+        if(!this.getMessageList().contains(messaageId)){
+            this.getMessageList().add(messaageId);
         }
     }
 
-    public void addFriend(User user){
-        this.friendsList.add(user);
-        if(!user.getFriendsList().contains(this)){
-            user.addFriend(this);
+    public void addFriend(UUID userId){
+        if(!this.getFriendsList().contains(userId)){
+            this.getFriendsList().add(userId);
         }
     }
 

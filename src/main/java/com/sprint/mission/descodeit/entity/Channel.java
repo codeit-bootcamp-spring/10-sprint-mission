@@ -5,11 +5,10 @@ import com.sprint.mission.descodeit.entity.User;
 
 public class Channel extends BaseEntity {
     private String channelName;
-    private List<User> userList;
-    private List<Message> messageList;
+    private List<UUID> userList;
+    private List<UUID> messageList;
 
     public Channel(String channelName) {
-        super();
         this.channelName = channelName;
         this.userList = new ArrayList<>();
         this.messageList = new ArrayList<>();
@@ -19,25 +18,23 @@ public class Channel extends BaseEntity {
         return channelName;
     }
 
-    public List<Message> getMessageList(){
+    public List<UUID> getMessageList(){
         return messageList;
     }
 
-    public List<User> getUserList(){
+    public List<UUID> getUserList(){
         return userList;
     }
 
-    public void addUsers(User user){
-        this.userList.add(user);
-        if(!user.getChannelList().contains(this)){
-            user.addChannel(this);
+    public void addUsers(UUID userId){
+        if(!this.getUserList().contains(userId)){
+            this.getUserList().add(userId);
         }
     }
 
-    public void addMessage(Message message){
-        this.messageList.add(message);
-        if(message.getChannel() != this){
-            message.addChannel(this);
+    public void addMessage(UUID messageId){
+        if(!this.getMessageList().contains(messageId)){
+            this.getMessageList().add(messageId);
         }
     }
 

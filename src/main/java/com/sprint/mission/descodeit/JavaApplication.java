@@ -3,38 +3,50 @@ package com.sprint.mission.descodeit;
 import com.sprint.mission.descodeit.entity.Channel;
 import com.sprint.mission.descodeit.entity.Message;
 import com.sprint.mission.descodeit.entity.User;
+import com.sprint.mission.descodeit.repository.ChannelRepository;
+import com.sprint.mission.descodeit.repository.MessageRepository;
+import com.sprint.mission.descodeit.repository.UserRepository;
+import com.sprint.mission.descodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.descodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.descodeit.repository.file.FileUserRepository;
+import com.sprint.mission.descodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.descodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.descodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.descodeit.service.ChannelService;
 import com.sprint.mission.descodeit.service.MessageService;
 import com.sprint.mission.descodeit.service.UserService;
-import com.sprint.mission.descodeit.service.file.FileChannelService;
-import com.sprint.mission.descodeit.service.file.FileMessageService;
-import com.sprint.mission.descodeit.service.file.FileUserService;
-import com.sprint.mission.descodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.descodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.descodeit.service.jcf.JCFUserService;
+import com.sprint.mission.descodeit.service.basic.BasicChannelService;
+import com.sprint.mission.descodeit.service.basic.BasicMessageService;
+import com.sprint.mission.descodeit.service.basic.BasicUserService;
+
 
 import java.util.UUID;
 
 public class JavaApplication {
     public static void main(String[] args){
-        MessageService messageService = new FileMessageService();
-        UserService userService = new FileUserService(messageService);
-        ChannelService channelService = new FileChannelService(userService,messageService);
-        messageService.setDependencies(userService,channelService);
+        UserRepository userRepository = new JCFUserRepository();
+        MessageRepository messageRepository = new JCFMessageRepository();
+        ChannelRepository channelRepository = new JCFChannelRepository();
+
+        MessageService messageService = new BasicMessageService(messageRepository, userRepository, channelRepository);
+        UserService userService = new BasicUserService(userRepository,messageRepository,channelRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository,messageRepository,userRepository);
 
 
         // 유저 생성
         User user1 = userService.create("김현재");
         User user2 = userService.create("기면재");
+
         // 친구 추가
         userService.addFriend(user1.getId(), user2.getId());
 
         //채널 생성
         Channel channel1 = channelService.create("스프린트");
         Channel channel2 = channelService.create("코드잇");
+
         // 채널 참여
-        channelService.joinUsers(channel1.getId(), user1.getId(),user2.getId());
-        channelService.joinUsers(channel2.getId(), user1.getId());
+        test(() -> channelService.joinUsers(channel1.getId(), user1.getId(),user2.getId()));
+        test(() ->  channelService.joinUsers(channel2.getId(), user1.getId()));
 
         // 메시지 생성
         Message message1 = messageService.create(user1.getId(), "안녕하세요", channel1.getId());
@@ -42,10 +54,11 @@ public class JavaApplication {
         Message message3 = messageService.create(user2.getId(), "안녕!", channel2.getId());
 
         System.out.println("--- 조회 ---");
+
         // 조회
         test(() -> userService.findUser(user1.getId()));
+        test(() -> userService.findUser(user2.getId()));
         userService.findAllUsers();
-
 
         test(() -> channelService.findChannel(channel1.getId()));
         test(() -> channelService.findChannel(channel2.getId()));
@@ -58,7 +71,7 @@ public class JavaApplication {
         test(() -> userService.findFriends(user1.getId()));
         test(() -> userService.findFriends(user2.getId()));
 
-        test(() -> messageService.findMessageByKeyword(channel1 .getId(), "안녕"));
+        test(() -> messageService.findMessageByKeyword(channel1.getId(), "안녕"));
 
         test(() -> channelService.findAllChannelsByUserId(user1.getId()));
         test(() -> messageService.findAllMessagesByChannelId(channel1.getId()));
@@ -69,7 +82,7 @@ public class JavaApplication {
         // 수정 & 조회
 
         test(() -> userService.update(user1.getId(), "현재"));
-        test(() -> userService.findUser(user1.getId()));
+        test(() -> userService.findUser(user2.getId()));
 
         test(() -> channelService.update(channel1.getId(), "코드잇"));
         test(() -> channelService.findChannel(channel1.getId()));
@@ -78,6 +91,7 @@ public class JavaApplication {
         test(() -> messageService.update(message1.getId(), user1.getId(), "Hello"));
         test(() -> messageService.update(message1.getId(), user2.getId(), "Hi"));
         test(() -> messageService.findMessage(message1.getId()));
+
         userService.findAllUsers();
         messageService.findAllMessages();
         channelService.findAllChannel();

@@ -2,40 +2,34 @@ package com.sprint.mission.descodeit.entity;
 import java.util.UUID;
 
 public class Message extends BaseEntity{
-    private User user;
+    private UUID userId;
     private String text;
-    private Channel channel;
+    private UUID channelId;
 
-    public Message(User user, String text, Channel channel) {
+    public Message(UUID userId, String text, UUID channelId) {
+        this.userId = userId;
         this.text = text;
-        user.addMessage(this);
-        channel.addMessage(this);
+        this.channelId = channelId;
     }
 
-    public User getUser(){
-        return user;
+    public UUID getUserId(){
+        return userId;
     }
 
     public String getText(){
         return text;
     }
 
-    public Channel getChannel(){
-        return channel;
+    public UUID getChannelId(){
+        return channelId;
     }
 
-    public void addUser(User user){
-        this.user = user;
-        if(!user.getMessageList().contains(this)){
-            user.addMessage(this);
-        }
+    public void addUser(UUID userId){
+        if(this.userId == null) this.userId = userId;
     }
 
-    public void addChannel(Channel channel){
-        this.channel = channel;
-        if(!channel.getMessageList().contains(this)){
-            channel.addMessage(this);
-        }
+    public void addChannel(UUID channelId){
+        if(this.channelId == null) this.channelId = channelId;
     }
 
     public void updateMessage(String newText){

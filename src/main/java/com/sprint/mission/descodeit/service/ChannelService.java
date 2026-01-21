@@ -14,6 +14,5 @@ public interface ChannelService {
     List<Channel> findAllChannelsByUserId(UUID userId);
     Channel update(UUID channelId, String newName);
     void delete(UUID channelId);
-    public Map<UUID, Channel> loadChannel();
-    public void saveChannel(Map<UUID, Channel> data);
+    void save(Channel channel);
 }

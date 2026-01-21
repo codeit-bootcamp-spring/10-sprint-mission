@@ -41,14 +41,17 @@ public class FileChannelService implements ChannelService {
         // 파일 불러오기
         Map<UUID,Channel> channelData = loadChannel();
         Channel channel = channelData.get(channelId);
-        Map<UUID, User> userData = userService.loadUser();
+
 
         // 유저 추가
         Arrays.stream(userId)
-                .map(userData::get)
-                .forEach(channel::addUsers);
+                .map(userService::findUser)
+                .forEach(user -> {
+                    channel.addUsers(user.getId());
+                    user.addChannel(channelId);
+                    userService.save(user);
+                });
         // 파일 저장하기
-        userService.saveUser(userData);
         saveChannel(channelData);
         return channel;
     }
@@ -79,9 +82,11 @@ public class FileChannelService implements ChannelService {
         // 파일 불러오기
         Map<UUID,Channel> data = loadChannel();
         User user = userService.findUser(userId);
-        List<Channel> channelList = user.getChannelList();
 
         System.out.println("-- " + user + "가 속한 채널 조회 --");
+        List<Channel> channelList = user.getChannelList().stream()
+                .map(this::findChannel).filter(Objects::nonNull).toList();
+
         channelList.forEach(System.out::println);
 
         return channelList;
@@ -107,12 +112,12 @@ public class FileChannelService implements ChannelService {
         Channel channel = data.get(channelId);
 
         // 채널이 삭제될때 이 채널이 속해있는 유저의 채널리스트에서 채널 삭제
-        List<User> userList = new ArrayList<>(channel.getUserList());
-        userList.forEach(user -> user.getChannelList().remove(channel));
+        List<UUID> userList = new ArrayList<>(channel.getUserList());
+        userList.forEach(userId -> userService.findUser(userId).getChannelList().remove(channelId));
 
         // 채널이 삭제될때 채널에 속해있던 메시지들 전부 삭제
-        List<Message> messageList = new ArrayList<>(channel.getMessageList());
-        messageList.forEach(message -> messageService.delete(message.getId()));
+        List<UUID> messageList = new ArrayList<>(channel.getMessageList());
+        messageList.forEach(messageService::delete);
 
         data.remove(channelId);
 
@@ -120,7 +125,13 @@ public class FileChannelService implements ChannelService {
         saveChannel(data);
     }
 
-    public Map<UUID, Channel> loadChannel(){
+    public void save(Channel channel){
+        Map<UUID, Channel> data = loadChannel();
+        data.put(channel.getId(), channel);
+        saveChannel(data);
+    }
+
+    private Map<UUID, Channel> loadChannel(){
         try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(CHANNEL_FILE))){
             return (Map<UUID,Channel>) ois.readObject();
         }
@@ -129,7 +140,7 @@ public class FileChannelService implements ChannelService {
         }
     }
 
-    public void saveChannel(Map<UUID, Channel> data){
+    private void saveChannel(Map<UUID, Channel> data) {
         try(ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream(CHANNEL_FILE)))){
             oos.writeObject(data);
         }
