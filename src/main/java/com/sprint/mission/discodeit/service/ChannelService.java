@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.service.listener.ChannelLifecycleListener;
 
 import java.util.*;
 
@@ -16,4 +17,6 @@ public interface ChannelService {
 
     void deleteChannel(UUID channelId);
     void deleteChannelsByOwnerId(UUID ownerId);
+
+    void addListener(ChannelLifecycleListener listener);
 }

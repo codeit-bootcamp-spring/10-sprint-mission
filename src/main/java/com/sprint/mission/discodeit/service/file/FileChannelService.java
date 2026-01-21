@@ -10,11 +10,18 @@ import java.util.*;
 
 public class FileChannelService implements ChannelService {
     private Map<UUID, Channel> channelDB = new HashMap<>();
-    private final File file = new File("channels.ser");
+    private final File file;
 
     private final List<ChannelLifecycleListener> listeners = new ArrayList<>();
 
     public FileChannelService() {
+        // 데이터 폴더 생성 및 파일 경로 설정
+        File dataDir = new File("discodeit.data");
+        if (!dataDir.exists()) {
+            dataDir.mkdirs();
+        }
+        this.file = new File(dataDir, "channels.ser");
+
         if (file.exists()) {
             load();
         } else {
@@ -22,7 +29,7 @@ public class FileChannelService implements ChannelService {
         }
     }
 
-    @SuppressWarnings("unckecked")
+    @SuppressWarnings("unchecked")
     private void load() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             this.channelDB = (Map<UUID, Channel>) ois.readObject();

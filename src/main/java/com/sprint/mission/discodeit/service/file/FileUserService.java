@@ -9,11 +9,18 @@ import java.util.*;
 
 public class FileUserService implements UserService {
     private Map<UUID, User> userDB = new HashMap<>();
-    private final File file = new File("users.ser"); // 저장할 파일명
+    private final File file;// 저장할 파일명
 
     private final List<UserLifecycleListener> listeners = new ArrayList<>();
 
     public FileUserService() {
+        // 데이터 폴더 생성 및 파일 경로 설정
+        File dataDir = new File("discodeit.data");
+        if (!dataDir.exists()) {
+            dataDir.mkdirs();
+        }
+        this.file = new File(dataDir, "users.ser");
+
         if (file.exists()) {
             load();
         } else {

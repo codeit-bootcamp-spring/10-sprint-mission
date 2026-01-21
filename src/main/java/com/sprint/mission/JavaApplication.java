@@ -1,44 +1,77 @@
 package com.sprint.mission;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.ChannelUserRoleRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.*;
 import com.sprint.mission.discodeit.service.*;
-import com.sprint.mission.discodeit.service.file.*; // 파일 방식(File) 추가
+import com.sprint.mission.discodeit.service.basic.*;
 
+import java.io.File;
+import java.util.*;
+
+import java.io.File;
 import java.util.*;
 
 public class JavaApplication {
-    public static void main(String[] args) {
-        printSection("[discodeit] 서비스 기능 테스트 시작");
+    private static final String DATA_DIR = "discodeit.data";
 
+    public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+
+        // 기존 데이터 삭제 여부 확인
+        System.out.print("기존 데이터 파일을 삭제하고 시작하시겠습니까? (y/n): ");
+        String choice = sc.nextLine().trim();
+        if ("y".equalsIgnoreCase(choice)) {
+            deleteDataFiles();
+        } else {
+            System.out.println("기존 데이터를 유지하고 시작합니다.");
+        }
+
+        printSection("[discodeit] 서비스 기능 테스트 시작 (Basic Service + File Repository Mode)");
         boolean running = true;
 
-        // 이 방법으로 할 경우 UserService, ChannelService 인터페이스에 리스너 추가 필요
-        // UserService userService = new FileUserService();
-        // ChannelService channelService = new FileChannelService();
+        // Dependency Injection
+        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+        MessageRepository messageRepository = new FileMessageRepository();
+        ChannelUserRoleRepository channelUserRoleRepository = new FileChannelUserRoleRepository();
 
-        FileUserService userService = new FileUserService();
-        FileChannelService channelService = new FileChannelService();
+        UserService userService = new BasicUserService(userRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository);
 
-        MessageService messageService = new FileMessageService(userService, channelService);
-        ChannelUserRoleService channelUserRoleService = new FileChannelUserRoleService(userService, channelService);
+        MessageService messageService = new BasicMessageService(
+                messageRepository,
+                userRepository,
+                channelRepository,
+                channelUserRoleRepository
+        );
 
-        // FileUserService와 FileChannelService에도 addListener가 구현되어 있어야 함
-        userService.addListener(userId -> {
+        ChannelUserRoleService channelUserRoleService = new BasicChannelUserRoleService(
+                channelUserRoleRepository,
+                userRepository,
+                channelRepository
+        );
+
+
+        // 리스너 등록 (기존과 동일)
+        userService.addListener((UUID userId) -> {
             channelService.deleteChannelsByOwnerId(userId);
             messageService.deleteAllMessagesByUserId(userId);
             channelUserRoleService.deleteAllAssociationsByUserId(userId);
         });
 
-        channelService.addListener(channelId -> {
+        channelService.addListener((UUID channelId) -> {
             messageService.deleteAllMessagesByChannelId(channelId);
             channelUserRoleService.deleteAllAssociationsByChannelId(channelId);
         });
 
-
+        // 메인 루프 (기존과 동일)
         while (running) {
-            System.out.println("\t\t\t\t\t----------------------------------");
-            System.out.println("\t\t\t\t\t|   📌[discodei t] 테스트 메뉴 선택📌  |");
+            System.out.println("\n\t\t\t\t\t----------------------------------");
+            System.out.println("\t\t\t\t\t|   📌[discodeit] 테스트 메뉴 선택📌  |");
             System.out.println("\t\t\t\t\t| 1. User 도메인 테스트               |");
             System.out.println("\t\t\t\t\t| 2. Channel 도메인 테스트            |");
             System.out.println("\t\t\t\t\t| 3. Message 도메인 테스트            |");
@@ -70,11 +103,31 @@ public class JavaApplication {
                         System.out.println("⚠️잘못된 입력입니다. 다시 선택해주세요.⚠️");
                 }
             } catch (Exception e) {
-                e.printStackTrace(); // 실무에서는 로깅 라이브러리 사용
-                System.out.println("\n⚠️테스트 실행 중 오류 발생⚠️");
+                e.printStackTrace(); // 디버깅용
+                System.out.println("\n⚠️테스트 실행 중 오류 발생: " + e.getMessage());
             }
         }
         sc.close();
+    }
+
+    // 데이터 파일 삭제
+    private static void deleteDataFiles() {
+        File dir = new File(DATA_DIR);
+        if (dir.exists() && dir.isDirectory()) {
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.getName().endsWith(".ser")) {
+                        if (file.delete()) {
+                            System.out.println("[삭제됨] " + file.getName());
+                        }
+                    }
+                }
+            }
+            System.out.println("기존 데이터 파일 삭제 완료.");
+        } else {
+            System.out.println("삭제할 데이터 폴더가 존재하지 않습니다.");
+        }
     }
 
     // =================================================================

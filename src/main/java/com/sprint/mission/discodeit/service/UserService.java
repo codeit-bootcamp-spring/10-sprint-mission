@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.service.listener.UserLifecycleListener;
 
 import java.util.*;
 
@@ -14,4 +15,6 @@ public interface UserService{
     User updateUser(UUID id, String username);
 
     void deleteUser(UUID id);
+
+    void addListener(UserLifecycleListener listener);
 }

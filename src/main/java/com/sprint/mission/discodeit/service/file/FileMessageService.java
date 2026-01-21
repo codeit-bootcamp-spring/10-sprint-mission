@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class FileMessageService implements MessageService {
     private Map<UUID, Message> messageDB = new HashMap<>();
-    private final File file = new File("message.ser");
+    private final File file;
 
     private final UserService userService;
     private final ChannelService channelService;
@@ -21,6 +21,12 @@ public class FileMessageService implements MessageService {
     public FileMessageService(UserService userService, ChannelService channelService) {
         this.userService = userService;
         this.channelService = channelService;
+
+        File dataDir = new File("discodeit.data");
+        if (!dataDir.exists()) {
+            dataDir.mkdirs();
+        }
+        this.file = new File(dataDir, "message.ser");
 
         if (file.exists()) {
             load();
@@ -52,7 +58,7 @@ public class FileMessageService implements MessageService {
         User sender  = userService.findUserByUserId(userId);
         Channel channel = channelService.findChannelById(channelId);
 
-        // 주의: 파일 기반 구조에서 channel 객체는 channels.dat에서 로드된 별도의 객체일 수 있음
+        // 주의: 파일 기반 구조에서 channel 객체는 channels.ser에서 로드된 별도의 객체일 수 있음
         // 따라서 channel.getChannelUserRoles()가 최신 상태인지 보장하기 어려울 수 있음 (추후 Repository 패턴으로 해결)
         boolean isMember = channel.getChannelUserRoles().stream()
                 .anyMatch(role -> role.getUser().getId().equals(userId));

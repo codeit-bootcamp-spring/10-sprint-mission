@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class FileChannelUserRoleService implements ChannelUserRoleService {
     private Map<UUID, ChannelUserRole> channelUserRoleDB = new HashMap<>();
-    private final File file = new File("channel_user_roles.ser");
+    private final File file;
 
     private final UserService userService;
     private final ChannelService channelService;
@@ -22,6 +22,12 @@ public class FileChannelUserRoleService implements ChannelUserRoleService {
     public FileChannelUserRoleService(UserService userservice, ChannelService channelService) {
         this.userService = userservice;
         this.channelService = channelService;
+
+        File dataDir = new File("discodeit.data");
+        if (!dataDir.exists()) {
+            dataDir.mkdirs();
+        }
+        this.file = new File(dataDir, "channel_user_roles.ser");
 
         if (file.exists()) {
             load();
