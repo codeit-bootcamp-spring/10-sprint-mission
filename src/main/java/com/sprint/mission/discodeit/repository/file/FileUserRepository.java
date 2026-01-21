@@ -70,20 +70,7 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public void deleteUser(UUID userId) {
-        // 경로 생성 (user-id.ser)
-        Path filePath = userFilePath(userId);
-
-        try {
-            // 파일이 존재한다면 삭제 후 true 반환
-            boolean deleted = Files.deleteIfExists(filePath);
-            if (!deleted) {
-                throw new RuntimeException("유저가 존재하지 않습니다.");
-            }
-            // 컬렉션에서도 삭제
-            data.remove(userId);
-        } catch (IOException e) {
-            throw new RuntimeException("유저 파일 삭제를 실패했습니다.");
-        }
+        deleteFileAndRemoveFromData(userId);
     }
 
     public User loadUserFile(UUID userId) {
@@ -106,7 +93,7 @@ public class FileUserRepository implements UserRepository {
         }
     }
 
-    public void loadAllFromFiles() {
+    private void loadAllFromFiles() {
         try {
             Files.list(userDir)
                     .filter(path -> path.getFileName().toString().startsWith("user-")) // 파일명이 "user-"로 시작해야 함
@@ -123,6 +110,23 @@ public class FileUserRepository implements UserRepository {
                     });
         } catch (IOException e) {
             throw new RuntimeException("유저 디렉토리 조회를 실패했습니다.");
+        }
+    }
+
+    private void deleteFileAndRemoveFromData(UUID userId) {
+        // 경로 생성 (user-id.ser)
+        Path filePath = userFilePath(userId);
+
+        try {
+            // 파일이 존재한다면 삭제 후 true 반환
+            boolean deleted = Files.deleteIfExists(filePath);
+            if (!deleted) {
+                throw new RuntimeException("유저가 존재하지 않습니다.");
+            }
+            // 컬렉션에서도 삭제
+            data.remove(userId);
+        } catch (IOException e) {
+            throw new RuntimeException("유저 파일 삭제를 실패했습니다.");
         }
     }
 }

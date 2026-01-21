@@ -70,20 +70,7 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public void deleteMessage(UUID messageId) {
-        // 경로 생성 (message-id.ser)
-        Path filePath = messageFilePath(messageId);
-
-        try {
-            // 파일이 존재한다면 삭제 후 true 반환
-            boolean deleted = Files.deleteIfExists(filePath);
-            if (!deleted) {
-                throw new RuntimeException("메시지가 존재하지 않습니다.");
-            }
-            // 컬렉션에서도 삭제
-            data.remove(messageId);
-        } catch (IOException e) {
-            throw new RuntimeException("메시지 파일 삭제를 실패했습니다.");
-        }
+        deleteFileAndRemoveFromData(messageId);
     }
 
     public Message loadMessageFile(UUID messageId) {
@@ -106,7 +93,7 @@ public class FileMessageRepository implements MessageRepository {
         }
     }
 
-    public void loadAllFromFiles() {
+    private void loadAllFromFiles() {
         try {
             Files.list(messageDir)
                     .filter(path -> path.getFileName().toString().startsWith("message-")) // 파일명이 "message-"로 시작해야 함
@@ -123,6 +110,23 @@ public class FileMessageRepository implements MessageRepository {
                     });
         } catch (IOException e) {
             throw new RuntimeException("메시지 디렉토리 조회를 실패했습니다.");
+        }
+    }
+
+    private void deleteFileAndRemoveFromData(UUID messageId) {
+        // 경로 생성 (message-id.ser)
+        Path filePath = messageFilePath(messageId);
+
+        try {
+            // 파일이 존재한다면 삭제 후 true 반환
+            boolean deleted = Files.deleteIfExists(filePath);
+            if (!deleted) {
+                throw new RuntimeException("메시지가 존재하지 않습니다.");
+            }
+            // 컬렉션에서도 삭제
+            data.remove(messageId);
+        } catch (IOException e) {
+            throw new RuntimeException("메시지 파일 삭제를 실패했습니다.");
         }
     }
 }

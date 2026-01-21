@@ -70,20 +70,7 @@ public class FileChannelRepository implements ChannelRepository {
 
     @Override
     public void deleteChannel(UUID channelId) {
-        // 경로 생성 (channel-id.ser)
-        Path filePath = channelFilePath(channelId);
-
-        try {
-            // 파일이 존재한다면 삭제 후 true 반환
-            boolean deleted = Files.deleteIfExists(filePath);
-            if (!deleted) {
-                throw new RuntimeException("채널이 존재하지 않습니다.");
-            }
-            // 컬렉션에서도 삭제
-            data.remove(channelId);
-        } catch (IOException e) {
-            throw new RuntimeException("채널 파일 삭제를 실패했습니다.");
-        }
+        deleteFileAndRemoveFromData(channelId);
     }
 
     public Channel loadChannelFile(UUID channelId) {
@@ -106,7 +93,7 @@ public class FileChannelRepository implements ChannelRepository {
         }
     }
 
-    public void loadAllFromFiles() {
+    private void loadAllFromFiles() {
         try {
             Files.list(channelDir)
                     .filter(path -> path.getFileName().toString().startsWith("channel-")) // 파일명이 "channel-"로 시작해야 함
@@ -123,6 +110,23 @@ public class FileChannelRepository implements ChannelRepository {
                     });
         } catch (IOException e) {
             throw new RuntimeException("채널 디렉토리 조회를 실패했습니다.");
+        }
+    }
+
+    private void deleteFileAndRemoveFromData(UUID channelId) {
+        // 경로 생성 (channel-id.ser)
+        Path filePath = channelFilePath(channelId);
+
+        try {
+            // 파일이 존재한다면 삭제 후 true 반환
+            boolean deleted = Files.deleteIfExists(filePath);
+            if (!deleted) {
+                throw new RuntimeException("채널이 존재하지 않습니다.");
+            }
+            // 컬렉션에서도 삭제
+            data.remove(channelId);
+        } catch (IOException e) {
+            throw new RuntimeException("채널 파일 삭제를 실패했습니다.");
         }
     }
 }
