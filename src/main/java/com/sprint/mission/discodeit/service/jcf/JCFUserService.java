@@ -21,7 +21,12 @@ public class JCFUserService implements UserService {
 
     @Override
     public User signIn(String email, String password) {
-        return null;
+        User user = data.values().stream()
+                .filter(u -> u.getEmail().equals(email) && u.getPassword().equals(password)).findFirst().orElse(null);
+        if(user == null){
+            throw new NoSuchElementException("유효하지 않은 이메일 또는 비밀번호");
+        }
+        return user;
     }
 
     @Override
