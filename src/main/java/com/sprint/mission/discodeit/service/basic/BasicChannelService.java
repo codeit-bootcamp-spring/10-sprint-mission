@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -9,11 +9,11 @@ import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.*;
 
-public class FileChannelService implements ChannelService {
+public class BasicChannelService implements ChannelService{
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
 
-    public FileChannelService(ChannelRepository channelRepository, UserRepository userRepository) {
+    public BasicChannelService(ChannelRepository channelRepository, UserRepository userRepository) {
         this.channelRepository = channelRepository;
         this.userRepository = userRepository;
     }
