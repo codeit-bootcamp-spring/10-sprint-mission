@@ -3,23 +3,22 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.*;
 
 public class JCFMessageService implements MessageService{
     private final MessageRepository messageRepository;
-    private final UserService userService;
-    private final ChannelService channelService;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
 
-
-    public JCFMessageService(MessageRepository messageRepository, UserService userService, ChannelService channelService){
+    public JCFMessageService(MessageRepository messageRepository, UserRepository userRepository, ChannelRepository channelRepository){
         this.messageRepository = messageRepository;
-        this.userService = userService;
-        this.channelService = channelService;
+        this.userRepository = userRepository;
+        this.channelRepository = channelRepository;
     }
 
     // 메시지 생성
@@ -27,14 +26,16 @@ public class JCFMessageService implements MessageService{
     public Message create(String content, UUID userId, UUID channelId) {
         validateAccess(userId, channelId); // 권한 확인
 
-        User author = userService.findById(userId);
-        Channel channel = channelService.findById(channelId);
+        User author = findUserOrThrow(userId);
+        Channel channel = findChannelOrThrow(channelId);
 
         Message newMessage = new Message(content,author, channel);
 
         author.addMessage(newMessage);
         channel.addMessage(newMessage);
 
+        userRepository.save(author);
+        channelRepository.save(channel);
         return messageRepository.save(newMessage);
     }
 
@@ -84,17 +85,29 @@ public class JCFMessageService implements MessageService{
     @Override
     public List<Message> findAllByChannelId(UUID channelId, UUID userId) { // 특정 채널의 메시지 조회
         validateAccess(userId, channelId);
-        Channel channel = channelService.findById(channelId);
+        Channel channel = findChannelOrThrow(channelId);
         return channel.getMessages();
     }
 
     // 권한 확인
     private void validateAccess(UUID userId, UUID channelId) {
         // 채널 멤버 확인
-        User user = userService.findById(userId);
-        Channel channel = channelService.findById(channelId);
+        User user = findUserOrThrow(userId);
+        Channel channel = findChannelOrThrow(channelId);
         if (!channel.isMember(user)) {
             throw new IllegalArgumentException("채널 멤버만 접근할 수 있습니다.");
         }
+    }
+
+    // 헬퍼 메서드 - 저장소에서 유저 조회
+    private User findUserOrThrow(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 ID입니다."));
+    }
+
+    // 헬퍼 메서드 - 저장소에서 채널 조회
+    private Channel findChannelOrThrow(UUID channelId) {
+        return channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널 ID입니다."));
     }
 }

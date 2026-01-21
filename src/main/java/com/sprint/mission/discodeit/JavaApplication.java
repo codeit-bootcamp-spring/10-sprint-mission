@@ -29,8 +29,8 @@ public class JavaApplication {
         MessageRepository messageRepository = new FileMessageRepository();
 
         UserService userService = new FileUserService(userRepository);
-        ChannelService channelService = new FileChannelService(channelRepository, userRepository, userService);
-        MessageService messageService = new FileMessageService(messageRepository, userRepository, channelRepository, userService, channelService);
+        ChannelService channelService = new FileChannelService(channelRepository, userRepository);
+        MessageService messageService = new FileMessageService(messageRepository, userRepository, channelRepository);
 
         System.out.println("========= [1. User 도메인 테스트] =========");
         // 1. 등록

@@ -4,18 +4,18 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
 
-    public JCFChannelService(ChannelRepository channelRepository, UserService userService) {
+    public JCFChannelService(ChannelRepository channelRepository, UserRepository userRepository) {
         this.channelRepository = channelRepository;
-        this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     // 채널 생성
@@ -57,7 +57,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void join(UUID channelId, UUID userId) {
         Channel channel = findById(channelId);
-        User user = userService.findById(userId);
+        User user = findUserOrThrow(userId);
 
         if (channel.isMember(user)) {
             throw new IllegalStateException("이미 채널에 가입된 유저입니다.");
@@ -67,13 +67,14 @@ public class JCFChannelService implements ChannelService {
         user.addJoinedChannel(channel);
 
         channelRepository.save(channel);
+        userRepository.save(user);
     }
 
     // 채널 탈퇴
     @Override
     public void leave(UUID channelId, UUID userId) {
         Channel channel = findById(channelId);
-        User user = userService.findById(userId);
+        User user = findUserOrThrow(userId);
 
         if (!channel.isMember(user)) {
             throw new IllegalStateException("해당 채널의 멤버가 아닙니다.");
@@ -83,6 +84,7 @@ public class JCFChannelService implements ChannelService {
         user.leaveChannel(channel);
 
         channelRepository.save(channel);
+        userRepository.save(user);
     }
 
     // 특정 채널의 유저 목록 조회
@@ -97,5 +99,11 @@ public class JCFChannelService implements ChannelService {
     public List<Message> findMessagesByChannelId(UUID channelId){
         Channel channel = findById(channelId);
         return channel.getMessages();
+    }
+
+    // 헬퍼 메서드 - 저장소에서 유저 조회
+    private User findUserOrThrow(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 ID입니다."));
     }
 }

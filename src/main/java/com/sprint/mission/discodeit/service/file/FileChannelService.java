@@ -13,12 +13,10 @@ import java.util.*;
 public class FileChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
-    private final UserService userService;
 
-    public FileChannelService(ChannelRepository channelRepository, UserRepository userRepository, UserService userService) {
+    public FileChannelService(ChannelRepository channelRepository, UserRepository userRepository) {
         this.channelRepository = channelRepository;
         this.userRepository = userRepository;
-        this.userService = userService;
     }
 
     // 채널 생성
@@ -60,7 +58,7 @@ public class FileChannelService implements ChannelService {
     @Override
     public void join(UUID channelId, UUID userId) {
         Channel channel = findById(channelId);
-        User user = userService.findById(userId);
+        User user = findUserOrThrow(userId);
 
         if (channel.isMember(user)) {
             throw new IllegalStateException("이미 채널에 가입된 유저입니다.");
@@ -73,12 +71,11 @@ public class FileChannelService implements ChannelService {
         userRepository.save(user);
     }
 
-
     // 채널 탈퇴
     @Override
     public void leave(UUID channelId, UUID userId) {
         Channel channel = findById(channelId);
-        User user = userService.findById(userId);
+        User user = findUserOrThrow(userId);
 
         if (!channel.isMember(user)) {
             throw new IllegalStateException("해당 채널의 멤버가 아닙니다.");
@@ -103,5 +100,11 @@ public class FileChannelService implements ChannelService {
     public List<Message> findMessagesByChannelId(UUID channelId){
         Channel channel = findById(channelId);
         return channel.getMessages();
+    }
+
+    // 헬퍼 메서드 - 저장소에서 유저 조회
+    private User findUserOrThrow(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 ID입니다."));
     }
 }
