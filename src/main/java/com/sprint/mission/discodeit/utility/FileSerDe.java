@@ -14,7 +14,13 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public abstract class FileSerDe<T extends Common> {
-    public T save(String filePath, T data) {
+    private final Class<T> type;
+
+    protected FileSerDe(Class<T> type) {
+        this.type = type;
+    }
+
+    protected T save(String filePath, T data) {
         Path file = checkDirectory(filePath).resolve(String.format("%s.ser", data.getId()));
 
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file.toFile()))) {
@@ -25,7 +31,7 @@ public abstract class FileSerDe<T extends Common> {
         }
     }
 
-    protected Optional<T> load(String filePath, UUID uuid, Class<T> type) {
+    protected Optional<T> load(String filePath, UUID uuid) {
         Path path = Paths.get(filePath).resolve(String.format("%s.ser", uuid.toString()));
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
@@ -36,7 +42,7 @@ public abstract class FileSerDe<T extends Common> {
         }
     }
 
-    public List<T> loadAll(String filePath, Class<T> type) {
+    protected List<T> loadAll(String filePath) {
         Path directory = Paths.get(filePath);
         if (Files.notExists(directory)) {
             return new ArrayList<>();
@@ -56,7 +62,7 @@ public abstract class FileSerDe<T extends Common> {
         }
     }
 
-    public void delete(String filePath, UUID uuid) {
+    protected void delete(String filePath, UUID uuid) {
         Path path = Paths.get(filePath).resolve(String.format("%s.ser", uuid.toString()));
 
         try {

@@ -17,6 +17,7 @@ public class FileMessageService extends FileSerDe<Message> implements MessageSer
     private final ChannelService channelService;
 
     public FileMessageService(UserService userService, ChannelService channelService) {
+        super(Message.class);
         this.userService = userService;
         this.channelService = channelService;
     }
@@ -56,7 +57,7 @@ public class FileMessageService extends FileSerDe<Message> implements MessageSer
 
     @Override
     public List<Message> findAllMessages() {
-        return loadAll(MESSAGE_DATA_DIRECTORY, Message.class).stream()
+        return loadAll(MESSAGE_DATA_DIRECTORY).stream()
                 .sorted(Comparator.comparingLong(Common::getCreatedAt))
                 .toList();
     }
