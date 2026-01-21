@@ -24,7 +24,9 @@ public class FileConsistencyManager {
     }
 
     public User saveUser(User user) {
+        // 유저 저장
         userRepository.saveUser(user);
+        // 유저의 가입 채널과 작성 메시지에 반영
         user.getChannels().forEach(channelRepository::saveChannel);
         user.getMessages().forEach(messageRepository::saveMessage);
 
@@ -32,7 +34,9 @@ public class FileConsistencyManager {
     }
 
     public Channel saveChannel(Channel channel) {
+        // 채널 저장
         channelRepository.saveChannel(channel);
+        // 채널에 가입된 유저와 작성된 메시지에 반영
         channel.getUsers().forEach(userRepository::saveUser);
         channel.getMessages().forEach(messageRepository::saveMessage);
 
@@ -40,7 +44,9 @@ public class FileConsistencyManager {
     }
 
     public Message saveMessage(Message message) {
+        // 메시지 저장
         messageRepository.saveMessage(message);
+        // 메시지를 작성한 유저와 작성 채널에 반영
         userRepository.saveUser(message.getUser());
         channelRepository.saveChannel(message.getChannel());
 
@@ -48,19 +54,22 @@ public class FileConsistencyManager {
     }
 
     public void deleteUser(User user) {
+        // 유저의 가입 채널 목록과 메시지 목록 조회
         List<Channel> channels = new ArrayList<>(user.getChannels());
         List<Message> messages = new ArrayList<>(user.getMessages());
 
+        // 유저가 가입한 채널 탈퇴 처리
         for (Channel channel : channels) {
             channel.removeUser(user);
             channelRepository.saveChannel(channel);
         }
-
+        // 유저가 작성한 메시지 삭제 처리
         for (Message message : messages) {
             message.removeFromChannelAndUser();
             messageRepository.deleteMessage(message.getId());
         }
 
+        // 유저 삭제
         userRepository.deleteUser(user.getId());
     }
 
@@ -85,13 +94,15 @@ public class FileConsistencyManager {
     }
 
     public void deleteMessage(Message message) {
+        // 메시지를 작성한 유저와 작성 채널에서 제거 반영
         userRepository.saveUser(message.getUser());
         channelRepository.saveChannel(message.getChannel());
+        // 메시지 삭제
         messageRepository.deleteMessage(message.getId());
     }
 
     public void channelManagement(Channel channel, User user) {
-        channelRepository.saveChannel(channel);
         userRepository.saveUser(user);
+        channelRepository.saveChannel(channel);
     }
 }
