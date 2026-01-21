@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -17,10 +18,12 @@ public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final UserService userService;
     private final MessageRepository messageRepository;
-    public BasicChannelService(ChannelRepository channelRepository, UserService userService, MessageRepository messageRepository) {
+    private final UserRepository userRepository;
+    public BasicChannelService( UserService userService, UserRepository userRepository, ChannelRepository channelRepository,MessageRepository messageRepository) {
         this.channelRepository = channelRepository;
         this.userService = userService;
         this.messageRepository = messageRepository;
+        this.userRepository = userRepository;
     }
     @Override
     public Channel addChannel(String name, String description, UUID ownerId, ChannelType channelType) {
@@ -51,6 +54,8 @@ public class BasicChannelService implements ChannelService {
                 .filter(d -> !d.equals(channel.getDescription()))
                 .ifPresent(d -> channel.setDescription(d));
         channelRepository.save(channel);
+        userRepository.saveAll();
+        messageRepository.saveAll();
         return channel;
     }
 
@@ -71,8 +76,12 @@ public class BasicChannelService implements ChannelService {
         blockDirectChannel(channel.getChannelType());
         User owner = userService.findUserById(ownerId);
         channel.checkChannelOwner(owner);
+        List<User> members = channel.getMembers();
         channel.removeAllMembers();
-        //채널 메세지 삭제 로직 필요
+        /*for(User member : members) {
+            userRepository.save(member);//변경된 채널정보 영속화
+        }*/
+        userRepository.saveAll();
         messageRepository.deleteAllByChannelId(channel.getId());
         channelRepository.deleteById(id);
     }
@@ -84,6 +93,10 @@ public class BasicChannelService implements ChannelService {
             directChannel.addMember(userService.findUserById(chatterId));
         }
         channelRepository.save(directChannel);
+        /*for(User member : directChannel.getMembers()) {//멤버의 변경된 채널정보 영속화
+            userRepository.save(member);
+        }*/
+        userRepository.saveAll();
         return directChannel;
     }
 

@@ -16,6 +16,9 @@ public class FileBasicService<T extends Serializable> {
         data.put(id, value);
         saveFile(data);
     }
+    public void saveAll(){
+        saveFile(data);
+    }
     public T get(UUID id){
         return data.get(id);
     }

@@ -80,7 +80,7 @@ public class User extends BaseEntity implements Serializable {
         List<String> channelNames = channels.stream().map(c->c.getName()).toList();
         return "이름: " + userName
                 +"\n이메일"+ email
-                +"id"+getId()
+                //+"\nid"+getId()
                 +"\n참여 채널: "+channelNames
                 +"\n생성: "+getCreatedAt()
                 + "\n마지막 수정: "+getUpdatedAt()+"\n";

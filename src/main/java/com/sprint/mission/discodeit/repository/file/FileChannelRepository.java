@@ -17,6 +17,11 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
+    public void saveAll() {
+        data.saveAll();
+    }
+
+    @Override
     public Optional<Channel> findById(UUID id) {
         return Optional.ofNullable(data.get(id));
     }

@@ -18,7 +18,7 @@ public class BasicMessageService implements MessageService {
     private final UserCoordinatorService userCoordinatorService;
     private final UserService userService;
 
-    public BasicMessageService(MessageRepository messageRepository, UserCoordinatorService userCoordinatorService, UserService userService) {
+    public BasicMessageService(UserService userService, UserCoordinatorService userCoordinatorService,MessageRepository messageRepository) {
         this.messageRepository = messageRepository;
         this.userCoordinatorService = userCoordinatorService;
         this.userService = userService;
@@ -42,7 +42,7 @@ public class BasicMessageService implements MessageService {
         User sender =  userService.findUserById(senderId);//사실 아래에서 이미 확인해줌
         Channel channel = userCoordinatorService.findAccessibleChannel(channelId, senderId);
         Message message = new Message(sender,channel, content);
-        messageRepository.save(message);
+        messageRepository.save(message);//단방향이라서 다른 파일 저장 필요없음
         return message;
     }
 
@@ -52,7 +52,7 @@ public class BasicMessageService implements MessageService {
         checkSender(id,senderId);
         Message message = getMessageById(id);
         message.setContent(content);
-        messageRepository.save(message);
+        messageRepository.save(message);//단방향이라서 다른 파일 저장 필요없음
         return message;
     }
 
@@ -65,7 +65,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public void deleteByIdAndSenderId(UUID id, UUID senderId) {
         checkSender(id,senderId);
-        messageRepository.deleteById(id);
+        messageRepository.deleteById(id);//단방향이라서 다른 파일 저장 필요없음
     }
     private void validateContent(String content) {
         if(content == null || content.isEmpty()){

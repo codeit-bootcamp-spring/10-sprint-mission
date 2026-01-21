@@ -15,6 +15,11 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
+    public void saveAll() {
+        //맵에 이미 객체 변경사항 반영
+    }
+
+    @Override
     public Optional<User> findById(UUID id) {
         return Optional.ofNullable(data.get(id));
     }

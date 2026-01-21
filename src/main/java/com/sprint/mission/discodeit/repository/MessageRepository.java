@@ -9,6 +9,7 @@ import java.util.UUID;
 
 public interface MessageRepository {
     Message save(Message message);
+    void saveAll();
     Optional<Message> findById(UUID id);
     List<Message> findAllByChannelIdOrderByCreatedAtAsc(UUID channelId);
     void deleteById(UUID id);

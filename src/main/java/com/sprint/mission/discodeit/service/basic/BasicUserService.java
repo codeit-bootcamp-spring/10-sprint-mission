@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -11,8 +14,12 @@ import java.util.UUID;
 
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
-    public BasicUserService(UserRepository userRepository) {
+    private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
+    public BasicUserService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
         this.userRepository = userRepository;
+        this.channelRepository = channelRepository;
+        this.messageRepository = messageRepository;
     }
     @Override
     public User signUp(String userName, String email, String password) {
@@ -53,6 +60,8 @@ public class BasicUserService implements UserService {
                 .filter(n -> !n.equals(user.getPassword()))
                 .ifPresent(p -> user.setPassword(p));
         userRepository.save(user);
+        channelRepository.saveAll();
+        messageRepository.saveAll();
         return user;
     }
 
@@ -71,6 +80,8 @@ public class BasicUserService implements UserService {
         User user = findUserById(id);
         user.removeAllChannels();
         user.setUserName("[삭제된 사용자]");
+        channelRepository.saveAll();
+        messageRepository.saveAll();
         //소유 채널 삭제 선택사항...
         userRepository.deleteById(id);
     }

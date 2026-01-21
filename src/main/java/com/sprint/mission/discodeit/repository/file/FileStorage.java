@@ -17,6 +17,9 @@ public class FileStorage<T extends Serializable> {
         saveFile(data);
         return value;
     }
+    public void saveAll(){
+        saveFile(data);
+    }
     public T get(UUID id){
         return data.get(id);
     }

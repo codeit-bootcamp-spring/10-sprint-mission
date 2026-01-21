@@ -15,6 +15,11 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public void saveAll() {
+        data.saveAll();
+    }
+
+    @Override
     public Optional<User> findById(UUID id) {
         return Optional.ofNullable(data.get(id));
     }

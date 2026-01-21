@@ -10,12 +10,12 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.util.*;
 
 public class FileMessageService implements MessageService {
-    private final FileBasicService<Message> data;
+    private final FileBasicService<Message> messageData;
     private final UserService userService;
     private final UserCoordinatorService userCoordinatorService;
 
-    public FileMessageService(UserService userService, UserCoordinatorService userCoordinatorService) {
-        data = new FileBasicService<>("messages");
+    public FileMessageService(UserService userService, UserCoordinatorService userCoordinatorService, FileBasicService<Message> messageData) {
+        this.messageData = messageData;
         this.userService = userService;
         this.userCoordinatorService = userCoordinatorService;
     }
@@ -47,7 +47,7 @@ public class FileMessageService implements MessageService {
         User sender =  userService.findUserById(senderId);//사실 아래에서 이미 확인해줌
         Channel channel = userCoordinatorService.findAccessibleChannel(channelId, senderId);
         Message message = new Message(sender,channel, content);
-        data.put(message.getId(), message);
+        messageData.put(message.getId(), message);//단방향이라서 다른 파일 저장 필요없음
         return message;
     }
 
@@ -57,7 +57,7 @@ public class FileMessageService implements MessageService {
         checkSender(id,senderId);
         Message message = getMessageById(id);
         message.setContent(content);
-        data.put(message.getId(), message);
+        messageData.put(message.getId(), message);//단방향이라서 다른 파일 저장 필요없음
         return message;
     }
 
@@ -65,7 +65,7 @@ public class FileMessageService implements MessageService {
     public List<Message> findMessagesByChannelIdAndMemberId(UUID channelId, UUID memberId) {
         Channel channel = userCoordinatorService.findAccessibleChannel(channelId,memberId);
         List<Message> messages
-                = data.values()
+                = messageData.values()
                 .stream()
                 .filter(e-> e.getChannel().getId().equals(channel.getId()))
                 .sorted(Comparator
@@ -78,18 +78,18 @@ public class FileMessageService implements MessageService {
 
     private Message getMessageById(UUID id) {
         validateMessage(id);
-        Message message = data.get(id);
+        Message message = messageData.get(id);
         return message;
     }
 
     @Override
     public void deleteByIdAndSenderId(UUID id, UUID senderId) {
         checkSender(id,senderId);
-        data.remove(id);
+        messageData.remove(id);//단방향이라서 다른 데이터 파일 저장 필요없음
     }
 
     private void validateMessage(UUID messageId) {
-        boolean exitsMessege = data.containsKey(messageId);
+        boolean exitsMessege = messageData.containsKey(messageId);
         if(!exitsMessege){
             throw new NoSuchElementException("해당 메세지 없음: "+messageId);
         }

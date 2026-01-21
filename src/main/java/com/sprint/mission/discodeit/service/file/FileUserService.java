@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -7,21 +10,25 @@ import java.io.*;
 import java.util.*;
 
 public class FileUserService implements UserService {
-    private final FileBasicService<User> data;
-    public FileUserService() {
-        data = new FileBasicService<>("users");
+    private final FileBasicService<User> userData;
+    private final FileBasicService<Channel> channelData;
+    private final FileBasicService<Message> messageData;
+    public FileUserService(FileBasicService<User> userData, FileBasicService<Channel> channelData, FileBasicService<Message> messageData) {
+        this.userData = userData;
+        this.channelData = channelData;
+        this.messageData = messageData;
     }
 
     @Override
     public User signUp(String userName,String email, String password) {
         validateEmail(email);
         User user = new User(userName, email, password);
-        data.put(user.getId(), user);
+        userData.put(user.getId(), user);
         return user;
     }
     @Override
     public User signIn(String email, String password) {
-        User user = data.values().stream()
+        User user = userData.values().stream()
                 .filter(u -> u.getEmail().equals(email) && u.getPassword().equals(password)).findFirst().orElse(null);
         if(user == null){
             throw new NoSuchElementException("유효하지 않은 이메일 또는 비밀번호");
@@ -50,19 +57,21 @@ public class FileUserService implements UserService {
         Optional.ofNullable(password)
                 .filter(n -> !n.equals(user.getPassword()))
                 .ifPresent(p -> user.setPassword(p));
-        data.put(user.getId(), user);
+        userData.put(user.getId(), user);
+        channelData.saveAll();
+        messageData.saveAll();
         return user;
     }
 
     @Override
     public User findUserById(UUID id) {
         validateUser(id);
-        return data.get(id);
+        return userData.get(id);
     }
 
     @Override
     public List<User> findAllUsers() {
-        List<User> users = new ArrayList<>(data.values());
+        List<User> users = new ArrayList<>(userData.values());
         return users;
     }
 
@@ -71,12 +80,14 @@ public class FileUserService implements UserService {
         User user = findUserById(id);
         user.removeAllChannels();
         user.setUserName("[삭제된 사용자]");
-        //소유 채널 삭제 필요
-        data.remove(id);
+        channelData.saveAll();
+        messageData.saveAll();
+        //소유 채널 삭제? 선택사항
+        userData.remove(id);
     }
 
     private void validateEmail(String email) {
-        boolean exists = data.values()
+        boolean exists = userData.values()
                 .stream()
                 .anyMatch(u -> u.getEmail().equals(email));
         if (exists) {
@@ -85,7 +96,7 @@ public class FileUserService implements UserService {
     }
 
     private void validateUser(UUID id) {
-        boolean exists = data.containsKey(id);
+        boolean exists = userData.containsKey(id);
         if (!exists) {
             throw new NoSuchElementException("유효하지 않은 사용자ID: "+id);
         }
