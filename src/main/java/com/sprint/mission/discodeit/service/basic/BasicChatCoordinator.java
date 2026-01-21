@@ -16,7 +16,7 @@ public class BasicChatCoordinator {
     private final ChannelService channelService;
     private final MessageService messageService;
 
-    // ✅ 파일 반영을 위해 repo도 주입 (Coordinator가 저장 책임)
+    // 파일 반영을 위해 repo도 주입 (Coordinator가 책임)
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
@@ -37,16 +37,16 @@ public class BasicChatCoordinator {
         this.messageRepository = messageRepository;
     }
 
-    // =========================================================
+
     // JOIN / LEAVE
-    // =========================================================
+
     public void joinChannel(UUID userId, UUID channelId) {
         User user = userService.findUserById(userId);
         Channel channel = channelService.findChannelById(channelId);
 
         user.joinChannel(channel);
 
-        // ✅ 파일 반영
+        // 파일 반영
         userRepository.save(user);
         channelRepository.save(channel);
     }
@@ -57,28 +57,28 @@ public class BasicChatCoordinator {
 
         user.leaveChannel(channel);
 
-        // ✅ 파일 반영
+        // 파일 반영
         userRepository.save(user);
         channelRepository.save(channel);
     }
 
-    // =========================================================
+
     // SEND MESSAGE (저장 + 그래프 동기화 + 파일 반영)
-    // =========================================================
+
     public Message sendMessage(UUID userId, UUID channelId, String content) {
         Validation.notBlank(content, "메세지 내용");
 
         User user = userService.findUserById(userId);
         Channel channel = channelService.findChannelById(channelId);
 
-        // 1) 메시지 생성/저장 (messages.dat 반영)
+        // 메시지 생성/저장 (messages.dat 반영)
         Message message = messageService.createMessage(content, userId, channelId);
 
-        // 2) 런타임 그래프 동기화 (User.messages, Channel.messages)
+        // 동기화 (User.messages, Channel.messages)
         user.addMessage(message);
         channel.addMessages(message);
 
-        // 3) ✅ 파일 반영 (users.dat / channels.dat에 messages 리스트가 반영되려면 필요)
+        // 파일 반영 (users.dat / channels.dat에 messages 리스트가 반영되려면 필요)
         userRepository.save(user);
         channelRepository.save(channel);
 
@@ -100,39 +100,38 @@ public class BasicChatCoordinator {
         return channel.getParticipants();
     }
 
-    // =========================================================
-    // CLEAN DELETE: Message
+
+
     // (repo 삭제 + user/channel 리스트에서도 제거 + 파일 반영)
-    // =========================================================
+
     public void deleteMessageClean(UUID messageId) {
         Message msg = messageService.getMessageById(messageId);
 
-        // sender/channel이 연결되어 있다고 가정(당신 프로젝트에서 지금 출력이 잘 되는 상태)
+        // sender/channel이 연결되어 있다고 가정
         User sender = msg.getSender();
         Channel channel = msg.getChannel();
 
-        // 1) repo에서 삭제
+        // repo에서 삭제
         messageService.deleteMessage(messageId);
 
-        // 2) 그래프 정리 (null-safe 굳이 안 넣음)
+        // 그래프 정리
         if (sender != null) sender.getMessages().remove(msg);
         if (channel != null) channel.getMessages().remove(msg);
 
-        // 3) 파일 반영
+        // 파일 반영
         if (sender != null) userRepository.save(sender);
         if (channel != null) channelRepository.save(channel);
     }
 
-    // =========================================================
-    // CLEAN DELETE: User
-    // - 참여 채널 전부 퇴장
-    // - 본인 메시지 전부 삭제
-    // - 유저 삭제
-    // =========================================================
+
+    // 참여 채널 전부 퇴장
+    // 본인 메시지 전부 삭제
+    // 유저 삭제
+
     public void deleteUserClean(UUID userId) {
         User user = userService.findUserById(userId);
 
-        // 1) 채널 퇴장(양방향 정리) + 파일 반영
+        // 채널 퇴장(양방향 정리) + 파일 반영
         List<Channel> joined = new ArrayList<>(user.getJoinedChannels());
         for (Channel ch : joined) {
             user.leaveChannel(ch);
@@ -140,7 +139,7 @@ public class BasicChatCoordinator {
         }
         userRepository.save(user);
 
-        // 2) 본인 메시지 전부 삭제 (repo + 그래프 정리)
+        // 본인 메시지 전부 삭제 (repo + 그래프 정리)
         List<Message> myMessages = new ArrayList<>(user.getMessages());
         for (Message m : myMessages) {
             // 채널에서도 제거
@@ -151,20 +150,18 @@ public class BasicChatCoordinator {
             messageRepository.delete(m.getId());
         }
 
-        // 3) 유저 삭제
+        // 유저 삭제
         userService.deleteUser(userId);
     }
 
-    // =========================================================
-    // CLEAN DELETE: Channel
-    // - 참가자 전부 퇴장
-    // - 채널 메시지 전부 삭제
-    // - 채널 삭제
-    // =========================================================
+    // 참가자 전부 퇴장
+    // 채널 메시지 전부 삭제
+    // 채널 삭제
+
     public void deleteChannelClean(UUID channelId) {
         Channel channel = channelService.findChannelById(channelId);
 
-        // 1) 참가자 전부 퇴장
+        //  참가자 전부 퇴장
         List<User> participants = new ArrayList<>(channel.getParticipants());
         for (User u : participants) {
             u.leaveChannel(channel);
@@ -172,7 +169,7 @@ public class BasicChatCoordinator {
         }
         channelRepository.save(channel);
 
-        // 2) 채널 메시지 전부 삭제
+        //  채널 메시지 전부 삭제
         List<Message> msgs = new ArrayList<>(channel.getMessages());
         for (Message m : msgs) {
             if (m.getSender() != null) {
@@ -184,7 +181,45 @@ public class BasicChatCoordinator {
         channel.getMessages().clear();
         channelRepository.save(channel);
 
-        // 3) 채널 삭제
+        //  채널 삭제
         channelService.deleteChannel(channelId);
     }
+
+
+    //user 업데이트 및 채널,메세지 영속화
+    public User updateUserCascade(UUID userId, String newName, String newAlias) {
+        User updated = userService.updateUser(userId, newName, newAlias);
+        // 이 유저를 포함하는 채널들.... 저장?
+        for(Channel ch: channelService.getChannelAll()) {
+            boolean contains = ch.getParticipants().stream()
+                    .anyMatch(user-> user.getId().equals(userId));
+            if (contains) channelRepository.save(ch);
+        }
+
+        // 유저가 sender인 메세지를 저장 (messages.dat 저장)
+        for(Message m: messageService.getMessageAll()){
+            if(m.getSender() !=null && m.getSender().getId().equals(userId)){
+                messageRepository.save(m);
+            }
+        }
+        // 유저 데이터도 한번 더 저장!!
+        userRepository.save(updated);
+        return updated;
+    }
+
+    // Channel 업데이트 + 메세지 영속화
+    public Channel updateChannelCascade(UUID channelId, String newName) {
+        Channel updated = channelService.updateChannel(channelId, newName);
+
+        // 이 채널을 참조하는 메세지 저장.
+        for(Message m: messageService.getMessageAll()) {
+            if(m.getChannel() != null && m.getChannel().getId().equals(channelId)){
+                messageRepository.save(m);
+            }
+        }
+        channelRepository.save(updated);
+        return updated;
+    }
+
+
 }

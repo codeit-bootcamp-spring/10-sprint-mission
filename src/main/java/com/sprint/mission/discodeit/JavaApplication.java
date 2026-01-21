@@ -6,9 +6,11 @@ import com.sprint.mission.discodeit.service.*;
 import com.sprint.mission.discodeit.service.basic.*;
 import com.sprint.mission.discodeit.service.jcf.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 
 import static java.nio.file.Files.deleteIfExists;
 
@@ -569,7 +571,212 @@ public class JavaApplication {
 //        System.out.println("\n=====================================");
 //        System.out.println(" Discodeit File Repository Test End   ");
 //        System.out.println("=====================================");
+
+
+
+
+
         // 1) Repo/Service/Coordinator 준비 (FileRepository 사용)
+//        UserRepository userRepo = new FileUserRepository();
+//        ChannelRepository channelRepo = new FileChannelRepository();
+//        MessageRepository messageRepo = new FileMessageRepository();
+//
+//        UserService userService = new BasicUserService(userRepo);
+//        ChannelService channelService = new BasicChannelService(channelRepo);
+//        MessageService messageService = new BasicMessageService(messageRepo);
+//
+//        BasicChatCoordinator coordinator = new BasicChatCoordinator(
+//                userService, channelService, messageService,
+//                userRepo, channelRepo, messageRepo
+//        );
+//
+//        System.out.println("===== START (FileRepository Basic Test) =====");
+//
+//        // =========================================
+//        // [CREATE] 유저/채널 생성 -> 바로 출력
+//        // =========================================
+//        User u1 = userService.createUser("유지", "yuji");
+//        User u2 = userService.createUser("민수", "minsu");
+//
+//        Channel c1 = channelService.createChannel("general");
+//        Channel c2 = channelService.createChannel("music");
+//
+//        System.out.println("\n[AFTER CREATE]");
+//        printUsers(userService.getUserAll());
+//        printChannels(channelService.getChannelAll());
+//
+//        // =========================================
+//        // [JOIN] 채널 입장 -> 바로 출력
+//        // =========================================
+//        coordinator.joinChannel(u1.getId(), c1.getId());
+//        coordinator.joinChannel(u2.getId(), c1.getId());
+//        coordinator.joinChannel(u1.getId(), c2.getId());
+//
+//        System.out.println("\n[AFTER JOIN]");
+//        System.out.println("general participants: " + channelService.findChannelById(c1.getId()).getParticipants());
+//        System.out.println("music participants: " + channelService.findChannelById(c2.getId()).getParticipants());
+//        System.out.println("u1 joinedChannels: " + userService.findUserById(u1.getId()).getJoinedChannels());
+//        System.out.println("u2 joinedChannels: " + userService.findUserById(u2.getId()).getJoinedChannels());
+//
+//        // =========================================
+//        // [SEND MESSAGE] 메시지 전송 -> 바로 출력
+//        // =========================================
+//        Message m1 = coordinator.sendMessage(u1.getId(), c1.getId(), "안녕하세요!");
+//        Message m2 = coordinator.sendMessage(u2.getId(), c1.getId(), "반가워요 :)");
+//
+//        System.out.println("\n[AFTER SEND MESSAGE]");
+//        System.out.println("Messages in general:");
+//        for (Message m : coordinator.getMessagesInChannel(c1.getId())) {
+//            // sender/channel이 세팅되어 있다고 가정(지금 메모리 기준 출력)
+//            System.out.println("- " + m.getSender().getAlias() + ": " + m.getContent() + " (id=" + m.getId() + ")");
+//        }
+//
+//        // =========================================
+//        // [UPDATE] 유저/채널/메시지 수정 -> 바로 출력
+//        // =========================================
+//        userService.updateUser(u2.getId(), "민수(수정)", "minsu2");
+//        channelService.updateChannel(c2.getId(), "music-room");
+//        messageService.updateMessage(m2.getId(), "반가워요!!(수정)");
+//
+//        // 수정된 객체 파일 반영(중요: user/channel/message 그래프 변경 저장)
+//        userRepo.save(userService.findUserById(u2.getId()));
+//        channelRepo.save(channelService.findChannelById(c2.getId()));
+//        messageRepo.save(messageService.getMessageById(m2.getId()));
+//
+//        System.out.println("\n[AFTER UPDATE]");
+//        System.out.println("Updated user2: "
+//                + userService.findUserById(u2.getId()).getUserName()
+//                + " (" + userService.findUserById(u2.getId()).getAlias() + ")");
+//        System.out.println("Updated channel2: " + channelService.findChannelById(c2.getId()).getChannelName());
+//
+//        System.out.println("Messages in general (after update):");
+//        for (Message m : coordinator.getMessagesInChannel(c1.getId())) {
+//            System.out.println("- " + m.getSender().getAlias() + ": " + m.getContent() + " (id=" + m.getId() + ")");
+//        }
+//
+//        // =========================================
+//        // [LEAVE] 채널 퇴장 -> 바로 출력
+//        // =========================================
+//        coordinator.leaveChannel(u1.getId(), c2.getId());
+//
+//        System.out.println("\n[AFTER LEAVE]");
+//        System.out.println("music-room participants: " + channelService.findChannelById(c2.getId()).getParticipants());
+//        System.out.println("u1 joinedChannels: " + userService.findUserById(u1.getId()).getJoinedChannels());
+//
+//        // =========================================
+//        // [DELETE] 메시지 삭제 -> 바로 출력
+//        // =========================================
+//        messageService.deleteMessage(m1.getId());
+//
+//        System.out.println("\n[AFTER DELETE m1]");
+//        System.out.println("All messages (repo 기준):");
+//        for (Message m : messageService.getMessageAll()) {
+//            System.out.println("- " + m.getId() + " | " + m.getContent());
+//        }
+//
+//        // =========================================
+//        // [DELETE] 채널 삭제 -> 바로 출력
+//        // =========================================
+//        channelService.deleteChannel(c2.getId());
+//        System.out.println("\n[AFTER DELETE channel2]");
+//        printChannels(channelService.getChannelAll());
+//
+//        // =========================================
+//        // [DELETE] 유저 삭제 -> 바로 출력
+//        // =========================================
+//        userService.deleteUser(u2.getId());
+//        System.out.println("\n[AFTER DELETE user2]");
+//        printUsers(userService.getUserAll());
+//
+//        System.out.println("\n===== END =====");
+//    }
+//
+//    private static void printUsers(List<User> users) {
+//        System.out.println("Users:");
+//        for (User u : users) {
+//            System.out.println("- " + u.getId() + " | " + u.getUserName() + " (" + u.getAlias() + ")");
+//        }
+//    }
+//
+//    private static void printChannels(List<Channel> channels) {
+//        System.out.println("Channels:");
+//        for (Channel c : channels) {
+//            System.out.println("- " + c.getId() + " | " + c.getChannelName());
+//        }
+//    }
+
+
+
+
+
+
+//        // 최초 생성/동작
+//        UserRepository userRepo = new FileUserRepository();
+//        ChannelRepository channelRepo = new FileChannelRepository();
+//        MessageRepository messageRepo = new FileMessageRepository();
+//
+//        UserService userService = new BasicUserService(userRepo);
+//        ChannelService channelService = new BasicChannelService(channelRepo);
+//        MessageService messageService = new BasicMessageService(messageRepo);
+//
+//        BasicChatCoordinator coordinator = new BasicChatCoordinator(
+//                userService, channelService, messageService,
+//                userRepo, channelRepo, messageRepo
+//        );
+//
+//        User u1 = userService.createUser("종인", "jongin");
+//        User u2 = userService.createUser("수빈", "subin");
+//        Channel ch = channelService.createChannel("일반");
+//
+//        coordinator.joinChannel(u1.getId(), ch.getId());
+//        coordinator.joinChannel(u2.getId(), ch.getId());
+//
+//        Message m1 = coordinator.sendMessage(u1.getId(), ch.getId(), "안녕하세요!");
+//        Message m2 = coordinator.sendMessage(u2.getId(), ch.getId(), "반가워요 :)");
+//
+//        System.out.println("=== BEFORE UPDATE (memory) ===");
+//        printCore(u2.getId(), ch.getId(), m2.getId(), userService, channelService, messageService);
+//
+//        // Cascade Update
+//        coordinator.updateUserCascade(u2.getId(), "훈인(수정)", "hunin(수정)");
+//        coordinator.updateChannelCascade(ch.getId(), "공지사항(수정)");
+//
+//        System.out.println("=== AFTER UPDATE (memory) ===");
+//        printCore(u2.getId(), ch.getId(), m2.getId(), userService, channelService, messageService);
+//
+//        // RELOAD CHECK (파일에서 다시 로드)
+//        UserRepository userRepo2 = new FileUserRepository();
+//        ChannelRepository channelRepo2 = new FileChannelRepository();
+//        MessageRepository messageRepo2 = new FileMessageRepository();
+//
+//        UserService userService2 = new BasicUserService(userRepo2);
+//        ChannelService channelService2 = new BasicChannelService(channelRepo2);
+//        MessageService messageService2 = new BasicMessageService(messageRepo2);
+//
+//        System.out.println("=== AFTER UPDATE ===");
+//        printCore(u2.getId(), ch.getId(), m2.getId(), userService2, channelService2, messageService2);
+//
+//        System.out.println("===== END =====");
+//    }
+//
+//    // 핵심만 출력: 유저2 별명, 채널명, 메시지2의 sender별명/채널명/내용
+//    private static void printCore(
+//            UUID user2Id, UUID channelId, UUID message2Id,
+//            UserService userService, ChannelService channelService, MessageService messageService
+//    ) {
+//        User u2 = userService.findUserById(user2Id);
+//        Channel ch = channelService.findChannelById(channelId);
+//        Message m2 = messageService.getMessageById(message2Id);
+//
+//        System.out.println("user2 alias = " + u2.getAlias());
+//        System.out.println("channel name = " + ch.getChannelName());
+//        System.out.println("message2 = " + m2.getSender().getAlias()
+//                + " | " + m2.getChannel().getChannelName()
+//                + " | " + m2.getContent());
+//        System.out.println();
+//    }
+
+        // ===== 1) 최초 컨텍스트 =====
         UserRepository userRepo = new FileUserRepository();
         ChannelRepository channelRepo = new FileChannelRepository();
         MessageRepository messageRepo = new FileMessageRepository();
@@ -583,121 +790,81 @@ public class JavaApplication {
                 userRepo, channelRepo, messageRepo
         );
 
-        System.out.println("===== START (FileRepository Basic Test) =====");
-
-        // =========================================
-        // [CREATE] 유저/채널 생성 -> 바로 출력
-        // =========================================
-        User u1 = userService.createUser("유지", "yuji");
+        // 유저/채널 2개 생성
+        User u1 = userService.createUser("종인", "jongin");
         User u2 = userService.createUser("민수", "minsu");
 
-        Channel c1 = channelService.createChannel("general");
-        Channel c2 = channelService.createChannel("music");
+        Channel general = channelService.createChannel("general");
+        Channel music = channelService.createChannel("music");
 
-        System.out.println("\n[AFTER CREATE]");
-        printUsers(userService.getUserAll());
-        printChannels(channelService.getChannelAll());
+        // u2는 채널 2개 참가
+        coordinator.joinChannel(u2.getId(), general.getId());
+        coordinator.joinChannel(u2.getId(), music.getId());
 
-        // =========================================
-        // [JOIN] 채널 입장 -> 바로 출력
-        // =========================================
-        coordinator.joinChannel(u1.getId(), c1.getId());
-        coordinator.joinChannel(u2.getId(), c1.getId());
-        coordinator.joinChannel(u1.getId(), c2.getId());
+        // u2 메시지 3개 (general 2, music 1)
+        Message g1 = coordinator.sendMessage(u2.getId(), general.getId(), "g-hello1");
+        Message g2 = coordinator.sendMessage(u2.getId(), general.getId(), "g-hello2");
+        Message m1 = coordinator.sendMessage(u2.getId(), music.getId(), "m-hello1");
 
-        System.out.println("\n[AFTER JOIN]");
-        System.out.println("general participants: " + channelService.findChannelById(c1.getId()).getParticipants());
-        System.out.println("music participants: " + channelService.findChannelById(c2.getId()).getParticipants());
-        System.out.println("u1 joinedChannels: " + userService.findUserById(u1.getId()).getJoinedChannels());
-        System.out.println("u2 joinedChannels: " + userService.findUserById(u2.getId()).getJoinedChannels());
+        System.out.println("=== BEFORE UPDATE (memory) ===");
+        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
+                userService, channelService, messageService);
 
-        // =========================================
-        // [SEND MESSAGE] 메시지 전송 -> 바로 출력
-        // =========================================
-        Message m1 = coordinator.sendMessage(u1.getId(), c1.getId(), "안녕하세요!");
-        Message m2 = coordinator.sendMessage(u2.getId(), c1.getId(), "반가워요 :)");
+        // updateUserCascade
+        coordinator.updateUserCascade(u2.getId(), "민수(수정)", "minsu2");
 
-        System.out.println("\n[AFTER SEND MESSAGE]");
-        System.out.println("Messages in general:");
-        for (Message m : coordinator.getMessagesInChannel(c1.getId())) {
-            // sender/channel이 세팅되어 있다고 가정(지금 메모리 기준 출력)
-            System.out.println("- " + m.getSender().getAlias() + ": " + m.getContent() + " (id=" + m.getId() + ")");
-        }
+        System.out.println(" AFTER updateUserCascade (memory) ");
+        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
+                userService, channelService, messageService);
 
-        // =========================================
-        // [UPDATE] 유저/채널/메시지 수정 -> 바로 출력
-        // =========================================
-        userService.updateUser(u2.getId(), "민수(수정)", "minsu2");
-        channelService.updateChannel(c2.getId(), "music-room");
-        messageService.updateMessage(m2.getId(), "반가워요!!(수정)");
+        // updateChannelCascade 검증 <music -> music-room>
+        coordinator.updateChannelCascade(music.getId(), "music-room");
 
-        // 수정된 객체 파일 반영(중요: user/channel/message 그래프 변경 저장)
-        userRepo.save(userService.findUserById(u2.getId()));
-        channelRepo.save(channelService.findChannelById(c2.getId()));
-        messageRepo.save(messageService.getMessageById(m2.getId()));
+        System.out.println(" AFTER updateChannelCascade (memory) ");
+        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
+                userService, channelService, messageService);
 
-        System.out.println("\n[AFTER UPDATE]");
-        System.out.println("Updated user2: "
-                + userService.findUserById(u2.getId()).getUserName()
-                + " (" + userService.findUserById(u2.getId()).getAlias() + ")");
-        System.out.println("Updated channel2: " + channelService.findChannelById(c2.getId()).getChannelName());
+        // RELOAD CHECK
+        UserRepository userRepo2 = new FileUserRepository();
+        ChannelRepository channelRepo2 = new FileChannelRepository();
+        MessageRepository messageRepo2 = new FileMessageRepository();
 
-        System.out.println("Messages in general (after update):");
-        for (Message m : coordinator.getMessagesInChannel(c1.getId())) {
-            System.out.println("- " + m.getSender().getAlias() + ": " + m.getContent() + " (id=" + m.getId() + ")");
-        }
+        UserService userService2 = new BasicUserService(userRepo2);
+        ChannelService channelService2 = new BasicChannelService(channelRepo2);
+        MessageService messageService2 = new BasicMessageService(messageRepo2);
 
-        // =========================================
-        // [LEAVE] 채널 퇴장 -> 바로 출력
-        // =========================================
-        coordinator.leaveChannel(u1.getId(), c2.getId());
+        System.out.println("AFTER UPDATE (reload from file)");
+        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
+                userService2, channelService2, messageService2);
 
-        System.out.println("\n[AFTER LEAVE]");
-        System.out.println("music-room participants: " + channelService.findChannelById(c2.getId()).getParticipants());
-        System.out.println("u1 joinedChannels: " + userService.findUserById(u1.getId()).getJoinedChannels());
-
-        // =========================================
-        // [DELETE] 메시지 삭제 -> 바로 출력
-        // =========================================
-        messageService.deleteMessage(m1.getId());
-
-        System.out.println("\n[AFTER DELETE m1]");
-        System.out.println("All messages (repo 기준):");
-        for (Message m : messageService.getMessageAll()) {
-            System.out.println("- " + m.getId() + " | " + m.getContent());
-        }
-
-        // =========================================
-        // [DELETE] 채널 삭제 -> 바로 출력
-        // =========================================
-        channelService.deleteChannel(c2.getId());
-        System.out.println("\n[AFTER DELETE channel2]");
-        printChannels(channelService.getChannelAll());
-
-        // =========================================
-        // [DELETE] 유저 삭제 -> 바로 출력
-        // =========================================
-        userService.deleteUser(u2.getId());
-        System.out.println("\n[AFTER DELETE user2]");
-        printUsers(userService.getUserAll());
-
-        System.out.println("\n===== END =====");
+        System.out.println(" END ");
     }
 
-    private static void printUsers(List<User> users) {
-        System.out.println("Users:");
-        for (User u : users) {
-            System.out.println("- " + u.getId() + " | " + u.getUserName() + " (" + u.getAlias() + ")");
-        }
+    private static void printCore(
+            UUID u2Id, UUID generalId, UUID musicId,
+            UUID g1Id, UUID g2Id, UUID m1Id,
+            UserService userService, ChannelService channelService, MessageService messageService
+    ) {
+        User u2 = userService.findUserById(u2Id);
+        Channel general = channelService.findChannelById(generalId);
+        Channel music = channelService.findChannelById(musicId);
+
+        Message g1 = messageService.getMessageById(g1Id);
+        Message g2 = messageService.getMessageById(g2Id);
+        Message m1 = messageService.getMessageById(m1Id);
+
+        System.out.println("u2 별명 = " + u2.getAlias());
+        System.out.println("general 참가자 = " + general.getParticipants());
+        System.out.println("music 참가자   = " + music.getParticipants());
+
+        System.out.println("g1: " + g1.getSender().getAlias() + " -> " + g1.getChannel().getChannelName() + " | " + g1.getContent());
+        System.out.println("g2: " + g2.getSender().getAlias() + " -> " + g2.getChannel().getChannelName() + " | " + g2.getContent());
+        System.out.println("m1: " + m1.getSender().getAlias() + " -> " + m1.getChannel().getChannelName() + " | " + m1.getContent());
+        System.out.println();
     }
 
-    private static void printChannels(List<Channel> channels) {
-        System.out.println("Channels:");
-        for (Channel c : channels) {
-            System.out.println("- " + c.getId() + " | " + c.getChannelName());
-        }
-    }
 }
+
 
 
 
