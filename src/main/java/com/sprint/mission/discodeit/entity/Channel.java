@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import java.util.*;
 
 public class Channel extends DefaultEntity {
+    private static final long serialVersionUID = 1L;
     private String channelName;
     private String channelDescription;
 
@@ -29,6 +30,16 @@ public class Channel extends DefaultEntity {
 
     public void updateChannelDescription(String channelDescription) {
         this.channelDescription = channelDescription;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void updateMessages(List<Message> messages) {
+        this.messages = messages;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void updateRoles(List<Role> roles) {
+        this.roles = roles;
         this.updatedAt = System.currentTimeMillis();
     }
 

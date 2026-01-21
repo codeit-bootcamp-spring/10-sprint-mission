@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.service.jcf;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -54,7 +56,9 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User update(User user) {
+    public User update(UUID id, List<Role> roles) {
         return null;
     }
+
+
 }

@@ -6,6 +6,7 @@ package com.sprint.mission.discodeit.entity;
 */
 
 public class Role extends DefaultEntity{
+    private static final long serialVersionUID = 1L;
     private PermissionLevel roleName;//그룹 이름.
     private final User user;
     private final Channel channel;

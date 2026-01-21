@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.PermissionLevel;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.file.FileRoleRepository;
 import com.sprint.mission.discodeit.service.RoleService;
 
 import java.io.*;
@@ -12,18 +13,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public class FileRoleService implements RoleService {
-    private static final String FILE_PATH = "roles.dat";
-
-    public FileRoleService(){
-        File file = new File(FILE_PATH);
-        if (!file.exists() || file.length() == 0) {
-            saveToFile(new HashSet<>());
-        }
-    }
-
-    public FileRoleService(boolean dummy){//리셋생성자
-        saveToFile(new HashSet<>());
-    }
+    private FileRoleRepository repository = new FileRoleRepository();
 
     @Override
     public Role find(UUID id) {
@@ -36,11 +26,7 @@ public class FileRoleService implements RoleService {
 
     @Override
     public Set<Role> findAll() {
-        try (ObjectInputStream fileInput = new ObjectInputStream(new FileInputStream(FILE_PATH))) {
-            return (Set<Role>)fileInput.readObject();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return repository.fileLoad();
     }
 
     @Override
@@ -51,22 +37,39 @@ public class FileRoleService implements RoleService {
         Role role = new Role(roleName, user, channel);
         Set<Role> usersInFile = findAll();
         usersInFile.add(role);
-        saveToFile(usersInFile);//자체 리스트 파일에 등록하고
+        repository.fileSave(usersInFile);//자체 리스트 파일에 등록하고
 
         user.getRoles().add(role); //유저에 등록하며
         channel.getRoles().add(role); //채널에도 등록
 
-        new FileUserService().update(user);
-        new FileChannelService().update(channel);
+        new FileUserService().update(user.getId(), user.getRoles());
+        new FileChannelService().update(channel.getId(), channel.getRoles(), channel.getMessages());
 
         return role;
     }
 
     @Override
     public void delete(UUID id) {
+        Role role = find(id);
+        User user = role.getUsers();
+        Channel channel = role.getChannel();
+
+        // 1. Role 저장소에서 삭제
         Set<Role> rolesInFile = findAll();
-        rolesInFile.remove(find(id));
-        saveToFile(rolesInFile);
+        rolesInFile.removeIf(r -> r.getId().equals(id));
+        repository.fileSave(rolesInFile);
+
+        // 2. 연관된 User에서 Role 제거 및 업데이트
+        if (user != null) {
+            user.getRoles().removeIf(r -> r.getId().equals(id));
+            new FileUserService().update(user.getId(), user.getRoles());
+        }
+
+        // 3. 연관된 Channel에서 Role 제거 및 업데이트
+        if (channel != null) {
+            channel.getRoles().removeIf(r -> r.getId().equals(id));
+            new FileChannelService().update(channel.getId(), channel.getRoles(), channel.getMessages());
+        }
     }
 
     @Override
@@ -78,18 +81,26 @@ public class FileRoleService implements RoleService {
                 .findFirst()
                 .orElseThrow(() ->new RuntimeException("User not found: id = " + roleID));
 
-        rolesInFile.remove(role);
         role.updateGroupName(roleName);
-        rolesInFile.add(role);
-        saveToFile(rolesInFile);
-        return role;
-    }
+        repository.fileSave(rolesInFile);
 
-    private void saveToFile(Set<Role> roles){
-        try (ObjectOutputStream fileOutput = new ObjectOutputStream(new FileOutputStream(FILE_PATH))){
-            fileOutput.writeObject(roles);
-        }catch(Exception e){
-            throw new RuntimeException(e);
+        User user = role.getUsers();
+        Channel channel = role.getChannel();
+
+        if (user != null) {
+            // User가 가진 Role 목록 중 현재 수정된 Role을 찾아 업데이트 (Set이므로 기존 것 삭제 후 추가 혹은 참조 업데이트)
+            user.getRoles().removeIf(r -> r.getId().equals(roleID));
+            user.getRoles().add(role);
+            new FileUserService().update(user.getId(), user.getRoles());
         }
+
+        if (channel != null) {
+            // Channel이 가진 Role 목록 중 현재 수정된 Role을 찾아 업데이트
+            channel.getRoles().removeIf(r -> r.getId().equals(roleID));
+            channel.getRoles().add(role);
+            new FileChannelService().update(channel.getId(), channel.getRoles(), channel.getMessages());
+        }
+
+        return role;
     }
 }

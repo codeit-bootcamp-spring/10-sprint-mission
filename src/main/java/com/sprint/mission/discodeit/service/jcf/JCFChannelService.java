@@ -4,10 +4,7 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.RoleService;
 
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFChannelService implements ChannelService {
     private static JCFChannelService instance = null;
@@ -69,7 +66,7 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(Channel channel) {
+    public Channel update(UUID id, List<Role> roles, List<Message> messages) {
         return null;
     }
 

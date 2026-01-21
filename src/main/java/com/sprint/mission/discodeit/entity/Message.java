@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 public class Message extends DefaultEntity {
+    private static final long serialVersionUID = 1L;
     private String message; // 메시지 내용
     private final User user; // 보낸 사람
     private Channel channel; //속한 채널

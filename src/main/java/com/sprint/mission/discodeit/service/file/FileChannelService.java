@@ -1,30 +1,21 @@
 package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileRoleRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFRoleService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.io.*;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class FileChannelService implements ChannelService {
-    private static final String FILE_PATH = "channels.dat";
 
-    public FileChannelService() {
-        File file = new File(FILE_PATH);
-        if (!file.exists() || file.length() == 0) {
-            saveToFile(new HashSet<>());
-        }
-    }
-
-    public FileChannelService(boolean dummy){ //테스트할때 리셋용 더미생성자
-        saveToFile(new HashSet<>());
-    }
+    private FileChannelRepository fileChannelRepository = new FileChannelRepository();
+    private FileUserRepository fileUserRepository = new FileUserRepository();
+    private FileMessageRepository fileMessageRepository = new FileMessageRepository();
+    private FileRoleRepository fileRoleRepository = new FileRoleRepository();
 
     @Override
     public Channel find(UUID id) {
@@ -37,11 +28,7 @@ public class FileChannelService implements ChannelService {
 
     @Override
     public Set<Channel> findAll() {
-        try (ObjectInputStream fileInput = new ObjectInputStream(new FileInputStream(FILE_PATH))) {
-            return (Set<Channel>)fileInput.readObject();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return fileChannelRepository.fileLoad();
     }
 
     @Override
@@ -49,8 +36,7 @@ public class FileChannelService implements ChannelService {
         Channel channel = new Channel(channelName, channelDescription);
         Set<Channel> channelsInFile = findAll();
         channelsInFile.add(channel);
-        saveToFile(channelsInFile);
-
+        fileChannelRepository.fileSave(channelsInFile);
         return channel;
     }
 
@@ -62,15 +48,18 @@ public class FileChannelService implements ChannelService {
                 .findFirst()
                 .orElseThrow(()-> new RuntimeException("Channel not found: id = " + channelID));
 
-        FileUserService users = new FileUserService();
-        User user = users.find(userID);
+        User user = fileUserRepository.fileLoad().stream()
+                .filter(u -> u.getId().equals(userID))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("User not found: id = " + userID));
+
 
         boolean isADMIN = channel.getRoles().stream()
-                .anyMatch(R-> R.getRoleName().equals(PermissionLevel.ADMIN)
-                        && R.getUsers().equals(user));
+                .anyMatch(R -> R.getUsers().getId().equals(userID)
+                        && R.getRoleName().equals(PermissionLevel.ADMIN));
         if(isADMIN){
-            channelsInFile.remove(channel);
-            saveToFile(channelsInFile);
+            fileChannelRepository.fileDelete(channelID);
+
         }
         else{
             throw new RuntimeException("User not allowed to delete channel");
@@ -85,23 +74,29 @@ public class FileChannelService implements ChannelService {
                 .findFirst()
                 .orElseThrow(()-> new RuntimeException("Channel not found: id = " + id));
 
-        channelsInFile.remove(channel);
-
         Optional.ofNullable(name)
                 .ifPresent(channel::updateChannelName);
         Optional.ofNullable(desc)
                 .ifPresent(channel::updateChannelDescription);
 
-        channelsInFile.add(channel);
-        saveToFile(channelsInFile);
+        fileChannelRepository.fileSave(channelsInFile);
         return channel;
     }
 
-    public Channel update(Channel channel) {
+    public Channel update(UUID id, List<Role> roles, List<Message> messages) {
         Set<Channel> channels = findAll();
-        channels.removeIf(c -> c.getId().equals(channel.getId()));
+        Channel channel = channels.stream()
+                .filter(ch -> ch.getId().equals(id))
+                .findFirst()
+                .orElseThrow(()-> new RuntimeException("Channel not found: id = " + id));
+
+        Optional.ofNullable(roles)
+                .ifPresent(c -> channel.updateRoles(roles));
+        Optional.ofNullable(messages)
+                .ifPresent(c-> channel.updateMessages(messages));
+
         channels.add(channel);
-        saveToFile(channels); // 파일에 쓰는 private 메서드
+        fileChannelRepository.fileSave(channels);// 파일에 쓰는 private 메서드
         return channel;
     }
 
@@ -124,8 +119,11 @@ public class FileChannelService implements ChannelService {
                 .anyMatch(R-> R.getUsers().getId().equals(tryingUserID) && R.getRoleName().equals(PermissionLevel.ADMIN));
 
         if(isAdmin){
-            FileRoleService roles = new FileRoleService();
-            roles.update(role.getId(), roleName);
+            role.updateGroupName(roleName);
+            FileRoleService roleService = new FileRoleService();
+            roleService.update(role.getId(), roleName);
+
+            update(channelID, channel.getRoles(), channel.getMessages());
         }
         else{
             throw new RuntimeException("User not allowed to change role");
@@ -134,33 +132,31 @@ public class FileChannelService implements ChannelService {
 
     @Override
     public Message addMessage(UUID channelID, UUID userID, String msg) {
-        Message sendMessage = null;
-        FileMessageService messages = new FileMessageService();
-        FileUserService users = new FileUserService();
-        User user = users.find(userID);
+        // 1. 필요한 서비스 주입 (생성자 주입 권장하나 현재 구조 유지)
+        FileMessageService messageService = new FileMessageService();
+        FileUserService userService = new FileUserService();
+        
+        // 2. 권한 확인을 위한 최신 데이터 조회
+        User user = userService.find(userID);
         Channel channel = this.find(channelID);
 
-        boolean isAllowedUser = user.getRoles()
-                .stream()
-                .anyMatch(g->g.getChannel().getId().equals(channelID));
+        // 3. 비즈니스 로직 검증
+        boolean isAllowedUser = user.getRoles().stream()
+                .anyMatch(role -> role.getChannel().getId().equals(channelID));
 
-        if(isAllowedUser){
-            sendMessage = messages.create(userID, msg, channelID);
-            channel.getMessages().add(sendMessage);
-            update(channel);
+        if (isAllowedUser) {
+            // 4. 메시지 생성 및 저장 (Message 파일에 저장됨)
+            Message newMessage = messageService.create(userID, msg, channelID);
+            
+            // 5. Channel 엔티티의 메시지 리스트 동기화 (필요한 경우에만)
+            // 사실 파일 시스템에서는 매번 전체 리스트를 관리하기보다 
+            // findMessagesByChannelId(channelID) 같은 메서드를 제공하는 것이 더 효율적입니다.
+            channel.getMessages().add(newMessage);
+            this.update(channel.getId(), channel.getRoles(), channel.getMessages()); // 채널 파일 업데이트
 
-        }
-        else{
+            return newMessage;
+        } else {
             throw new RuntimeException("User not allowed to send message in this channel");
-        }
-        return sendMessage;
-    }
-
-    private void saveToFile(Set<Channel> channels){
-        try (ObjectOutputStream fileOutput = new ObjectOutputStream(new FileOutputStream(FILE_PATH))){
-            fileOutput.writeObject(channels);
-        }catch(Exception e){
-            throw new RuntimeException(e);
         }
     }
 

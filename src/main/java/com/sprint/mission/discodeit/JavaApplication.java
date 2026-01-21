@@ -26,10 +26,10 @@ import static com.sprint.mission.discodeit.entity.PermissionLevel.USER;
 public class JavaApplication {
     public static void main(String[] args) throws IOException {
         //생성
-        UserService userdata = new FileUserService(true);
-        ChannelService channeldata = new FileChannelService(true);
-        MessageService messagedata = new FileMessageService(true);
-        RoleService roledata = new FileRoleService(true);
+        UserService userdata = new FileUserService();
+        ChannelService channeldata = new FileChannelService();
+        MessageService messagedata = new FileMessageService();
+        RoleService roledata = new FileRoleService();
 
         User user1 = userdata.create("초시");
         User user2 = userdata.create("초코");
@@ -54,7 +54,7 @@ public class JavaApplication {
 
         //수정
         System.out.println("------ 이하 수정 ------");
-        channeldata.update(ch1.getId(), "코딩하는 채널", "말그대로 코딩 하는 채널");//채널정보 수정
+        channeldata.update(ch1.getId(), "코딩하는 채널", "말그대로 코딩 하는 채널");//채널정보 수정, 이건됨
         messagedata.update(mes1.getId(), "이게 뭐어어어어어지?");//메시지 수정
         userdata.update(user3.getId(), "경-단");//유저이름 수정
         channeldata.updateUserRole(ch1.getId(), user2.getId(), ADMIN, user1.getId());//권한등급 수정

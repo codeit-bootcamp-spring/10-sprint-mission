@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 public class User extends DefaultEntity {
+    private static final long serialVersionUID = 1L;
     private String userName;
     private List<Role> roles;
 
@@ -20,6 +21,11 @@ public class User extends DefaultEntity {
 
     public void updateUserName(String userName) {
         this.userName = userName;
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+    public void updateRoles(List<Role> roles) {
+        this.roles = roles;
         this.updatedAt = System.currentTimeMillis();
     }
 
