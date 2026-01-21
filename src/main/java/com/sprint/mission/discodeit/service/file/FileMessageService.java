@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 public class FileMessageService implements MessageService {
     private Map<UUID, Message> messageDB = new HashMap<>();
-    private final File file = new File("message.dat");
+    private final File file = new File("message.ser");
 
     private final UserService userService;
     private final ChannelService channelService;

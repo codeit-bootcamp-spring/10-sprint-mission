@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class FileChannelUserRoleRepository implements ChannelUserRoleRepository {
     private Map<UUID, ChannelUserRole> channelUserRoleDB = new HashMap<>();
-    private final File file = new File("channel_user_roles.dat");
+    private final File file = new File("channel_user_roles.ser");
 
     public FileChannelUserRoleRepository() {
         if (file.exists()) load(); else persist();

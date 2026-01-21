@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class FileMessageRepository implements MessageRepository {
     private Map<UUID, Message> messageDB = new HashMap<>();
-    private final File file = new File("messages.dat");
+    private final File file = new File("messages.ser");
 
     public FileMessageRepository() {
         if (file.exists()) load(); else persist();

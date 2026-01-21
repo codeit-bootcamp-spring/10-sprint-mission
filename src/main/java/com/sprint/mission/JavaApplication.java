@@ -1,10 +1,8 @@
 package com.sprint.mission;
 
 import com.sprint.mission.discodeit.entity.*;
-
 import com.sprint.mission.discodeit.service.*;
-import com.sprint.mission.discodeit.service.jcf.*;
-import com.sprint.mission.discodeit.service.listener.*;
+import com.sprint.mission.discodeit.service.file.*; // 파일 방식(File) 추가
 
 import java.util.*;
 
@@ -15,25 +13,32 @@ public class JavaApplication {
         Scanner sc = new Scanner(System.in);
         boolean running = true;
 
+        // 이 방법으로 할 경우 UserService, ChannelService 인터페이스에 리스너 추가 필요
+        // UserService userService = new FileUserService();
+        // ChannelService channelService = new FileChannelService();
+
+        FileUserService userService = new FileUserService();
+        FileChannelService channelService = new FileChannelService();
+
+        MessageService messageService = new FileMessageService(userService, channelService);
+        ChannelUserRoleService channelUserRoleService = new FileChannelUserRoleService(userService, channelService);
+
+        // FileUserService와 FileChannelService에도 addListener가 구현되어 있어야 함
+        userService.addListener(userId -> {
+            channelService.deleteChannelsByOwnerId(userId);
+            messageService.deleteAllMessagesByUserId(userId);
+            channelUserRoleService.deleteAllAssociationsByUserId(userId);
+        });
+
+        channelService.addListener(channelId -> {
+            messageService.deleteAllMessagesByChannelId(channelId);
+            channelUserRoleService.deleteAllAssociationsByChannelId(channelId);
+        });
+
+
         while (running) {
-            JCFUserService userService = new JCFUserService();
-            JCFChannelService channelService = new JCFChannelService();
-            MessageService messageService = new JCFMessageService(userService, channelService);
-            ChannelUserRoleService channelUserRoleService = new JCFChannelUserRoleService(userService, channelService);
-
-            userService.addListener(userId -> {
-                channelService.deleteChannelsByOwnerId(userId);
-                messageService.deleteAllMessagesByUserId(userId);
-                channelUserRoleService.deleteAllAssociationsByUserId(userId);
-            });
-
-            channelService.addListener(channelId -> {
-                messageService.deleteAllMessagesByChannelId(channelId);
-                channelUserRoleService.deleteAllAssociationsByChannelId(channelId);
-            });
-
             System.out.println("\t\t\t\t\t----------------------------------");
-            System.out.println("\t\t\t\t\t|   📌[discodeit] 테스트 메뉴 선택📌  |");
+            System.out.println("\t\t\t\t\t|   📌[discodei t] 테스트 메뉴 선택📌  |");
             System.out.println("\t\t\t\t\t| 1. User 도메인 테스트               |");
             System.out.println("\t\t\t\t\t| 2. Channel 도메인 테스트            |");
             System.out.println("\t\t\t\t\t| 3. Message 도메인 테스트            |");

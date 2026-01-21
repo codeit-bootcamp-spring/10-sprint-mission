@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 public class FileChannelRepository implements ChannelRepository {
     private Map<UUID, Channel> channelDB = new HashMap<>();
-    private final File file = new File("channels.dat");
+    private final File file = new File("channels.ser");
 
     public FileChannelRepository() {
         if (file.exists()) load(); else persist();

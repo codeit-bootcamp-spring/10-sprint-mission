@@ -7,9 +7,12 @@ import java.util.UUID;
 
 public interface ChannelRepository {
     Channel save(Channel channel);
+
     Optional<Channel> findById(UUID id);
     List<Channel> findAll();
     List<Channel> findAllByOwnerId(UUID ownerId);
+
     void delete(UUID id);
+
     boolean existsByName(String name);
 }

@@ -10,7 +10,7 @@ import java.util.*;
 
 public class FileChannelService implements ChannelService {
     private Map<UUID, Channel> channelDB = new HashMap<>();
-    private final File file = new File("channels.dat");
+    private final File file = new File("channels.ser");
 
     private final List<ChannelLifecycleListener> listeners = new ArrayList<>();
 
@@ -47,7 +47,7 @@ public class FileChannelService implements ChannelService {
     private void validateDuplicateChannelName(String channelName) {
         boolean isDuplicate = channelDB.values().stream()
                 .anyMatch(ch -> ch.getChannelName().equals(channelName));
-        if (!isDuplicate) {
+        if (isDuplicate) {
             throw new IllegalArgumentException("이미 존재하는 채널 이름입니다. (channelName: " + channelName + " )");
         }
     }

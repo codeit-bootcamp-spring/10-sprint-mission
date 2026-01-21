@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public class FileChannelUserRoleService implements ChannelUserRoleService {
     private Map<UUID, ChannelUserRole> channelUserRoleDB = new HashMap<>();
-    private final File file = new File("channel_user_roles.dat");
+    private final File file = new File("channel_user_roles.ser");
 
     private final UserService userService;
     private final ChannelService channelService;

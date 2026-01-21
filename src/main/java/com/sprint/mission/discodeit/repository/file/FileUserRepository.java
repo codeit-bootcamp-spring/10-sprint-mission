@@ -8,7 +8,7 @@ import java.util.*;
 
 public class FileUserRepository implements UserRepository {
     private Map<UUID, User> userDB = new HashMap<>();
-    private final File file = new File("users.dat");
+    private final File file = new File("users.ser");
 
     public FileUserRepository() {
         if (file.exists()) load(); else persist();

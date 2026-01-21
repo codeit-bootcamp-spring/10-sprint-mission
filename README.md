@@ -1,5 +1,4 @@
 # [SB] 스프린트 미션 2
----
 ## 📝 요구사항 - 1차
 ### 1️⃣ 기본 요구사항
 **📍프로젝트 초기화**
@@ -157,21 +156,67 @@ Architecture: Layered Architecture (Controller -> Service -> Repository/Memory)
 
 📂 Project Structure
 
-com.sprint.mission.discodeit  
-├── entity            # 도메인 객체 (데이터 정의 및 기본 유효성 검사)  
-│   ├── BaseEntity.java  (ID, 생성일시, 수정일시 공통 관리)  
-│   ├── User.java  
-│   ├── Channel.java  
-│   └── Message.java  
-├── service           # 비즈니스 로직 인터페이스  
-│   ├── UserService.java  
-│   ├── ChannelService.java  
-│   └── MessageService.java  
-├── service.jcf       # JCF(Map) 기반 서비스 구현체  
-│   ├── JCFUserService.java  
-│   ├── JCFChannelService.java  
-│   └── JCFMessageService.java   
-└── JavaApplication.java         # 애플리케이션 진입점 및 통합 테스트 시나리오  
+```
+com.sprint.mission
+├── JavaApplication.java               # [Main] 애플리케이션 시작점 (통합 테스트 조립)
+│
+└── discodeit
+    ├── entity                         # [Domain] 데이터 모델
+    │   ├── BaseEntity.java            # (공통) ID, 생성일, 수정일
+    │   ├── User.java
+    │   ├── Channel.java
+    │   ├── Message.java
+    │   ├── ChannelRole.java           # (Enum) OWNER, ADMIN, MEMBER
+    │   └── ChannelUserRole.java       # (관계) 유저-채널 참여 정보 및 권한
+    │
+    ├── repository                     # [Data Layer] 저장소 인터페이스
+    │   ├── UserRepository.java
+    │   ├── ChannelRepository.java
+    │   ├── MessageRepository.java
+    │   └── ChannelUserRoleRepository.java
+    │   │
+    │   ├── jcf                        # [Impl] 메모리 기반 저장소 구현체
+    │   │   ├── JCFUserRepository.java
+    │   │   ├── JCFChannelRepository.java
+    │   │   ├── JCFMessageRepository.java
+    │   │   └── JCFChannelUserRoleRepository.java
+    │   │
+    │   └── file                       # [Impl] 파일 기반 저장소 구현체
+    │       ├── FileUserRepository.java
+    │       ├── FileChannelRepository.java
+    │       ├── FileMessageRepository.java
+    │       └── FileChannelUserRoleRepository.java
+    │
+    ├── service                        # [Service Layer] 비즈니스 로직 인터페이스
+    │   ├── UserService.java
+    │   ├── ChannelService.java
+    │   ├── MessageService.java
+    │   └── ChannelUserRoleService.java
+    │   │
+    │   ├── basic                      # [Impl] Repository를 사용하는 순수 비즈니스 로직 (최종 완성본)
+    │   │   ├── BasicUserService.java
+    │   │   ├── BasicChannelService.java
+    │   │   ├── BasicMessageService.java
+    │   │   └── BasicChannelUserRoleService.java
+    │   │
+    │   ├── listener                   # [Event] 도메인 간 결합도를 낮추기 위한 리스너
+    │   │   ├── UserLifecycleListener.java
+    │   │   └── ChannelLifecycleListener.java
+    │   │
+    │   ├── jcf                        # [Legacy] 1단계: Repository 없이 Map 직접 사용 (참고용)
+    │   │   ├── JCFUserService.java
+    │   │   ├── ...
+    │   │
+    │   └── file                       # [Legacy] 2단계: Repository 없이 File 직접 사용 (참고용)
+    │       ├── FileUserService.java
+    │       ├── ...
+    │
+    └── (Project Root)                 # [Data Files] 런타임에 생성되는 데이터 파일들
+        ├── users.dat
+        ├── channels.dat
+        ├── messages.dat
+        └── channel_user_roles.dat
+```
 
 ✨ Key Features (핵심 기능)  
 1. User (사용자)  

@@ -9,7 +9,7 @@ import java.util.*;
 
 public class FileUserService implements UserService {
     private Map<UUID, User> userDB = new HashMap<>();
-    private final File file = new File("users.dat"); // 저장할 파일명
+    private final File file = new File("users.ser"); // 저장할 파일명
 
     private final List<UserLifecycleListener> listeners = new ArrayList<>();
 
@@ -49,7 +49,7 @@ public class FileUserService implements UserService {
     private void validateDuplicateUsername(String username) {
         boolean isDuplicate = userDB.values().stream()
                 .anyMatch(user ->user.getUsername().equals(username));
-        if (!isDuplicate) {
+        if (isDuplicate) {
             throw new IllegalArgumentException("이미 존재하는 유저 이름입니다. (username: " + username + " )");
         }
     }
