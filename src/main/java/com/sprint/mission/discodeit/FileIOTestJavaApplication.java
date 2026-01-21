@@ -14,6 +14,9 @@ import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileDataStore;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
@@ -86,7 +89,8 @@ public class FileIOTestJavaApplication {
 //        UserService userService = new FileUserService(fileDataStore);
         FileObjectStore fileObjectStore = FileObjectStore.loadData(); // 파일에 있는 데이터 로드
         UserRepository userRepo = new FileUserRepository(fileObjectStore);
-        UserService userService = new JCFUserService(userRepo);
+//        UserService userService = new JCFUserService(userRepo);
+        UserService userService = new BasicUserService(userRepo);
         System.out.println("\n========== 유저 생성 u1, u2, u3 ==========");
         User u1 = userService.createUser("u1@email.com", "u1", "u1Nick", "1111", "20000101");
         User u2 = userService.createUser("u2@email.com", "u2", "u2Nick", "2222", "20000202");
@@ -126,7 +130,8 @@ public class FileIOTestJavaApplication {
 //        UserService userService = new FileUserService(fileDataStore);
         FileObjectStore fileObjectStore = FileObjectStore.loadData(); // 파일에 있는 데이터 로드
         UserRepository userRepo = new FileUserRepository(fileObjectStore);
-        UserService userService = new JCFUserService(userRepo);
+//        UserService userService = new JCFUserService(userRepo);
+        UserService userService = new BasicUserService(userRepo);
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
     }
@@ -140,8 +145,11 @@ public class FileIOTestJavaApplication {
         FileObjectStore fileObjectStore = FileObjectStore.loadData();
         UserRepository userRepo = new FileUserRepository(fileObjectStore);
         ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
-        UserService userService = new JCFUserService(userRepo);
-        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+//        UserService userService = new JCFUserService(userRepo);
+//        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        UserService userService = new BasicUserService(userRepo);
+        ChannelService channelService = new BasicChannelService(channelRepo, userRepo);
+
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
@@ -188,8 +196,11 @@ public class FileIOTestJavaApplication {
         FileObjectStore fileObjectStore = FileObjectStore.loadData();
         UserRepository userRepo = new FileUserRepository(fileObjectStore);
         ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
-        UserService userService = new JCFUserService(userRepo);
-        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+//        UserService userService = new JCFUserService(userRepo);
+//        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        UserService userService = new BasicUserService(userRepo);
+        ChannelService channelService = new BasicChannelService(channelRepo, userRepo);
+
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
@@ -243,8 +254,11 @@ public class FileIOTestJavaApplication {
         FileObjectStore fileObjectStore = FileObjectStore.loadData();
         UserRepository userRepo = new FileUserRepository(fileObjectStore);
         ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
-        UserService userService = new JCFUserService(userRepo);
-        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+//        UserService userService = new JCFUserService(userRepo);
+//        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+        UserService userService = new BasicUserService(userRepo);
+        ChannelService channelService = new BasicChannelService(channelRepo, userRepo);
+
         System.out.println("\n========== 채널 Load c1, c2, c3 ==========");
         System.out.println("생성된 전체 channel ID = " + channelService.findAllChannels().stream().map(channel -> channel.getChannelName() + "(owner=" + channel.getOwner().getId() + "): " + channel.getId()).toList());
 
@@ -269,9 +283,13 @@ public class FileIOTestJavaApplication {
         UserRepository userRepo = new FileUserRepository(fileObjectStore);
         ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
         MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
-        UserService userService = new JCFUserService(userRepo);
-        ChannelService channelService = new JCFChannelService(channelRepo, userService);
-        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
+//        UserService userService = new JCFUserService(userRepo);
+//        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+//        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
+        UserService userService = new BasicUserService(userRepo);
+        ChannelService channelService = new BasicChannelService(channelRepo, userRepo);
+        MessageService messageService = new BasicMessageService(messageRepo, userRepo, channelRepo);
+
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
@@ -320,9 +338,13 @@ public class FileIOTestJavaApplication {
         UserRepository userRepo = new FileUserRepository(fileObjectStore);
         ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
         MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
-        UserService userService = new JCFUserService(userRepo);
-        ChannelService channelService = new JCFChannelService(channelRepo, userService);
-        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
+//        UserService userService = new JCFUserService(userRepo);
+//        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+//        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
+        UserService userService = new BasicUserService(userRepo);
+        ChannelService channelService = new BasicChannelService(channelRepo, userRepo);
+        MessageService messageService = new BasicMessageService(messageRepo, userRepo, channelRepo);
+
         System.out.println("\n========== 메세지 Load m1, m2, m3 ==========");
         System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getMessageChannel().getId() + "): " + message.getMessageContent()).toList());
     }
@@ -337,9 +359,13 @@ public class FileIOTestJavaApplication {
         UserRepository userRepo = new FileUserRepository(fileObjectStore);
         ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
         MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
-        UserService userService = new JCFUserService(userRepo);
-        ChannelService channelService = new JCFChannelService(channelRepo, userService);
-        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
+//        UserService userService = new JCFUserService(userRepo);
+//        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+//        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
+        UserService userService = new BasicUserService(userRepo);
+        ChannelService channelService = new BasicChannelService(channelRepo, userRepo);
+        MessageService messageService = new BasicMessageService(messageRepo, userRepo, channelRepo);
+
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
@@ -392,9 +418,13 @@ public class FileIOTestJavaApplication {
         UserRepository userRepo = new FileUserRepository(fileObjectStore);
         ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
         MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
-        UserService userService = new JCFUserService(userRepo);
-        ChannelService channelService = new JCFChannelService(channelRepo, userService);
-        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
+//        UserService userService = new JCFUserService(userRepo);
+//        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+//        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
+        UserService userService = new BasicUserService(userRepo);
+        ChannelService channelService = new BasicChannelService(channelRepo, userRepo);
+        MessageService messageService = new BasicMessageService(messageRepo, userRepo, channelRepo);
+
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
@@ -451,9 +481,13 @@ public class FileIOTestJavaApplication {
         UserRepository userRepo = new FileUserRepository(fileObjectStore);
         ChannelRepository channelRepo = new FileChannelRepository(fileObjectStore);
         MessageRepository messageRepo = new FileMessageRepository(fileObjectStore);
-        UserService userService = new JCFUserService(userRepo);
-        ChannelService channelService = new JCFChannelService(channelRepo, userService);
-        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
+//        UserService userService = new JCFUserService(userRepo);
+//        ChannelService channelService = new JCFChannelService(channelRepo, userService);
+//        MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
+        UserService userService = new BasicUserService(userRepo);
+        ChannelService channelService = new BasicChannelService(channelRepo, userRepo);
+        MessageService messageService = new BasicMessageService(messageRepo, userRepo, channelRepo);
+
         System.out.println("\n========== 유저 Load u1, u2, u3 ==========");
         User u1 = userService.findUserByEmailAndPassword("u1@email.com", "1111").orElseThrow();
         User u2 = userService.findUserByEmailAndPassword("u2@email.com", "2222").orElseThrow();
