@@ -41,8 +41,8 @@ public class JCFMessageService implements MessageService {
 
         Message message = new Message(channel, author, content);
 
-        messageRepository.save(message);
         linkMessage(author, channel, message);
+        messageRepository.save(message);
         return message;
     }
 
@@ -69,9 +69,7 @@ public class JCFMessageService implements MessageService {
         // Channel ID null & channel 객체 존재 확인
         validateChannelByChannelId(channelId);
 
-        return findAllMessages().stream()
-                .filter(message -> message.getMessageChannel().getId().equals(channelId))
-                .toList();
+        return messageRepository.findByChannelId(channelId);
     }
 
     // 특정 사용자가 작성한 모든 메시지
@@ -80,9 +78,7 @@ public class JCFMessageService implements MessageService {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         validateUserByUserId(userId);
 
-        return findAllMessages().stream()
-                .filter(message -> message.getAuthor().getId().equals(userId))
-                .toList();
+        return messageRepository.findByAuthorId(userId);
     }
 
     // U. 수정

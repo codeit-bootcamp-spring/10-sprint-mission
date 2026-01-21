@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
 import java.util.*;
@@ -29,6 +28,20 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public List<Message> findAll() {
         return new ArrayList<>(data.values());
+    }
+
+    @Override
+    public List<Message> findByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(message -> message.getMessageChannel().getId().equals(channelId))
+                .toList();
+    }
+
+    @Override
+    public List<Message> findByAuthorId(UUID authorId) {
+        return data.values().stream()
+                .filter(message -> message.getAuthor().getId().equals(authorId))
+                .toList();
     }
 
     @Override
