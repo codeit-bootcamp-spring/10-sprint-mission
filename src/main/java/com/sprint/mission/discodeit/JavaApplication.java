@@ -7,6 +7,9 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
@@ -17,15 +20,15 @@ import java.util.List;
 public class JavaApplication {
     public static void main(String[] args) {
         // 0. 서비스 초기화
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService();
-        MessageService messageService = new JCFMessageService(userService, channelService);
+        UserService userService = new FileUserService();
+        ChannelService channelService = new FileChannelService(userService);
+        MessageService messageService = new FileMessageService(userService, channelService);
 
-        System.out.println("=== [시작] 서비스 테스트 ===");
-        //================================ 기본 기능 ================================
-        System.out.println("==기본 기능==");
-        //---------------------------------1. user---------------------------------
-        // 1-1. user 등록 및 조회
+//        System.out.println("=== [시작] 서비스 테스트 ===");
+//        //================================ 기본 기능 ================================
+//        System.out.println("==기본 기능==");
+//        //---------------------------------1. user---------------------------------
+//        // 1-1. user 등록 및 조회
         User user1 = userService.createUser("전창현", "ckdgus12@gmail.com");
         System.out.println("1-1. 유저 등록 완료: " + user1.getUserName());
 
@@ -112,7 +115,7 @@ public class JavaApplication {
         System.out.println("2-5. channel 다건 재조회: " + "총" + channelService.readAllChannel().size() + "개");
         System.out.println();
 
-        //---------------------------------3. message---------------------------------
+//        ---------------------------------3. message---------------------------------
         // 3-1. message 등록 및 조회
         Message message1 = messageService.createMessage("안녕하세요", channel1.getId(), user1.getId());
         System.out.println("3-1. 메시지 등록 완료: [" + user1.getUserName() + "] " + message1.getContent());
@@ -142,13 +145,13 @@ public class JavaApplication {
         System.out.println("3-5. 메세지 다건 재조회: " + "총" + messageService.readAllMessage().size() + "개");
         System.out.println();
 
-        // -----------------------1. 채널의 참가자 목록/메시지 조회-----------------------
-        // user의 channel 등록
+//         -----------------------1. 채널의 참가자 목록/메시지 조회-----------------------
+//         user의 channel 등록
         channelService.joinChannel(channel1.getId(), user1);
         channelService.joinChannel(channel1.getId(), user2);
         channelService.joinChannel(channel2.getId(), user2);
 
-        // 1-1. channel 참가자 목록(name) 조회
+//         1-1. channel 참가자 목록(name) 조회
         List<User> userList = userService.readUsersByChannel(channel1.getId());
         List<String> userNames = userList.stream()
                 .map(User::getUserName)
