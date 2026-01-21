@@ -40,7 +40,7 @@ public class JCFMessageService implements MessageService {
         return message;
     }
 
-    //특정 채널에 특정 유저가 쓴 메세지 리스트 반환
+    //특정 채널에 특정 유저가 쓴  리스트 반환
     @Override
     public List<Message> findMessagesByUserAndChannel(UUID channelId,  UUID userId) {
         return data.stream().filter(message -> message.getUser().getId().equals(userId))
@@ -64,7 +64,7 @@ public class JCFMessageService implements MessageService {
                 .toList();
     }
 
-    //모든 채널의 모든 메세지리스트 반환
+    //모든 채널의 모든 메시지 리스트 반환
     @Override
     public List<Message> findAllMessages() {
         return new ArrayList<>(data);
@@ -74,7 +74,7 @@ public class JCFMessageService implements MessageService {
     public Message findMessageById(UUID messageId) {
         return data.stream().filter(message -> message.getId().equals(messageId))
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메세지 아이디입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 아이디입니다."));
     }
 
     @Override

@@ -4,22 +4,44 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 
 import java.util.List;
 import java.util.UUID;
 
-public class FileJavaApplication {
+public class TestCodeMain {
 
     public static void main(String[] args) {
-        UserService userService = new FileUserService();
-        ChannelService channelService = new FileChannelService(userService);
-        MessageService messageService = new FileMessageService(channelService, userService);
+
+        //JCFService
+//        UserService userService = new JCFUserService();
+//        ChannelService channelService = new JCFChannelService(userService);
+//        MessageService messageService = new JCFMessageService(channelService, userService);
+
+        //FileService
+//        UserService userService = new FileUserService();
+//        ChannelService channelService = new FileChannelService(userService);
+//        MessageService messageService = new FileMessageService(channelService, userService);
+
+        //BasicService
+        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+        MessageRepository messageRepository = new FileMessageRepository();
+
+        UserService userService = new BasicUserService(channelRepository, userRepository, messageRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository, userRepository, messageRepository);
+        MessageService messageService = new BasicMessageService(channelRepository, userRepository, messageRepository);
 
         System.out.println("========[채널 테스트]========");
         //채널 등록 테스트
@@ -108,9 +130,9 @@ public class FileJavaApplication {
         System.out.println("유저 삭제 후 전체 유저 목록: " + userService.findAllUser());
 
         System.out.println();
-        System.out.println("========[메세지 테스트]========");
+        System.out.println("========[메시지 테스트]========");
 
-        //메세지 등록 테스트 (테스트채널, 관리자채널, 관리자 A, 관리자 B 등록)
+        //메시지 등록 테스트 (테스트채널, 관리자채널, 관리자 A, 관리자 B 등록)
         channelService.create(ChannelType.PUBLIC, "테스트 채널", "테스트 채널입니다.");
         Channel testChannel = channelService.findChannelByName("테스트 채널");
 
@@ -127,18 +149,18 @@ public class FileJavaApplication {
         channelService.joinChannel(adminChannel.getId(), adminA.getId());
         channelService.joinChannel(testChannel.getId(), adminB.getId());
 
-        //관리자 A가 테스트 채널에 메세지 2번, 관리자 채널에 메세지 1번 전송
-        Message message1 = messageService.create("첫번째 메세지 전송 테스트입니다.", testChannel.getId(), adminA.getId());
+        //관리자 A가 테스트 채널에 메시지 2번, 관리자 채널에 메시지 1번 전송
+        Message message1 = messageService.create("첫번째 메시지 전송 테스트입니다.", testChannel.getId(), adminA.getId());
 
-        Message message2 = messageService.create("두번째 메세지 전송 테스트입니다.", testChannel.getId(), adminA.getId());
+        Message message2 = messageService.create("두번째 메시지 전송 테스트입니다.", testChannel.getId(), adminA.getId());
 
         Message message3 = messageService.create("여기는 관리자 채널입니다.", adminChannel.getId(), adminA.getId());
 
-        //메세지 Id로 메세지 조회
+        //메시지 Id로 메시지 조회
         Message foundMessage = messageService.findMessageById(message3.getId());
-        System.out.println("메세지 ID로 찾은 메세지 = " + foundMessage);
+        System.out.println("메시지 ID로 찾은 메시지 = " + foundMessage);
 
-        //특정 채널의 특정 유저의 메세지 조회 - 테스트 채널, 관리자 A
+        //특정 채널의 특정 유저의 메시지 조회 - 테스트 채널, 관리자 A
         System.out.println("테스트 채널의 관리자 A의 모든 채팅");
         List<Message> testChannelAdminAMessages = messageService.findMessagesByUserAndChannel(testChannel.getId(), adminA.getId());
         for (Message testChannelAdminAMessage : testChannelAdminAMessages) {
@@ -146,7 +168,7 @@ public class FileJavaApplication {
         }
         System.out.println();
 
-        //특정 채널의 모든 메세지 조회 (관리자 B가 테스트 채널에 메세지 추가)
+        //특정 채널의 모든 메시지 조회 (관리자 B가 테스트 채널에 메시지 추가)
         System.out.println("테스트 채널의 모든 채팅");
         messageService.create("관리자 B가 테스트 합니다.", testChannel.getId(), adminB.getId());
         List<Message> testChannelMessages = messageService.findMessagesByChannel(testChannel.getId());
@@ -155,7 +177,7 @@ public class FileJavaApplication {
         }
         System.out.println();
 
-        //특정 유저가 발행한 모든 메세지 조회 (관리자 A)
+        //특정 유저가 발행한 모든 메시지 조회 (관리자 A)
         System.out.println("관리자 A의 모든 채팅");
         List<Message> userMessages = messageService.findMessagesByUser(adminA.getId());
         for (Message userMessage : userMessages) {
@@ -187,37 +209,37 @@ public class FileJavaApplication {
         }
         System.out.println();
 
-        //모든 채널의 모든 메세지 조회
+        //모든 채널의 모든 메시지 조회
         List<Message> allMessages = messageService.findAllMessages();
-        System.out.println("모든 채널의 모든 메세지");
+        System.out.println("모든 채널의 모든 메시지");
         for (Message allMessage : allMessages) {
             System.out.println(allMessage);
         }
         System.out.println();
 
-        //메세지 수정 테스트 (테스트 채널의 관리자 A 메세지 리스트 중 처음 메세지 수정)
+        //메시지 수정 테스트 (테스트 채널의 관리자 A 메시지 리스트 중 처음 메시지 수정)
         System.out.println("테스트 채널의 관리자 A 채팅");
         Message firstMessage = testChannelAdminAMessages.get(0);
         UUID messageId = firstMessage.getId();
-        Message updated = messageService.update(messageId, "첫번째 메세지를 수정해봤습니다.");
+        Message updated = messageService.update(messageId, "첫번째 메시지를 수정해봤습니다.");
         for (Message testChannelAdminAMessage : testChannelAdminAMessages) {
             System.out.println(testChannelAdminAMessage);
         }
         System.out.println();
 
-        //메세지 삭제 테스트 (관리자 채널의 관리자 A의 메세지 지우기)
+        //메시지 삭제 테스트 (관리자 채널의 관리자 A의 메시지 지우기)
         List<Message> removeTestMessages = messageService.findMessagesByChannel(adminChannel.getId());
-        System.out.println("관리자 채널 메세지 삭제 전: " + removeTestMessages);
+        System.out.println("관리자 채널 메시지 삭제 전: " + removeTestMessages);
         Message removeTarget = removeTestMessages.get(0);
         UUID targetId = removeTarget.getId();
         messageService.delete(targetId);
 
-        System.out.println("관리자 채널 메세지 삭제 후: " + messageService.findMessagesByChannel(adminChannel.getId()));
+        System.out.println("관리자 채널 메시지 삭제 후: " + messageService.findMessagesByChannel(adminChannel.getId()));
 
         System.out.println();
         System.out.println("========[채널 참가, 탈퇴 테스트]========");
 
-        //메세지 없이 채널에 유저 참가 (테스트 채널)
+        //메시지 없이 채널에 유저 참가 (테스트 채널)
         User joinUser = userService.create("관리자 C", "adminC@discodeit.com", "admincpassword");
         channelService.joinChannel(testChannel.getId(), joinUser.getId());
 
@@ -225,7 +247,7 @@ public class FileJavaApplication {
         List<Channel> channelsByUserId = channelService.findChannelsByUser(joinUser.getId());
         System.out.println("관리자 C가 참여중인 채널: " + channelsByUserId);
 
-        //메세지 없이 유저 탈퇴
+        //메시지 없이 유저 탈퇴
         System.out.println("삭제 전 테스트 채널에 참여 중인 유저");
         for (User user : userService.findUsersByChannel(testChannel.getId())) {
             System.out.println(user);
@@ -246,6 +268,5 @@ public class FileJavaApplication {
         System.out.println("관리자 A가 참여중인 채널 목록");
         User changedAdminA = userService.findUserById(adminA.getId());
         System.out.println(changedAdminA.getChannels());
-
     }
 }

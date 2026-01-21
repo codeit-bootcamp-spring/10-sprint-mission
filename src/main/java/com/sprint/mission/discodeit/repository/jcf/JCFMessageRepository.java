@@ -23,7 +23,7 @@ public class JCFMessageRepository implements MessageRepository {
         return data.stream()
                 .filter(m -> m.getId().equals(messageId))
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메세지 아이디입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 아이디입니다."));
     }
 
     @Override

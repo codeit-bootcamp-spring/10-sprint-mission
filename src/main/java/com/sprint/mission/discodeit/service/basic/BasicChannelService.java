@@ -9,7 +9,6 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -117,6 +116,7 @@ public class BasicChannelService implements ChannelService {
         userRepository.save(user);
     }
 
+    //채널명 중복체크
     private void existsByChannelName(String name) {
         boolean exist = channelRepository.findAllChannel().stream()
                 .anyMatch(channel -> channel.getChannelName().equals(name));
@@ -125,6 +125,7 @@ public class BasicChannelService implements ChannelService {
         }
     }
 
+    //유저 목록에서 채널 삭제
     private void leaveChannelFromUsers(Channel channel, List<User> users) {
         for (User user : users) {
             channel.leave(user);
@@ -132,6 +133,7 @@ public class BasicChannelService implements ChannelService {
         }
     }
 
+    //유저 목록에서 채널 업데이트
     private void updateChannelInUsers(Channel newChannel) {
         List<User> users = userRepository.findAllUser().stream().filter(user -> user.getChannels().stream()
                         .anyMatch(channel -> channel.equals(newChannel)))
@@ -149,6 +151,7 @@ public class BasicChannelService implements ChannelService {
         }
     }
 
+    //메시지 목록에서 채널 업데이트
     private void updateChannelInMessages(Channel newChannel) {
         List<Message> messages = messageRepository.findAllMessages().stream()
                 .filter(message -> message.getChannel().equals(newChannel))

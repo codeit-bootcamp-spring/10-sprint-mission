@@ -123,6 +123,7 @@ public class BasicUserService implements UserService {
         }
     }
 
+    //채널 목록에서 유저 삭제
     private void leaveUserFromChannels(User user, List<Channel> channels) {
         for (Channel channel : channels) {
             channel.leave(user);
@@ -130,6 +131,7 @@ public class BasicUserService implements UserService {
         }
     }
 
+    //채널 목록에서 유저 업데이트
     private void updateUserInChannels(User newUser) {
         List<Channel> channels = channelRepository.findAllChannel().stream()
                 .filter(channel -> channel.getUsers().stream()
@@ -149,6 +151,7 @@ public class BasicUserService implements UserService {
         }
     }
 
+    //메시지 목록에서 유저 업데이트
     private void updateUserInMessages(User newUser) {
         List<Message> messages = messageRepository.findAllMessages().stream()
                 .filter(message -> message.getUser().equals(newUser))

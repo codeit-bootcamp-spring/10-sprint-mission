@@ -25,7 +25,7 @@ public class FileMessageRepository implements MessageRepository {
             try {
                 Files.createDirectories(dirPath);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("메시지 데이터 폴더 생성 실패", e);
             }
         }
     }
@@ -41,7 +41,7 @@ public class FileMessageRepository implements MessageRepository {
         return findAllMessages().stream()
                 .filter(message -> message.getId().equals(messageId))
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메세지 아이디입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 아이디입니다."));
     }
 
     @Override
@@ -85,7 +85,7 @@ public class FileMessageRepository implements MessageRepository {
         ) {
             oos.writeObject(message);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("메시지 데이터 저장 실패", e);
         }
     }
 }

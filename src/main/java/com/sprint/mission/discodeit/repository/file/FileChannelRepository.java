@@ -85,7 +85,7 @@ public class FileChannelRepository implements ChannelRepository {
         ) {
             oos.writeObject(channel);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("채널 데이터 저장 실패", e);
         }
     }
 }

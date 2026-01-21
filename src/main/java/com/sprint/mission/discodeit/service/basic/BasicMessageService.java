@@ -11,8 +11,6 @@ import com.sprint.mission.discodeit.service.MessageService;
 import java.util.List;
 import java.util.UUID;
 
-import static java.util.stream.Collectors.toList;
-
 public class BasicMessageService implements MessageService {
 
     private final ChannelRepository channelRepository;
@@ -75,7 +73,7 @@ public class BasicMessageService implements MessageService {
         return messageRepository.findAllMessages().stream()
                 .filter(message -> message.getId().equals(messageId))
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메세지 아이디입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 아이디입니다."));
     }
 
     @Override
