@@ -66,9 +66,9 @@ public class FileUserService extends BaseFileService<User> implements UserServic
         User user = findById(userId);
 
         if (isValid(user.getUsername(), newUsername)) user.updateUsername(newUsername);
-        if (isValid(user.getNickname(), newUsername)) user.updateNickname(newNickname);
-        if (isValid(user.getEmail(), newEmail)) user.updateEmail(newEmail);
-        if (isValid(user.getPhoneNumber(), newPhoneNumber)) user.updatePhoneNumber(newPhoneNumber);
+        if (isValid(user.getNickname(), newNickname)) user.updateNickname(newNickname);
+        if (isValid(user.getEmail().orElse(null), newEmail)) user.updateEmail(newEmail);
+        if (isValid(user.getPhoneNumber().orElse(null), newPhoneNumber)) user.updatePhoneNumber(newPhoneNumber);
         save(user);
         syncUserChanges(user);
 
