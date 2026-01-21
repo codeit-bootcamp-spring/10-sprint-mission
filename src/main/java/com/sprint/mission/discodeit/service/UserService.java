@@ -15,6 +15,7 @@ public interface UserService {
     Optional<User> findUserByMail(String mail);
     List<User> findAllUsers();
     User updateUser(UUID uuid, String accountId, String password, String name, String mail);
+    User updateUser(User newUser);     // File쪽 특화용(다른 JCF관련 필드)
     void deleteUser(UUID uuid);
     void deleteUserByAccountId(String accountId);
     void deleteUserByMail(String mail);
