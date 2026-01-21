@@ -16,24 +16,24 @@ import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
     private final List<Message> data;                     // 한 채널에서
-    private static final JCFMessageService messageService = new JCFMessageService();
+    private static final JCFMessageService jcfMessageService = new JCFMessageService();
 
-    JCFUserService userService = JCFUserService.getInstance();
-    ChannelService channelService = JCFChannelService.getInstance();
+    JCFUserService jcfUService = JCFUserService.getJcfUService();
+    ChannelService jcfChannelService = JCFChannelService.getJcfChannelService();
 
     public JCFMessageService() {
         this.data = new ArrayList<>();
     }
 
-    public static JCFMessageService getInstance() {
-        return messageService;
+    public static JCFMessageService getJcfMessageService() {
+        return jcfMessageService;
     }
 
     // 메시지 생성
     @Override
     public Message createMessage(String message, UUID userId, UUID channelId, MessageType type) {
-        User sender = userService.searchUser(userId);
-        Channel targetChannel = channelService.searchChannel(channelId);
+        User sender = jcfUService.searchUser(userId);
+        Channel targetChannel = jcfChannelService.searchChannel(channelId);
 
         Message newMessage = new Message(message, sender, targetChannel, type);
         data.add(newMessage);
@@ -60,14 +60,14 @@ public class JCFMessageService implements MessageService {
 
     // 특정 유저가 발행한 메시지 다건 조회
     public List<Message> searchMessagesByUserId(UUID targetUserId) {
-        User targetUser = userService.searchUser(targetUserId);
+        User targetUser = jcfUService.searchUser(targetUserId);
 
         return targetUser.getMessages();
     }
 
     // 특정 채널의 메시지 발행 리스트 조회
     public List<Message> searchMessagesByChannelId(UUID targetChannelId) {
-        Channel targetChannel = channelService.searchChannel(targetChannelId);
+        Channel targetChannel = jcfChannelService.searchChannel(targetChannelId);
 
         return targetChannel.getMessages();
     }

@@ -14,22 +14,22 @@ import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
     private final List<Channel> data;           // 사용자 한 명당 가지는 채널
-    private static final JCFChannelService channelService = new JCFChannelService();
+    private static final JCFChannelService jcfChannelService = new JCFChannelService();
 
-    JCFUserService userService = JCFUserService.getInstance();
+    JCFUserService jcfUserService = JCFUserService.getJcfUService();
 
     public JCFChannelService(){
         this.data = new ArrayList<>();
     }
 
-    public static JCFChannelService getInstance(){
-        return channelService;
+    public static JCFChannelService getJcfChannelService() {
+        return jcfChannelService;
     }
 
     // 채널 생성
     @Override
     public Channel createChannel(String channelName, UUID userId, ChannelType channelType) {
-        User owner = userService.searchUser(userId);
+        User owner = jcfUserService.searchUser(userId);
 
         Channel newChannel = new Channel(channelName, owner, channelType);
         data.add(newChannel);
@@ -55,7 +55,7 @@ public class JCFChannelService implements ChannelService {
 
     // 특정 유저가 참가한 채널 리스트 조회
     public List<Channel> searchChannelsByUserId(UUID userId) {
-        User targetUser = userService.searchUser(userId);
+        User targetUser = jcfUserService.searchUser(userId);
 
         return targetUser.getChannels();
     }
@@ -87,7 +87,7 @@ public class JCFChannelService implements ChannelService {
 
     // 채널 참가자 초대
     public void inviteMembers(UUID targetUserId, UUID targetChannelId) {
-        User newUser = userService.searchUser(targetUserId);
+        User newUser = jcfUserService.searchUser(targetUserId);
         Channel targetChannel = searchChannel(targetChannelId);
 
         validateMemberExists(targetUserId, targetChannelId);
@@ -98,7 +98,7 @@ public class JCFChannelService implements ChannelService {
 
     // 채널 퇴장
     public void leaveMembers(UUID targetUserId, UUID targetChannelId) {
-        User targetUser = userService.searchUser(targetUserId);
+        User targetUser = jcfUserService.searchUser(targetUserId);
         Channel targetChannel = searchChannel(targetChannelId);
 
         validateUserNotInChannel(targetUserId, targetChannelId);
@@ -109,7 +109,7 @@ public class JCFChannelService implements ChannelService {
 
     // 유효성 검증 (초대)
     public void validateMemberExists(UUID userId, UUID channelId) {
-        List<User> currentMembers = userService.searchUsersByChannelId(channelId);
+        List<User> currentMembers = jcfUserService.searchUsersByChannelId(channelId);
 
         if (currentMembers.stream().anyMatch(member -> member.getId().equals(userId))) {
             throw new IllegalArgumentException("이미 채널에 존재하는 사용자입니다.");
@@ -118,7 +118,7 @@ public class JCFChannelService implements ChannelService {
 
     // 유효성 검증 (퇴장)
     public void validateUserNotInChannel(UUID userId, UUID channelId) {
-        List<User> currentMembers = userService.searchUsersByChannelId(channelId);
+        List<User> currentMembers = jcfUserService.searchUsersByChannelId(channelId);
 
         if (currentMembers.stream().noneMatch(member -> member.getId().equals(userId))) {
             throw new IllegalArgumentException("해당 채널에 존재하는 사용자가 아닙니다.");

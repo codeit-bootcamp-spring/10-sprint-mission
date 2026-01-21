@@ -14,14 +14,14 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
 public class JCFUserService implements UserService {
     private final List<User> data;             // 전체 사용자
-    private static final JCFUserService userService = new JCFUserService();
+    private static final JCFUserService jcfUService = new JCFUserService();
 
     private JCFUserService(){
         this.data = new ArrayList<>();
     };
 
-    public static JCFUserService getInstance(){
-        return userService;
+    public static JCFUserService getJcfUService(){
+        return jcfUService;
     };
 
     // 사용자 생성
@@ -50,7 +50,7 @@ public class JCFUserService implements UserService {
 
     // 특정 채널의 참가자 리스트 조회
     public List<User> searchUsersByChannelId(UUID channelId) {
-        Channel targetChannel = JCFChannelService.getInstance().searchChannelAll().stream()
+        Channel targetChannel = JCFChannelService.getJcfChannelService().searchChannelAll().stream()
                 .filter(channel -> channel.getId().equals(channelId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
@@ -89,13 +89,13 @@ public class JCFUserService implements UserService {
         User targetUser = searchUser(targetUserId);
 
         // 모든 채널의 member에서 해당 유저를 제거
-        JCFChannelService.getInstance()
+        JCFChannelService.getJcfChannelService()
                 .searchChannelAll().stream()
                 .filter(channel -> targetUser.getChannels().contains(channel))
                 .forEach(channel -> {channel.getMembers().remove(targetUser);});
 
         // 모든 메시지에서 해당 유저가 작성한 메시지 제거
-        JCFMessageService.getInstance()
+        JCFMessageService.getJcfMessageService()
                 .searchMessageAll()
                 .removeIf(message -> targetUser.getMessages().contains(message));
 
