@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFMessageRepository implements MessageRepository {
@@ -23,8 +24,8 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findMessageByMessageId(UUID messageId) {
-        return data.get(messageId);
+    public Optional<Message> findMessageByMessageId(UUID messageId) {
+        return Optional.ofNullable(data.get(messageId));
     }
 
     @Override

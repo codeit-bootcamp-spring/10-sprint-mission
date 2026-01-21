@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFChannelRepository implements ChannelRepository {
@@ -23,8 +24,8 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findChannelById(UUID channelId) {
-        return data.get(channelId);
+    public Optional<Channel> findChannelById(UUID channelId) {
+        return Optional.ofNullable(data.get(channelId));
     }
 
     @Override

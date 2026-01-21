@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FileChannelRepository implements ChannelRepository {
@@ -55,12 +56,8 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findChannelById(UUID channelId) {
-        Channel channel = data.get(channelId);
-        if (channel == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
-        return channel;
+    public Optional<Channel> findChannelById(UUID channelId) {
+        return Optional.ofNullable(data.get(channelId));
     }
 
     @Override

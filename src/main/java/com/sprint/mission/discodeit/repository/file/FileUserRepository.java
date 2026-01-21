@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FileUserRepository implements UserRepository {
@@ -55,12 +56,8 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public User findUserById(UUID userId) {
-        User user = data.get(userId);
-        if (user == null) {
-            throw new RuntimeException("유저가 존재하지 않습니다.");
-        }
-        return user;
+    public Optional<User> findUserById(UUID userId) {
+        return Optional.ofNullable(data.get(userId));
     }
 
     @Override

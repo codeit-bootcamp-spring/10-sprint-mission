@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FileMessageRepository implements MessageRepository {
@@ -55,12 +56,8 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findMessageByMessageId(UUID messageId) {
-        Message message = data.get(messageId);
-        if (message == null) {
-            throw new RuntimeException("메시지가 존재하지 않습니다.");
-        }
-        return message;
+    public Optional<Message> findMessageByMessageId(UUID messageId) {
+        return Optional.ofNullable(data.get(messageId));
     }
 
     @Override
