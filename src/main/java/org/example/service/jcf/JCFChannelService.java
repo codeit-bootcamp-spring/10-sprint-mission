@@ -35,8 +35,11 @@ public class JCFChannelService implements ChannelService {
         }
         User owner =userService.findById(ownerId);
         Channel channel = new Channel(name, description, type, owner);
+
         data.put(channel.getId(),channel);
+
         owner.getChannels().add(channel);
+
         return channel;
     }
 

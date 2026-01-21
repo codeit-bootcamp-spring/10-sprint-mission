@@ -1,8 +1,11 @@
 package org.example.entity;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class User extends BaseEntity {
+public class User extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String username;
     private String email;
     private String password;

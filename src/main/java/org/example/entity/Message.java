@@ -1,6 +1,9 @@
 package org.example.entity;
 
-public class Message extends BaseEntity {
+import java.io.Serializable;
+
+public class Message extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private String content;
     private User sender;

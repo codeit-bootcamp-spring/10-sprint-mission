@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface UserService {
     User create(String username, String email, String password, String nickname);
 
-    User findById(UUID id);
+    User findById(UUID userId);
     List<User> findAll();
 
     User update(UUID userId, String username, String email, String nickname, String password, Status status);
@@ -20,9 +20,9 @@ public interface UserService {
 //
 //    void changeStatus(UUID id, Status status);
 
-    void softDelete(UUID id);
+    void softDelete(UUID userId);
 
-    void hardDelete(UUID id);
+    void hardDelete(UUID userId);
 
-    List<Channel> findChannelByUser(UUID id);
+    List<Channel> findChannelByUser(UUID userId);
 }

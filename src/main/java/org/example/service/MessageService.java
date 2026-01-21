@@ -8,14 +8,14 @@ import java.util.UUID;
 public interface MessageService {
     Message create(String content, UUID senderId, UUID channelId);
 
-    Message findById(UUID id);
+    Message findById(UUID messageId);
     List<Message> findAll();
     List<Message> findByChannel(UUID channelId);
     List<Message> findBySender(UUID senderId);
 
-    Message update(UUID id, String content);
+    Message update(UUID messageId, String content);
 
-    void softDelete(UUID id);
+    void softDelete(UUID messageId);
 
-    void hardDelete(UUID id);
+    void hardDelete(UUID messageId);
 }

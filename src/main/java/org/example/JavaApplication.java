@@ -1,6 +1,9 @@
 package org.example;
 
 import org.example.entity.*;
+import org.example.service.file.FileChannelService;
+import org.example.service.file.FileMessageService;
+import org.example.service.file.FileUserService;
 import org.example.service.jcf.*;
 
 import java.util.UUID;
@@ -10,12 +13,22 @@ public class JavaApplication {
     public static void main(String[] args) {
 
         // 서비스 초기화
-        JCFUserService userService = new JCFUserService();
+        /*JCFUserService userService = new JCFUserService();
         JCFChannelService channelService = new JCFChannelService(userService);
         JCFMessageService messageService = new JCFMessageService(userService, channelService);
 
         channelService.setMessageService(messageService);
+        userService.setMessageService(messageService);*/
+// 1. 순환 의존성 없는 것 먼저
+        FileUserService userService = new FileUserService();
+
+// 2. 부분 생성
+        FileChannelService channelService = new FileChannelService(userService);
+        FileMessageService messageService = new FileMessageService(userService, channelService);
+
+// 3. Setter로 나머지 주입
         userService.setMessageService(messageService);
+        channelService.setMessageService(messageService);
 
         // ==================== 1. 등록 테스트 ====================
         System.out.println("\n[ 1. 등록 테스트 ]");
