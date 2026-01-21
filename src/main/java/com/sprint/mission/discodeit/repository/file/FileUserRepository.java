@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.config.FileStorageConfig;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
@@ -8,9 +9,11 @@ import java.util.*;
 
 public class FileUserRepository implements UserRepository {
     private Map<UUID, User> userDB = new HashMap<>();
-    private final File file = new File("users.ser");
+    private final File file;
 
     public FileUserRepository() {
+        File dataDir = FileStorageConfig.getDataDirectory();
+        this.file = new File(dataDir, "users.ser");
         if (file.exists()) load(); else persist();
     }
 

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.config.FileStorageConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelRole;
 import com.sprint.mission.discodeit.entity.ChannelUserRole;
@@ -23,17 +24,9 @@ public class FileChannelUserRoleService implements ChannelUserRoleService {
         this.userService = userservice;
         this.channelService = channelService;
 
-        File dataDir = new File("discodeit.data");
-        if (!dataDir.exists()) {
-            dataDir.mkdirs();
-        }
-        this.file = new File(dataDir, "channel_user_roles.ser");
-
-        if (file.exists()) {
-            load();
-        } else {
-            persist();
-        }
+        File dataDir = FileStorageConfig.getDataDirectory();
+        this.file = new File(dataDir, "channelUserRoles.ser");
+        if (file.exists()) load(); else persist();
     }
 
     @SuppressWarnings("unchecked")

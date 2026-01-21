@@ -1,5 +1,6 @@
 package com.sprint.mission;
 
+import com.sprint.mission.discodeit.config.FileStorageConfig;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ChannelUserRoleRepository;
@@ -12,12 +13,7 @@ import com.sprint.mission.discodeit.service.basic.*;
 import java.io.File;
 import java.util.*;
 
-import java.io.File;
-import java.util.*;
-
 public class JavaApplication {
-    private static final String DATA_DIR = "discodeit.data";
-
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
@@ -56,7 +52,7 @@ public class JavaApplication {
         );
 
 
-        // 리스너 등록 (기존과 동일)
+        // 리스너 등록
         userService.addListener((UUID userId) -> {
             channelService.deleteChannelsByOwnerId(userId);
             messageService.deleteAllMessagesByUserId(userId);
@@ -68,7 +64,7 @@ public class JavaApplication {
             channelUserRoleService.deleteAllAssociationsByChannelId(channelId);
         });
 
-        // 메인 루프 (기존과 동일)
+        // 메인 루프
         while (running) {
             System.out.println("\n\t\t\t\t\t----------------------------------");
             System.out.println("\t\t\t\t\t|   📌[discodeit] 테스트 메뉴 선택📌  |");
@@ -112,7 +108,7 @@ public class JavaApplication {
 
     // 데이터 파일 삭제
     private static void deleteDataFiles() {
-        File dir = new File(DATA_DIR);
+        File dir = FileStorageConfig.getDataDirectory();
         if (dir.exists() && dir.isDirectory()) {
             File[] files = dir.listFiles();
             if (files != null) {

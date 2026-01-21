@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.config.FileStorageConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -22,17 +23,9 @@ public class FileMessageService implements MessageService {
         this.userService = userService;
         this.channelService = channelService;
 
-        File dataDir = new File("discodeit.data");
-        if (!dataDir.exists()) {
-            dataDir.mkdirs();
-        }
-        this.file = new File(dataDir, "message.ser");
-
-        if (file.exists()) {
-            load();
-        } else {
-            persist();
-        }
+        File dataDir = FileStorageConfig.getDataDirectory();
+        this.file = new File(dataDir, "messages.ser");
+        if (file.exists()) load(); else persist();
     }
 
     @SuppressWarnings("unchecked")

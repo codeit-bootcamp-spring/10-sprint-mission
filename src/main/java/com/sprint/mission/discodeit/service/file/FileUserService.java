@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.config.FileStorageConfig;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.listener.UserLifecycleListener;
@@ -14,18 +15,9 @@ public class FileUserService implements UserService {
     private final List<UserLifecycleListener> listeners = new ArrayList<>();
 
     public FileUserService() {
-        // 데이터 폴더 생성 및 파일 경로 설정
-        File dataDir = new File("discodeit.data");
-        if (!dataDir.exists()) {
-            dataDir.mkdirs();
-        }
+        File dataDir = FileStorageConfig.getDataDirectory();
         this.file = new File(dataDir, "users.ser");
-
-        if (file.exists()) {
-            load();
-        } else {
-            persist();
-        }
+        if (file.exists()) load(); else persist();
     }
 
     // 파일에서 Map 객체를 읽어오는 메소드 (역직렬화)

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.config.FileStorageConfig;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
@@ -9,9 +10,11 @@ import java.util.stream.Collectors;
 
 public class FileMessageRepository implements MessageRepository {
     private Map<UUID, Message> messageDB = new HashMap<>();
-    private final File file = new File("messages.ser");
+    private final File file;
 
     public FileMessageRepository() {
+        File dataDir = FileStorageConfig.getDataDirectory();
+        this.file = new File(dataDir, "messages.ser");
         if (file.exists()) load(); else persist();
     }
 

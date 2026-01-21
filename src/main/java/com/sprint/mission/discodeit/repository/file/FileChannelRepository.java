@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.config.FileStorageConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 
@@ -9,12 +10,13 @@ import java.util.stream.Collectors;
 
 public class FileChannelRepository implements ChannelRepository {
     private Map<UUID, Channel> channelDB = new HashMap<>();
-    private final File file = new File("channels.ser");
+    private final File file;
 
     public FileChannelRepository() {
+        File dataDir = FileStorageConfig.getDataDirectory();
+        this.file = new File(dataDir, "channels.ser");
         if (file.exists()) load(); else persist();
     }
-
     @SuppressWarnings("unchecked")
     private void load() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {

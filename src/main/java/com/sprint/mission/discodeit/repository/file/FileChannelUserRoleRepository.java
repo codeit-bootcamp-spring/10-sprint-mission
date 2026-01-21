@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.config.FileStorageConfig;
 import com.sprint.mission.discodeit.entity.ChannelUserRole;
 import com.sprint.mission.discodeit.repository.ChannelUserRoleRepository;
 
@@ -9,9 +10,11 @@ import java.util.stream.Collectors;
 
 public class FileChannelUserRoleRepository implements ChannelUserRoleRepository {
     private Map<UUID, ChannelUserRole> channelUserRoleDB = new HashMap<>();
-    private final File file = new File("channel_user_roles.ser");
+    private final File file;
 
     public FileChannelUserRoleRepository() {
+        File dataDir = FileStorageConfig.getDataDirectory();
+        this.file = new File(dataDir, "channelUserRoles.ser");
         if (file.exists()) load(); else persist();
     }
 

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.config.FileStorageConfig;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -15,18 +16,9 @@ public class FileChannelService implements ChannelService {
     private final List<ChannelLifecycleListener> listeners = new ArrayList<>();
 
     public FileChannelService() {
-        // 데이터 폴더 생성 및 파일 경로 설정
-        File dataDir = new File("discodeit.data");
-        if (!dataDir.exists()) {
-            dataDir.mkdirs();
-        }
+        File dataDir = FileStorageConfig.getDataDirectory();
         this.file = new File(dataDir, "channels.ser");
-
-        if (file.exists()) {
-            load();
-        } else {
-            persist();
-        }
+        if (file.exists()) load(); else persist();
     }
 
     @SuppressWarnings("unchecked")
