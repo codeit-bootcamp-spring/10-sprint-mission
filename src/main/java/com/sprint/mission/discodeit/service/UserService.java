@@ -14,4 +14,5 @@ public interface UserService {
     void delete(UUID userId);
     List<User> findUsersByChannelId(UUID channelId);
     List<Message> findMessagesByUserId(UUID userId);
+
 }

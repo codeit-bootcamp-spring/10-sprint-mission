@@ -1,9 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class Channel extends BaseEntity {
+public class Channel extends BaseEntity implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private String name;
     private final List<User> users = new ArrayList<>();
     private final List<Message> messages = new ArrayList<>();
@@ -42,4 +47,5 @@ public class Channel extends BaseEntity {
     public void removeUser(User user) {
         this.users.remove(user);
     }
+
 }
