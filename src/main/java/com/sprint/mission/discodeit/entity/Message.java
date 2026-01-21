@@ -12,8 +12,8 @@ public class Message extends BaseEntity implements Serializable, Identifiable {
     private String content;
     private boolean isEdited;
 
-    private final User author;
-    private final Channel channel;
+    private User author;
+    private Channel channel;
 
     // 메시지 순서 보장을 위해 사용
     // AtomicLong은 멀티쓰레딩의 동시성 문제
@@ -68,10 +68,12 @@ public class Message extends BaseEntity implements Serializable, Identifiable {
     public User getAuthor() {
         return author;
     }
-
     public Channel getChannel() {
         return channel;
     }
+
+    public void updateAuthor(User author) { this.author = author;}
+    public void updateChannel(Channel channel) { this.channel = channel;}
 
     // toString
     @Override

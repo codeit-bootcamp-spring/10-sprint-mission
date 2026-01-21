@@ -31,6 +31,11 @@ public class FileMessageService extends BaseFileService<Message> implements Mess
     }
 
     @Override
+    public void save(Message message) {
+        super.save(message);
+    }
+
+    @Override
     public Message sendMessage(UUID authorId, UUID channelId, String content) {
         User author = userService.findById(authorId);
         Channel channel = channelService.findById(channelId);

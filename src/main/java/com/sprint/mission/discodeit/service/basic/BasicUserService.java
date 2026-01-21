@@ -61,7 +61,10 @@ public class BasicUserService implements UserService {
         if (isValid(user.getEmail().orElse(null), newEmail)) user.updateEmail(newEmail);
         if (isValid(user.getPhoneNumber().orElse(null), newPhoneNumber)) user.updatePhoneNumber(newPhoneNumber);
 
-        return userRepository.save(user);
+        userRepository.save(user);
+        syncUserChanges(user);
+
+        return user;
     }
 
     @Override
@@ -72,7 +75,10 @@ public class BasicUserService implements UserService {
         if (isValid(user.isMicrophoneOn(), newMicrophoneIsOn)) user.toggleMicrophone(newMicrophoneIsOn);
         if (isValid(user.isHeadsetOn(), newHeadsetIsOn)) user.toggleHeadset(newHeadsetIsOn);
 
-        return userRepository.save(user);
+        userRepository.save(user);
+        syncUserChanges(user);
+
+        return user;
     }
 
     @Override
@@ -124,5 +130,20 @@ public class BasicUserService implements UserService {
     private boolean isValid(Object current, Object target) {
         if (target == null) return false;
         return !Objects.equals(current, target);
+    }
+
+    private void syncUserChanges(User user) {
+        // 1. 유저가 작성한 모든 메시지 업데이트
+        messageService.findMessagesByAuthor(user.getId()).forEach(msg -> {
+            msg.updateAuthor(user);
+            messageService.save(msg);
+        });
+
+        // 2. 유저가 가입한 모든 채널의 유저 목록 업데이트
+        user.getChannels().forEach(channel -> {
+            Channel lastestChannel = channelService.findById(channel.getId());
+            lastestChannel.updateUserInSet(user);
+            channelService.save(lastestChannel);
+        });
     }
 }

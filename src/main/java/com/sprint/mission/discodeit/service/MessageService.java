@@ -32,4 +32,7 @@ public interface MessageService {
     // Delete All(유저 탈퇴, 채널 삭제 등)
     void deleteMessagesByChannelId(UUID channelId);
     void deleteMessagesByAuthorId(UUID authorId);
+
+    // logic
+    void save(Message message);
 }

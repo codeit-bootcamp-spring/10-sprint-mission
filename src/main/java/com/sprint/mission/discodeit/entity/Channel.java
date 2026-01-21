@@ -80,6 +80,7 @@ public class Channel extends BaseEntity implements Serializable, Identifiable {
     public Set<User> getUsers() {
         return new HashSet<>(this.users);
     }
+
     // Message Control
     public void addMessage(Message message) {
         this.messages.add(message);
@@ -98,6 +99,14 @@ public class Channel extends BaseEntity implements Serializable, Identifiable {
                 this.messages.set(i, updatedMessage);
                 return;
             }
+        }
+    }
+
+    // Convenience
+    public void updateUserInSet(User updatedUser) {
+        if (this.users.contains(updatedUser)) {
+            this.users.remove(updatedUser); // 수정 전 객체 삭제
+            this.users.add(updatedUser); // 수정 후 객체 등록
         }
     }
 

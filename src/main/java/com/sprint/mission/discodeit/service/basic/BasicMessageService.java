@@ -33,6 +33,11 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
+    public void save(Message message) {
+        messageRepository.save(message);
+    }
+
+    @Override
     public Message sendMessage(UUID authorId, UUID channelId, String content) {
         User author = userService.findById(authorId);
         Channel channel = channelService.findById(channelId);

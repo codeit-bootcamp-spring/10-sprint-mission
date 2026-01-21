@@ -34,7 +34,7 @@ public abstract class BaseEntity implements Serializable {
         this.updatedAt = System.currentTimeMillis();
     }
 
-    // [추가] equals 재정의: ID가 같으면 같은 객체로 판단
+    // ID가 같으면 같은 객체로 판단
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -43,7 +43,7 @@ public abstract class BaseEntity implements Serializable {
         return Objects.equals(id, that.id);
     }
 
-    // [추가] hashCode 재정의: Set이나 Map에서 ID 기반으로 관리되도록 함
+    // Set이나 Map에서 ID 기반으로 관리되도록 함
     @Override
     public int hashCode() {
         return Objects.hash(id);

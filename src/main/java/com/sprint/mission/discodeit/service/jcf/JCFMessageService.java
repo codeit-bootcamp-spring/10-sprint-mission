@@ -25,6 +25,11 @@ public class JCFMessageService implements MessageService {
         this.channelService = channelService;
     }
 
+
+    @Override
+    public void save(Message message) {
+        data.put(message.getId(), message);
+    }
     @Override
     public Message sendMessage(UUID authorId, UUID channelId, String content) {
         //엔티티에서 빈 메시지 검증함

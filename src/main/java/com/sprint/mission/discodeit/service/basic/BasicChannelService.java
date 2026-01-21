@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -68,7 +69,10 @@ public class BasicChannelService implements ChannelService {
                 .filter(v -> v != channel.getChannelVisibility())
                 .ifPresent(channel::updateVisibility);
 
-        return channelRepository.save(channel);
+        channelRepository.save(channel);
+        syncChannelChanges(channel);
+
+        return channel;
     }
 
     @Override
@@ -91,5 +95,21 @@ public class BasicChannelService implements ChannelService {
         }
 
         channelRepository.deleteById(channelId);
+    }
+
+    // Helper
+    private void syncChannelChanges(Channel channel) {
+        // 1. 채널에 속한 모든 메시지 업데이트
+        messageService.findMessagesByChannel(channel.getId()).forEach(msg -> {
+            msg.updateChannel(channel);
+            messageService.save(msg);
+        });
+
+        // 2. 채널에 가입한 모든 유저의 채널 목록 업데이트
+        channel.getUsers().forEach(user -> {
+            User lastedUser = userService.findById(user.getId());
+            lastedUser.updateChannelInSet(channel);
+            userService.save(lastedUser);
+        });
     }
 }

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -69,6 +70,7 @@ public class FileUserService extends BaseFileService<User> implements UserServic
         if (isValid(user.getEmail(), newEmail)) user.updateEmail(newEmail);
         if (isValid(user.getPhoneNumber(), newPhoneNumber)) user.updatePhoneNumber(newPhoneNumber);
         save(user);
+        syncUserChanges(user);
 
         return user;
     }
@@ -81,6 +83,7 @@ public class FileUserService extends BaseFileService<User> implements UserServic
         if (isValid(user.isMicrophoneOn(), newMicrophoneIsOn)) user.toggleMicrophone(newMicrophoneIsOn);
         if (isValid(user.isHeadsetOn(), newHeadsetIsOn)) user.toggleHeadset(newHeadsetIsOn);
         save(user);
+        syncUserChanges(user); // 유저 변경 사항을 메시지와 채널에 반영
 
         return user;
     }
@@ -124,5 +127,20 @@ public class FileUserService extends BaseFileService<User> implements UserServic
     private boolean isValid(Object current, Object target) {
         if (target == null) return false;
         return !Objects.equals(current, target);
+    }
+
+    private void syncUserChanges(User user) {
+        // 1. 유저가 작성한 모든 메시지 업데이트
+        messageService.findMessagesByAuthor(user.getId()).forEach(msg -> {
+            msg.updateAuthor(user);
+            messageService.save(msg);
+        });
+
+        // 2. 유저가 가입한 모든 채널의 유저 목록 업데이트
+        user.getChannels().forEach(channel -> {
+            Channel lastestChannel = channelService.findById(channel.getId());
+            lastestChannel.updateUserInSet(user);
+            channelService.save(lastestChannel);
+        });
     }
 }

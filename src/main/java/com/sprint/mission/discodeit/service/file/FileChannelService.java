@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -66,6 +67,7 @@ public class FileChannelService extends BaseFileService<Channel>implements Chann
                 .ifPresent(channel::updateVisibility);
 
         save(channel);
+        syncChannelChanges(channel); // 채널 변경 사항을 유저와 메시지에 반영
 
         return channel;
     }
@@ -87,5 +89,21 @@ public class FileChannelService extends BaseFileService<Channel>implements Chann
             throw new RuntimeException("채널 삭제 중 오류 발생: " + channelId,e);
         }
 
+    }
+
+    // Helper
+    private void syncChannelChanges(Channel channel) {
+        // 1. 채널에 속한 모든 메시지 업데이트
+        messageService.findMessagesByChannel(channel.getId()).forEach(msg -> {
+            msg.updateChannel(channel);
+            messageService.save(msg);
+        });
+
+        // 2. 채널에 가입한 모든 유저의 채널 목록 업데이트
+        channel.getUsers().forEach(user -> {
+            User lastedUser = userService.findById(user.getId());
+            lastedUser.updateChannelInSet(channel);
+            userService.save(lastedUser);
+        });
     }
 }

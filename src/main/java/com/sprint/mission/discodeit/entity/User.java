@@ -141,6 +141,16 @@ public class User extends BaseEntity implements Serializable, Identifiable {
         }
     }
 
+    // Convenience
+    public void updateChannelInSet(Channel updatedChannel) {
+        if (this.channels.contains(updatedChannel)) {
+            this.channels.remove(updatedChannel); // 수정 전 객체 삭제
+            this.channels.add(updatedChannel); // 수정 후 객체 등록
+        }
+    }
+
+
+
     // toString
     @Override
     public String toString() {
