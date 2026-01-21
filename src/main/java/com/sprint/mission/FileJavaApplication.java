@@ -239,5 +239,13 @@ public class FileJavaApplication {
             System.out.println(user);
         }
 
+        System.out.println();
+        System.out.println("테스트 채널에 참가중인 유저 목록");
+        Channel updatedTestChannel = channelService.findChannelByName("테스트 채널");
+        System.out.println(updatedTestChannel.getUsers());
+        System.out.println("관리자 A가 참여중인 채널 목록");
+        User changedAdminA = userService.findUserById(adminA.getId());
+        System.out.println(changedAdminA.getChannels());
+
     }
 }

@@ -57,8 +57,8 @@ public class JavaApplication {
 
         // 서비스 초기화
         // TODO Basic*Service 구현체를 초기화하세요.
-        UserService userService = new BasicUserService(channelRepository, userRepository);
-        ChannelService channelService = new BasicChannelService(channelRepository, userRepository);
+        UserService userService = new BasicUserService(channelRepository, userRepository, messageRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository, userRepository, messageRepository);
         MessageService messageService = new BasicMessageService(channelRepository, userRepository, messageRepository);
 
         // 셋업

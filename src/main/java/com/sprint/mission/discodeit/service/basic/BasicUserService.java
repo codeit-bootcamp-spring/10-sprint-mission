@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -15,10 +17,12 @@ public class BasicUserService implements UserService {
 
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
 
-    public BasicUserService(ChannelRepository channelRepository, UserRepository userRepository) {
+    public BasicUserService(ChannelRepository channelRepository, UserRepository userRepository, MessageRepository messageRepository) {
         this.channelRepository = channelRepository;
         this.userRepository = userRepository;
+        this.messageRepository = messageRepository;
     }
 
     @Override
@@ -69,6 +73,10 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(email).ifPresent(user::updateEmail);
 
         userRepository.save(user);
+
+        updateUserInChannels(user);
+        updateUserInMessages(user);
+
         return user;
     }
 
@@ -78,6 +86,10 @@ public class BasicUserService implements UserService {
         validatePassword(user, currentPassword);
         user.updatePassword(newPassword);
         userRepository.save(user);
+
+        updateUserInChannels(user);
+        updateUserInMessages(user);
+
         return user;
     }
 
@@ -115,6 +127,38 @@ public class BasicUserService implements UserService {
         for (Channel channel : channels) {
             channel.leave(user);
             user.leave(channel);
+        }
+    }
+
+    private void updateUserInChannels(User newUser) {
+        List<Channel> channels = channelRepository.findAllChannel().stream()
+                .filter(channel -> channel.getUsers().stream()
+                        .anyMatch(u -> u.equals(newUser)))
+                .toList();
+
+        for (Channel channel : channels) {
+            channel.getUsers().stream()
+                    .filter(u -> u.equals(newUser))
+                    .findFirst()
+                    .ifPresent(u -> {
+                        u.updateEmail(newUser.getEmail());
+                        u.updateUsername(newUser.getUsername());
+                        u.updatePassword(newUser.getPassword());
+                    });
+            channelRepository.save(channel);
+        }
+    }
+
+    private void updateUserInMessages(User newUser) {
+        List<Message> messages = messageRepository.findAllMessages().stream()
+                .filter(message -> message.getUser().equals(newUser))
+                .toList();
+
+        for (Message message : messages) {
+            message.getUser().updateEmail(newUser.getEmail());
+            message.getUser().updateUsername(newUser.getUsername());
+            message.getUser().updatePassword(newUser.getPassword());
+            messageRepository.save(message);
         }
     }
 }

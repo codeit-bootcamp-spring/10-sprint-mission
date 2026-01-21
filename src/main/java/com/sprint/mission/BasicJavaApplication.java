@@ -16,9 +16,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
 
 import java.util.List;
 import java.util.UUID;
@@ -31,8 +28,8 @@ public class BasicJavaApplication {
         ChannelRepository channelRepository = new FileChannelRepository();
         MessageRepository messageRepository = new FileMessageRepository();
 
-        UserService userService = new BasicUserService(channelRepository, userRepository);
-        ChannelService channelService = new BasicChannelService(channelRepository, userRepository);
+        UserService userService = new BasicUserService(channelRepository, userRepository, messageRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository, userRepository, messageRepository);
         MessageService messageService = new BasicMessageService(channelRepository, userRepository, messageRepository);
 
         System.out.println("========[채널 테스트]========");
@@ -252,5 +249,13 @@ public class BasicJavaApplication {
         for (User user : userService.findUsersByChannel(testChannel.getId())) {
             System.out.println(user);
         }
+
+        System.out.println();
+        System.out.println("테스트 채널에 참가중인 유저 목록");
+        Channel updatedTestChannel = channelService.findChannelByName("테스트 채널");
+        System.out.println(updatedTestChannel.getUsers());
+        System.out.println("관리자 A가 참여중인 채널 목록");
+        User changedAdminA = userService.findUserById(adminA.getId());
+        System.out.println(changedAdminA.getChannels());
     }
 }

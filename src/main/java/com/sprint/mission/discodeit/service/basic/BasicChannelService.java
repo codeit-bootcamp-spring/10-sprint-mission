@@ -2,8 +2,10 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
@@ -17,10 +19,12 @@ public class BasicChannelService implements ChannelService {
 
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
 
-    public BasicChannelService(ChannelRepository channelRepository, UserRepository userRepository) {
+    public BasicChannelService(ChannelRepository channelRepository, UserRepository userRepository, MessageRepository messageRepository) {
         this.channelRepository = channelRepository;
         this.userRepository = userRepository;
+        this.messageRepository = messageRepository;
     }
 
     @Override
@@ -69,6 +73,10 @@ public class BasicChannelService implements ChannelService {
         Optional.ofNullable(description).ifPresent(channel::updateDescription);
 
         channelRepository.save(channel);
+
+        updateChannelInUsers(channel);
+        updateChannelInMessages(channel);
+
         return channel;
     }
 
@@ -121,6 +129,35 @@ public class BasicChannelService implements ChannelService {
         for (User user : users) {
             channel.leave(user);
             user.leave(channel);
+        }
+    }
+
+    private void updateChannelInUsers(Channel newChannel) {
+        List<User> users = userRepository.findAllUser().stream().filter(user -> user.getChannels().stream()
+                        .anyMatch(channel -> channel.equals(newChannel)))
+                .toList();
+
+        for (User user : users) {
+            user.getChannels().stream()
+                    .filter(c -> c.equals(newChannel))
+                    .findFirst()
+                    .ifPresent(c -> {
+                        c.updateChannelName(newChannel.getChannelName());
+                        c.updateDescription(newChannel.getDescription());
+                    });
+            userRepository.save(user);
+        }
+    }
+
+    private void updateChannelInMessages(Channel newChannel) {
+        List<Message> messages = messageRepository.findAllMessages().stream()
+                .filter(message -> message.getChannel().equals(newChannel))
+                .toList();
+
+        for (Message message : messages) {
+            message.getChannel().updateChannelName(newChannel.getChannelName());
+            message.getChannel().updateDescription(newChannel.getDescription());
+            messageRepository.save(message);
         }
     }
 }
