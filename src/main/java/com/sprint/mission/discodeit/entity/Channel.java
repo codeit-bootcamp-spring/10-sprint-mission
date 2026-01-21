@@ -1,8 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.*;
 
-public class Channel extends BaseEntity {
+public class Channel extends BaseEntity implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     // 채널에 속한 메세지 목록
     private final List<Message> messages = new ArrayList<>();

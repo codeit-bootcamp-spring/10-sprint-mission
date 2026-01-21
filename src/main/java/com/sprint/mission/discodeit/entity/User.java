@@ -1,11 +1,15 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class User extends BaseEntity {
+public class User extends BaseEntity implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     // 유저가 속한 채널 목록
     private final List<Channel> channels = new ArrayList<>();

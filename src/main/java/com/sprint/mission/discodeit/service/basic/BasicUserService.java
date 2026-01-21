@@ -1,16 +1,17 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
-public class JCFUserService implements UserService {
+public class BasicUserService implements UserService {
 
-    private final Map<UUID, User> data;    // 유저 전체 목록
+    private final UserRepository userRepository;
 
-    public JCFUserService() {
-        this.data = new HashMap<>();
+    public BasicUserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -20,36 +21,35 @@ public class JCFUserService implements UserService {
         Objects.requireNonNull(profileImageUrl, "프로필 이미지 URL은 필수 항목입니다.");
 
         User user = new User(name, email, profileImageUrl);
-        data.put(user.getId(), user);
-
+        userRepository.save(user);
         return user;
     }
 
     @Override
     public User findById(UUID userId) {
-        Objects.requireNonNull(userId, "유저 Id가 유효하지 않습니다.");
-        return Objects.requireNonNull(data.get(userId), "Id에 해당하는 유저가 존재하지 않습니다.");
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 유저가 존재하지 않습니다."));
     }
 
     @Override
     public List<User> findAll() {
-        return new ArrayList<>(data.values());
+        return userRepository.findAll();
     }
 
     @Override
     public User update(UUID userId, String name, String email, String profileImageUrl) {
         User user = findById(userId);
-
         Optional.ofNullable(name).ifPresent(user::updateName);
         Optional.ofNullable(email).ifPresent(user::updateEmail);
         Optional.ofNullable(profileImageUrl).ifPresent(user::updateProfileImageUrl);
+
+        userRepository.save(user);
         return user;
     }
 
     @Override
     public void delete(UUID userId) {
-        findById(userId);
-        data.remove(userId);
+        findById(userId); // 존재 여부 확인
+        userRepository.delete(userId);
     }
-
 }

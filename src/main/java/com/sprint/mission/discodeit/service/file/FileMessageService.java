@@ -1,93 +1,118 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.io.*;
 import java.util.*;
 
-public class JCFMessageService implements MessageService {
+public class FileMessageService implements MessageService {
 
-    // 전체 메세지 저장
-    private final Map<UUID, Message> data = new HashMap<>();
-    // 채널 JCF 객체 저장
+    private final String FILE_PATH = "messages.dat";
+    private final Map<UUID, Message> data;
+
     private final UserService userService;
     private final ChannelService channelService;
 
-    public JCFMessageService(UserService userService, ChannelService channelService) {
+    public FileMessageService(UserService userService, ChannelService channelService) {
         this.userService = userService;
         this.channelService = channelService;
+        this.data = loadFromFile();
     }
 
     @Override
-    public Message create(String content, UUID userId, UUID channelId) {    // 내용, 사용자, 채널 객체 받아서 메세지 생성
+    public Message create(String content, UUID userId, UUID channelId) {
         User user = userService.findById(userId);
         Channel channel = channelService.findById(channelId);
+
         Objects.requireNonNull(content, "메시지 내용은 null일 수 없습니다.");
         Objects.requireNonNull(user, "메시지 작성자(User)는 null일 수 없습니다.");
         Objects.requireNonNull(channel, "메시지 대상 채널(Channel)은 null일 수 없습니다.");
 
-        if (!channel.getUsers().contains(user))
+        if (!channel.getUsers().contains(user)) {
             throw new IllegalArgumentException("해당 채널의 멤버가 아니면 메시지를 작성할 수 없습니다.");
+        }
+
         Message message = new Message(content, user, channel);
+
         data.put(message.getId(), message);
         channel.addMessage(message);
+
+        saveToFile();
 
         return message;
     }
 
-
     @Override
     public Message findById(UUID messageId) {
         Objects.requireNonNull(messageId, "조회하려는 메시지 Id가 null입니다.");
-        return Objects.requireNonNull(data.get(messageId), "Id에 해당하는 메세지가 존재하지 않습니다.");
+        Message message = data.get(messageId);
+        return Objects.requireNonNull(message, "Id에 해당하는 메세지가 존재하지 않습니다.");
     }
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
         Objects.requireNonNull(channelId, "조회하려는 채널 Id가 null입니다.");
-        // 해당 채널 ID를 가진 메시지만 필터링하여 리스트로 반환
         Channel channel = channelService.findById(channelId);
-        if (channel == null) {
-            System.out.println("해당 채널이 존재하지 않습니다.");
-            return List.of(); // null 대신 빈 리스트 반환이 안전합니다.
-        }
 
+        if (channel == null) {
+            return List.of();
+        }
         return channel.getMessages();
     }
 
     @Override
     public Message update(UUID messageId, String content) {
-        Objects.requireNonNull(messageId, "메세지 Id가 유효하지 않습니다.");
-        Message message = data.get(messageId);
-        if (message == null) {
-            System.out.println("메세지가 존재하지 않습니다.");
-            return null;
-        }
-
+        Message message = findById(messageId);
         Optional.ofNullable(content).ifPresent(message::updateContent);
+
+        saveToFile();
+
         return message;
     }
 
     @Override
     public void delete(UUID messageId) {
-        Objects.requireNonNull(messageId, "메세지 Id가 유효하지 않습니다.");
+        Message message = findById(messageId);
 
-        findById(messageId);
-
-        Channel channel = channelService.findById(data.remove(messageId).getChannelId());
+        Channel channel = channelService.findById(message.getChannelId());
         if (channel != null) {
             channel.removeMessage(messageId);
-
         }
+
+        data.remove(messageId);
+        saveToFile();
     }
 
     @Override
     public List<Message> getMessageListByChannelId(UUID channelId) {
         Objects.requireNonNull(channelId, "채널 Id가 유효하지 않습니다.");
         Channel channel = channelService.findById(channelId);
-
         return channel.getMessages();
+    }
+
+    private void saveToFile() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+            oos.writeObject(data);
+        } catch (IOException e) {
+            System.err.println("메시지 데이터 저장 중 오류 발생: " + e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<UUID, Message> loadFromFile() {
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            return new HashMap<>();
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            return (Map<UUID, Message>) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("메시지 데이터 로드 중 오류 발생: " + e.getMessage());
+            return new HashMap<>();
+        }
     }
 }

@@ -1,17 +1,16 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.*;
 
 public class JCFChannelService implements ChannelService {
 
-    private final Map<UUID, Channel> channels;    // 유저 전체 목록
+    private final Map<UUID, Channel> data;    // 유저 전체 목록
 
     public JCFChannelService() {
-        this.channels = new HashMap<>();
+        this.data = new HashMap<>();
     }
 
     @Override
@@ -20,7 +19,7 @@ public class JCFChannelService implements ChannelService {
         Objects.requireNonNull(description, "채널 설명은 필수 항목입니다.");
 
         Channel channel = new Channel(name, description);
-        channels.put(channel.getId(), channel);
+        data.put(channel.getId(), channel);
 
         return channel;
     }
@@ -31,19 +30,19 @@ public class JCFChannelService implements ChannelService {
 
         findById(channelId);
 
-        channels.remove(channelId);
+        data.remove(channelId);
     }
 
     @Override
     public Channel findById(UUID id) {
         Objects.requireNonNull(id, "채널 Id가 유효하지 않습니다.");
-        return Objects.requireNonNull(channels.get(id), "Id에 해당하는 채널이 존재하지 않습니다.");
+        return Objects.requireNonNull(data.get(id), "Id에 해당하는 채널이 존재하지 않습니다.");
 
     }
 
     @Override
     public List<Channel> findAll() {
-        return new ArrayList<>(channels.values());
+        return new ArrayList<>(data.values());
     }
 
     @Override
