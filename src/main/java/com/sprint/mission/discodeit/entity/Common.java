@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 
 public abstract class Common implements Serializable {
@@ -28,5 +29,17 @@ public abstract class Common implements Serializable {
     }
     public void updateUpdatedAt() {
         this.updatedAt = System.currentTimeMillis();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Common other)) return false;
+        return Objects.equals(this.getId(), other.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getId());
     }
 }
