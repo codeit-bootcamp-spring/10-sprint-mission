@@ -1,9 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class BaseDomain {
-    protected UUID id;
+public class BaseDomain implements Serializable {
+    protected final UUID id;
     protected long createdAt;
     protected long updatedAt;
 

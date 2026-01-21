@@ -12,6 +12,10 @@ public class JCFUserService implements UserService {
     public JCFUserService() {
         this.data = new HashMap<>();
     }
+//    public JCFUserService(JCFChannelService channelService) {
+//        this.data = new HashMap<>();
+//        this.channelService = channelService;
+//    }
 
     @Override
     public User create(String name) {
@@ -32,7 +36,7 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User update(UUID id, String name) {
+    public User updateUserName(UUID id, String name) {
         this.read(id).updateName(name);
         return this.read(id);
     }
@@ -44,7 +48,6 @@ public class JCFUserService implements UserService {
     }
 
     // 특정 채널의 참가한 유저 목록 조회
-    @Override
     public List<User> readChannelUserList(UUID channelId, JCFChannelService channelService) {
         Channel channel = channelService.read(channelId);
         return channel.getUserList();

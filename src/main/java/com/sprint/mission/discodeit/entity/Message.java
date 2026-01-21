@@ -1,12 +1,15 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.UUID;
 
-public class Message extends BaseDomain {
+public class Message extends BaseDomain implements Serializable {
     // 필드
     private String msg;
     private User user;
     private Channel channel;
+
+    private static final long serialVersionUID = 1L;
 
     // 생성자
     public Message(String msg, User user, Channel channel) {

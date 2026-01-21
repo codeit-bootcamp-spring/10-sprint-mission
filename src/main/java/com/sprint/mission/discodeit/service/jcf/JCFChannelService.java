@@ -12,6 +12,10 @@ public class JCFChannelService implements ChannelService {
     public JCFChannelService() {
         this.data = new HashMap<>();
     }
+//    public JCFChannelService(JCFUserService userService) {
+//        this.data = new HashMap<>();
+//        this.userService = userService;
+//    }
 
     @Override
     public Channel create(String channelName) {
@@ -43,24 +47,21 @@ public class JCFChannelService implements ChannelService {
         this.data.remove(id);
     }
 
-    @Override
-    public void joinUser(UUID userId, UUID channelId, JCFUserService userService, JCFChannelService channelService) {
+    public void joinUser(UUID userId, UUID channelId, JCFUserService userService) {
         User user = userService.read(userId);
-        Channel channel = channelService.read(channelId);
+        Channel channel = data.get(channelId);
         user.getChannelList().add(channel);
         channel.getUserList().add(user);
     }
 
-    @Override
-    public void quitUser(UUID userId, UUID channelId, JCFUserService userService, JCFChannelService channelService) {
+    public void quitUser(UUID userId, UUID channelId, JCFUserService userService) {
         User user = userService.read(userId);
-        Channel channel = channelService.read(channelId);
+        Channel channel = data.get(channelId);
         user.getChannelList().remove(channel);
         channel.getUserList().remove(user);
     }
 
     // 특정 유저가 참가한 채널 리스트 조회
-    @Override
     public List<Channel> readUserChannelList(UUID userId, JCFUserService userService) {
         User user = userService.read(userId);
         return user.getChannelList();

@@ -1,24 +1,20 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.*;
 
-public class JCFMessageService implements MessageService {
-    private final HashMap<UUID, Message> data;
-    private JCFChannelService channelService;
-    private JCFUserService userService;
+public class BasicMessageService implements MessageService {
+    private MessageRepository messageRepository;
+    private BasicUserService userService;
+    private BasicChannelService channelService;
 
-    public JCFMessageService() {
-        this.data = new HashMap<>();
-        this.channelService = new JCFChannelService();
-        this.userService = new JCFUserService();
-    }
-    public JCFMessageService(JCFChannelService channelService, JCFUserService userService) {
-        this.data = new HashMap<>();
+    public BasicMessageService(MessageRepository messageRepository, BasicChannelService channelService, BasicUserService userService) {
+        this.messageRepository = messageRepository;
         this.channelService = channelService;
         this.userService = userService;
     }
@@ -28,31 +24,34 @@ public class JCFMessageService implements MessageService {
         User user = userService.read(userId);
         Channel channel = channelService.read(channelId);
         Message message = new Message(msg, user, channel);
-        data.put(message.getId(), message);
+        this.messageRepository.save(message);
         return message;
     }
 
     @Override
     public Message read(UUID id) {
-        Message message = Optional.ofNullable(data.get(id)).orElseThrow(() -> new NoSuchElementException());
-        return message;
+        for (Message message : this.messageRepository.loadAll()) {
+            if (message.getId().equals(id)) {
+                return message;
+            }
+        }
+        throw new NoSuchElementException();
     }
 
     @Override
     public List<Message> readAll() {
-        return new ArrayList<>(this.data.values());
+        return this.messageRepository.loadAll();
     }
 
     @Override
-    public Message updateMessageData(UUID id, String messageData) throws NoSuchElementException{
-        this.read(id).updateText(messageData);
+    public Message updateMessageData(UUID id, String messageData) {
+        this.messageRepository.updateMessageData(id, messageData);
         return this.read(id);
     }
 
     @Override
-    public void delete(UUID id) throws NoSuchElementException{
-        this.read(id);
-        this.data.remove(id);
+    public void delete(UUID id) {
+        this.messageRepository.delete(id);
     }
 
     // 특정 유저가 발행한 메시지 리스트 조회
