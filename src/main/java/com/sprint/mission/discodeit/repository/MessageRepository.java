@@ -3,20 +3,21 @@ package com.sprint.mission.discodeit.repository;
 import com.sprint.mission.discodeit.entity.Message;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface MessageRepository {
-    // 생성
-    Message createMessage(UUID userId, String content, UUID channelId);
+    // 저장
+    Message save(Message message);
 
     // 읽기
-    Message findById(UUID id);
+    Optional<Message> findById(UUID id);
 
     // 모두 읽기
     List<Message> findAll();
 
     // 수정
-    Message updateById(UUID id, String content);
+//    Message updateById(UUID id, String content);
 
     // 삭제
     void deleteById(UUID id);
@@ -26,10 +27,6 @@ public interface MessageRepository {
 
     // 해당 channel Id를 가진 채널의 메시지 목록을 반환
     List<Message> getMessagesByChannelId(UUID channelId);
-
-    // 다른 repository setter
-    void setUserRepository(UserRepository userRepository);
-    void setChannelRepository(ChannelRepository channelRepository);
 
     void loadData();
 

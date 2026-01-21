@@ -3,20 +3,23 @@ package com.sprint.mission.discodeit.repository;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRepository {
-    // 생성
-    User createUser(String userName);
+    // 저장
+    User save(User user);
 
     // 읽기
-    User findById(UUID id);
+    Optional<User> findById(UUID id);
 
     // 모두 읽기
     List<User> findAll();
 
     // 수정
-    User updateById(UUID id, User userName);
+    // 수정은 서비스에서 수정을 하고
+    // UserRepository의 save()를 이용해서 저장 하도록
+//    User updateById(UUID id, User userName);
 
     // 삭제
     void deleteById(UUID id);

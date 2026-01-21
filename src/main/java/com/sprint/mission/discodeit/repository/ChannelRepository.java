@@ -3,20 +3,21 @@ package com.sprint.mission.discodeit.repository;
 import com.sprint.mission.discodeit.entity.Channel;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ChannelRepository {
-    // 생성
-    Channel createChannel(String channelName);
+    // 저장
+    Channel Save(Channel channel);
 
     // 읽기
-    Channel findById(UUID id);
+    Optional<Channel> findById(UUID id);
 
     // 모두 읽기
     List<Channel> findAll();
 
     // 수정
-    Channel updateById(UUID id, String newChannelName);
+//    Channel updateById(UUID id, String newChannelName);
 
     // 삭제
     void deleteById(UUID id);
