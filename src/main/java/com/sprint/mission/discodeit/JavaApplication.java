@@ -1,24 +1,75 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.consistency.FileConsistencyManager;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 public class JavaApplication {
 
+    public static void init(Path directory) {
+        // 저장할 경로의 파일 초기화
+        if (!Files.exists(directory)) {
+            try {
+                Files.createDirectories(directory);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     public static void main(String[] args) {
-        DataStore dataStore = new DataStore();
-        UserService userService = new JCFUserService(dataStore);
-        ChannelService channelService = new JCFChannelService(userService, dataStore);
-        MessageService messageService = new JCFMessageService(channelService, userService, dataStore);
+        Path baseDir = Paths.get(System.getProperty("user.dir"), "data");
+        Path userDir = baseDir.resolve("users");
+        Path channelDir = baseDir.resolve("channels");
+        Path messageDir = baseDir.resolve("messages");
+
+        init(userDir);
+        init(channelDir);
+        init(messageDir);
+
+//        UserRepository userRepository = new JCFUserRepository();
+//        ChannelRepository channelRepository = new JCFChannelRepository();
+//        MessageRepository messageRepository = new JCFMessageRepository();
+
+        UserRepository userRepository = new FileUserRepository(userDir);
+        ChannelRepository channelRepository = new FileChannelRepository(channelDir);
+        MessageRepository messageRepository = new FileMessageRepository(messageDir);
+
+//        ConsistencyManager consistencyManager = new ConsistencyManager(userRepository, channelRepository, messageRepository);
+//        UserService userService = new JCFUserService(consistencyManager, userRepository);
+//        ChannelService channelService = new JCFChannelService(consistencyManager, channelRepository, userService);
+//        MessageService messageService = new JCFMessageService(messageRepository, channelService, userService);
+
+//        FileConsistencyManager fileConsistencyManager = new FileConsistencyManager(userRepository, channelRepository, messageRepository);
+//        UserService userService = new FileUserService(fileConsistencyManager, userRepository);
+//        ChannelService channelService = new FileChannelService(fileConsistencyManager, channelRepository, userService);
+//        MessageService messageService = new FileMessageService(fileConsistencyManager, messageRepository, channelService, userService);
+
+        UserService userService = new BasicUserService(userRepository, channelRepository, messageRepository);
+        ChannelService channelService = new BasicChannelService(userRepository, channelRepository, messageRepository);
+        MessageService messageService = new BasicMessageService(userRepository, channelRepository, messageRepository);
 
         final String HR = "============================================================";
         final String SR = "------------------------------------------------------------";
@@ -283,7 +334,7 @@ public class JavaApplication {
         // =========================================================
 
         System.out.println("\n[채널 삭제 테스트 전 저장소 상태]");
-        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  채널=" + channelRepository.findAll().size() + "개 / 유저=" + userRepository.findAll().size() + "명 / 메시지=" + messageRepository.findAll().size() + "개");
         System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
         System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
 
@@ -295,7 +346,7 @@ public class JavaApplication {
         System.out.println(user1);
 
         System.out.println("\n[저장소 상태]");
-        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  채널=" + channelRepository.findAll().size() + "개 / 유저=" + userRepository.findAll().size() + "명 / 메시지=" + messageRepository.findAll().size() + "개");
         System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
         System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
         System.out.println("  • " + deleteChannel.getName() + " 멤버수=" + deleteChannel.getUsers().size() + " / 메시지수=" + deleteChannel.getMessages().size());
@@ -303,14 +354,14 @@ public class JavaApplication {
         channelService.deleteChannel(deleteChannel.getId(), user1.getId());
 
         System.out.println("\n[채널 삭제 후 저장소 상태]");
-        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  채널=" + channelRepository.findAll().size() + "개 / 유저=" + userRepository.findAll().size() + "명 / 메시지=" + messageRepository.findAll().size() + "개");
         System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
         System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
 
         System.out.println("\n[채널 삭제 후 유저의 채널 목록 확인]");
         System.out.println(user1);
 
-        if (dataStore.getChannelData().containsKey(deleteChannel.getId())) {
+        if (channelRepository.findAll().contains(deleteChannel)) {
             System.out.println("실패: 삭제된 채널이 channelData에 남아있음");
         }
 
@@ -322,7 +373,7 @@ public class JavaApplication {
             System.out.println("실패: user2 joinedChannels에 삭제된 채널이 남아있음");
         }
 
-        boolean messageDataHasDeleteChannel = dataStore.getMessageData().values()
+        boolean messageDataHasDeleteChannel = messageRepository.findAll()
                 .stream()
                 .anyMatch(m -> m.getChannel().equals(deleteChannel));
         if (messageDataHasDeleteChannel) {
@@ -348,7 +399,7 @@ public class JavaApplication {
         // =========================================================
         System.out.println("\n" + SR);
         System.out.println("\n[유저 삭제 테스트 전 저장소 상태]");
-        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  채널=" + channelRepository.findAll().size() + "개 / 유저=" + userRepository.findAll().size() + "명 / 메시지=" + messageRepository.findAll().size() + "개");
         System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
         System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
 
@@ -358,43 +409,43 @@ public class JavaApplication {
         Message deleteUserMsg1 = messageService.createMessage(channel1.getId(), deleteUser.getId(), "삭제 검증 유저 메시지 1");
 
         System.out.println("\n[저장소 상태]");
-        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  채널=" + channelRepository.findAll().size() + "개 / 유저=" + userRepository.findAll().size() + "명 / 메시지=" + messageRepository.findAll().size() + "개");
         System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
         System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
 
         userService.deleteUser(deleteUser.getId());
 
         System.out.println("\n[유저 삭제 후 저장소 상태]");
-        System.out.println("  채널=" + dataStore.getChannelData().size() + "개 / 유저=" + dataStore.getUserData().size() + "명 / 메시지=" + dataStore.getMessageData().size() + "개");
+        System.out.println("  채널=" + channelRepository.findAll().size() + "개 / 유저=" + userRepository.findAll().size() + "명 / 메시지=" + messageRepository.findAll().size() + "개");
         System.out.println("  • " + channel1.getName() + " 멤버수=" + channel1.getUsers().size() + " / 메시지수=" + channel1.getMessages().size());
         System.out.println("  • " + channel2.getName() + " 멤버수=" + channel2.getUsers().size() + " / 메시지수=" + channel2.getMessages().size());
 
-        if (dataStore.getUserData().containsKey(deleteUser.getId())) {
+        if (userRepository.findAll().contains(deleteUser)) {
             System.out.println("실패: 삭제된 유저가 userData에 남아있음");
         }
 
-        boolean anyChannelHasDeleteUser = dataStore.getChannelData().values()
+        boolean anyChannelHasDeleteUser = channelRepository.findAll()
                 .stream()
                 .anyMatch(ch -> ch.getUsers().stream().anyMatch(u -> u.getId().equals(deleteUser.getId())));
         if (anyChannelHasDeleteUser) {
             System.out.println("실패: 채널 멤버 목록에 삭제된 유저가 남아있음");
         }
 
-        boolean messageDataHasDeleteUser = dataStore.getMessageData().values()
+        boolean messageDataHasDeleteUser = messageRepository.findAll()
                 .stream()
                 .anyMatch(m -> m.getUser().getId().equals(deleteUser.getId()));
         if (messageDataHasDeleteUser) {
             System.out.println("실패: messageData에 삭제된 유저가 작성한 메시지가 남아있음");
         }
 
-        boolean anyChannelHasDeleteUserMsg = dataStore.getChannelData().values()
+        boolean anyChannelHasDeleteUserMsg = channelRepository.findAll()
                 .stream()
                 .anyMatch(ch -> ch.getMessages().stream().anyMatch(m -> m.getUser().getId().equals(deleteUser.getId())));
         if (anyChannelHasDeleteUserMsg) {
             System.out.println("실패: 채널 메시지 목록에 삭제된 유저 메시지가 남아있음");
         }
 
-        if (dataStore.getMessageData().containsKey(deleteUserMsg1.getId())) {
+        if (messageRepository.findAll().contains(deleteUserMsg1)) {
             System.out.println("실패: deleteUserMsg1이 messageData에 남아있음");
         }
 
