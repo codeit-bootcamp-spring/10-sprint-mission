@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Channel extends Entity {
@@ -19,8 +20,8 @@ public class Channel extends Entity {
         this.owner = owner;
         this.users = new ArrayList<>();
         this.messages = new ArrayList<>();
-        this.users.add(owner);
-        owner.joinChannel(this);
+        // 채널 목록에 유저(채널 생성자) 추가
+        addUser(owner);
     }
 
     public String getName() {
@@ -32,18 +33,23 @@ public class Channel extends Entity {
     }
 
     public List<User> getUsers() {
-        return new ArrayList<>(users);
+        return Collections.unmodifiableList(users);
     }
 
     public List<Message> getMessages() {
-        return new ArrayList<>(messages);
+        return Collections.unmodifiableList(messages);
     }
 
     public void addUser(User user) {
+        // 이미 가입된 유저라면 return
+        if (users.contains(user)) {
+            return;
+        }
+
         // 채널에 가입한 유저 목록에 유저 추가
         users.add(user);
-
-        // 유저가 가입한 채널 목록에 해당 채널이 없으면 추가
+        
+        // 유저의 채널 목록에 채널이 없다면 채널 추가
         if (!user.getChannels().contains(this)) {
             user.joinChannel(this);
         }
@@ -53,10 +59,15 @@ public class Channel extends Entity {
     }
 
     public void removeUser(User user) {
+        // 가입된 유저가 아니라면 return
+        if (!users.contains(user)) {
+            return;
+        }
+
         // 채널에 가입한 유저 목록에서 유저 제거
         users.remove(user);
 
-        // 유저가 가입한 채널 목록에 해당 채널이 있으면 제거
+        // 유저의 채널 목록에 채널이 있다면 채널 제거
         if (user.getChannels().contains(this)) {
             user.leaveChannel(this);
         }
@@ -79,9 +90,9 @@ public class Channel extends Entity {
         super.update();
     }
 
-    public Channel updateChannelName(String name) {
+    public Channel updateChannelName(String newName) {
         // 채널 이름 변경
-        this.name = name;
+        this.name = newName;
         // 수정 시각 갱신
         super.update();
         return this;

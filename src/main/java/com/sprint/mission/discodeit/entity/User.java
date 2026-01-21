@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class User extends Entity {
@@ -13,7 +14,7 @@ public class User extends Entity {
         super();
         this.nickname = nickname;
         this.email = email;
-        this.channels = new ArrayList<>(); // 순서를 기억하고 보편적인 컬렉션을 사용하기 위해 선택
+        this.channels = new ArrayList<>();
         this.messages = new ArrayList<>();
     }
 
@@ -26,31 +27,42 @@ public class User extends Entity {
     }
 
     public List<Channel> getChannels() {
-        return new ArrayList<>(channels);
+        return Collections.unmodifiableList(channels);
     }
 
     public List<Message> getMessages() {
-        return new ArrayList<>(messages);
+        return Collections.unmodifiableList(messages);
     }
 
     public void joinChannel(Channel channel) {
+        // 이미 가입한 채널이라면 return
+        if (channels.contains(channel)) {
+            return;
+        }
+
         // 유저가 가입한 채널 목록에 채널 추가
         channels.add(channel);
 
-        // 채널에 가입한 유저 목록에 해당 유저가 없으면 추가
+        // 채널의 유저 목록에 유저가 없다면 유저 추가
         if (!channel.getUsers().contains(this)) {
             channel.addUser(this);
         }
+
 
         // 수정 시각 갱신
         super.update();
     }
 
     public void leaveChannel(Channel channel) {
+        // 가입한 채널이 아니라면 return
+        if (!channels.contains(channel)) {
+            return;
+        }
+
         // 유저가 가입한 채널 목록에서 채널 제거
         channels.remove(channel);
 
-        // 채널에 가입한 유저 목록에 해당 유저가 있으면 제거
+        // 채널의 유저 목록에 유저가 있다면 유저 제거
         if (channel.getUsers().contains(this)) {
             channel.removeUser(this);
         }
@@ -73,9 +85,9 @@ public class User extends Entity {
         super.update();
     }
 
-    public User updateUserNickname(String nickname) {
+    public User updateUserNickname(String newNickname) {
         // 닉네임 변경
-        this.nickname = nickname;
+        this.nickname = newNickname;
         // 수정 시각 갱신
         super.update();
         return this;

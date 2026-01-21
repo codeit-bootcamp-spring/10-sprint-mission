@@ -38,10 +38,10 @@ public class Message extends Entity {
         user.removeMessage(this);
     }
 
-    public Message updateMessageContent(String content) {
+    public Message updateMessageContent(String newContent) {
         // 마지막 수정 시각 갱신
         super.update();
-        this.content = content;
+        this.content = newContent;
         return this;
     }
 
