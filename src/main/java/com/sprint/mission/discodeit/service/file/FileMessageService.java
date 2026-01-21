@@ -9,7 +9,6 @@ import com.sprint.mission.discodeit.service.jcf.UserService;
 import com.sprint.mission.discodeit.utils.CheckValidation;
 import com.sprint.mission.discodeit.utils.SaveLoadUtil;
 
-import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,7 +44,6 @@ public class FileMessageService implements MessageService {
         Objects.requireNonNull(channelID, "유효하지 않은 채널입니다.");
         Objects.requireNonNull(userID, "유효하지 않은 유저입니다.");
 
-        reload(); // data 최신화
 
         // 채널/유저가 각 서비스 data 리스트에 있는지 검증합니다.
         // 존재하지 않으면 IllegalStateException을 MessageHelper(호출자)로 던집니다.
@@ -74,7 +72,7 @@ public class FileMessageService implements MessageService {
 
     // 메세지의 uuid를 식별자 삼아서 읽고 메시지를 리턴합니다.
     public Message readMessage(UUID uuid) {
-        reload();
+
         return CheckValidation.readEntity(data, uuid, () -> new IllegalStateException("유효하지 않은 객체입니다."));
     }
 
@@ -83,7 +81,7 @@ public class FileMessageService implements MessageService {
         User user = userService.readUser(userID);
         List<Message> messageList = new ArrayList<>(); // 리턴할 리스트를 초기화
 
-        reload(); // data 초기화
+
         // 메시지 서비스의 data에서 입력받은 유저ID와 일치하는 메시지를 찾고 messageList에 삽입.
         data.stream().filter(
                         m -> user.getUserId().equals(m.getUser().getUserId()))
@@ -98,7 +96,7 @@ public class FileMessageService implements MessageService {
         Channel channel = channelService.readChannel(channelID);
         List<Message> messageList = new ArrayList<>(); // 결과물을 담을 리스트
 
-        reload();
+
 
         data.stream().filter(
                         m -> channel.getId().equals(m.getChannel().getId()))
@@ -112,8 +110,6 @@ public class FileMessageService implements MessageService {
     public Message updateMessage(UUID msgID, String msgContext) {
         Objects.requireNonNull(msgID, "유효하지 않은 식별자 ID입니다.");
 
-        reload();
-
         Message message = readMessage(msgID);
         message.updateContext(msgContext);
         save();
@@ -123,7 +119,6 @@ public class FileMessageService implements MessageService {
     @Override
     public void deleteMessage(UUID msgID) {
         Objects.requireNonNull(msgID, "유효하지 않은 식별자 ID입니다.");
-        reload();
 
         Message message = readMessage(msgID);
         data.remove(message);
@@ -134,7 +129,7 @@ public class FileMessageService implements MessageService {
 
     @Override
     public ArrayList<Message> readAllMessage() {
-        reload();
+
         data.forEach(System.out::println);
         return (ArrayList<Message>) data;
     }

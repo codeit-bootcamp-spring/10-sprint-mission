@@ -117,6 +117,8 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void deleteChannelbyName(String name) {
+        Objects.requireNonNull(name, "유효하지 않은 매개변수입니다.");
+
 
     }
 
