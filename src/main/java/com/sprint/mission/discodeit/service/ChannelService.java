@@ -14,6 +14,7 @@ public interface ChannelService {
     Optional<Channel> findChannelByTitle(String title);
     List<Channel> findAllChannels();
     Channel updateChannel(UUID uuid, String title, String description);
+    Channel updateChannel(Channel newChannel);      // File쪽 특화용(다른 JCF관련 필드)
     void deleteChannel(UUID uuid);
     void deleteChannelByTitle(String title);
     void joinChannel(UUID channelId, UUID userId);
