@@ -37,9 +37,9 @@ public class FileMessageService implements MessageService {
     @Override
     public Message createMessage(UUID channelId, UUID authorId, String content) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User author = validateAndGetUserByUserId(authorId);
+        User author = userService.findUserById(authorId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(channelId);
+        Channel channel = channelService.findChannelById(channelId);
         // String `null` or `blank` 검증
         ValidationMethods.validateNullBlankString(content, "content");
 
@@ -60,11 +60,12 @@ public class FileMessageService implements MessageService {
     // R. 읽기
     // 특정 메시지 정보 읽기 by messageId
     @Override
-    public Optional<Message> findMessageById(UUID messageId) {
+    public Message findMessageById(UUID messageId) {
         // Message ID `null` 검증
         ValidationMethods.validateId(messageId);
 
-        return Optional.ofNullable(data.get(messageId));
+        return Optional.ofNullable(data.get(messageId))
+                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
     }
 
     // R. 모두 읽기
@@ -78,7 +79,7 @@ public class FileMessageService implements MessageService {
     @Override
     public List<Message> findChannelMessagesByChannelId(UUID channelId) {
         // Channel ID null & channel 객체 존재 확인
-        validateChannelByChannelId(channelId);
+        channelService.findChannelById(channelId);
 
         return findAllMessages().stream()
                 .filter(message -> message.getMessageChannel().getId().equals(channelId))
@@ -89,7 +90,7 @@ public class FileMessageService implements MessageService {
     @Override
     public List<Message> findUserMessagesByUserId(UUID userId) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        validateUserByUserId(userId);
+        userService.findUserById(userId);
 
         return findAllMessages().stream()
                 .filter(message -> message.getAuthor().getId().equals(userId))
@@ -101,7 +102,7 @@ public class FileMessageService implements MessageService {
     @Override
     public Message updateMessageContent(UUID requestUserId, UUID messageId, String content) {
         // Message ID null & Message 객체 존재 확인
-        Message message = validateAndGetMessageByMessageId(messageId);
+        Message message = findMessageById(messageId);
         // requestUser가 해당 message를 작성한 게 맞는지 확인
         verifyMessageAuthor(message, requestUserId);
 
@@ -117,11 +118,11 @@ public class FileMessageService implements MessageService {
     @Override
     public void deleteMessage(UUID userId, UUID messageId) {
         // 요청자의 user ID null / user 객체 존재 확인
-        validateUserByUserId(userId);
+        userService.findUserById(userId);
         // Message ID null & Message 객체 존재 확인
-        Message message = validateAndGetMessageByMessageId(messageId);
+        Message message = findMessageById(messageId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(message.getMessageChannel().getId());
+        Channel channel = channelService.findChannelById(message.getMessageChannel().getId());
 
         // message author의 id와 삭제 요청한 user id가 동일한지 확인하고
         // 메세지가 작성된 channel의 owner와 user가 동일한지 확인해서 동일하지 않다면 exception
@@ -129,7 +130,7 @@ public class FileMessageService implements MessageService {
             throw new IllegalStateException("권한이 없습니다.");
         }
 
-        User author = validateAndGetUserByUserId(message.getAuthor().getId());
+        User author = userService.findUserById(message.getAuthor().getId());
 
         unlinkMessage(author, channel, message);
         data.remove(messageId);
@@ -150,32 +151,6 @@ public class FileMessageService implements MessageService {
     }
 
     //// validation
-    // 로그인 되어있는 user ID null & user 객체 존재 확인
-    public void validateUserByUserId(UUID userId) {
-        userService.findUserById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
-    }
-    public User validateAndGetUserByUserId(UUID userId) {
-        return userService.findUserById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
-    }
-
-    // Channel ID null & channel 객체 존재 확인
-    public Channel validateAndGetChannelByChannelId(UUID channelId) {
-        return channelService.findChannelById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
-    }
-    public void validateChannelByChannelId(UUID channelId) {
-        channelService.findChannelById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
-    }
-
-    // Message ID null & channel 객체 존재 확인
-    public Message validateAndGetMessageByMessageId(UUID messageId) {
-        return findMessageById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
-    }
-
     // message의 author와 삭제 요청한 user가 동일한지
     public void verifyMessageAuthor(Message message, UUID userId) {
         // message author의 id와 삭제 요청한 user id가 동일한지 확인

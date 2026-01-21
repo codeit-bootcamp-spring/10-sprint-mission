@@ -41,11 +41,12 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Optional<Channel> findChannelById(UUID channelId) {
+    public Channel findChannelById(UUID channelId) {
         // Channel ID null 검증
         ValidationMethods.validateId(channelId);
 
-        return channelRepository.findById(channelId);
+        return channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
     }
 
     @Override
@@ -97,7 +98,7 @@ public class BasicChannelService implements ChannelService {
         // 로그인 되어있는 user ID null & user 객체 존재 확인
         validateUserByUserId(ownerId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(channelId);
+        Channel channel = findChannelById(channelId);
         // channel owner의 user ID와 owner의 user ID가 동일한지 확인
         verifyChannelOwner(channel, ownerId);
         // blank 검증
@@ -128,7 +129,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public Channel changeChannelOwner(UUID currentUserId, UUID channelId, UUID newOwnerId) {
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(channelId);
+        Channel channel = findChannelById(channelId);
         validateUserByUserId(currentUserId);
         User newOwner = validateAndGetUserByUserId(newOwnerId);
         // channel owner의 user ID와 owner의 user ID가 동일한지 확인
@@ -156,7 +157,7 @@ public class BasicChannelService implements ChannelService {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(channelId);
+        Channel channel = findChannelById(channelId);
 
         // 이미 참여한 채널인지 검증
         if (channel.getChannelMembersList().stream()
@@ -176,7 +177,7 @@ public class BasicChannelService implements ChannelService {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(channelId);
+        Channel channel = findChannelById(channelId);
 
         // 참여한 채널인지 확인
         if (!channel.getChannelMembersList().stream()
@@ -201,7 +202,7 @@ public class BasicChannelService implements ChannelService {
         // 로그인 되어있는 owner ID null & user 객체 존재 확인
         validateUserByUserId(ownerId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(channelId);
+        Channel channel = findChannelById(channelId);
         // channel owner의 user ID와 owner의 user ID가 동일한지 확인
         verifyChannelOwner(channel, ownerId);
 
@@ -233,17 +234,10 @@ public class BasicChannelService implements ChannelService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
-
     // ChannelType null 검증
     public void validateNullChannelType(ChannelType channelType) {
         String message = "channelType이 null 입니다.";
         Objects.requireNonNull(channelType, message);
-    }
-
-    // Channel ID null & channel 객체 존재 확인
-    public Channel validateAndGetChannelByChannelId(UUID channelId) {
-        return findChannelById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
     }
 
     // channel owner의 user ID와 owner의 user ID가 동일한지 확인

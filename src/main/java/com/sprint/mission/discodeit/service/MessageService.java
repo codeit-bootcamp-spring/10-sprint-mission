@@ -13,7 +13,7 @@ public interface MessageService {
 
     // R. 읽기
     // 특정 메시지 정보 읽기
-    Optional<Message> findMessageById(UUID messageId);
+    Message findMessageById(UUID messageId);
 
     // R. 모두 읽기 : 시간순으로 정렬?
     // 메시지 전체

@@ -14,7 +14,7 @@ public interface ChannelService {
 
     // R. 읽기
     // 특정 채널 정보 읽기
-    Optional<Channel> findChannelById(UUID channelId);
+    Channel findChannelById(UUID channelId);
 
     // R. 모두 읽기
     // 채널 목록 전체

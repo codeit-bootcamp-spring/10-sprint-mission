@@ -12,7 +12,7 @@ public interface UserService {
     User createUser(String email, String userName, String nickName, String password, String birthday);
 
     // R. 읽기
-    Optional<User> findUserById(UUID userId);
+    User findUserById(UUID userId);
     Optional<User> findUserByEmailAndPassword(String email, String password);
 
     // R. 모두 읽기

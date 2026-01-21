@@ -35,13 +35,15 @@ public class JCFUserService implements UserService {
 
     // R. 읽기
     @Override
-    public Optional<User> findUserById(UUID userId) {
+    public User findUserById(UUID userId) {
         // User ID null 검증
         ValidationMethods.validateId(userId);
 
-        return userRepository.findById(userId);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
 
+    // 로그인?
     @Override
     public Optional<User> findUserByEmailAndPassword(String email, String password) {
         ValidationMethods.validateNullBlankString(email, "email");
@@ -63,7 +65,7 @@ public class JCFUserService implements UserService {
     @Override
     public User updateUserInfo(UUID userId, String email, String password, String userName, String nickName, String birthday) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateAndGetUserByUserId(userId);
+        User user = findUserById(userId);
         // blank 검증
         if (email != null) ValidationMethods.validateNullBlankString(email, "email");
         if (password != null) ValidationMethods.validateNullBlankString(password, "password");
@@ -106,23 +108,13 @@ public class JCFUserService implements UserService {
     @Override
     public void deleteUser(UUID userId) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        validateUserByUserId(userId);
+        findUserById(userId);
 
         // channel, message 삭제는 상위에서
         userRepository.delete(userId);
     }
 
     //// validation
-    // 로그인 되어있는 user ID null & user 객체 존재 확인
-    public void validateUserByUserId(UUID userId) {
-        findUserById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
-    }
-    public User validateAndGetUserByUserId(UUID userId) {
-        return findUserById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
-    }
-
     // email이 이미 존재하는지 확인
     private void validateDuplicateEmail(String newEmail) {
         if (userRepository.existByEmail(newEmail)) {

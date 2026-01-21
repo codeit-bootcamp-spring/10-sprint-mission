@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.validation.ValidationMethods;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 
 public class BasicMessageService implements MessageService {
@@ -50,11 +49,12 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Optional<Message> findMessageById(UUID messageId) {
+    public Message findMessageById(UUID messageId) {
         // Message ID `null` 검증
         ValidationMethods.validateId(messageId);
 
-        return messageRepository.findById(messageId);
+        return messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
     }
 
     @Override
@@ -81,7 +81,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public Message updateMessageContent(UUID requestUserId, UUID messageId, String content) {
         // Message ID null & Message 객체 존재 확인
-        Message message = validateAndGetMessageByMessageId(messageId);
+        Message message = findMessageById(messageId);
         // requestUser가 해당 message를 작성한 게 맞는지 확인
         verifyMessageAuthor(message, requestUserId);
 
@@ -98,7 +98,7 @@ public class BasicMessageService implements MessageService {
         // 요청자의 user ID null / user 객체 존재 확인
         validateUserByUserId(userId);
         // Message ID null & Message 객체 존재 확인
-        Message message = validateAndGetMessageByMessageId(messageId);
+        Message message = findMessageById(messageId);
         // Channel ID null & channel 객체 존재 확인
         Channel channel = validateAndGetChannelByChannelId(message.getMessageChannel().getId());
 
@@ -147,12 +147,6 @@ public class BasicMessageService implements MessageService {
     public void validateChannelByChannelId(UUID channelId) {
         channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
-    }
-
-    // Message ID null & channel 객체 존재 확인
-    public Message validateAndGetMessageByMessageId(UUID messageId) {
-        return findMessageById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
     }
 
     // message의 author와 삭제 요청한 user가 동일한지
