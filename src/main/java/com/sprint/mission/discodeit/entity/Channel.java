@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class Channel extends BaseEntity {
+public class Channel extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String channelName;         // 채널 이름 (변경 가능)
     private User user;                  // 채널 소유자 (변경 불가능)
     private List<User> members;         // 채널 참가자 (변경 가능)

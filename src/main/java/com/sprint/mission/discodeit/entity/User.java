@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class User extends BaseEntity {
+public class User extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String email;                    // 이메일 (변경 불가능)
     private String password;                 // 비밀번호 (변경 가능)
     private String nickname;                 // 닉네임 (변경 가능)
