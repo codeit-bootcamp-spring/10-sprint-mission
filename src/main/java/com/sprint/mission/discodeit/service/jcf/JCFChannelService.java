@@ -1,25 +1,26 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.consistency.JCFConsistencyManager;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.DataStore;
 import com.sprint.mission.discodeit.service.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
+    private final JCFConsistencyManager jcfConsistencyManager;
+    private final ChannelRepository channelRepository;
     private final UserService userService;
-    private final DataStore dataStore;
-    private final Map<UUID, Channel> data;
 
-    public JCFChannelService(UserService userService, DataStore dataStore) {
+    public JCFChannelService(JCFConsistencyManager jcfConsistencyManager,
+                             ChannelRepository channelRepository,
+                             UserService userService) {
+        this.jcfConsistencyManager = jcfConsistencyManager;
+        this.channelRepository = channelRepository;
         this.userService = userService;
-        this.dataStore = dataStore;
-        this.data = dataStore.getChannelData();
     }
 
     @Override
@@ -30,14 +31,13 @@ public class JCFChannelService implements ChannelService {
         Channel channel = new Channel(name, owner);
 
         // 채널 추가
-        data.put(channel.getId(), channel);
-        return channel;
+        return channelRepository.saveChannel(channel);
     }
 
     @Override
     public Channel findChannelById(UUID channelId) {
         // 존재하는 채널인지 검색 및 검증, 존재하지 않으면 예외 발생
-        Channel channel = data.get(channelId);
+        Channel channel = channelRepository.findChannelById(channelId);
         if (channel == null) {
             throw new RuntimeException("채널이 존재하지 않습니다.");
         }
@@ -48,12 +48,12 @@ public class JCFChannelService implements ChannelService {
     @Override
     public List<Channel> findAll() {
         // 전체 채널 목록 반환
-        return new ArrayList<>(data.values());
+        return channelRepository.findAll();
     }
 
     @Override
     public Channel updateChannelName(UUID channelId, UUID userId, String newName) {
-        // 수정 대상 채널이 실제로 존재하는지 검색 및 검증
+        // 수정 대상 채널이 존재하는지 검색 및 검증
         Channel channel = findChannelById(channelId);
         // 채널 권한 확인, 채널 소유자만 수정 가능
         if (!channel.getOwner().getId().equals(userId)) {
@@ -66,7 +66,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void deleteChannel(UUID channelId, UUID userId) {
-        // 삭제 대상 채널이 실제로 존재하는지 검색 및 검증
+        // 삭제 대상 채널이 존재하는지 검색 및 검증
         Channel channel = findChannelById(channelId);
         // 채널 권한 확인, 채널 소유자만 삭제 가능
         if (!channel.getOwner().getId().equals(userId)) {
@@ -74,17 +74,17 @@ public class JCFChannelService implements ChannelService {
         }
 
         // 채널 삭제를 위해 해당 채널의 관계 정리
-        dataStore.cleanupChannelRelations(channel);
+        jcfConsistencyManager.cleanupChannelRelations(channel);
 
         // 관계를 정리한 후 채널 삭제, 저장소에서 제거
-        data.remove(channelId);
+        channelRepository.deleteChannel(channel.getId());
     }
 
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
-        // 유저가 가입하려는 채널이 실제로 존재하는지 검색 및 검증
+        // 유저가 가입하려는 채널이 존재하는지 검색 및 검증
         Channel channel = findChannelById(channelId);
-        // 실제로 존재하는 유저인지 검색 및 검증
+        // 존재하는 유저인지 검색 및 검증
         User user = userService.findUserById(userId);
 
         // 가입 여부 확인, 이미 존재하는 유저라면 예외 발생
@@ -102,9 +102,9 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
-        // 유저가 탈퇴하려는 채널이 실제로 존재하는지 검색 및 검증
+        // 유저가 탈퇴하려는 채널이 존재하는지 검색 및 검증
         Channel channel = findChannelById(channelId);
-        // 실제로 존재하는 유저인지 검색 및 검증
+        // 존재하는 유저인지 검색 및 검증
         User user = userService.findUserById(userId);
 
         // 가입 여부 확인, 가입되어 있지 않은 유저라면 예외 발생
@@ -122,7 +122,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public List<User> getMembers(UUID channelId) {
-        // 실제로 존재하는 채널인지 검색 및 검증
+        // 존재하는 채널인지 검색 및 검증
         Channel channel = findChannelById(channelId);
         // 채널에 속한 유저 목록 반환
         return channel.getUsers();
