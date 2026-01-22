@@ -50,6 +50,7 @@ public class BasicUserService implements UserService {
     }
 
     // 특정 채널의 참가자 목록 조회
+    @Override
     public List<User> searchMembersByChannelId(UUID channelId) {
         channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
@@ -103,6 +104,11 @@ public class BasicUserService implements UserService {
                 .forEach(messageRepository::delete);
 
         userRepository.delete(targetUser);
+    }
+
+    @Override
+    public void updateUser(UUID userId, User user) {
+        userRepository.save(user);
     }
 
     // 유효성 검사 (이메일 중복)

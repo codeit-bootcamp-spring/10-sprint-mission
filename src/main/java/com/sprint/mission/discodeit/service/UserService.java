@@ -8,17 +8,23 @@ import java.util.UUID;
 
 public interface UserService {
     // 사용자 생성
-    public User createUser(String email, String password, String nickname, UserStatusType userStatus);
+    User createUser(String email, String password, String nickname, UserStatusType userStatus);
 
     // 사용자 단건 조회
-    public User searchUser(UUID userId);
+    User searchUser(UUID userId);
 
     // 사용자 전체 조회
-    public List<User> searchUserAll();
+    List<User> searchUserAll();
+
+    // 채널 내 멤버 목록 조회
+    List<User> searchMembersByChannelId(UUID channelId);
 
     // 사용자 수정
-    public User updateUser(UUID userId, String newPassword, String newNickname, UserStatusType newUserStatus);
+    User updateUser(UUID userId, String newPassword, String newNickname, UserStatusType newUserStatus);
+
+    // 사용자 저장
+    void updateUser(UUID userId, User user);
 
     // 사용자 삭제
-    public void deleteUser(UUID userId);
+    void deleteUser(UUID userId);
 }

@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.util.FileUtil;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateS
 
 public class FileChannelService implements ChannelService {
     private final Path directory = Paths.get(System.getProperty("user.dir"), "data", "channels");       // 경로 설정
-    private final FileUserService fileUserService;
+    private final UserService fileUserService;
 
     public FileChannelService(FileUserService fileUserService) {
         FileUtil.init(directory);

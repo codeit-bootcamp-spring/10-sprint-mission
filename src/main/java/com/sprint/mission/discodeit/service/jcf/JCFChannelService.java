@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
@@ -15,7 +16,7 @@ import java.util.UUID;
 public class JCFChannelService implements ChannelService {
     private final List<Channel> data;           // 사용자 한 명당 가지는 채널
 
-    private final JCFUserService jcfUserService;
+    private final UserService jcfUserService;
 
     public JCFChannelService(JCFUserService jcfUserService) {
         this.data = new ArrayList<>();
@@ -51,6 +52,7 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 특정 유저가 참가한 채널 리스트 조회
+    @Override
     public List<Channel> searchChannelsByUserId(UUID userId) {
         User targetUser = jcfUserService.searchUser(userId);
 
@@ -72,6 +74,9 @@ public class JCFChannelService implements ChannelService {
 
         return targetChannel;
     }
+
+    @Override
+    public void updateChannel(UUID id, Channel channel) {}
 
     // 채널 삭제
     @Override

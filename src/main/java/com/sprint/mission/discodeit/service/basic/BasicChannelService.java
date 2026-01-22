@@ -84,6 +84,9 @@ public class BasicChannelService implements ChannelService {
         return targetChannel;
     }
 
+    @Override
+    public void updateChannel(UUID id, Channel channel) {}
+
     // 채널 삭제
     @Override
     public void deleteChannel(UUID targetChannelId) {

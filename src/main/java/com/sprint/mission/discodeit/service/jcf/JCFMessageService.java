@@ -4,7 +4,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.MessageType;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
@@ -16,8 +18,8 @@ import java.util.UUID;
 public class JCFMessageService implements MessageService {
     private final List<Message> data;                     // 한 채널에서
 
-    private final JCFUserService jcfUserService;
-    private final JCFChannelService jcfChannelService;
+    private final UserService jcfUserService;
+    private final ChannelService jcfChannelService;
 
     public JCFMessageService(JCFUserService jcfUserService, JCFChannelService jcfChannelService) {
         this.data = new ArrayList<>();
@@ -85,6 +87,9 @@ public class JCFMessageService implements MessageService {
 
         return targetMessage;
     }
+
+    @Override
+    public void updateMessage(UUID channelId, Channel channel) {}
 
     // 메시지 삭제
     @Override

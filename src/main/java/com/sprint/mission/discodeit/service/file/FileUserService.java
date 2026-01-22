@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatusType;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.util.FileUtil;
 
@@ -19,8 +21,8 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateS
 
 public class FileUserService implements UserService {
     private final Path directory = Paths.get(System.getProperty("user.dir"), "data", "users");              // 경로 설정
-    private FileChannelService fileChannelService;
-    private FileMessageService fileMessageService;
+    private ChannelService fileChannelService;
+    private MessageService fileMessageService;
 
     public FileUserService() {
         FileUtil.init(directory);
@@ -86,8 +88,9 @@ public class FileUserService implements UserService {
     }
 
     // 파일 내 사용자 수정 (덮어쓰기)
-    public void updateUser(UUID targetUserId, User targetUser) {
-        FileUtil.save(directory.resolve(targetUserId + ".ser"), targetUser);
+    @Override
+    public void updateUser(UUID targetUserId, User user) {
+        FileUtil.save(directory.resolve(targetUserId + ".ser"), user);
     }
 
     // 사용자 삭제

@@ -4,7 +4,9 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.MessageType;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.util.FileUtil;
 
 import java.io.IOException;
@@ -20,8 +22,8 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateS
 
 public class FileMessageService implements MessageService {
     private final Path directory = Paths.get(System.getProperty("user.dir"), "data", "messages");              // 경로 설정
-    private final FileUserService fileUserService;
-    private final FileChannelService fileChannelService;
+    private final UserService fileUserService;
+    private final ChannelService fileChannelService;
 
     public FileMessageService(FileUserService fileUserService, FileChannelService fileChannelService) {
         FileUtil.init(directory);
@@ -98,6 +100,9 @@ public class FileMessageService implements MessageService {
         FileUtil.save(directory.resolve(targetMessageId + ".ser"), targetMessage);
         return targetMessage;
     }
+
+    @Override
+    public void updateMessage(UUID channelId, Channel channel) {}
 
     // 파일 내 메시지 수정 (덮어쓰기)
     public void updateMessage(UUID targetMessageId, Message targetMessage) {

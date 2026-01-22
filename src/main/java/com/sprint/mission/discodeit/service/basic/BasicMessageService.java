@@ -99,6 +99,9 @@ public class BasicMessageService implements MessageService {
         return targetMessage;
     }
 
+    @Override
+    public void updateMessage(UUID channelId, Channel channel) {}
+
     // 메시지 삭제
     @Override
     public void deleteMessage(UUID targetMessageId) {

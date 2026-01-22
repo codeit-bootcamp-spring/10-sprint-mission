@@ -20,8 +20,8 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 public class JCFUserService implements UserService {
     private final List<User> data;             // 전체 사용자
 
-    private JCFChannelService jcfChannelService;
-    private JCFMessageService jcfMessageService;
+    private ChannelService jcfChannelService;
+    private MessageService jcfMessageService;
 
     public JCFUserService() {
         this.data = new ArrayList<>();
@@ -52,6 +52,7 @@ public class JCFUserService implements UserService {
     }
 
     // 특정 채널의 참가자 리스트 조회
+    @Override
     public List<User> searchMembersByChannelId(UUID channelId) {
         Channel targetChannel = jcfChannelService.searchChannelAll().stream()
                 .filter(channel -> channel.getId().equals(channelId))
@@ -88,6 +89,9 @@ public class JCFUserService implements UserService {
 
         return targetUser;
     }
+
+    @Override
+    public void updateUser(UUID userId, User user) {}
 
     // 사용자 삭제
     @Override
