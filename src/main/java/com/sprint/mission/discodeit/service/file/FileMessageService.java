@@ -74,6 +74,12 @@ public class FileMessageService extends FileSerDe<Message> implements MessageSer
     }
 
     @Override
+    public Message updateMessage(Message newMessage) {
+        newMessage.updateUpdatedAt();
+        return save(MESSAGE_DATA_DIRECTORY, newMessage);
+    }
+
+    @Override
     public void deleteMessage(UUID uuid) {
         Message msg = getMessage(uuid);
         Channel channel = channelService.getChannel(msg.getChannel().getId());
