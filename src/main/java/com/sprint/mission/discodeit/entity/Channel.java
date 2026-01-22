@@ -34,6 +34,14 @@ public class Channel extends BaseEntity implements Serializable {
         this.updatedAt = System.currentTimeMillis();
     }
 
+    public void addMember(User user) {
+        this.members.add(user);
+    }
+
+    public void removeMember(User user) {
+        this.members.remove(user);
+    }
+
     public void addMessage(Message message) {
         this.messages.add(message);
     }
