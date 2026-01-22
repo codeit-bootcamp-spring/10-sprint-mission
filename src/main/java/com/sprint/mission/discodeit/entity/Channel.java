@@ -28,6 +28,11 @@ public class Channel extends Common {
     public void removeParticipant(User user) {
         participants.remove(user);
     }
+    public void updateParticipant(User user) {
+        if (this.participants.removeIf(u -> Objects.equals(u.getId(), user.getId()))) {
+            addParticipant(user);
+        }
+    }
 
     // messages
     public List<Message> getMessages() {
@@ -38,6 +43,14 @@ public class Channel extends Common {
     }
     public void removeMessage(Message message) {
         this.messages.remove(message);
+    }
+    public void updateMessage(Message message) {
+        for (int i = 0; i < this.messages.size(); i++) {
+            if (this.messages.get(i).getId().equals(message.getId())) {
+                this.messages.set(i, message);
+                break;
+            }
+        }
     }
 
     public String getTitle() {
