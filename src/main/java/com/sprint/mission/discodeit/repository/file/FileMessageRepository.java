@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.utility.FileSerDe;
+import com.sprint.mission.discodeit.extend.FileSerDe;
 
 import java.util.List;
 import java.util.Optional;
