@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
@@ -13,9 +15,13 @@ import java.util.UUID;
 
 public class Main {
     public static void main(String[] args) {
-        final FileUserService fileUserService = new FileUserService();
-        final FileChannelService fileChannelService = new FileChannelService(fileUserService);
-        final FileMessageService fileMessageService = new FileMessageService(fileUserService, fileChannelService);
+        final FileUserRepository fileUserRepository = new FileUserRepository();
+        final FileChannelRepository fileChannelRepository = new FileChannelRepository();
+        final FileMessageRepository fileMessageRepository = new FileMessageRepository();
+
+        final FileUserService fileUserService = new FileUserService(fileUserRepository);
+        final FileChannelService fileChannelService = new FileChannelService(fileChannelRepository, fileUserService);
+        final FileMessageService fileMessageService = new FileMessageService(fileMessageRepository, fileUserService, fileChannelService);
 
         fileUserService.setFileMessageService(fileMessageService);
         fileUserService.setFileChannelService(fileChannelService);
@@ -282,7 +288,7 @@ public class Main {
         // 특정 채널의 참가자 리스트 조회
         try {   // 예상 출력: sakuya
             System.out.println("특정 채널의 참가자 리스트 조회 테스트");
-            List<User> channelUsers = fileUserService.searchUsersByChannelId(channel2.getId());
+            List<User> channelUsers = fileUserService.searchMembersByChannelId(channel2.getId());
             channelUsers.forEach(channel -> System.out.println(channel.getNickname()));
         } catch (Exception e) {
             System.err.println("[채널의 참가자 목록 조회 실패] " + e.getMessage());
@@ -290,7 +296,7 @@ public class Main {
 
         try {   // 해당 채널이 존재하지 않음
             System.out.println("특정 채널의 참가자 리스트 조회 테스트");
-            List<User> channelUsers = fileUserService.searchUsersByChannelId(channel1.getId());
+            List<User> channelUsers = fileUserService.searchMembersByChannelId(channel1.getId());
             channelUsers.forEach(channel -> System.out.println(channel.getNickname()));
         } catch (Exception e) {
             System.err.println("[채널의 참가자 목록 조회 실패] " + e.getMessage());
