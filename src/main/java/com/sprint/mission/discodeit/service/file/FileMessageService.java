@@ -4,12 +4,13 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.MessageType;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.util.FileUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,13 +19,13 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateD
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateString;
 
 public class FileMessageService implements MessageService {
-    private final MessageRepository fileMessageRepository;
-
+    private final Path directory = Paths.get(System.getProperty("user.dir"), "data", "messages");              // 경로 설정
     private final FileUserService fileUserService;
     private final FileChannelService fileChannelService;
 
-    public FileMessageService(FileMessageRepository fileMessageRepository, FileUserService fileUserService, FileChannelService fileChannelService) {
-        this.fileMessageRepository = fileMessageRepository;
+    public FileMessageService(FileUserService fileUserService, FileChannelService fileChannelService) {
+        FileUtil.init(directory);
+
         this.fileUserService = fileUserService;
         this.fileChannelService = fileChannelService;
     }
@@ -36,13 +37,13 @@ public class FileMessageService implements MessageService {
         Channel targetChannel = fileChannelService.searchChannel(channelId);
 
         Message newMessage = new Message(message, sender, targetChannel, type);
-        fileMessageRepository.save(newMessage);
+        FileUtil.save(directory.resolve(newMessage.getId() + ".ser"), newMessage);
 
-        sender.addMessage(newMessage);              // 사용자 메시지 목록에 메시지 추가
-        fileUserService.updateUser(sender);
+        sender.addMessage(newMessage);
+        fileUserService.updateUser(sender.getId(), sender);
 
-        targetChannel.addMessage(newMessage);       // 채널 메시지 목록에 메시지 추가
-        fileChannelService.updateChannel(targetChannel);
+        targetChannel.addMessage(newMessage);
+        fileChannelService.updateChannel(targetChannel.getId(), targetChannel);
 
         return newMessage;
     }
@@ -50,14 +51,13 @@ public class FileMessageService implements MessageService {
     // 메시지 단건 조회
     @Override
     public Message searchMessage(UUID targetMessageId) {
-        return fileMessageRepository.findById(targetMessageId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
+        return FileUtil.loadSingle(directory.resolve(targetMessageId + ".ser"));
     }
 
     // 메시지 전체 조회
     @Override
     public List<Message> searchMessageAll() {
-        return fileMessageRepository.findAll();
+        return FileUtil.load(directory);
     }
 
     // 특정 유저가 발행한 메시지 목록 조회
@@ -95,13 +95,13 @@ public class FileMessageService implements MessageService {
                     targetMessage.updateMessage(newMessage);
                 });
 
-        fileMessageRepository.save(targetMessage);
+        FileUtil.save(directory.resolve(targetMessageId + ".ser"), targetMessage);
         return targetMessage;
     }
 
     // 파일 내 메시지 수정 (덮어쓰기)
-    public void updateMessage(Message targetMessage) {
-        fileMessageRepository.save(targetMessage);
+    public void updateMessage(UUID targetMessageId, Message targetMessage) {
+        FileUtil.save(directory.resolve(targetMessageId + ".ser"), targetMessage);
     }
 
     // 메시지 삭제
@@ -109,14 +109,20 @@ public class FileMessageService implements MessageService {
     public void deleteMessage(UUID targetMessageId) {
         Message targetMessage = searchMessage(targetMessageId);
 
-        User targetUser = fileUserService.searchUser(targetMessage.getUser().getId());                          // 사용자 내 메시지 목록 연쇄 삭제
+        // 사용자 내 메시지 목록 연쇄 삭제
+        User targetUser = fileUserService.searchUser(targetMessage.getUser().getId());
         targetUser.getMessages().removeIf(message -> message.getId().equals(targetMessage.getId()));
-        fileUserService.updateUser(targetUser);
+        fileUserService.updateUser(targetUser.getId(), targetUser);
 
-        Channel targetChannel = fileChannelService.searchChannel(targetMessage.getChannel().getId());           // 채널 내 메시지 목록 연쇄 삭제
+        // 채널 내 메시지 목록 연쇄 삭제
+        Channel targetChannel = fileChannelService.searchChannel(targetMessage.getChannel().getId());
         targetChannel.getMessages().removeIf(message -> message.getId().equals(targetMessage.getId()));
-        fileChannelService.updateChannel(targetChannel);
+        fileChannelService.updateChannel(targetChannel.getId(), targetChannel);
 
-        fileMessageRepository.delete(targetMessage);
+        try {
+            Files.deleteIfExists(directory.resolve(targetMessageId + ".ser"));
+        } catch (IOException e) {
+            throw new RuntimeException("[삭제 실패] 시스템 오류가 발생했습니다." + e);
+        }
     }
 }

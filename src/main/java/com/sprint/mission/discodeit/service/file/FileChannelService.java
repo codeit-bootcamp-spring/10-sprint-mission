@@ -3,9 +3,13 @@ package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.util.FileUtil;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,13 +18,13 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateD
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateString;
 
 public class FileChannelService implements ChannelService {
-    private final FileChannelRepository fileChannelRepository;
-
+    private final Path directory = Paths.get(System.getProperty("user.dir"), "data", "channels");       // 경로 설정
     private final FileUserService fileUserService;
 
-    public FileChannelService(FileChannelRepository fileChannelRepository, FileUserService fileUserService) {
+    public FileChannelService(FileUserService fileUserService) {
+        FileUtil.init(directory);
+
         this.fileUserService = fileUserService;
-        this.fileChannelRepository = fileChannelRepository;
     }
 
     // 채널 생성
@@ -29,10 +33,11 @@ public class FileChannelService implements ChannelService {
         User owner = fileUserService.searchUser(userId);
 
         Channel newChannel = new Channel(channelName, owner, channelType);
-        fileChannelRepository.save(newChannel);
+        Path filePath = directory.resolve(newChannel.getId() + ".ser");
+        FileUtil.save(filePath, newChannel);
 
-        owner.addChannel(newChannel);           // 채널 소유자의 채널 목록에 생성한 채널 저장
-        fileUserService.updateUser(owner);
+        owner.addChannel(newChannel);
+        fileUserService.updateUser(owner.getId(), owner);
 
         return newChannel;
     }
@@ -40,14 +45,13 @@ public class FileChannelService implements ChannelService {
     // 채널 단건 조회
     @Override
     public Channel searchChannel(UUID targetChannelId) {
-        return fileChannelRepository.findById(targetChannelId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+        return FileUtil.loadSingle(directory.resolve(targetChannelId + ".ser"));
     }
 
     // 채널 전체 조회
     @Override
     public List<Channel> searchChannelAll() {
-        return fileChannelRepository.findAll();
+        return FileUtil.load(directory);
     }
 
     // 특정 사용자가 참가한 채널 목록 조회
@@ -67,20 +71,21 @@ public class FileChannelService implements ChannelService {
     public Channel updateChannel(UUID targetChannelId, String newChannelName) {
         Channel targetChannel = searchChannel(targetChannelId);
 
-        Optional.ofNullable(newChannelName)         // 채널 이름 필드 변경
+        // 채널 이름 필드 변경
+        Optional.ofNullable(newChannelName)
                 .ifPresent(channelName -> {
                     validateString(channelName, "[채널 이름 변경 실패] 올바른 채널 이름 형식이 아닙니다.");
                     validateDuplicateValue(targetChannel.getChannelName(), channelName, "[채널 이름 변경 실패] 현재 채널 이름과 동일합니다.");
                     targetChannel.updateChannelName(newChannelName);
                 });
 
-        fileChannelRepository.save(targetChannel);
+        FileUtil.save(directory.resolve(targetChannelId + ".ser"), targetChannel);
         return targetChannel;
     }
 
     // 파일 내 채널 수정 (덮어쓰기)
-    public void updateChannel (Channel targetChannel) {
-        fileChannelRepository.save(targetChannel);
+    public void updateChannel (UUID targetChannelId, Channel targetChannel) {
+        FileUtil.save(directory.resolve(targetChannelId + ".ser"), targetChannel);
     }
 
     // 채널 삭제
@@ -88,43 +93,46 @@ public class FileChannelService implements ChannelService {
     public void deleteChannel(UUID targetChannelId) {
         Channel targetChannel = searchChannel(targetChannelId);
 
-        List<User> members = fileUserService.searchMembersByChannelId(targetChannel.getId());
-
-        members.forEach(member -> {     // 모든 채널 멤버에서 채널 목록 삭제
+        // 모든 채널 멤버에서 채널 목록 삭제
+        targetChannel.getMembers().forEach(member -> {
             User targetUser = fileUserService.searchUser(member.getId());
             targetUser.getChannels().removeIf(channel -> channel.getId().equals(targetChannelId));
-            fileUserService.updateUser(targetUser);
+            fileUserService.updateUser(targetUser.getId(), targetUser);
         });
 
-        fileChannelRepository.delete(targetChannel);
+        try {
+            Files.deleteIfExists(directory.resolve(targetChannelId + ".ser"));
+        } catch (IOException e) {
+            throw new RuntimeException("[삭제 실패] 시스템 오류가 발생했습니다.", e);
+        }
     }
 
     // 채널 참가자 초대
     public void inviteMembers(UUID targetUserId, UUID targetChannelId) {
-        User newUser = fileUserService.searchUser(targetUserId);        // 유효성 검증
+        User newUser = fileUserService.searchUser(targetUserId);
         Channel targetChannel = searchChannel(targetChannelId);
 
         validateMemberExists(targetUserId, targetChannelId);
 
-        newUser.addChannel(targetChannel);          // 사용자 채널 목록에 채널 추가
-        fileUserService.updateUser(newUser);
+        newUser.addChannel(targetChannel);
+        fileUserService.updateUser(newUser.getId(), newUser);
 
-        targetChannel.addMember(newUser);           // 채널 멤버 목록에 사용자 추가
-        fileChannelRepository.save(targetChannel);
+        targetChannel.getMembers().add(newUser);
+        FileUtil.save(directory.resolve(targetChannelId + ".ser"), targetChannel);
     }
 
     // 채널 퇴장
     public void leaveMembers(UUID targetUserId, UUID targetChannelId) {
-        User targetUser = fileUserService.searchUser(targetUserId);     // 유효성 검증
+        User targetUser = fileUserService.searchUser(targetUserId);
         Channel targetChannel = searchChannel(targetChannelId);
 
         validateUserNotInChannel(targetUserId, targetChannelId);
 
-        targetChannel.getMembers().removeIf(member -> member.getId().equals(targetUser.getId()));          // 채널 멤버에서 사용자 삭제
-        fileChannelRepository.save(targetChannel);
+        targetChannel.getMembers().removeIf(member -> member.getId().equals(targetUser.getId()));
+        FileUtil.save(directory.resolve(targetChannelId + ".ser"), targetChannel);
 
-        targetUser.getChannels().removeIf(channel -> channel.getId().equals(targetChannel.getId()));    // 사용자의 채널 목록에서 채널 삭제
-        fileUserService.updateUser(targetUser);
+        targetUser.getChannels().removeIf(channel -> channel.getId().equals(targetUser.getId()));
+        fileUserService.updateUser(targetUser.getId(), targetUser);
     }
 
     // 유효성 검증 (초대)

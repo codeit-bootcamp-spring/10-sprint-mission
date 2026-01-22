@@ -3,23 +3,23 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
 
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
-    private final JCFChannelRepository jcfChannelRepository;
+    private final List<Channel> data;           // 사용자 한 명당 가지는 채널
+
     private final JCFUserService jcfUserService;
 
-    public JCFChannelService(JCFChannelRepository jcfChannelRepository, JCFUserService jcfUserService) {
-        this.jcfChannelRepository = jcfChannelRepository;
+    public JCFChannelService(JCFUserService jcfUserService) {
+        this.data = new ArrayList<>();
+
         this.jcfUserService = jcfUserService;
     }
 
@@ -29,7 +29,7 @@ public class JCFChannelService implements ChannelService {
         User owner = jcfUserService.searchUser(userId);
 
         Channel newChannel = new Channel(channelName, owner, channelType);
-        jcfChannelRepository.save(newChannel);
+        data.add(newChannel);
         owner.addChannel(newChannel);
 
         return newChannel;
@@ -38,14 +38,16 @@ public class JCFChannelService implements ChannelService {
     // 채널 단건 조회
     @Override
     public Channel searchChannel(UUID targetChannelId) {
-        return jcfChannelRepository.findById(targetChannelId)
+        return data.stream()
+                .filter(channel -> channel.getId().equals(targetChannelId))
+                .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
     }
 
     // 채널 다건 조회
     @Override
     public List<Channel> searchChannelAll() {
-        return jcfChannelRepository.findAll();
+        return data;
     }
 
     // 특정 유저가 참가한 채널 리스트 조회
@@ -79,7 +81,7 @@ public class JCFChannelService implements ChannelService {
         targetChannel.getMembers()      // 채널 내 모든 멤버의 채널 목록에서 채널 삭제
                 .forEach(member -> member.removeChannel(targetChannel));
 
-        jcfChannelRepository.delete(targetChannel);
+        data.remove(targetChannel);
     }
 
     // 채널 참가자 초대

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,13 +18,13 @@ import com.sprint.mission.discodeit.service.UserService;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
 public class JCFUserService implements UserService {
-    private final JCFUserRepository jcfUserRepository;
+    private final List<User> data;             // 전체 사용자
 
     private JCFChannelService jcfChannelService;
     private JCFMessageService jcfMessageService;
 
-    public JCFUserService(JCFUserRepository jcfUserRepository) {
-        this.jcfUserRepository = jcfUserRepository;
+    public JCFUserService() {
+        this.data = new ArrayList<>();
     };
 
     // 사용자 생성
@@ -31,27 +32,31 @@ public class JCFUserService implements UserService {
     public User createUser(String email, String password, String nickname, UserStatusType userStatus) {
         isEmailDuplicate(email);
         User newUser = new User(email, password, nickname, userStatus);
-
-        jcfUserRepository.save(newUser);
+        data.add(newUser);
         return newUser;
     }
 
     // 사용자 단건 조회
     @Override
     public User searchUser(UUID targetUserId) {
-        return jcfUserRepository.findById(targetUserId)
+        return data.stream()
+                .filter(user -> user.getId().equals(targetUserId))
+                .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
     }
 
     // 사용자 전체 조회
     @Override
     public List<User> searchUserAll() {
-        return jcfUserRepository.findAll();
+        return data;
     }
 
     // 특정 채널의 참가자 리스트 조회
     public List<User> searchMembersByChannelId(UUID channelId) {
-        Channel targetChannel = jcfChannelService.searchChannel(channelId);
+        Channel targetChannel = jcfChannelService.searchChannelAll().stream()
+                .filter(channel -> channel.getId().equals(channelId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
         return targetChannel.getMembers();
     }
@@ -98,12 +103,12 @@ public class JCFUserService implements UserService {
         jcfMessageService.searchMessageAll()
                 .removeIf(message -> targetUser.getMessages().contains(message));
 
-        jcfUserRepository.delete(targetUser);
+        data.remove(targetUser);
     }
 
     // 유효성 검사 (생성)
     public void isEmailDuplicate(String email) {
-        if (jcfUserRepository.existsByEmail(email))
+        if (data.stream().anyMatch(user -> user.getEmail().equals(email)))
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
     }
 
