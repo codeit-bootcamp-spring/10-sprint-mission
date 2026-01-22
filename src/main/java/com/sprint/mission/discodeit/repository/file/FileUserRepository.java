@@ -7,7 +7,7 @@ import com.sprint.mission.discodeit.util.FileIo;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FileUserRepository implements UserRepository {
@@ -32,23 +32,17 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public User findById(UUID id) {
+    public Optional<User> findById(UUID id) {
         return fileIo.load().stream()
             .filter(u -> u.getId().equals(id))
-            .findFirst()
-            .orElseThrow(
-                () -> new NoSuchElementException("id가 " + id + "인 유저를 찾을 수 없습니다.")
-            );
+            .findFirst();
     }
 
     @Override
-    public User findByUserName(String userName) {
+    public Optional<User> findByUserName(String userName) {
         return fileIo.load().stream()
             .filter(u -> u.getUserName().equals(userName))
-            .findFirst()
-            .orElseThrow(
-                () -> new NoSuchElementException("사용자명이 " + userName + "인 유저를 찾을 수 없습니다.")
-            );
+            .findFirst();
     }
 
     @Override

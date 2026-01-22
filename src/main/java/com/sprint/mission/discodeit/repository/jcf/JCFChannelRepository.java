@@ -3,10 +3,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFChannelRepository implements ChannelRepository {
     private static ChannelRepository instance;
@@ -35,20 +32,17 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findById(UUID channelId) {
+    public Optional<Channel> findById(UUID channelId) {
         return data.stream()
             .filter(ch -> ch.getId().equals(channelId))
-            .findFirst()
-            .orElseThrow(
-                () -> new NoSuchElementException(channelId + " 은(는) 존재하지 않는 채널 id입니다.")
-            );
+            .findFirst();
     }
 
     @Override
     public List<Channel> findAll() {
         return this.data;
     }
-    
+
     @Override
     public void delete(UUID channelId) {
         if (!data.removeIf(user -> user.getId().equals(channelId)))

@@ -3,10 +3,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFUserRepository implements UserRepository {
     private static UserRepository instance;
@@ -37,19 +34,17 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User findById(UUID id) {
+    public Optional<User> findById(UUID id) {
         return data.stream()
             .filter(user -> user.getId().equals(id))
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("id가 " + id + "인 유저를 찾을 수 없습니다."));
+            .findFirst();
     }
 
     @Override
-    public User findByUserName(String userName) {
+    public Optional<User> findByUserName(String userName) {
         return data.stream()
             .filter(user -> user.getUserName().equals(userName))
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("사용자명이 " + userName + "인 유저를 찾을 수 없습니다."));
+            .findFirst();
     }
 
     @Override

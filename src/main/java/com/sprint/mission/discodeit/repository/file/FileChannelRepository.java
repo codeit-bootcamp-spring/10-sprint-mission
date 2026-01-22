@@ -8,7 +8,7 @@ import com.sprint.mission.discodeit.util.FileIo;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FileChannelRepository implements ChannelRepository {
@@ -37,13 +37,10 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findById(UUID channelId) {
+    public Optional<Channel> findById(UUID channelId) {
         return channelFileIo.load().stream()
             .filter(ch -> ch.getId().equals(channelId))
-            .findFirst()
-            .orElseThrow(
-                () -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
-            );
+            .findFirst();
     }
 
     @Override

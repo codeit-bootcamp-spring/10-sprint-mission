@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,12 +39,16 @@ public class BasicUserService implements UserService {
 
     @Override
     public User findById(UUID id) {
-        return userRepository.findById(id);
+        return userRepository.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("id가 " + id + "인 유저를 찾을 수 없습니다."));
     }
 
     @Override
     public User findByUserName(String userName) {
-        return userRepository.findByUserName(userName);
+        return userRepository.findByUserName(userName)
+            .orElseThrow(
+                () -> new NoSuchElementException("사용자명이 " + userName + "인 유저를 찾을 수 없습니다.")
+            );
     }
 
     @Override
@@ -53,7 +58,9 @@ public class BasicUserService implements UserService {
 
     @Override
     public User updateUser(UUID userId, User user) {
-        User updatedUser = userRepository.findById(userId);
+        User updatedUser = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("id가 " + userId + "인 유저를 찾을 수 없습니다."));
+        ;
 
         // input이 null이 아닌 필드 업데이트
         Optional.ofNullable(user.getNickName())

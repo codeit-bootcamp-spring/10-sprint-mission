@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class BasicChannelService implements ChannelService {
@@ -48,7 +49,9 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel findById(UUID channelId) {
-        return channelRepository.findById(channelId);
+        return channelRepository.findById(channelId).orElseThrow(
+            () -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
+        );
     }
 
     @Override
@@ -68,8 +71,14 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel addUser(UUID channelId, UUID userId) {
-        Channel channel = channelRepository.findById(channelId);
-        User user = userRepository.findById(userId);
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
+            );
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + userId + "인 유저를 찾을 수 없습니다.")
+            );
 
         channel.addUser(user);
 
@@ -82,8 +91,14 @@ public class BasicChannelService implements ChannelService {
     @Override
     public boolean deleteUser(UUID channelId, UUID userId) {
         // 채널 객체를 찾는다.
-        Channel channel = channelRepository.findById(channelId);
-        User user = userRepository.findById(userId);
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
+            );
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + userId + "인 유저를 찾을 수 없습니다.")
+            );
 
         // 해당 채널에 유저가 속해있는지 확인한 후 내보낸다.
         // 유저쪽도 참여한 채녈 목록에서 삭제한다.
@@ -103,7 +118,10 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void delete(UUID channelId) {
         // 채널에 있던 유저 내보내고 유저의 메시지 정보도 삭제
-        Channel channel = channelRepository.findById(channelId);
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
+            );
         channel.getUserList().stream()
             .forEach(
                 user -> {
@@ -120,8 +138,14 @@ public class BasicChannelService implements ChannelService {
     @Override
     public boolean isUserInvolved(UUID channelId, UUID userId) {
         // 채널과 유저 객체를 찾는다.
-        Channel channel = channelRepository.findById(channelId);
-        User user = userRepository.findById(userId);
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
+            );
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + userId + "인 유저를 찾을 수 없습니다.")
+            );
 
         return channel.getUserList().contains(user);
     }

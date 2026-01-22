@@ -16,6 +16,7 @@ import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class BasicMessageService implements MessageService {
@@ -46,8 +47,14 @@ public class BasicMessageService implements MessageService {
     @Override
     public Message create(UUID userId, String text, UUID channelId) throws RuntimeException {
         // 메시지를 생성 전, 유저가 해당 채널에 속해있는지 확인한다.
-        Channel channel = channelRepository.findById(channelId);
-        User user = userRepository.findById(userId);
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + channelId + "인 채널은 존재하지 않습니다.")
+            );
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + userId + "인 유저는 존재하지 않습니다.")
+            );
 
         if (user.getChannelList().stream()
             .noneMatch(ch -> ch.getId().equals(channelId))) {
@@ -71,23 +78,39 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public Message findById(UUID id) {
-        return messageRepository.findById(id);
+        return messageRepository.findById(id)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + id + "인 메시지는 존재하지 않습니다.")
+            );
     }
 
     @Override
     public List<Message> findByUser(UUID userId) {
-        return userRepository.findById(userId).getMessageList();
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + userId + "인 유저는 존재하지 않습니다.")
+            );
+
+        return user.getMessageList();
     }
 
 
     @Override
     public List<Message> findByChannel(UUID channelId) {
-        return channelRepository.findById(channelId).getMessageList();
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + channelId + "인 채널은 존재하지 않습니다.")
+            );
+
+        return channel.getMessageList();
     }
 
     @Override
     public Message updateById(UUID messageId, String text) {
-        Message message = messageRepository.findById(messageId);
+        Message message = messageRepository.findById(messageId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + messageId + "인 메시지는 존재하지 않습니다.")
+            );
 
         message.updateText(text);
         messageRepository.save(message);
@@ -97,16 +120,25 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public void delete(UUID messageId) {
-        Message message = messageRepository.findById(messageId);
+        Message message = messageRepository.findById(messageId)
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + messageId + "인 메시지는 존재하지 않습니다.")
+            );
 
         // 유저쪽에서 메시지 정보 삭제
-        User user = userRepository.findById(message.getSender().getId());
+        User user = userRepository.findById(message.getSender().getId())
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + message.getSender().getId() + "인 유저는 존재하지 않습니다.")
+            );
         user.getMessageList()
             .removeIf(msg -> msg.getId().equals(messageId));
         userRepository.save(user);
 
         // 채널쪽에 메시지 정보 삭제
-        Channel channel = channelRepository.findById(message.getChannel().getId());
+        Channel channel = channelRepository.findById(message.getChannel().getId())
+            .orElseThrow(
+                () -> new NoSuchElementException("id가 " + message.getChannel().getId() + "인 채널은 존재하지 않습니다.")
+            );
         channel.getMessageList()
             .removeIf(msg -> msg.getId().equals(messageId));
         channelRepository.save(channel);

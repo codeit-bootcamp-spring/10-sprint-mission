@@ -3,10 +3,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 public class JCFMessageRepository implements MessageRepository {
     private static MessageRepository instance;
@@ -35,13 +32,10 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findById(UUID id) {
+    public Optional<Message> findById(UUID id) {
         return data.stream()
             .filter(message -> message.getId().equals(id))
-            .findFirst()
-            .orElseThrow(
-                () -> new NoSuchElementException("id가 " + id + "인 메시지는 존재하지 않습니다.")
-            );
+            .findFirst();
     }
 
     @Override

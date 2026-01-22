@@ -8,7 +8,7 @@ import com.sprint.mission.discodeit.util.FileIo;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FileMessageRepository implements MessageRepository {
@@ -49,13 +49,10 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findById(UUID id) {
+    public Optional<Message> findById(UUID id) {
         return messageFileIo.load().stream()
             .filter(u -> u.getId().equals(id))
-            .findFirst()
-            .orElseThrow(
-                () -> new NoSuchElementException("id가 " + id + "인 메시지를 찾을 수 없습니다.")
-            );
+            .findFirst();
     }
 
     @Override
