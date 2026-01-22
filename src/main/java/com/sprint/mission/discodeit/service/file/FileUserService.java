@@ -19,16 +19,14 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateS
 
 public class FileUserService implements UserService {
     private final Path directory = Paths.get(System.getProperty("user.dir"), "data", "users");              // 경로 설정
-    private static final FileUserService fileUserService = new FileUserService();
+    private final FileChannelService fileChannelService;
+    private final FileMessageService fileMessageService;
 
-    private final Path channelDirectory = Paths.get(System.getProperty("user.dir"), "data", "channels");    // 채널 경로 설정
-
-    private FileUserService() {
+    private FileUserService(FileChannelService fileChannelService, FileMessageService fileMessageService) {
         FileUtil.init(directory);
-    }
 
-    public static FileUserService getFileUserService() {
-        return fileUserService;
+        this.fileChannelService = fileChannelService;
+        this.fileMessageService = fileMessageService;
     }
 
     // 사용자 생성

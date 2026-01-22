@@ -20,20 +20,14 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateS
 
 public class FileMessageService implements MessageService {
     private final Path directory = Paths.get(System.getProperty("user.dir"), "data", "messages");              // 경로 설정
-    private static final FileMessageService fileMessageService = new FileMessageService();
+    private final FileUserService fileUserService;
+    private final FileChannelService fileChannelService;
 
-    FileUserService fileUserService = FileUserService.getFileUserService();
-    private final Path userDirectory = Paths.get(System.getProperty("user.dir"), "data", "users");             // 사용자 경로 설정
-
-    FileChannelService fileChannelService = FileChannelService.getFileChannelService();
-    private final Path channelDirectory = Paths.get(System.getProperty("user.dir"), "data", "channels");       // 채널 경로 설정
-
-    private FileMessageService() {
+    private FileMessageService(FileUserService fileUserService, FileChannelService fileChannelService) {
         FileUtil.init(directory);
-    }
 
-    public static FileMessageService getFileMessageService() {
-        return fileMessageService;
+        this.fileUserService = fileUserService;
+        this.fileChannelService = fileChannelService;
     }
 
     // 메시지 생성
