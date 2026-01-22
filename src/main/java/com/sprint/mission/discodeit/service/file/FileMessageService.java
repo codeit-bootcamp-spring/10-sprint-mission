@@ -23,7 +23,7 @@ public class FileMessageService implements MessageService {
     private final FileUserService fileUserService;
     private final FileChannelService fileChannelService;
 
-    private FileMessageService(FileUserService fileUserService, FileChannelService fileChannelService) {
+    public FileMessageService(FileUserService fileUserService, FileChannelService fileChannelService) {
         FileUtil.init(directory);
 
         this.fileUserService = fileUserService;
@@ -40,10 +40,10 @@ public class FileMessageService implements MessageService {
         FileUtil.save(directory.resolve(newMessage.getId() + ".ser"), newMessage);
 
         sender.addMessage(newMessage);
-        FileUtil.save(userDirectory.resolve(sender.getId() + ".ser"), sender);
+        fileUserService.updateUser(sender.getId(), sender);
 
         targetChannel.addMessage(newMessage);
-        FileUtil.save(channelDirectory.resolve(targetChannel.getId() + ".ser"), targetChannel);
+        fileChannelService.updateChannel(targetChannel.getId(), targetChannel);
 
         return newMessage;
     }
@@ -60,7 +60,7 @@ public class FileMessageService implements MessageService {
         return FileUtil.load(directory);
     }
 
-    // 특정 유저가 발행한 메시지 다건 조회
+    // 특정 유저가 발행한 메시지 목록 조회
     public List<Message> searchMessagesByUserId(UUID targetUserId) {
         fileUserService.searchUser(targetUserId);
 
@@ -71,7 +71,7 @@ public class FileMessageService implements MessageService {
                 .toList();
     }
 
-    // 특정 채널의 메시지 발행 리스트 조회
+    // 특정 채널에서 발행된 메시지 목록 조회
     public List<Message> searchMessagesByChannelId(UUID targetChannelId) {
         fileChannelService.searchChannel(targetChannelId);
 
@@ -99,20 +99,25 @@ public class FileMessageService implements MessageService {
         return targetMessage;
     }
 
+    // 파일 내 메시지 수정 (덮어쓰기)
+    public void updateMessage(UUID targetMessageId, Message targetMessage) {
+        FileUtil.save(directory.resolve(targetMessageId + ".ser"), targetMessage);
+    }
+
     // 메시지 삭제
     @Override
     public void deleteMessage(UUID targetMessageId) {
         Message targetMessage = searchMessage(targetMessageId);
 
         // 사용자 내 메시지 목록 연쇄 삭제
-        User targetUser = FileUtil.loadSingle(userDirectory.resolve(targetMessage.getUser().getId() + ".ser"));
+        User targetUser = fileUserService.searchUser(targetMessage.getUser().getId());
         targetUser.getMessages().removeIf(message -> message.getId().equals(targetMessage.getId()));
-        FileUtil.save(userDirectory.resolve(targetUser.getId() + ".ser"), targetUser);
+        fileUserService.updateUser(targetUser.getId(), targetUser);
 
         // 채널 내 메시지 목록 연쇄 삭제
-        Channel targetChannel = FileUtil.loadSingle(channelDirectory.resolve(targetMessage.getChannel().getId() + ".ser"));
+        Channel targetChannel = fileChannelService.searchChannel(targetMessage.getChannel().getId());
         targetChannel.getMessages().removeIf(message -> message.getId().equals(targetMessage.getId()));
-        FileUtil.save(channelDirectory.resolve(targetChannel.getId() + ".ser"), targetChannel);
+        fileChannelService.updateChannel(targetChannel.getId(), targetChannel);
 
         try {
             Files.deleteIfExists(directory.resolve(targetMessageId + ".ser"));

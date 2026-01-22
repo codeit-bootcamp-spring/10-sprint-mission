@@ -19,14 +19,11 @@ import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateS
 
 public class FileUserService implements UserService {
     private final Path directory = Paths.get(System.getProperty("user.dir"), "data", "users");              // 경로 설정
-    private final FileChannelService fileChannelService;
-    private final FileMessageService fileMessageService;
+    private FileChannelService fileChannelService;
+    private FileMessageService fileMessageService;
 
-    private FileUserService(FileChannelService fileChannelService, FileMessageService fileMessageService) {
+    public FileUserService() {
         FileUtil.init(directory);
-
-        this.fileChannelService = fileChannelService;
-        this.fileMessageService = fileMessageService;
     }
 
     // 사용자 생성
@@ -54,7 +51,7 @@ public class FileUserService implements UserService {
 
     // 특정 채널의 참가자 리스트 조회
     public List<User> searchUsersByChannelId(UUID channelId) {
-        Channel channel = FileChannelService.getFileChannelService().searchChannel(channelId);      // 함수가 실행된 시점에서의 가장 최신 채널 목록
+        Channel channel = fileChannelService.searchChannel(channelId);      // 함수가 실행된 시점에서의 가장 최신 채널 목록
 
         return channel.getMembers();
     }
@@ -88,24 +85,28 @@ public class FileUserService implements UserService {
         return targetUser;
     }
 
+    // 파일 내 사용자 수정 (덮어쓰기)
+    public void updateUser(UUID targetUserId, User targetUser) {
+        FileUtil.save(directory.resolve(targetUserId + ".ser"), targetUser);
+    }
+
     // 사용자 삭제
     @Override
     public void deleteUser(UUID userId) {
         searchUser(userId);
 
         // 모든 채널의 member에서 해당 유저를 제거
-        FileChannelService.getFileChannelService().searchChannelAll().stream()
+        fileChannelService.searchChannelAll().stream()
                 .filter(channel -> channel.getMembers().stream().anyMatch(member -> member.getId().equals(userId)))
                 .forEach(channel -> {
                     channel.getMembers().removeIf(member -> member.getId().equals(userId));
-                    FileUtil.save(channelDirectory.resolve(channel.getId() + ".ser"), channel);
+                    fileChannelService.updateChannel(channel.getId(), channel);
                 });
 
         // 모든 메시지에서 해당 유저가 작성한 메시지 제거
-        FileMessageService.getFileMessageService()
-                .searchMessageAll().stream()
+        fileMessageService.searchMessageAll().stream()
                 .filter(message -> message.getUser().getId().equals(userId))
-                .forEach(message -> FileMessageService.getFileMessageService().deleteMessage(message.getId()));
+                .forEach(message -> fileMessageService.deleteMessage(message.getId()));
 
         try {
             Files.deleteIfExists(directory.resolve(userId + ".ser"));
@@ -114,9 +115,18 @@ public class FileUserService implements UserService {
         }
     }
 
-    // 유효성 검사 (생성)
+    // 유효성 검사 (이메일 중복)
     public void isEmailDuplicate(String email) {
         if (searchUserAll().stream().anyMatch(user -> user.getEmail().equals(email)))
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+    }
+
+    // setter
+    public void setFileChannelService(FileChannelService fileChannelService) {
+        this.fileChannelService = fileChannelService;
+    }
+
+    public void setFileMessageService(FileMessageService fileMessageService) {
+        this.fileMessageService = fileMessageService;
     }
 }
