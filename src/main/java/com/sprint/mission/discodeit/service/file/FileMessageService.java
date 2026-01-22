@@ -101,10 +101,10 @@ public class FileMessageService extends BaseFileService<Message> implements Mess
         Message message = findById(messageId);
 
         message.getChannel().removeMessage(message);
-        userService.save(message.getAuthor());
+        channelService.save(message.getChannel());
 
         message.getAuthor().removeMessage(message);
-        channelService.save(message.getChannel());
+        userService.save(message.getAuthor());
 
         try {
             Files.deleteIfExists(getFilePath(messageId));

@@ -84,13 +84,15 @@ public class BasicChannelService implements ChannelService {
         Channel channel = findById(channelId);
 
         if (messageService != null) {
-            messageService.deleteMessagesByChannelId(channelId);
+            messageService.findMessagesByChannel(channelId)
+                    .forEach(msg -> messageService.deleteMessage(msg.getId()));
         }
 
         if (userService != null) {
             channel.getUsers().forEach(user -> {
-                user.leaveChannel(channel);
-                userService.save(user); // 유저 정보 업데이트
+                User lastestUser = userService.findById(user.getId());
+                lastestUser.leaveChannel(channel);
+                userService.save(lastestUser); // 유저 정보 업데이트
             });
         }
 

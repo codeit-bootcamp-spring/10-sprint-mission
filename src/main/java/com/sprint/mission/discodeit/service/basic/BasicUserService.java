@@ -86,13 +86,15 @@ public class BasicUserService implements UserService {
         User user = findById(userId);
 
         if (messageService != null) {
-            messageService.deleteMessagesByAuthorId(userId);
+            messageService.findMessagesByAuthor(userId)
+                    .forEach(msg -> messageService.deleteMessage(msg.getId()));
         }
 
         if (channelService != null) {
             user.getChannels().forEach(channel -> {
-                user.leaveChannel(channel);
-                channelService.save(channel);
+                Channel lastestChannel = channelService.findById(channel.getId());
+                user.leaveChannel(lastestChannel);
+                channelService.save(lastestChannel);
             });
         }
 
