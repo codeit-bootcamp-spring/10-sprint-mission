@@ -38,8 +38,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public User getUser(UUID uuid) {
-        return findAllUsers().stream()
-                .filter(u -> Objects.equals(u.getId(), uuid)).findFirst()
+        return userRepository.findById(uuid)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
     }
 
@@ -74,7 +73,26 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(name).ifPresent(user::updateName);
         Optional.ofNullable(mail).ifPresent(user::updateMail);
         user.updateUpdatedAt();
-        return userRepository.save(user);
+        userRepository.save(user);
+
+        // 다른 객체도 변경
+        channelService.findAllChannels().forEach(c -> {
+            c.getParticipants().stream()
+                    .filter(u -> Objects.equals(u.getId(), user.getId()))
+                    .findFirst()
+                    .ifPresent(u -> {
+                        c.updateParticipant(user);
+                        channelService.updateChannel(c);
+                    });
+        });
+        messageService.findAllMessages().stream()
+                .filter(m -> Objects.equals(m.getUser().getId(), user.getId()))
+                .forEach(m -> {
+                    m.updateUserIfSameId(user);
+                    messageService.updateMessage(m);
+                });
+
+        return user;
     }
 
     @Override

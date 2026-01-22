@@ -64,8 +64,26 @@ public class BasicChannelService implements ChannelService {
         Optional.ofNullable(title).ifPresent(channel::updateTitle);
         Optional.ofNullable(description).ifPresent(channel::updateDescription);
         channel.updateUpdatedAt();
+        channelRepository.save(channel);
 
-        return channelRepository.save(channel);
+        // 다른 객체도 변경
+        userService.findAllUsers().forEach(u -> {
+            u.getJoinedChannels().stream()
+                    .filter(c -> Objects.equals(c.getId(), channel.getId()))
+                    .findFirst()
+                    .ifPresent(c -> {
+                        u.updateJoinedChannel(channel);
+                        userService.updateUser(u);
+                    });
+        });
+        messageService.findAllMessages().stream()
+                .filter(m -> Objects.equals(m.getChannel().getId(), channel.getId()))
+                .forEach(m -> {
+                    m.updateChannelIfSameId(channel);
+                    messageService.updateMessage(m);
+                });
+
+        return channel;
     }
 
     @Override

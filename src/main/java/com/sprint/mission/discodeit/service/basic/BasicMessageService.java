@@ -44,8 +44,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public Message getMessage(UUID uuid) {
-        return findAllMessages().stream()
-                .filter(m -> Objects.equals(m.getId(), uuid)).findFirst()
+        return messageRepository.findById(uuid)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지입니다"));
     }
 
@@ -68,8 +67,31 @@ public class BasicMessageService implements MessageService {
 
         Optional.ofNullable(newMessage).ifPresent(msg::updateMessage);
         msg.updateUpdatedAt();
+        messageRepository.save(msg);
 
-        return messageRepository.save(msg);
+        // 다른 객체도 변경
+        userService.findAllUsers().stream()
+                .filter(u -> Objects.equals(u.getId(), msg.getUser().getId()))
+                .findFirst()
+                .ifPresent(u -> {
+                    u.updateMessageHistory(msg);
+                    userService.updateUser(u);
+                });
+        channelService.findAllChannels().stream()
+                .filter(c -> Objects.equals(c.getId(), msg.getChannel().getId()))
+                .findFirst()
+                .ifPresent(c -> {
+                    c.updateMessage(msg);
+                    channelService.updateChannel(c);
+                });
+
+        return msg;
+    }
+
+    @Override
+    public Message updateMessage(Message newMessage) {
+        newMessage.updateUpdatedAt();
+        return messageRepository.save(newMessage);
     }
 
     @Override
