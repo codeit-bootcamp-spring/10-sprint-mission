@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
@@ -12,9 +13,12 @@ import java.util.UUID;
 
 public class Main {
     public static void main(String[] args) {
-        final FileUserService fileUserService = FileUserService.getFileUserService();
-        final FileChannelService fileChannelService = FileChannelService.getFileChannelService();
-        final FileMessageService fileMessageService = FileMessageService.getFileMessageService();
+        final FileUserService fileUserService = new FileUserService();
+        final FileChannelService fileChannelService = new FileChannelService(fileUserService);
+        final FileMessageService fileMessageService = new FileMessageService(fileUserService, fileChannelService);
+
+        fileUserService.setFileMessageService(fileMessageService);
+        fileUserService.setFileChannelService(fileChannelService);
 
         // 파일 테스트 데이터 초기화
         FileUtil.clearDirectory(Paths.get(System.getProperty("user.dir"), "data", "users"));
