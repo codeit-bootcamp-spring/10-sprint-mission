@@ -14,8 +14,8 @@ public class JCFChannelService implements ChannelService {
     private final UserService userService;
 
     //반복되는 예외처리 메서드
-    public Channel getRequiredChannel(UUID messageId) {
-        Channel channel = channels.get(messageId);
+    public Channel getRequiredChannel(UUID channelId) {
+        Channel channel = channels.get(channelId);
         if (channel == null) {
             throw new ChannelNotFoundException();
         }

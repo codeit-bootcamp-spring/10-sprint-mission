@@ -22,4 +22,7 @@ public interface ChannelService {
     Channel deleteChannel(UUID channelId);
 
     Channel findByUserChannel(UUID userId);
+
+    // **특정 채널 참가자 목록 조회**
+    String findAllUserInChannel(UUID channelId);
 }

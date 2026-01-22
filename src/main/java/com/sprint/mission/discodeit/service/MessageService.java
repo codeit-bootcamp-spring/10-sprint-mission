@@ -21,6 +21,9 @@ public interface MessageService {
     // 서버 전체 메시지 조회
     List<Message> findAllMessage();
 
+
+    public List<Message> findAllByUserMessage(UUID userId);
+
     // 메시지 수정
     Message updateMessage(UUID messageId, String newContent);
 

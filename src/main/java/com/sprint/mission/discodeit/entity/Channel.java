@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class Channel extends BaseEntity {
+public class Channel extends BaseEntity implements Serializable {
 
     private String channelName;
     private final List<User> channelUsers = new ArrayList<>();
@@ -31,6 +33,12 @@ public class Channel extends BaseEntity {
     public boolean hasChannelUser(User user) {
         return channelUsers.contains(user);
     }
+
+    public boolean hasUserId(UUID userId) {
+        return channelUsers.stream()
+                .anyMatch(user -> user.getId().equals(userId));
+    }
+
 
     public String getChannelName() {
         return channelName;

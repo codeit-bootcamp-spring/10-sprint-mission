@@ -1,32 +1,35 @@
-package com.sprint.mission.discodeit.service.jcf;
-
+package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.MessageNotFoundException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
+
 import java.util.*;
 
-public class JCFMessageService implements MessageService {
 
+public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID,Message> messages = new LinkedHashMap<>();
     private final UserService userService;
     private final ChannelService channelService;
 
-    public JCFMessageService(UserService userService,  ChannelService channelService) {
+    public JCFMessageRepository(UserService userService, ChannelService channelService) {
         this.userService = userService;
         this.channelService = channelService;
     }
+
+
+
+
     public UserService getUserService() {
         return this.userService;
     }
 
-    // 메시지 생성
+
+    @Override
     public Message createMessage(User user, Channel channel, String content) {
         userService.findUser(user.getId());
         channelService.findChannel(channel.getId());
@@ -36,18 +39,31 @@ public class JCFMessageService implements MessageService {
         return message;
     }
 
-    // 단건 조회
+    @Override
     public Message findMessage(UUID messageId) {
         Message message = messages.get(messageId);
 
         if (message == null) {
             throw new MessageNotFoundException();
         }
-
         return message;
     }
 
-    // 채널별 메시지 조회
+    @Override
+    public List<Message> findAllMessage() {
+        return new ArrayList<>(messages.values());
+    }
+
+    @Override
+    public List<Message> findAllByUserMessage(UUID userId) {
+        userService.findUser(userId);
+
+        return messages.values().stream()
+                .filter(message -> message.getSender().getId().equals(userId))
+                .toList();
+    }
+
+    @Override
     public List<Message> findAllByChannelMessage(UUID channelId) {
         channelService.findChannel(channelId);
 
@@ -56,40 +72,19 @@ public class JCFMessageService implements MessageService {
                 .toList();
     }
 
-    // 전체 메시지 조회
-    public List<Message> findAllMessage() {
-        return new ArrayList<>(messages.values());
-    }
 
-    // 메시지 수정
-    public Message updateMessage(UUID messageId, String newContent) {
-        Message message = findMessage(messageId);
-        message.updateContent(newContent);
-        return message;
-    }
-
-    // 메시지 삭제
+    @Override
     public void deleteMessage(UUID messageId) {
         if (messages.remove(messageId) == null) {
             throw new MessageNotFoundException();
         }
     }
 
-    // 특정 유저 메시지 조회
-    public List<Message> findAllByUserMessage(UUID userId) {
-        userService.findUser(userId);
+    @Override
+    public Message updateMessage(UUID messageId, String content) {
+        Message message = findMessage(messageId);
+        message.updateContent(content);
 
-        List<Message> userMessages = messages.values().stream()
-                .filter(message -> message.getSender().getId().equals(userId))
-                .toList();
-
-        if (userMessages.isEmpty()) {
-            throw new MessageNotFoundException();
-        }
-
-        return userMessages;
+        return message;
     }
-
-
 }
-

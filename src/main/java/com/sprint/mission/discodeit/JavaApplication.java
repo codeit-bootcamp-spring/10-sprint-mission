@@ -4,9 +4,29 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.MessageNotFoundException;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+import com.sprint.mission.discodeit.view.BasicChannelMessageView;
 import com.sprint.mission.discodeit.view.ChannelMessageView;
 import com.sprint.mission.discodeit.view.ChannelView;
 
@@ -16,11 +36,39 @@ import java.util.List;
 public class JavaApplication {
     public static void main(String[] args) {
 
-        JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService(userService);
-        JCFMessageService messageService = new JCFMessageService(userService, channelService);
+//            // JCF기반(File로 변경 가능)
+//            UserRepository userRepository = new JCFUserRepository();
+//            UserService userService = new BasicUserService(userRepository);
+//
+//            ChannelRepository channelRepository = new JCFChannelRepository();
+//            ChannelService channelService = new BasicChannelService(channelRepository, userRepository);
+//
+//            MessageRepository messageRepository = new JCFMessageRepository(userService, channelService);
+//            MessageService messageService = new BasicMessageService(channelRepository, userRepository, messageRepository);
 
-        // ===== 유저 생성 =====
+        //FILE 기반
+        FileUserRepository fileUserRepository = new FileUserRepository();
+        FileChannelRepository fileChannelRepository = new FileChannelRepository();
+        FileMessageRepository fileMessageRepository = new FileMessageRepository();
+
+        // 파일 초기화
+        fileUserRepository.resetUserFile();
+        fileChannelRepository.resetChannelFile();
+        fileMessageRepository.resetMessageFile();
+
+        UserService userService = new BasicUserService(fileUserRepository);
+        ChannelService channelService =
+                new BasicChannelService(fileChannelRepository, fileUserRepository);
+        MessageService messageService =
+                new BasicMessageService(
+                        fileChannelRepository,
+                        fileUserRepository,
+                        fileMessageRepository
+                );
+
+
+
+        // 유저 생성
         String[][] userData = {
                 {"김코딩", "kim@test.com"},
                 {"이코딩", "lee@test.com"},
@@ -66,8 +114,12 @@ public class JavaApplication {
 
         // 채널 생성
         String[] channelData = {"채널1", "채널2", "채널3", "채널4"};
-        List<Channel> channels = new ArrayList<>();
-        for (String name : channelData) channels.add(channelService.createChannel(name));
+        for (String name : channelData) {
+            channelService.createChannel(name);
+        }
+
+        List<Channel> channels = channelService.findAllChannel();
+
 
         // 채널 멤버 추가
         channelService.userAddChannel(
@@ -125,37 +177,45 @@ public class JavaApplication {
         // ============================================
 
         // 메시지 생성
-        Message m1 =messageService.createMessage(users.get(0), channels.get(0), "안녕하세요!");
-        Message m2 =messageService.createMessage(users.get(1), channels.get(0), "반갑습니다!");
-        Message m3 = messageService.createMessage(users.get(2), channels.get(1), "채널2 첫 메시지");
+        Message m1 =messageService.createMessage(
+                users.get(0), channels.get(0), "안녕하세요!");
+        Message m2 =messageService.createMessage(
+                users.get(1), channels.get(0), "반갑습니다!");
+        Message m3 = messageService.createMessage(
+                users.get(2), channels.get(1), "채널2 첫 메시지");
 
 
         // 채널별 메시지 출력
         System.out.println("[채널별 메시지 출력]");
         for(Channel channel : channelService.findAllChannel()) {
-            System.out.println(ChannelMessageView.viewMessage(channel, messageService));
-            System.out.println();
+        System.out.println(BasicChannelMessageView.viewMessage(channel, messageService));
+                System.out.println();
         }
+
+            System.out.println();
 
         // 전체 메시지 출력
         System.out.println("[서버 전체 메시지]");
-        System.out.println(ChannelMessageView.viewAllMessages(messageService));
+        System.out.println(BasicChannelMessageView.viewAllMessages(messageService));
         System.out.println();
+
+            System.out.println();
 
         // 메시지 수정 후 출력
         System.out.println("[메시지 수정]");
-        Message updatedMessage = messageService.updateMessage(m2.getId(),"메시지 수정");
-        System.out.println(updatedMessage);
-        System.out.println();
+        Message updatedMessage = messageService.updateMessage(m2.getId(), "메시지 수정");
+        System.out.println(BasicChannelMessageView.viewSingleMessage(updatedMessage));
+
+            System.out.println();
 
         // 메시지 삭제
         messageService.deleteMessage(m1.getId());
 
-        // 채널별 메시지 출력 (수정/삭제 후)
-        System.out.println("[메시지 삭제]");
-        for(Channel channel : channelService.findAllChannel()) {
-            System.out.println(ChannelMessageView.viewMessage(channel, messageService));
-            System.out.println();
+        // 채널별 메시지 출력 (삭제 후)
+        System.out.println("[채널별 메시지 출력 (삭제 후)]");
+        for (Channel channel : channelService.findAllChannel()) {
+        System.out.println(BasicChannelMessageView.viewMessage(channel, messageService));
+        System.out.println();
         }
 
         //===========================================
@@ -169,19 +229,19 @@ public class JavaApplication {
 
         // 특정 유저가 발행한 메시지 목록 조회
         System.out.println("[특정 유저가 발행한 메시지 목록]");
-
         User user2 = users.get(2); // 박코딩
-        List<Message> messages = messageService.findAllByUserMessage(user2.getId());
+        try {
+                    List<Message> messages = messageService.findAllByUserMessage(user2.getId());
 
-        System.out.println("[" + user2.getUserName() + "]이 발행한 메시지 목록");
-
-        if (messages.isEmpty()) {
-            System.out.println("(메시지 없음)");
-        } else {
-            for (Message message : messages) {
-                System.out.println(message);
+                    System.out.println("[" + user2.getUserName() + "]이 발행한 메시지 목록");
+                    for (Message message : messages) {
+                            // 단순 toString 대신 포맷된 메시지 출력
+                            System.out.println(BasicChannelMessageView.viewSingleMessage(message));
+                    }
+            } catch (MessageNotFoundException e) {
+                    System.out.println("[" + user2.getUserName() + "]이 발행한 메시지가 없습니다.");
             }
-        }
+
         System.out.println();
 
         // 특정 채널 참가자 목록
@@ -191,10 +251,7 @@ public class JavaApplication {
         System.out.println("[" + channel3.getChannelName() + "]" + "에 있는 멤버: " + members);
 
 
-
-
-
-
-
     }
 }
+
+

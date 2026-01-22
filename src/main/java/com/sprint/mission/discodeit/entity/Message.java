@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
-public class Message extends BaseEntity {
+public class Message extends BaseEntity implements Serializable {
 
     private final User sender;
     private final Channel channel;

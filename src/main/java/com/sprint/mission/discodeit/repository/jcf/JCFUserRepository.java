@@ -1,24 +1,16 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.DuplicationEmailException;
 import com.sprint.mission.discodeit.exception.UserNotFoundException;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.repository.UserRepository;
 
 import java.util.*;
 
-public class JCFUserService implements UserService {
-
+public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> users = new LinkedHashMap<>();
 
     @Override
-    public User createUser(String userName, String userEmail) {
-        if (users.values().stream()
-                .anyMatch(u -> u.getUserEmail().equals(userEmail))) {
-            throw new DuplicationEmailException();
-        }
-
-        User user = new User(userName, userEmail);
+    public User createUser(User user) {
         users.put(user.getId(), user);
 
         return user;
@@ -27,7 +19,9 @@ public class JCFUserService implements UserService {
     @Override
     public User findUser(UUID userId) {
         User user = users.get(userId);
-        if (user == null) throw new UserNotFoundException();
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
         return user;
     }
 
@@ -36,7 +30,6 @@ public class JCFUserService implements UserService {
         return new ArrayList<>(users.values());
     }
 
-    @Override
     public User updateUser(UUID userId, String userName, String userEmail) {
         User user = findUser(userId);
         user.update(userName, userEmail);
@@ -45,8 +38,7 @@ public class JCFUserService implements UserService {
 
     @Override
     public User deleteUser(UUID userId) {
-        User removed = users.remove(userId);
-
+        User removed =  users.remove(userId);
         if (removed == null) {
             throw new UserNotFoundException();
         }
