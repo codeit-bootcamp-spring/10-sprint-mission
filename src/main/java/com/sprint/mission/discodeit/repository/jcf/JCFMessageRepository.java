@@ -18,6 +18,8 @@ public class JCFMessageRepository implements MessageRepository {
     // 메시지 저장
     @Override
     public void save(Message message) {
+        data.removeIf(eexistMessage -> eexistMessage.getId().equals(message.getId()));
+
         data.add(message);
     }
 

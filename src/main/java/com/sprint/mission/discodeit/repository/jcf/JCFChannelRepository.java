@@ -18,6 +18,8 @@ public class JCFChannelRepository implements ChannelRepository {
     // 채널 저장
     @Override
     public void save(Channel channel) {
+        data.removeIf(eexistChannel -> eexistChannel.getId().equals(channel.getId()));
+
         data.add(channel);
     }
 

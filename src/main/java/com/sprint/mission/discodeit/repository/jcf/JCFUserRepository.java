@@ -18,6 +18,8 @@ public class JCFUserRepository implements UserRepository {
     // 사용자 저장
     @Override
     public void save(User user) {
+        data.removeIf(eexistUser -> eexistUser.getId().equals(user.getId()));
+
         data.add(user);
     }
 
