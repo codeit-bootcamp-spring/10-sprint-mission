@@ -4,41 +4,37 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.MessageType;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public class JCFMessageService implements MessageService {
-    private final List<Message> data;                     // 한 채널에서
-    private static final JCFMessageService jcfMessageService = new JCFMessageService();
+    private final JCFMessageRepository jcfMessageRepository;
+    private final JCFUserService jcfUserService;
+    private final JCFChannelService jcfChannelService;
 
-    JCFUserService jcfUService = JCFUserService.getJcfUService();
-    ChannelService jcfChannelService = JCFChannelService.getJcfChannelService();
-
-    public JCFMessageService() {
-        this.data = new ArrayList<>();
-    }
-
-    public static JCFMessageService getJcfMessageService() {
-        return jcfMessageService;
+    public JCFMessageService(JCFMessageRepository jcfMessageRepository, JCFUserService jcfUserService, JCFChannelService jcfChannelService) {
+        this.jcfMessageRepository = jcfMessageRepository;
+        this.jcfUserService = jcfUserService;
+        this.jcfChannelService = jcfChannelService;
     }
 
     // 메시지 생성
     @Override
     public Message createMessage(String message, UUID userId, UUID channelId, MessageType type) {
-        User sender = jcfUService.searchUser(userId);
+        User sender = jcfUserService.searchUser(userId);
         Channel targetChannel = jcfChannelService.searchChannel(channelId);
 
         Message newMessage = new Message(message, sender, targetChannel, type);
-        data.add(newMessage);
-        sender.addMessage(newMessage);
-        targetChannel.addMessage(newMessage);
+        jcfMessageRepository.save(newMessage);
+
+        sender.addMessage(newMessage);              // 발행자 메시지 목록에 메시지 추가
+        targetChannel.addMessage(newMessage);       // 발행된 채널의 메시지 목록에 메시지 추가
 
         return newMessage;
     }
@@ -46,21 +42,19 @@ public class JCFMessageService implements MessageService {
     // 메시지 단건 조회
     @Override
     public Message searchMessage(UUID targetMessageId) {
-        return data.stream()
-                .filter(message -> message.getId().equals(targetMessageId))
-                .findFirst()
+        return jcfMessageRepository.findById(targetMessageId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
     }
 
     // 메시지 전체 조회
     @Override
     public List<Message> searchMessageAll() {
-        return data;
+        return jcfMessageRepository.findAll();
     }
 
     // 특정 유저가 발행한 메시지 다건 조회
     public List<Message> searchMessagesByUserId(UUID targetUserId) {
-        User targetUser = jcfUService.searchUser(targetUserId);
+        User targetUser = jcfUserService.searchUser(targetUserId);
 
         return targetUser.getMessages();
     }
@@ -77,6 +71,7 @@ public class JCFMessageService implements MessageService {
     public Message updateMessage(UUID targetMessageId, String newMessage) {
         Message targetMessage = searchMessage(targetMessageId);
 
+        // 메시지 내용 수정
         Optional.ofNullable(newMessage)
                 .ifPresent(message -> {
                     validateString(message, "[메시지 변경 실패] 올바른 메시지 형식이 아닙니다.");
@@ -94,6 +89,6 @@ public class JCFMessageService implements MessageService {
 
         targetMessage.getUser().removeMessage(targetMessage);
         targetMessage.getChannel().removeMessage(targetMessage);
-        data.remove(targetMessage);
+        jcfMessageRepository.delete(targetMessage);
     }
 }

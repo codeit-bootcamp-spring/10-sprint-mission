@@ -3,27 +3,24 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public class JCFChannelService implements ChannelService {
-    private final List<Channel> data;           // 사용자 한 명당 가지는 채널
-    private static final JCFChannelService jcfChannelService = new JCFChannelService();
+    private final JCFChannelRepository jcfChannelRepository;
+    private final JCFUserService jcfUserService;
 
-    JCFUserService jcfUserService = JCFUserService.getJcfUService();
-
-    public JCFChannelService(){
-        this.data = new ArrayList<>();
-    }
-
-    public static JCFChannelService getJcfChannelService() {
-        return jcfChannelService;
+    public JCFChannelService(JCFChannelRepository jcfChannelRepository, JCFUserService jcfUserService) {
+        this.jcfChannelRepository = jcfChannelRepository;
+        this.jcfUserService = jcfUserService;
     }
 
     // 채널 생성
@@ -32,7 +29,7 @@ public class JCFChannelService implements ChannelService {
         User owner = jcfUserService.searchUser(userId);
 
         Channel newChannel = new Channel(channelName, owner, channelType);
-        data.add(newChannel);
+        jcfChannelRepository.save(newChannel);
         owner.addChannel(newChannel);
 
         return newChannel;
@@ -41,16 +38,14 @@ public class JCFChannelService implements ChannelService {
     // 채널 단건 조회
     @Override
     public Channel searchChannel(UUID targetChannelId) {
-        return data.stream()
-                .filter(channel -> channel.getId().equals(targetChannelId))
-                .findFirst()
+        return jcfChannelRepository.findById(targetChannelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
     }
 
     // 채널 다건 조회
     @Override
     public List<Channel> searchChannelAll() {
-        return data;
+        return jcfChannelRepository.findAll();
     }
 
     // 특정 유저가 참가한 채널 리스트 조회
@@ -65,6 +60,7 @@ public class JCFChannelService implements ChannelService {
     public Channel updateChannel(UUID targetChannelId, String newChannelName) {
         Channel targetChannel = searchChannel(targetChannelId);
 
+        // 채널 이름 변경
         Optional.ofNullable(newChannelName)
                 .ifPresent(channelName -> {
                     validateString(channelName, "[채널 이름 변경 실패] 올바른 채널 이름 형식이 아닙니다.");
@@ -80,9 +76,10 @@ public class JCFChannelService implements ChannelService {
     public void deleteChannel(UUID targetChannelId) {
         Channel targetChannel = searchChannel(targetChannelId);
 
-        targetChannel.getMembers().forEach(member -> {member.removeChannel(targetChannel);});
+        targetChannel.getMembers()      // 채널 내 모든 멤버의 채널 목록에서 채널 삭제
+                .forEach(member -> member.removeChannel(targetChannel));
 
-        data.remove(targetChannel);
+        jcfChannelRepository.delete(targetChannel);
     }
 
     // 채널 참가자 초대
@@ -109,7 +106,7 @@ public class JCFChannelService implements ChannelService {
 
     // 유효성 검증 (초대)
     public void validateMemberExists(UUID userId, UUID channelId) {
-        List<User> currentMembers = jcfUserService.searchUsersByChannelId(channelId);
+        List<User> currentMembers = jcfUserService.searchMembersByChannelId(channelId);
 
         if (currentMembers.stream().anyMatch(member -> member.getId().equals(userId))) {
             throw new IllegalArgumentException("이미 채널에 존재하는 사용자입니다.");
@@ -118,7 +115,7 @@ public class JCFChannelService implements ChannelService {
 
     // 유효성 검증 (퇴장)
     public void validateUserNotInChannel(UUID userId, UUID channelId) {
-        List<User> currentMembers = jcfUserService.searchUsersByChannelId(channelId);
+        List<User> currentMembers = jcfUserService.searchMembersByChannelId(channelId);
 
         if (currentMembers.stream().noneMatch(member -> member.getId().equals(userId))) {
             throw new IllegalArgumentException("해당 채널에 존재하는 사용자가 아닙니다.");
