@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.utility;
+package com.sprint.mission.discodeit.extend;
 
 import com.sprint.mission.discodeit.entity.Common;
 
