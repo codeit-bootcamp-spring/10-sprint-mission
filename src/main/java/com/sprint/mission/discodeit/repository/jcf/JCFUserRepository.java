@@ -11,7 +11,7 @@ import java.util.UUID;
 public class JCFUserRepository implements UserRepository {
     private final List<User> data;      // 모든 사용자
 
-    private JCFUserRepository() {
+    public JCFUserRepository() {
         data = new ArrayList<>();
     }
 

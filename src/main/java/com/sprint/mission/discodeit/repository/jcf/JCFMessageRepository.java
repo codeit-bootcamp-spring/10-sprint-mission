@@ -11,7 +11,7 @@ import java.util.UUID;
 public class JCFMessageRepository implements MessageRepository {
     private final List<Message> data;       // 모든 메시지
 
-    private JCFMessageRepository() {
+    public JCFMessageRepository() {
         data = new ArrayList<>();
     }
 
