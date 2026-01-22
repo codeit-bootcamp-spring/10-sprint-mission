@@ -32,6 +32,11 @@ public class User extends Common {
     public void removeJoinedChannels(Channel channel) {
         this.joinedChannels.remove(channel);
     }
+    public void updateJoinedChannel(Channel channel) {
+        if (this.joinedChannels.removeIf(c -> Objects.equals(c.getId(), channel.getId()))) {
+            addJoinedChannels(channel);
+        }
+    }
 
     // messageHistory
     public List<Message> getMessageHistory() {
@@ -42,6 +47,14 @@ public class User extends Common {
     }
     public void removeMessageHistory(Message message) {
         this.messageHistory.remove(message);
+    }
+    public void updateMessageHistory(Message message) {
+        for (int i = 0; i < this.messageHistory.size(); i++) {
+            if (this.messageHistory.get(i).getId().equals(message.getId())) {
+                this.messageHistory.set(i, message);
+                break;
+            }
+        }
     }
 
     public String getAccountId() {
