@@ -70,6 +70,11 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
+    public Message updateMessage(Message newMessage) {
+        return updateMessage(newMessage.getId(), null);
+    }
+
+    @Override
     public void deleteMessage(UUID uuid) {
         Message msg = getMessage(uuid);
         Channel channel = msg.getChannel();

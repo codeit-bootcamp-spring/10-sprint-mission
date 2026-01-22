@@ -13,5 +13,6 @@ public interface MessageService {
     List<Message> findMessagesByChannelId(UUID uuid);
     List<Message> findAllMessages();
     Message updateMessage(UUID uuid, String newMessage);
+    Message updateMessage(Message newMessage);      // File쪽 특화용(다른 JCF관련 필드)
     void deleteMessage(UUID uuid);
 }
