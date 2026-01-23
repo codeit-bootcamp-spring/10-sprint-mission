@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class FileChannelService implements ChannelService {
-    private final String FILE_PATH = "channels.ser";
+    private final String FILE_PATH = "Channel.ser";
 
     private List<Channel> loadData() {
         File file = new File(FILE_PATH);

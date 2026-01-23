@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class FileMessageService implements MessageService {
-    private final String FILE_PATH = "messages.ser";
+    private final String FILE_PATH = "Message.ser";
     private final UserService userService;
     private final ChannelService channelService;
 
