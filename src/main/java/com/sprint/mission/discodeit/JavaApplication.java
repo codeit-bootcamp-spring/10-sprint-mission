@@ -14,6 +14,8 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.DiscordService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
@@ -223,35 +225,43 @@ public class JavaApplication {
 
         // ****************************미션 2****************************
         static User setupUser(UserService userService) {
-            User user = userService.create("woody", "woody@codeit.com", "woody1234");
+            User user = userService.create("lynn", "lynn@codeit.com", "lynn1234");
             return user;
         }
 
-//        static Channel setupChannel(ChannelService channelService) {
-//            Channel channel = channelService.create(ChannelType.PUBLIC, "공지", "공지 채널입니다.");
-//            return channel;
-//        }
+        static Channel setupChannel(ChannelService channelService) {
+            Channel channel = channelService.create("공지 채널");
+            return channel;
+        }
 
-//        static void messageCreateTest(MessageService messageService, Channel channel, User author) {
-//            Message message = messageService.create("안녕하세요.", channel.getId(), author.getId());
-//            System.out.println("메시지 생성: " + message.getId());
-//        }
+        static void messageCreate(MessageService messageService, Channel channel, User sender) {
+            Message message = messageService.create(channel.getId(), sender.getId(), "안녕하세요.");
+            System.out.println("================================");
+            System.out.println("메시지 생성이 완료되었습니다!");
+            System.out.println("채널: " + message.getChannel().getName());
+            System.out.println("보낸 이: " + message.getSender().getName());
+            System.out.println("내용: " + message.getText());
+            System.out.println("메시지 ID: " + message.getId());
+            System.out.println("================================");
+        }
 
         public static void main(String[] args) {
             // 서비스 초기화
             UserRepository userRepository = new FileUserRepository();
             ChannelRepository channelRepository = new FileChannelRepository();
             MessageRepository messageRepository = new FileMessageRepository();
-            // TODO Basic*Service 구현체를 초기화하세요.
+
+            // Basic*Service 구현체를 초기화
             UserService userService = new BasicUserService(userRepository);
-//            ChannelService channelService = new BasicChannelService();
-//            MessageService messageService = new BasicMessageService(userService, channelService);
+            ChannelService channelService = new BasicChannelService(channelRepository);
+            MessageService messageService = new BasicMessageService(messageRepository, userService, channelService);
 
             // 셋업
             User user = setupUser(userService);
-//            Channel channel = setupChannel(channelService);
-//            // 테스트
-//            messageCreateTest(messageService, channel, user);
+            Channel channel = setupChannel(channelService);
+
+            // 테스트
+            messageCreate(messageService, channel, user);
         }
 
     }
