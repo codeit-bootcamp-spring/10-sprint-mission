@@ -50,7 +50,8 @@ public class JavaApplication {
         System.out.println("------ 이하 단건조회 ------");
         channeldata.find(ch1.getId()).printChannel();
         System.out.println("------ 이하 다건조회 ------");
-        channeldata.findAll().forEach(Channel::printChannel);
+        channeldata.printChannel(ch1.getId());
+        channeldata.printChannel(ch2.getId());
 
         //수정
         System.out.println("------ 이하 수정 ------");
@@ -58,13 +59,15 @@ public class JavaApplication {
         messagedata.update(mes1.getId(), "이게 뭐어어어어어지?");//메시지 수정
         userdata.update(user3.getId(), "경-단");//유저이름 수정
         channeldata.updateUserRole(ch1.getId(), user2.getId(), ADMIN, user1.getId());//권한등급 수정
-        channeldata.findAll().forEach(Channel::printChannel);
+        channeldata.printChannel(ch1.getId());
+        channeldata.printChannel(ch2.getId());
 
         //삭제
-        //System.out.println("------ 이하 삭제 ------");
-        //messagedata.delete(mes1.getId(), user1.getId());//전송된 메시지 삭제
-        //roledata.delete(role2.getId());//권한 삭제
-        //channeldata.delete(ch2.getId(), user3.getId());//채널 삭제
-        //channeldata.findAll().forEach(Channel::printChannel);
+        System.out.println("------ 이하 삭제 ------");
+        messagedata.delete(mes1.getId(), user1.getId());//전송된 메시지 삭제
+        roledata.delete(role2.getId());//권한 삭제
+        channeldata.delete(ch2.getId(), user3.getId());//채널 삭제
+        channeldata.printChannel(ch1.getId());
+        //channeldata.printChannel(ch2.getId());
     }
 }

@@ -85,25 +85,43 @@ public class FileChannelService implements ChannelService {
 
     public Channel update(UUID id, List<Role> roles, List<Message> messages) {
         Set<Channel> channels = findAll();
+
         Channel channel = channels.stream()
                 .filter(ch -> ch.getId().equals(id))
                 .findFirst()
-                .orElseThrow(()-> new RuntimeException("Channel not found: id = " + id));
+                .orElseThrow(() -> new RuntimeException("Channel not found: id = " + id));
 
-        Optional.ofNullable(roles)
-                .ifPresent(c -> channel.updateRoles(roles));
-        Optional.ofNullable(messages)
-                .ifPresent(c-> channel.updateMessages(messages));
+        // 먼저 제거
+        channels.remove(channel);
 
+        if (roles != null) channel.updateRoles(roles);
+        if (messages != null) channel.updateMessages(messages);
+
+        // 수정된 객체 다시 추가
         channels.add(channel);
-        fileChannelRepository.fileSave(channels);// 파일에 쓰는 private 메서드
+
+        fileChannelRepository.fileSave(channels);
         return channel;
     }
 
     @Override
     public void printChannel(UUID id) {
-        Channel PrintingChannel = this.find(id);
-        PrintingChannel.printChannel();
+        Channel channel = this.find(id);
+
+        // 채널 파일의 channel.getMessages()는 신뢰하지 않고,
+        // messages.dat에서 채널 ID로 조회해서 출력한다.
+        FileMessageService messageService = new FileMessageService();
+        Set<Message> allMessages = messageService.findAll();
+
+        List<Message> channelMessages = allMessages.stream()
+                .filter(m -> m.getChannel() != null && id.equals(m.getChannel().getId()))
+                .toList();
+
+        System.out.println("=========================");
+        System.out.println(channel); // Channel.toString(): 채널명/설명/유저목록(roles)
+        System.out.println("=========================");
+        channelMessages.forEach(System.out::println);
+        System.out.println("=========================");
     }
 
     @Override
