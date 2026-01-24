@@ -12,10 +12,12 @@ import java.util.*;
 
 public class FileMessageRepository implements MessageRepository {
     private Map<UUID, Message> data;
-    private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
+//    private final UserRepository userRepository;
+//    private final ChannelRepository channelRepository;
+    // 다른 레포지토리를 의존하면 안됨
 
-    public FileMessageRepository(UserRepository userRepository,ChannelRepository channelRepository) {
+    // 다른 레포지토리 생성자로 주입X(다른 레포지토리를 의존하지 않도록)
+    public FileMessageRepository() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./messages.ser"))) {
             data = (Map<UUID, Message>) ois.readObject();
         }catch (IOException | ClassNotFoundException e) {
@@ -23,8 +25,6 @@ public class FileMessageRepository implements MessageRepository {
             data = new HashMap<>();
         }
         saveData();
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
     }
 
     @Override
