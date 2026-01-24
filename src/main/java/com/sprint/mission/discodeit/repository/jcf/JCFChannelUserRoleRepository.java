@@ -9,17 +9,18 @@ import java.util.stream.Collectors;
 public class JCFChannelUserRoleRepository implements ChannelUserRoleRepository {
     private final Map<UUID, ChannelUserRole> channelUserRoleDB = new HashMap<>();
 
+    // Create
     @Override
     public ChannelUserRole save(ChannelUserRole role) {
         channelUserRoleDB.put(role.getId(), role);
         return role;
     }
 
+    // Read
     @Override
     public Optional<ChannelUserRole> findById(UUID id) {
         return Optional.ofNullable(channelUserRoleDB.get(id));
     }
-
     @Override
     public Optional<ChannelUserRole> findByChannelIdAndUserId(UUID channelId, UUID userId) {
         return channelUserRoleDB.values().stream()
@@ -27,40 +28,36 @@ public class JCFChannelUserRoleRepository implements ChannelUserRoleRepository {
                         && cu.getUser().getId().equals(userId))
                 .findFirst();
     }
-
     @Override
     public List<ChannelUserRole> findAllByChannelId(UUID channelId) {
         return channelUserRoleDB.values().stream()
                 .filter(cu -> cu.getChannel().getId().equals(channelId))
                 .collect(Collectors.toList());
     }
-
     @Override
     public List<ChannelUserRole> findAllByUserId(UUID userId) {
         return channelUserRoleDB.values().stream()
                 .filter(cu -> cu.getUser().getId().equals(userId))
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public void delete(UUID id) {
-        channelUserRoleDB.remove(id);
-    }
-
-    @Override
-    public void deleteAllByUserId(UUID userId) {
-        channelUserRoleDB.values().removeIf(role -> role.getUser().getId().equals(userId));
-    }
-
-    @Override
-    public void deleteAllByChannelId(UUID channelId) {
-        channelUserRoleDB.values().removeIf(role -> role.getChannel().getId().equals(channelId));
-    }
-
     @Override
     public boolean existsByChannelIdAndUserId(UUID channelId, UUID userId) {
         return channelUserRoleDB.values().stream()
                 .anyMatch(cu -> cu.getChannel().getId().equals(channelId)
                         && cu.getUser().getId().equals(userId));
+    }
+
+    // Delete
+    @Override
+    public void delete(UUID id) {
+        channelUserRoleDB.remove(id);
+    }
+    @Override
+    public void deleteAllByUserId(UUID userId) {
+        channelUserRoleDB.values().removeIf(role -> role.getUser().getId().equals(userId));
+    }
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        channelUserRoleDB.values().removeIf(role -> role.getChannel().getId().equals(channelId));
     }
 }

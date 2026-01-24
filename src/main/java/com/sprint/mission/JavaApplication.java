@@ -2,13 +2,13 @@ package com.sprint.mission;
 
 import com.sprint.mission.discodeit.config.FileStorageConfig;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.ChannelUserRoleRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.repository.file.*;
+import com.sprint.mission.discodeit.repository.jcf.*;
 import com.sprint.mission.discodeit.service.*;
 import com.sprint.mission.discodeit.service.basic.*;
+import com.sprint.mission.discodeit.service.file.*;
+import com.sprint.mission.discodeit.service.jcf.*;
 
 import java.io.File;
 import java.util.*;
@@ -17,63 +17,120 @@ public class JavaApplication {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
-        // 기존 데이터 삭제 여부 확인
-        System.out.print("기존 데이터 파일을 삭제하고 시작하시겠습니까? (y/n): ");
-        String choice = sc.nextLine().trim();
-        if ("y".equalsIgnoreCase(choice)) {
-            deleteDataFiles();
-        } else {
-            System.out.println("기존 데이터를 유지하고 시작합니다.");
+        System.out.println("=========================================");
+        System.out.println("   [discodeit] 실행 모드를 선택하세요.");
+        System.out.println("=========================================");
+        System.out.println("1. JCF Service (Legacy: 메모리 DB, Repo 미사용)");
+        System.out.println("2. File Service (Legacy: 파일 DB, Repo 미사용)");
+        System.out.println("3. Basic Service + JCF Repository (Refactored: 메모리 DB)");
+        System.out.println("4. Basic Service + File Repository (Refactored: 파일 DB)");
+        System.out.print(">> 선택: ");
+
+        String mode = sc.nextLine().trim();
+
+        // 파일 모드(2, 4)일 경우에만 초기화 질문
+        if (mode.equals("2") || mode.equals("4")) {
+            System.out.print("기존 데이터 파일을 삭제하고 시작하시겠습니까? (y/n): ");
+            String choice = sc.nextLine().trim();
+            if ("y".equalsIgnoreCase(choice)) {
+                deleteDataFiles();
+            } else {
+                System.out.println("기존 데이터를 유지하고 시작합니다.");
+            }
         }
 
-        printSection("[discodeit] 서비스 기능 테스트 시작 (Basic Service + File Repository Mode)");
-        boolean running = true;
+        // 공통 인터페이스 선언
+        UserService userService = null;
+        ChannelService channelService = null;
+        MessageService messageService = null;
+        ChannelUserRoleService channelUserRoleService = null;
 
-        // Dependency Injection
-        UserRepository userRepository = new FileUserRepository();
-        ChannelRepository channelRepository = new FileChannelRepository();
-        MessageRepository messageRepository = new FileMessageRepository();
-        ChannelUserRoleRepository channelUserRoleRepository = new FileChannelUserRoleRepository();
+        // 모드별 의존성 주입 (DI - Dependency Injection)
+        try {
+            switch (mode) {
+                case "1": // 1. JCF Service (Legacy: 메모리 DB, Repo 미사용)
+                    printSection("모드 1: JCF Service (Memory Only) 시작");
+                    userService = new JCFUserService();
+                    channelService = new JCFChannelService();
+                    messageService = new JCFMessageService(userService, channelService);
+                    channelUserRoleService = new JCFChannelUserRoleService(userService, channelService);
+                    break;
 
-        UserService userService = new BasicUserService(userRepository);
-        ChannelService channelService = new BasicChannelService(channelRepository);
+                case "2": // 2. File Service (Legacy: 파일 DB, Repo 미사용)
+                    printSection("모드 2: File Service (File I/O) 시작");
+                    userService = new FileUserService();
+                    channelService = new FileChannelService();
+                    messageService = new FileMessageService(userService, channelService);
+                    channelUserRoleService = new FileChannelUserRoleService(userService, channelService);
+                    break;
 
-        MessageService messageService = new BasicMessageService(
-                messageRepository,
-                userRepository,
-                channelRepository,
-                channelUserRoleRepository
-        );
+                case "3": // 3. Basic Service + JCF Repository (Refactored: 메모리 DB)
+                    printSection("모드 3: Basic Service + JCF Repository 시작");
+                    // Repository 생성
+                    UserRepository jcfUserRepo = new JCFUserRepository();
+                    ChannelRepository jcfChannelRepo = new JCFChannelRepository();
+                    MessageRepository jcfMessageRepo = new JCFMessageRepository();
+                    ChannelUserRoleRepository jcfRoleRepo = new JCFChannelUserRoleRepository();
 
-        ChannelUserRoleService channelUserRoleService = new BasicChannelUserRoleService(
-                channelUserRoleRepository,
-                userRepository,
-                channelRepository
-        );
+                    // Service에 Repo 주입
+                    userService = new BasicUserService(jcfUserRepo);
+                    channelService = new BasicChannelService(jcfChannelRepo);
+                    messageService = new BasicMessageService(jcfMessageRepo, jcfUserRepo, jcfChannelRepo, jcfRoleRepo);
+                    channelUserRoleService = new BasicChannelUserRoleService(jcfRoleRepo, jcfUserRepo, jcfChannelRepo);
+                    break;
 
+                case "4": // 4. Basic Service + File Repository (Refactored: 파일 DB)
+                    printSection("모드 4: Basic Service + File Repository 시작");
+                    // Repository 생성
+                    UserRepository fileUserRepo = new FileUserRepository();
+                    ChannelRepository fileChannelRepo = new FileChannelRepository();
+                    MessageRepository fileMessageRepo = new FileMessageRepository();
+                    ChannelUserRoleRepository fileRoleRepo = new FileChannelUserRoleRepository();
 
-        // 리스너 등록
+                    // Service에 Repo 주입
+                    userService = new BasicUserService(fileUserRepo);
+                    channelService = new BasicChannelService(fileChannelRepo);
+                    messageService = new BasicMessageService(fileMessageRepo, fileUserRepo, fileChannelRepo, fileRoleRepo);
+                    channelUserRoleService = new BasicChannelUserRoleService(fileRoleRepo, fileUserRepo, fileChannelRepo);
+                    break;
+
+                default:
+                    System.out.println("⚠️ 잘못된 입력입니다. 프로그램을 종료합니다.");
+                    return;
+            }
+        } catch (Exception e) {
+            System.out.println("❌ 초기화 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+            return;
+        }
+
+        // 리스너 등록 (공통 로직)
+        UserService finalUserService = userService;
+        ChannelService finalChannelService = channelService;
+        MessageService finalMessageService = messageService;
+        ChannelUserRoleService finalChannelUserRoleService = channelUserRoleService;
+
         userService.addListener((UUID userId) -> {
-            channelService.deleteChannelsByOwnerId(userId);
-            messageService.deleteAllMessagesByUserId(userId);
-            channelUserRoleService.deleteAllAssociationsByUserId(userId);
+            finalChannelService.deleteChannelsByOwnerId(userId);
+            finalMessageService.deleteAllMessagesByUserId(userId);
+            finalChannelUserRoleService.deleteAllAssociationsByUserId(userId);
         });
 
         channelService.addListener((UUID channelId) -> {
-            messageService.deleteAllMessagesByChannelId(channelId);
-            channelUserRoleService.deleteAllAssociationsByChannelId(channelId);
+            finalMessageService.deleteAllMessagesByChannelId(channelId);
+            finalChannelUserRoleService.deleteAllAssociationsByChannelId(channelId);
         });
 
-        // 메인 루프
+        boolean running = true;
         while (running) {
-            System.out.println("\n\t\t\t\t\t----------------------------------");
-            System.out.println("\t\t\t\t\t|   📌[discodeit] 테스트 메뉴 선택📌  |");
-            System.out.println("\t\t\t\t\t| 1. User 도메인 테스트               |");
-            System.out.println("\t\t\t\t\t| 2. Channel 도메인 테스트            |");
-            System.out.println("\t\t\t\t\t| 3. Message 도메인 테스트            |");
-            System.out.println("\t\t\t\t\t| 4. ChannelUser(참여자) 도메인 테스트  |");
-            System.out.println("\t\t\t\t\t| 0. 종료                           |");
-            System.out.print("\t\t\t\t\t>> 선택할 번호를 입력하세요: ");
+            System.out.println("\n----------------------------------");
+            System.out.println("|   📌[discodeit] 테스트 메뉴 선택📌  |");
+            System.out.println("| 1. User 도메인 테스트               |");
+            System.out.println("| 2. Channel 도메인 테스트            |");
+            System.out.println("| 3. Message 도메인 테스트            |");
+            System.out.println("| 4. ChannelUser(참여자) 도메인 테스트  |");
+            System.out.println("| 0. 종료                           |");
+            System.out.print(">> 선택할 번호를 입력하세요: ");
 
             String input = sc.nextLine();
 
@@ -99,30 +156,40 @@ public class JavaApplication {
                         System.out.println("⚠️잘못된 입력입니다. 다시 선택해주세요.⚠️");
                 }
             } catch (Exception e) {
-                e.printStackTrace(); // 디버깅용
+                e.printStackTrace();
                 System.out.println("\n⚠️테스트 실행 중 오류 발생: " + e.getMessage());
             }
         }
         sc.close();
     }
 
-    // 데이터 파일 삭제
+    // 데이터 파일 삭제 메서드
     private static void deleteDataFiles() {
         File dir = FileStorageConfig.getDataDirectory();
-        if (dir.exists() && dir.isDirectory()) {
-            File[] files = dir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.getName().endsWith(".ser")) {
-                        if (file.delete()) {
-                            System.out.println("[삭제됨] " + file.getName());
-                        }
+
+        if (!dir.exists() || !dir.isDirectory()) {
+            System.out.println("삭제할 데이터 폴더가 존재하지 않습니다.");
+            return;
+        }
+
+        File[] files = dir.listFiles();
+        int deletedCount = 0;
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.getName().endsWith(".ser")) {
+                    if (file.delete()) {
+                        System.out.println("[삭제됨] " + file.getName());
+                        deletedCount++;
                     }
                 }
             }
-            System.out.println("기존 데이터 파일 삭제 완료.");
+        }
+
+        if (deletedCount > 0) {
+            System.out.println("기존 데이터 파일 삭제 완료하였습니다. (총 " + deletedCount + "개)");
         } else {
-            System.out.println("삭제할 데이터 폴더가 존재하지 않습니다.");
+            System.out.println("삭제할 기존 데이터 파일(.ser)이 존재하지 않습니다.");
         }
     }
 
@@ -174,7 +241,7 @@ public class JavaApplication {
 
         System.out.println("\t--- [삭제 검증을 위한 데이터 준비] ---");
         // 1 유저가 소유한 채널 생성 (유저 삭제 시 이 채널도 삭제되어야 함)
-        Channel user1Channel = channelService.createChannel("1번_유저_이름바꿈_채널", updatedUser1);
+        Channel user1Channel = channelService.createChannel("1번_유저_이름바꿈 의 채널", updatedUser1);
         System.out.println("\t(준비1 - 유저 소유 채널 생성) channelName: " + user1Channel.getChannelName()
                 + "\n\t\t(channelId: " + user1Channel.getId() + ")"
                 + "\n\t\t(channelName: " + user1Channel.getChannelName() + ")"
@@ -384,10 +451,10 @@ public class JavaApplication {
 
         // (선행조건) 메시지 전송을 위한 User와 Channel 필요
         System.out.println("0) 사전 작업");
-        User testSender1 = userService.createUser("MEMBER_User8"); printUserCreated(testSender1);
-        User testOwner1 = userService.createUser("OWNER_User9"); printUserCreated(testOwner1); // 방장
-        Channel testChannel1 = channelService.createChannel("Free-Topic", testOwner1); printChannelCreated(testChannel1);
-        // 채널 생성 시 자동 채널 관계 참여로 설정 (추후 구현)
+        User testSender1 = userService.createUser("testSender1"); printUserCreated(testSender1);
+        User testOwner1 = userService.createUser("testOwner1"); printUserCreated(testOwner1); // 방장
+        Channel testChannel1 = channelService.createChannel("자유 주제 채널", testOwner1); printChannelCreated(testChannel1);
+        // TODO: 채널 생성 시 자동 채널 관계 참여로 설정
         channelUserRoleService.addChannelUser(testChannel1.getId(), testOwner1.getId(), ChannelRole.OWNER);
         channelUserRoleService.addChannelUser(testChannel1.getId(), testSender1.getId(), ChannelRole.MEMBER);
 
@@ -402,7 +469,7 @@ public class JavaApplication {
         Message foundMsg = messageService.findMessageById(testMsg1.getId());
         System.out.println("\t-> 단건 조회: " + foundMsg.getContent());
         // [2-2] 특정 채널의 전체 메시지 조회
-        System.out.println("\t\t---특정 채널의 전체 메시지 조회를 위한 유저 및 채널 생성---");
+        System.out.println("\t\t---특정 채널의 전체 메시지 조회를 위한 메시지 생성---");
         Message testMsg2 = messageService.createMessage("안녕하세요2!", testSender1.getId(), testChannel1.getId());
         printMessageCreated(testMsg2);
         Message testMsg3 = messageService.createMessage("안녕하세요3!", testSender1.getId(), testChannel1.getId());
@@ -423,7 +490,7 @@ public class JavaApplication {
         // [4] 수정 확인
         System.out.println("4) 수정 결과 확인");
         Message updatedMsg = messageService.findMessageById(testMsg1.getId());
-        System.out.println("\t-> 변경된 메시지 내용: \"" + updatedMsg.getContent() + "\"");
+        System.out.println("\t-> 변경된 메시지 내용: " + updatedMsg.getContent() + " messageId: " + updatedMsg.getId());
 
         // [5] 삭제
         System.out.println("5) 삭제");
@@ -549,7 +616,7 @@ public class JavaApplication {
         channelUserRoleService.addChannelUser(channel1.getId(), user2.getId(), ChannelRole.MEMBER);
 
         System.out.println("\t-> [채널 입장 완료] "
-                + "\n\t\t- " + owner.getUsername() + " (OWNER)"
+                + "\n\t\t- " + owner.getUsername() + channel1.getChannelName() + owner.getChannelUserRoles()
                 + "\n\t\t- " + user1.getUsername() + " (MEMBER)"
                 + "\n\t\t- " + user2.getUsername() + " (MEMBER)");
 
