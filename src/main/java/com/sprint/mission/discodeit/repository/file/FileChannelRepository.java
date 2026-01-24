@@ -9,6 +9,14 @@ import java.util.Set;
 import java.util.UUID;
 
 public class FileChannelRepository implements ChannelRepository {
+    private static FileChannelRepository instance = null;
+    public static FileChannelRepository getInstance(){
+        if(instance == null){
+            instance = new FileChannelRepository();
+        }
+        return instance;
+    }
+    private FileChannelRepository(){}
 
     public static final String FILE_PATH = "channels.dat";
 

@@ -9,7 +9,7 @@ import java.io.*;
 import java.util.*;
 
 public class FileUserService implements UserService {
-    FileUserRepository users = new FileUserRepository();
+    FileUserRepository users = FileUserRepository.getInstance();
 
     @Override
     public User find(UUID id) {
@@ -56,7 +56,7 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User update(UUID id, List<Role> roles) {
+    public User update(UUID id, List<UUID> roles) {
         Set<User> usersInFile = users.fileLoad();
 
         User user = usersInFile.stream()
@@ -64,7 +64,7 @@ public class FileUserService implements UserService {
                 .findFirst()
                 .orElseThrow(() ->new RuntimeException("User not found: id = " + id));
 
-        user.updateRoles(roles);
+        user.setRoleIDs(roles);
         users.fileSave(usersInFile);
 
         return user;

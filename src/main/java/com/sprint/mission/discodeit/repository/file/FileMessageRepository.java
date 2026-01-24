@@ -9,6 +9,14 @@ import java.util.Set;
 import java.util.UUID;
 
 public class FileMessageRepository implements MessageRepository {
+    private static FileMessageRepository instance = null;
+    public static FileMessageRepository getInstance(){
+        if(instance == null){
+            instance = new FileMessageRepository();
+        }
+        return instance;
+    }
+    private FileMessageRepository(){}
     public static final String FILE_PATH = "messages.dat";
 
     @Override

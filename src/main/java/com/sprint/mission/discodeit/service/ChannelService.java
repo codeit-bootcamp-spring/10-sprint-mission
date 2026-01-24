@@ -15,7 +15,7 @@ public interface ChannelService {
     public Channel create(String channelName, String channelDescription);
     public void delete(UUID channelID, UUID userID);
     public Channel update(UUID id, String name, String desc);
-    public Channel update(UUID id, List<Role> roles, List<Message> messages);
+    public Channel update(UUID id, List<UUID> roles, List<UUID> messages);
     public void printChannel(UUID id);
     public void updateUserRole(UUID channelID, UUID willChangeUserID, PermissionLevel roleName, UUID tryingUserID);
     public Message addMessage(UUID channelID, UUID userID, String msg);

@@ -9,6 +9,14 @@ import java.util.Set;
 import java.util.UUID;
 
 public class FileUserRepository implements UserRepository {
+    private static FileUserRepository instance = null;
+    public static FileUserRepository getInstance(){
+        if(instance == null){
+            instance = new FileUserRepository();
+        }
+        return instance;
+    }
+    private FileUserRepository(){}
     private static final String FILE_PATH = "users.dat";
 
     @Override

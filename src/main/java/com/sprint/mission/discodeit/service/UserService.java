@@ -14,5 +14,5 @@ public interface UserService {
     public User create(String userName) throws IOException;
     public void delete(UUID id);
     public User update(UUID id, String newUserName);
-    public User update(UUID id, List<Role> roles);
+    public User update(UUID id, List<UUID> roles);
 }

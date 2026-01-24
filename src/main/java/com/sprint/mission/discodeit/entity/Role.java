@@ -5,27 +5,29 @@ package com.sprint.mission.discodeit.entity;
 디스코드 서버의 '역할'과 유사한 기능을 합니다.
 */
 
+import java.util.UUID;
+
 public class Role extends DefaultEntity{
     private static final long serialVersionUID = 1L;
     private PermissionLevel roleName;//그룹 이름.
-    private final User user;
-    private final Channel channel;
+    private final UUID user;
+    private final UUID channel;
 
-    public Role(PermissionLevel roleName, User user, Channel channel) {
+    public Role(PermissionLevel roleName, UUID userID, UUID channelID) {
         this.roleName = roleName;
-        this.user = user;
-        this.channel = channel;
+        this.user = userID;
+        this.channel = channelID;
     }
 
     public PermissionLevel getRoleName() {
         return roleName;
     }
 
-    public User getUsers() {
+    public UUID getUserID() {
         return user;
     }
 
-    public Channel getChannel() {
+    public UUID getChannelID() {
         return channel;
     }
 
@@ -35,6 +37,6 @@ public class Role extends DefaultEntity{
     }
 
     public String toString(){
-        return roleName + " : " + user;
+        return roleName.toString();
     }
 }

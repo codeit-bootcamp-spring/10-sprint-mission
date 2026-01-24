@@ -9,6 +9,14 @@ import java.util.Set;
 import java.util.UUID;
 
 public class FileRoleRepository implements RoleRepository {
+    private static FileRoleRepository instance = null;
+    public static FileRoleRepository getInstance(){
+        if(instance == null){
+            instance = new FileRoleRepository();
+        }
+        return instance;
+    }
+    private FileRoleRepository(){}
     public static final String FILE_PATH = "roles.dat";
 
     @Override

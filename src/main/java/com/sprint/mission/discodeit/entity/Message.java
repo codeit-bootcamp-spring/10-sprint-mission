@@ -1,15 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.UUID;
+
 public class Message extends DefaultEntity {
     private static final long serialVersionUID = 1L;
     private String message; // 메시지 내용
-    private final User user; // 보낸 사람
-    private Channel channel; //속한 채널
+    private final UUID userID; // 보낸 사람
+    private UUID channelID; //속한 채널
 
-    public Message(User user, String message, Channel channel) {
+    public Message(UUID userID, String message, UUID channelID) {
         this.message = message;
-        this.user = user;
-        this.channel = channel;
+        this.userID = userID;
+        this.channelID = channelID;
     }
 
     public String getMessage() {
@@ -21,15 +23,11 @@ public class Message extends DefaultEntity {
         updatedAt = System.currentTimeMillis();
     }
 
-    public User getUser() {
-        return user;
+    public UUID getUserID() {
+        return userID;
     }
 
-    public Channel getChannel() {
-        return channel;
-    }
-
-    public String toString() {
-        return user.toString() + " : " + message;
+    public UUID getChannelID() {
+        return channelID;
     }
 }

@@ -7,8 +7,8 @@ public class Channel extends DefaultEntity {
     private String channelName;
     private String channelDescription;
 
-    private List<Message> messages = new ArrayList<>();
-    private List<Role> roles = new ArrayList<>();
+    private List<UUID> messages = new ArrayList<>();
+    private List<UUID> roles = new ArrayList<>();
 
     public Channel(String channelName, String channelDescription) {
         this.channelName = channelName;
@@ -33,44 +33,46 @@ public class Channel extends DefaultEntity {
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public void updateMessages(List<Message> messages) {
-        this.messages = messages;
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public void updateRoles(List<Role> roles) {
-        this.roles = roles;
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public List<Message> getMessages() {
+    public List<UUID> getMessagesID() {
         return messages;
     }
 
-    public void DeleteMessage(UUID messageID) {
+    public void AddMessageInChannel(UUID messageID) {
+        messages.add(messageID);
+    }
+
+    public void DeleteMessageInChannel(UUID messageID) {
         messages.stream()
-                .filter(message -> messageID.equals(message.getId()))
+                .filter(message -> messageID.equals(message))
                 .findFirst()
                 .ifPresent(messages::remove);
     }
 
-    public void replaceMessages(ArrayList<Message> newArrayList) {
-        messages = newArrayList;
+    public void setMessagesID(List<UUID> messages) {
+        this.messages = messages;
     }
 
-    public String toString() {
-        return "채널명: " + channelName + ", 설명: " + channelDescription + ", 유저 목록: " + roles;
-    }
-
-    public List<Role> getRoles() {
+    public List<UUID> getRolesID() {
         return roles;
     }
 
-    public void printChannel(){
-        System.out.println("=========================");
-        System.out.println(this);
-        System.out.println("=========================");
-        getMessages().forEach(System.out::println);
-        System.out.println("=========================");
+    public void setRolesID(List<UUID> roles) {
+        this.roles = roles;
     }
+
+    public void AddRoleInChannel(UUID roleID) {
+        roles.add(roleID);
+    }
+
+    public void DeleteRoleInChannel(UUID roleID) {
+        roles.stream()
+                .filter(role -> roleID.equals(role))
+                .findFirst()
+                .ifPresent(roles::remove);
+    }
+
+    public String toString() {
+        return "채널명: " + channelName + ", 설명: " + channelDescription;
+    }
+
 }

@@ -12,7 +12,10 @@ import java.util.Set;
 import java.util.UUID;
 
 public class FileMessageService implements MessageService {
-    private FileMessageRepository repository = new FileMessageRepository();
+    private FileMessageRepository repository = FileMessageRepository.getInstance();
+    private FileUserService userService = new FileUserService();
+    private FileChannelService channelService = new FileChannelService();
+    private FileRoleService roleService = new FileRoleService();
 
     @Override
     public Message find(UUID id) {
@@ -30,13 +33,10 @@ public class FileMessageService implements MessageService {
 
     @Override
     public Message create(UUID userID, String msg, UUID channelID) {
-        FileUserService users = new FileUserService();
-        User user = users.find(userID);
+        User user = userService.find(userID);
+        Channel channel = channelService.find(channelID);
 
-        FileChannelService channels = new FileChannelService();
-        Channel channel = channels.find(channelID);
-
-        Message message = new Message(user, msg, channel);
+        Message message = new Message(userID, msg, channelID);
         Set<Message> usersInFile = findAll();
         usersInFile.add(message);
         repository.fileSave(usersInFile);
@@ -47,36 +47,28 @@ public class FileMessageService implements MessageService {
     @Override
     public void delete(UUID messageID, UUID userID) {
         Message deletedMessage = find(messageID);// 삭제 대상 메시지
-        FileUserService users = new FileUserService();
-        User user = users.find(userID); // 삭제를 시도하는 유저
-        boolean canDelete = user.equals(deletedMessage.getUser()) //삭제하려 시도하는 유저가 보낸 유저거나
-                || deletedMessage.getChannel()
-                .getRoles().stream()
+        boolean canDelete = userID.equals(deletedMessage.getUserID()) //삭제하려 시도하는 유저가 보낸 유저거나
+                || channelService.find(deletedMessage.getChannelID())//관리자일 경우
+                .getRolesID().stream()
+                .map(roleService::find)
                 .anyMatch(
-                        r->r.getUsers().equals(user)
+                        r->r.getUserID().equals(userID)
                                 && r.getRoleName().equals(PermissionLevel.ADMIN)
                 );
 
         if (canDelete) {
-            // 1) messages.dat에서 삭제
+            //채널에서 이 메시지의 아이디 삭제
+            Channel targetChannel = channelService.find(deletedMessage.getChannelID());
+            targetChannel.DeleteMessageInChannel(messageID);
+            channelService.update(targetChannel.getId(), targetChannel.getRolesID(), targetChannel.getMessagesID());
+
+            //messages.dat에서 삭제
             Set<Message> messages = findAll();
             messages.remove(deletedMessage);
             repository.fileSave(messages);
 
-            // 2) channels.dat 업데이트는 "항상 messages.dat 기준으로 재구성"
-            UUID channelId = deletedMessage.getChannel().getId();
-
-            List<Message> channelMessages = messages.stream()
-                    .filter(m -> m.getChannel() != null && channelId.equals(m.getChannel().getId()))
-                    .toList();
-
-            FileChannelService channelService = new FileChannelService();
-
-            // roles는 deletedMessage 안의 channel(복사본) 말고, 채널 파일에서 최신으로 가져오기
-            Channel latestChannel = channelService.find(channelId);
-
-            channelService.update(channelId, latestChannel.getRoles(), channelMessages);
-        } else {
+        }
+        else{
             throw new RuntimeException("User not allowed to delete message");
         }
     }
@@ -92,22 +84,8 @@ public class FileMessageService implements MessageService {
 
         message.updateMessage(msg);
 
-        // 1) 메시지 전체 저장
+        // 메시지 전체 저장
         repository.fileSave(messages);
-
-        // 2) 채널 업데이트는 "message.getChannel().getMessages()" 쓰지 말고
-        //    전체 메시지에서 채널 메시지를 다시 구성해서 넣기
-        UUID channelId = message.getChannel().getId();
-
-        List<Message> channelMessages = messages.stream()
-                .filter(m -> m.getChannel() != null && channelId.equals(m.getChannel().getId()))
-                .toList();
-
-        FileChannelService channelService = new FileChannelService();
-
-        // roles도 message 안의 channel에서 가져오면 복사본일 수 있어서,
-        // 가능하면 채널을 다시 조회해서 roles를 가져오는게 더 안전
-        channelService.update(channelId, message.getChannel().getRoles(), channelMessages);
 
         return message;
     }

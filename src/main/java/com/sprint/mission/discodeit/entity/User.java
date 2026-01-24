@@ -4,11 +4,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class User extends DefaultEntity {
     private static final long serialVersionUID = 1L;
     private String userName;
-    private List<Role> roles;
+    private List<UUID> roles;
 
     public User(String userName) {
         this.userName = userName;
@@ -24,17 +25,27 @@ public class User extends DefaultEntity {
         this.updatedAt = System.currentTimeMillis();
     }
 
-    public void updateRoles(List<Role> roles) {
-        this.roles = roles;
-        this.updatedAt = System.currentTimeMillis();
-    }
-
     public String toString() {
         return userName;
     }
 
-    public List<Role> getRoles() {
+    public List<UUID> getRoleIDs() {
         return roles;
+    }
+
+    public void AddRoleInUser(UUID roleID) {
+        roles.add(roleID);
+    }
+
+    public void DeleteRoleInUser(UUID roleID) {
+        roles.stream()
+                .filter(role -> roleID.equals(role))
+                .findFirst()
+                .ifPresent(roles::remove);
+    }
+
+    public void setRoleIDs(List<UUID> roles) {
+        this.roles = roles;
     }
 
     @Override
