@@ -9,8 +9,9 @@ import java.util.*;
 
 public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> data;
-    private ChannelRepository channelRepository;
-    private MessageRepository messageRepository;
+//    private ChannelRepository channelRepository;
+//    private MessageRepository messageRepository;
+//    다른 레포지토리리를 의존하면 안됨
 
     public JCFUserRepository() {
         data = new HashMap<UUID, User>();
@@ -47,34 +48,39 @@ public class JCFUserRepository implements UserRepository {
     }
 
     // 해당 channel Id를 가진 유저 목록을 반환
-    @Override
-    public List<User> getUsersByChannelId(UUID channelId) {
-        return data.values()
-                .stream()
-                .filter(user ->
-                        user.getChannels().
-                                stream().
-                                anyMatch(channel -> channel.getId().equals(channelId)))
-                .toList();
-    }
+//    @Override
+//    public List<User> getUsersByChannelId(UUID channelId) {
+//        return data.values()
+//                .stream()
+//                .filter(user ->
+//                        user.getChannels().
+//                                stream().
+//                                anyMatch(channel -> channel.getId().equals(channelId)))
+//                .toList();
+//    }
+    // 서비스 영역으로
+    // 서비스로 옮기면 지금은 data.values()~~ 이런식으로 레포지토리의 필드인 data를 이용하는데
+    // 서비스로 옮기면 findAll()을 이용해서 전체 리스트를 반환받아서 이용?
 
-    @Override
-    public void setChannelRepository(ChannelRepository channelRepository) {
-        this.channelRepository = channelRepository;
-    }
+//    다른 레포지토리 의존 X
+//    @Override
+//    public void setChannelRepository(ChannelRepository channelRepository) {
+//        this.channelRepository = channelRepository;
+//    }
+//
+//    @Override
+//    public void setMessageRepository(MessageRepository messageRepository) {
+//        this.messageRepository = messageRepository;
+//    }
 
-    @Override
-    public void setMessageRepository(MessageRepository messageRepository) {
-        this.messageRepository = messageRepository;
-    }
-
-    @Override
-    public void saveData() {
-
-    }
-
-    @Override
-    public void loadData() {
-
-    }
+    // JCF 레포지토리에는 필요하지 않은 기능
+//    @Override
+//    public void saveData() {
+//
+//    }
+//
+//    @Override
+//    public void loadData() {
+//
+//    }
 }

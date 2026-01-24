@@ -54,25 +54,28 @@ public class FileMessageRepository implements MessageRepository {
         saveData();
     }
 
-    @Override
-    public List<Message> getMessagesByUserId(UUID userId) {
-        loadData();
-        User user = userRepository.findById(userId).orElse(null);
-        return data.values().stream()
-                .filter(message -> message.getUser().equals(user))
-                .toList();
-    }
+//    @Override
+//    public List<Message> getMessagesByUserId(UUID userId) {
+//        loadData();
+//        User user = userRepository.findById(userId).orElse(null);
+//        return data.values().stream()
+//                .filter(message -> message.getUser().equals(user))
+//                .toList();
+//    }
+    // 서비스 영역으로,지금은 userRepository를 이용해서 user를 찾고 있지만
+    // messageService가 userService를 필드로 들고 userService를 이용해서 user를 찾으면 될 것 같음
 
-    @Override
-    public List<Message> getMessagesByChannelId(UUID channelId) {
-        loadData();
-        Channel channel = channelRepository.findById(channelId).orElse(null);
-        return data.values().stream()
-                .filter(message -> message.getChannel().equals(channel))
-                .toList();
-    }
+//    @Override
+//    public List<Message> getMessagesByChannelId(UUID channelId) {
+//        loadData();
+//        Channel channel = channelRepository.findById(channelId).orElse(null);
+//        return data.values().stream()
+//                .filter(message -> message.getChannel().equals(channel))
+//                .toList();
+//    }
+    // 서비스 영역으로,지금은 channelRepository를 이용해서 channel를 찾고 있지만
+    // messageService가 channelService를 필드로 들고 channelService를 이용해서 channel을 찾으면 될 것 같음
 
-    @Override
     public void loadData() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./messages.ser"))) {
             data = (Map<UUID, Message>) ois.readObject();
@@ -81,7 +84,7 @@ public class FileMessageRepository implements MessageRepository {
         }
     }
 
-    @Override
+
     public void saveData() {
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("./messages.ser"))){
             oos.writeObject(data);

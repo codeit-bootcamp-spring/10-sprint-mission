@@ -10,8 +10,9 @@ import java.util.*;
 
 public class FileChannelRepository implements ChannelRepository {
     private Map<UUID, Channel> data;
-    private MessageRepository messageRepository;
-    private UserRepository userRepository;
+//    private MessageRepository messageRepository;
+//    private UserRepository userRepository;
+    // 다른 레포지토리를 의존하면 안됨
 
     public FileChannelRepository() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./channels.ser"))) {
@@ -50,27 +51,29 @@ public class FileChannelRepository implements ChannelRepository {
         saveData();
     }
 
-    @Override
-    public List<Channel> getChannelsByUserId(UUID userId) {
-        loadData();
-        return data.values().stream()
-                .filter(channel ->
-                        channel.getJoinedUsers().stream()
-                                .anyMatch(user -> user.getId().equals(userId)))
-                .toList();
-    }
+//    @Override
+//    public List<Channel> getChannelsByUserId(UUID userId) {
+//        loadData();
+//        return data.values().stream()
+//                .filter(channel ->
+//                        channel.getJoinedUsers().stream()
+//                                .anyMatch(user -> user.getId().equals(userId)))
+//                .toList();
+//    }
+    // 서비스 영역으로
 
-    @Override
-    public void setMessageRepository(MessageRepository messageRepository) {
-        this.messageRepository = messageRepository;
-    }
+    // 다른 레포지토리 의존 X
+//    @Override
+//    public void setMessageRepository(MessageRepository messageRepository) {
+//        this.messageRepository = messageRepository;
+//    }
+//
+//    @Override
+//    public void setUserRepository(UserRepository userRepository) {
+//        this.userRepository = userRepository;
+//    }
 
-    @Override
-    public void setUserRepository(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
-    @Override
     public void loadData() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./channels.ser"))) {
             data = (Map<UUID, Channel>) ois.readObject();
@@ -79,7 +82,7 @@ public class FileChannelRepository implements ChannelRepository {
         }
     }
 
-    @Override
+
     public void saveData() {
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("./channels.ser"))){
             oos.writeObject(data);

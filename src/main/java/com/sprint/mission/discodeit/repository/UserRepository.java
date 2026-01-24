@@ -25,15 +25,17 @@ public interface UserRepository {
     void deleteById(UUID id);
 
     // 해당 channel Id를 가진 유저 목록을 반환
-    List<User> getUsersByChannelId(UUID channelId);
+//    List<User> getUsersByChannelId(UUID channelId); // 서비스 영역으로 가야함
 
     // 다른 repository setter
-    void setChannelRepository(ChannelRepository channelRepository);
-    void setMessageRepository(MessageRepository messageRepository);
+//    void setChannelRepository(ChannelRepository channelRepository);
+//    void setMessageRepository(MessageRepository messageRepository);
+    // 다른 레포지토리를 의존하면 안됨
 
-    // 데이터 저장
-    void saveData();
-
-    // 데이터 불러오기
-    void loadData();
+//    // 데이터 저장
+//    void saveData();
+//
+//    // 데이터 불러오기
+//    void loadData();
+    // JCF 레포지토리에서는 필요 없는 기능임(레포지토리 추상화가 잘못된 것)
 }

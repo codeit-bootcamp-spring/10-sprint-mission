@@ -10,13 +10,13 @@ import java.util.*;
 
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> data;
-    private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
+//    private final UserRepository userRepository;
+//    private final ChannelRepository channelRepository;
+    // 다른 레포지토리를 의존하면 안됨
 
-    public JCFMessageRepository(UserRepository userRepository, ChannelRepository channelRepository) {
+    // 다른 레포지토리 생성자로 주입 X(다른 레포지토리를 의존하지 않도록)
+    public JCFMessageRepository() {
         data = new HashMap<UUID, Message>();
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
     }
 
     @Override
@@ -40,27 +40,30 @@ public class JCFMessageRepository implements MessageRepository {
         data.remove(id);
     }
 
-    @Override
-    public List<Message> getMessagesByUserId(UUID userId) {
-        return data.values().stream()
-                .filter(message -> message.getUser()!=null && message.getUser().getId().equals(userId))
-                .toList();
-    }
+//    @Override
+//    public List<Message> getMessagesByUserId(UUID userId) {
+//        return data.values().stream()
+//                .filter(message -> message.getUser()!=null && message.getUser().getId().equals(userId))
+//                .toList();
+//    }
+    // 서비스 영역으로
 
-    @Override
-    public List<Message> getMessagesByChannelId(UUID channelId) {
-        return data.values().stream()
-                .filter(message -> message.getChannel()!=null && message.getChannel().getId().equals(channelId))
-                .toList();
-    }
+//    @Override
+//    public List<Message> getMessagesByChannelId(UUID channelId) {
+//        return data.values().stream()
+//                .filter(message -> message.getChannel()!=null && message.getChannel().getId().equals(channelId))
+//                .toList();
+//    }
+    // 서비스 영역으로
 
-    @Override
-    public void loadData() {
-
-    }
-
-    @Override
-    public void saveData() {
-
-    }
+    // JCF 레포지토리에는 필요하지 않은 기능
+//    @Override
+//    public void loadData() {
+//
+//    }
+//
+//    @Override
+//    public void saveData() {
+//
+//    }
 }

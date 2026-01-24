@@ -78,7 +78,7 @@ public class JCFMessageService implements MessageService {
     public List<Message> getMessagesByUserId(UUID userId) {
         User user = userService.findById(userId);
         return messages.values().stream()
-                .filter(message -> message.getUser() == user)
+                .filter(message -> message.getUser().equals(user))
                 .toList();
     }
 
@@ -87,7 +87,7 @@ public class JCFMessageService implements MessageService {
     public List<Message> getMessagesByChannelId(UUID channelId) {
         Channel channel = channelService.findById(channelId);
         return messages.values().stream()
-                .filter(message -> message.getChannel()==channel)
+                .filter(message -> message.getChannel().equals(channel))
                 .toList();
     }
 

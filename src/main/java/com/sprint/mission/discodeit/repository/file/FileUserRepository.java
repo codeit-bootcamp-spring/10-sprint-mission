@@ -10,8 +10,9 @@ import java.util.*;
 
 public class FileUserRepository implements UserRepository {
     private Map<UUID, User> data;
-    private ChannelRepository channelRepository;
-    private MessageRepository messageRepository;
+//    private ChannelRepository channelRepository;
+//    private MessageRepository messageRepository;
+    // 다른 레포지토리를 의존하면 안됨
 
     public FileUserRepository() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./users.ser"))) {
@@ -50,29 +51,31 @@ public class FileUserRepository implements UserRepository {
         saveData();
     }
 
-    @Override
-    public List<User> getUsersByChannelId(UUID channelId) {
-        loadData();
-        return data.values()
-                .stream()
-                .filter(user ->
-                        user.getChannels().
-                                stream().
-                                anyMatch(channel -> channel.getId().equals(channelId)))
-                .toList();
-    }
+//    @Override
+//    public List<User> getUsersByChannelId(UUID channelId) {
+//        loadData();
+//        return data.values()
+//                .stream()
+//                .filter(user ->
+//                        user.getChannels().
+//                                stream().
+//                                anyMatch(channel -> channel.getId().equals(channelId)))
+//                .toList();
+//    }
+    // 서비스 영역으로
 
-    @Override
-    public void setChannelRepository(ChannelRepository channelRepository) {
-        this.channelRepository = channelRepository;
-    }
+    // 다른 레포지토리 의존 X
+//    @Override
+//    public void setChannelRepository(ChannelRepository channelRepository) {
+//        this.channelRepository = channelRepository;
+//    }
+//
+//    @Override
+//    public void setMessageRepository(MessageRepository messageRepository) {
+//        this.messageRepository = messageRepository;
+//    }
 
-    @Override
-    public void setMessageRepository(MessageRepository messageRepository) {
-        this.messageRepository = messageRepository;
-    }
-
-    @Override
+    // File 레포지토리에만 필요한 기능
     public void saveData() {
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("./users.ser"))){
             oos.writeObject(data);
@@ -80,8 +83,8 @@ public class FileUserRepository implements UserRepository {
             e.printStackTrace();
         }
     }
-
-    @Override
+    
+    // File 레포지토리에만 필요한 기능 
     public void loadData() {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./users.ser"))) {
             data = (Map<UUID, User>) ois.readObject();

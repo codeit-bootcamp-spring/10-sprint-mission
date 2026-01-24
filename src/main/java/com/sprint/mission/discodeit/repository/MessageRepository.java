@@ -22,13 +22,16 @@ public interface MessageRepository {
     // 삭제
     void deleteById(UUID id);
 
-    // 해당 user Id를 가진 유저가 작성한 메시지 목록을 반환
-    List<Message> getMessagesByUserId(UUID userId);
+//    // 해당 user Id를 가진 유저가 작성한 메시지 목록을 반환
+//    List<Message> getMessagesByUserId(UUID userId);
+    // 서비스 영역으로
 
-    // 해당 channel Id를 가진 채널의 메시지 목록을 반환
-    List<Message> getMessagesByChannelId(UUID channelId);
+//    // 해당 channel Id를 가진 채널의 메시지 목록을 반환
+//    List<Message> getMessagesByChannelId(UUID channelId);
+    // 서비스 영역으로
 
-    void loadData();
-
-    void saveData();
+    // JCF 레포지토리에서는 필요 없는 기능임(레포지토리 추상화가 잘못된 것)
+//    void loadData();
+//
+//    void saveData();
 }
