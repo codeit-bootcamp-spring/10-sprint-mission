@@ -19,46 +19,41 @@ import com.sprint.mission.discodeit.service.jcf.ChannelService;
 import com.sprint.mission.discodeit.service.jcf.MessageService;
 import com.sprint.mission.discodeit.service.jcf.UserService;
 
+import java.util.Optional;
+
 public class Application {
 
-//    static User setupUser(UserService userService){
-//        return userService.createUser("성경","tjdrud@naver.com", "tjdrud");
-//    }
-//
-//    static Channel setupChannel(ChannelService channelService){
-//        return channelService.createChannel("공지","공지채널입니다.", Channel.CHANNEL_TYPE.PUBLIC);
-//    }
-//
-//    static void messageCreateTest(MessageService messageService, Channel channel, User user){
-//        Message message = messageService.createMessage("안녕하세요", channel.getId(), user.getUserId());
-//        System.out.println("메시지 생성: " + message.getId());
-//    }
+    static User setupUser(UserService userService) {
+        User user = userService.createUser("woody", "woody@codeit.com", "woody1234");
+        return user;
+    }
+
+    static Channel setupChannel(ChannelService channelService) {
+        Channel channel = channelService.createChannel("공지", "공지 채널입니다.", Channel.CHANNEL_TYPE.PUBLIC);
+        return channel;
+    }
+
+    static void messageCreateTest(MessageService messageService, Channel channel, User author) {
+        Message message = messageService.createMessage("안녕하세요.", channel.getId(), author.getUserId());
+        System.out.println("메시지 생성: " + message.getId());
+    }
 
     public static void main(String[] args) {
+        UserService userService;
+        ChannelService channelService;
+        MessageService messageService;
 
-        ChannelRepository channelRepository = new FileChannelRepository();
-        UserRepository userRepository = new FileUserRepository();
-        MessageRepository messageRepository = new FileMessageRepository();
+        userService = new BasicUserService(new FileUserRepository());
+        channelService = new BasicChannelService(new FileChannelRepository());
+        messageService = new BasicMessageService(new FileMessageRepository(), userService, channelService);
 
-        ChannelService channelService = new BasicChannelService(channelRepository);
-        UserService userService = new BasicUserService(userRepository);
-        MessageService messageService = new BasicMessageService(messageRepository);
+        User user = setupUser(userService);
+        Channel channel = setupChannel(channelService);
 
-        channelService.setUserService(userService);
-        userService.setChannelService(channelService);
-        messageService.setChannelService(channelService);
-        messageService.setUserService(userService);
-
-        Channel ch1 = ChannelHelper.safeCreateChannel(channelService, "채널2", "채널2입니다.", Channel.CHANNEL_TYPE.PUBLIC);
-        User u1 = UserHelper.safeCreateUser(userService, "성경", "tjdrud@naver.com", "tjdrud");
-        userService.readUsersbyChannel()
-        System.out.println(channelService.readAllChannels());
-        System.out.println(userService.readAllUsers());
-
-
-
-
-
-
+        messageCreateTest(messageService, channel, user);
     }
+
+
+
+
 }

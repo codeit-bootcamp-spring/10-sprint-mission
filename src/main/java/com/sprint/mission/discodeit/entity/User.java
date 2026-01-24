@@ -8,14 +8,14 @@ public class User extends DiscordEntity {
     private String userName;
     private String email;
     private String userId;
-    private Set<Channel> channelList; // 유저가 현재 가입되어 있는 채널의 목록
+    private List<Channel> channelList; // 유저가 현재 가입되어 있는 채널의 목록
     private List<Message> messageList;
 
     public User(String userName, String email, String userId){
         this.userName = userName;
         this.email = email;
         this.userId = userId;
-        this.channelList = new HashSet<>();
+        this.channelList = new ArrayList<>();
         this.messageList = new ArrayList<>();
         updateTime();
     }
@@ -32,7 +32,7 @@ public class User extends DiscordEntity {
         return this.userId;
     }
 
-    public Set<Channel> getChannelList(){
+    public List<Channel> getChannelList(){
         return this.channelList;
     }
 

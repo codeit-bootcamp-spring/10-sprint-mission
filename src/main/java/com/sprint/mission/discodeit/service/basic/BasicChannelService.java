@@ -89,7 +89,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Set<Channel> readChannelsbyUser(String userID) {
+    public List<Channel> readChannelsbyUser(String userID) {
         User user = userService.readUser(userID);
         return user.getChannelList();
     }

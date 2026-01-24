@@ -26,10 +26,12 @@ public class FileUserRepository implements UserRepository {
     public void save(User user) {
         Objects.requireNonNull(user, "유효하지 않은 유저입력.");
 
-        if(data
-                .stream()
-                .anyMatch(u -> user.getId().equals(u.getId()))){
-            throw new IllegalStateException("중복되는 유저입니다.");
+        for (int i = 0; i < data.size(); i++) {
+            if (user.getId().equals(data.get(i).getId())) {
+                data.set(i, user); // 덮어쓰기
+                persist();
+                return;
+            }
         }
 
         data.add(user);

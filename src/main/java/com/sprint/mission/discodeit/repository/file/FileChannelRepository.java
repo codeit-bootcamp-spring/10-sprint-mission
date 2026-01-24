@@ -26,15 +26,17 @@ public class FileChannelRepository implements ChannelRepository {
     public void save(Channel channel) {
         Objects.requireNonNull(channel, "유효하지 않은 채널입력.");
 
-        if(data
-                .stream()
-                .anyMatch(c -> channel.getId().equals(c.getId()))){
-            throw new IllegalStateException("중복되는 채널입니다.");
+        for (int i = 0; i < data.size(); i++) {
+            if (channel.getId().equals(data.get(i).getId())) {
+                data.set(i, channel); // 덮어쓰기
+                persist();
+                return;
+            }
         }
 
-        data.add(channel);
-
+        data.add(channel); // 신규 추가
         persist();
+
     }
 
     @Override

@@ -81,8 +81,8 @@ public class FileUserService implements UserService {
 
     }
 
-    // 채널의 UUID를 식별자로 삼아 해당 채널에 존재하는 유저 Set을 리턴합니다.
-    public Set<User> readUsersbyChannel(UUID channelID){
+    // 채널의 UUID를 식별자로 삼아 해당 채널에 존재하는 유저 List을 리턴합니다.
+    public List<User> readUsersbyChannel(UUID channelID){
         // FileUserService 생성 시 받은 클래스 매개변수 FileChannelService의 메소드 사용.
         Channel channel = channelService.readChannel(channelID);
         return channel.getUsers();

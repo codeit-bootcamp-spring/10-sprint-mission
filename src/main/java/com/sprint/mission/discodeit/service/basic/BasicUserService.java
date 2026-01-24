@@ -48,7 +48,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public Set<User> readUsersbyChannel(UUID channelID) {
+    public List<User> readUsersbyChannel(UUID channelID) {
         return channelService.readChannel(channelID).getUsers();
     }
 

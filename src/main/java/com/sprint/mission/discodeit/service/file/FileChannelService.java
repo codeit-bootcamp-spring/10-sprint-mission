@@ -108,8 +108,8 @@ public class FileChannelService implements ChannelService {
     }
 
     @Override
-    public Set<Channel> readChannelsbyUser(String userID) {
-        return Set.of();
+    public List<Channel> readChannelsbyUser(String userID) {
+        return List.of();
     }
 
     @Override

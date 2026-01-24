@@ -7,7 +7,7 @@ import java.util.*;
 public interface UserService {
     public User createUser(String name, String email, String userId); // 생성
     public User readUser(String userId);
-    public Set<User> readUsersbyChannel(UUID channelID);
+    public List<User> readUsersbyChannel(UUID channelID);
     public User updateUser(String userId, String name, String email);
     public void deleteUser(String userID);
     public List<User> readAllUsers();

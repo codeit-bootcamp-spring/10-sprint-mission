@@ -81,8 +81,8 @@ public class JCFChannelService implements ChannelService {
     }
 
     // 유저ID를 식별자로 사용하여 채널을 검색하고 리턴합니다.
-    public Set<Channel> readChannelsbyUser(String userID){
-        Set<Channel> channelList = userService.readUser(userID).getChannelList();
+    public List<Channel> readChannelsbyUser(String userID){
+        List<Channel> channelList = userService.readUser(userID).getChannelList();
         System.out.println(channelList);
         return channelList;
     }

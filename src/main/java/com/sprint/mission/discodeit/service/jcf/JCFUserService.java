@@ -53,7 +53,7 @@ public class JCFUserService implements UserService {
     }
 
         // 채널의 UUID를 식별자로 삼아 해당 채널에 존재하는 유저 Set을 리턴합니다.
-    public Set<User> readUsersbyChannel(UUID channelID){
+    public List<User> readUsersbyChannel(UUID channelID){
         // JCFUserService 생성 시 받은 클래스 매개변수 JCFChannelService의 메소드 사용.
         Channel channel = channelService.readChannel(channelID);
         return channel.getUsers();

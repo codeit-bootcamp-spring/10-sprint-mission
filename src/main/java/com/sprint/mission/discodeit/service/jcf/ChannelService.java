@@ -13,7 +13,7 @@ public interface ChannelService {
     public Channel updateChannel(UUID uuid, String name, String desc, Channel.CHANNEL_TYPE type);
     public void deleteChannel(UUID uuid);
     public List<Channel> readAllChannels();
-    public Set<Channel> readChannelsbyUser(String userID);
+    public List<Channel> readChannelsbyUser(String userID);
     public void userJoin(String userID, UUID channelID);
     public void userLeave(String userID, UUID channelID);
     public void deleteChannelbyName(String name);
