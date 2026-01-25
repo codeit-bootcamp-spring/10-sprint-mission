@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
@@ -12,10 +13,12 @@ import java.util.*;
 public class FileChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
 
-    public FileChannelService(ChannelRepository channelRepository, UserRepository userRepository) {
+    public FileChannelService(ChannelRepository channelRepository, UserRepository userRepository, MessageRepository messageRepository) {
         this.channelRepository = channelRepository;
         this.userRepository = userRepository;
+        this.messageRepository = messageRepository;
     }
 
     // 채널 생성
@@ -47,13 +50,33 @@ public class FileChannelService implements ChannelService {
         Optional.ofNullable(description).ifPresent(channel::updateDescription);
         Optional.ofNullable(isPublic).ifPresent(channel::updateIsPublic);
 
-        return channelRepository.save(channel);
+        channelRepository.save(channel);
+
+        for (User member : channel.getMembers()) {
+            userRepository.save(member);
+        }
+
+        for (Message message : channel.getMessages()) {
+            messageRepository.save(message);
+        }
+
+        return channel;
     }
 
     // 채널 삭제
     @Override
     public void delete(UUID id){
         Channel channel = findById(id);
+
+        for (User member : channel.getMembers()) {
+            member.leaveChannel(channel);
+            userRepository.save(member);
+        }
+
+        for (Message message : channel.getMessages()) {
+            messageRepository.delete(message);
+        }
+
         channelRepository.delete(channel);
     }
 
