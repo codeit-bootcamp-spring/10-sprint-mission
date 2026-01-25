@@ -25,8 +25,16 @@ public class JCFRoleRepository implements RoleRepository {
     }
 
     @Override
-    public Set<Role> fileLoad() {
+    public Set<Role> fileLoadAll() {
         return roles;
+    }
+
+    @Override
+    public Role fileLoad(UUID id) {
+        return roles.stream()
+                .filter(role -> role.getId().equals(id))
+                .findFirst()
+                .orElseThrow(()-> new RuntimeException("Role not found: id = " + id));
     }
 
     @Override

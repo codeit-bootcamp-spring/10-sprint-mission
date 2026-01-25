@@ -23,8 +23,16 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public Set<User> fileLoad() {
+    public Set<User> fileLoadAll() {
         return users;
+    }
+
+    @Override
+    public User fileLoad(UUID id) {
+        return users.stream()
+                .filter(user -> user.getId().equals(id))
+                .findFirst()
+                .orElseThrow(()-> new RuntimeException("User not found: id = " + id));
     }
 
     @Override

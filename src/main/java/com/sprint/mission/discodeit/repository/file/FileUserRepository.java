@@ -29,7 +29,7 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public Set<User> fileLoad() {
+    public Set<User> fileLoadAll() {
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             return new HashSet<>(); // 파일이 없으면 빈 셋 반환
@@ -43,8 +43,16 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public User fileLoad(UUID id) {
+        return fileLoadAll().stream()
+                .filter(user -> user.getId().equals(id))
+                .findFirst()
+                .orElseThrow(()-> new RuntimeException("User not found: id = " + id));
+    }
+
+    @Override
     public void fileDelete(UUID id) {
-        Set<User> users = fileLoad();
+        Set<User> users = fileLoadAll();
         users.removeIf(role -> role.getId().equals(id));
         fileSave(users);
     }

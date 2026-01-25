@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public interface ChannelRepository {
     public void fileSave(Set<Channel> channels);
-    public Set<Channel> fileLoad();
+    public Set<Channel> fileLoadAll();
+    public Channel fileLoad(UUID id);
     public void fileDelete(UUID id);
 }

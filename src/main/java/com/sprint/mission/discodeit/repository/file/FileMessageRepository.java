@@ -29,7 +29,7 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Set<Message> fileLoad() {
+    public Set<Message> fileLoadAll() {
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             return new HashSet<>(); // 파일이 없으면 빈 셋 반환
@@ -43,8 +43,17 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
+    public Message fileLoad(UUID id) {
+        return fileLoadAll().stream()
+                .filter(message -> message.getId().equals(id))
+                .findFirst()
+                .orElseThrow(()-> new RuntimeException("Message not found: id = " + id));
+    }
+
+
+    @Override
     public void fileDelete(UUID id) {
-        Set<Message> messages = fileLoad();
+        Set<Message> messages = fileLoadAll();
         messages.removeIf(message -> message.getId().equals(id));
         fileSave(messages);
     }

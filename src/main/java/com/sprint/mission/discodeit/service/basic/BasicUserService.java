@@ -1,34 +1,33 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.io.*;
 import java.util.*;
 
-public class FileUserService implements UserService {
-    FileUserRepository users = FileUserRepository.getInstance();
+public class BasicUserService implements UserService {
+    UserRepository users;
+
+    public BasicUserService(UserRepository users){
+        this.users = users;
+    }
 
     @Override
     public User find(UUID id) {
-        Set<User> usersInFile = users.fileLoad();
-        return usersInFile.stream()
-                .filter(user -> user.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() ->new RuntimeException("User not found: id = " + id));
+        return users.fileLoad(id);
     }
 
     @Override
     public Set<User> findAll() {
-        return users.fileLoad();
+        return users.fileLoadAll();
     }
 
     @Override
     public User create(String userName) throws IOException {
         User user = new User(userName);
-        Set<User> usersInFile = users.fileLoad();
+        Set<User> usersInFile = users.fileLoadAll();
         usersInFile.add(user);
         users.fileSave(usersInFile);
 
@@ -42,7 +41,7 @@ public class FileUserService implements UserService {
 
     @Override
     public User update(UUID id, String newUserName) {
-        Set<User> usersInFile = users.fileLoad();
+        Set<User> usersInFile = users.fileLoadAll();
 
         User user = usersInFile.stream()
                 .filter(u -> u.getId().equals(id))
@@ -57,7 +56,7 @@ public class FileUserService implements UserService {
 
     @Override
     public User update(UUID id, List<UUID> roles) {
-        Set<User> usersInFile = users.fileLoad();
+        Set<User> usersInFile = users.fileLoadAll();
 
         User user = usersInFile.stream()
                 .filter(u -> u.getId().equals(id))

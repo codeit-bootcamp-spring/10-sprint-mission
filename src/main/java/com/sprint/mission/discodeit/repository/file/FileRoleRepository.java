@@ -29,7 +29,7 @@ public class FileRoleRepository implements RoleRepository {
     }
 
     @Override
-    public Set<Role> fileLoad() {
+    public Set<Role> fileLoadAll() {
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             return new HashSet<>(); // 파일이 없으면 빈 셋 반환
@@ -43,8 +43,16 @@ public class FileRoleRepository implements RoleRepository {
     }
 
     @Override
+    public Role fileLoad(UUID id) {
+        return fileLoadAll().stream()
+                .filter(role -> role.getId().equals(id))
+                .findFirst()
+                .orElseThrow(()-> new RuntimeException("Role not found: id = " + id));
+    }
+
+    @Override
     public void fileDelete(UUID id) {
-        Set<Role> roles = fileLoad();
+        Set<Role> roles = fileLoadAll();
         roles.removeIf(role -> role.getId().equals(id));
         fileSave(roles);
     }

@@ -1,45 +1,56 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.PermissionLevel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.RoleRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class FileMessageService implements MessageService {
-    private FileMessageRepository repository = FileMessageRepository.getInstance();
-    private FileUserService userService = new FileUserService();
-    private FileChannelService channelService = new FileChannelService();
-    private FileRoleService roleService = new FileRoleService();
+public class BasicMessageService implements MessageService {
+    private MessageRepository messageRepository = FileMessageRepository.getInstance();
+    private UserRepository userRepository;
+    private ChannelRepository channelRepository;
+    private RoleRepository roleRepository;
+
+    public BasicMessageService(MessageRepository messageRepository
+            , UserRepository userRepository
+            , ChannelRepository channelRepository
+            , RoleRepository roleRepository)
+    {
+        this.messageRepository = messageRepository;
+        this.userRepository = userRepository;
+        this.channelRepository = channelRepository;
+        this.roleRepository = roleRepository;
+
+    }
 
     @Override
     public Message find(UUID id) {
-        Set<Message> usersInFile = findAll();
-        return usersInFile.stream()
-                .filter(user -> user.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() ->new RuntimeException("Message not found: id = " + id));
+        return messageRepository.fileLoad(id);
     }
 
     @Override
     public Set<Message> findAll() {
-        return repository.fileLoad();
+        return messageRepository.fileLoadAll();
     }
 
     @Override
     public Message create(UUID userID, String msg, UUID channelID) {
-        User user = userService.find(userID);
-        Channel channel = channelService.find(channelID);
+        User user = userRepository.fileLoad(userID);
+        Channel channel = channelRepository.fileLoad(channelID);
 
         Message message = new Message(userID, msg, channelID);
         Set<Message> usersInFile = findAll();
         usersInFile.add(message);
-        repository.fileSave(usersInFile);
+        messageRepository.fileSave(usersInFile);
 
         return message;
     }
@@ -47,10 +58,12 @@ public class FileMessageService implements MessageService {
     @Override
     public void delete(UUID messageID, UUID userID) {
         Message deletedMessage = find(messageID);// 삭제 대상 메시지
+        Channel channel = channelRepository.fileLoad(deletedMessage.getChannelID());
+
         boolean canDelete = userID.equals(deletedMessage.getUserID()) //삭제하려 시도하는 유저가 보낸 유저거나
-                || channelService.find(deletedMessage.getChannelID())//관리자일 경우
+                || channelRepository.fileLoad(deletedMessage.getChannelID())//관리자일 경우
                 .getRolesID().stream()
-                .map(roleService::find)
+                .map(roleRepository::fileLoad)
                 .anyMatch(
                         r->r.getUserID().equals(userID)
                                 && r.getRoleName().equals(PermissionLevel.ADMIN)
@@ -58,14 +71,17 @@ public class FileMessageService implements MessageService {
 
         if (canDelete) {
             //채널에서 이 메시지의 아이디 삭제
-            Channel targetChannel = channelService.find(deletedMessage.getChannelID());
-            targetChannel.DeleteMessageInChannel(messageID);
-            channelService.update(targetChannel.getId(), targetChannel.getRolesID(), targetChannel.getMessagesID());
+            channel.DeleteMessageInChannel(messageID);
+
+            Set<Channel> channels = channelRepository.fileLoadAll();
+            channels.removeIf(ch -> ch.getId().equals(channel.getId()));
+            channels.add(channel);
+            channelRepository.fileSave(channels);
 
             //messages.dat에서 삭제
             Set<Message> messages = findAll();
             messages.remove(deletedMessage);
-            repository.fileSave(messages);
+            messageRepository.fileSave(messages);
 
         }
         else{
@@ -85,7 +101,7 @@ public class FileMessageService implements MessageService {
         message.updateMessage(msg);
 
         // 메시지 전체 저장
-        repository.fileSave(messages);
+        messageRepository.fileSave(messages);
 
         return message;
     }
@@ -94,7 +110,7 @@ public class FileMessageService implements MessageService {
         Set<Message> messages = findAll();
         messages.removeIf(c -> c.getId().equals(message.getId()));
         messages.add(message);
-        repository.fileSave(messages);
+        messageRepository.fileSave(messages);
         return message;
     }
 

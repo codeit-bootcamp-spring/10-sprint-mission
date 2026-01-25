@@ -1,22 +1,30 @@
-package com.sprint.mission.discodeit.service.file;
+package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.PermissionLevel;
 import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.file.FileRoleRepository;
+import com.sprint.mission.discodeit.repository.RoleRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.RoleService;
+import com.sprint.mission.discodeit.service.UserService;
 
-import java.io.*;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class FileRoleService implements RoleService {
-    private FileRoleRepository repository = FileRoleRepository.getInstance();
-    private FileUserService userService = new FileUserService();
-    private FileChannelService channelService = new FileChannelService();
+public class BasicRoleService implements RoleService {
+    private RoleRepository repository;
+    private UserService userService;
+    private ChannelService channelService;
+
+    public BasicRoleService(RoleRepository repository,
+                            UserService userService,
+                            ChannelService channelService
+    ) {
+        this.repository = repository;
+        this.userService = userService;
+        this.channelService = channelService;
+    }
 
     @Override
     public Role find(UUID id) {
@@ -29,7 +37,7 @@ public class FileRoleService implements RoleService {
 
     @Override
     public Set<Role> findAll() {
-        return repository.fileLoad();
+        return repository.fileLoadAll();
     }
 
     @Override

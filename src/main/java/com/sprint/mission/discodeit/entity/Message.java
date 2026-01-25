@@ -30,4 +30,8 @@ public class Message extends DefaultEntity {
     public UUID getChannelID() {
         return channelID;
     }
+
+    public String toString() {
+        return message;
+    }
 }

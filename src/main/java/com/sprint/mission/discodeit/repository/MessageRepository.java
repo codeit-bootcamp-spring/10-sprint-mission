@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface MessageRepository {
     public void fileSave(Set<Message> messages);
-    public Set<Message> fileLoad();
+    public Set<Message> fileLoadAll();
+    public Message fileLoad(UUID id);
     public void fileDelete(UUID id);
 }

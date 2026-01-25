@@ -25,8 +25,16 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Set<Channel> fileLoad() {
+    public Set<Channel> fileLoadAll() {
         return channels;
+    }
+
+    @Override
+    public Channel fileLoad(UUID id) {
+        return channels.stream()
+                .filter(channel -> channel.getId().equals(id))
+                .findFirst()
+                .orElseThrow(()-> new RuntimeException("Channel not found: id = " + id));
     }
 
     @Override

@@ -7,6 +7,7 @@ import java.util.UUID;
 
 public interface UserRepository {
     public void fileSave(Set<User> users);
-    public Set<User> fileLoad();
+    public Set<User> fileLoadAll();
+    public User fileLoad(UUID id);
     public void fileDelete(UUID id);
 }

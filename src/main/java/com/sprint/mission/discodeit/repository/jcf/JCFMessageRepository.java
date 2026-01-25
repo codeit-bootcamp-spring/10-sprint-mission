@@ -25,8 +25,16 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Set<Message> fileLoad() {
+    public Set<Message> fileLoadAll() {
         return messages;
+    }
+
+    @Override
+    public Message fileLoad(UUID id) {
+        return messages.stream()
+                .filter(message -> message.getId().equals(id))
+                .findFirst()
+                .orElseThrow(()-> new RuntimeException("Message not found: id = " + id));
     }
 
     @Override

@@ -32,7 +32,7 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Set<Channel> fileLoad() {
+    public Set<Channel> fileLoadAll() {
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             return new HashSet<>(); // 파일이 없으면 빈 셋 반환
@@ -46,8 +46,17 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
+    public Channel fileLoad(UUID id) {
+        return fileLoadAll().stream()
+                .filter(channel -> channel.getId().equals(id))
+                .findFirst()
+                .orElseThrow(()-> new RuntimeException("Channel not found: id = " + id));
+    }
+
+
+    @Override
     public void fileDelete(UUID id) {
-        Set<Channel> channels = fileLoad();
+        Set<Channel> channels = fileLoadAll();
         channels.removeIf(channel -> channel.getId().equals(id));
         fileSave(channels);
     }
