@@ -31,6 +31,8 @@ public class BasicMessageService implements MessageService {
         Message message = new Message(content, user, channel);
         messageRepository.save(message);
         channel.addMessage(message);
+        channelService.update(channel.getId(), null, null);
+
         return message;
     }
 
@@ -59,6 +61,7 @@ public class BasicMessageService implements MessageService {
         Message message = findById(messageId);
         Channel channel = channelService.findById(message.getChannelId());
         channel.removeMessage(messageId);
+        channelService.update(channel.getId(), null, null);
         messageRepository.delete(messageId);
     }
 

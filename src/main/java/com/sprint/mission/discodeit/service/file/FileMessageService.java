@@ -41,6 +41,7 @@ public class FileMessageService implements MessageService {
         channel.addMessage(message);
 
         saveToFile();
+        channelService.update(null, null, null);
 
         return message;
     }
@@ -80,6 +81,7 @@ public class FileMessageService implements MessageService {
         Channel channel = channelService.findById(message.getChannelId());
         if (channel != null) {
             channel.removeMessage(messageId);
+            channelService.update(null, null, null);    // update로 채널 영속화
         }
 
         data.remove(messageId);
