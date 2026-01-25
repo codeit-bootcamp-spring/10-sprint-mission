@@ -40,9 +40,13 @@ public class BasicChannelService implements ChannelService{
 
     // 채널 정보 수정
     @Override
-    public Channel update(UUID id, String name, String description, boolean isPublic){
+    public Channel update(UUID id, String name, String description, Boolean isPublic){
         Channel channel = findById(id);
-        channel.update(name, description, isPublic);
+
+        Optional.ofNullable(name).ifPresent(channel::updateName);
+        Optional.ofNullable(description).ifPresent(channel::updateDescription);
+        Optional.ofNullable(isPublic).ifPresent(channel::updateIsPublic);
+
         return channelRepository.save(channel);
     }
 

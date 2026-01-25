@@ -25,12 +25,24 @@ public class Channel extends BaseEntity implements Serializable {
         this.isPublic = isPublic;
     }
 
-    // 채널 정보 수정
-    public void update(String name, String description, boolean isPublic) {
+    // 채널 이름 수정
+    public void updateName (String name) {
         this.name = name;
+        this.updated();
+    }
+
+    // 채널 설명 수정
+    public void updateDescription (String description) {
         this.description = description;
-        this.isPublic = isPublic;
-        this.updated(); // BaseEntity의 시간 갱신
+        this.updated();
+    }
+
+    // 채널 공개 여부 수정
+    public void updateIsPublic(Boolean isPublic) {
+        if (isPublic != null) {
+            this.isPublic = isPublic;
+            this.updated();
+        }
     }
 
     // 채널 멤버인지 확인
