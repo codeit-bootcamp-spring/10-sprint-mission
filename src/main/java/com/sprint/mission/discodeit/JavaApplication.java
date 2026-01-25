@@ -6,23 +6,27 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+import com.sprint.mission.discodeit.service.file.FileChannelService;
+import com.sprint.mission.discodeit.service.file.FileMessageService;
+import com.sprint.mission.discodeit.service.file.FileUserService;
 
 public class JavaApplication {
     public static void main(String[] args) {
-        UserService userService = new JCFUserService();
-        ChannelService channelService = new JCFChannelService();
-        MessageService messageService = new JCFMessageService();
-        /*
-        * [ ] 등록
-        [ ] 조회(단건, 다건)
-        [ ] 수정
-        [ ] 수정된 데이터 조회
-        [ ] 삭제
-        [ ] 조회를 통해 삭제되었는지 확인
-        * */
+//        UserService userService = new JCFUserService();
+//        ChannelService channelService = new JCFChannelService();
+//        MessageService messageService = new JCFMessageService(userService, channelService);
+
+        UserService userService = new FileUserService();
+        ChannelService channelService = new FileChannelService();
+        MessageService messageService = new FileMessageService(userService, channelService);
+
+        testFile(userService, channelService, messageService);
+    }
+
+    public static void testFile(UserService userService, ChannelService channelService, MessageService messageService){
+        userService.deleteAll();
+        channelService.deleteAll();
+        messageService.deleteAll();
 
         System.out.println("-------------user-------------");
 
@@ -38,19 +42,24 @@ public class JavaApplication {
         User user3 = userService.CreateUser("셋", "test3@codeit.com");
 
         System.out.println("---단건조회---");
-        System.out.println(userService.findId(user1.getId()) + " 조회 성공");
+        try {
+            System.out.println(userService.findById(user1.getId()) + " 조회 성공");
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
 
         System.out.println("---다건 조회---");
         System.out.println("전체 유저 수: " + userService.findAll().size());
 
         System.out.println("---수정/조회---");
         System.out.println("이름 수정 전 " + user1.getUserName());
-        user1 = userService.updateName(user1.getId(), "일");
+        user1 = userService.update(user1.getId(), "일", null);
         System.out.println("이름 수정 후 " + user1.getUserName());
 
         System.out.println("이름 수정 전 " + user2.getUserName());
         try {
-            user2 = userService.updateName(null,"이");
+            user2 = userService.update(null,"이", null);
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -59,7 +68,7 @@ public class JavaApplication {
 
         System.out.println("이메일 수정 전 " + user2.getEmail());
         try {
-            user2 = userService.updateName(user2.getId(), "");
+            user2 = userService.update(user2.getId(), null,"");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -67,7 +76,7 @@ public class JavaApplication {
 
         System.out.println("이메일 수정 전 " + user3.getEmail());
         try {
-            user3 = userService.updateName(user3.getId(), "     ");
+            user3 = userService.update(user3.getId(), null, "     ");
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -122,19 +131,19 @@ public class JavaApplication {
 
         System.out.println("-------------Message-------------");
         System.out.println("---등록---");
-        Message msg2 = messageService.createMessage("12345", user2, channel2);
-        Message msg3 = messageService.createMessage("가나다라", user3, channel3);
+        Message msg2 = messageService.createMessage("12345", user2.getId(), channel2.getId());
+        Message msg3 = messageService.createMessage("가나다라", user3.getId(), channel3.getId());
 
         System.out.println("---단건조회---");
-        System.out.println(messageService.findId(msg3.getId()) + " 조회 성공");
+        System.out.println(messageService.findId(msg3.getId()).getId() + " 조회 성공");
 
         System.out.println("---다건 조회---");
         System.out.println("전체 메세지 수: " + messageService.findAll().size());
 
         System.out.println("---수정/조회---");
-        System.out.println("메세지 수정 전 " + msg2.getContent());
+        System.out.println("메세지 수정 전 " + messageService.findId(msg2.getId()).getContent());
         try {
-            msg3 = messageService.update(msg3.getId(), "1aaa5");
+            msg2 = messageService.update(messageService.findId(msg2.getId()).getId(), "1aaa5");
         } catch (Exception e) {
             System.out.println(e);
         }

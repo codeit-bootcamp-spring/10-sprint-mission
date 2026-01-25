@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class User extends Common{
+public class User extends Common implements Serializable {
     private String userName;
     private String email;
     private List<Channel> channelList;
@@ -21,20 +23,24 @@ public class User extends Common{
         return userName;
     }
 
-    public void setUserName(String userName){
-        this.userName = userName;
-        setUpdatedAt();
-    }
-
     public String getEmail(){
         return email;
     }
 
-    public void setEmail(String email){
-        this.email = email;
-        setUpdatedAt();
+    public void update(UUID id, String userName, String email) {
+        boolean changed = false;
+        if (userName != null && !userName.trim().isEmpty()) {
+            this.userName = userName;
+            changed = true;
+        }
+        if (email != null && !email.trim().isEmpty()) {
+            this.email = email;
+            changed = true;
+        }
+        if (changed) {
+            setUpdatedAt();
+        }
     }
-
 
     // 채널, 메세지 부분
     // 상호참조
@@ -57,4 +63,8 @@ public class User extends Common{
         this.messageList.add(message);
     }
 
+    @Override
+    public String toString() {
+        return "User{name='" + userName + "', email='" + email + "', " + super.toString() + "}";
+    }
 }

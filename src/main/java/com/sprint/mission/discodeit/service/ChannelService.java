@@ -22,4 +22,6 @@ public interface ChannelService {
     Channel update(UUID channelId, String channelName);
 
     void delete(UUID channelId);
+
+    void deleteAll();
 }

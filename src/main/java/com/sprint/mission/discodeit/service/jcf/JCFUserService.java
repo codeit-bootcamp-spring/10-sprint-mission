@@ -52,14 +52,11 @@ public class JCFUserService implements UserService {
 
     @Override
     public User update(UUID userId, String userName, String email) {
-        User foundUser = findById(userId);
-        Optional.ofNullable(userName)
-                .filter(name -> !name.trim().isEmpty())
-                .ifPresent(foundUser::setUserName);
-
-        Optional.ofNullable(email)
-                .filter(e -> !e.trim().isEmpty())
-                .ifPresent(foundUser::setEmail);
+        User foundUser = data.stream()
+                .filter(u -> u.getId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("해당 유저가 존재하지 않습니다."));
+        foundUser.update(userId, userName, email);
 
         return foundUser;
     }
@@ -81,5 +78,9 @@ public class JCFUserService implements UserService {
         User target = findById(userId);
         data.remove(target);
     }
-
+    @Override
+    public void deleteAll() {
+        data.clear(); // 리스트 내부의 모든 채널 객체 삭제
+        System.out.println("JCF: 모든 채널 데이터를 초기화했습니다.");
+    }
 }

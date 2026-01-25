@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 
-public class Common {
-    private UUID id;
+public class Common implements Serializable{
+    private final UUID id;
     private final long createdAt;
     private long updatedAt;
 
@@ -34,5 +36,20 @@ public class Common {
         updatedAt = System.currentTimeMillis();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Common common = (Common) o;
+        return Objects.equals(id, common.id);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+    @Override
+    public String toString() {
+        return "ID: " + id;
+    }
 }

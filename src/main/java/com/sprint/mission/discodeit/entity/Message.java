@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
-public class Message extends Common{
+import java.io.Serializable;
+
+public class Message extends Common implements Serializable {
     String content;
     private Channel channel;
     private User sender;
@@ -28,5 +30,9 @@ public class Message extends Common{
 
     public Channel getChannel(){
         return channel;
+    }
+
+    public void update(String content) {
+        this.content = content;
     }
 }

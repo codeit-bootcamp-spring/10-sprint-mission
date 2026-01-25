@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Channel extends Common{
+public class Channel extends Common implements Serializable {
     private String channelName;
     private List<User> userList = new ArrayList<>();
     private List<Message> messageList = new ArrayList<>();

@@ -13,7 +13,9 @@ public interface MessageService {
     List<Message> findAll();
     List<Message> findMessagesById(UUID userId);
     List<Message> findMessagesByChannel(UUID channelId);
-    List<Message> findMessagesByUserAndChannel(UUID userId, UUID channelId)
+    List<Message> findMessagesByUserAndChannel(UUID userId, UUID channelId);
     Message update(UUID massageId, String content);
     void delete(UUID massageId);
+
+    void deleteAll();
 }

@@ -22,4 +22,5 @@ public interface UserService {
     void addChannel(UUID userId, Channel channel);
 
 
+    void deleteAll();
 }
