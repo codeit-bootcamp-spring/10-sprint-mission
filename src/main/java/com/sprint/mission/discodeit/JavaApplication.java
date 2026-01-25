@@ -211,7 +211,7 @@ public class JavaApplication {
         System.out.println("=== [종료] 서비스 테스트 ===");
 
         /*
-        [서비스 구조 변화 정리]
+        [서비스 구조 변화(차이점)ㅂ 정리]
 
         - 초기 JCF*Service / File*Service 단계에서는
          서비스가 비즈니스 로직과 저장 로직을 함께 가지고 있었다.
