@@ -2,31 +2,37 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.util.Validators;
 
 import java.io.*;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class FileChannelRepository implements ChannelRepository {
-    private static final String FILE_PATH = "data/channels.ser";
-    final List<Channel> data;
+public class FileMessageRepository implements MessageRepository {
+    private static final String FILE_PATH = "data/messages.ser";
+    final List<Message> data;
 
-    public FileChannelRepository() {
-        this.data = loadChannels();
+    public FileMessageRepository() {
+        this.data = loadMessages();
     }
-    private void saveChannels(){
+
+    private void saveMessages(){
         File file = new File(FILE_PATH);
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
             oos.writeObject(this.data);
-            System.out.println("직렬화 완료: channels.ser에 저장되었습니다.");
+            System.out.println("직렬화 완료: messages.ser에 저장되었습니다.");
         } catch (Exception e) {
-            throw new RuntimeException("채널 데이터 저장 중 오류 발생", e);
+            throw new RuntimeException("메시지 데이터 저장 중 오류 발생", e);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private List<Channel> loadChannels() {
+    private List<Message> loadMessages() {
         File file = new File(FILE_PATH);
         if(!file.exists() || file.length() == 0) {
             return new ArrayList<>();
@@ -34,44 +40,46 @@ public class FileChannelRepository implements ChannelRepository {
         try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             Object data = ois.readObject();
             System.out.println("역직렬화 완료: " + data);
-            return (List<Channel>) data;
+            return (List<Message>) data;
         } catch (IOException |ClassNotFoundException e) {
             throw new RuntimeException("메시지 데이터 로드 중 오류 발생", e);
         }
     }
 
     @Override
-    public Channel save(Channel channel) {
+    public Message save(Message message) {
         OptionalInt indexOpt = IntStream.range(0, this.data.size())
-                .filter(i -> data.get(i).getId().equals(channel.getId()))
+                .filter(i -> data.get(i).getId().equals(message.getId()))
                 .findFirst();
         if (indexOpt.isPresent()) {
-            data.set(indexOpt.getAsInt(), channel);
+            data.set(indexOpt.getAsInt(), message);
         } else {
-            data.add(channel);
+            data.add(message);
         }
 
-        saveChannels();
-        return channel;
+        saveMessages();
+        return message;
     }
 
     @Override
-    public Optional<Channel> findById(UUID id) {
+    public Optional<Message> findById(UUID id) {
         return data.stream()
-                .filter(channel -> channel.getId().equals(id))
+                .filter(message -> message.getId().equals(id))
                 .findFirst();
     }
 
 
     @Override
-    public List<Channel> findAll() {
+    public List<Message> findAll() {
         return new ArrayList<>(data);
     }
 
 
     @Override
     public void deleteById(UUID id) {
-        data.removeIf(channel -> channel.getId().equals(id));
-        saveChannels();
+        data.removeIf(message -> message.getId().equals(id));
+        saveMessages();
     }
+
+
 }

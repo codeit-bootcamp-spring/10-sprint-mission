@@ -4,15 +4,15 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.List;
 
@@ -20,13 +20,16 @@ import java.util.List;
 public class JavaApplication {
     public static void main(String[] args) {
         // 0. 서비스 초기화
-        UserService userService = new FileUserService();
-        ChannelService channelService = new FileChannelService(userService);
-        MessageService messageService = new FileMessageService(userService, channelService);
+        FileUserRepository fileUserRepository = new FileUserRepository();
+        FileChannelRepository fileChannelRepository = new FileChannelRepository();
+        FileMessageRepository fileMessageRepository = new FileMessageRepository();
+        UserService userService = new FileUserService(fileUserRepository);
+        ChannelService channelService = new FileChannelService(fileUserRepository, fileChannelRepository);
+        MessageService messageService = new FileMessageService(fileMessageRepository, fileChannelRepository, fileUserRepository);
 
-//        System.out.println("=== [시작] 서비스 테스트 ===");
+       System.out.println("=== [시작] 서비스 테스트 ===");
 //        //================================ 기본 기능 ================================
-//        System.out.println("==기본 기능==");
+        System.out.println("==기본 기능==");
 //        //---------------------------------1. user---------------------------------
 //        // 1-1. user 등록 및 조회
         User user1 = userService.createUser("전창현", "ckdgus12@gmail.com");
@@ -147,9 +150,9 @@ public class JavaApplication {
 
 //         -----------------------1. 채널의 참가자 목록/메시지 조회-----------------------
 //         user의 channel 등록
-        channelService.joinChannel(channel1.getId(), user1);
-        channelService.joinChannel(channel1.getId(), user2);
-        channelService.joinChannel(channel2.getId(), user2);
+        channelService.joinChannel(channel1.getId(), user1.getId());
+        channelService.joinChannel(channel1.getId(), user2.getId());
+        channelService.joinChannel(channel2.getId(), user2.getId());
 
 //         1-1. channel 참가자 목록(name) 조회
         List<User> userList = userService.readUsersByChannel(channel1.getId());

@@ -3,6 +3,10 @@ package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -16,57 +20,34 @@ import java.util.UUID;
 
 public class FileMessageService implements MessageService {
     private static final String FILE_PATH = "data/messages.ser";
-    final List<Message> data;
-    private final ChannelService channelService;
-    private final UserService userService;
+    private final FileMessageRepository fileMessageRepository;
+    private final FileChannelRepository fileChannelRepository;
+    private final FileUserRepository fileUserRepository;
 
-    public FileMessageService(UserService userService, ChannelService channelService) {
-        this.data = loadMessages();
-        this.userService = userService;
-        this.channelService = channelService;
+
+    public FileMessageService(FileMessageRepository fileMessageRepository, FileChannelRepository fileChannelRepository, FileUserRepository fileUserRepository) {
+        this.fileMessageRepository = fileMessageRepository;
+        this.fileChannelRepository = fileChannelRepository;
+        this.fileUserRepository = fileUserRepository;
+
     }
-
-    private void saveMessages(){
-        File file = new File(FILE_PATH);
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-            oos.writeObject(this.data);
-            System.out.println("직렬화 완료: messages.ser에 저장되었습니다.");
-        } catch (Exception e) {
-            throw new RuntimeException("메시지 데이터 저장 중 오류 발생", e);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private List<Message> loadMessages() {
-        File file = new File(FILE_PATH);
-        if(!file.exists() || file.length() == 0) {
-            return new ArrayList<>();
-        }
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            Object data = ois.readObject();
-            System.out.println("역직렬화 완료: " + data);
-            return (List<Message>) data;
-        } catch (IOException |ClassNotFoundException e) {
-            throw new RuntimeException("메시지 데이터 로드 중 오류 발생", e);
-        }
-    }
-
-
 
     @Override
     public Message createMessage(String content, UUID channelId, UUID userId) {
         Validators.validationMessage(content);
-        Channel channel = channelService.readChannel(channelId);
-        User user = userService.readUser(userId);
+        Channel channel = fileChannelRepository.findById(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("채널 id가 존재하지 않습니다."));
+        User user = fileUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저 id가 존재하지 않습니다."));
+
         Message message = new Message(content, channel, user);
 
         channel.getMessages().add(message);
         user.getMessages().add(message);
 
-        this.data.add(message);
-        saveMessages();
-        channelService.updateChannel(channel.getId(), null, null, null);
-        userService.updateUser(user.getId(), null, null);
+        fileMessageRepository.save(message);
+        fileChannelRepository.save(channel);
+        fileUserRepository.save(user);
 
         return message;
     }
@@ -78,7 +59,7 @@ public class FileMessageService implements MessageService {
 
     @Override
     public List<Message> readAllMessage() {
-        return this.data;
+        return fileMessageRepository.findAll();
     }
 
     @Override
@@ -89,36 +70,44 @@ public class FileMessageService implements MessageService {
                     message.updateContent(content);
                 });
 
-        saveMessages();
+        fileMessageRepository.save(message);
         return message;
     }
 
-    public void deleteMessage(UUID id) {
-        Message message = validateExistenceMessage(id);
-        Channel channel = message.getChannel();
-        User user = message.getUser();
+    public void deleteMessage(UUID messageId) {
+        Message message = validateExistenceMessage(messageId);
 
-        channel.getMessages().removeIf(m -> id.equals(m.getId()));
-        user.getMessages().removeIf(m -> id.equals(m.getId()));
-        this.data.removeIf(m -> id.equals(m.getId()));
-        saveMessages();
+        UUID channelId = message.getChannel().getId();
+        UUID userId = message.getUser().getId();
+
+        Channel channel = fileChannelRepository.findById(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("채널 id가 존재하지 않습니다."));
+        User user = fileUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저 id가 존재하지 않습니다."));
+
+        channel.getMessages().removeIf(m -> m.getId().equals(messageId));
+        user.getMessages().removeIf(m -> m.getId().equals(messageId));
+
+        fileMessageRepository.deleteById(messageId);
+
+        fileChannelRepository.save(channel);
+        fileUserRepository.save(user);
     }
 
     public List<Message> readMessagesByChannel(UUID channelId) {
-        Channel channel = channelService.readChannel(channelId);
+        Channel channel = fileChannelRepository.findById(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("채널 id가 존재하지 않습니다."));
         return channel.getMessages();
     }
 
     public List<Message> readMessagesByUser(UUID userId) {
-        User user = userService.readUser(userId);
+        User user = fileUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저 id가 존재하지 않습니다."));
         return user.getMessages();
     }
     private Message validateExistenceMessage(UUID id) {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
-        return this.data.stream()
-                .filter(message -> id.equals(message.getId()))
-
-                .findFirst()
+        return fileMessageRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("메세지 id는 존재하지 않습니다."));
     }
 
