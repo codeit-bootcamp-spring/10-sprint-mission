@@ -36,8 +36,8 @@ public class JavaApplication {
         ChannelRepository channelRepository = new FileChannelRepository();
         MessageRepository messageRepository = new FileMessageRepository();
 
-        UserService userService = new BasicUserService(userRepository);
-        ChannelService channelService = new BasicChannelService(channelRepository, userRepository);
+        UserService userService = new BasicUserService(userRepository, channelRepository, messageRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository, userRepository, messageRepository);
         MessageService messageService = new BasicMessageService(messageRepository, userRepository, channelRepository);
 
         System.out.println("========= [1. User 도메인 테스트] =========");
