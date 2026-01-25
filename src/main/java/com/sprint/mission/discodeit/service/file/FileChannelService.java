@@ -106,26 +106,6 @@ public class FileChannelService implements ChannelService {
     }
 
     @Override
-    public Channel userRemoveChannel(UUID channelId, UUID userId) {
-        Map<UUID, Channel> channels = load();
-
-        Channel channel = channels.get(channelId);
-        if (channel == null){
-            throw new ChannelNotFoundException();
-        }
-
-        User user = userService.findUser(userId);
-        if (!channel.hasChannelUser(user)){
-            throw new UserNotInChannelException();
-        }
-
-        channel.removeChannelUser(user);
-        save(channels);
-
-        return channel;
-    }
-
-    @Override
     public Channel nameUpdateChannel(UUID channelId, String channelName) {
         Map<UUID, Channel> channels = load();
 

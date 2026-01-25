@@ -15,8 +15,6 @@ public interface ChannelService {
 
     Channel userAddChannel(UUID channelId, UUID userId);
 
-    Channel userRemoveChannel(UUID channelId, UUID userId);
-
     Channel nameUpdateChannel(UUID channelId, String channelName);
 
     Channel deleteChannel(UUID channelId);

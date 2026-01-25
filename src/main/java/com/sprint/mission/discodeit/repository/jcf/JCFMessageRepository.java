@@ -21,21 +21,17 @@ public class JCFMessageRepository implements MessageRepository {
         this.channelService = channelService;
     }
 
-
-
-
-    public UserService getUserService() {
-        return this.userService;
-    }
-
-
     @Override
-    public Message createMessage(User user, Channel channel, String content) {
-        userService.findUser(user.getId());
-        channelService.findChannel(channel.getId());
+    public Message createMessage(UUID userId, UUID channelId, String content) {
+        // 1. 유저와 채널 객체 조회 (비즈니스 검증)
+        User sender = userService.findUser(userId);       // 유저가 존재하는지 확인
+        Channel channel = channelService.findChannel(channelId); // 채널 존재 확인
 
-        Message message = new Message(user, channel, content);
-        messages.put(message.getId(), message);
+        // 2. 메시지 생성 및 Map에 저장
+        Message message = new Message(sender, channel, content);
+        messages.put(message.getId(), message); // messages는 JCF 기반 Map
+
+        // 3. 생성된 메시지 반환
         return message;
     }
 
@@ -53,16 +49,6 @@ public class JCFMessageRepository implements MessageRepository {
     public List<Message> findAllMessage() {
         return new ArrayList<>(messages.values());
     }
-
-    @Override
-    public List<Message> findAllByUserMessage(UUID userId) {
-        userService.findUser(userId);
-
-        return messages.values().stream()
-                .filter(message -> message.getSender().getId().equals(userId))
-                .toList();
-    }
-
     @Override
     public List<Message> findAllByChannelMessage(UUID channelId) {
         channelService.findChannel(channelId);

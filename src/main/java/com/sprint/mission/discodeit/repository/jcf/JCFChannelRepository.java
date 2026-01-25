@@ -2,15 +2,21 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.AlreadyJoinedChannelException;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class JCFChannelRepository implements ChannelRepository {
     private final Map<UUID, Channel> channels = new LinkedHashMap<>();
+    private final UserService userService;
 
+    public JCFChannelRepository(UserService userService) {
+        this.userService = userService;
+    }
     @Override
     public Channel createChannel(Channel channel) {
         channels.put(channel.getId(),  channel);
@@ -41,22 +47,10 @@ public class JCFChannelRepository implements ChannelRepository {
 
     }
 
-    public Channel updateChannel(UUID channelId, Channel channelName) {
-        Channel channel = findChannel(channelId);
-        channels.put(channelId, channelName);
-        return channel;
-    }
-
     @Override
     public boolean existsByNameChannel(String channelName) {
         return channels.values().stream()
                 .anyMatch(c -> c.getChannelName().equals(channelName));
-    }
-
-    @Override
-    public Channel saveChannel(Channel channel) {
-        channels.put(channel.getId(), channel);
-        return channel;
     }
 
     @Override
@@ -82,5 +76,16 @@ public class JCFChannelRepository implements ChannelRepository {
         return users.stream()
                 .map(User::getUserName)
                 .collect(Collectors.joining(", "));
+    }
+
+    @Override
+    public void userAddChannel(UUID channelId, UUID userId) {
+        Channel channel = channels.get(channelId);
+        if (channel == null) throw new ChannelNotFoundException();
+
+        User user = userService.findUser(userId);
+        if (channel.getChannelUser().contains(user)) throw new AlreadyJoinedChannelException();
+
+        channel.getChannelUser().add(user);
     }
 }

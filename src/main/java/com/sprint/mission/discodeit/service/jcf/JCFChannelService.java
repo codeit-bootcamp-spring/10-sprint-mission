@@ -58,15 +58,6 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel userRemoveChannel(UUID channelId, UUID userId) {
-        Channel channel = findChannel(channelId);
-        User user = userService.findUser(userId);
-        if (!channel.hasChannelUser(user)) throw new UserNotInChannelException();
-        channel.removeChannelUser(user);
-        return channel;
-    }
-
-    @Override
     public Channel nameUpdateChannel(UUID channelId, String channelName) {
         Channel channel = findChannel(channelId);
         if (channel.getChannelName().equals(channelName)) throw new DuplicationChannelException();

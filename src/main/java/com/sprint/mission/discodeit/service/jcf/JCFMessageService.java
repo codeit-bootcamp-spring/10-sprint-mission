@@ -4,9 +4,7 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.MessageNotFoundException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -27,11 +25,12 @@ public class JCFMessageService implements MessageService {
     }
 
     // 메시지 생성
-    public Message createMessage(User user, Channel channel, String content) {
-        userService.findUser(user.getId());
-        channelService.findChannel(channel.getId());
+    public Message createMessage(UUID userId, UUID channelId, String content) {
+        // 1. 유저와 채널 객체 조회 (비즈니스 검증)
+        User sender = userService.findUser(userId);
+        Channel channel = channelService.findChannel(channelId);
 
-        Message message = new Message(user, channel, content);
+        Message message = new Message(sender, channel, content);
         messages.put(message.getId(), message);
         return message;
     }
@@ -92,4 +91,3 @@ public class JCFMessageService implements MessageService {
 
 
 }
-

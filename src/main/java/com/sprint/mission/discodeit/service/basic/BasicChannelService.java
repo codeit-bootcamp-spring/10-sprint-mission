@@ -2,10 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.AlreadyJoinedChannelException;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.DuplicationChannelException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -19,7 +16,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
 
-    public BasicChannelService(ChannelRepository channelRepository,  UserRepository userRepository) {
+    public BasicChannelService(ChannelRepository channelRepository, UserRepository userRepository) {
         this.channelRepository = channelRepository;
         this.userRepository = userRepository;
     }
@@ -56,23 +53,7 @@ public class BasicChannelService implements ChannelService {
         }
 
         channel.addChannelUser(user);
-
-        channelRepository.updateChannel(channelId, channel);
-        return channel;
-    }
-
-    @Override
-    public Channel userRemoveChannel(UUID channelId, UUID userId) {
-        Channel channel = channelRepository.findChannel(channelId);
-        User user = userRepository.findUser(userId);
-
-        if (!channel.hasChannelUser(user)) {
-            throw new UserNotFoundException();
-        }
-
-        channel.removeChannelUser(user);
-
-        channelRepository.updateChannel(channelId, channel);
+        channelRepository.createChannel(channel); // 저장
         return channel;
     }
 
@@ -85,16 +66,14 @@ public class BasicChannelService implements ChannelService {
         }
 
         channel.updateChannelName(channelName);
-
-        channelRepository.updateChannel(channelId, channel);
+        channelRepository.createChannel(channel); // 저장
         return channel;
     }
 
     @Override
     public Channel deleteChannel(UUID channelId) {
-        Channel channel = channelRepository.findChannel(channelId);
         channelRepository.deleteChannel(channelId);
-        return channel;
+        return null; // 삭제 후 반환 필요 없으면 null
     }
 
     @Override
@@ -103,15 +82,8 @@ public class BasicChannelService implements ChannelService {
         return channelRepository.findByUserId(userId);
     }
 
-    // **특정 채널 참가자 목록 조회**
     @Override
     public String findAllUserInChannel(UUID channelId) {
-        Channel channel = channelRepository.findChannel(channelId);
-        List<User> users = channel.getChannelUser();
-
-        return users.stream()
-                .map(User::getUserName)
-                .collect(Collectors.joining(", "));
+        return channelRepository.findAllUserInChannel(channelId);
     }
-
 }

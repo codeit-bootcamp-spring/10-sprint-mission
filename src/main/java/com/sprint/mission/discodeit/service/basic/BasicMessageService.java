@@ -7,7 +7,9 @@ import com.sprint.mission.discodeit.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,25 +19,30 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
+    private final UserService userService;
+    private final ChannelService channelService;
 
     public BasicMessageService(
             ChannelRepository channelRepository,
             UserRepository userRepository,
-            MessageRepository messageRepository
+            MessageRepository messageRepository,
+            UserService userService,
+            ChannelService channelService
     ) {
         this.channelRepository = channelRepository;
         this.userRepository = userRepository;
         this.messageRepository = messageRepository;
+        this.userService = userService;
+        this.channelService = channelService;
     }
 
     @Override
-    public Message createMessage(User sender, Channel channel, String content) {
-        // 비즈니스 검증
-        userRepository.findUser(sender.getId());
-        channelRepository.findChannel(channel.getId());
+    public Message createMessage(UUID userId, UUID channelId, String content) {
+        // 존재 여부만 검증
+        userService.findUser(userId);
+        channelService.findChannel(channelId);
 
-        // 저장은 Repository 책임
-        return messageRepository.createMessage(sender, channel, content);
+        return messageRepository.createMessage(userId, channelId, content);
     }
 
     @Override

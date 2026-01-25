@@ -12,10 +12,10 @@ public class FileUserRepository implements UserRepository {
 
     private static final String FILE_PATH = "users.dat";
 
+    // 파일에서 Map 로드
     private Map<UUID, User> load() {
         File file = new File(FILE_PATH);
         if (!file.exists()) return new LinkedHashMap<>();
-
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             return (Map<UUID, User>) ois.readObject();
         } catch (Exception e) {
@@ -23,6 +23,7 @@ public class FileUserRepository implements UserRepository {
         }
     }
 
+    // 파일에 Map 저장
     private void save(Map<UUID, User> users) {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
             oos.writeObject(users);
@@ -31,21 +32,17 @@ public class FileUserRepository implements UserRepository {
         }
     }
 
+    // 초기화
     public void resetUserFile() {
-        Map<UUID, User> users = load();
-        users.clear();
-        save(users);
+        save(new LinkedHashMap<>());
     }
 
     @Override
     public User createUser(User user) {
         Map<UUID, User> users = load();
-
-        if (users.values().stream()
-                .anyMatch(u -> u.getUserEmail().equals(user.getUserEmail()))) {
+        if (users.values().stream().anyMatch(u -> u.getUserEmail().equals(user.getUserEmail()))) {
             throw new DuplicationEmailException();
         }
-
         users.put(user.getId(), user);
         save(users);
         return user;
@@ -79,7 +76,6 @@ public class FileUserRepository implements UserRepository {
         Map<UUID, User> users = load();
         User removed = users.remove(userId);
         if (removed == null) throw new UserNotFoundException();
-
         save(users);
         return removed;
     }
