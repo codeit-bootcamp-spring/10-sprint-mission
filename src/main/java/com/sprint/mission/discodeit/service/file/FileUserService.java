@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -10,9 +12,13 @@ import java.util.*;
 
 public class FileUserService implements UserService {
     private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
 
-    public FileUserService(UserRepository userRepository) {
+    public FileUserService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
         this.userRepository = userRepository;
+        this.channelRepository = channelRepository;
+        this.messageRepository = messageRepository;
     }
 
     // 유저 생성
@@ -46,13 +52,33 @@ public class FileUserService implements UserService {
         Optional.ofNullable(status).ifPresent(user::updateStatus);
         Optional.ofNullable(password).ifPresent(user::updatePassword);
 
-        return userRepository.save(user);
+        userRepository.save(user);
+
+        for (Channel channel : user.getJoinedChannels()) {
+            channelRepository.save(channel);
+        }
+
+        for (Message message : user.getMyMessages()) {
+            messageRepository.save(message);
+        }
+
+        return user;
     }
 
     // 유저 삭제
     @Override
     public void delete(UUID id){
         User user = findById(id);
+
+        for (Channel channel : user.getJoinedChannels()) {
+            channel.removeMember(user);
+            channelRepository.save(channel);
+        }
+
+        for (Message message : user.getMyMessages()) {
+            messageRepository.delete(message);
+        }
+
         userRepository.delete(user);
     }
 
