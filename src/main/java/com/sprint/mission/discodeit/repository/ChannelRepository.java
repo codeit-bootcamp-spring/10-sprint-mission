@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface ChannelRepository {
     // 저장
-    Channel Save(Channel channel);
+    Channel save(Channel channel);
 
     // 읽기
     Optional<Channel> findById(UUID id);

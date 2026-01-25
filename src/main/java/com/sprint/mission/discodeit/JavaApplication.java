@@ -3,9 +3,19 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
+import com.sprint.mission.discodeit.service.*;
+import com.sprint.mission.discodeit.service.basic.BasicChannelServiceImpl;
+import com.sprint.mission.discodeit.service.basic.BasicMessageServiceImpl;
+import com.sprint.mission.discodeit.service.basic.BasicUserServiceImpl;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
@@ -25,15 +35,65 @@ public class JavaApplication {
 //        userService.setMessageService(messageService);
 //        channelService.setMessageService(messageService);
 
-        //FileService
-        UserService userService = new FileUserService();
-        ChannelService channelService = new FileChannelService();
-        MessageService messageService = new FileMessageService(userService,channelService);
+//        //FileService
+//        UserService userService = new FileUserService();
+//        ChannelService channelService = new FileChannelService();
+//        MessageService messageService = new FileMessageService(userService,channelService);
+//        userService.setChannelService(channelService);
+//        userService.setMessageService(messageService);
+//        channelService.setMessageService(messageService);
+//        channelService.setUserService(userService);
+
+        /// /////////////////////////////////////////////////////
+
+        //BasicService+JCF Repository
+        UserRepository userRepository = new JCFUserRepository();
+        ChannelRepository channelRepository = new JCFChannelRepository();
+        MessageRepository messageRepository = new JCFMessageRepository();
+        BasicUserService userService = new BasicUserServiceImpl(userRepository);
+        BasicChannelService channelService = new BasicChannelServiceImpl(channelRepository);
+        BasicMessageService messageService = new BasicMessageServiceImpl(messageRepository);
+
         userService.setChannelService(channelService);
         userService.setMessageService(messageService);
-        channelService.setMessageService(messageService);
-        channelService.setUserService(userService);
+        userService.setChannelRepository(channelRepository);
+        userService.setMessageRepository(messageRepository);
 
+        channelService.setUserService(userService);
+        channelService.setMessageService(messageService);
+        channelService.setUserRepository(userRepository);
+        channelService.setMessageRepository(messageRepository);
+
+        messageService.setUserService(userService);
+        messageService.setChannelService(channelService);
+        messageService.setUserRepository(userRepository);
+        messageService.setChannelRepository(channelRepository);
+
+        /// //////////////////////////////////////////
+//        //BasicService + File Repo
+//        UserRepository userRepository = new FileUserRepository();
+//        ChannelRepository channelRepository = new FileChannelRepository();
+//        MessageRepository messageRepository = new FileMessageRepository();
+//        BasicUserService userService = new BasicUserServiceImpl(userRepository);
+//        BasicChannelService channelService = new BasicChannelServiceImpl(channelRepository);
+//        BasicMessageService messageService = new BasicMessageServiceImpl(messageRepository);
+//
+//        userService.setChannelService(channelService);
+//        userService.setMessageService(messageService);
+//        userService.setChannelRepository(channelRepository);
+//        userService.setMessageRepository(messageRepository);
+//
+//        channelService.setUserService(userService);
+//        channelService.setMessageService(messageService);
+//        channelService.setUserRepository(userRepository);
+//        channelService.setMessageRepository(messageRepository);
+//
+//        messageService.setUserService(userService);
+//        messageService.setChannelService(channelService);
+//        messageService.setUserRepository(userRepository);
+//        messageService.setChannelRepository(channelRepository);
+
+        /// ////////////////////////////////////////////////////
         // 유저
         User user1 = userService.createUser("장동규");
         UUID user1Id = user1.getId();
@@ -222,7 +282,7 @@ public class JavaApplication {
                 .forEach(System.out::println);
 
 
-        // 각 객체 삭제 시 연관 데이터 삭제 확인
+        /////////// 각 객체 삭제 시 연관 데이터 삭제 확인
         User user5 = userService.createUser("노경섭");
 
         Channel catChannel = channelService.createChannel("고양이 채널");

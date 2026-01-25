@@ -25,7 +25,7 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel Save(Channel channel) {
+    public Channel save(Channel channel) {
         loadData();
         data.put(channel.getId(), channel);
         saveData();
