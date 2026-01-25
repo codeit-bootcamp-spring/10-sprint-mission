@@ -46,34 +46,10 @@ public class JavaApplication {
 
         /// /////////////////////////////////////////////////////
 
-        //BasicService+JCF Repository
-        UserRepository userRepository = new JCFUserRepository();
-        ChannelRepository channelRepository = new JCFChannelRepository();
-        MessageRepository messageRepository = new JCFMessageRepository();
-        BasicUserService userService = new BasicUserServiceImpl(userRepository);
-        BasicChannelService channelService = new BasicChannelServiceImpl(channelRepository);
-        BasicMessageService messageService = new BasicMessageServiceImpl(messageRepository);
-
-        userService.setChannelService(channelService);
-        userService.setMessageService(messageService);
-        userService.setChannelRepository(channelRepository);
-        userService.setMessageRepository(messageRepository);
-
-        channelService.setUserService(userService);
-        channelService.setMessageService(messageService);
-        channelService.setUserRepository(userRepository);
-        channelService.setMessageRepository(messageRepository);
-
-        messageService.setUserService(userService);
-        messageService.setChannelService(channelService);
-        messageService.setUserRepository(userRepository);
-        messageService.setChannelRepository(channelRepository);
-
-        /// //////////////////////////////////////////
-//        //BasicService + File Repo
-//        UserRepository userRepository = new FileUserRepository();
-//        ChannelRepository channelRepository = new FileChannelRepository();
-//        MessageRepository messageRepository = new FileMessageRepository();
+//        //BasicService+JCF Repository
+//        UserRepository userRepository = new JCFUserRepository();
+//        ChannelRepository channelRepository = new JCFChannelRepository();
+//        MessageRepository messageRepository = new JCFMessageRepository();
 //        BasicUserService userService = new BasicUserServiceImpl(userRepository);
 //        BasicChannelService channelService = new BasicChannelServiceImpl(channelRepository);
 //        BasicMessageService messageService = new BasicMessageServiceImpl(messageRepository);
@@ -92,6 +68,30 @@ public class JavaApplication {
 //        messageService.setChannelService(channelService);
 //        messageService.setUserRepository(userRepository);
 //        messageService.setChannelRepository(channelRepository);
+
+        /// //////////////////////////////////////////
+        //BasicService + File Repo
+        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+        MessageRepository messageRepository = new FileMessageRepository();
+        BasicUserService userService = new BasicUserServiceImpl(userRepository);
+        BasicChannelService channelService = new BasicChannelServiceImpl(channelRepository);
+        BasicMessageService messageService = new BasicMessageServiceImpl(messageRepository);
+
+        userService.setChannelService(channelService);
+        userService.setMessageService(messageService);
+        userService.setChannelRepository(channelRepository);
+        userService.setMessageRepository(messageRepository);
+
+        channelService.setUserService(userService);
+        channelService.setMessageService(messageService);
+        channelService.setUserRepository(userRepository);
+        channelService.setMessageRepository(messageRepository);
+
+        messageService.setUserService(userService);
+        messageService.setChannelService(channelService);
+        messageService.setUserRepository(userRepository);
+        messageService.setChannelRepository(channelRepository);
 
         /// ////////////////////////////////////////////////////
         // 유저
