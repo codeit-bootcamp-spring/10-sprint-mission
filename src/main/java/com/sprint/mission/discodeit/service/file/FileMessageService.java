@@ -59,7 +59,11 @@ public class FileMessageService implements MessageService {
         Message message = findById(id);
         message.update(content); // 여기서 isEdited가 true로 변함
 
-        return messageRepository.save(message);
+        messageRepository.save(message);
+        userRepository.save(message.getUser());
+        channelRepository.save(message.getChannel());
+
+        return message;
     }
 
     // 메시지 삭제
@@ -84,7 +88,11 @@ public class FileMessageService implements MessageService {
         Message message = findById(id);
         message.togglePin();
 
-        return messageRepository.save(message);
+        messageRepository.save(message);
+        channelRepository.save(message.getChannel());
+        userRepository.save(message.getUser());
+
+        return message;
     }
 
     // 특정 채널의 메시지 목록 조회
