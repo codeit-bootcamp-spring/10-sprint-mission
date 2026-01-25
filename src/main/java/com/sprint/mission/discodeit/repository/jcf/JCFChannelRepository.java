@@ -4,10 +4,8 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class JCFChannelRepository implements ChannelRepository {
     final ArrayList<Channel> data;
@@ -18,7 +16,15 @@ public class JCFChannelRepository implements ChannelRepository {
 
     @Override
     public Channel save(Channel channel) {
-        data.add(channel); // 저장 로직
+        OptionalInt indexOpt = IntStream.range(0, this.data.size())
+                .filter(i -> data.get(i).getId().equals(channel.getId()))
+                .findFirst();
+        if (indexOpt.isPresent()) {
+            data.set(indexOpt.getAsInt(), channel);
+        } else {
+            data.add(channel);
+        }
+
         return channel;
     }
 

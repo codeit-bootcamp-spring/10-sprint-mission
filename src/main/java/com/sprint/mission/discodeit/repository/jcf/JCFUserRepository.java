@@ -4,10 +4,8 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.util.Validators;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class JCFUserRepository implements UserRepository {
     final ArrayList<User> data;
@@ -18,7 +16,15 @@ public class JCFUserRepository implements UserRepository {
 
     @Override
     public User save(User user) {
-        data.add(user); // 저장 로직
+        OptionalInt indexOpt = IntStream.range(0, this.data.size())
+                .filter(i -> data.get(i).getId().equals(user.getId()))
+                .findFirst();
+        if (indexOpt.isPresent()) {
+            data.set(indexOpt.getAsInt(), user);
+        } else {
+            data.add(user);
+        }
+
         return user;
     }
 

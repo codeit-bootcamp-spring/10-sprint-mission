@@ -4,12 +4,21 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import com.sprint.mission.discodeit.service.file.FileChannelService;
 import com.sprint.mission.discodeit.service.file.FileMessageService;
 import com.sprint.mission.discodeit.service.file.FileUserService;
@@ -20,12 +29,15 @@ import java.util.List;
 public class JavaApplication {
     public static void main(String[] args) {
         // 0. 서비스 초기화
-        FileUserRepository fileUserRepository = new FileUserRepository();
-        FileChannelRepository fileChannelRepository = new FileChannelRepository();
-        FileMessageRepository fileMessageRepository = new FileMessageRepository();
-        UserService userService = new FileUserService(fileUserRepository);
-        ChannelService channelService = new FileChannelService(fileUserRepository, fileChannelRepository);
-        MessageService messageService = new FileMessageService(fileMessageRepository, fileChannelRepository, fileUserRepository);
+     // 0.1 Repository 초기화
+     UserRepository userRepository = new FileUserRepository(); //or new JCFUserRepository
+     ChannelRepository channelRepository = new FileChannelRepository(); // or new JCFChannelRepository
+     MessageRepository messageRepository = new FileMessageRepository(); // or new JCFMessageRepository
+
+     // 0.2 Service 초기화
+     BasicUserService userService = new BasicUserService(userRepository);
+     BasicChannelService channelService = new BasicChannelService(userRepository, channelRepository);
+     BasicMessageService messageService = new BasicMessageService(messageRepository, channelRepository, userRepository);
 
        System.out.println("=== [시작] 서비스 테스트 ===");
 //        //================================ 기본 기능 ================================
@@ -197,5 +209,29 @@ public class JavaApplication {
         System.out.println();
 
         System.out.println("=== [종료] 서비스 테스트 ===");
+
+        /*
+        [서비스 구조 변화 정리]
+
+        - 초기 JCF*Service / File*Service 단계에서는
+         서비스가 비즈니스 로직과 저장 로직을 함께 가지고 있었다.
+         예를 들어, JCF*Service는 내부 컬렉션(ArrayList)을 기반으로 데이터를 직접 관리했고,
+         File*Service는 파일 직렬화/역직렬화까지 서비스가 직접 처리했다.
+
+       - 이후 Repository를 도입하면서,
+         저장 로직을 서비스에서 분리하여
+         JCF*Repository / File*Repository 구현체로 이동시켰다.
+         이 단계에서는 여전히
+         JCF*Service는 JCF*Repository에,
+         File*Service는 File*Repository에 각각 의존하는 구조였다.
+
+       - 마지막으로 Basic*Service를 도입하면서,
+         서비스는 저장 방식(JCF/File)을 전혀 알지 않고
+         Repository 인터페이스에만 의존하도록 변경했다.
+         그 결과, Service 코드는 그대로 유지한 채
+         main에서 주입하는 Repository 구현체만 바꿔
+         저장 방식을 유연하게 교체할 수 있게 되었다.
+        */
+
     }
 }

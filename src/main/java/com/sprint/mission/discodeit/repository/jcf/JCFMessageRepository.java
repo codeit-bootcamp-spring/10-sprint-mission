@@ -4,10 +4,8 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class JCFMessageRepository implements MessageRepository {
     final ArrayList<Message> data;
@@ -18,7 +16,15 @@ public class JCFMessageRepository implements MessageRepository {
 
     @Override
     public Message save(Message message) {
-        data.add(message); // 저장 로직
+        OptionalInt indexOpt = IntStream.range(0, this.data.size())
+                .filter(i -> data.get(i).getId().equals(message.getId()))
+                .findFirst();
+        if (indexOpt.isPresent()) {
+            data.set(indexOpt.getAsInt(), message);
+        } else {
+            data.add(message);
+        }
+
         return message;
     }
 
