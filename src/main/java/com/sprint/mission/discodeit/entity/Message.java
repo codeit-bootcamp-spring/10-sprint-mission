@@ -1,7 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.UUID;
+import lombok.Getter;
 
+@Getter
 public class Message extends BaseEntity {
     // 메시지 내용
     private String content;
@@ -19,18 +20,6 @@ public class Message extends BaseEntity {
         this.sentUser = sentUser;
         // sentChannelId 초기화는 메시지 전송 시점에 설정
         this.sentChannel = sentChannel;
-    }
-
-    public User getSentUser() {
-        return sentUser;
-    }
-
-    public Channel getSentChannel() {
-        return sentChannel;
-    }
-
-    public String getContent() {
-        return content;
     }
 
     public void updateContent(String content) {

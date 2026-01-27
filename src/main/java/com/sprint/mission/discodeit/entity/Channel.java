@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class Channel extends BaseEntity {
     private String channelName;
     private List<User> joinedUsers;
@@ -13,14 +16,6 @@ public class Channel extends BaseEntity {
         // 필드 초기화
         this.channelName = channelName;
         this.joinedUsers = new ArrayList<>();
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public List<User> getJoinedUsers() {
-        return joinedUsers;
     }
 
     public void updateChannelName(String channelName) {
