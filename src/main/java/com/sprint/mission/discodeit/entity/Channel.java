@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -24,8 +25,8 @@ public class Channel extends BaseEntity implements Serializable {
         this.messages = new ArrayList<>();
 
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.channelName = channelName;
         this.user = user;
         this.type = channelType;
@@ -35,7 +36,7 @@ public class Channel extends BaseEntity implements Serializable {
 
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     public void addMember(User user) {

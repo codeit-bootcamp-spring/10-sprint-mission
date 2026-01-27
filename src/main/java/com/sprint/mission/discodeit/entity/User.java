@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -26,8 +28,8 @@ public class User extends BaseEntity implements Serializable {
         this.messages = new ArrayList<>();
 
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.email = email;
         this.password = password;
         this.nickname = nickname;
@@ -36,17 +38,17 @@ public class User extends BaseEntity implements Serializable {
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     public void updateNickname(String newNickname) {
         this.nickname = newNickname;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.ofEpochSecond(System.currentTimeMillis());
     }
 
     public void updateUserStatus(UserStatusType newUserStatus) {
         this.userStatus = newUserStatus;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.ofEpochSecond(System.currentTimeMillis());
     }
 
     public void addChannel(Channel channel) {

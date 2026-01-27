@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -17,8 +18,8 @@ public class Message extends BaseEntity implements Serializable {
 
     public Message(String message, User user, Channel channel, MessageType type) {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.message = message;
         this.user = user;
         this.channel = channel;
@@ -27,6 +28,6 @@ public class Message extends BaseEntity implements Serializable {
 
     public void updateMessage(String message) {
         this.message = message;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 }
