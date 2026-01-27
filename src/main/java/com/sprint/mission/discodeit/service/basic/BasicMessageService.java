@@ -8,11 +8,13 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Service
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
@@ -100,7 +102,7 @@ public class BasicMessageService implements MessageService {
         // Message ID null & Message 객체 존재 확인
         Message message = findMessageById(messageId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(message.getMessageChannel().getId());
+        Channel channel = validateAndGetChannelByChannelId(message.getChannel().getId());
 
         // message author의 id와 삭제 요청한 user id가 동일한지 확인하고
         // 메세지가 작성된 channel의 owner와 user가 동일한지 확인해서 동일하지 않다면 exception
