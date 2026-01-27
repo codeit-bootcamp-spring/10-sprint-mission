@@ -24,10 +24,10 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message createMessage(String content, User sender, Channel channel) {
-        Message message = new Message(content, sender, channel);
+        Message message = new Message(content, sender.getId(), channel.getId());
         data.add(message);
-        channel.addMessage(message);
-        sender.addMessage(message);
+        channel.addMessageId(message.getId());
+        sender.addMessageId(message.getId());
         return message;
     }
 
@@ -46,12 +46,20 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public List<Message> getMessagesByUserId(UUID userId) {
-        return userService.getUser(userId).getMessages();
+        List<Message> result = new ArrayList<>();
+        userService.getUser(userId)
+                .getMessageIds()
+                .forEach(messageId -> result.add(getMessage(messageId)));
+        return result;
     }
 
     @Override
     public List<Message> getMessagesByChannelId(UUID channelId) {
-        return channelService.getChannel(channelId).getMessages();
+        List<Message> result = new ArrayList<>();
+        channelService.getChannel(channelId)
+                .getMessageIds()
+                .forEach(messageId -> result.add(getMessage(messageId)));
+        return result;
     }
 
     @Override
@@ -64,9 +72,13 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public void deleteMessage(UUID messageId) {
-        Message target = getMessage(messageId);
-        target.getSender().removeMessage(target);
-        target.getChannel().removeMessage(target);
+        Optional<Message> deleteMessage = data.stream()
+                .filter(message -> message.getId().equals(messageId))
+                .findAny();
+        if(deleteMessage.isEmpty()) return;
+        Message target = deleteMessage.get();
+        userService.getUser(target.getSenderId()).removeMessageId(messageId);
+        channelService.getChannel(target.getChannelId()).removeMessageId(messageId);
         data.remove(target);
     }
 }

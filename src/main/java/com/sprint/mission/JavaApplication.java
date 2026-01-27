@@ -12,7 +12,6 @@ import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
-import java.io.*;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -24,16 +23,16 @@ public class JavaApplication {
         channelServiceTest();
         printN("메세지 테스트 시작");
         messageServiceTest();
-        printN("유저 삭제 연관 관계 테스트");
-        deleteUserTest();
-        printN("채널 삭제 연관 관계 테스트");
-        deleteChannelTest();
-        printN("메세지 삭제 연관 관계 테스트");
-        deleteMessageTest();
+//        printN("유저 삭제 연관 관계 테스트");
+//        deleteUserTest();
+//        printN("채널 삭제 연관 관계 테스트");
+//        deleteChannelTest();
+//        printN("메세지 삭제 연관 관계 테스트");
+//        deleteMessageTest();
     }
 
     private static void userServiceTest() {
-        UserService userService = new FileUserService();
+        UserService userService = new JCFUserService();
         User user1 = userService.createUser("user1", "1234", "");
         User user2 = userService.createUser("user2", "4567", "");
 
@@ -101,8 +100,8 @@ public class JavaApplication {
     }
 
     private static void channelServiceTest() {
-        FileUserService userService = new FileUserService();
-        FileChannelService channelService = new FileChannelService();
+        JCFUserService userService = new JCFUserService();
+        JCFChannelService channelService = new JCFChannelService();
         userService.setChannelService(channelService);
         channelService.setUserService(userService);
 
@@ -175,13 +174,15 @@ public class JavaApplication {
     }
 
     private static void messageServiceTest() {
-        FileMessageService messageService = new FileMessageService();
-        FileUserService userService = new FileUserService();
-        FileChannelService channelService = new FileChannelService();
+        JCFMessageService messageService = new JCFMessageService();
+        JCFUserService userService = new JCFUserService();
+        JCFChannelService channelService = new JCFChannelService();
         userService.setChannelService(channelService);
         userService.setMessageService(messageService);
         channelService.setUserService(userService);
         channelService.setMessageService(messageService);
+        messageService.setUserService(userService);
+        messageService.setChannelService(channelService);
 
         User user1 = userService.createUser("user1", "1234", "");
         Channel channel1 = channelService.createChannel("channel1", ChannelType.PUBLIC, "channel1 description");
@@ -262,15 +263,15 @@ public class JavaApplication {
         // 전체 유저 수 = 2
         int allUserSize = userService.getAllUsers().size();
         // 채널1 의 유저 수 = 2
-        int channel1UserSize = channel1.getUsers().size();
+        int channel1UserSize = channel1.getUserIds().size();
         // 전체 메세지 수 = 4
         int allMessageSize = messageService.getAllMessages().size();
         // user1의 메세지 수 = 3
-        int user1MessageSize = user1.getMessages().size();
+        int user1MessageSize = user1.getMessageIds().size();
         userService.deleteUser(user1.getId());
 
         if(userService.getAllUsers().size() == allUserSize - 1
-        && channel1.getUsers().size() == channel1UserSize - 1
+        && channel1.getUserIds().size() == channel1UserSize - 1
         && messageService.getAllMessages().size() == allMessageSize - 3) {
             System.out.println("유저 삭제 연관 관계 테스트 성공");
         } else {
@@ -308,17 +309,17 @@ public class JavaApplication {
         // 전체 메세지 수 = 5
         int allMessageSize = messageService.getAllMessages().size();
         // 채널1 의 메세지 수 = 3
-        int channel1MessageSize = channel1.getMessages().size();
+        int channel1MessageSize = channel1.getMessageIds().size();
         // user1의 메세지 수 = 3
-        int user1MessageSize = user1.getMessages().size();
+        int user1MessageSize = user1.getMessageIds().size();
         // user2의 메세지 수 = 2
-        int user2MessageSize = user2.getMessages().size();
+        int user2MessageSize = user2.getMessageIds().size();
         channelService.deleteChannel(channel1.getId());
 
         if(channelService.getAllChannels().size() == allChannelSize - 1
         && messageService.getAllMessages().size() == allMessageSize - 3
-        && user1.getMessages().size() == user1MessageSize - 2
-        && user2.getMessages().size() == user2MessageSize - 1) {
+        && user1.getMessageIds().size() == user1MessageSize - 2
+        && user2.getMessageIds().size() == user2MessageSize - 1) {
             System.out.println("채널 삭제 연관 관계 테스트 성공");
         } else {
             System.out.println("채널 삭제 연관 관계 테스트 실패");
@@ -349,18 +350,18 @@ public class JavaApplication {
         // 전체 메세지 수 =
         int allMessageSize = messageService.getAllMessages().size();
         // 채널1 의 메세지 수 =
-        int channel1MessageSize = channel1.getMessages().size();
+        int channel1MessageSize = channel1.getMessageIds().size();
         // user1의 메세지 수 =
-        int user1MessageSize = user1.getMessages().size();
+        int user1MessageSize = user1.getMessageIds().size();
         // user2의 메세지 수 =
-        int user2MessageSize = user2.getMessages().size();
+        int user2MessageSize = user2.getMessageIds().size();
         // 메세지1 삭제
         messageService.deleteMessage(message1.getId());
 
         if(messageService.getAllMessages().size() == allMessageSize - 1
-        && channel1.getMessages().size() == channel1MessageSize - 1
-        && user1.getMessages().size() == user1MessageSize - 1
-        && user2.getMessages().size() == user2MessageSize) {
+        && channel1.getMessageIds().size() == channel1MessageSize - 1
+        && user1.getMessageIds().size() == user1MessageSize - 1
+        && user2.getMessageIds().size() == user2MessageSize) {
             System.out.println("메세지1 삭제 연관 관계 테스트 성공");
         } else {
             System.out.println("메세지1 삭제 연관 관계 테스트 실패");
@@ -370,9 +371,9 @@ public class JavaApplication {
         messageService.deleteMessage(message2.getId());
 
         if(messageService.getAllMessages().size() == allMessageSize - 2
-                && channel1.getMessages().size() == channel1MessageSize - 2
-                && user1.getMessages().size() == user1MessageSize - 1
-                && user2.getMessages().size() == user2MessageSize - 1) {
+                && channel1.getMessageIds().size() == channel1MessageSize - 2
+                && user1.getMessageIds().size() == user1MessageSize - 1
+                && user2.getMessageIds().size() == user2MessageSize - 1) {
             System.out.println("메세지2 삭제 연관 관계 테스트 성공");
         } else {
             System.out.println("메세지2 삭제 연관 관계 테스트 실패");

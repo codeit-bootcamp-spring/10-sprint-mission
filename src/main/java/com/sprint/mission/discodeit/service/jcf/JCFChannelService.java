@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -47,7 +46,11 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public List<Channel> getChannelsByUserId(UUID userId) {
-        return userService.getUser(userId).getChannels();
+        List<Channel> result = new ArrayList<>();
+        userService.getUser(userId)
+                .getChannelIds()
+                .forEach(channelId -> result.add(getChannel(channelId)));
+        return result;
     }
 
     @Override
@@ -65,9 +68,13 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void deleteChannel(UUID channelId) {
-        Channel target = getChannel(channelId);
-        target.getMessages().forEach(message -> messageService.deleteMessage(message.getId()));
-        target.getUsers().forEach(user -> leaveChannel(channelId, user.getId()));
+        Optional<Channel> deleteChannel = data.stream()
+                .filter(channel -> channel.getId().equals(channelId))
+                .findAny();
+        if(deleteChannel.isEmpty()) return;
+        Channel target = deleteChannel.get();
+        target.getMessageIds().forEach(messageId -> messageService.deleteMessage(messageId));
+        target.getUserIds().forEach(userId -> leaveChannel(channelId, userId));
         data.remove(target);
     }
 
@@ -76,8 +83,8 @@ public class JCFChannelService implements ChannelService {
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
 
-        channel.addUser(user);
-        user.addChannel(channel);
+        channel.addUserId(userId);
+        user.addChannelId(channelId);
     }
 
     @Override
@@ -85,8 +92,8 @@ public class JCFChannelService implements ChannelService {
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
 
-        channel.removeUser(user);
-        user.removeChannel(channel);
+        channel.removeUserId(userId);
+        user.removeChannelId(channelId);
     }
 
     private void validateChannelExist(String channelName) {
