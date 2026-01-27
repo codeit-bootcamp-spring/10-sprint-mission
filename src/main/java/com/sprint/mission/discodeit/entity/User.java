@@ -1,62 +1,70 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.UUID;
 
-public class User extends BaseEntity {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private UUID id;
+    private Long createdAt;
+    private Long updatedAt;
+    //
     private String username;
-    private String password;
     private String email;
-    private List<Channel> myChannels = new ArrayList<>();
-    private List<Message> myMessages = new ArrayList<>();
+    private String password;
+
+    public User(String username, String email, String password) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now().getEpochSecond();
+        //
+        this.username = username;
+        this.email = email;
+        this.password = password;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+
+    public Long getUpdatedAt() {
+        return updatedAt;
+    }
 
     public String getUsername() {
         return username;
-    }
-
-    public String getPassword() {
-        return password;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void updateUsername(String newUsername){
-        this.username = newUsername;
-        this.setUpdatedAt(System.currentTimeMillis());
+    public String getPassword() {
+        return password;
     }
 
-    public void updateEmail(String newEmail){
-        this.email = newEmail;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
+    public void update(String newUsername, String newEmail, String newPassword) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
 
-    public void updatePassword(String newPassword){
-        this.password = newPassword;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public List<Message> getMyMessages() {
-        return myMessages;
-    }
-
-    public List<Channel> getMyChannels() {
-        return myChannels;
-    }
-
-    public void addMessage(Message message){
-        this.myMessages.add(message);
-    }
-
-    public User(String username, String password, String email) {
-        this.username = username;
-        this.password = password;
-        this.email = email;
-    }
-
-    @Override
-    public String toString() {
-        return "이름: " + username + ", 이메일: " + email + ", 비밀번호: " + password;
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
 }
