@@ -34,4 +34,7 @@ out/
 /.nb-gradle/
 
 ### VS Code ###
-.vscode/
+.vsc
+
+## 파일들
+.ser
