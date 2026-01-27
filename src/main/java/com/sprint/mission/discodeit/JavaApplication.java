@@ -49,12 +49,12 @@ public class JavaApplication {
         }
 
         private void serviceInjection() {
-            userService = new BasicUserService(userRepository);
-            channelService = new BasicChannelService(channelRepository, userService);
-            messageService = new BasicMessageService(messageRepository, userService, channelService);
-            ((BasicUserService)userService).setMessageService(messageService);
-            ((BasicUserService)userService).setChannelService(channelService);
-            ((BasicChannelService)channelService).setMessageService(messageService);
+//            userService = new BasicUserService(userRepository);
+//            channelService = new BasicChannelService(channelRepository, userService);
+//            messageService = new BasicMessageService(messageRepository, userService, channelService);
+//            ((BasicUserService)userService).setMessageService(messageService);
+//            ((BasicUserService)userService).setChannelService(channelService);
+//            ((BasicChannelService)channelService).setMessageService(messageService);
         }
     }
 
