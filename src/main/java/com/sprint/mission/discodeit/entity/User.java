@@ -1,82 +1,70 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
 
-public class User extends Common implements Serializable {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    private String userName;
+    private UUID id;
+    private Long createdAt;
+    private Long updatedAt;
+    //
+    private String username;
     private String email;
-    private String status;
-    private List<Channel> channelList;
-    private List<Message> messageList;
+    private String password;
 
-    public User(String userName, String email, String status){
-        //super가 숨겨져있음.
-        this.userName = userName;
+    public User(String username, String email, String password) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now().getEpochSecond();
+        //
+        this.username = username;
         this.email = email;
-        this.status = status;
-        this.channelList = new ArrayList<>();
-        this.messageList = new ArrayList<>();
+        this.password = password;
     }
 
-    public String getUserName() {
-        return userName;
+    public UUID getId() {
+        return id;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
-        setUpdatedAt();
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+
+    public Long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public String getPassword() {
+        return password;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public List<Channel> getChannelList(){
-        return channelList;
-    }
-
-    public List<Message> getMessageList(){
-        return messageList;
-    }
-
-    @Override
-    public String toString() {
-        return String.format(
-                "[유저명:%s]",
-                userName
-
-        );
-    }
-
-    public void addChannel(Channel channel){
-        if(channelList.contains(channel)){
-            throw new IllegalArgumentException("이미 채널이 존재합니다.");
+    public void update(String newUsername, String newEmail, String newPassword) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
         }
-        channelList.add(channel);
-    }
-
-    public void removeChannel(Channel channel){
-        if (!channelList.contains(channel)) {
-            throw new IllegalArgumentException("해당 채널이 존재하지 않습니다.");
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
         }
-        channelList.remove(channel);
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
-
-
 }

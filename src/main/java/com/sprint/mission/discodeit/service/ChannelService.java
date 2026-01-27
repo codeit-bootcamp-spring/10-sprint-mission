@@ -1,23 +1,14 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.ChannelType;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-
-    Channel create(String channelName, String type, UUID ownerId);
-    Channel findById(UUID id);
+    Channel create(ChannelType type, String name, String description);
+    Channel find(UUID channelId);
     List<Channel> findAll();
-    Channel update(UUID channelId, String name);
-    Channel delete(UUID channelId);
-    void enter(UUID channelId,UUID userId);
-    void leave(UUID channelId,UUID userId);
-    void save();
-
-    List<Channel> findByUser(UUID userId);
-    List<User> findByChannel(UUID channelId);
-    void removeUserFromAllChannel(UUID userId);
+    Channel update(UUID channelId, String newName, String newDescription);
+    void delete(UUID channelId);
 }

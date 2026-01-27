@@ -1,52 +1,63 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
 
-public class Message extends Common implements Serializable {
+public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
 
+    private UUID id;
+    private Long createdAt;
+    private Long updatedAt;
+    //
     private String content;
-    private User user;
-    private Channel channel;
+    //
+    private UUID channelId;
+    private UUID authorId;
 
-
-    public Message(String content,User user,Channel channel){
-
+    public Message(String content, UUID channelId, UUID authorId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now().getEpochSecond();
+        //
         this.content = content;
-        this.user = user;
-        this.channel = channel;
+        this.channelId = channelId;
+        this.authorId = authorId;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+
+    public Long getUpdatedAt() {
+        return updatedAt;
     }
 
     public String getContent() {
         return content;
     }
 
-    public User getUser(){
-        return user;
+    public UUID getChannelId() {
+        return channelId;
     }
 
-    public Channel getChannel(){
-        return channel;
+    public UUID getAuthorId() {
+        return authorId;
     }
 
-    //내용 수정일때 update시간 필요
-    public void setContent(String content) {
-        this.content = content;
-        setUpdatedAt();
+    public void update(String newContent) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
-
-
-    @Override
-    public String toString() {
-        return String.format(
-                "[내용: %s, 유저명:%s, 채널명: %s]",
-                content,
-                user.getUserName(),
-                channel.getChannelName()
-        );
-    }
-
-
 }

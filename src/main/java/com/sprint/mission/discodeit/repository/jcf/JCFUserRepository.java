@@ -1,35 +1,39 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
-import java.io.*;
 import java.util.*;
 
 public class JCFUserRepository implements UserRepository {
+    private final Map<UUID, User> data;
 
-    private final Map<UUID,User> data = new HashMap<>();
-
-
-    @Override
-    public User save(User user) {
-        data.put(user.getId(),user);
-        return data.get(user.getId());
+    public JCFUserRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
-    public User findById(UUID userId) {
-        return data.get(userId);
+    public User save(User user) {
+        this.data.put(user.getId(), user);
+        return user;
+    }
+
+    @Override
+    public Optional<User> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
     public List<User> findAll() {
-        return new ArrayList<>(data.values());
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public void delete(UUID userId) {
-        data.remove(userId);
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
     }
 
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
+    }
 }

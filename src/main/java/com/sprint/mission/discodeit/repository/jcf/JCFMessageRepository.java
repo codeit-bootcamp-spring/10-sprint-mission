@@ -1,34 +1,39 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
 import java.util.*;
 
 public class JCFMessageRepository implements MessageRepository {
+    private final Map<UUID, Message> data;
 
-    private final Map<UUID,Message> data = new HashMap<>();
-
-    @Override
-    public Message save(Message message) {
-        data.put(message.getId(),message);
-
-        return data.get(message.getId());
+    public JCFMessageRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
-    public Message findById(UUID messageId) {
-        return data.get(messageId);
+    public Message save(Message message) {
+        this.data.put(message.getId(), message);
+        return message;
+    }
+
+    @Override
+    public Optional<Message> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
     public List<Message> findAll() {
-        return new ArrayList<>(data.values());
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public void delete(UUID messageId) {
-        data.remove(messageId);
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
+    }
 
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
 }
