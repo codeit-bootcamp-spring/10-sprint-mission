@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Getter
 public class User extends Entity {
     private final String email;
     private String nickname;
@@ -16,14 +19,6 @@ public class User extends Entity {
         this.email = email;
         this.channels = new ArrayList<>();
         this.messages = new ArrayList<>();
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     public List<Channel> getChannels() {

@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Getter
 public class Channel extends Entity {
     private String name;
     private User owner;
@@ -22,14 +25,6 @@ public class Channel extends Entity {
         this.messages = new ArrayList<>();
         // 채널 목록에 유저(채널 생성자) 추가
         addUser(owner);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public User getOwner() {
-        return owner;
     }
 
     public List<User> getUsers() {

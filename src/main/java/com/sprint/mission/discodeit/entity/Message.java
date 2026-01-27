@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
+@Getter
 public class Message extends Entity {
     private final Channel channel;
     private final User user;
@@ -10,18 +13,6 @@ public class Message extends Entity {
         this.channel = channel;
         this.user = user;
         this.content = content;
-    }
-
-    public Channel getChannel() {
-        return channel;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public String getContent() {
-        return content;
     }
 
     public void addToChannelAndUser() {
