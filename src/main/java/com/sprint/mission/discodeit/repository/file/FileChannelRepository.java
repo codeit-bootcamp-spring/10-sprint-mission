@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class FileChannelRepository extends BaseFileRepository<Channel> implements ChannelRepository {
     public FileChannelRepository() {
         super("channels.ser");

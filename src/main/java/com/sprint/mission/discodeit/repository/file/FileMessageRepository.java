@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class FileMessageRepository extends BaseFileRepository<Message> implements MessageRepository {
     public FileMessageRepository() {
         super("messages.ser");

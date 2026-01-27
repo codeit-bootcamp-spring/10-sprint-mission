@@ -7,9 +7,11 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Service
 public class BasicChannelService implements ChannelService{
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
