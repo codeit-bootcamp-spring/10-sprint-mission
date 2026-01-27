@@ -8,11 +8,13 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.Validators;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 import java.util.stream.IntStream;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
     private static final String FILE_PATH = "data/messages.ser";
     final List<Message> data;
