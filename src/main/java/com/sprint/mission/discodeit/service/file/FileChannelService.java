@@ -77,7 +77,11 @@ public class FileChannelService implements ChannelService {
 
     @Override
     public List<Channel> getChannelsByUserId(UUID userId) {
-        return userService.getUser(userId).getChannels();
+        List<Channel> result = new ArrayList<>();
+        userService.getUser(userId)
+                .getChannelIds()
+                .forEach(channelId -> result.add(getChannel(channelId)));
+        return result;
     }
 
     @Override
@@ -108,8 +112,8 @@ public class FileChannelService implements ChannelService {
     public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
-        channel.addUser(user);
-        user.addChannel(channel);
+        channel.addUserId(userId);
+        user.addChannelId(channelId);
         // save(channel);
         // save(user);
     }
@@ -118,8 +122,8 @@ public class FileChannelService implements ChannelService {
     public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = getChannel(channelId);
         User user = userService.getUser(userId);
-        channel.removeUser(user);
-        user.removeChannel(channel);
+        channel.removeUserId(userId);
+        user.removeChannelId(channelId);
         // save(channel);
         // save(user);
     }

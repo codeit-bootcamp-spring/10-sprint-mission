@@ -32,7 +32,7 @@ public class JavaApplication {
     }
 
     private static void userServiceTest() {
-        UserService userService = new JCFUserService();
+        UserService userService = new FileUserService();
         User user1 = userService.createUser("user1", "1234", "");
         User user2 = userService.createUser("user2", "4567", "");
 
@@ -100,8 +100,8 @@ public class JavaApplication {
     }
 
     private static void channelServiceTest() {
-        JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService();
+        FileUserService userService = new FileUserService();
+        FileChannelService channelService = new FileChannelService();
         userService.setChannelService(channelService);
         channelService.setUserService(userService);
 
@@ -174,9 +174,9 @@ public class JavaApplication {
     }
 
     private static void messageServiceTest() {
-        JCFMessageService messageService = new JCFMessageService();
-        JCFUserService userService = new JCFUserService();
-        JCFChannelService channelService = new JCFChannelService();
+        FileMessageService messageService = new FileMessageService();
+        FileUserService userService = new FileUserService();
+        FileChannelService channelService = new FileChannelService();
         userService.setChannelService(channelService);
         userService.setMessageService(messageService);
         channelService.setUserService(userService);

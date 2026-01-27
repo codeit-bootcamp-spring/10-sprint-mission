@@ -78,7 +78,11 @@ public class FileUserService implements UserService {
 
     @Override
     public List<User> getUsersByChannelId(UUID channelId) {
-        return channelService.getChannel(channelId).getUsers();
+        List<User> result = new ArrayList<>();
+        channelService.getChannel(channelId)
+                .getUserIds()
+                .forEach(userId -> result.add(getUser(userId)));
+        return result;
     }
 
     @Override
