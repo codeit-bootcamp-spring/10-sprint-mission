@@ -82,7 +82,7 @@ public class FileMessageService implements MessageService {
         channelService.findChannelById(channelId);
 
         return findAllMessages().stream()
-                .filter(message -> message.getMessageChannel().getId().equals(channelId))
+                .filter(message -> message.getChannel().getId().equals(channelId))
                 .toList();
     }
 
@@ -122,7 +122,7 @@ public class FileMessageService implements MessageService {
         // Message ID null & Message 객체 존재 확인
         Message message = findMessageById(messageId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = channelService.findChannelById(message.getMessageChannel().getId());
+        Channel channel = channelService.findChannelById(message.getChannel().getId());
 
         // message author의 id와 삭제 요청한 user id가 동일한지 확인하고
         // 메세지가 작성된 channel의 owner와 user가 동일한지 확인해서 동일하지 않다면 exception

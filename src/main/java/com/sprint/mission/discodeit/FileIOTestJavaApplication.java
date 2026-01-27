@@ -17,15 +17,10 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileDataStore;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
 import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
 import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
 import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
-import java.io.File;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -321,12 +316,12 @@ public class FileIOTestJavaApplication {
         } catch (IllegalArgumentException e) {
             System.out.println(e);
         }
-        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getMessageChannel().getId() + "): " + message.getMessageContent()).toList());        System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
+        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getChannel().getId() + "): " + message.getContent()).toList());        System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
 
         System.out.println("\n========== 메세지 정보 수정 테스트: m2 수정 ==========");
-        System.out.println("[전]m2의 content = " + messageService.findMessageById(m2.getId()).getMessageContent());
+        System.out.println("[전]m2의 content = " + messageService.findMessageById(m2.getId()).getContent());
         messageService.updateMessageContent(u1.getId(), m2.getId(), "[update]m2c1u1");
-        System.out.println("[후]m2의 content = " + messageService.findMessageById(m2.getId()).getMessageContent());
+        System.out.println("[후]m2의 content = " + messageService.findMessageById(m2.getId()).getContent());
     }
 
     static void loadMessage() {
@@ -346,7 +341,7 @@ public class FileIOTestJavaApplication {
         MessageService messageService = new BasicMessageService(messageRepo, userRepo, channelRepo);
 
         System.out.println("\n========== 메세지 Load m1, m2, m3 ==========");
-        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getMessageChannel().getId() + "): " + message.getMessageContent()).toList());
+        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getChannel().getId() + "): " + message.getContent()).toList());
     }
 
     static void deleteMessageTest() {
@@ -382,10 +377,10 @@ public class FileIOTestJavaApplication {
         System.out.println("c1 참여 유저 = " + channelService.findChannelById(c1.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList());
 
         System.out.println("\n========== 메세지 Load m1, m2, m3 ==========");
-        Message m1 = messageService.findAllMessages().stream().filter(m -> m.getMessageContent().equals("m1c1u1")).findFirst().orElseThrow();
-        Message m2 = messageService.findAllMessages().stream().filter(m -> m.getMessageContent().equals("[update]m2c1u1")).findFirst().orElseThrow();
-        Message m3 = messageService.findAllMessages().stream().filter(m -> m.getMessageContent().equals("m3c1u2")).findFirst().orElseThrow();
-        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getMessageChannel().getId() + "): " + message.getMessageContent()).toList());
+        Message m1 = messageService.findAllMessages().stream().filter(m -> m.getContent().equals("m1c1u1")).findFirst().orElseThrow();
+        Message m2 = messageService.findAllMessages().stream().filter(m -> m.getContent().equals("[update]m2c1u1")).findFirst().orElseThrow();
+        Message m3 = messageService.findAllMessages().stream().filter(m -> m.getContent().equals("m3c1u2")).findFirst().orElseThrow();
+        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getChannel().getId() + "): " + message.getContent()).toList());
         System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
 
         System.out.println("\n========== 메세지 m2 삭제 ==========");
@@ -441,18 +436,18 @@ public class FileIOTestJavaApplication {
         System.out.println("c1 참여 유저 = " + channelService.findChannelById(c1.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList());
 
         System.out.println("\n========== 메세지 Load m1, m2, m3 ==========");
-        Message m1 = messageService.findAllMessages().stream().filter(m -> m.getMessageContent().equals("m1c1u1")).findFirst().orElseThrow();
-        Message m2 = messageService.findAllMessages().stream().filter(m -> m.getMessageContent().equals("[update]m2c1u1")).findFirst().orElseThrow();
-        Message m3 = messageService.findAllMessages().stream().filter(m -> m.getMessageContent().equals("m3c1u2")).findFirst().orElseThrow();
+        Message m1 = messageService.findAllMessages().stream().filter(m -> m.getContent().equals("m1c1u1")).findFirst().orElseThrow();
+        Message m2 = messageService.findAllMessages().stream().filter(m -> m.getContent().equals("[update]m2c1u1")).findFirst().orElseThrow();
+        Message m3 = messageService.findAllMessages().stream().filter(m -> m.getContent().equals("m3c1u2")).findFirst().orElseThrow();
 
-        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getMessageChannel().getId() + "): " + message.getMessageContent()).toList());
+        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getChannel().getId() + "): " + message.getContent()).toList());
         System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
 
         System.out.println("\n========== channel1 삭제 및 삭제 후 데이터 조회 ==========");
         System.out.println(channelService.findChannelById(c1.getId()));
         System.out.println("[전]channel1의 member list = " + c1.getChannelMembersList().stream().map(m -> m.getId()).toList());
         System.out.println("[전]user1의 join channel list = " + u1.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[전]user1의 message list = " + u1.getWriteMessageList().stream().map(m -> m.getId() + ": " + m.getMessageContent()).toList());
+        System.out.println("[전]user1의 message list = " + u1.getWriteMessageList().stream().map(m -> m.getId() + ": " + m.getContent()).toList());
         System.out.println("[전]전체 message list = " + messageService.findAllMessages().stream().map(m -> m.getId()).toList());
         System.out.println("===== [채널 삭제 시작] =====");
         deleteChannel(u1.getId(), c1.getId(), channelService, messageService);
@@ -467,7 +462,7 @@ public class FileIOTestJavaApplication {
         System.out.println("[후]channel1의 member list = " + c1.getChannelMembersList().stream().map(m -> m.getId()).toList());
 //        System.out.println("[후]user1의 join channel list = " + userService.findUserById(u1.getId()).orElseThrow().getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
         System.out.println("[후]user1의 join channel list = " + u1.getJoinChannelList().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
-        System.out.println("[후]user1의 message list = " + u1.getWriteMessageList().stream().map(m -> m.getId() + ": " + m.getMessageContent()).toList());
+        System.out.println("[후]user1의 message list = " + u1.getWriteMessageList().stream().map(m -> m.getId() + ": " + m.getContent()).toList());
         System.out.println("[후]전체 message list = " + messageService.findAllMessages().stream().map(m -> m.getId()).toList());
     }
 
@@ -504,11 +499,11 @@ public class FileIOTestJavaApplication {
         System.out.println("c1 참여 유저 = " + channelService.findChannelById(c1.getId()).getChannelMembersList().stream().map(m -> m.getId()).toList());
 
         System.out.println("\n========== 메세지 Load m1, m2, m3 ==========");
-        Message m1 = messageService.findAllMessages().stream().filter(m -> m.getMessageContent().equals("m1c1u1")).findFirst().orElseThrow();
-        Message m2 = messageService.findAllMessages().stream().filter(m -> m.getMessageContent().equals("[update]m2c1u1")).findFirst().orElseThrow();
-        Message m3 = messageService.findAllMessages().stream().filter(m -> m.getMessageContent().equals("m3c1u2")).findFirst().orElseThrow();
+        Message m1 = messageService.findAllMessages().stream().filter(m -> m.getContent().equals("m1c1u1")).findFirst().orElseThrow();
+        Message m2 = messageService.findAllMessages().stream().filter(m -> m.getContent().equals("[update]m2c1u1")).findFirst().orElseThrow();
+        Message m3 = messageService.findAllMessages().stream().filter(m -> m.getContent().equals("m3c1u2")).findFirst().orElseThrow();
 
-        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getMessageChannel().getId() + "): " + message.getMessageContent()).toList());
+        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getChannel().getId() + "): " + message.getContent()).toList());
         System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
 
         System.out.println("\n========== u2가 c1, c3에 참여 ==========");
@@ -522,14 +517,14 @@ public class FileIOTestJavaApplication {
         System.out.println("[전]전체 user list = " + userService.findAllUsers().stream().map(u -> u.getUserName() + ": " + u.getId()).toList());
         System.out.println("[전]전체 channel List = " + channelService.findAllChannels().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
         System.out.println("[전]channel1의 member list = " + c1.getChannelMembersList().stream().map(m -> m.getUserName() + ": " + m.getId()).toList());
-        System.out.println("[전]전체 message list = " + messageService.findAllMessages().stream().map(m -> m.getMessageContent() + ": " + m.getId()).toList());
+        System.out.println("[전]전체 message list = " + messageService.findAllMessages().stream().map(m -> m.getContent() + ": " + m.getId()).toList());
         System.out.println("===== [유저 삭제 시작] =====");
         deleteUser(u1.getId(), userService, channelService, messageService);
         System.out.println("===== [유저 삭제 종료] =====");
         System.out.println("[후]전체 user list = " + userService.findAllUsers().stream().map(u -> u.getUserName() + ": " + u.getId()).toList());
         System.out.println("[후]전체 channel List = " + channelService.findAllChannels().stream().map(c -> c.getChannelName() + ": " + c.getId()).toList());
         System.out.println("[후]channel1의 member list = " + c1.getChannelMembersList().stream().map(m -> m.getUserName() + ": " + m.getId()).toList());
-        System.out.println("[후]전체 message list = " + messageService.findAllMessages().stream().map(m -> m.getMessageContent() + ": " + m.getId()).toList());
+        System.out.println("[후]전체 message list = " + messageService.findAllMessages().stream().map(m -> m.getContent() + ": " + m.getId()).toList());
         try {
             System.out.println("u1 조회 = " + userService.findUserById(u1.getId()));
         } catch (NoSuchElementException e) {
@@ -603,9 +598,9 @@ public class FileIOTestJavaApplication {
         Channel c1 = channelService.findAllChannels().stream().filter(c -> c.getChannelName().equals("c1u1PUBLIC")).findFirst().orElseThrow();
         // message 생성
         Message m2 = messageService.createMessage(c1.getId(), u1.getId(), "m2c1u1");
-        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getMessageChannel().getId() + "): " + message.getMessageContent()).toList());        System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
+        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getChannel().getId() + "): " + message.getContent()).toList());        System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
         messageService.updateMessageContent(u1.getId(), m2.getId(), "[update]m2c1u1");
-        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getMessageChannel().getId() + "): " + message.getMessageContent()).toList());        System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
+        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getChannel().getId() + "): " + message.getContent()).toList());        System.out.println("c1의 Message List = " + messageService.findChannelMessagesByChannelId(c1.getId()).stream().map(m->m.getId()).toList());
     }
     public static void c1Add() {
 //        FileDataStore fileDataStore = FileDataStore.loadData();

@@ -107,6 +107,6 @@ public class JavaApplication {
         ChannelService channelService = new JCFChannelService(channelRepo, userService);
         MessageService messageService = new JCFMessageService(messageRepo, userService, channelService);
         System.out.println("\n========== 메세지 Load m1, m2, m3 ==========");
-        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getMessageChannel().getId() + "): " + message.getMessageContent()).toList());
+        System.out.println("생성된 전체 message ID = " + messageService.findAllMessages().stream().map(message -> message.getId() + "(channel=" + message.getChannel().getId() + "): " + message.getContent()).toList());
     }
 }
