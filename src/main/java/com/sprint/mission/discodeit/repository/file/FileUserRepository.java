@@ -64,7 +64,9 @@ public class FileUserRepository implements UserRepository {
     @Override
     public List<User> findAllByChannelId(UUID channelId) {
         return findAll().stream()
-                .filter(u -> u.getChannels().stream().anyMatch(c -> c.getId().equals(channelId)))
+                .filter(u -> u.getChannelIds()
+                        .stream()
+                        .anyMatch(findChannelId -> findChannelId.equals(channelId)))
                 .toList();
     }
 

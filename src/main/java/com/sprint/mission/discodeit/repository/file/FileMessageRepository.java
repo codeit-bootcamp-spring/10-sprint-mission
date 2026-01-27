@@ -56,14 +56,14 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public List<Message> findAllByUserId(UUID userId) {
         return findAll().stream()
-                .filter(m -> m.getSender().getId().equals(userId))
+                .filter(m -> m.getSenderId().equals(userId))
                 .toList();
     }
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
         return findAll().stream()
-                .filter(m -> m.getChannel().getId().equals(channelId))
+                .filter(m -> m.getChannelId().equals(channelId))
                 .toList();
     }
 
