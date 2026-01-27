@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/discodeit.iml" filepath="$PROJECT_DIR$/.idea/modules/discodeit.iml" group="discodeit" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/discodeit_main.iml" filepath="$PROJECT_DIR$/.idea/modules/discodeit_main.iml" group="discodeit" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/discodeit_test.iml" filepath="$PROJECT_DIR$/.idea/modules/discodeit_test.iml" group="discodeit" />
+    </modules>
+  </component>
+</project>
