@@ -1,21 +1,20 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class User extends BaseEntity{
+public class User extends BaseEntity {
+    private static final long serialVersionUID = 1L;
+
     private String username;
     private String email;
     private String password;
-    private final Set<Channel> channels;
+    private final Set<UUID> channelIds;
 
     public User(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.channels = new HashSet<>();
+        this.channelIds = new HashSet<>();
     }
 
     public String getUsername() {
@@ -30,16 +29,16 @@ public class User extends BaseEntity{
         return password;
     }
 
-    public List<Channel> getChannels() {
-        return new ArrayList<>(channels);
+    public void addChannel(UUID channelId) {
+        this.channelIds.add(channelId);
     }
 
-    public void join(Channel channel) {
-        this.channels.add(channel);
+    public void deleteChannel(UUID channelId) {
+        this.channelIds.remove(channelId);
     }
 
-    public void leave(Channel channel) {
-        this.channels.remove(channel);
+    public List<UUID> getChannelIds() {
+        return new ArrayList<>(channelIds);
     }
 
     public void updateUsername(String username) {

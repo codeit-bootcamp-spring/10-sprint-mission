@@ -1,4 +1,4 @@
-package com.sprint.mission;
+package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -10,21 +10,14 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.service.jcf.JCFChannelService;
-import com.sprint.mission.discodeit.service.jcf.JCFMessageService;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
 
 import java.util.List;
-import java.util.UUID;
 
 public class JavaApplication {
     static User setupUser(UserService userService) {
@@ -46,14 +39,14 @@ public class JavaApplication {
     public static void main(String[] args) {
 
         //JCF*Repository 초기화
-        UserRepository userRepository = new JCFUserRepository();
-        ChannelRepository channelRepository = new JCFChannelRepository();
-        MessageRepository messageRepository = new JCFMessageRepository();
+//        UserRepository userRepository = new JCFUserRepository();
+//        ChannelRepository channelRepository = new JCFChannelRepository();
+//        MessageRepository messageRepository = new JCFMessageRepository();
 
         //File*Repository 초기화
-//        UserRepository userRepository = new FileUserRepository();
-//        ChannelRepository channelRepository = new FileChannelRepository();
-//        MessageRepository messageRepository = new FileMessageRepository();
+        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+        MessageRepository messageRepository = new FileMessageRepository();
 
         // 서비스 초기화
         // TODO Basic*Service 구현체를 초기화하세요.
@@ -64,17 +57,43 @@ public class JavaApplication {
         // 셋업
         User user = setupUser(userService);
         Channel channel = setupChannel(channelService);
-
-        // 테스트
-        // (예외발생) 가입하지 않고 메시지 보내기
-
-        System.out.println("[테스트] 미가입 상태로 메시지 전송 시도");
-        messageCreateTest(messageService, channel, user);
-
-        // (성공) 채널 가입 후 메시지 보내기
         channelService.joinChannel(channel.getId(), user.getId());
-        System.out.println("[테스트] 가입 후 메시지 전송 시도");
+        // 테스트
         messageCreateTest(messageService, channel, user);
+
+        //조회
+        User foundUser = userService.findUserById(user.getId());
+        System.out.println("foundUser = " + foundUser);
+        List<User> usersByChannel = userService.findUsersByChannel(channel.getId());
+        System.out.println("usersByChannel = " + usersByChannel);
+        Channel foundChannel = channelService.findChannelById(channel.getId());
+        System.out.println("foundChannel = " + foundChannel);
+        List<Channel> channelsByUser = channelService.findChannelsByUser(user.getId());
+        System.out.println("channelsByUser = " + channelsByUser);
+        List<Message> messagesByUser = messageService.findMessagesByUser(user.getId());
+        System.out.println("messagesByUser = " + messagesByUser);
+
+        //수정
+        userService.update(user.getId(),"woody1234", "hello", "hello@hello.com");
+        channelService.update(channel.getId(), "게임", "게임 채널입니다.");
+        List<User> allUser = userService.findAllUser();
+        System.out.println("allUser = " + allUser);
+        List<Channel> channelList = channelService.findAllChannel();
+        System.out.println("channelList = " + channelList);
+
+        //삭제
+        userService.delete(user.getId(), "woody1234");
+        channelService.delete(channel.getId());
+        try {
+            userService.findUserById(user.getId());
+        } catch (Exception e) {
+            System.out.println("예외 발생: " + user.getId() + " 유저 삭제 됨");
+        }
+        try {
+            channelService.findChannelById(channel.getId());
+        } catch (Exception e) {
+            System.out.println("예외 발생: " + channel.getId() + " 채널 삭제 됨");
+        }
 
         System.out.println("============== [테스트 종료] ==============");
     }

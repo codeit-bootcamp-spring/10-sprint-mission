@@ -24,18 +24,17 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message create(String text, UUID channelId, UUID userId) {
-        User user = userRepository.findUserById(userId);
+    public Message create(String content, UUID channelId, UUID userId) {
         Channel channel = channelRepository.findChannelById(channelId);
 
-        boolean isMember = channel.getUsers().stream()
-                .anyMatch(u -> u.getId().equals(userId));
+        Message message = new Message(content, channelId, userId);
+
+        boolean isMember = channel.getUserIds().stream()
+                .anyMatch(u -> u.equals(userId));
 
         if (!isMember) {
             throw new IllegalArgumentException("채널에 참여하지 않아 메시지를 보낼 수 없습니다.");
         }
-
-        Message message = new Message(text, user, channel);
 
         messageRepository.save(message);
         return message;
@@ -44,22 +43,22 @@ public class BasicMessageService implements MessageService {
     @Override
     public List<Message> findMessagesByUserAndChannel(UUID channelId, UUID userId) {
         return messageRepository.findAllMessages().stream()
-                .filter(message -> message.getUser().getId().equals(userId))
-                .filter(message -> message.getChannel().getId().equals(channelId))
+                .filter(message -> message.getAuthorId().equals(userId))
+                .filter(message -> message.getChannelId().equals(channelId))
                 .toList();
     }
 
     @Override
     public List<Message> findMessagesByChannel(UUID channelId) {
         return messageRepository.findAllMessages().stream()
-                .filter(message -> message.getChannel().getId().equals(channelId))
+                .filter(message -> message.getChannelId().equals(channelId))
                 .toList();
     }
 
     @Override
     public List<Message> findMessagesByUser(UUID userId) {
         return messageRepository.findAllMessages().stream()
-                .filter(message -> message.getUser().getId().equals(userId))
+                .filter(message -> message.getAuthorId().equals(userId))
                 .toList();
     }
 
@@ -70,16 +69,13 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public Message findMessageById(UUID messageId) {
-        return messageRepository.findAllMessages().stream()
-                .filter(message -> message.getId().equals(messageId))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 아이디입니다."));
+        return messageRepository.findMessageById(messageId);
     }
 
     @Override
-    public Message update(UUID messageId, String text) {
+    public Message update(UUID messageId, String content) {
         Message message = messageRepository.findMessageById(messageId);
-        message.update(text);
+        message.update(content);
         messageRepository.save(message);
         return message;
     }

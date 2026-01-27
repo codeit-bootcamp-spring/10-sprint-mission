@@ -48,8 +48,8 @@ public class BasicUserService implements UserService {
 
     @Override
     public List<User> findUsersByChannel(UUID channelId) {
-        return userRepository.findAllUser().stream().filter(user -> user.getChannels().stream()
-                        .anyMatch(channel -> channel.getId().equals(channelId)))
+        return userRepository.findAllUser().stream().filter(user -> user.getChannelIds().stream()
+                        .anyMatch(c -> c.equals(channelId)))
                 .toList();
     }
 
@@ -74,9 +74,6 @@ public class BasicUserService implements UserService {
 
         userRepository.save(user);
 
-        updateUserInChannels(user);
-        updateUserInMessages(user);
-
         return user;
     }
 
@@ -87,9 +84,6 @@ public class BasicUserService implements UserService {
         user.updatePassword(newPassword);
         userRepository.save(user);
 
-        updateUserInChannels(user);
-        updateUserInMessages(user);
-
         return user;
     }
 
@@ -98,11 +92,11 @@ public class BasicUserService implements UserService {
         User user = userRepository.findUserById(userId);
         validatePassword(user, password);
 
-        List<Channel> channels = new ArrayList<>(user.getChannels());
-
-        leaveUserFromChannels(user, channels);
-
-        channels.forEach(channelRepository::save);
+        for (UUID channelId : user.getChannelIds()) {
+            Channel channel = channelRepository.findChannelById(channelId);
+            channel.deleteUser(userId);
+            channelRepository.save(channel);
+        }
 
         userRepository.delete(user);
     }
@@ -120,48 +114,6 @@ public class BasicUserService implements UserService {
     private void validatePassword(User user, String inputPassword) {
         if (!user.getPassword().equals(inputPassword)) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-    }
-
-    //채널 목록에서 유저 삭제
-    private void leaveUserFromChannels(User user, List<Channel> channels) {
-        for (Channel channel : channels) {
-            channel.leave(user);
-            user.leave(channel);
-        }
-    }
-
-    //채널 목록에서 유저 업데이트
-    private void updateUserInChannels(User newUser) {
-        List<Channel> channels = channelRepository.findAllChannel().stream()
-                .filter(channel -> channel.getUsers().stream()
-                        .anyMatch(u -> u.equals(newUser)))
-                .toList();
-
-        for (Channel channel : channels) {
-            channel.getUsers().stream()
-                    .filter(u -> u.equals(newUser))
-                    .findFirst()
-                    .ifPresent(u -> {
-                        u.updateEmail(newUser.getEmail());
-                        u.updateUsername(newUser.getUsername());
-                        u.updatePassword(newUser.getPassword());
-                    });
-            channelRepository.save(channel);
-        }
-    }
-
-    //메시지 목록에서 유저 업데이트
-    private void updateUserInMessages(User newUser) {
-        List<Message> messages = messageRepository.findAllMessages().stream()
-                .filter(message -> message.getUser().equals(newUser))
-                .toList();
-
-        for (Message message : messages) {
-            message.getUser().updateEmail(newUser.getEmail());
-            message.getUser().updateUsername(newUser.getUsername());
-            message.getUser().updatePassword(newUser.getPassword());
-            messageRepository.save(message);
         }
     }
 }
