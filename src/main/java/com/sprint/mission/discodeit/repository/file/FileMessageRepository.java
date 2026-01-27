@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -11,10 +12,11 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Repository
 public class FileMessageRepository extends AbstractFileRepository<Message> implements MessageRepository {
 
-    public FileMessageRepository(String path) {
-        super(path);
+    public FileMessageRepository() {
+        super("Message.ser");
     }
 
     @Override

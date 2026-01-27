@@ -41,9 +41,9 @@ public class JavaApplication {
 //        UserRepository userRepository = new JCFUserRepository();
 //        ChannelRepository channelRepository = new JCFChannelRepository();
 //        MessageRepository messageRepository = new JCFMessageRepository();
-        UserRepository userRepository = new FileUserRepository("User.ser");
-        ChannelRepository channelRepository = new FileChannelRepository("Channel.ser");
-        MessageRepository messageRepository = new FileMessageRepository("Message.ser");
+        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+        MessageRepository messageRepository = new FileMessageRepository();
         UserService userService = new BasicUserService(userRepository, channelRepository, messageRepository);
         ChannelService channelService = new BasicChannelService(userService, userRepository, channelRepository, messageRepository);
         MessageService messageService = new BasicMessageService(userService, channelService, messageRepository, channelRepository);
@@ -89,7 +89,6 @@ public class JavaApplication {
 //
 //public class JavaApplication {
 //    public static void main(String[] args) {
-//        // 1. 초기 설정 및 초기화
 //        UserRepository userRepository = new FileUserRepository("User.ser");
 //        MessageRepository messageRepository = new FileMessageRepository("Message.ser");
 //        ChannelRepository channelRepository = new FileChannelRepository("Channel.ser");

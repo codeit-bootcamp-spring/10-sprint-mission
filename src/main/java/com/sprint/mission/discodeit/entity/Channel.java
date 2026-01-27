@@ -1,11 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Getter
 public class Channel extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -36,10 +39,6 @@ public class Channel extends BaseEntity implements Serializable {
         }
     }
 
-    public List<Message> getMessages(){
-        return messages;
-    }
-
     public void addUser(User user) {
         boolean isAlreadyJoind = users.stream()
                 .anyMatch(u -> u.getId().equals(user.getId()));
@@ -51,9 +50,6 @@ public class Channel extends BaseEntity implements Serializable {
         }
     }
 
-    public List<User> getUsers(){
-        return users;
-    }
     public void addOwner(User owner){
         this.owner = owner;
         if (!owner.getChannels().contains(this)) {
@@ -63,18 +59,6 @@ public class Channel extends BaseEntity implements Serializable {
 
     public void updateOwner(User owner) {
         this.owner = owner;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public IsPrivate getIsPrivate() {
-        return isPrivate;
     }
 
     public void updateName(String name) {

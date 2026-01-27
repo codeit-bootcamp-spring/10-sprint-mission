@@ -10,23 +10,21 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.ClearMemory;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@RequiredArgsConstructor
+@Service
 public class BasicMessageService implements MessageService, ClearMemory {
     private final UserService userService;
     private final ChannelService channelService;
     private final MessageRepository messageRepository;
     private final ChannelRepository channelRepository;
-
-    public BasicMessageService(UserService userService, ChannelService channelService, MessageRepository messageRepository, ChannelRepository channelRepository) {
-        this.userService = userService;
-        this.channelService = channelService;
-        this.messageRepository = messageRepository;
-        this.channelRepository = channelRepository;
-    }
 
     @Override
     public Message create(UUID userId, UUID channelId, String content) {

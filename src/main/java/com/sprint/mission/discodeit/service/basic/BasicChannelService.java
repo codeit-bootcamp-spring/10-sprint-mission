@@ -10,21 +10,19 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.ClearMemory;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@RequiredArgsConstructor
+@Service
 public class BasicChannelService implements ChannelService, ClearMemory {
     private final UserService userService;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
-
-    public BasicChannelService(UserService userService, UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.messageRepository = messageRepository;
-    }
 
     @Override
     public Channel create(String name, IsPrivate isPrivate, UUID ownerId) {

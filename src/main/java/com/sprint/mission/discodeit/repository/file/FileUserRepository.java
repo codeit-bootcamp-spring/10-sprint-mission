@@ -2,14 +2,16 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
 public class FileUserRepository extends AbstractFileRepository<User> implements UserRepository {
 
-    public FileUserRepository(String path) {
-        super(path);
+    public FileUserRepository() {
+        super("User.ser");
     }
     @Override
     public User save(User user) {
