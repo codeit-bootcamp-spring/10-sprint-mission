@@ -7,19 +7,17 @@ import com.sprint.mission.discodeit.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-
+@Component
+@RequiredArgsConstructor
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID,Message> messages = new LinkedHashMap<>();
     private final UserService userService;
     private final ChannelService channelService;
-
-    public JCFMessageRepository(UserService userService, ChannelService channelService) {
-        this.userService = userService;
-        this.channelService = channelService;
-    }
 
     @Override
     public Message createMessage(UUID userId, UUID channelId, String content) {

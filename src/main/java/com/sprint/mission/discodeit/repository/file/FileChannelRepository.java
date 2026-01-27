@@ -7,18 +7,18 @@ import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.UserNotInChannelException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
+@RequiredArgsConstructor
 public class FileChannelRepository implements ChannelRepository {
 
     private static final String FILE_PATH = "channels.dat";
     private final UserService userService;
-
-    public FileChannelRepository(UserService userService) {
-        this.userService = userService;
-    }
 
     // 파일에서 Map 로드
     private Map<UUID, Channel> load() {

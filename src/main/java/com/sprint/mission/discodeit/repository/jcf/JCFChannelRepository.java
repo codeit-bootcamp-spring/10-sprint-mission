@@ -6,17 +6,18 @@ import com.sprint.mission.discodeit.exception.AlreadyJoinedChannelException;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Component
+@RequiredArgsConstructor
 public class JCFChannelRepository implements ChannelRepository {
     private final Map<UUID, Channel> channels = new LinkedHashMap<>();
     private final UserService userService;
 
-    public JCFChannelRepository(UserService userService) {
-        this.userService = userService;
-    }
     @Override
     public Channel createChannel(Channel channel) {
         channels.put(channel.getId(),  channel);

@@ -7,21 +7,20 @@ import com.sprint.mission.discodeit.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
+@RequiredArgsConstructor
 public class FileMessageRepository implements MessageRepository {
 
     private static final String FILE_PATH = "messages.dat";
 
     private final UserService userService;
     private final ChannelService channelService;
-
-    public FileMessageRepository(UserService userService, ChannelService channelService) {
-        this.userService = userService;
-        this.channelService = channelService;
-    }
 
     private Map<UUID, Message> load() {
         File file = new File(FILE_PATH);

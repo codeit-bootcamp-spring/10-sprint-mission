@@ -10,10 +10,14 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 
+@Component
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
 
     private final ChannelRepository channelRepository;
@@ -21,20 +25,6 @@ public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     private final UserService userService;
     private final ChannelService channelService;
-
-    public BasicMessageService(
-            ChannelRepository channelRepository,
-            UserRepository userRepository,
-            MessageRepository messageRepository,
-            UserService userService,
-            ChannelService channelService
-    ) {
-        this.channelRepository = channelRepository;
-        this.userRepository = userRepository;
-        this.messageRepository = messageRepository;
-        this.userService = userService;
-        this.channelService = channelService;
-    }
 
     @Override
     public Message createMessage(UUID userId, UUID channelId, String content) {

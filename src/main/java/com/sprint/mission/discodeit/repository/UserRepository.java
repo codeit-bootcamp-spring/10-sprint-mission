@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.UUID;
 
+
+@Repository
 public interface UserRepository {
     User createUser(User user);               // 생성 및 수정 저장
     User findUser(UUID userId);         // 단건 조회
