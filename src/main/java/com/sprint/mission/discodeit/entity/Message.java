@@ -7,12 +7,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class Message implements Serializable {
+public class Message extends DefaultEntity implements Serializable {
     private static final long serialVersionUID = 1L;
-
-    private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
     //
     private String content;
     //
@@ -20,8 +16,7 @@ public class Message implements Serializable {
     private UUID authorId;
 
     public Message(String content, UUID channelId, UUID authorId) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now().getEpochSecond();
+        super();
         //
         this.content = content;
         this.channelId = channelId;
@@ -36,7 +31,7 @@ public class Message implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.updatedAt = Instant.now().getEpochSecond();
+            this.updatedAt = Instant.now();
         }
     }
 }
