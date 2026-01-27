@@ -30,7 +30,9 @@ public class JCFUserRepository implements UserRepository {
     @Override
     public List<User> findAllByChannelId(UUID channelId) {
         return data.stream()
-                .filter(u -> u.getChannels().stream().anyMatch(c -> c.getId().equals(channelId)))
+                .filter(u -> u.getChannelIds()
+                        .stream()
+                        .anyMatch(findChannelId -> findChannelId.equals(channelId)))
                 .toList();
     }
 
