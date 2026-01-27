@@ -1,27 +1,29 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.util.UUID;
+
 public class Message extends CommonEntity{
     private static final long serialVersionUID = 1L;
     private String content;
-    private final User sender;
-    private final Channel channel;
+    private final UUID senderId;
+    private final UUID channelId;
 
-    public Message(String content, User sender, Channel channel) {
+    public Message(String content, UUID sender, UUID channel) {
         this.content = content;
-        this.sender = sender;
-        this.channel = channel;
+        this.senderId = sender;
+        this.channelId = channel;
     }
 
     public String getContent() {
         return content;
     }
 
-    public User getSender() {
-        return sender;
+    public UUID getSenderId() {
+        return senderId;
     }
 
-    public Channel getChannel() {
-        return channel;
+    public UUID getChannelId() {
+        return channelId;
     }
 
     public void updateContent(String content) {

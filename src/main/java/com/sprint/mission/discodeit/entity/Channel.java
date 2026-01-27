@@ -2,14 +2,15 @@ package com.sprint.mission.discodeit.entity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Channel extends CommonEntity{
     private static final long serialVersionUID = 1L;
     private String channelName;
     private ChannelType channelType;
     private String description;
-    private final List<Message> messages = new ArrayList<>();
-    private final List<User> users = new ArrayList<>();
+    private final List<UUID> messageIds = new ArrayList<>();
+    private final List<UUID> userIds = new ArrayList<>();
 
     public Channel(String channelName, ChannelType channelType, String description) {
         this.channelName = channelName;
@@ -29,12 +30,12 @@ public class Channel extends CommonEntity{
         return description;
     }
 
-    public List<Message> getMessages() {
-        return List.copyOf(messages);
+    public List<UUID> getMessageIds() {
+        return List.copyOf(messageIds);
     }
 
-    public List<User> getUsers() {
-        return List.copyOf(users);
+    public List<UUID> getUserIds() {
+        return List.copyOf(userIds);
     }
 
     public void updateChannelName(String channelName) {
@@ -52,28 +53,23 @@ public class Channel extends CommonEntity{
         this.updateAt = System.currentTimeMillis();
     }
 
-    public void addMessage(Message message) {
-        messages.add(message);
+    public void addMessageId(UUID messageId) {
+        messageIds.add(messageId);
         this.updateAt = System.currentTimeMillis();
     }
 
-    public void removeMessage(Message message) {
-        messages.remove(message);
+    public void removeMessageId(UUID messageId) {
+        messageIds.remove(messageId);
         this.updateAt = System.currentTimeMillis();
     }
 
-    public void addUser(User user) {
-        users.add(user);
+    public void addUserId(UUID userId) {
+        userIds.add(userId);
         this.updateAt = System.currentTimeMillis();
     }
 
-    public void removeUser(User user) {
-        users.remove(user);
-        this.updateAt = System.currentTimeMillis();
-    }
-
-    public void updateUser(User user) {
-        users.set(users.indexOf(user), user);
+    public void removeUserId(UUID userId) {
+        userIds.remove(userId);
         this.updateAt = System.currentTimeMillis();
     }
 }
