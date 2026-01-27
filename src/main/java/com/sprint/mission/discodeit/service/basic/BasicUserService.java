@@ -5,23 +5,20 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Service
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
-    private MessageService messageService;
-    private ChannelService channelService;
+    private final MessageService messageService;
+    private final ChannelService channelService;
 
-    public BasicUserService(UserRepository userRepository) {
+    public BasicUserService(UserRepository userRepository, @Lazy MessageService messageService, @Lazy ChannelService channelService) {
         this.userRepository = userRepository;
-    }
-
-    public void setMessageService(MessageService messageService) {
         this.messageService = messageService;
-    }
-
-    public void setChannelService(ChannelService channelService) {
         this.channelService = channelService;
     }
 
