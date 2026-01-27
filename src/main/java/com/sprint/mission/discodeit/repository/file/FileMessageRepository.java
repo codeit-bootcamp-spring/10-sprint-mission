@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,13 +18,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
     private final Map<UUID, Message> data; // 빠른 조회를 위한 컬렉션
     private final Path messageDir;
 
-    public FileMessageRepository(Path messageDir) {
+    public FileMessageRepository(Path baseDir) {
         this.data = new HashMap<>();
-        this.messageDir = messageDir;
+        this.messageDir = baseDir.resolve("messages");
         try {
             // 파일이 저장될 디렉토리가 존재하지 않을 경우 폴더 생성
             Files.createDirectories(messageDir);
@@ -36,7 +38,7 @@ public class FileMessageRepository implements MessageRepository {
 
     private Path messageFilePath(UUID messageId) {
         // 메시지를 구분하기 위한 파일 경로 생성
-        return messageDir.resolve("message-" + messageId +".ser");
+        return messageDir.resolve("message-" + messageId + ".ser");
     }
 
     @Override
