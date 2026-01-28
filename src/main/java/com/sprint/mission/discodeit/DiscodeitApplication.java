@@ -29,13 +29,13 @@ public class DiscodeitApplication {
 		System.out.println("==기본 기능==");
 //        //---------------------------------1. user---------------------------------
 //        // 1-1. user 등록 및 조회
-		User user1 = userService.createUser("전창현", "ckdgus12@gmail.com");
+		User user1 = userService.create("전창현", "ckdgus12@gmail.com");
 		System.out.println("1-1. 유저 등록 완료: " + user1.getUserName());
 
-		User user2 = userService.createUser("이한수", "gkstn13@naver.com");
+		User user2 = userService.create("이한수", "gkstn13@naver.com");
 		System.out.println("1-1. 유저 등록 완료: " + user2.getUserName());
 
-		User user3 = userService.createUser("이백호", "qorgh@kongju.ac.kr");
+		User user3 = userService.create("이백호", "qorgh@kongju.ac.kr");
 		System.out.println("1-1. 유저 등록 완료: " + user3.getUserName());
 		System.out.println();
 
@@ -44,19 +44,19 @@ public class DiscodeitApplication {
 		System.out.println();
 
 		// 1-3. user 정보 수정 및 조회
-		User updatedUser1 = userService.updateUser(user1.getId(), "김수한", "suhan78@gmail.com");
+		User updatedUser1 = userService.update(user1.getId(), "김수한", "suhan78@gmail.com");
 		System.out.println("1-3-1. 유저 정보 수정 완료: " + "\n이름: " + updatedUser1.getUserName()
 				+ "\n이메일: " + updatedUser1.getUserEmail());
 		System.out.println("수정 시각: " + updatedUser1.getUpdatedAt());
 		System.out.println();
 
-		User updatedUser2 = userService.updateUser(user2.getId(), "정몽주", null);
+		User updatedUser2 = userService.update(user2.getId(), "정몽주", null);
 		System.out.println("1-3-2. 유저 이름 수정 완료: " + "\n이름: " + updatedUser2.getUserName()
 				+ "\n이메일: " + updatedUser2.getUserEmail());
 		System.out.println("수정 시각: " + updatedUser2.getUpdatedAt());
 		System.out.println();
 
-		User updatedUser3 = userService.updateUser(user3.getId(), null, "backho@naver.com");
+		User updatedUser3 = userService.update(user3.getId(), null, "backho@naver.com");
 		System.out.println("1-3-3. 유저 이메일 수정 완료: " + "\n이름: " + updatedUser3.getUserName()
 				+ "\n이메일: " + updatedUser3.getUserEmail());
 		System.out.println("수정 시각: " + updatedUser3.getUpdatedAt());

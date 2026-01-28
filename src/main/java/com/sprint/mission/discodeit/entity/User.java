@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.io.PipedReader;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,10 +20,10 @@ public class User extends CommonEntity implements Serializable {
     private final List<Channel> joinedChannels = new ArrayList<>();
     private final UUID profileId;
 
-    public User(String userName, String userEmail) {
+    public User(String userName, String userEmail, UUID profileId) {
         this.userName = userName;
         this.userEmail = userEmail;
-        this.profileId = UUID.randomUUID();
+        this.profileId = profileId;
     }
 
     public void updateUserName(String userName) {
@@ -34,6 +35,7 @@ public class User extends CommonEntity implements Serializable {
         this.userEmail = userEmail;
         update();
     }
+
 
 
 }

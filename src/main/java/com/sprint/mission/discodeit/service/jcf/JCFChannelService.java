@@ -68,7 +68,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = readChannel(channelId);
-        User user = userService.readUser(userId);
+        User user = userService.find(userId);
 
         boolean alreadyJoined = channel.getJoinedUsers().stream()
                 .anyMatch(u -> u.getId().equals(userId));
@@ -84,7 +84,7 @@ public class JCFChannelService implements ChannelService {
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = readChannel(channelId);
-        User user = userService.readUser(userId);
+        User user = userService.find(userId);
 
         boolean alreadyLeaved = channel.getJoinedUsers().stream()
                 .noneMatch(u -> u.getId().equals(userId));

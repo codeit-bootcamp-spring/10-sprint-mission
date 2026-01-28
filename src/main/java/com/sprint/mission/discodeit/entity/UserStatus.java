@@ -11,10 +11,12 @@ import java.util.UUID;
 public class UserStatus extends CommonEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private UUID userId;
-    private Instant lastSeenAt;
+    private final UUID userId;
+    private final Instant lastSeenAt;
 
-    public UserStatus() {
+    public UserStatus(UUID userId, Instant lastSeenAt) {
+        this.userId = userId;
+        this.lastSeenAt = lastSeenAt;
     }
 
     public boolean isOnline() {
