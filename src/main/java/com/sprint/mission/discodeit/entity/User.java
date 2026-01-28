@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class User extends CommonEntity{
     private static final long serialVersionUID = 1L;
     private String userName;
@@ -16,18 +19,6 @@ public class User extends CommonEntity{
         this.userName = userName;
         this.password = password;
         this.email = email;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getEmail() {
-        return email;
     }
 
     public List<UUID> getChannelIds() {

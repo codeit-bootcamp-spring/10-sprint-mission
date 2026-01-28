@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,15 +12,11 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @Service
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
-
-    BasicUserService(UserRepository userRepository, ChannelRepository channelRepository) {
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-    }
 
     @Override
     public User createUser(String userName, String password, String email) {

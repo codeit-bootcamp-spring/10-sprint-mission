@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.util.UUID;
 
+@Getter
 abstract class CommonEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     protected final UUID id;
@@ -26,17 +29,5 @@ abstract class CommonEntity implements Serializable {
     @Override
     public int hashCode() {
         return id.hashCode();
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdateAt() {
-        return updateAt;
     }
 }

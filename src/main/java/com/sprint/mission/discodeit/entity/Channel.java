@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class Channel extends CommonEntity{
     private static final long serialVersionUID = 1L;
     private String channelName;
@@ -16,18 +19,6 @@ public class Channel extends CommonEntity{
         this.channelName = channelName;
         this.channelType = channelType;
         this.description = description;
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public ChannelType getChannelType() {
-        return channelType;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public List<UUID> getMessageIds() {
