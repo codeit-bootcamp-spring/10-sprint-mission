@@ -10,21 +10,25 @@ import java.util.UUID;
 public class UserStatus extends BaseEntity {
     @Setter
     private UUID userId;
-    @Setter
-    private String userStatus;
+    private UserStatusType statusType;
     private Instant lastLoginAt;
 
-    public UserStatus(UUID userId, String userStatus, Instant lastLoginAt) {
+    public UserStatus(UUID userId, Instant lastLoginAt) {
         this.userId = userId;
-        this.userStatus = userStatus;
         this.lastLoginAt = lastLoginAt;
+        this.statusType = UserStatusType.ONLINE;
     }
 
-    public void setLastLoginAt() {
+    public void updateLastLoginAt() {
         lastLoginAt = Instant.now();
         updatedAt = lastLoginAt;
     }
 
+    public void updateStatusType(UserStatusType userStatusType) {
+        this.statusType = userStatusType;
+    }
+
+    // 마지막 로그인 기준으로 온라인인지 계산
     public boolean isCurrentlyLoggedIn() {
         if (lastLoginAt == null) {
             return false;
@@ -34,11 +38,19 @@ public class UserStatus extends BaseEntity {
                 .isAfter(Instant.now());
     }
 
+    public UserStatusType getEffectiveStatus() {
+        if (isCurrentlyLoggedIn()) {
+            return statusType;
+        } else {
+            return UserStatusType.OFFLINE;
+        }
+    }
+
     @Override
     public String toString() {
         return "UserStatus{" +
                 "userId=" + userId +
-                ", userStatus='" + userStatus + '\'' +
+                ", userStatus='" + statusType + '\'' +
                 ", lastLoginAt=" + lastLoginAt +
                 '}';
     }
