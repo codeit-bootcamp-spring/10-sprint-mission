@@ -1,7 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentRequestDto;
+import com.sprint.mission.discodeit.dto.UserRequestDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,10 +20,36 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final UserStatusRepository userStatusRepository;
 
     @Override
-    public User create(String username, String email, String password) {
-        User user = new User(username, email, password);
+    public User create(UserRequestDto userRequestDto) {
+        //중복여부 검사 로직
+        if (findAll().stream()
+                .anyMatch(user ->
+                        user.getUsername().equals(userRequestDto.username()) ||
+                                user.getEmail().equals(userRequestDto.email())
+                )) throw new AssertionError("Username or Email already exists");
+
+        User user;
+        if(userRequestDto.profileImage() != null){
+            BinaryContent profileImage = new BinaryContent(userRequestDto.profileImage().content());
+            binaryContentRepository.save(profileImage);
+
+            user = new User(userRequestDto.username(),
+                    userRequestDto.email(),
+                    userRequestDto.password(),
+                    profileImage.getId());
+        }
+        else user = new User(userRequestDto.username(),
+                userRequestDto.email(),
+                userRequestDto.password(),
+                null);
+
+        UserStatus userStatus = new UserStatus(user.getId());
+        userStatusRepository.save(userStatus);
+
         return userRepository.save(user);
     }
 

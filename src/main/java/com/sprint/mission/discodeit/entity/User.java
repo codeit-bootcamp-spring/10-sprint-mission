@@ -1,12 +1,14 @@
 package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
+@RequiredArgsConstructor
 public class User extends DefaultEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -16,7 +18,7 @@ public class User extends DefaultEntity implements Serializable {
     private String password;
     private UUID profileId;
 
-    public User(String username, String email, String password) {
+    public User(String username, String email, String password, UUID profileId) {
         super();
         //
         this.username = username;
