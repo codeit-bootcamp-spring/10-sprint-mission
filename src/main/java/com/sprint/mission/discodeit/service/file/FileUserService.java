@@ -1,26 +1,32 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.io.*;
 import java.util.*;
+import java.util.UUID;
 
-public class JCFUserService implements UserService {
+public class FileUserService implements UserService {
+    private static final String FILE_PATH = "users.ser";
     private ChannelService channelService;
-    private final Map<UUID, User> data = new HashMap<>();
 
     public void setChannelService(ChannelService channelService) {
         this.channelService = channelService;
     }
 
+    private Map<UUID, User> data;
+
+    public FileUserService() {
+        this.data = loadUsers();
+    }
+
     @Override
     public User createUser(String username, String email, String password) {
-        Objects.requireNonNull(email, "email은 null일 수 없습니다.");
-        Objects.requireNonNull(password, "password는 null일 수 없습니다.");
-
         User user = new User(username, email, password);
         data.put(user.getId(), user);
+        saveUsers();
 
         return user;
     }
@@ -57,6 +63,8 @@ public class JCFUserService implements UserService {
         User user = findUserById(userId);
 
         user.updateUsername(newName);
+        saveUsers();
+
         return user;
     }
 
@@ -65,6 +73,7 @@ public class JCFUserService implements UserService {
         User user = findUserById(userId);
 
         data.remove(userId);
+        saveUsers();
     }
 
     private User findUserById(UUID userId) {
@@ -77,5 +86,26 @@ public class JCFUserService implements UserService {
         }
 
         return user;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<UUID, User> loadUsers() {
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            return new HashMap<>();
+        }
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            return (Map<UUID, User>) ois.readObject();
+        } catch (Exception e) {
+            throw new RuntimeException("사용자 데이터 로드 실패", e);
+        }
+    }
+
+    private void saveUsers() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+            oos.writeObject(data);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

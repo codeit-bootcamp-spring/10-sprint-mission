@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
@@ -6,25 +6,26 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.io.*;
 import java.util.*;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
-public class JCFChannelService implements ChannelService {
+public class FileChannelService implements ChannelService {
+    private static final String FILE_PATH = "channels.ser";
     private final MessageService messageService;
     private final UserService userService;
-    private final Map<UUID, Channel> data = new HashMap<>();
+    private Map<UUID, Channel> data;
 
-    public JCFChannelService(MessageService messageService, UserService userService) {
+    public FileChannelService(MessageService messageService, UserService userService) {
         this.messageService = messageService;
         this.userService = userService;
+        this.data = loadChannels();
     }
 
     @Override
     public Channel createChannel(String channelName) {
         Channel channel = new Channel(channelName);
         data.put(channel.getId(), channel);
+        saveChannels();
 
         return channel;
     }
@@ -62,6 +63,7 @@ public class JCFChannelService implements ChannelService {
             throw new IllegalArgumentException("해당 채널의 이름이 바꿀 이름과 동일합니다.");
         }
         channel.updateChannelName(newChannelName);
+        saveChannels();
         // 변경된 객체 반환
         return channel;
     }
@@ -75,6 +77,7 @@ public class JCFChannelService implements ChannelService {
 
         channel.addUser(user);
         user.updateJoinedChannels(channel);
+        saveChannels();
     }
 
     @Override
@@ -86,6 +89,7 @@ public class JCFChannelService implements ChannelService {
 
         channel.removeUser(user.getId());
         user.removeChannel(channel);
+        saveChannels();
     }
 
     @Override
@@ -94,6 +98,7 @@ public class JCFChannelService implements ChannelService {
 
         messageService.clearChannelMessage(channelId);
         data.remove(channelId);
+        saveChannels();
     }
 
     private Channel findChannelById(UUID channelId) {
@@ -106,5 +111,26 @@ public class JCFChannelService implements ChannelService {
         }
 
         return channel;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<UUID, Channel> loadChannels() {
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            return new HashMap<>();
+        }
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            return (Map<UUID, Channel>) ois.readObject();
+        } catch (Exception e) {
+            throw new RuntimeException("채널 데이터 로드 실패", e);
+        }
+    }
+
+    private void saveChannels() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+            oos.writeObject(data);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

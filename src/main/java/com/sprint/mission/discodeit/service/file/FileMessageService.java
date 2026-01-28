@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.jcf;
+package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -6,21 +6,24 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 
+import java.io.*;
 import java.util.*;
 
-public class JCFMessageService implements MessageService {
+public class FileMessageService implements MessageService {
+    private static final String FILE_PATH = "messages.ser";
     private final UserService userService;
     private ChannelService channelService;
-
-    public JCFMessageService(UserService userService) {
-        this.userService = userService;
-    }
 
     public void setChannelService(ChannelService channelService) {
         this.channelService = channelService;
     }
 
-    private final Map<UUID, Message> data = new HashMap<>();
+    private Map<UUID, Message> data;
+
+    public FileMessageService(UserService userService) {
+        this.userService = userService;
+        this.data = loadMessages();
+    }
 
     @Override
     public Message sendMessage(UUID userId, UUID channelId, String content) {
@@ -29,6 +32,7 @@ public class JCFMessageService implements MessageService {
         // 메시지 생성 및 리스트에 추가
         data.put(message.getId(), message);
         userInfo.updateSentMessages(message);
+        saveMessages();
 
         return message;
     }
@@ -77,6 +81,7 @@ public class JCFMessageService implements MessageService {
         Message message = findMessageById(messageId);
 
         message.updateContent(newContent);
+        saveMessages();
         return message;
     }
 
@@ -86,20 +91,22 @@ public class JCFMessageService implements MessageService {
         Message message = data.remove(messageId);
 
         message.getSentUser().removeSentMessage(message);
+        saveMessages();
     }
 
     @Override
     public void clearChannelMessage(UUID channelId) {
         List<UUID> messageId = data.values().stream()
-                        .filter(message -> message.getSentChannel().getId().equals(channelId))
-                        .map(Message::getId)
-                        .toList();
+                .filter(message -> message.getSentChannel().getId().equals(channelId))
+                .map(Message::getId)
+                .toList();
 
         if (messageId.isEmpty()) {
             throw new NoSuchElementException("해당 채널에 메시지가 없습니다");
         }
 
         messageId.forEach(data::remove);
+        saveMessages();
     }
 
     private Message findMessageById(UUID messageId) {
@@ -112,5 +119,26 @@ public class JCFMessageService implements MessageService {
         }
 
         return message;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<UUID, Message> loadMessages() {
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            return new HashMap<>();
+        }
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            return (Map<UUID, Message>) ois.readObject();
+        } catch (Exception e) {
+            throw new RuntimeException("메시지 데이터 로드 실패", e);
+        }
+    }
+
+    private void saveMessages() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+            oos.writeObject(data);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
