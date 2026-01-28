@@ -9,13 +9,13 @@ import java.util.UUID;
 @Getter
 public class Channel extends BaseEntity {
     private String channelName;
-    private List<User> joinedUsers;
+    private List<UUID> joinedUserIds;
 
     public Channel(String channelName) {
         super();
         // 필드 초기화
         this.channelName = channelName;
-        this.joinedUsers = new ArrayList<>();
+        this.joinedUserIds = new ArrayList<>();
     }
 
     public void updateChannelName(String channelName) {
@@ -23,12 +23,12 @@ public class Channel extends BaseEntity {
         setUpdatedAt();
     }
 
-    public void addUser(User user) {
-        joinedUsers.add(user);
+    public void addUser(UUID userId) {
+        joinedUserIds.add(userId);
     }
 
     public void removeUser(UUID userId) {
-        joinedUsers.removeIf(user -> user.getId().equals(userId));
+        joinedUserIds.removeIf(user -> user.equals(userId));
     }
 
     @Override
@@ -38,7 +38,7 @@ public class Channel extends BaseEntity {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", channelName='" + channelName + '\'' +
-                ", joinedUsers=" + joinedUsers +
+                ", joinedUsers=" + joinedUserIds +
                 '}';
     }
 }
