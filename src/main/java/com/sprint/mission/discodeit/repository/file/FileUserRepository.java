@@ -56,4 +56,10 @@ public class FileUserRepository implements UserRepository {
     public boolean existsByEmail(String email) {
         return findAll().stream().anyMatch(user -> user.getEmail().equals(email));
     }
+
+    // 유효성 검증 (이름 중복)
+    @Override
+    public boolean existsByNickname(String nickname) {
+        return findAll().stream().anyMatch(user -> user.getNickname().equals(nickname));
+    }
 }

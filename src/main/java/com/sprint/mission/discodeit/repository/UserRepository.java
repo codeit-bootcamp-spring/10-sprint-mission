@@ -21,4 +21,7 @@ public interface UserRepository {
 
     // 유효성 검사 (이메일 중복)
     boolean existsByEmail(String email);
+
+    // 유효성 검사 (이름 중복)
+    boolean existsByNickname(String nickname);
 }
