@@ -3,8 +3,6 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.factory.ServiceFactory;
-import com.sprint.mission.discodeit.factory.ServiceType;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -33,20 +31,20 @@ public class JavaApplication {
 
 
     public static void main(String[] args) {
-        ServiceFactory serviceFactory = new ServiceFactory(ServiceType.JCF);
-//        ServiceFactory serviceFactory = new ServiceFactory(ServiceType.FILE);
-
-        UserService userService = serviceFactory.userService();
-        ChannelService channelService = serviceFactory.channelService();
-        MessageService messageService = serviceFactory.messageService();
-
-        // 셋업
-        User user = setupUser(userService);
-        Channel channel = setupChannel(channelService);
-        channelService.addUser(channel.getId(), user.getId());
-
-        // 테스트
-        messageCreateTest(messageService, channel, user);
+//        ServiceFactory serviceFactory = new ServiceFactory(ServiceType.JCF);
+////        ServiceFactory serviceFactory = new ServiceFactory(ServiceType.FILE);
+//
+//        UserService userService = serviceFactory.userService();
+//        ChannelService channelService = serviceFactory.channelService();
+//        MessageService messageService = serviceFactory.messageService();
+//
+//        // 셋업
+//        User user = setupUser(userService);
+//        Channel channel = setupChannel(channelService);
+//        channelService.addUser(channel.getId(), user.getId());
+//
+//        // 테스트
+//        messageCreateTest(messageService, channel, user);
     }
 
 

@@ -5,16 +5,16 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.util.FileIo;
+import org.springframework.stereotype.Repository;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
     public static final Path MESSAGE_DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", "messages");
-
-    private static MessageRepository instance;
 
     private final FileIo<Message> messageFileIo;
     private final FileIo<User> userFileIo;
@@ -27,11 +27,6 @@ public class FileMessageRepository implements MessageRepository {
         userFileIo.init();
         this.channelFileIo = new FileIo<>(FileChannelRepository.CHANNEL_DIRECTORY);
         channelFileIo.init();
-    }
-
-    public static MessageRepository getInstance() {
-        if (instance == null) instance = new FileMessageRepository();
-        return instance;
     }
 
     @Override

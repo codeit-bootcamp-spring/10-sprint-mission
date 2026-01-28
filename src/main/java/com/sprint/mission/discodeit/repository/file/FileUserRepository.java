@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.util.FileIo;
+import org.springframework.stereotype.Repository;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,20 +11,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class FileUserRepository implements UserRepository {
     public static final Path USER_DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", "users");
 
-    private static UserRepository instance;
     private final FileIo<User> fileIo;
 
     private FileUserRepository() {
         fileIo = new FileIo<User>(USER_DIRECTORY);
         fileIo.init();
-    }
-
-    public static UserRepository getInstance() {
-        if (instance == null) instance = new FileUserRepository();
-        return instance;
     }
 
     @Override

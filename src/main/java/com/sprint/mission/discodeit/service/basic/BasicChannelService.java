@@ -2,44 +2,26 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.factory.ServiceType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
-import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Service
 public class BasicChannelService implements ChannelService {
-    private static BasicChannelService instance;
-
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
 
-    private BasicChannelService(ServiceType type) {
-        if (type == ServiceType.JCF) {
-            userRepository = JCFUserRepository.getInstance();
-            channelRepository = JCFChannelRepository.getInstance();
-            messageRepository = JCFMessageRepository.getInstance();
-        } else {
-            userRepository = FileUserRepository.getInstance();
-            channelRepository = FileChannelRepository.getInstance();
-            messageRepository = FileMessageRepository.getInstance();
-        }
-    }
-
-    public static ChannelService getInstance(ServiceType type) {
-        if (instance == null) instance = new BasicChannelService(type);
-        return instance;
+    public BasicChannelService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
+        this.userRepository = userRepository;
+        this.channelRepository = channelRepository;
+        this.messageRepository = messageRepository;
     }
 
     @Override

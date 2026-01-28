@@ -1,33 +1,23 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.factory.ServiceType;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 public class BasicUserService implements UserService {
     private static BasicUserService instance;
 
     private final UserRepository userRepository;
 
-    private BasicUserService(ServiceType type) {
-        if (type == ServiceType.JCF) {
-            userRepository = JCFUserRepository.getInstance();
-        } else {
-            userRepository = FileUserRepository.getInstance();
-        }
-    }
-
-    public static UserService getInstance(ServiceType type) {
-        if (instance == null) instance = new BasicUserService(type);
-        return instance;
+    public BasicUserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override

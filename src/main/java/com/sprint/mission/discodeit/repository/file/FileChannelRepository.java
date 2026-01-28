@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.util.FileIo;
+import org.springframework.stereotype.Repository;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,10 +12,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class FileChannelRepository implements ChannelRepository {
     public static final Path CHANNEL_DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", "channels");
 
-    private static ChannelRepository instance;
     private final FileIo<Channel> channelFileIo;
     private final FileIo<User> userFileIo;
 
@@ -23,11 +24,6 @@ public class FileChannelRepository implements ChannelRepository {
         this.channelFileIo.init();
         userFileIo = new FileIo<>(FileUserRepository.USER_DIRECTORY);
         this.userFileIo.init();
-    }
-
-    public static ChannelRepository getInstance() {
-        if (instance == null) instance = new FileChannelRepository();
-        return instance;
     }
 
     @Override

@@ -3,44 +3,26 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.factory.ServiceType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
-import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Service
 public class BasicMessageService implements MessageService {
-    private static BasicMessageService instance;
-
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
 
-    private BasicMessageService(ServiceType type) {
-        if (type == ServiceType.JCF) {
-            userRepository = JCFUserRepository.getInstance();
-            channelRepository = JCFChannelRepository.getInstance();
-            messageRepository = JCFMessageRepository.getInstance();
-        } else {
-            userRepository = FileUserRepository.getInstance();
-            channelRepository = FileChannelRepository.getInstance();
-            messageRepository = FileMessageRepository.getInstance();
-        }
-    }
-
-    public static MessageService getInstance(ServiceType type) {
-        if (instance == null) instance = new BasicMessageService(type);
-        return instance;
+    public BasicMessageService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
+        this.userRepository = userRepository;
+        this.channelRepository = channelRepository;
+        this.messageRepository = messageRepository;
     }
 
     // data 필드를 활용해 생성, 조회, 수정, 삭제하는 메소드를 구현하세요.
