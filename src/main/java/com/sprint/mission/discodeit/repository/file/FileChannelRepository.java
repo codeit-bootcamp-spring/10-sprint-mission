@@ -61,11 +61,12 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Optional<Channel> find(UUID channelID) {
+    public Channel find(UUID channelID) {
         loadData();
         return channelData.stream()
                 .filter(channel -> channel.getId().equals(channelID))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
     }
 
     @Override

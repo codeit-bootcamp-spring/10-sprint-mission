@@ -13,14 +13,24 @@ public class Channel extends Base  {
     private final List<User> membersList;
     @Getter
     private final List<Message> messageList;
-
+    @Getter
+    private final String descriptions;
     // 생성자
     public Channel(String name) {
         super();
         this.name = name;
         this.membersList = new ArrayList<>();
         this.messageList = new ArrayList<>();
+        this.descriptions = "Public";
     }
+
+    public Channel(){
+        super();
+        this.membersList = new ArrayList<>();
+        this.messageList = new ArrayList<>();
+        this.descriptions = "Private";
+    }
+
     // setter
     public void updateName(String name) {
         this.name = name;

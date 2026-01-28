@@ -18,10 +18,11 @@ public class JCFChannelRepository implements ChannelRepository {
 
 
     @Override
-    public Optional<Channel> find(UUID channelID) {
+    public Channel find(UUID channelID) {
         return channelData.stream()
                 .filter(channel -> channel.getId().equals(channelID))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(()-> new IllegalArgumentException("Channel not found: "+ channelID));
     }
 
     @Override

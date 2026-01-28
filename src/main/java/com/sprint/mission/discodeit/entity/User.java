@@ -14,11 +14,20 @@ public class User extends Base  {
     private final List<Channel> channelsList;
     @Getter
     private final List<Message> messageList;
+    @Getter
+    private String email;
+    @Getter
+    private String password;
 
+    @Getter
+    private BinaryContent profileImage;
     // 생성자
-    public User(String name) {
+    public User(String name, String email, String password, BinaryContent profileImage) {
         super();
         this.name = name;
+        this.email = email;
+        this.password = password;
+        this.profileImage = profileImage;
         this.channelsList = new ArrayList<>();
         this.messageList = new ArrayList<Message>();
     }
@@ -27,6 +36,15 @@ public class User extends Base  {
     public void updateName(String name) {
         this.name = name;
         updateUpdatedAt();
+    }
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+    public void updateProfileImageID(BinaryContent profileImage) {
+        this.profileImage = profileImage;
     }
 
     // other

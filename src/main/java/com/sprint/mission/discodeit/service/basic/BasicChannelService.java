@@ -1,18 +1,22 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPrivate;
+import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPublic;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
+
+import static java.util.stream.Collectors.toList;
+
 @RequiredArgsConstructor
 @Service
 public class BasicChannelService implements ChannelService {
@@ -20,30 +24,110 @@ public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
+    private final ReadStatusRepository ReadStatusRepository;
 
+    // public Channel 생성
     @Override
-    public Channel create(String name) {
-        Channel channel = new Channel(name);
+    public Channel createPublic(ChannelCreateRequestPublic request) {
+        // 같은 이름 존재 check
+        channelRepository.findAll().stream()
+                .filter(ch -> ch.getName().equals(request.name()))
+                .findFirst()
+                .ifPresent(ch -> {
+                    throw new IllegalArgumentException("Already Present name");
+                });
+
+        Channel channel = new Channel(request.name());
         // [저장]
         return channelRepository.save(channel);
     }
 
+    // private Channel 생성 : 이름, description 생략 채널 참여 유저 정보 생성 + 유저 별 readStatus 정보
     @Override
-    public Channel find(UUID id) {
-        return channelRepository.find(id)
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
+    public Channel createPrivate(ChannelCreateRequestPrivate request) {
+        // channel 생성
+        Channel channel = new Channel();
+
+        // private channel의 userList
+        List<User> users = new ArrayList<>(request.users());
+
+        // ReadStatus 생성 -> 저장
+        for(User user : users) {
+            ReadStatus status = new ReadStatus(channel.getId(), user.getId());
+            ReadStatusRepository.save(status);
+        }
+
+        return channelRepository.save(channel);
     }
 
     @Override
-    public List<Channel> findAll() {
-        return channelRepository.findAll();
+    public ChannelResponse find(UUID id) {
+        // channel 조회
+        Channel channel = channelRepository.find(id);
+
+        // 최근 메시지의 시간
+        Instant lastCreatedAt = channel.getMessageList().stream()
+                                .map(Base::getCreatedAt)
+                                .max(Instant::compareTo)
+                                .orElse(null);
+
+        if (lastCreatedAt != null) {
+            throw new IllegalStateException("lastCreatedAt is null");
+        }
+
+        List<UUID> userIDs = null;
+        // private일 경우
+        if (channel.getDescriptions().equals("Private")){
+            userIDs = channel.getMembersList().stream()
+                    .map(User::getId)
+                    .toList();
+        }
+
+        return new ChannelResponse(
+                channel.getId(), channel.getName(), channel.getDescriptions(), lastCreatedAt, userIDs
+        );
+    }
+
+    @Override
+    public List<ChannelResponse> findAllByUserID(UUID userID) {
+        // ChannelRepo channel 전체 조회
+        List<Channel> channels = new ArrayList<>(channelRepository.findAll());
+        // Channel전체 정보 담을 List 선언
+        List<ChannelResponse> channelResponses = new ArrayList<>();
+
+        // Channel type에 따라 channelReponses에 저장
+        for (Channel channel : channels) {
+            // channel의 가장 최근 시간
+            Instant lastCreatedAt = channel.getMessageList().stream()
+                                    .map(Base::getCreatedAt)
+                                    .max(Instant::compareTo)
+                                    .orElse(null);
+
+            // public일 경우 null
+            List<UUID> userIDs = null;
+
+            // private일 경우 userIDs List 생성
+            if (channel.getDescriptions().equals("Private")) {
+                userIDs = channel.getMembersList().stream()
+                        .map(User::getId)
+                        .toList();
+            }
+
+            channelResponses.add(
+                    new ChannelResponse(
+                            channel.getId(), channel.getName(), channel.getDescriptions(), lastCreatedAt, userIDs
+                    )
+            );
+        }
+
+        return channelResponses;
     }
 
     @Override
     public Channel updateName(UUID channelID, String name) {
         // [저장] , 조회
-        Channel channel = channelRepository.find(channelID)
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
+        Channel channel = channelRepository.find(channelID);
+
         // 비즈니스
         channel.updateName(name);
         channelRepository.save(channel);
@@ -83,7 +167,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID channelID) {
         // [저장]
-        Channel channel = find(channelID);
+        Channel channel = channelRepository.find(channelID);
 
         // [비즈니스]
         List<User> members = new ArrayList<>(channel.getMembersList());
@@ -103,7 +187,7 @@ public class BasicChannelService implements ChannelService {
     public void joinChannel(UUID userID, UUID channelID) {
 
         // [저장], 조회
-        Channel channel = find(channelID);
+        Channel channel = channelRepository.find(channelID);
         User user = userRepository.find(userID)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
 
@@ -124,7 +208,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public void leaveChannel(UUID userID, UUID channelID) {
-        Channel channel = find(channelID);
+        Channel channel = channelRepository.find(channelID);
         User user = userRepository.find(userID)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
 
@@ -154,13 +238,12 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<String> findMembers(UUID channelID) {
-        Channel channel = channelRepository.find(channelID)
-                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
+        Channel channel = channelRepository.find(channelID);
         // userService의 find로 user 객체 최신화 필요
         return channel.getMembersList().stream()
                 .map(user -> userRepository.find(user.getId())
                         .orElseThrow(()-> new IllegalArgumentException("User not found: "+ user.getId())))
                 .map(User::getName)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(toList());
     }
 }
