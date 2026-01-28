@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
@@ -36,28 +37,23 @@ public class BasicUserService implements UserService {
         }
 
         // userId를 받아오기 위해 우선 객체 생성
-        User user = new User(dto.username(), dto.email(), dto.password(), null);
-        userRepository.save(user);
+        User user = UserMapper.toEntity(dto, null);
 
         if (dto.profileImage() != null) {
             BinaryContentCreateDTO img = dto.profileImage();
 
-            BinaryContent binaryContent = new BinaryContent(
-                    user.getId(),
-                    img.data(),
-                    img.contentType(),
-                    img.filename()
-            );
+            BinaryContent binaryContent = BinaryContentMapper.toEntity(user.getId(), img);
 
             binaryContentRepository.save(binaryContent);
 
             // 프로필 사진이 있으면 갱신하기
             user.updateProfileImage(binaryContent.getId());
-            userRepository.save(user);
         }
 
         UserStatus status = new UserStatus(user.getId(), Instant.now());
         userStatusRepository.save(status);
+
+        userRepository.save(user);
 
         return UserMapper.toResponse(user, status);
     }
@@ -65,9 +61,9 @@ public class BasicUserService implements UserService {
     @Override
     public List<UserResponseDTO> getUserList() {
         List<User> users = userRepository.findAll();
-        Map<UUID, UserStatus> userStatusMap = indexStatusByUserId(userStatusRepository.findAll());
+        List<UserStatus> statuses = userStatusRepository.findAll();
 
-        return responseDTOList(userStatusMap, users);
+        return UserMapper.toResponseList(users, statuses);
     }
 
     @Override
@@ -80,9 +76,9 @@ public class BasicUserService implements UserService {
                 .filter(user -> user.getJoinedChannels().stream()
                         .anyMatch(channel -> channel.getId().equals(channelId)))
                 .toList();
-        Map<UUID, UserStatus> userStatusMap = indexStatusByUserId(userStatusRepository.findAll());
+        List<UserStatus> statuses = userStatusRepository.findAll();
 
-        return responseDTOList(userStatusMap, users);
+        return UserMapper.toResponseList(users, statuses);
     }
 
     @Override
@@ -94,18 +90,20 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponseDTO updateUser(UserUpdateDTO dto) {
+        User user = findUserInfoById(dto.userId());
+
         if (dto.username() != null) {
-            updateUserName(dto);
+            updateUserName(dto, user);
         }
         if (dto.statusType() != null) {
             updateUserStatus(dto);
         }
         if (dto.profileImage() != null) {
-            updateUserProfileImage(dto);
+            updateUserProfileImage(dto, user);
         }
 
         return UserMapper.toResponse(
-                findUserInfoById(dto.userId()),
+                user,
                 userStatusRepository.findByUserId(dto.userId())
         );
     }
@@ -156,35 +154,7 @@ public class BasicUserService implements UserService {
         });
     }
 
-    private Map<UUID, UserStatus> indexStatusByUserId(List<UserStatus> statuses) {
-        Map<UUID, UserStatus> map = new HashMap<>();
-        for (UserStatus status: statuses) {
-            map.put(status.getUserId(), status);
-        }
-        return map;
-    }
-
-    private List<UserResponseDTO> responseDTOList(Map<UUID, UserStatus> statusMap, List<User> users) {
-        List<UserResponseDTO> userResponseDTOS = new ArrayList<>();
-
-        for (User user: users) {
-            UserStatus status = statusMap.get(user.getId());
-
-            if (status == null) {
-                throw new IllegalStateException(
-                        "UserStatus가 없습니다.: userId=" + user.getId()
-                );
-            }
-
-            userResponseDTOS.add(UserMapper.toResponse(user, status));
-        }
-
-        return userResponseDTOS;
-    }
-
-    private void updateUserName(UserUpdateDTO dto) {
-        User user = findUserInfoById(dto.userId());
-
+    private void updateUserName(UserUpdateDTO dto, User user) {
         if (!user.getUsername().equals(dto.username())){
             if (userRepository.existsByUsername(dto.username())) {
                 throw new IllegalArgumentException("이미 사용중인 username입니다.");
@@ -206,20 +176,14 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(status);
     }
 
-    private void updateUserProfileImage(UserUpdateDTO dto) {
+    private void updateUserProfileImage(UserUpdateDTO dto, User user) {
         if (dto.profileImage() == null) {
             throw new IllegalArgumentException("profile 값이 존재하지 않습니다.");
         }
 
-        User user = findUserInfoById(dto.userId());
         BinaryContentCreateDTO img = dto.profileImage();
 
-        BinaryContent binaryContent = new BinaryContent(
-                user.getId(),
-                img.data(),
-                img.contentType(),
-                img.filename()
-        );
+        BinaryContent binaryContent = BinaryContentMapper.toEntity(user.getId(), dto.profileImage());
 
         binaryContentRepository.save(binaryContent);
 
