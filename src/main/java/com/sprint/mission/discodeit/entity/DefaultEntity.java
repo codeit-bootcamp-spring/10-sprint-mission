@@ -7,8 +7,9 @@ import java.util.UUID;
 
 @Getter
 public abstract class DefaultEntity {
-    protected UUID id;
-    protected Instant createdAt;
+    //공통필드
+    protected final UUID id;
+    protected final Instant createdAt;
     protected Instant updatedAt;
 
     public DefaultEntity() {

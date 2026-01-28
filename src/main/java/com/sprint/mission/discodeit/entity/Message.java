@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -14,6 +15,7 @@ public class Message extends DefaultEntity implements Serializable {
     //
     private UUID channelId;
     private UUID authorId;
+    private List<UUID> attachments;
 
     public Message(String content, UUID channelId, UUID authorId) {
         super();
