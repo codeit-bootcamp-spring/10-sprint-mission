@@ -1,0 +1,7 @@
+package com.sprint.mission.discodeit.entity;
+
+import java.util.UUID;
+
+// 바이너리 데이터 표현
+public class BinaryContent extends Base {
+}

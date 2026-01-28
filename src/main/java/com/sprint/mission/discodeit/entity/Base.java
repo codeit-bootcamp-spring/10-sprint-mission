@@ -1,31 +1,33 @@
 package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-// User, Channel, Message 간 공통 필드, Getter, Setter가 존재해 추상 Class
 public abstract class Base implements Serializable {
     // 필드
     private static final long serialVersionUID = 1L;
     @Getter
     private final UUID id;
     @Getter
-    private final Long createdAt;
+    private final Instant createdAt;
     @Getter
-    private Long updatedAt;
+    private Instant updatedAt;
 
     // 생성자
     public Base() {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
         this.updatedAt = createdAt;
     }
     // Setter
     public void updateUpdatedAt() {
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
     }
 
     @Override
