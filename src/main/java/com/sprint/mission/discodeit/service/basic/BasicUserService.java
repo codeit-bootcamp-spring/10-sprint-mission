@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.UserCreateResponseDTO;
+import com.sprint.mission.discodeit.dto.response.UserSearchResponseDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
@@ -40,11 +41,13 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(newUserStatus);
 
         // 3. 선택적 프로필 이미지 생성 및 저장
-        UUID profileImageId = Optional.ofNullable(binaryContentCreateRequestDTO.getBinaryContent()).map(content -> {
-            BinaryContent newBinaryContent = new BinaryContent(binaryContentCreateRequestDTO);
-            binaryContentRepository.save(newBinaryContent);
-            return newBinaryContent.getId();
-        });
+        UUID profileImageId = Optional.ofNullable(binaryContentCreateRequestDTO.getBinaryContent())
+                .map(content -> {
+                    BinaryContent newBinaryContent = new BinaryContent(binaryContentCreateRequestDTO);
+                    binaryContentRepository.save(newBinaryContent);
+                    return newBinaryContent.getId();
+                })
+                .orElse(null);
 
         // 5. 응답 DTO 객체 생성 및 반환
         return UserCreateResponseDTO.builder()
@@ -60,22 +63,51 @@ public class BasicUserService implements UserService {
 
     // 사용자 단건 조회
     @Override
-    public User searchUser(UUID userId) {
-        return userRepository.findById(userId)
+    public UserSearchResponseDTO searchUser(UUID userId) {
+        // 1. 사용자 존재 여부 확인
+        User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+
+        // 2. 사용자 상태 정보 조회
+        UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
+
+        // 2. 조회 응답 DTO 생성 및 반환
+        return UserSearchResponseDTO.builder()
+                .id(targetUser.getId())
+                .email(targetUser.getEmail())
+                .nickname(targetUser.getNickname())
+                .createdAt(targetUser.getCreatedAt())
+                .updatedAt(targetUser.getUpdatedAt())
+                .profileId(targetUser.getProfileId())
+                .status(targetUserStatus.getStatus())
+                .build();
     }
 
     // 사용자 전체 조회
     @Override
-    public List<UserCreateResponseDTO> searchUserAll() {
-        return userRepository.findAll();
+    public List<UserSearchResponseDTO> searchUserAll() {
+        // 1. 조회 응답 DTO 생성 및 반환
+        return userRepository.findAll().stream()
+                .map(user -> {
+                    // 사용자 상태 조회
+                    UserStatus userStatus = userStatusRepository.findById(user.getId());
+                    // 사용자 -> 사용자 조회 응답 변환
+                    return UserSearchResponseDTO.builder()
+                            .id(user.getId())
+                            .email(user.getEmail())
+                            .nickname(user.getNickname())
+                            .createdAt(user.getCreatedAt())
+                            .updatedAt(user.getUpdatedAt())
+                            .profileId(user.getProfileId())
+                            .status(userStatus.getStatus())
+                            .build();
+                })
+                .toList();
     }
 
     // 특정 채널의 참가자 목록 조회
     @Override
     public List<UUID> searchMembersByChannelId(UUID channelId) {
-        channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
-
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."))
                 .getMembers();
