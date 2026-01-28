@@ -16,6 +16,8 @@ public class User extends BaseEntity implements Serializable {
     private String password;
     private String birthday;
 
+    private UUID profileId; // 프로필 이미지
+
     // 연관
     // 해당 유저가 참여 중인 채널 List
     private final List<Channel> joinChannelList;
@@ -29,6 +31,7 @@ public class User extends BaseEntity implements Serializable {
         this.nickName = nickName;
         this.password = password; // 해싱?
         this.birthday = birthday;
+        this.profileId = null;
 
         joinChannelList = new ArrayList<>();
         writeMessageList = new ArrayList<>();
@@ -83,6 +86,11 @@ public class User extends BaseEntity implements Serializable {
 
     public void updateBirthday(String birthday) {
         this.birthday = birthday;
+        updateTime();
+    }
+
+    public void updateProfileId(UUID profileId) { // BinaryContent의 id
+        this.profileId = profileId;
         updateTime();
     }
 
