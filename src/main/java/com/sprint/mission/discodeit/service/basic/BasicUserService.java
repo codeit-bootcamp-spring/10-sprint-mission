@@ -85,20 +85,12 @@ public class BasicUserService implements UserService {
     public void deleteUser(UUID userId) {
         User targetUser = searchUser(userId);
 
-//        targetUser.getChannels()                       // 모든 채널의 member에서 해당 유저를 제거
-//                .forEach(channel -> {
-//                    Channel realChannel = channelRepository.findById(channel.getId())
-//                            .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
-//                    realChannel.getMembers().removeIf(memberID -> memberID.equals(userId));
-//                    channelRepository.save(realChannel);
-//                });
-
         channelRepository.findAll().stream()
-                        .filter(channel -> channel.getUserId().equals(userId))
-                        .forEach(channel -> {
-                            channel.getMembers().removeIf(memberID -> memberID.equals(userId));
-                            channelRepository.save(channel);
-                        });
+                .filter(channel -> channel.getUserId().equals(userId))
+                .forEach(channel -> {
+                    channel.getMembers().removeIf(memberID -> memberID.equals(userId));
+                    channelRepository.save(channel);
+                });
 
         messageRepository.findAll().stream()          // 모든 메시지에서 해당 유저가 작성한 메시지 제거
                 .filter(message -> message != null /*&& targetUser != null*/)
