@@ -1,45 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import lombok.Getter;
 
-public class User extends BaseEntity{
+import java.util.*;
+
+public class User extends BaseEntity {
+    private static final long serialVersionUID = 1L;
+
+    @Getter
     private String username;
+    @Getter
     private String email;
+    @Getter
     private String password;
-    private final Set<Channel> channels;
+    @Getter
+    private UUID profileId;
+    private final Set<UUID> channelIds;
 
     public User(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.channels = new HashSet<>();
+        this.channelIds = new HashSet<>();
     }
 
-    public String getUsername() {
-        return username;
+    public void addChannel(UUID channelId) {
+        this.channelIds.add(channelId);
     }
 
-    public String getEmail() {
-        return email;
+    public void deleteChannel(UUID channelId) {
+        this.channelIds.remove(channelId);
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public List<Channel> getChannels() {
-        return new ArrayList<>(channels);
-    }
-
-    public void join(Channel channel) {
-        this.channels.add(channel);
-    }
-
-    public void leave(Channel channel) {
-        this.channels.remove(channel);
+    public List<UUID> getChannelIds() {
+        return new ArrayList<>(channelIds);
     }
 
     public void updateUsername(String username) {
@@ -54,6 +48,11 @@ public class User extends BaseEntity{
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
+        setUpdateAt();
+    }
+
+    public void updateProfileId(UUID profileId) {
+        this.profileId = profileId;
         setUpdateAt();
     }
 

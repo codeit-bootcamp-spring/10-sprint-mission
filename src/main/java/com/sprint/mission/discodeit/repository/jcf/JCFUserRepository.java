@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User findUserById(UUID userId) {
+    public User findById(UUID userId) {
         return data.stream()
                 .filter(u -> u.getId().equals(userId))
                 .findAny()
@@ -27,7 +28,7 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public List<User> findAllUser() {
+    public List<User> findAll() {
         return new ArrayList<>(data);
     }
 

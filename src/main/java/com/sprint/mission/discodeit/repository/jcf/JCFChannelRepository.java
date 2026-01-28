@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findChannelById(UUID channelId) {
+    public Channel findById(UUID channelId) {
         return data.stream()
                 .filter(c -> c.getId().equals(channelId))
                 .findAny()
@@ -27,7 +28,7 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public List<Channel> findAllChannel() {
+    public List<Channel> findAll() {
         return new ArrayList<>(data);
     }
 

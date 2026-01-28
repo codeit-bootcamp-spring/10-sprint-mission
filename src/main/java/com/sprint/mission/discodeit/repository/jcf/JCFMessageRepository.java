@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findMessageById(UUID messageId) {
+    public Message findById(UUID messageId) {
         return data.stream()
                 .filter(m -> m.getId().equals(messageId))
                 .findAny()
@@ -27,7 +28,7 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public List<Message> findAllMessages() {
+    public List<Message> findAll() {
         return new ArrayList<>(data);
     }
 

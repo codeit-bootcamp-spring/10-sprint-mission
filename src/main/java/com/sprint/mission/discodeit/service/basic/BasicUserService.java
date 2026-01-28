@@ -1,167 +1,156 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.dto.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.UserDTO;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final UserStatusRepository userStatusRepository;
     private final MessageRepository messageRepository;
 
-    public BasicUserService(ChannelRepository channelRepository, UserRepository userRepository, MessageRepository messageRepository) {
-        this.channelRepository = channelRepository;
-        this.userRepository = userRepository;
-        this.messageRepository = messageRepository;
-    }
-
     @Override
-    public User create(String username, String email, String password) {
-        existsByEmail(email);
-        User user = new User(username, email, password);
+    public UserDTO.Response create(UserDTO.Create request) {
+        existsByUsername(request.username());
+        existsByEmail(request.email());
+        User user = new User(request.username(), request.email(), request.password());
         userRepository.save(user);
-        return user;
+
+        //요청에 프로필이 있다면 binaryContent 객체 생성 후 저장
+        if (request.binaryContent() != null) {
+            BinaryContentDTO.Create profileDto = request.binaryContent();
+
+            BinaryContent profile = new BinaryContent(
+                    profileDto.fileName(),
+                    profileDto.bytes()
+            );
+
+            binaryContentRepository.save(profile);
+
+            user.updateProfileId(profile.getId());
+            userRepository.save(user);
+        }
+
+        //유저 상태 객체 생성 후 저장
+        UserStatus status = new UserStatus(user.getId());
+        status.updateOnline();
+
+        userStatusRepository.save(status);
+
+        return UserDTO.Response.of(user, status);
     }
 
     @Override
-    public User findUserById(UUID userId) {
-        return userRepository.findUserById(userId);
+    public UserDTO.Response findById(UUID userId) {
+        User user = userRepository.findById(userId);
+        UserStatus status = userStatusRepository.findByUserId(userId);
+        return UserDTO.Response.of(user, status);
     }
 
     @Override
-    public User findUserByEmail(String email) {
-        return userRepository.findAllUser().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-    }
-
-    @Override
-    public List<User> findUsersByChannel(UUID channelId) {
-        return userRepository.findAllUser().stream().filter(user -> user.getChannels().stream()
-                        .anyMatch(channel -> channel.getId().equals(channelId)))
+    public List<UserDTO.Response> findAll() {
+        return userRepository.findAll().stream()
+                .map(user -> {
+                    UserStatus status = userStatusRepository.findByUserId(user.getId());
+                    return UserDTO.Response.of(user, status);
+                })
                 .toList();
     }
 
     @Override
-    public List<User> findAllUser() {
-        return userRepository.findAllUser();
+    public UserDTO.Response update(UUID userId, UserDTO.Update request) {
+        User user = userRepository.findById(userId);
+
+        Optional.ofNullable(request.username()).ifPresent(user::updateUsername);
+        Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
+        Optional.ofNullable(request.password()).ifPresent(user::updatePassword);
+
+        if (request.binaryContent() != null) {
+            if (user.getProfileId() != null) {
+                BinaryContent oldProfile = binaryContentRepository.findById(user.getProfileId());
+                binaryContentRepository.delete(oldProfile);
+            }
+
+            BinaryContentDTO.Create profileDto = request.binaryContent();
+
+            BinaryContent newProfile = new BinaryContent(
+                    profileDto.fileName(),
+                    profileDto.bytes()
+            );
+            binaryContentRepository.save(newProfile);
+
+            user.updateProfileId(newProfile.getId());
+        }
+        userRepository.save(user);
+
+        UserStatus status = userStatusRepository.findByUserId(userId);
+        status.updateOnline();
+
+        userStatusRepository.save(status);
+        return UserDTO.Response.of(user, status);
     }
 
     @Override
-    public User update(UUID userId, String password, String username, String email) {
-        existsByEmail(email);
+    public void delete(UUID userId) {
+        User user = userRepository.findById(userId);
 
-        User user = userRepository.findUserById(userId);
-        validatePassword(user, password);
-
-        if (email != null && !email.equals(user.getEmail())) {
-            existsByEmail(email);
+        //유저 탈퇴시 유저 메세지 지우기
+        List<Message> messages = messageRepository.findAll().stream()
+                .filter(message -> message.getAuthorId().equals(userId))
+                .toList();
+        for (Message message : messages) {
+            messageRepository.delete(message);
         }
 
-        Optional.ofNullable(username).ifPresent(user::updateUsername);
-        Optional.ofNullable(email).ifPresent(user::updateEmail);
+        //유저 탈퇴 시 채널에서 탈퇴
+        for (UUID channelId : user.getChannelIds()) {
+            Channel channel = channelRepository.findById(channelId);
+            channel.deleteUser(userId);
+            channelRepository.save(channel);
+        }
 
-        userRepository.save(user);
+        //유저 상태 삭제
+        UserStatus status = userStatusRepository.findByUserId(userId);
+        userStatusRepository.delete(status);
 
-        updateUserInChannels(user);
-        updateUserInMessages(user);
-
-        return user;
-    }
-
-    @Override
-    public User updatePassword(UUID userId, String currentPassword, String newPassword) {
-        User user = userRepository.findUserById(userId);
-        validatePassword(user, currentPassword);
-        user.updatePassword(newPassword);
-        userRepository.save(user);
-
-        updateUserInChannels(user);
-        updateUserInMessages(user);
-
-        return user;
-    }
-
-    @Override
-    public void delete(UUID userId, String password) {
-        User user = userRepository.findUserById(userId);
-        validatePassword(user, password);
-
-        List<Channel> channels = new ArrayList<>(user.getChannels());
-
-        leaveUserFromChannels(user, channels);
-
-        channels.forEach(channelRepository::save);
+        //유저 프로필 삭제
+        if (user.getProfileId() != null) {
+            BinaryContent profile = binaryContentRepository.findById(user.getProfileId());
+            binaryContentRepository.delete(profile);
+        }
 
         userRepository.delete(user);
     }
 
+    //유저명 중복체크
+    private void existsByUsername(String username) {
+        boolean exist = userRepository.findAll().stream()
+                .anyMatch(user -> user.getUsername().equals(username));
+        if (exist) {
+            throw new IllegalArgumentException("이미 사용중인 유저 이름입니다: " + username);
+        }
+    }
+
     //유저 이메일 중복체크
     private void existsByEmail(String email) {
-        boolean exist = userRepository.findAllUser().stream()
+        boolean exist = userRepository.findAll().stream()
                 .anyMatch(user -> user.getEmail().equals(email));
         if (exist) {
             throw new IllegalArgumentException("이미 사용중인 이메일입니다: " + email);
-        }
-    }
-
-    //비밀번호 검증
-    private void validatePassword(User user, String inputPassword) {
-        if (!user.getPassword().equals(inputPassword)) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-    }
-
-    //채널 목록에서 유저 삭제
-    private void leaveUserFromChannels(User user, List<Channel> channels) {
-        for (Channel channel : channels) {
-            channel.leave(user);
-            user.leave(channel);
-        }
-    }
-
-    //채널 목록에서 유저 업데이트
-    private void updateUserInChannels(User newUser) {
-        List<Channel> channels = channelRepository.findAllChannel().stream()
-                .filter(channel -> channel.getUsers().stream()
-                        .anyMatch(u -> u.equals(newUser)))
-                .toList();
-
-        for (Channel channel : channels) {
-            channel.getUsers().stream()
-                    .filter(u -> u.equals(newUser))
-                    .findFirst()
-                    .ifPresent(u -> {
-                        u.updateEmail(newUser.getEmail());
-                        u.updateUsername(newUser.getUsername());
-                        u.updatePassword(newUser.getPassword());
-                    });
-            channelRepository.save(channel);
-        }
-    }
-
-    //메시지 목록에서 유저 업데이트
-    private void updateUserInMessages(User newUser) {
-        List<Message> messages = messageRepository.findAllMessages().stream()
-                .filter(message -> message.getUser().equals(newUser))
-                .toList();
-
-        for (Message message : messages) {
-            message.getUser().updateEmail(newUser.getEmail());
-            message.getUser().updateUsername(newUser.getUsername());
-            message.getUser().updatePassword(newUser.getPassword());
-            messageRepository.save(message);
         }
     }
 }
