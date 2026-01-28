@@ -8,6 +8,11 @@ public class UserStatus extends BaseEntity{
     private UUID userID;
     private Instant lastConnectedAt;
 
+    public UserStatus(UUID userID) {
+        this.userID = userID;
+        this.lastConnectedAt = Instant.now();
+    }
+
     public boolean isOnline(){
         return (Duration.between(lastConnectedAt, Instant.now()).getSeconds() < 300);
     }

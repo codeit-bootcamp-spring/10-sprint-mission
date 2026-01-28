@@ -10,4 +10,13 @@ public class ReadStatus extends BaseEntity {
     private UUID userID;
     private UUID channelID;
     private Instant lastReadAt = Instant.EPOCH;
+
+    public boolean isRead(){
+        return lastReadAt.isAfter(Instant.EPOCH);
+    }
+
+    public Instant getLastReadAt(){
+        return lastReadAt;
+    }
+
 }
