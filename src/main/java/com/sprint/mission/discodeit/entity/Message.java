@@ -13,6 +13,8 @@ public class Message extends BaseEntity {
     private final UUID authorId;
     @Getter
     private final UUID channelId;
+    @Getter
+    private UUID attachmentId;
 
     public Message(String content, UUID channelId, UUID authorId) {
         this.content = content;
@@ -22,6 +24,11 @@ public class Message extends BaseEntity {
 
     public void update(String content) {
         this.content = content;
+        setUpdateAt();
+    }
+
+    public void updateAttachment(UUID attachmentId) {
+        this.attachmentId = attachmentId;
         setUpdateAt();
     }
 

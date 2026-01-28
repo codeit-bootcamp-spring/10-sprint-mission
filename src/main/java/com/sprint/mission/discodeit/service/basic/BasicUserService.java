@@ -1,15 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.dto.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.UserDTO;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,72 +19,94 @@ public class BasicUserService implements UserService {
 
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final UserStatusRepository userStatusRepository;
     private final MessageRepository messageRepository;
 
     @Override
-    public User create(String username, String email, String password) {
-        existsByEmail(email);
-        User user = new User(username, email, password);
+    public UserDTO.Response create(UserDTO.Create request) {
+        existsByUsername(request.username());
+        existsByEmail(request.email());
+        User user = new User(request.username(), request.email(), request.password());
         userRepository.save(user);
-        return user;
+
+        //요청에 프로필이 있다면 binaryContent 객체 생성 후 저장
+        if (request.binaryContent() != null) {
+            BinaryContentDTO.Create profileDto = request.binaryContent();
+
+            BinaryContent profile = new BinaryContent(
+                    profileDto.fileName(),
+                    profileDto.bytes()
+            );
+
+            binaryContentRepository.save(profile);
+
+            user.updateProfileId(profile.getId());
+            userRepository.save(user);
+        }
+
+        //유저 상태 객체 생성 후 저장
+        UserStatus status = new UserStatus(user.getId());
+        status.updateOnline();
+
+        userStatusRepository.save(status);
+
+        return UserDTO.Response.of(user, status);
     }
 
     @Override
-    public User findUserById(UUID userId) {
-        return userRepository.findById(userId);
+    public UserDTO.Response findById(UUID userId) {
+        User user = userRepository.findById(userId);
+        UserStatus status = userStatusRepository.findByUserId(userId);
+        return UserDTO.Response.of(user, status);
     }
 
     @Override
-    public User findUserByEmail(String email) {
+    public List<UserDTO.Response> findAll() {
         return userRepository.findAll().stream()
-                .filter(user -> user.getEmail().equals(email))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
-    }
-
-    @Override
-    public List<User> findUsersByChannel(UUID channelId) {
-        return userRepository.findAll().stream().filter(user -> user.getChannelIds().stream()
-                        .anyMatch(c -> c.equals(channelId)))
+                .map(user -> {
+                    UserStatus status = userStatusRepository.findByUserId(user.getId());
+                    return UserDTO.Response.of(user, status);
+                })
                 .toList();
     }
 
     @Override
-    public List<User> findAllUser() {
-        return userRepository.findAll();
-    }
-
-    @Override
-    public User update(UUID userId, String password, String username, String email) {
+    public UserDTO.Response update(UUID userId, UserDTO.Update request) {
         User user = userRepository.findById(userId);
-        validatePassword(user, password);
 
-        if (email != null && !email.equals(user.getEmail())) {
-            existsByEmail(email);
+        Optional.ofNullable(request.username()).ifPresent(user::updateUsername);
+        Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
+        Optional.ofNullable(request.password()).ifPresent(user::updatePassword);
+
+        if (request.binaryContent() != null) {
+            if (user.getProfileId() != null) {
+                BinaryContent oldProfile = binaryContentRepository.findById(user.getProfileId());
+                binaryContentRepository.delete(oldProfile);
+            }
+
+            BinaryContentDTO.Create profileDto = request.binaryContent();
+
+            BinaryContent newProfile = new BinaryContent(
+                    profileDto.fileName(),
+                    profileDto.bytes()
+            );
+            binaryContentRepository.save(newProfile);
+
+            user.updateProfileId(newProfile.getId());
         }
-
-        Optional.ofNullable(username).ifPresent(user::updateUsername);
-        Optional.ofNullable(email).ifPresent(user::updateEmail);
-
         userRepository.save(user);
 
-        return user;
+        UserStatus status = userStatusRepository.findByUserId(userId);
+        status.updateOnline();
+
+        userStatusRepository.save(status);
+        return UserDTO.Response.of(user, status);
     }
 
     @Override
-    public User updatePassword(UUID userId, String currentPassword, String newPassword) {
+    public void delete(UUID userId) {
         User user = userRepository.findById(userId);
-        validatePassword(user, currentPassword);
-        user.updatePassword(newPassword);
-        userRepository.save(user);
-
-        return user;
-    }
-
-    @Override
-    public void delete(UUID userId, String password) {
-        User user = userRepository.findById(userId);
-        validatePassword(user, password);
 
         //유저 탈퇴시 유저 메세지 지우기
         List<Message> messages = messageRepository.findAll().stream()
@@ -102,7 +123,26 @@ public class BasicUserService implements UserService {
             channelRepository.save(channel);
         }
 
+        //유저 상태 삭제
+        UserStatus status = userStatusRepository.findByUserId(userId);
+        userStatusRepository.delete(status);
+
+        //유저 프로필 삭제
+        if (user.getProfileId() != null) {
+            BinaryContent profile = binaryContentRepository.findById(user.getProfileId());
+            binaryContentRepository.delete(profile);
+        }
+
         userRepository.delete(user);
+    }
+
+    //유저명 중복체크
+    private void existsByUsername(String username) {
+        boolean exist = userRepository.findAll().stream()
+                .anyMatch(user -> user.getUsername().equals(username));
+        if (exist) {
+            throw new IllegalArgumentException("이미 사용중인 유저 이름입니다: " + username);
+        }
     }
 
     //유저 이메일 중복체크
@@ -111,13 +151,6 @@ public class BasicUserService implements UserService {
                 .anyMatch(user -> user.getEmail().equals(email));
         if (exist) {
             throw new IllegalArgumentException("이미 사용중인 이메일입니다: " + email);
-        }
-    }
-
-    //비밀번호 검증
-    private void validatePassword(User user, String inputPassword) {
-        if (!user.getPassword().equals(inputPassword)) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
     }
 }

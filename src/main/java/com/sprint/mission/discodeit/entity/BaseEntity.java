@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -13,18 +14,18 @@ public abstract class BaseEntity implements Serializable {
     @Getter
     private final UUID id;
     @Getter
-    private final Long createdAt;
+    private final Instant createdAt;
     @Getter
-    private Long updateAt;
+    private Instant updateAt;
 
     protected BaseEntity() {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
         this.updateAt = this.createdAt;
     }
 
     protected void setUpdateAt() {
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 
     @Override

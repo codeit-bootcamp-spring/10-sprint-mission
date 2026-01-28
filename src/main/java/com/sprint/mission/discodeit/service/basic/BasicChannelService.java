@@ -32,29 +32,13 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel findChannelById(UUID channelId) {
+    public Channel findById(UUID channelId) {
         return channelRepository.findById(channelId);
     }
 
     @Override
-    public Channel findChannelByName(String name) {
-        return channelRepository.findAll().stream()
-                .filter(channel -> channel.getChannelName().equals(name))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
-    }
-
-    @Override
-    public List<Channel> findAllChannel() {
+    public List<Channel> findAll() {
         return channelRepository.findAll();
-    }
-
-    @Override
-    public List<Channel> findChannelsByUser(UUID userId) {
-        return channelRepository.findAll().stream()
-                .filter(channel -> channel.getUserIds().stream()
-                        .anyMatch(u -> u.equals(userId)))
-                .toList();
     }
 
     @Override

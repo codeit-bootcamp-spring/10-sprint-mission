@@ -13,6 +13,8 @@ public class User extends BaseEntity {
     private String email;
     @Getter
     private String password;
+    @Getter
+    private UUID profileId;
     private final Set<UUID> channelIds;
 
     public User(String username, String email, String password) {
@@ -46,6 +48,11 @@ public class User extends BaseEntity {
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
+        setUpdateAt();
+    }
+
+    public void updateProfileId(UUID profileId) {
+        this.profileId = profileId;
         setUpdateAt();
     }
 
