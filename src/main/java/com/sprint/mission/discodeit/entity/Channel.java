@@ -1,12 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.util.*;
 
 public class Channel extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
+    @Getter
     private ChannelType type;
+    @Getter
     private String channelName;
+    @Getter
     private String description;
     private final Set<UUID> userIds;
 
@@ -15,18 +20,6 @@ public class Channel extends BaseEntity {
         this.channelName = channelName;
         this.description = description;
         this.userIds = new HashSet<>();
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public ChannelType getType() {
-        return type;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public void addUser(UUID userId) {

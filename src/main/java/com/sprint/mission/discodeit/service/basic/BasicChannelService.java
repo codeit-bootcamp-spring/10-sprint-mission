@@ -8,23 +8,21 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
 
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
-
-    public BasicChannelService(ChannelRepository channelRepository, UserRepository userRepository, MessageRepository messageRepository) {
-        this.channelRepository = channelRepository;
-        this.userRepository = userRepository;
-        this.messageRepository = messageRepository;
-    }
 
     @Override
     public Channel create(ChannelType type, String name, String description) {
@@ -104,6 +102,15 @@ public class BasicChannelService implements ChannelService {
     public void delete(UUID channelId) {
         Channel channel = channelRepository.findChannelById(channelId);
 
+        //채널 삭제 시 채널에 있는 메세지 지우기
+        List<Message> messages = messageRepository.findAllMessages().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .toList();
+        for (Message message : messages) {
+            messageRepository.delete(message);
+        }
+
+        //채널에 있는 유저 탈퇴
         for (UUID userId : channel.getUserIds()) {
             User user = userRepository.findUserById(userId);
             user.deleteChannel(channelId);

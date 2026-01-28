@@ -7,23 +7,21 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
-
-    public BasicUserService(ChannelRepository channelRepository, UserRepository userRepository, MessageRepository messageRepository) {
-        this.channelRepository = channelRepository;
-        this.userRepository = userRepository;
-        this.messageRepository = messageRepository;
-    }
 
     @Override
     public User create(String username, String email, String password) {
@@ -60,8 +58,6 @@ public class BasicUserService implements UserService {
 
     @Override
     public User update(UUID userId, String password, String username, String email) {
-        existsByEmail(email);
-
         User user = userRepository.findUserById(userId);
         validatePassword(user, password);
 
@@ -92,6 +88,15 @@ public class BasicUserService implements UserService {
         User user = userRepository.findUserById(userId);
         validatePassword(user, password);
 
+        //유저 탈퇴시 유저 메세지 지우기
+        List<Message> messages = messageRepository.findAllMessages().stream()
+                .filter(message -> message.getAuthorId().equals(userId))
+                .toList();
+        for (Message message : messages) {
+            messageRepository.delete(message);
+        }
+
+        //유저 탈퇴 시 채널에서 탈퇴
         for (UUID channelId : user.getChannelIds()) {
             Channel channel = channelRepository.findChannelById(channelId);
             channel.deleteUser(userId);
