@@ -186,8 +186,8 @@ public class JavaApplication {
 
         User user1 = userService.createUser("user1", "1234", "");
         Channel channel1 = channelService.createChannel("channel1", ChannelType.PUBLIC, "channel1 description");
-        Message message1 = messageService.createMessage("message1 content", user1, channel1);
-        Message message2 = messageService.createMessage("message2 content", user1, channel1);
+        Message message1 = messageService.createMessage("message1 content", user1.getId(), channel1.getId());
+        Message message2 = messageService.createMessage("message2 content", user1.getId(), channel1.getId());
         // 단건 조회
         Message result = messageService.getMessage(message1.getId());
         if(result.equals(message1)) System.out.println("단건 조회 테스트 성공");
@@ -255,10 +255,10 @@ public class JavaApplication {
         channelService.joinChannel(channel1.getId(), user1.getId());
         channelService.joinChannel(channel1.getId(), user2.getId());
 
-        Message message1 = messageService.createMessage("message1 content", user1, channel1);
-        Message message2 = messageService.createMessage("message2 content", user2, channel1);
-        Message message3 = messageService.createMessage("message3 content", user1, channel1);
-        Message message4 = messageService.createMessage("message4 content", user1, channel1);
+        Message message1 = messageService.createMessage("message1 content", user1.getId(), channel1.getId());
+        Message message2 = messageService.createMessage("message2 content", user2.getId(), channel1.getId());
+        Message message3 = messageService.createMessage("message3 content", user1.getId(), channel1.getId());
+        Message message4 = messageService.createMessage("message4 content", user1.getId(), channel1.getId());
 
         // 전체 유저 수 = 2
         int allUserSize = userService.getAllUsers().size();
@@ -298,11 +298,11 @@ public class JavaApplication {
         channelService.joinChannel(channel2.getId(), user1.getId());
         channelService.joinChannel(channel2.getId(), user2.getId());
 
-        Message message1 = messageService.createMessage("message1 content", user1, channel1);
-        Message message2 = messageService.createMessage("message2 content", user2, channel1);
-        Message message3 = messageService.createMessage("message3 content", user1, channel1);
-        Message message4 = messageService.createMessage("message4 content", user1, channel2);
-        Message message5 = messageService.createMessage("message5 content", user2, channel2);
+        Message message1 = messageService.createMessage("message1 content", user1.getId(), channel1.getId());
+        Message message2 = messageService.createMessage("message2 content", user2.getId(), channel1.getId());
+        Message message3 = messageService.createMessage("message3 content", user1.getId(), channel1.getId());
+        Message message4 = messageService.createMessage("message4 content", user1.getId(), channel2.getId());
+        Message message5 = messageService.createMessage("message5 content", user2.getId(), channel2.getId());
 
         // 전체 채널 수 = 2
         int allChannelSize = channelService.getAllChannels().size();
@@ -342,10 +342,10 @@ public class JavaApplication {
         channelService.joinChannel(channel1.getId(), user1.getId());
         channelService.joinChannel(channel1.getId(), user2.getId());
 
-        Message message1 = messageService.createMessage("message1 content", user1, channel1);
-        Message message2 = messageService.createMessage("message2 content", user2, channel1);
-        Message message3 = messageService.createMessage("message3 content", user1, channel1);
-        Message message4 = messageService.createMessage("message4 content", user1, channel1);
+        Message message1 = messageService.createMessage("message1 content", user1.getId(), channel1.getId());
+        Message message2 = messageService.createMessage("message2 content", user2.getId(), channel1.getId());
+        Message message3 = messageService.createMessage("message3 content", user1.getId(), channel1.getId());
+        Message message4 = messageService.createMessage("message4 content", user1.getId(), channel1.getId());
 
         // 전체 메세지 수 =
         int allMessageSize = messageService.getAllMessages().size();
