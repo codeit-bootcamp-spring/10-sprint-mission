@@ -1,0 +1,8 @@
+package com.sprint.mission.discodeit.exception;
+
+
+public class DuplicationEmailException extends RuntimeException {
+    public DuplicationEmailException() {
+        super("중복된 이메일입니다.");
+    }
+}
