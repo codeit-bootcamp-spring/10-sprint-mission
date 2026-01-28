@@ -26,7 +26,7 @@ public class User extends DefaultEntity implements Serializable {
         this.password = password;
     }
 
-    public void update(String newUsername, String newEmail, String newPassword) {
+    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
         boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
@@ -37,6 +37,10 @@ public class User extends DefaultEntity implements Serializable {
             anyValueUpdated = true;
         }
         if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
             this.password = newPassword;
             anyValueUpdated = true;
         }

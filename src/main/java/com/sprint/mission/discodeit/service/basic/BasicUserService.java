@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.UserFindingDto;
+import com.sprint.mission.discodeit.dto.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -81,10 +82,32 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, String newUsername, String newEmail, String newPassword) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-        user.update(newUsername, newEmail, newPassword);
+    public User update(UserUpdateRequestDto userUpdateRequestDto) {
+        User user = userRepository.findById(userUpdateRequestDto.targetUserId())
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userUpdateRequestDto.targetUserId() + " not found"));
+
+        if(userUpdateRequestDto.profileImage() == null){
+            user.update(
+                    userUpdateRequestDto.newUsername(),
+                    userUpdateRequestDto.newEmail(),
+                    userUpdateRequestDto.newPassword(),
+                    null
+                    );
+        }
+        else{
+            BinaryContent profileImage = new BinaryContent(userUpdateRequestDto.profileImage().content());
+
+            if(user.getProfileId() != null) binaryContentRepository.deleteById(user.getProfileId());
+            binaryContentRepository.save(profileImage);
+
+            user.update(
+                    userUpdateRequestDto.newUsername(),
+                    userUpdateRequestDto.newEmail(),
+                    userUpdateRequestDto.newPassword(),
+                    profileImage.getId()
+            );
+        }
+
         return userRepository.save(user);
     }
 
