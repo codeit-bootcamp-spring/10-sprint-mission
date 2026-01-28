@@ -12,9 +12,10 @@ public class BinaryContent {                             // 수정 불가능 클
     private byte[] data;                                 // 실제 파일
     private BinaryContentType binaryContentType;         // 파일 종류
 
-    public BinaryContent(BinaryContentType binaryContentType) {
+    public BinaryContent(byte[] data, BinaryContentType binaryContentType) {
         this.id = UUID.randomUUID();
         this.createdTime = Instant.now();
+        this.data = data;
         this.binaryContentType = binaryContentType;
     }
 }
