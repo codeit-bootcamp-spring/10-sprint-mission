@@ -9,33 +9,19 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@RequiredArgsConstructor
+@Service
 public class BasicUserService implements UserService {
+    private final ChannelService channelService;
     // 필드
-    private UserRepository userRepository;
-    private ChannelRepository channelRepository;
-    private MessageRepository messageRepository;
-
-    private MessageService messageService;
-    private ChannelService channelService;
-
-    public BasicUserService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.messageRepository = messageRepository;
-    }
-
-    @Override
-    public void setMessageService(MessageService messageService) {
-        this.messageService = messageService;
-    }
-
-    @Override
-    public void setChannelService(ChannelService channelService) {
-        this.channelService = channelService;
-    }
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
 
     @Override
     public User create(String name) {
@@ -62,7 +48,7 @@ public class BasicUserService implements UserService {
 
         Set<UUID> channelIDs = new HashSet<>();
 
-        for (Channel channel : user.getChannels()) {
+        for (Channel channel : user.getChannelsList()) {
             for (User u : channel.getMembersList()){
                 if (u.getId().equals(userID)) {
                     u.updateName(name);
@@ -82,18 +68,16 @@ public class BasicUserService implements UserService {
         }
 
         for (UUID messageID : messageIDs) {
-            messageRepository.save(messageRepository.find(messageID).get());
+            messageRepository.save(messageRepository.find(messageID)
+                    .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageID)));
         }
         // [저장] 변경사항 저장
         return userRepository.save(user);
     }
 
+    // user가 해당 ch에서 보낸 msg 삭제 반영 X
     @Override
     public void deleteUser(UUID userID) {
-        if (messageService == null) {
-            throw new IllegalStateException("MessageService is not set in BasicUserService");
-        }
-
         // [저장]
         User user = userRepository.find(userID)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
@@ -102,14 +86,14 @@ public class BasicUserService implements UserService {
         List<Message> messages = new ArrayList<>(user.getMessageList());
         for (Message message : messages) {
             if (message.getSender() != null && message.getSender().getId().equals(userID)) {
-                messageService.deleteMessage(message.getId());
+                messageRepository.deleteMessage(message.getId());
             }
         }
 
 
         // [비즈니스] ??
         List<UUID> channelIDs = new ArrayList<>();
-        for (Channel channel : user.getChannels()) {
+        for (Channel channel : user.getChannelsList()) {
             channelIDs.add(channel.getId());
         }
 
@@ -124,7 +108,7 @@ public class BasicUserService implements UserService {
     @Override
     public List<String> findJoinedChannels(UUID userID) {
         User user = find(userID);
-        return user.getChannels().stream()
+        return user.getChannelsList().stream()
                 .map(Channel::getName)
                 .collect(java.util.stream.Collectors.toList());
     }

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class FileChannelRepository implements ChannelRepository {
     // 필드
     private static final Path BASE_PATH = Path.of("data/channel");
@@ -73,9 +75,9 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void deleteChannel(Channel channel) {
+    public void deleteChannel(UUID channelID) {
         loadData();
-        channelData.removeIf(ch -> ch.getId().equals(channel.getId()));
+        channelData.removeIf(ch -> ch.getId().equals(channelID));
         saveData();
     }
 

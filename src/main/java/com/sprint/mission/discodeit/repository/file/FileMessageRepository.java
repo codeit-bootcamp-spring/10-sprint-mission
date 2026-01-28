@@ -2,12 +2,14 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
+@Repository
 public class FileMessageRepository implements MessageRepository {
     private Map<UUID, Message> messageData;
 
@@ -68,9 +70,9 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void deleteMessage(Message message) {
+    public void deleteMessage(UUID messageID) {
         loadData();
-        messageData.remove(message.getId());
+        messageData.remove(messageID);
         saveData();
     }
 

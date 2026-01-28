@@ -24,14 +24,6 @@ public class JCFUserService implements UserService {
         this.userData = new ArrayList<>();
     }
 
-    // Setter
-    @Override
-    public void setMessageService(MessageService messageService) {
-        this.messageService = messageService;
-    }
-
-    public void setChannelService(ChannelService channelService) {this.channelService = channelService;}
-
     // User 등록 , 저장 로직
     @Override
     public User create(String name) {
@@ -83,7 +75,7 @@ public class JCFUserService implements UserService {
         messageList.forEach(message -> messageService.deleteMessage(message.getId()));
 
         // [비즈니스] Channel에서 User 탈퇴 및 User가 가입한 channel에서 User 탈퇴 , 양방향 삭제를 해줘야 객체가 완전히 지워짐 ??
-        List<Channel> channels = new ArrayList<>(user.getChannels());
+        List<Channel> channels = new ArrayList<>(user.getChannelsList());
         channels.forEach(channel -> {
             channel.removeMember(user);
             user.leaveChannel(channel);
@@ -98,7 +90,7 @@ public class JCFUserService implements UserService {
     public List<String> findJoinedChannels(UUID userID){
         // [저장]
         User user = find(userID);
-        return user.getChannels().stream()
+        return user.getChannelsList().stream()
                 .map(Channel::getName)
                 .collect(Collectors.toList());
     }

@@ -1,11 +1,16 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 
 public class Message extends Base  {
     // 필드
+    @Getter
     private String contents;
+    @Getter
     private final User sender;
+    @Getter
     private final Channel channel;
 
     // 생성자
@@ -16,20 +21,6 @@ public class Message extends Base  {
         this.channel = channel;
 
     }
-
-    // Getter
-    public String getContents() {
-        return contents;
-    }
-
-    public User getSender() {
-        return sender;
-    }
-
-    public Channel getChannel() {
-        return channel;
-    }
-
     // Setter
     public void updateContents(String contents) {
         this.contents = contents;

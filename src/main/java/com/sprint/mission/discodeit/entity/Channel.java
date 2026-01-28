@@ -1,12 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.util.*;
 
 public class Channel extends Base  {
     // 필드
+    @Getter
     private String name;
+    @Getter
     private final List<User> membersList;
+    @Getter
     private final List<Message> messageList;
 
     // 생성자
@@ -16,20 +21,6 @@ public class Channel extends Base  {
         this.membersList = new ArrayList<>();
         this.messageList = new ArrayList<>();
     }
-
-    // getter
-    public String getName() {
-        return name;
-    }
-
-    public List<User> getMembersList() {
-        return membersList;
-    }
-
-    public List<Message> getMessageList(){
-        return messageList;
-    }
-
     // setter
     public void updateName(String name) {
         this.name = name;

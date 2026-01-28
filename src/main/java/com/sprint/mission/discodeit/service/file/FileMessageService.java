@@ -64,15 +64,6 @@ public class FileMessageService implements MessageService {
         }
     }
 
-    // Setter
-    public void setChannelService(ChannelService FileChannelService) {
-        this.FileChannelService = FileChannelService;
-    }
-
-    public void setUserService(UserService FileUserService) {
-        this.FileUserService = FileUserService;
-    }
-
     //생성
     @Override
     public Message create(String contents, UUID userID, UUID channelID) {

@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MessageService {
-    // Setter
-    void setChannelService(ChannelService channelService);
-    void setUserService(UserService userService);
     // CRUD
     Message create(String contents, UUID userID, UUID channelID);
     Message find(UUID messageID);

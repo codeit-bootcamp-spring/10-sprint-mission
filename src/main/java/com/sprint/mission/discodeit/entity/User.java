@@ -1,12 +1,18 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.util.*;
 
 public class User extends Base  {
+    // Getter
     // 필드
+    @Getter
     private String name;
+    @Getter
     private final List<Channel> channelsList;
+    @Getter
     private final List<Message> messageList;
 
     // 생성자
@@ -15,19 +21,6 @@ public class User extends Base  {
         this.name = name;
         this.channelsList = new ArrayList<>();
         this.messageList = new ArrayList<Message>();
-    }
-
-    // Getter
-    public String getName() {
-        return name;
-    }
-
-    public List<Channel> getChannels() {
-        return channelsList;
-    }
-
-    public List<Message> getMessageList(){
-        return messageList;
     }
 
     // Setter
@@ -43,7 +36,7 @@ public class User extends Base  {
     }
 
     public void leaveChannel(Channel channel){
-        channelsList.remove(channel);
+        channelsList.removeIf(ch -> ch.getId().equals(channel.getId()));
         updateUpdatedAt();
     }
 

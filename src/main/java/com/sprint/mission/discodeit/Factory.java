@@ -1,4 +1,4 @@
-package com.sprint.mission;
+package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -48,8 +48,8 @@ public class Factory {
                 MessageRepository messageRepository = new JCFMessageRepository();
                 UserRepository userRepository = new JCFUserRepository();
 
-                this.userService = new BasicUserService(userRepository, channelRepository, messageRepository);
                 this.channelService = new BasicChannelService(channelRepository, userRepository, messageRepository);
+                this.userService = new BasicUserService(userRepository, channelRepository, messageRepository, this.channelService);
                 this.messageService = new BasicMessageService(messageRepository, userRepository, channelRepository);
             }
             case "basic-file" -> {
@@ -57,23 +57,13 @@ public class Factory {
                 MessageRepository messageRepository = new FileMessageRepository();
                 UserRepository userRepository = new FileUserRepository();
 
-                this.userService = new BasicUserService(userRepository, channelRepository, messageRepository);
                 this.channelService = new BasicChannelService(channelRepository, userRepository, messageRepository);
+                this.userService = new BasicUserService(userRepository, channelRepository, messageRepository, this.channelService);
                 this.messageService = new BasicMessageService(messageRepository, userRepository, channelRepository);
             }
 
             default -> throw new IllegalArgumentException("Invalid mode: " + mode);
         }
-
-        // 각 서비스 주입
-        userService.setMessageService(messageService);
-        userService.setChannelService(channelService);
-
-        channelService.setMessageService(messageService);
-        channelService.setUserService(userService);
-
-        messageService.setChannelService(channelService);
-        messageService.setUserService(userService);
     }
     // Getter
     public UserService getUserService() {

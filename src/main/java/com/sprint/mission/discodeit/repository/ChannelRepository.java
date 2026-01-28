@@ -9,6 +9,6 @@ import java.util.UUID;
 public interface ChannelRepository {
     Optional<Channel> find(UUID channelID);
     List<Channel> findAll();
-    void deleteChannel(Channel channel);
+    void deleteChannel(UUID channelID);
     Channel save(Channel channel);
 }

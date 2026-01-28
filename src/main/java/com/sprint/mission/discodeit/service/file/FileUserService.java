@@ -69,15 +69,6 @@ public class FileUserService implements UserService {
             throw new RuntimeException("Data load failed." + e.getMessage());
         }
     }
-
-    // Setter
-    @Override
-    public void setMessageService(MessageService messageService) {
-        this.messageService = messageService;
-    }
-
-    public void setChannelService(ChannelService channelService) {this.channelService = channelService;}
-
     // User 등록
     @Override
     public User create(String name) {
@@ -133,7 +124,7 @@ public class FileUserService implements UserService {
         messageList.forEach(message -> messageService.deleteMessage(message.getId()));
 
         // Channel에서 User 탈퇴 및 User가 가입한 channel에서 User 탈퇴 , channelService 내부에서 loadData() 및 saveData()
-        List<Channel> channels = new ArrayList<>(user.getChannels());
+        List<Channel> channels = new ArrayList<>(user.getChannelsList());
         channels.forEach(channel -> {
             channelService.leaveChannel(user.getId(), channel.getId()); // channelService 내부에서 변경사항 저장
             user.leaveChannel(channel);
@@ -148,7 +139,7 @@ public class FileUserService implements UserService {
     @Override
     public List<String> findJoinedChannels(UUID userID){
         User user = find(userID);
-        return user.getChannels().stream()
+        return user.getChannelsList().stream()
                 .map(Channel::getName)
                 .collect(Collectors.toList());
     }

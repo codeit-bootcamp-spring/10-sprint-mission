@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    void setMessageService(MessageService messageService);
-    void setUserService(UserService userService);
     Channel create(String name);
     Channel find(UUID id);
     List<Channel> findAll();

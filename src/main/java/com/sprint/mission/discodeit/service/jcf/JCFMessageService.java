@@ -20,15 +20,6 @@ public class JCFMessageService implements MessageService {
     public JCFMessageService() {
         this.messageData = new HashMap<>();
     }
-    // Setter
-    public void setChannelService(ChannelService channelService) {
-        this.channelService = channelService;
-    }
-
-    public void setUserService(UserService userService) {
-        this.userService = userService;
-    }
-
     //생성
     @Override
     public Message create(String contents, UUID userID, UUID channelID) {

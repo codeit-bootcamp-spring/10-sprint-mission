@@ -23,17 +23,6 @@ public class JCFChannelService implements ChannelService {
         this.channelData = new ArrayList<>();
     }
 
-    // Setter
-    @Override
-    public void setMessageService(MessageService messageService) {
-        this.messageService = messageService;
-    }
-
-    @Override
-    public void setUserService(UserService userService){
-        this.userService = userService;
-    }
-
     // 생성
     @Override
     public Channel create(String name) {

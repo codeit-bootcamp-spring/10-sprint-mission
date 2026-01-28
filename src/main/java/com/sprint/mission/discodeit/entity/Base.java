@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -8,8 +10,11 @@ import java.util.UUID;
 public abstract class Base implements Serializable {
     // 필드
     private static final long serialVersionUID = 1L;
+    @Getter
     private final UUID id;
+    @Getter
     private final Long createdAt;
+    @Getter
     private Long updatedAt;
 
     // 생성자
@@ -18,20 +23,6 @@ public abstract class Base implements Serializable {
         this.createdAt = System.currentTimeMillis();
         this.updatedAt = createdAt;
     }
-
-    // Getter
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
     // Setter
     public void updateUpdatedAt() {
         this.updatedAt = System.currentTimeMillis();

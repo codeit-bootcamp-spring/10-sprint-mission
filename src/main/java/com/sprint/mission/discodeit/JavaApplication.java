@@ -1,4 +1,4 @@
-package com.sprint.mission;
+package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -67,7 +67,7 @@ public class JavaApplication {
         user4 = userService.find(user4.getId());
         ch1 = channelService.find(ch1.getId());
 
-        System.out.println("user4.channels (before leave): " + user4.getChannels());
+        System.out.println("user4.channels (before leave): " + user4.getChannelsList());
         System.out.println("ch1.members (before leave): " + ch1.getMembersList());
 
         channelService.leaveChannel(user4.getId(), ch1.getId());
@@ -76,7 +76,7 @@ public class JavaApplication {
         user4 = userService.find(user4.getId());
         ch1 = channelService.find(ch1.getId());
 
-        System.out.println("user4.channels (after leave): " + user4.getChannels());
+        System.out.println("user4.channels (after leave): " + user4.getChannelsList());
         System.out.println("ch1.members (after leave): " + ch1.getMembersList() + "\n");
 
         // ============================================================
@@ -167,7 +167,7 @@ public class JavaApplication {
 
         channelService.updateName(ch1.getId(), "CODEIT_10");
         System.out.println("Ch1 updated name: " + channelService.find(ch1.getId()).getName());
-        System.out.println("user2 channels: " + userService.find(user2.getId()).getChannels().stream()
+        System.out.println("user2 channels: " + userService.find(user2.getId()).getChannelsList().stream()
         .map(Channel::getName).toList());
 
         messageService.updateName(msg2.getId(), "My name is DAVID");
@@ -307,7 +307,7 @@ public class JavaApplication {
                 List<User> users = (List<User>) ois.readObject();
                 System.out.println("Users loaded: " + users.size());
                 users.forEach(u -> System.out.println("  id=" + u.getId() + ", name=" + u.getName()
-                        + ", channels=" + u.getChannels().size() + ", messages=" + u.getMessageList().size()));
+                        + ", channels=" + u.getChannelsList().size() + ", messages=" + u.getMessageList().size()));
             } catch (Exception e) {
                 System.out.println("User serialization failed: " + e.getMessage());
             }

@@ -6,49 +6,22 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
+@RequiredArgsConstructor
+@Service
 public class BasicMessageService implements MessageService {
     // 필드
-    private MessageRepository messageRepository;
-    private UserRepository userRepository;
-    private ChannelRepository channelRepository;
-
-    private ChannelService channelService;
-    private UserService userService;
-
-    public BasicMessageService(MessageRepository messageRepository, UserRepository userRepository, ChannelRepository channelRepository) {
-        this.messageRepository = messageRepository;
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-    }
-
-    @Override
-    public void setChannelService(ChannelService channelService) {
-        this.channelService = channelService;
-    }
-
-    @Override
-    public void setUserService(UserService userService) {
-        this.userService = userService;
-    }
+    private final MessageRepository messageRepository;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
 
     @Override
     public Message create(String contents, UUID userID, UUID channelID) {
-        if (userService == null) {
-            throw new IllegalStateException("UserService is not set in BasicMessageService");
-        }
-        if (channelService == null){
-            throw new IllegalStateException("ChannelService is not set in BasicMessageService");
-        }
-
         User sender = userRepository.find(userID)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
         Channel channel = channelRepository.find(channelID)
@@ -98,7 +71,8 @@ public class BasicMessageService implements MessageService {
         UUID channelID = msg.getChannel().getId();
 
         // sender에서 반영
-        User sender = userService.find(userID);
+        User sender = userRepository.find(userID)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
         for(Message m : sender.getMessageList()){
             if(m.getId().equals(messageID)){
                 m.updateContents(contents);
@@ -107,7 +81,8 @@ public class BasicMessageService implements MessageService {
         userRepository.save(sender);
 
         // channel에서 반영
-        Channel channel = channelService.find(channelID);
+        Channel channel = channelRepository.find(channelID)
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
         for(Message m : channel.getMessageList()){
             if(m.getId().equals(messageID)){
                 m.updateContents(contents);
@@ -129,23 +104,23 @@ public class BasicMessageService implements MessageService {
         UUID channelID = channel.getId();
 
         // 여기 check
-        sender = userService.find(senderID);
-        channel = channelService.find(channelID);
+        sender = userRepository.find(senderID)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + senderID));
+        channel = channelRepository.find(channelID)
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
 
         sender.removeMessage(msg);
         channel.removeMessage(msg);
 
-        messageRepository.deleteMessage(msg);
+        messageRepository.deleteMessage(msg.getId());
         userRepository.save(sender);
         channelRepository.save(channel);
     }
 
     @Override
     public List<String> findMessagesByChannel(UUID channelID) {
-        if (channelService == null) {
-            throw new IllegalStateException("ChannelService is not set in BasicMessageService");
-        }
-        Channel channel = channelService.find(channelID);
+        Channel channel = channelRepository.find(channelID)
+                .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + channelID));
         return channel.getMessageList().stream()
                 .map(Message::getContents)
                 .collect(java.util.stream.Collectors.toList());
@@ -153,11 +128,8 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public List<String> findMessagesByUser(UUID userID) {
-        if (userService == null) {
-            throw new IllegalStateException("UserService is not set in BasicMessageService");
-        }
-
-        User user = userService.find(userID);
+        User user = userRepository.find(userID)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
         return user.getMessageList().stream()
                 .map(Message::getContents)
                 .collect(java.util.stream.Collectors.toList());

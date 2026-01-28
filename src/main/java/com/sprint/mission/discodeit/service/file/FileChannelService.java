@@ -71,17 +71,6 @@ public class FileChannelService implements ChannelService {
         }
     }
 
-    // Setter
-    @Override
-    public void setMessageService(MessageService fileMessageService) {
-        this.fileMessageService = fileMessageService;
-    }
-
-    @Override
-    public void setUserService(UserService fileUserService) {
-        this.fileUserService = fileUserService;
-    }
-
     // [비즈니스] 생성
     @Override
     public Channel create(String name) {
