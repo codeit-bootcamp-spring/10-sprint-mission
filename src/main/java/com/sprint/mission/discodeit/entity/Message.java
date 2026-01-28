@@ -2,14 +2,26 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.Objects;
+import java.util.UUID;
+
 @Getter
-public class Message extends Entity {
+public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final UUID id;
+    private final Instant createdAt;
+    private Instant updatedAt;
+
     private final Channel channel;
     private final User user;
     private String content;
 
     public Message(Channel channel, User user, String content) {
-        super();
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = createdAt;
         this.channel = channel;
         this.user = user;
         this.content = content;
@@ -30,9 +42,10 @@ public class Message extends Entity {
     }
 
     public Message updateMessageContent(String newContent) {
-        // 마지막 수정 시각 갱신
-        super.update();
+        // 메시지 내용 변경
         this.content = newContent;
+        // 수정 시각 갱신
+        update();
         return this;
     }
 
@@ -43,6 +56,11 @@ public class Message extends Entity {
                 + content;
     }
 
+    public void update() {
+        // 업데이트 시간 갱신
+        this.updatedAt = Instant.now();
+    }
+
     @Override
     public String toString() {
         return String.format(
@@ -50,7 +68,24 @@ public class Message extends Entity {
                 getId().toString().substring(0, 5),
                 content,
                 "[id=" + channel.getId().toString().substring(0, 5) + ", " + channel.getName() + "]",
-                "[id=" +  user.getId().toString().substring(0, 5) + ", " + user.getNickname() + "]"
+                "[id=" + user.getId().toString().substring(0, 5) + ", " + user.getNickname() + "]"
         );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Message message = (Message) o;
+        return Objects.equals(id, message.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

@@ -2,19 +2,30 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Getter
-public class User extends Entity {
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final UUID id;
+    private final Instant createdAt;
+    private Instant updatedAt;
+
     private final String email;
     private String nickname;
     private final List<Channel> channels;
     private final List<Message> messages;
 
     public User(String nickname, String email) {
-        super();
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = createdAt;
         this.nickname = nickname;
         this.email = email;
         this.channels = new ArrayList<>();
@@ -45,7 +56,7 @@ public class User extends Entity {
 
 
         // 수정 시각 갱신
-        super.update();
+        update();
     }
 
     public void leaveChannel(Channel channel) {
@@ -63,29 +74,34 @@ public class User extends Entity {
         }
 
         // 수정 시각 갱신
-        super.update();
+        update();
     }
 
     public void addMessage(Message message) {
         // 유저가 작성한 메시지 목록에 메시지 추가
         messages.add(message);
         // 수정 시각 갱신
-        super.update();
+        update();
     }
 
     public void removeMessage(Message message) {
         // 유저가 작성한 메시지 목록에서 메시지 제거
         messages.remove(message);
         // 수정 시각 갱신
-        super.update();
+        update();
     }
 
     public User updateUserNickname(String newNickname) {
         // 닉네임 변경
         this.nickname = newNickname;
         // 수정 시각 갱신
-        super.update();
+        update();
         return this;
+    }
+
+    public void update() {
+        // 업데이트 시간 갱신
+        this.updatedAt = Instant.now();
     }
 
     @Override
@@ -96,8 +112,25 @@ public class User extends Entity {
                 nickname,
                 email,
                 channels.stream()
-                        .map(ch -> "[id=" + ch.getId().toString().substring(0,5) + ", name=" + ch.getName() + "]").toList(),
+                        .map(ch -> "[id=" + ch.getId().toString().substring(0, 5) + ", name=" + ch.getName() + "]").toList(),
                 messages.size()
         );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
