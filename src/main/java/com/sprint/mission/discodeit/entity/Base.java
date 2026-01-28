@@ -6,9 +6,9 @@ import java.util.UUID;
 public class Base implements Serializable {
     private static final long serialVersionUID = 1L; // (역)직렬화 클래스의 버전
 
-    UUID id;
-    Long createdAt;
-    Long updatedAt;
+    private UUID id;
+    private Long createdAt;
+    private Long updatedAt;
 
     public Base() {
         this.id = UUID.randomUUID();

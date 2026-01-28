@@ -96,7 +96,6 @@ public class FileMessageService implements MessageService {
         Message updateMessage = this.findById(messageId);
 
         updateMessage.updateText(text);
-        updateMessage.updateUpdatedAt(System.currentTimeMillis());
         messageFileIo.save(messageId, updateMessage);
 
         return updateMessage;

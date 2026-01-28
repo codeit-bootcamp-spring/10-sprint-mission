@@ -61,13 +61,13 @@ public class FileIo<T> {
     }
 
     // 객체의 id를 파일명으로 하여 저장한다.
-    public void save(UUID id, T data) {
+    public T save(UUID id, T data) {
         try (
             FileOutputStream fos = new FileOutputStream(directory.resolve(id.toString().concat(".ser")).toFile());
             ObjectOutputStream oos = new ObjectOutputStream(fos)
         ) {
             oos.writeObject(data);
-
+            return data;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -29,6 +29,7 @@ public class Message extends Base {
 
     public void updateText(String text) {
         this.text = text;
+        updateUpdatedAt(System.currentTimeMillis());
     }
 
     @Override
@@ -37,6 +38,6 @@ public class Message extends Base {
             channel.getName() + ">" +
             sender.getNickName() + ": " +
             text +
-            "(" + new Timestamp(updatedAt == null ? createdAt : updatedAt) + ")}";
+            "(" + new Timestamp(getUpdatedAt()) + ")}";
     }
 }

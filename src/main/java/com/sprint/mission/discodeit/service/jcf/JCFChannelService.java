@@ -57,7 +57,6 @@ public class JCFChannelService implements ChannelService {
             .orElseThrow(() -> new NoSuchElementException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
 
         channel.updateName(name);
-        channel.updateUpdatedAt(System.currentTimeMillis());
 
         return channel;
     }
@@ -72,7 +71,6 @@ public class JCFChannelService implements ChannelService {
         User user = userService.findById(userId);
 
         channel.addUser(user);
-        channel.updateUpdatedAt(System.currentTimeMillis());
 
         return channel;
     }

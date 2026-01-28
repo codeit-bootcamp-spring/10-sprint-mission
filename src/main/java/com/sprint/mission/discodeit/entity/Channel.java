@@ -30,6 +30,7 @@ public class Channel extends Base {
 
     public void updateName(String name) {
         this.name = name;
+        updateUpdatedAt(System.currentTimeMillis());
     }
 
     // 연관관계 편의 메서드
@@ -56,11 +57,11 @@ public class Channel extends Base {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Channel channel)) return false;
-        return Objects.equals(id, channel.id);
+        return Objects.equals(this.getId(), channel.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hashCode(this.getId());
     }
 }

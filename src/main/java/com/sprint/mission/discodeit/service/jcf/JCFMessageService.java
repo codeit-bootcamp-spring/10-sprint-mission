@@ -86,7 +86,6 @@ public class JCFMessageService implements MessageService {
             .orElseThrow(() -> new NoSuchElementException("id가 " + messageId + "인 메시지는 존재하지 않습니다."));
 
         message.updateText(text);
-        message.updateUpdatedAt(System.currentTimeMillis());
 
         return message;
     }
