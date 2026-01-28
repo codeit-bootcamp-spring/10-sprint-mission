@@ -1,0 +1,149 @@
+package com.sprint.mission.discodeit.service.file;
+
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
+
+import java.io.*;
+import java.util.*;
+
+public class FileChannelService implements ChannelService {
+
+    private final Map<UUID, Channel> data;
+    private final UserService userService;
+
+    public FileChannelService(UserService userService){
+        this.data = load();
+        this.userService = userService;
+
+    }
+
+    @Override
+    public Channel create(String channelName, String type, UUID ownerId){
+        load();
+        User owner = userService.findById(ownerId);
+        Channel channel = new Channel(channelName,type,owner);
+        channel.getUserList().add(owner);//방장을 Channel에 넣기.
+        owner.getChannelList().add(channel); //채널을 user에 넣기.
+        userService.save();
+        data.put(channel.getId(),channel); //data에 key value 값으로 넣음.
+        save();
+        return channel;
+    }
+
+    @Override
+    public Channel findById(UUID id){
+        load();
+        if(data.get(id) == null){
+            throw new IllegalArgumentException("채널이 없습니다.");
+        }
+        return data.get(id);
+    }
+
+    @Override
+    public List<Channel> findAll() {
+        load();
+        return new ArrayList<>(data.values());
+    }
+
+    public List<Channel> findByUser(UUID userId){ //특정유저가 참여하고 있는 채널
+        User user = userService.findById(userId);
+        return user.getChannelList();
+    }
+
+    public List<User> findByChannel(UUID channelId){ //특정 채널에 참여하고있는 유저 목록
+        Channel channel = findById(channelId);
+        return channel.getUserList();
+    }
+
+    @Override
+    public Channel update(UUID id, String name) {
+        Channel channel = findById(id);
+        channel.setChannelName(name);
+        save();
+        return channel;
+    }
+
+    //채널이 삭제되면, User의 해당 채널이 삭제된다./메세지의 해당 채널이 삭제된다.
+    @Override
+    public Channel delete(UUID channelId) {
+        load();
+        Channel channel = findById(channelId);
+        userService.removeChannel(channelId);//사용자측에서 해당 channelId 삭제(removeChannel내 영속화 o)
+        data.remove(channelId);
+        save();
+        return channel;
+    }
+
+    @Override
+    public void enter(UUID channelId,UUID userId){ //채널 id가 들어온다.
+        Channel channel = findById(channelId);
+        User user = userService.findById(userId);
+        if(channel.getUserList().contains(user)){
+            throw new IllegalArgumentException("이미 참여하고 있는 유저입니다.");
+        }
+        channel.getUserList().add(user);
+        user.addChannel(channel);
+        userService.save();
+        save();
+
+    }
+
+    @Override
+    public void leave(UUID channelId,UUID userId){
+        Channel channel = findById(channelId);
+        User user = userService.findById(userId);
+
+        if(user.equals(channel.getOwner())){
+            throw new IllegalArgumentException("방장은 퇴장할 수 없습니다.");
+        }
+        channel.getUserList().remove(user);
+        user.removeChannel(channel);
+        userService.save();
+        save();
+    }
+
+    public void removeUserFromAllChannel(UUID userId){
+        load();
+        if (userId == null){
+            throw new IllegalArgumentException("삭제하려는 유저가 없습니다.");
+        }
+        //유저가 방장인경우 처리를 넣어줘야함.
+
+        for(Channel channel : data.values()){
+            channel.getUserList().removeIf(User -> User.getId().equals(userId));
+        }
+        save();
+    }
+
+    //CREATE 객체 직렬화
+    public void save(){
+        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("channel.ser"))){
+            oos.writeObject(data);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public Map<UUID, Channel> load(){
+        File file = new File("channel.ser");
+
+        //파일이 없을때 error 방지
+        if (!file.exists()) {
+
+            return new HashMap<>();
+        }
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream("channel.ser"))){
+
+            return (Map<UUID, Channel>) ois.readObject();
+
+        }catch (Exception e){
+            e.printStackTrace();
+            return new HashMap<>();
+        }
+    }
+
+}
