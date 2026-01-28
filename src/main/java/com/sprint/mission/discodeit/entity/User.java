@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 public class User extends BaseEntity {
@@ -15,8 +16,10 @@ public class User extends BaseEntity {
     // 채널 참여 내역과 메시지 전송 내역을 기록하는 필드
     private List<Channel> joinedChannels;
     private List<Message> sentMessages;
+    // 사용자의 프로필 이미지
+    private UUID profileImageId;
 
-    public User(String username, String email, String password) {
+    public User(String username, String email, String password, UUID profileImageId) {
         // id 자동생성 및 초기화
         super();
         // 필드 초기화
@@ -26,6 +29,8 @@ public class User extends BaseEntity {
         // 참여한 채널들과 보낸 메세지들
         this.joinedChannels = new ArrayList<>();
         this.sentMessages = new ArrayList<>();
+        // 사용자의 프로필 이미지
+        this.profileImageId = profileImageId;
     }
 
     // username 수정 메서드
@@ -48,6 +53,11 @@ public class User extends BaseEntity {
 
     public void removeSentMessage(Message message) {
         sentMessages.remove(message);
+    }
+
+    public void updateProfileImage(UUID profileImageId) {
+        this.profileImageId = profileImageId;
+        super.setUpdatedAt();
     }
 
     @Override

@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.dto.user;
 
+import com.sprint.mission.discodeit.entity.UserStatusType;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -8,7 +10,7 @@ public record UserResponseDTO (
         String email,
         String username,
 
-        String userStatus,
+        UserStatusType userStatus,
         Instant lastLoginAt,
 
         UUID profileImageId
