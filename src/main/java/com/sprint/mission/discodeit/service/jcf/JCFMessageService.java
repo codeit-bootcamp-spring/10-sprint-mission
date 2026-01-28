@@ -34,11 +34,8 @@ public class JCFMessageService implements MessageService {
         User sender = jcfUserService.searchUser(userId);
         Channel targetChannel = jcfChannelService.searchChannel(channelId);
 
-        Message newMessage = new Message(message, sender, targetChannel, type);
+        Message newMessage = new Message(message, sender.getId(), targetChannel.getId(), type);
         data.add(newMessage);
-
-        sender.addMessage(newMessage);              // 발행자 메시지 목록에 메시지 추가
-        targetChannel.addMessage(newMessage);       // 발행된 채널의 메시지 목록에 메시지 추가
 
         return newMessage;
     }
@@ -62,14 +59,18 @@ public class JCFMessageService implements MessageService {
     public List<Message> searchMessagesByUserId(UUID targetUserId) {
         User targetUser = jcfUserService.searchUser(targetUserId);
 
-        return targetUser.getMessages();
+        return searchMessageAll().stream()
+                .filter(message -> message.getAuthorId().equals(targetUser.getId()))
+                .toList();
     }
 
     // 특정 채널의 메시지 발행 리스트 조회
     public List<Message> searchMessagesByChannelId(UUID targetChannelId) {
         Channel targetChannel = jcfChannelService.searchChannel(targetChannelId);
 
-        return targetChannel.getMessages();
+        return searchMessageAll().stream()
+                .filter(message -> message.getChannelId().equals(targetChannelId))
+                .toList();
     }
 
     // 메시지 수정
@@ -96,8 +97,6 @@ public class JCFMessageService implements MessageService {
     public void deleteMessage(UUID targetMessageId) {
         Message targetMessage = searchMessage(targetMessageId);
 
-        targetMessage.getUser().removeMessage(targetMessage);
-        targetMessage.getChannel().removeMessage(targetMessage);
         data.remove(targetMessage);
     }
 }

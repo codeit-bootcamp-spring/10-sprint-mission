@@ -6,11 +6,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatusType;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -29,9 +26,9 @@ public class JCFUserService implements UserService {
 
     // 사용자 생성
     @Override
-    public User createUser(String email, String password, String nickname, UserStatusType userStatus) {
+    public User createUser(String email, String password, String nickname) {
         isEmailDuplicate(email);
-        User newUser = new User(email, password, nickname, userStatus);
+        User newUser = new User(email, password, nickname);
         data.add(newUser);
         return newUser;
     }
@@ -53,7 +50,7 @@ public class JCFUserService implements UserService {
 
     // 특정 채널의 참가자 리스트 조회
     @Override
-    public List<User> searchMembersByChannelId(UUID channelId) {
+    public List<UUID> searchMembersByChannelId(UUID channelId) {
         Channel targetChannel = jcfChannelService.searchChannelAll().stream()
                 .filter(channel -> channel.getId().equals(channelId))
                 .findFirst()
@@ -83,10 +80,6 @@ public class JCFUserService implements UserService {
                     targetUser.updateNickname(nickname);
                 });
 
-        // 상태 변경
-        Optional.ofNullable(newUserStatus)
-                .ifPresent(targetUser::updateUserStatus);
-
         return targetUser;
     }
 
@@ -100,12 +93,12 @@ public class JCFUserService implements UserService {
 
         // 모든 채널의 member에서 해당 유저를 제거
         jcfChannelService.searchChannelAll().stream()
-                .filter(channel -> targetUser.getChannels().contains(channel))
-                .forEach(channel -> channel.getMembers().remove(targetUser));
+                .filter(channel -> channel.getMembers().contains(targetUserId))
+                .forEach(channel -> channel.getMembers().remove(targetUserId));
 
         // 모든 메시지에서 해당 유저가 작성한 메시지 제거
         jcfMessageService.searchMessageAll()
-                .removeIf(message -> targetUser.getMessages().contains(message));
+                .removeIf(message -> message.getAuthorId().equals(targetUserId));
 
         data.remove(targetUser);
     }

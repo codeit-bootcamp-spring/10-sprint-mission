@@ -30,9 +30,9 @@ public class FileUserService implements UserService {
 
     // 사용자 생성
     @Override
-    public User createUser(String email, String password, String nickname, UserStatusType userStatus) {
+    public User createUser(String email, String password, String nickname) {
         isEmailDuplicate(email);
-        User newUser = new User(email, password, nickname, userStatus);
+        User newUser = new User(email, password, nickname);
 
         Path filePath = directory.resolve(newUser.getId() + ".ser");
         FileUtil.save(filePath, newUser);
@@ -52,7 +52,7 @@ public class FileUserService implements UserService {
     }
 
     // 특정 채널의 참가자 리스트 조회
-    public List<User> searchMembersByChannelId(UUID channelId) {
+    public List<UUID> searchMembersByChannelId(UUID channelId) {
         Channel channel = fileChannelService.searchChannel(channelId);      // 함수가 실행된 시점에서의 가장 최신 채널 목록
 
         return channel.getMembers();
@@ -79,10 +79,6 @@ public class FileUserService implements UserService {
                     targetUser.updateNickname(nickname);
                 });
 
-        // 상태 필드 변경
-        Optional.ofNullable(newUserStatus)
-                .ifPresent(targetUser::updateUserStatus);
-
         FileUtil.save(directory.resolve(userId + ".ser"), targetUser);
         return targetUser;
     }
@@ -100,15 +96,15 @@ public class FileUserService implements UserService {
 
         // 모든 채널의 member에서 해당 유저를 제거
         fileChannelService.searchChannelAll().stream()
-                .filter(channel -> channel.getMembers().stream().anyMatch(member -> member.getId().equals(userId)))
+                .filter(channel -> channel.getMembers().stream().anyMatch(memberId -> memberId.equals(userId)))
                 .forEach(channel -> {
-                    channel.getMembers().removeIf(member -> member.getId().equals(userId));
+                    channel.getMembers().removeIf(memberId -> memberId.equals(userId));
                     fileChannelService.updateChannel(channel.getId(), channel);
                 });
 
         // 모든 메시지에서 해당 유저가 작성한 메시지 제거
         fileMessageService.searchMessageAll().stream()
-                .filter(message -> message.getUser().getId().equals(userId))
+                .filter(message -> message.getAuthorId().equals(userId))
                 .forEach(message -> fileMessageService.deleteMessage(message.getId()));
 
         try {

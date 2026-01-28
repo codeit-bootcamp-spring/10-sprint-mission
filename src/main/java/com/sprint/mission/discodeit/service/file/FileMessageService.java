@@ -38,14 +38,14 @@ public class FileMessageService implements MessageService {
         User sender = fileUserService.searchUser(userId);
         Channel targetChannel = fileChannelService.searchChannel(channelId);
 
-        Message newMessage = new Message(message, sender, targetChannel, type);
+        Message newMessage = new Message(message, sender.getId(), targetChannel.getId(), type);
         FileUtil.save(directory.resolve(newMessage.getId() + ".ser"), newMessage);
 
-        sender.addMessage(newMessage);
-        fileUserService.updateUser(sender.getId(), sender);
-
-        targetChannel.addMessage(newMessage);
-        fileChannelService.updateChannel(targetChannel.getId(), targetChannel);
+//        sender.addMessage(newMessage);
+//        fileUserService.updateUser(sender.getId(), sender);
+//
+//        targetChannel.addMessage(newMessage);
+//        fileChannelService.updateChannel(targetChannel.getId(), targetChannel);
 
         return newMessage;
     }
@@ -69,7 +69,7 @@ public class FileMessageService implements MessageService {
         List<Message> messages = searchMessageAll();               // 함수가 실행된 시점에서 가장 최신 메시지 목록
 
         return messages.stream()
-                .filter(message -> message.getUser().getId().equals(targetUserId))
+                .filter(message -> message.getAuthorId().equals(targetUserId))
                 .toList();
     }
 
@@ -80,7 +80,7 @@ public class FileMessageService implements MessageService {
         List<Message> allMessages = searchMessageAll();
 
         return allMessages.stream()
-                .filter(message -> message.getChannel().getId().equals(targetChannelId))
+                .filter(message -> message.getChannelId().equals(targetChannelId))
                 .toList();
     }
 
@@ -113,16 +113,6 @@ public class FileMessageService implements MessageService {
     @Override
     public void deleteMessage(UUID targetMessageId) {
         Message targetMessage = searchMessage(targetMessageId);
-
-        // 사용자 내 메시지 목록 연쇄 삭제
-        User targetUser = fileUserService.searchUser(targetMessage.getUser().getId());
-        targetUser.getMessages().removeIf(message -> message.getId().equals(targetMessage.getId()));
-        fileUserService.updateUser(targetUser.getId(), targetUser);
-
-        // 채널 내 메시지 목록 연쇄 삭제
-        Channel targetChannel = fileChannelService.searchChannel(targetMessage.getChannel().getId());
-        targetChannel.getMessages().removeIf(message -> message.getId().equals(targetMessage.getId()));
-        fileChannelService.updateChannel(targetChannel.getId(), targetChannel);
 
         try {
             Files.deleteIfExists(directory.resolve(targetMessageId + ".ser"));

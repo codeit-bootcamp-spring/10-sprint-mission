@@ -30,11 +30,8 @@ public class BasicChannelService implements ChannelService {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
 
-        Channel newChannel = new Channel(channelName, owner, channelType);
+        Channel newChannel = new Channel(channelName, owner.getId(), channelType);
         channelRepository.save(newChannel);
-
-        owner.addChannel(newChannel);
-        userRepository.save(owner);
 
         return newChannel;
     }
@@ -60,7 +57,7 @@ public class BasicChannelService implements ChannelService {
 
         return channels.stream()
                 .filter(channel -> channel.getMembers().stream()
-                        .anyMatch(member -> member.getId().equals(userId)))
+                        .anyMatch(memberId -> memberId.equals(userId)))
                 .toList();
     }
 
@@ -89,13 +86,6 @@ public class BasicChannelService implements ChannelService {
     public void deleteChannel(UUID targetChannelId) {
         Channel targetChannel = searchChannel(targetChannelId);
 
-        targetChannel.getMembers().forEach(member -> {
-            User targetUser = userRepository.findById(member.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
-            targetUser.getChannels().removeIf(channel -> channel.getId().equals(targetChannelId));
-            userRepository.save(targetUser);
-        });
-
         channelRepository.delete(targetChannel);
     }
 
@@ -107,11 +97,8 @@ public class BasicChannelService implements ChannelService {
 
         validateMemberExists(targetUserId, targetChannelId);
 
-        targetChannel.getMembers().add(newUser);
+        targetChannel.getMembers().add(newUser.getId());
         channelRepository.save(targetChannel);
-
-        newUser.addChannel(targetChannel);
-        userRepository.save(newUser);
     }
 
     // 채널 퇴장
@@ -122,31 +109,28 @@ public class BasicChannelService implements ChannelService {
 
         validateUserNotInChannel(targetUserId, targetChannelId);
 
-        targetChannel.getMembers().removeIf(member -> member.getId().equals(targetUserId));
+        targetChannel.getMembers().removeIf(memberId -> memberId.equals(targetUserId));
         channelRepository.save(targetChannel);
-
-        targetUser.getChannels().removeIf(channel -> channel.getId().equals(targetChannelId));
-        userRepository.save(targetUser);
     }
 
     // 유효성 검증 (초대)
     public void validateMemberExists(UUID userId, UUID channelId) {
-        List<User> currentMembers = channelRepository.findById(channelId)
+        List<UUID> currentMembers = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."))
                 .getMembers();
 
-        if (currentMembers.stream().anyMatch(member -> member.getId().equals(userId))) {
+        if (currentMembers.stream().anyMatch(memberId -> memberId.equals(userId))) {
             throw new IllegalArgumentException("이미 채널에 존재하는 사용자입니다.");
         }
     }
 
     // 유효성 검증 (퇴장)
     public void validateUserNotInChannel(UUID userId, UUID channelId) {
-        List<User> currentMembers = channelRepository.findById(channelId)
+        List<UUID> currentMembers = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."))
                 .getMembers();
 
-        if (currentMembers.stream().noneMatch(member -> member.getId().equals(userId))) {
+        if (currentMembers.stream().noneMatch(member -> member.equals(userId))) {
             throw new IllegalArgumentException("해당 채널에 존재하는 사용자가 아닙니다.");
         }
     }

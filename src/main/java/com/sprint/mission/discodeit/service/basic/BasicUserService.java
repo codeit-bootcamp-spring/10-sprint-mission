@@ -26,9 +26,9 @@ public class BasicUserService implements UserService {
 
     // 사용자 생성
     @Override
-    public User createUser(String email, String password, String nickname, UserStatusType userStatus) {
+    public User createUser(String email, String password, String nickname) {
         isEmailDuplicate(email);
-        User newUser = new User(email, password, nickname, userStatus);
+        User newUser = new User(email, password, nickname);
 
         userRepository.save(newUser);
         return newUser;
@@ -49,7 +49,7 @@ public class BasicUserService implements UserService {
 
     // 특정 채널의 참가자 목록 조회
     @Override
-    public List<User> searchMembersByChannelId(UUID channelId) {
+    public List<UUID> searchMembersByChannelId(UUID channelId) {
         channelRepository.findById(channelId).orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
         return channelRepository.findById(channelId)
@@ -76,9 +76,6 @@ public class BasicUserService implements UserService {
                     targetUser.updateNickname(nickname);
                 });
 
-        Optional.ofNullable(newUserStatus)      //  상태 필드 변경
-                .ifPresent(targetUser::updateUserStatus);
-
         userRepository.save(targetUser);
         return targetUser;
     }
@@ -88,17 +85,24 @@ public class BasicUserService implements UserService {
     public void deleteUser(UUID userId) {
         User targetUser = searchUser(userId);
 
-        targetUser.getChannels()                                 // 모든 채널의 member에서 해당 유저를 제거
-                .forEach(channel -> {
-                    Channel realChannel = channelRepository.findById(channel.getId())
-                            .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
-                    realChannel.getMembers().removeIf(member -> member.getId().equals(userId));
-                    channelRepository.save(realChannel);
-                });
+//        targetUser.getChannels()                       // 모든 채널의 member에서 해당 유저를 제거
+//                .forEach(channel -> {
+//                    Channel realChannel = channelRepository.findById(channel.getId())
+//                            .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+//                    realChannel.getMembers().removeIf(memberID -> memberID.equals(userId));
+//                    channelRepository.save(realChannel);
+//                });
+
+        channelRepository.findAll().stream()
+                        .filter(channel -> channel.getUserId().equals(userId))
+                        .forEach(channel -> {
+                            channel.getMembers().removeIf(memberID -> memberID.equals(userId));
+                            channelRepository.save(channel);
+                        });
 
         messageRepository.findAll().stream()          // 모든 메시지에서 해당 유저가 작성한 메시지 제거
-                .filter(message -> message != null && message.getUser() != null)
-                .filter(message -> message.getUser().getId().equals(userId))
+                .filter(message -> message != null /*&& targetUser != null*/)
+                .filter(message -> message.getAuthorId().equals(userId))
                 .forEach(messageRepository::delete);
 
         userRepository.delete(targetUser);

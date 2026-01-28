@@ -33,14 +33,8 @@ public class BasicMessageService implements MessageService {
         Channel targetChannel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
-        Message newMessage = new Message(message, sender, targetChannel, type);
+        Message newMessage = new Message(message, sender.getId(), targetChannel.getId(), type);
         messageRepository.save(newMessage);
-
-        sender.addMessage(newMessage);              // 발행자 메시지 목록에 메시지 추가
-        userRepository.save(sender);
-
-        targetChannel.addMessage(newMessage);       // 발행된 채널의 메시지 목록에 메시지 추가
-        channelRepository.save(targetChannel);
 
         return newMessage;
     }
@@ -65,7 +59,7 @@ public class BasicMessageService implements MessageService {
         List<Message> messages = searchMessageAll();               // 함수가 실행된 시점에서 가장 최신 메시지 목록
 
         return messages.stream()
-                .filter(message -> message.getUser().getId().equals(targetUserId))
+                .filter(message -> message.getAuthorId().equals(targetUserId))
                 .toList();
     }
 
@@ -76,7 +70,7 @@ public class BasicMessageService implements MessageService {
         List<Message> messages = searchMessageAll();
 
         return messages.stream()
-                .filter(message -> message.getChannel().getId().equals(targetChannelId))
+                .filter(message -> message.getChannelId().equals(targetChannelId))
                 .toList();
     }
 
@@ -104,16 +98,6 @@ public class BasicMessageService implements MessageService {
     @Override
     public void deleteMessage(UUID targetMessageId) {
         Message targetMessage = searchMessage(targetMessageId);
-
-        User targetUser = userRepository.findById(targetMessage.getUser().getId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));                     // 사용자 내 메시지 목록 연쇄 삭제
-        targetUser.getMessages().removeIf(message -> message.getId().equals(targetMessage.getId()));
-        userRepository.save(targetUser);
-
-        Channel targetChannel = channelRepository.findById(targetMessage.getChannel().getId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));                      // 채널 내 메시지 목록 연쇄 삭제
-        targetChannel.getMessages().removeIf(message -> message.getId().equals(targetMessage.getId()));
-        channelRepository.save(targetChannel);
 
         messageRepository.delete(targetMessage);
     }
