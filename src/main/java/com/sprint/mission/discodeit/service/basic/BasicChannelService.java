@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,12 +33,12 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel findChannelById(UUID channelId) {
-        return channelRepository.findChannelById(channelId);
+        return channelRepository.findById(channelId);
     }
 
     @Override
     public Channel findChannelByName(String name) {
-        return channelRepository.findAllChannel().stream()
+        return channelRepository.findAll().stream()
                 .filter(channel -> channel.getChannelName().equals(name))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
@@ -47,12 +46,12 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<Channel> findAllChannel() {
-        return channelRepository.findAllChannel();
+        return channelRepository.findAll();
     }
 
     @Override
     public List<Channel> findChannelsByUser(UUID userId) {
-        return channelRepository.findAllChannel().stream()
+        return channelRepository.findAll().stream()
                 .filter(channel -> channel.getUserIds().stream()
                         .anyMatch(u -> u.equals(userId)))
                 .toList();
@@ -60,8 +59,8 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
-        Channel channel = channelRepository.findChannelById(channelId);
-        User user = userRepository.findUserById(userId);
+        Channel channel = channelRepository.findById(channelId);
+        User user = userRepository.findById(userId);
 
         channel.addUser(userId);
         user.addChannel(channelId);
@@ -72,8 +71,8 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
-        Channel channel = channelRepository.findChannelById(channelId);
-        User user = userRepository.findUserById(userId);
+        Channel channel = channelRepository.findById(channelId);
+        User user = userRepository.findById(userId);
 
         channel.deleteUser(userId);
         user.deleteChannel(channelId);
@@ -84,7 +83,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel update(UUID channelId, String name, String description) {
-        Channel channel = channelRepository.findChannelById(channelId);
+        Channel channel = channelRepository.findById(channelId);
 
         if (name != null && !name.equals(channel.getChannelName())) {
             existsByChannelName(name);
@@ -100,10 +99,10 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public void delete(UUID channelId) {
-        Channel channel = channelRepository.findChannelById(channelId);
+        Channel channel = channelRepository.findById(channelId);
 
         //채널 삭제 시 채널에 있는 메세지 지우기
-        List<Message> messages = messageRepository.findAllMessages().stream()
+        List<Message> messages = messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
                 .toList();
         for (Message message : messages) {
@@ -112,7 +111,7 @@ public class BasicChannelService implements ChannelService {
 
         //채널에 있는 유저 탈퇴
         for (UUID userId : channel.getUserIds()) {
-            User user = userRepository.findUserById(userId);
+            User user = userRepository.findById(userId);
             user.deleteChannel(channelId);
             userRepository.save(user);
         }
@@ -122,7 +121,7 @@ public class BasicChannelService implements ChannelService {
 
     //채널명 중복체크
     private void existsByChannelName(String name) {
-        boolean exist = channelRepository.findAllChannel().stream()
+        boolean exist = channelRepository.findAll().stream()
                 .anyMatch(channel -> channel.getChannelName().equals(name));
         if (exist) {
             throw new IllegalArgumentException("이미 사용중인 채널명입니다: " + name);

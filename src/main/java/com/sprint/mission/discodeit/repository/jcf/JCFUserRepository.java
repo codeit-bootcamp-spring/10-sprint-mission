@@ -20,7 +20,7 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User findUserById(UUID userId) {
+    public User findById(UUID userId) {
         return data.stream()
                 .filter(u -> u.getId().equals(userId))
                 .findAny()
@@ -28,7 +28,7 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public List<User> findAllUser() {
+    public List<User> findAll() {
         return new ArrayList<>(data);
     }
 

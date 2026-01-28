@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -23,7 +22,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public Message create(String content, UUID channelId, UUID userId) {
-        Channel channel = channelRepository.findChannelById(channelId);
+        Channel channel = channelRepository.findById(channelId);
 
         Message message = new Message(content, channelId, userId);
 
@@ -40,7 +39,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public List<Message> findMessagesByUserAndChannel(UUID channelId, UUID userId) {
-        return messageRepository.findAllMessages().stream()
+        return messageRepository.findAll().stream()
                 .filter(message -> message.getAuthorId().equals(userId))
                 .filter(message -> message.getChannelId().equals(channelId))
                 .toList();
@@ -48,31 +47,31 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public List<Message> findMessagesByChannel(UUID channelId) {
-        return messageRepository.findAllMessages().stream()
+        return messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
                 .toList();
     }
 
     @Override
     public List<Message> findMessagesByUser(UUID userId) {
-        return messageRepository.findAllMessages().stream()
+        return messageRepository.findAll().stream()
                 .filter(message -> message.getAuthorId().equals(userId))
                 .toList();
     }
 
     @Override
     public List<Message> findAllMessages() {
-        return messageRepository.findAllMessages();
+        return messageRepository.findAll();
     }
 
     @Override
     public Message findMessageById(UUID messageId) {
-        return messageRepository.findMessageById(messageId);
+        return messageRepository.findById(messageId);
     }
 
     @Override
     public Message update(UUID messageId, String content) {
-        Message message = messageRepository.findMessageById(messageId);
+        Message message = messageRepository.findById(messageId);
         message.update(content);
         messageRepository.save(message);
         return message;
@@ -80,7 +79,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public void delete(UUID messageId) {
-        Message message = messageRepository.findMessageById(messageId);
+        Message message = messageRepository.findById(messageId);
         messageRepository.delete(message);
     }
 }

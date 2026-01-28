@@ -39,15 +39,15 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public User findUserById(UUID userId) {
-        return findAllUser().stream()
+    public User findById(UUID userId) {
+        return findAll().stream()
                 .filter(user -> user.getId().equals(userId))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
     }
 
     @Override
-    public List<User> findAllUser() {
+    public List<User> findAll() {
         if(!Files.exists(dirPath)) {
             return new ArrayList<>();
         }
@@ -75,7 +75,9 @@ public class FileUserRepository implements UserRepository {
     public void delete(User user) {
         File file = new File(dirPath.toFile(), user.getId().toString() + ".ser");
         if (file.exists()) {
-            file.delete();
+            if (!file.delete()) {
+                throw new RuntimeException("유저 파일 삭제 실패");
+            }
         }
     }
 

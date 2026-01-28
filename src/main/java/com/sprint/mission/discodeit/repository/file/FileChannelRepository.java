@@ -39,15 +39,15 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findChannelById(UUID channelId) {
-        return findAllChannel().stream()
+    public Channel findById(UUID channelId) {
+        return findAll().stream()
                 .filter(channel -> channel.getId().equals(channelId))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
     }
 
     @Override
-    public List<Channel> findAllChannel() {
+    public List<Channel> findAll() {
         if(!Files.exists(dirPath)) {
             return new ArrayList<>();
         }
@@ -74,8 +74,11 @@ public class FileChannelRepository implements ChannelRepository {
     @Override
     public void delete(Channel channel) {
         File file = new File(dirPath.toFile(), channel.getId().toString() + ".ser");
+
         if (file.exists()) {
-            file.delete();
+            if (!file.delete()) {
+                throw new RuntimeException("채널 파일 삭제 실패");
+            }
         }
     }
 
