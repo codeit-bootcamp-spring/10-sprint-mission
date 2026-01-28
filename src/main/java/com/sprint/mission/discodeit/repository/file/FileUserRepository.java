@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.stereotype.Repository;
@@ -18,10 +19,10 @@ public class FileUserRepository implements UserRepository {
 
     }
     @Override
-    public User findById(UUID userId) {
+    public Optional<User> findById(UUID userId) {
         Map<UUID , User> data = loadData();
 
-        return data.get(userId);
+        return Optional.ofNullable(data.get(userId));
     }
 
     @Override
