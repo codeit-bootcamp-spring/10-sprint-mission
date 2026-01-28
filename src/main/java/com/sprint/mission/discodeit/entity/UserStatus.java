@@ -19,7 +19,7 @@ public class UserStatus implements Serializable {
     private UUID userId;
     private Instant lastActiveAt;
 
-    public UserStatus(UUID userId, UUID channelId) {
+    public UserStatus(UUID userId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.userId = userId;
