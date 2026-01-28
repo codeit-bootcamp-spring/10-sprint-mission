@@ -1,4 +1,6 @@
-package com.sprint.mission.discodeit.DTO;
+package com.sprint.mission.discodeit.DTO.UserDTO;
+
+import com.sprint.mission.discodeit.DTO.BinaryContentRecord;
 
 public record UserRegitrationRecord(
         String userName,

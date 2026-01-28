@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.DTO.BinaryContentRecord;
-import com.sprint.mission.discodeit.DTO.UserRegitrationRecord;
+import com.sprint.mission.discodeit.DTO.UserDTO.UserRegitrationRecord;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;

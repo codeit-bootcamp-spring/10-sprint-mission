@@ -8,9 +8,21 @@ import java.util.UUID;
 
 @Getter
 public class ReadStatus extends BaseEntity {
-    private UUID userID;
-    private UUID channelID;
-    private Instant lastReadAt = Instant.EPOCH;
+    private final UUID id;
+    private final UUID userID;
+    private final UUID channelID;
+    private Instant lastReadAt;
+
+    public ReadStatus(UUID userID, UUID channelID){
+        this.id = UUID.randomUUID();
+        this.userID = userID;
+        this.channelID = channelID;
+        this.lastReadAt = Instant.EPOCH;
+    }
+
+    public void read(){
+        this.lastReadAt = Instant.now();
+    }
 
     public boolean isRead(){
         return lastReadAt.isAfter(Instant.EPOCH);

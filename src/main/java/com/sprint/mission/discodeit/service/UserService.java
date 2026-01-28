@@ -1,13 +1,11 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.DTO.BinaryContentRecord;
-import com.sprint.mission.discodeit.DTO.UserRegitrationRecord;
-import com.sprint.mission.discodeit.DTO.UserReturnDTO;
-import com.sprint.mission.discodeit.DTO.UserUpdateDTO;
+import com.sprint.mission.discodeit.DTO.UserDTO.UserRegitrationRecord;
+import com.sprint.mission.discodeit.DTO.UserDTO.UserReturnDTO;
+import com.sprint.mission.discodeit.DTO.UserDTO.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface UserService {
