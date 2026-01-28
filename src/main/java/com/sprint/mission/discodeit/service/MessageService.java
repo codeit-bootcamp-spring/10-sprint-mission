@@ -13,7 +13,8 @@ public interface MessageService {
     Message create(String contents, UUID userID, UUID channelID);
     Message find(UUID messageID);
     List<Message> findAll();
-    Message update(UUID messageID, String contents);
+    Message updateName(UUID messageID, String contents);
+    default void update() {}
     void deleteMessage(UUID messageID);
 
     // 도메인 별 메시지 조회

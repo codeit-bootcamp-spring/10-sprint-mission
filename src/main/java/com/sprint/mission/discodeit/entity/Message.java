@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
-public class Message extends Base {
+import java.io.Serializable;
+
+public class Message extends Base  {
     // 필드
     private String contents;
     private final User sender;
@@ -31,6 +33,6 @@ public class Message extends Base {
     // Setter
     public void updateContents(String contents) {
         this.contents = contents;
-        update();
+        updateUpdatedAt();
     }
 }

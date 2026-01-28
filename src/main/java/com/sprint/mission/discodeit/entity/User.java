@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class User extends Base {
+public class User extends Base  {
     // 필드
     private String name;
     private final List<Channel> channelsList;
@@ -32,24 +33,28 @@ public class User extends Base {
     // Setter
     public void updateName(String name) {
         this.name = name;
-        update();
+        updateUpdatedAt();
     }
 
     // other
     public void joinChannel(Channel channel) {
         channelsList.add(channel);
+        updateUpdatedAt();
     }
 
     public void leaveChannel(Channel channel){
         channelsList.remove(channel);
+        updateUpdatedAt();
     }
 
     public void addMessage(Message msg){
         messageList.add(msg);
+        updateUpdatedAt();
     }
 
     public void removeMessage(Message msg){
         messageList.remove(msg);
+        updateUpdatedAt();
     }
 }
 

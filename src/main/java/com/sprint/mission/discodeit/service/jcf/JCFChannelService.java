@@ -19,6 +19,7 @@ public class JCFChannelService implements ChannelService {
     private UserService userService;
     // 생성자
     public JCFChannelService() {
+        // [저장]
         this.channelData = new ArrayList<>();
     }
 
@@ -32,55 +33,64 @@ public class JCFChannelService implements ChannelService {
     public void setUserService(UserService userService){
         this.userService = userService;
     }
-    //생성
+
+    // 생성
     @Override
     public Channel create(String name) {
+        // [비즈니스]
         Channel channel = new Channel(name);
+        // [저장]
         channelData.add(channel);
         return channel;
     }
 
-    // 조회
+    // [비즈니스] 조회
     @Override
     public Channel find(UUID id) {
+        // [저장]
         return channelData.stream()
                 .filter(channel -> channel.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Channel not found: " + id));
     }
 
-    // 전체 조회
+    // [비즈니스] 전체 조회
     @Override
     public List<Channel> findAll(){
+        // [저장]
         return channelData;
     } // realALl이랑 read랑 type 맞춰줘야 하나?
 
     // 수정
     @Override
     public Channel updateName(UUID channelID, String name) {
+        // [저장]
         Channel channel = find(channelID);
+        // [비즈니스]
         channel.updateName(name);
         return channel;
     }
 
-    // Channel 자체 삭제
+    // [비즈니스] Channel 자체 삭제
     @Override
     public void deleteChannel(UUID channelID) {
         if (messageService == null) {
             throw new IllegalStateException("MessageService is not set in JCFChannelService");
         }
-
+        // [저장] 조회
         Channel channel = find(channelID);
 
-        // channel에 속한 user들 삭제
+        // [비즈니스] channel에 속한 user들 삭제
         List<User> members = new ArrayList<>(channel.getMembersList());
+
+        // [비즈니스]
         members.forEach(user -> user.leaveChannel(channel));
 
-        // channel message 삭제 (Sender의 messageList, Channel messageList에서 삭제)
+        // [비즈니스] channel message 삭제 (Sender의 messageList, Channel messageList에서 삭제)
         List<Message> messageList = new ArrayList<>(channel.getMessageList());
         messageList.forEach(message -> messageService.deleteMessage(message.getId()));
 
-        // channelData에서 channel 삭제
+        // [저장] channelData에서 channel 삭제
         channelData.remove(channel);
     }
 
@@ -91,7 +101,7 @@ public class JCFChannelService implements ChannelService {
         if (userService == null) {
             throw new IllegalStateException("UserService is not set. Call setUserService() before using create().");
         }
-
+        // [저장]
         Channel channel = find(channelID);
         User user = userService.find(userID);
 
@@ -99,10 +109,10 @@ public class JCFChannelService implements ChannelService {
             throw new IllegalArgumentException("User is already in this channel." + channelID);
         }
 
-        // channel에 user 추가
+        // [비즈니스] channel에 user 추가
         channel.addMember(user);
 
-        // user에 가입한 channel 추가
+        // [비즈니스] user에 가입한 channel 추가
         user.joinChannel(channel);
     }
 
@@ -115,31 +125,36 @@ public class JCFChannelService implements ChannelService {
         if (messageService == null) {
             throw new IllegalStateException("MessageService is not set. Call setMessageService() before using create().");
         }
+        // [저장]
         Channel channel = find(channelID);
         User user = userService.find(userID);
+
+        // 예외처리 : channel에 member 존재 X
         if (!channel.getMembersList().contains(user)) {
             throw new IllegalArgumentException("User is not in this channel." + channelID);
         }
 
-        // user에서 channel 삭제
+        // [비즈니스] user에서 channel 삭제
         user.leaveChannel(channel);
 
+        // [비즈니스]
         // channel에서 user 삭제
         channel.removeMember(user);
 
-        // user가 보낸 messageList 중 해당 channel에 관한 것 삭제해줘야 함.
+        // [비즈니스] user가 보낸 messageList 중 해당 channel에 관한 것 삭제해줘야 함.
         List<Message> messageList = new ArrayList<>(user.getMessageList());
 
-        // messageList에서 channel 과 일치하는 것을 delete
+        // [비즈니스 + Message 저장] messageList에서 channel 과 일치하는 것을 delete
         messageList.stream()
                 .filter(msg -> msg.getChannel().equals(channel))
                 .forEach(msg -> messageService.deleteMessage(msg.getId()));
 
     }
 
-    // Channel 안 모든 User 조회
+    // [비즈니스] Channel 안 모든 User 조회
     @Override
     public List<String> findMembers(UUID channelID){
+        // [저장]
         Channel channel = find(channelID);
         return channel.getMembersList().stream()
                 .map(User::getName)
