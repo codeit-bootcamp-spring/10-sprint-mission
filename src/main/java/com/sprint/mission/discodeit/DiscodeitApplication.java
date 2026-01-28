@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.dto.user.UserCreateDto;
+import com.sprint.mission.discodeit.dto.user.UserInfoDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -23,34 +25,40 @@ public class DiscodeitApplication {
 		loadChannel(channelService);
 		loadMessage(messageService);
 
-//		// 셋업
-//		User user = setUser(userService);
+		// 셋업
+//		try {
+//			UserInfoDto user = setUser(userService);
+//			System.out.println("user = " + user);
+//		} catch (Exception e) {
+//			System.out.println(e);
+//		}
+
 //		Channel channel = setChannel(channelService, user);
 //		// 테스트
 //		messageCreateTest(messageService, channel, user);
-//
+
 //		loadUser(userService);
 //		loadChannel(channelService);
 //		loadMessage(messageService);
 	}
 
-	static User setUser(UserService userService) {
-		User user = userService.createUser("chung@codeit.com", "chung", "chungNick", "chung1234", "20000401");
-		return user;
+	static UserInfoDto setUser(UserService userService) {
+		UserCreateDto userCreateDto = new UserCreateDto("chung@codeit.com", "chung", "chungNick", "chung", "20000401", null);
+		return userService.createUser(userCreateDto);
 	}
 	static Channel setChannel(ChannelService channelService, User user) {
-		Channel channel = channelService.createChannel(user.getId(), ChannelType.PUBLIC, "밥 추천", "밥 추천 채널입니다");
+		Channel channel = channelService.createChannel(user.getId(), ChannelType.PUBLIC, "c1", "c1");
 		return channel;
 	}
 	static void messageCreateTest(MessageService messageService, Channel channel, User author) {
-		Message message = messageService.createMessage(channel.getId(), author.getId(), "만두!!!");
+		Message message = messageService.createMessage(channel.getId(), author.getId(), "m1");
 		System.out.println("메세지 생성: " + message);
 
 	}
 
 	static void loadUser(UserService userService) {
 		System.out.println("\n========== 유저 Load ==========");
-		System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.getUserName() + "(" + user.getEmail() + "): " + user.getId()).toList());
+		System.out.println("생성된 전체 user ID = " + userService.findAllUsers().stream().map(user -> user.userName() + "(" + user.email() + "): " + user.userId()).toList());
 	}
 	static void loadChannel(ChannelService channelService) {
 		System.out.println("\n========== 채널 Load ==========");
