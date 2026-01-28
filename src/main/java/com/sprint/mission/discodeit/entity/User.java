@@ -14,8 +14,8 @@ public class User extends BaseEntity {
     @Getter(AccessLevel.NONE)
     private transient String password;
     // 채널 참여 내역과 메시지 전송 내역을 기록하는 필드
-    private List<Channel> joinedChannels;
-    private List<Message> sentMessages;
+    private List<UUID> joinedChannelIds;
+    private List<UUID> sentMessageIds;
     // 사용자의 프로필 이미지
     private UUID profileImageId;
 
@@ -27,8 +27,8 @@ public class User extends BaseEntity {
         this.email = email;
         this.password = password;
         // 참여한 채널들과 보낸 메세지들
-        this.joinedChannels = new ArrayList<>();
-        this.sentMessages = new ArrayList<>();
+        this.joinedChannelIds = new ArrayList<>();
+        this.sentMessageIds = new ArrayList<>();
         // 사용자의 프로필 이미지
         this.profileImageId = profileImageId;
     }
@@ -39,20 +39,20 @@ public class User extends BaseEntity {
         super.setUpdatedAt();
     }
 
-    public void updateJoinedChannels(Channel channel) {
-        joinedChannels.add(channel);
+    public void updateJoinedChannels(UUID channelId) {
+        joinedChannelIds.add(channelId);
     }
 
-    public void removeChannel(Channel channel) {
-        joinedChannels.remove(channel);
+    public void removeChannel(UUID channelId) {
+        joinedChannelIds.remove(channelId);
     }
 
-    public void updateSentMessages(Message message) {
-        sentMessages.add(message);
+    public void updateSentMessages(UUID messageId) {
+        sentMessageIds.add(messageId);
     }
 
-    public void removeSentMessage(Message message) {
-        sentMessages.remove(message);
+    public void removeSentMessage(UUID messageId) {
+        sentMessageIds.remove(messageId);
     }
 
     public void updateProfileImage(UUID profileImageId) {

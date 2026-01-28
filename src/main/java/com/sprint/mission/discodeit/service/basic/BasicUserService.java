@@ -73,8 +73,8 @@ public class BasicUserService implements UserService {
         }
 
         List<User> users = userRepository.findAll().stream()
-                .filter(user -> user.getJoinedChannels().stream()
-                        .anyMatch(channel -> channel.getId().equals(channelId)))
+                .filter(user -> user.getJoinedChannelIds().stream()
+                        .anyMatch(c -> c.equals(channelId)))
                 .toList();
         List<UserStatus> statuses = userStatusRepository.findAll();
 
