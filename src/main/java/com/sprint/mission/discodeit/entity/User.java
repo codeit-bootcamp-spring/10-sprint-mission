@@ -17,10 +17,12 @@ public class User extends CommonEntity implements Serializable {
     private String userPassword;
     private final List<Message> messages = new ArrayList<>();
     private final List<Channel> joinedChannels = new ArrayList<>();
+    private final UUID profileId;
 
     public User(String userName, String userEmail) {
         this.userName = userName;
         this.userEmail = userEmail;
+        this.profileId = UUID.randomUUID();
     }
 
     public void updateUserName(String userName) {

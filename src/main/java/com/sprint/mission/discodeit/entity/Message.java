@@ -4,6 +4,8 @@ import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -13,6 +15,7 @@ public class Message extends CommonEntity implements Serializable {
     private final Channel channel;
     private final User user;
     private String content;
+    List<UUID> attachmentIds = new ArrayList<>();
 
 
     public Message(String content, Channel channel, User user) {
