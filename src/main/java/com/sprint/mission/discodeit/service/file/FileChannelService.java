@@ -14,33 +14,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class FileChannelService implements ChannelService {
 
-    private static final String FILE_NAME = "channels.ser";
-    private final Path filePath;
+    private static final String ROOT_PATH = System.getProperty("user.dir") + "/data";
+    private final Path dirPath;
     private final UserService userService;
 
-    public FileChannelService(UserService userService, String path) {
-        this.filePath = Paths.get(path, FILE_NAME);
+    public FileChannelService(UserService userService) {
+        this(userService, ROOT_PATH);
+    }
+
+    public FileChannelService(UserService userService, String rootPath) {
+        this.dirPath = Paths.get(rootPath, "channel");
         this.userService = userService;
-        init(filePath.getParent());
+        init();
     }
 
     @Override
     public Channel create(ChannelType type, String name, String description) {
-        List<Channel> data = load();
-        existsByChannelName(data, name);
+        existsByChannelName(name);
         Channel channel = new Channel(type, name, description);
-        data.add(channel);
-        save(data);
+        save(channel);
         return channel;
     }
 
     @Override
     public Channel findChannelById(UUID channelId) {
-        List<Channel> data = load();
-        return data.stream()
+        return load().stream()
                 .filter(channel -> channel.getId().equals(channelId))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
@@ -48,8 +50,7 @@ public class FileChannelService implements ChannelService {
 
     @Override
     public Channel findChannelByName(String name) {
-        List<Channel> data = load();
-        return data.stream()
+        return load().stream()
                 .filter(channel -> channel.getChannelName().equals(name))
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
@@ -63,8 +64,7 @@ public class FileChannelService implements ChannelService {
     //특정 사용자의 참가한 채널 리스트 조회
     @Override
     public List<Channel> findChannelsByUser(UUID userId) {
-        List<Channel> data = load();
-        return data.stream()
+        return load().stream()
                 .filter(channel -> channel.getUsers().stream()
                         .anyMatch(user -> user.getId().equals(userId)))
                 .toList();
@@ -72,39 +72,32 @@ public class FileChannelService implements ChannelService {
 
     @Override
     public Channel update(UUID channelId, String name, String description) {
-        List<Channel> data = load();
-        Channel channel = findInList(data, channelId);
+        Channel channel = findChannelById(channelId);
 
         if (name != null && !name.equals(channel.getChannelName())) {
-            existsByChannelName(data, name);
+            existsByChannelName(name);
         }
         Optional.ofNullable(name).ifPresent(channel::updateChannelName);
         Optional.ofNullable(description).ifPresent(channel::updateDescription);
 
-        saveOrUpdate(channel);
+        save(channel);
         return channel;
     }
 
     @Override
     public void delete(UUID channelId) {
-        List<Channel> data = load();
-        Channel channel = findInList(data, channelId);
+        Channel channel = findChannelById(channelId);
 
-        channel.getUsers().forEach(user -> {
+        new ArrayList<>(channel.getUsers()).forEach(user -> {
             user.leave(channel);
             channel.leave(user);
-            userService.saveOrUpdate(user);
+            //UserService의 .ser파일들을 수정할 수 없음
         });
-        data.remove(channel);
-        save(data);
-    }
 
-    @Override
-    public void saveOrUpdate(Channel channel) {
-        List<Channel> data = load();
-        data.removeIf(c -> c.getId().equals(channel.getId()));
-        data.add(channel);
-        save(data);
+        File file = new File(dirPath.toFile(), channelId.toString() + ".ser");
+        if (file.exists()) {
+            file.delete();
+        }
     }
 
     @Override
@@ -115,8 +108,8 @@ public class FileChannelService implements ChannelService {
         channel.join(user);
         user.join(channel);
 
-        saveOrUpdate(channel);
-        userService.saveOrUpdate(user);
+        save(channel);
+        //UserService의 .ser파일들을 수정할 수 없음
     }
 
     @Override
@@ -127,60 +120,59 @@ public class FileChannelService implements ChannelService {
         channel.leave(user);
         user.leave(channel);
 
-        saveOrUpdate(channel);
-        userService.saveOrUpdate(user);
+        save(channel);
+        //UserService의 .ser파일들을 수정할 수 없음
     }
 
-
-    //채널명 중복체크
-    private void existsByChannelName(List<Channel> data, String name) {
-        boolean exist = data.stream().anyMatch(channel -> channel.getChannelName().equals(name));
+    private void existsByChannelName(String name) {
+        boolean exist = load().stream().anyMatch(channel -> channel.getChannelName().equals(name));
         if (exist) {
             throw new IllegalArgumentException("이미 사용중인 채널명입니다: " + name);
         }
     }
 
-    //내부에서 수정, 삭제를 위한 조회메서드
-    private Channel findInList(List<Channel> data, UUID channelId) {
-        return data.stream()
-                .filter(channel -> channel.getId().equals(channelId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
-    }
-
-    private void init(Path directory) {
-        if (!Files.exists(directory)) {
+    private void init() {
+        if (!Files.exists(dirPath)) {
             try {
-                Files.createDirectories(directory);
+                Files.createDirectories(dirPath);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    private void save(List<Channel> data) {
-
+    private void save(Channel channel) {
+        File file = new File(dirPath.toFile(), channel.getId().toString() + ".ser");
         try (
-                FileOutputStream fos = new FileOutputStream(filePath.toFile());
+                FileOutputStream fos = new FileOutputStream(file);
                 ObjectOutputStream oos = new ObjectOutputStream(fos)
         ) {
-            oos.writeObject(data);
+            oos.writeObject(channel);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     private List<Channel> load() {
-        if (!Files.exists(filePath)) {
+        if(!Files.exists(dirPath)) {
             return new ArrayList<>();
         }
-
-        try (
-                FileInputStream fis = new FileInputStream(filePath.toFile());
-                ObjectInputStream ois = new ObjectInputStream(fis)
-        ) {
-            return (List<Channel>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
+        try {
+            List<Channel> list = Files.list(dirPath)
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            Object data = ois.readObject();
+                            return (Channel) data;
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .collect(Collectors.toList());
+            return list;
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

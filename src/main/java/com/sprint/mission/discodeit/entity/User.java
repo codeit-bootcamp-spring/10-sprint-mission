@@ -54,6 +54,7 @@ public class User extends BaseEntity{
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
+        setUpdateAt();
     }
 
     @Override

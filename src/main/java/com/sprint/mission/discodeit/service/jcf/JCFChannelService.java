@@ -73,16 +73,11 @@ public class JCFChannelService implements ChannelService {
     public void delete(UUID channelId) {
         Channel channel = findChannelById(channelId);
 
-        channel.getUsers().forEach(user -> {
+        new ArrayList<>(channel.getUsers()).forEach(user -> {
             user.leave(channel);
             channel.leave(user);
         });
         data.remove(channel);
-    }
-
-    @Override
-    public void saveOrUpdate(Channel channel) {
-        //동기화용 메서드
     }
 
     @Override

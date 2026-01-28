@@ -14,5 +14,4 @@ public interface UserService {
     User update(UUID userId, String password, String username, String email);
     User updatePassword(UUID userId, String currentPassword, String newPassword);
     void delete(UUID userId, String password);
-    void saveOrUpdate(User user);
 }

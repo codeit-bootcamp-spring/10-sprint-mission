@@ -23,10 +23,16 @@ public class JCFMessageService implements MessageService {
 
     @Override
     public Message create(String text, UUID channelId,  UUID userId) {
-        channelService.joinChannel(channelId, userId);
 
         User user = userService.findUserById(userId);
         Channel channel = channelService.findChannelById(channelId);
+
+        boolean isMember = channel.getUsers().stream()
+                .anyMatch(u -> u.getId().equals(userId));
+
+        if (!isMember) {
+            throw new IllegalArgumentException("채널에 참여하지 않아 메시지를 보낼 수 없습니다.");
+        }
 
         Message message = new Message(text, user, channel);
 
@@ -34,7 +40,7 @@ public class JCFMessageService implements MessageService {
         return message;
     }
 
-    //특정 채널에 특정 유저가 쓴 메세지 리스트 반환
+    //특정 채널에 특정 유저가 쓴  리스트 반환
     @Override
     public List<Message> findMessagesByUserAndChannel(UUID channelId,  UUID userId) {
         return data.stream().filter(message -> message.getUser().getId().equals(userId))
@@ -58,34 +64,29 @@ public class JCFMessageService implements MessageService {
                 .toList();
     }
 
-    //모든 채널의 모든 메세지리스트 반환
+    //모든 채널의 모든 메시지 리스트 반환
     @Override
     public List<Message> findAllMessages() {
         return new ArrayList<>(data);
     }
 
     @Override
-    public Message findMessage(UUID messageId) {
+    public Message findMessageById(UUID messageId) {
         return data.stream().filter(message -> message.getId().equals(messageId))
                 .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메세지 아이디입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 아이디입니다."));
     }
 
     @Override
     public Message update(UUID messageId, String text) {
-        Message message = findMessage(messageId);
+        Message message = findMessageById(messageId);
         message.update(text);
         return message;
     }
 
     @Override
-    public void saveOrUpdate(Message message) {
-        //동기화용 메서드
-    }
-
-    @Override
     public void delete(UUID messageId) {
-        Message message = findMessage(messageId);
+        Message message = findMessageById(messageId);
         data.remove(message);
     }
 }

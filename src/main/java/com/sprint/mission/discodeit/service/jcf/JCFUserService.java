@@ -75,16 +75,11 @@ public class JCFUserService implements UserService {
         User user = findUserById(userId);
         validatePassword(user, password);
 
-        user.getChannels().forEach(channel -> {
+        new ArrayList<>(user.getChannels()).forEach(channel -> {
             channel.leave(user);
             user.leave(channel);
         });
         data.remove(user);
-    }
-
-    @Override
-    public void saveOrUpdate(User user) {
-        //동기화용 메서드
     }
 
     //유저 이메일 중복체크
