@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -20,7 +21,7 @@ public class Channel extends Base {
 
     public void updateName(String name) {
         this.name = name;
-        updateUpdatedAt(System.currentTimeMillis());
+        updateUpdatedAt(Instant.now());
     }
 
     // 연관관계 편의 메서드

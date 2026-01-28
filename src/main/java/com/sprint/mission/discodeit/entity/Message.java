@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Getter
 public class Message extends Base {
@@ -19,7 +19,7 @@ public class Message extends Base {
 
     public void updateText(String text) {
         this.text = text;
-        updateUpdatedAt(System.currentTimeMillis());
+        updateUpdatedAt(Instant.now());
     }
 
     @Override
@@ -28,6 +28,6 @@ public class Message extends Base {
             channel.getName() + ">" +
             sender.getNickName() + ": " +
             text +
-            "(" + new Timestamp(getUpdatedAt()) + ")}";
+            "(" + getUpdatedAt() + ")}";
     }
 }

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -26,22 +27,22 @@ public class User extends Base {
 
     public void updateNickName(String nickName) {
         this.nickName = nickName;
-        updateUpdatedAt(System.currentTimeMillis());
+        updateUpdatedAt(Instant.now());
     }
 
     public void updateUserName(String userName) {
         this.userName = userName;
-        updateUpdatedAt(System.currentTimeMillis());
+        updateUpdatedAt(Instant.now());
     }
 
     public void updateEmail(String email) {
         this.email = email;
-        updateUpdatedAt(System.currentTimeMillis());
+        updateUpdatedAt(Instant.now());
     }
 
     public void updatePhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-        updateUpdatedAt(System.currentTimeMillis());
+        updateUpdatedAt(Instant.now());
     }
 
     public void addChannel(Channel channel) {
