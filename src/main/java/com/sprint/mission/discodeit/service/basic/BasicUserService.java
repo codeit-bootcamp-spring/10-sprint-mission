@@ -1,11 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatusType;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.response.UserCreateResponseDTO;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,15 +22,40 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final UserStatusRepository userStatusRepository;
 
     // 사용자 생성
     @Override
-    public User createUser(String email, String password, String nickname) {
-        isEmailDuplicate(email);
-        User newUser = new User(email, password, nickname);
+    public UserCreateResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO, BinaryContentCreateRequestDTO binaryContentCreateRequestDTO) {
+        // 1. 유효성 검증 (이메일 중복, 이름 중복)
+        isEmailDuplicate(userCreateRequestDTO.getEmail());
+        isNicknameDuplicate(userCreateRequestDTO.getNickname());
 
+        // 2. User 생성, UserStatus 같이 생성
+        User newUser = new User(userCreateRequestDTO);
         userRepository.save(newUser);
-        return newUser;
+
+        UserStatus newUserStatus = new UserStatus(newUser.getId());
+        userStatusRepository.save(newUserStatus);
+
+        // 3. 선택적 프로필 이미지 생성 및 저장
+        UUID profileImageId = Optional.ofNullable(binaryContentCreateRequestDTO.getBinaryContent()).map(content -> {
+            BinaryContent newBinaryContent = new BinaryContent(binaryContentCreateRequestDTO);
+            binaryContentRepository.save(newBinaryContent);
+            return newBinaryContent.getId();
+        });
+
+        // 5. 응답 DTO 객체 생성 및 반환
+        return UserCreateResponseDTO.builder()
+                .id(newUser.getId())
+                .email(newUser.getEmail())
+                .nickname(newUser.getNickname())
+                .createdAt(newUser.getCreatedAt())
+                .updatedAt(newUser.getUpdatedAt())
+                .profileId(profileImageId)
+                .status(newUserStatus.getStatus())
+                .build();
     }
 
     // 사용자 단건 조회
@@ -43,7 +67,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 전체 조회
     @Override
-    public List<User> searchUserAll() {
+    public List<UserCreateResponseDTO> searchUserAll() {
         return userRepository.findAll();
     }
 
@@ -109,5 +133,11 @@ public class BasicUserService implements UserService {
     public void isEmailDuplicate(String email) {
         if (userRepository.existsByEmail(email))
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+    }
+
+    // 유효성 검사 (이름 중복)
+    public void isNicknameDuplicate(String nickname) {
+        if (userRepository.existsByNickname(nickname))
+            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
     }
 }

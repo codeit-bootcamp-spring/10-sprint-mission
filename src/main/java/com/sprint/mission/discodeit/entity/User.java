@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -15,13 +16,14 @@ public class User extends BaseEntity implements Serializable {
     private String nickname;                 // 닉네임 (변경 가능)
     private UUID profileId;                  // 사용자의 프로필 고유 id
 
-    public User(String email, String password, String nickname) {
+    public User(UserCreateRequestDTO userCreateRequestDTO) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
-        this.email = email;
-        this.password = password;
-        this.nickname = nickname;
+
+        this.email = userCreateRequestDTO.getEmail();
+        this.password = userCreateRequestDTO.getPassword();
+        this.nickname = userCreateRequestDTO.getNickname();
     }
 
     public void updatePassword(String newPassword) {
@@ -31,6 +33,6 @@ public class User extends BaseEntity implements Serializable {
 
     public void updateNickname(String newNickname) {
         this.nickname = newNickname;
-        this.updatedAt = Instant.ofEpochSecond(System.currentTimeMillis());
+        this.updatedAt = Instant.now();
     }
 }

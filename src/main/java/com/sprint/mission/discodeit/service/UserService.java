@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.response.UserCreateResponseDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatusType;
 
@@ -8,13 +11,13 @@ import java.util.UUID;
 
 public interface UserService {
     // 사용자 생성
-    User createUser(String email, String password, String nickname);
+    UserCreateResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO, BinaryContentCreateRequestDTO binaryContentCreateRequestDTO);
 
     // 사용자 단건 조회
     User searchUser(UUID userId);
 
     // 사용자 전체 조회
-    List<User> searchUserAll();
+    List<UserCreateResponseDTO> searchUserAll();
 
     // 채널 내 멤버 목록 조회
     List<UUID> searchMembersByChannelId(UUID channelId);
