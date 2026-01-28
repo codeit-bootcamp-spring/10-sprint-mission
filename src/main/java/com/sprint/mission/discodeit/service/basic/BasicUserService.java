@@ -1,15 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentCreateDTO;
 import com.sprint.mission.discodeit.dto.user.UserCreateDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDTO;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +23,7 @@ public class BasicUserService implements UserService {
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
     private final UserStatusRepository userStatusRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
     public UserResponseDTO createUser(UserCreateDTO dto) {
@@ -35,8 +35,26 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("이미 사용중인 email입니다.");
         }
 
-        User user = new User(dto.username(), dto.email(), dto.password(), dto.profileImageId());
+        // userId를 받아오기 위해 우선 객체 생성
+        User user = new User(dto.username(), dto.email(), dto.password(), null);
         userRepository.save(user);
+
+        if (dto.profileImage() != null) {
+            BinaryContentCreateDTO img = dto.profileImage();
+
+            BinaryContent binaryContent = new BinaryContent(
+                    user.getId(),
+                    img.data(),
+                    img.contentType(),
+                    img.filename()
+            );
+
+            binaryContentRepository.save(binaryContent);
+
+            // 프로필 사진이 있으면 갱신하기
+            user.updateProfileImage(binaryContent.getId());
+            userRepository.save(user);
+        }
 
         UserStatus status = new UserStatus(user.getId(), Instant.now());
         userStatusRepository.save(status);
@@ -75,33 +93,35 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUserName(UserUpdateDTO dto) {
-        User user = findUserInfoById(dto.userId());
-        user.updateUsername(dto.username());
-        userRepository.save(user);
+    public UserResponseDTO updateUser(UserUpdateDTO dto) {
+        if (dto.username() != null) {
+            updateUserName(dto);
+        }
+        if (dto.statusType() != null) {
+            updateUserStatus(dto);
+        }
+        if (dto.profileImage() != null) {
+            updateUserProfileImage(dto);
+        }
 
-        // 메시지 파일 업데이트
-        updateMessagesUsername(dto.userId(), dto.username());
-        // 채널 파일 업데이트
-        updateChannelsUsername(dto.userId(), dto.username());
-
-        return UserMapper.toResponse(user, userStatusRepository.findByUserId(user.getId()));
-    }
-
-    @Override
-    public UserResponseDTO updateUserStatus(UserUpdateDTO dto) {
-        UserStatus status = userStatusRepository.findByUserId(dto.userId());
-        status.updateStatusType(dto.statusType());
-        userStatusRepository.save(status);
-
-        return UserMapper.toResponse(findUserInfoById(dto.userId()), status);
+        return UserMapper.toResponse(
+                findUserInfoById(dto.userId()),
+                userStatusRepository.findByUserId(dto.userId())
+        );
     }
 
     @Override
     public void deleteUser(UUID userId) {
-        findUserInfoById(userId);
+        UUID binaryContentId = findUserInfoById(userId).getProfileImageId();
+
+        userStatusRepository.deleteById(userStatusRepository.findByUserId(userId).getId());
+        if (binaryContentId != null){
+            binaryContentRepository.deleteById(binaryContentId);
+        }
         userRepository.deleteById(userId);
     }
+
+    // === 여기부터 내부 메서드 ===
 
     private User findUserInfoById(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null 값일 수 없습니다.");
@@ -160,5 +180,51 @@ public class BasicUserService implements UserService {
         }
 
         return userResponseDTOS;
+    }
+
+    private void updateUserName(UserUpdateDTO dto) {
+        User user = findUserInfoById(dto.userId());
+
+        if (!user.getUsername().equals(dto.username())){
+            if (userRepository.existsByUsername(dto.username())) {
+                throw new IllegalArgumentException("이미 사용중인 username입니다.");
+            }
+        }
+
+        user.updateUsername(dto.username());
+        userRepository.save(user);
+
+        // 메시지 파일 업데이트
+        updateMessagesUsername(dto.userId(), dto.username());
+        // 채널 파일 업데이트
+        updateChannelsUsername(dto.userId(), dto.username());
+    }
+
+    private void updateUserStatus(UserUpdateDTO dto) {
+        UserStatus status = userStatusRepository.findByUserId(dto.userId());
+        status.updateStatusType(dto.statusType());
+        userStatusRepository.save(status);
+    }
+
+    private void updateUserProfileImage(UserUpdateDTO dto) {
+        if (dto.profileImage() == null) {
+            throw new IllegalArgumentException("profile 값이 존재하지 않습니다.");
+        }
+
+        User user = findUserInfoById(dto.userId());
+        BinaryContentCreateDTO img = dto.profileImage();
+
+        BinaryContent binaryContent = new BinaryContent(
+                user.getId(),
+                img.data(),
+                img.contentType(),
+                img.filename()
+        );
+
+        binaryContentRepository.save(binaryContent);
+
+        // 프로필 사진이 있으면 갱신하기
+        user.updateProfileImage(binaryContent.getId());
+        userRepository.save(user);
     }
 }

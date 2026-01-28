@@ -11,7 +11,7 @@ public class UserMapper {
                 user.getEmail(),
                 user.getUsername(),
 
-                status.getStatusType(),
+                status.getEffectiveStatus(),
                 status.getLastLoginAt(),
 
                 user.getProfileImageId()
