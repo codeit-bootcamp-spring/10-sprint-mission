@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,36 +32,36 @@ public class Channel extends CommonEntity{
 
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 
     public void updateChannelType(ChannelType channelType) {
         this.channelType = channelType;
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 
     public void updateDescription(String description) {
         this.description = description;
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 
     public void addMessageId(UUID messageId) {
         messageIds.add(messageId);
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 
     public void removeMessageId(UUID messageId) {
         messageIds.remove(messageId);
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 
     public void addUserId(UUID userId) {
         userIds.add(userId);
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 
     public void removeUserId(UUID userId) {
         userIds.remove(userId);
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 }

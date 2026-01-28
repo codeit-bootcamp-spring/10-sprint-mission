@@ -3,18 +3,19 @@ package com.sprint.mission.discodeit.entity;
 import lombok.Getter;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 abstract class CommonEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     protected final UUID id;
-    protected Long createdAt;
-    protected Long updateAt;
+    protected Instant createdAt;
+    protected Instant updateAt;
 
     public CommonEntity() {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
         this.updateAt = this.createdAt;
     }
 

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -19,6 +20,6 @@ public class Message extends CommonEntity{
 
     public void updateContent(String content) {
         this.content = content;
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 }
