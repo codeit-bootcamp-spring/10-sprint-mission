@@ -7,6 +7,6 @@ import java.util.UUID;
 
 public interface UserStatusRepository {
     UserStatus save(UserStatus userStatus);
-    Optional<UserStatus> findById(UUID id);
+    Optional<UserStatus> findByUserId(UUID userId); // 구현 필요
     void deleteById(UUID id);
 }

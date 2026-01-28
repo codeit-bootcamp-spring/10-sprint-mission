@@ -64,7 +64,7 @@ public class BasicUserService implements UserService {
     public UserDto find(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-        boolean isOnline = userStatusRepository.findById(userId)
+        boolean isOnline = userStatusRepository.findByUserId(userId)
                 .map(UserStatus::isOnline)
                 .orElse(false);
 
@@ -75,7 +75,7 @@ public class BasicUserService implements UserService {
     public List<UserDto> findAll() {
         return userRepository.findAll().stream()
                 .map(user -> {
-                    boolean isOnline = userStatusRepository.findById(user.getId())
+                    boolean isOnline = userStatusRepository.findByUserId(user.getId())
                             .map(UserStatus::isOnline)
                             .orElse(false);
                     return new UserDto(user, isOnline);
@@ -101,7 +101,7 @@ public class BasicUserService implements UserService {
             user.updateProfileImageId(content.getId());
         }
         userRepository.save(user);
-        boolean isOnline = userStatusRepository.findById(user.getId())
+        boolean isOnline = userStatusRepository.findByUserId(user.getId())
                 .map(UserStatus::isOnline)
                 .orElse(false);
         return new UserDto(user, isOnline);
@@ -114,7 +114,7 @@ public class BasicUserService implements UserService {
                         "User with id " + userId + " not found")
                 );
         // 유저 상태 삭제
-        userStatusRepository.findById(userId)
+        userStatusRepository.findByUserId(userId)
                 .ifPresent(status -> userStatusRepository.deleteById(status.getId()));
         userRepository.deleteById(userId);
 
