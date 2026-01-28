@@ -99,4 +99,16 @@ public class FileUserRepository implements UserRepository {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public boolean existsByUsername(String userName) {
+        //userName 중복 검증 필요.
+        return true;
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        //email 중복 검증 필요.
+        return true;
+    }
 }

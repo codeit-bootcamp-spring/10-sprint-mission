@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.dto.UserCreateDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -32,8 +33,13 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User create(String username, String email, String password) {
-        User user = new User(username, email, password);
+    public User create(UserCreateDto userDto) {
+        User user = new User(
+                userDto.username(),
+                userDto.email(),
+                userDto.password()
+        );
+
         Path path = resolvePath(user.getId());
         try (
                 FileOutputStream fos = new FileOutputStream(path.toFile());

@@ -1,7 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.UserCreateDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,10 +20,52 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
+//    private final UserStatusRepository userStatusRepository;
 
     @Override
-    public User create(String username, String email, String password) {
-        User user = new User(username, email, password);
+    public User create(UserCreateDto userDto) {
+
+        //username과 email은 다른 유저와 같으면 안된다.
+        if(!userRepository.existsByUsername(userDto.username())){
+            throw new IllegalArgumentException("이미 있는 이름입니다.");
+        }
+        if(!userRepository.existsByEmail(userDto.email())){
+            throw new IllegalArgumentException("이미 있는 이메일입니다.");
+        }
+
+        User user = new User(
+                userDto.username(),
+                userDto.email(),
+                userDto.password()
+        );
+
+        //UserStatus를 같이 생성한다.
+        UserStatus userStatus =  new UserStatus(user.getId());
+
+        //userStatus 저장로직(필요)
+
+
+        //선택적으로 프로필 이미지를 같이 등록할 수 있다.
+        if(userDto.binaryContentDto() != null){
+
+            BinaryContentDto binaryContentDto = userDto.binaryContentDto();
+
+            //이미 프로필 존재하는지 검증(필요)
+
+            //BinaryContent 생성&저장(프로필 등록)
+            BinaryContent binaryContent = new BinaryContent(
+                    user.getId(),
+                    null,
+                    binaryContentDto.data(),
+                    binaryContentDto.contentType(),
+                    binaryContentDto.fileName()
+            );
+            binaryContentRepository.save(binaryContent);
+
+
+        }
+
         return userRepository.save(user);
     }
 

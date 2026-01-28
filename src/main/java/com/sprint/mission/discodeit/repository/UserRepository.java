@@ -12,4 +12,8 @@ public interface UserRepository {
     List<User> findAll();
     boolean existsById(UUID id);
     void deleteById(UUID id);
+
+    //검증용
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
 }
