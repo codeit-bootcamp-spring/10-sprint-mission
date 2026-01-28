@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.jcf;
+/* package com.sprint.mission.discodeit.service.jcf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,3 +117,4 @@ public class JCFUserService implements UserService {
         this.jcfMessageService = jcfMessageService;
     }
 }
+ */

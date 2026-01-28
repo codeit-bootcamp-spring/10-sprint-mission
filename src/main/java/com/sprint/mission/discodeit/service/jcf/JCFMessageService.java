@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.jcf;
+/* package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -100,3 +100,4 @@ public class JCFMessageService implements MessageService {
         data.remove(targetMessage);
     }
 }
+ */
