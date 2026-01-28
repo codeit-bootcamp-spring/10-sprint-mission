@@ -1,0 +1,85 @@
+package com.sprint.mission.discodeit.entity;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+public class User extends Basic implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    private String userName;
+
+
+    //내가 작성한 메세지 리스트.....추가!!!?? 유지가 메세지를 작성하면.... -> 메세지에 리스트항목에도 동시에 추가되어야한다...
+    private List<Message> messages = new ArrayList<>();
+    private List<Channel> joinedChannels = new ArrayList<>();
+
+    public String alias; //닉네임
+
+
+    // user 생성자
+    public User(String userName, String alias){
+        super(); // user 만드는 메소드 ... -> ID 와 CreatedAt 할당.
+        this.userName = userName;
+        this.alias = alias;
+    }
+
+    //  멤버 변수들 getter setter 설정.
+    public String getUserName(){
+        return userName;
+    }
+    public String getAlias(){
+        return alias;
+    }
+    public List<Message> getMessage() {return messages;}
+
+    // 필드별 수정 메서드 분리
+    public void changeUserName(String newUserName) {
+        this.userName = newUserName;
+        super.update(); // Basic의 update()를 명시적으로 호출
+    }
+
+    public void changeAlias(String newAlias) {
+        this.alias = newAlias;
+        super.update();
+    }
+    // 메세지 관련!!!!
+    public List<Message> getMessages() {
+        return messages;
+    }
+
+    public void addMessage(Message message) {
+        // 중복 방지
+        if (!messages.contains(message)) {
+            messages.add(message); // list 에 mesaage add하고,
+            message.setSender(this); //
+        }
+    }
+
+    // 채널 관련!!
+    public List<Channel> getJoinedChannels() {
+        return joinedChannels;
+    }
+    // 채널 참가
+    public void joinChannel(Channel channel){
+        if(!joinedChannels.contains(channel)){
+            joinedChannels.add(channel);
+            channel.addParticipant(this);
+        }
+    }
+    // ✅ 채널 탈퇴
+    public void leaveChannel(Channel channel) {
+        if (joinedChannels.contains(channel)) {
+            joinedChannels.remove(channel);
+            channel.removeParticipant(this); // 반대쪽에서도 제거
+        }
+    }
+    // 채널 탈퇴
+
+    @Override
+    public String toString() {
+        return userName;
+    }
+
+}
