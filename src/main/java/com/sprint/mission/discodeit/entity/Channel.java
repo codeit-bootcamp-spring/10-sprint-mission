@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-
+@Getter
 public class Channel extends Base {
     private final List<User> userList;
     private final List<Message> messageList;
@@ -14,18 +16,6 @@ public class Channel extends Base {
         this.name = name;
         this.userList = new ArrayList<User>();
         this.messageList = new ArrayList<Message>();
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public List<User> getUserList() {
-        return userList;
-    }
-
-    public List<Message> getMessageList() {
-        return messageList;
     }
 
     public void updateName(String name) {

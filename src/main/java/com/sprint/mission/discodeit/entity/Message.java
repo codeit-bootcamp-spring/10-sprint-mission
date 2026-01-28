@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.sql.Timestamp;
 
-
+@Getter
 public class Message extends Base {
     private User sender;
     private String text;
@@ -13,18 +15,6 @@ public class Message extends Base {
         this.sender = sender;
         this.text = text;
         this.channel = channel;
-    }
-
-    public User getSender() {
-        return sender;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public Channel getChannel() {
-        return channel;
     }
 
     public void updateText(String text) {

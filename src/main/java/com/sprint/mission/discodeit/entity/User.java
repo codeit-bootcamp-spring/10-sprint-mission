@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+@Getter
 public class User extends Base {
     private final List<Channel> channelList; // 특정 유저의 채널 소속 확인 용
     private final List<Message> messageList; // 특정 유저가 생성한 모든 메시지
@@ -19,30 +22,6 @@ public class User extends Base {
         this.phoneNumber = phoneNumber;
         this.channelList = new ArrayList<Channel>();
         this.messageList = new ArrayList<Message>();
-    }
-
-    public String getNickName() {
-        return nickName;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public List<Channel> getChannelList() {
-        return channelList;
-    }
-
-    public List<Message> getMessageList() {
-        return messageList;
     }
 
     public void updateNickName(String nickName) {
