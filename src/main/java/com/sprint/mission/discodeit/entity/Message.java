@@ -17,12 +17,13 @@ public class Message extends DefaultEntity implements Serializable {
     private UUID authorId;
     private List<UUID> attachments;
 
-    public Message(String content, UUID channelId, UUID authorId) {
+    public Message(String content, UUID channelId, UUID authorId, List<UUID> attachments) {
         super();
         //
         this.content = content;
         this.channelId = channelId;
         this.authorId = authorId;
+        this.attachments = attachments;
     }
 
     public void update(String newContent) {
