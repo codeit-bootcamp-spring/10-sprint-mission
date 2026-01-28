@@ -1,13 +1,19 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.user.UserCreateDTO;
+import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -16,10 +22,25 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
+    private final UserStatusRepository userStatusRepository;
 
     @Override
-    public User createUser(String username, String email, String password) {
-        return userRepository.save(new User(username, email, password));
+    public UserResponseDTO createUser(UserCreateDTO dto) {
+        if (userRepository.existsByUsername(dto.username())) {
+            throw new IllegalArgumentException("이미 사용중인 username입니다.");
+        }
+
+        if (userRepository.existsByEmail(dto.email())) {
+            throw new IllegalArgumentException("이미 사용중인 email입니다.");
+        }
+
+        User user = new User(dto.username(), dto.email(), dto.password(), dto.profileImageId());
+        userRepository.save(user);
+
+        UserStatus status = new UserStatus(user.getId(), Instant.now());
+        userStatusRepository.save(status);
+
+        return UserMapper.toResponse(user, status);
     }
 
     @Override
