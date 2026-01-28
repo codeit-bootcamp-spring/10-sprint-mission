@@ -42,6 +42,8 @@ public class DiscodeitApplication {
 		User user = setupUser(userService);
 		Channel channel = setupChannel(channelService);
 		messageCreateTest(messageService,channel,user);
+		System.out.println(user.getCreatedAt());
+		System.out.println(channel.getCreatedAt());
 
 	}
 
