@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.DTO.BinaryContentRecord;
+import lombok.Getter;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class BinaryContent {
     private final UUID id;
     private final Instant createdAt;
@@ -18,19 +20,4 @@ public class BinaryContent {
         this.files = files;
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public String getContentType() {
-        return contentType;
-    }
-
-    public byte[] getFiles() {
-        return files;
-    }
 }

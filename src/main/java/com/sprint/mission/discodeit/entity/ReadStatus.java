@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.fasterxml.jackson.databind.ser.Serializers;
+import lombok.Getter;
 
 import java.time.Instant;
 import java.util.UUID;
 
-
+@Getter
 public class ReadStatus extends BaseEntity {
     private UUID userID;
     private UUID channelID;
@@ -15,8 +16,5 @@ public class ReadStatus extends BaseEntity {
         return lastReadAt.isAfter(Instant.EPOCH);
     }
 
-    public Instant getLastReadAt(){
-        return lastReadAt;
-    }
 
 }

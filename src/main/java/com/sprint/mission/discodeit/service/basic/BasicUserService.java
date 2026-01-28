@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.DTO.BinaryContentRecord;
 import com.sprint.mission.discodeit.DTO.UserRegitrationRecord;
+import com.sprint.mission.discodeit.DTO.UserReturnDTO;
+import com.sprint.mission.discodeit.DTO.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -12,6 +14,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -44,29 +47,88 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User find(UUID userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-    }
-
-    @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
-
-    @Override
-    public User update(UUID userId, String newUsername, String newEmail, String newPassword) {
+    public UserReturnDTO find(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-        user.update(newUsername, newEmail, newPassword);
+        UserStatus userStatus = userStatusRepository.findByID(userId);
+
+        return new UserReturnDTO(user.getId(),
+                user.getProfileID(),
+                user.getUsername(),
+                user.getEmail(),
+                userStatus.isOnline(),
+                userStatus.getLastActiveAt(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
+
+    }
+
+    @Override
+    public List<UserReturnDTO> findAll() {
+        List<UserReturnDTO> userDTOList;
+        return userRepository
+                .findAll()
+                .stream()
+                .map(u -> {
+                    UserStatus userStatus = userStatusRepository.findByID(u.getId());
+                    boolean online = userStatus.isOnline();
+                    Instant lastActiveAt = userStatus.getLastActiveAt();
+                    return new UserReturnDTO(u.getId(),
+                            u.getProfileID(),
+                            u.getUsername(),
+                            u.getEmail(),
+                            online,
+                            lastActiveAt,
+                            u.getCreatedAt(),
+                            u.getUpdatedAt());
+                }).toList();
+    }
+
+    @Override
+    public User update(UserUpdateDTO req) {
+        User user = userRepository.findById(req.id())
+                .orElseThrow(() -> new NoSuchElementException("User with id " + req.id() + " not found"));
+
+        if(userRepository
+                .findAll()
+                .stream()
+                .anyMatch(u -> !u.getId().equals(req.id()) && (req.name().equals(u.getUsername()) || req.email().equals(u.getEmail())))){
+            throw new IllegalStateException("중복되는 이름 or 이메일입니다.");
+        }
+
+        UUID newProfileId = null;
+        if(req.newProfile() != null){
+            BinaryContentRecord binaryContentRecord = req.newProfile();
+            BinaryContent binaryContent = new BinaryContent(
+                    binaryContentRecord.contentType(),
+                    binaryContentRecord.bytes()
+            );
+            BinaryContent saved = binaryContentRepository.save(binaryContent);
+            newProfileId = saved.getId();
+        }
+
+        user.update(req.name(),
+                req.email(),
+                req.password(),
+                newProfileId);
         return userRepository.save(user);
     }
 
     @Override
     public void delete(UUID userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new NoSuchElementException("User with id " + userId + " not found");
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(
+                        () -> new IllegalStateException("존재하지 않는 id입니다.")
+                );
+
+        UUID profileID = user.getProfileID();
+        if(profileID != null){
+            binaryContentRepository.deleteByID(profileID);
         }
+
+        userStatusRepository.deleteByUserID(userId);
         userRepository.deleteById(userId);
     }
 }

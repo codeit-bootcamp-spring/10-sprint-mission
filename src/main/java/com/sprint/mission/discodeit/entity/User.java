@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class User extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -22,23 +23,8 @@ public class User extends BaseEntity implements Serializable {
         this.profileID = profileID;
     }
 
-    public String getUsername() {
-        return username;
-    }
 
-    public UUID getProfileID() {
-        return profileID;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void update(String newUsername, String newEmail, String newPassword) {
+    public void update(String newUsername, String newEmail, String newPassword, UUID profileId) {
         boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
@@ -50,6 +36,11 @@ public class User extends BaseEntity implements Serializable {
         }
         if (newPassword != null && !newPassword.equals(this.password)) {
             this.password = newPassword;
+            anyValueUpdated = true;
+        }
+
+        if (profileId != null && !profileId.equals(this.profileID)) {
+            this.profileID = profileId;
             anyValueUpdated = true;
         }
 
