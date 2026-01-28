@@ -116,6 +116,17 @@ public class BasicUserService implements UserService {
         if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User with id " + userId + " not found");
         }
-        userRepository.deleteById(userId);
+
+        User deletedUser = userRepository.findById(userId).get();
+        binaryContentRepository.deleteById(deletedUser.getProfileId());//프로필 이미지 삭제
+
+        UserStatus userStatus = userStatusRepository.findAll().stream()
+                        .filter(userstat -> userstat.getUserID() == deletedUser.getId())
+                        .findFirst()
+                        .orElseThrow(()-> new NoSuchElementException("UserStatus with id " + deletedUser.getId() + " not found"));
+
+        userStatusRepository.deleteById(userStatus.getId());//스테이터스 삭제
+
+        userRepository.deleteById(userId);//유저레포지토리에서 삭제
     }
 }
