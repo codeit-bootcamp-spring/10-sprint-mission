@@ -4,12 +4,16 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.*;
 import com.sprint.mission.discodeit.utils.Validation;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicChatCoordinator {
 
     private final UserService userService;
@@ -21,21 +25,21 @@ public class BasicChatCoordinator {
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
 
-    public BasicChatCoordinator(
-            UserService userService,
-            ChannelService channelService,
-            MessageService messageService,
-            UserRepository userRepository,
-            ChannelRepository channelRepository,
-            MessageRepository messageRepository
-    ) {
-        this.userService = userService;
-        this.channelService = channelService;
-        this.messageService = messageService;
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.messageRepository = messageRepository;
-    }
+//    public BasicChatCoordinator(
+//            UserService userService,
+//            ChannelService channelService,
+//            MessageService messageService,
+//            UserRepository userRepository,
+//            ChannelRepository channelRepository,
+//            MessageRepository messageRepository
+//    ) {
+//        this.userService = userService;
+//        this.channelService = channelService;
+//        this.messageService = messageService;
+//        this.userRepository = userRepository;
+//        this.channelRepository = channelRepository;
+//        this.messageRepository = messageRepository;
+//    }
 
 
     // JOIN / LEAVE

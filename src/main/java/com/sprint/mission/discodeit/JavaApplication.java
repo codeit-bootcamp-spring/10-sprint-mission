@@ -655,9 +655,9 @@ public class JavaApplication {
         System.out.println("general 참가자 = " + general.getParticipants());
         System.out.println("music 참가자   = " + music.getParticipants());
 
-        System.out.println("g1: " + g1.getSender().getAlias() + " -> " + g1.getChannel().getChannelName() + " | " + g1.getContent());
-        System.out.println("g2: " + g2.getSender().getAlias() + " -> " + g2.getChannel().getChannelName() + " | " + g2.getContent());
-        System.out.println("m1: " + m1.getSender().getAlias() + " -> " + m1.getChannel().getChannelName() + " | " + m1.getContent());
+        System.out.println("g1: " + g1.getSender().getAlias() + " -> " + g1.getChannel().getChannelName() + " | " + g1.getMessageContent());
+        System.out.println("g2: " + g2.getSender().getAlias() + " -> " + g2.getChannel().getChannelName() + " | " + g2.getMessageContent());
+        System.out.println("m1: " + m1.getSender().getAlias() + " -> " + m1.getChannel().getChannelName() + " | " + m1.getMessageContent());
         System.out.println();
     }
 

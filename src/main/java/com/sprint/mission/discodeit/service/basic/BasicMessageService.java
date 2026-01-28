@@ -5,15 +5,16 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.utils.Validation;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import javax.swing.*;
 import java.util.*;
+
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService{
     private final MessageRepository messageRepository;
-
-    public BasicMessageService(MessageRepository messageRepository){
-        this.messageRepository = messageRepository;
-    }
 
     @Override
     public Message createMessage(String content, UUID senderId, UUID channelId) {

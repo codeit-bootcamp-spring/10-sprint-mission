@@ -3,14 +3,16 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.utils.Validation;
 import com.sprint.mission.discodeit.entity.Channel;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
 import java.util.*;
 
+@Service
+@RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
 
-    public BasicChannelService(ChannelRepository channelRepository){
-        this.channelRepository = channelRepository;
-    }
     @Override
     public Channel createChannel(String channelName) {
         Validation.notBlank(channelName, "채널 이름");

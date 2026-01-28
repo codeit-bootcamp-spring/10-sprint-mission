@@ -53,7 +53,7 @@ public class ChatCoordinator {
         message.setChannel(channelService.findChannelById(channelId));
 
         // 메모리에 다시 반영. (서비스는 단순히 저장)
-        messageService.updateMessage(message.getId(), message.getContent());
+        messageService.updateMessage(message.getId(), message.getMessageContent());
 
         return message;
     }
@@ -80,7 +80,7 @@ public class ChatCoordinator {
             ch.removeParticipant(user);
         }
         // 모든 메세지 삭제
-        List<UUID> messageIds = new ArrayList<>(user.getMessage()).stream()
+        List<UUID> messageIds = new ArrayList<>(user.getMessages()).stream()
                 .map(msg->msg.getId())
                 .toList();
         for(UUID messageId : messageIds){

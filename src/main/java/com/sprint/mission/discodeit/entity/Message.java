@@ -1,11 +1,18 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class Message extends Basic implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    private List<UUID> attachmentIds = new ArrayList<>();
 
     private String messageContent;
     private User sender; // 보내는 사람을 User 타입으로 받음.
@@ -13,15 +20,6 @@ public class Message extends Basic implements Serializable {
     private UUID senderId;
     private UUID channelId;
 
-//    public Message(String content, User sender, Channel channel) {
-//        super(); // Message 에도 역시 각각 고유 ID, 생성 시간 할당.
-//        this.messageContent = content;
-//        setSender(sender);
-//        setChannel(channel);
-//        this.senderId = sender.getId();
-//        this.channelId = channel.getId();
-//
-//    }
 
     // 추가! ID 기반 생성자 (Service에서)
     public Message(String content, UUID senderId, UUID channelId) {
@@ -31,17 +29,15 @@ public class Message extends Basic implements Serializable {
         this.channelId = channelId;
     }
 
-    public String getContent() {
-        return messageContent;
-    }
-
-    public User getSender() {
-        return sender;
-    }
-
-    public Channel getChannel() {
-        return channel;
-    }
+//    public String getContent() {
+//        return messageContent;
+//    }
+//    public User getSender() {
+//        return sender;
+//    }
+//    public Channel getChannel() {
+//        return channel;
+//    }
 
     public void update(String content) {
         this.messageContent = content;
@@ -66,10 +62,19 @@ public class Message extends Basic implements Serializable {
         }
     }
 
+    // 메세지에 첨부파일 추가.
+    public void addAttachment(UUID binaryContentId) {
+        if (binaryContentId == null) throw new IllegalArgumentException("attachment id는 null 불가");
+        if (!attachmentIds.contains(binaryContentId)) {
+            attachmentIds.add(binaryContentId);
+            update();
+        }
+    }
+
     @Override
     public String toString() {
         return "[" + getCreatedAt() + "] "  // Basic에서 상속받은 포맷된 시간
                 + getSender().getUserName() + ": "
-                + getContent();
+                + getMessageContent();
     }
 }
