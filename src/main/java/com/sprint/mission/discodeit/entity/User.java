@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.UUID;
 
 @Getter
 @ToString(exclude = {"joinedChannels", "myMessages"})
@@ -20,7 +21,7 @@ public class User extends BaseEntity implements Serializable {
     private String nickname;
     private String email;
     private String password;
-    private String status;
+    private UUID profileId; // 프로필 이미지 (BinaryContent 참조 ID)
 
     @Getter(AccessLevel.NONE)
     private final List<Channel> joinedChannels = new ArrayList<>();
@@ -35,7 +36,6 @@ public class User extends BaseEntity implements Serializable {
         this.nickname = nickname;
         this.email = email;
         this.password = password;
-        this.status = "OFFLINE";
     }
 
     // 유저 이름 수정
@@ -56,9 +56,9 @@ public class User extends BaseEntity implements Serializable {
         this.updated();
     }
 
-    // 유저 상태 수정
-    public void updateStatus(String status) {
-        this.status = status;
+    // 프로필 이미지 수정
+    public void updateProfile(UUID profileId) {
+        this.profileId = profileId;
         this.updated();
     }
 

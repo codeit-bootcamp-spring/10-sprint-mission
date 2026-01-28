@@ -43,13 +43,13 @@ public class FileUserService implements UserService {
 
     // 유저 정보 수정
     @Override
-    public User update(UUID id, String name, String nickname, String email, String status, String password) {
+    public User update(UUID id, String name, String nickname, String email, UUID profileId, String password) {
         User user = findById(id);
 
         Optional.ofNullable(name).ifPresent(user::updateName);
         Optional.ofNullable(nickname).ifPresent(user::updateNickname);
         Optional.ofNullable(email).ifPresent(user::updateEmail);
-        Optional.ofNullable(status).ifPresent(user::updateStatus);
+        Optional.ofNullable(profileId).ifPresent(user::updateProfile);
         Optional.ofNullable(password).ifPresent(user::updatePassword);
 
         userRepository.save(user);

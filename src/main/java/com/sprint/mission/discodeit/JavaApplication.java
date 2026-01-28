@@ -52,7 +52,7 @@ public class JavaApplication {
         System.out.println("[다건 조회] 전체 유저 수: " + userService.findAll().size());
 
         // 3. 수정
-        userService.update(user1.getId(), "고철수", null, "go@example.com", "OFFLINE", "new-password");
+        userService.update(user1.getId(), "고철수", null, "go@example.com", null, "new-password");
         System.out.println("[수정] user1 계정 수정 완료");
 
         // 4. 수정된 데이터 조회
@@ -62,7 +62,6 @@ public class JavaApplication {
         System.out.println("- 닉네임 (기존 유지, 기대값: 철수): " + updatedUser.getNickname());
         System.out.println("- 이메일: " + updatedUser.getEmail());
         System.out.println("- 수정시간: " + updatedUser.getUpdatedAt());
-        System.out.println("- 현재 상태: " + user2.getStatus());
         System.out.println("- 비밀번호 변경 완료");
 
         // 5. 삭제
