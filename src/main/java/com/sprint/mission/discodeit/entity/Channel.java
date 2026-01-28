@@ -1,0 +1,94 @@
+package com.sprint.mission.discodeit.entity;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+
+public class Channel extends DiscordEntity {
+
+    public enum CHANNEL_TYPE{
+        PUBLIC,
+        PRIVATE
+    }
+    private CHANNEL_TYPE channelType;
+    private String channelName;
+    private String content;
+    private final List<Message> messageList;
+    private final List<User> userList;
+
+    // 생성자
+    public Channel(CHANNEL_TYPE channelType, String name, String content){
+        this.channelType = channelType;
+        this.channelName = name;
+        this.content = content;
+        this.userList = new ArrayList<>();
+        this.messageList = new ArrayList<>();
+        updateTime();
+    }
+
+
+
+    public String getName(){
+        return this.channelName;
+    }
+
+    public List<Message> getMessageList() {
+        return this.messageList;
+    }
+
+    public CHANNEL_TYPE getType(){
+        return this.channelType;
+    }
+
+    public String getDesc(){
+        return this.content;
+    }
+
+    public List<User> getUsers(){
+        //System.out.printf("%s 채널의 유저 리스트입니다.%n",this.channelName);
+
+        updateTime();
+        return this.userList;
+    }
+
+
+
+    public void updateType(CHANNEL_TYPE channelType){
+       this.channelType = channelType;
+       updateTime();
+    }
+
+    public void updateContent(String content){
+        this.content = content;
+        updateTime();
+    }
+
+
+    public void updateName(String name){
+        updateTime();
+        this.channelName = name;
+    }
+
+    public void addUser(User user) {
+        this.userList.add(user);
+        updateTime();
+    }
+
+    public void kickUser(User user){
+        this.userList.remove(user);
+        updateTime();
+    }
+
+    public String toString(){
+        return
+                String.format("[Channel] name: %s | type: %s | description: %s", this.channelName, this.channelType, this.content);
+    }
+
+
+
+
+
+}
