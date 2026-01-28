@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequestDto;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequestDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.DefaultEntity;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -30,7 +31,6 @@ import static com.sprint.mission.discodeit.entity.ChannelType.PUBLIC;
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
-    private final UserRepository userRepository;
     private final MessageRepository messageRepository;
 
     public Channel createPublicChannel(PublicChannelCreateRequestDto requestDto) {
@@ -101,6 +101,20 @@ public class BasicChannelService implements ChannelService {
         if (!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("Channel with id " + channelId + " not found");
         }
+
+        //채널에 속한 메시지들 삭제
+        messageRepository.findAll().stream()
+                        .filter(message -> message.getChannelId().equals(channelId))
+                        .map(DefaultEntity::getId)
+                        .forEach(messageRepository::deleteById);
+
+        //채널을 갖고 있는 리드스테이터스 객체 삭제
+        readStatusRepository.findAll().stream()
+                        .filter(readstat -> readstat.getChannelID().equals(channelId))
+                        .map(DefaultEntity::getId)
+                        .forEach(readStatusRepository::deleteById);
+
+        //최종적으로, 채널 삭제
         channelRepository.deleteById(channelId);
     }
 }
