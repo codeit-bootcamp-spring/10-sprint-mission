@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.user.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -44,39 +45,56 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<User> getUserList() {
-        return userRepository.findAll();
+    public List<UserResponseDTO> getUserList() {
+        List<User> users = userRepository.findAll();
+        Map<UUID, UserStatus> userStatusMap = indexStatusByUserId(userStatusRepository.findAll());
+
+        return responseDTOList(userStatusMap, users);
     }
 
     @Override
-    public List<User> getUsersByChannel(UUID channelId) {
+    public List<UserResponseDTO> getUsersByChannel(UUID channelId) {
         if (channelRepository.findById(channelId).isEmpty()) {
             throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
         }
 
-        return userRepository.findAll().stream()
+        List<User> users = userRepository.findAll().stream()
                 .filter(user -> user.getJoinedChannels().stream()
                         .anyMatch(channel -> channel.getId().equals(channelId)))
                 .toList();
+        Map<UUID, UserStatus> userStatusMap = indexStatusByUserId(userStatusRepository.findAll());
+
+        return responseDTOList(userStatusMap, users);
     }
 
     @Override
-    public User getUserInfoByUserId(UUID userId) {
-        return findUserInfoById(userId);
+    public UserResponseDTO getUserInfoByUserId(UUID userId) {
+        return UserMapper.toResponse(
+                findUserInfoById(userId), userStatusRepository.findByUserId(userId)
+        );
     }
 
     @Override
-    public User updateUserName(UUID userId, String newName) {
-        User user = findUserInfoById(userId);
-        user.updateUsername(newName);
+    public UserResponseDTO updateUserName(UserUpdateDTO dto) {
+        User user = findUserInfoById(dto.userId());
+        user.updateUsername(dto.username());
         userRepository.save(user);
 
         // 메시지 파일 업데이트
-        updateMessagesUsername(userId, newName);
+        updateMessagesUsername(dto.userId(), dto.username());
         // 채널 파일 업데이트
-        updateChannelsUsername(userId, newName);
+        updateChannelsUsername(dto.userId(), dto.username());
 
-        return user;
+        return UserMapper.toResponse(user, userStatusRepository.findByUserId(user.getId()));
+    }
+
+    @Override
+    public UserResponseDTO updateUserStatus(UserUpdateDTO dto) {
+        UserStatus status = userStatusRepository.findByUserId(dto.userId());
+        status.updateStatusType(dto.statusType());
+        userStatusRepository.save(status);
+
+        return UserMapper.toResponse(findUserInfoById(dto.userId()), status);
     }
 
     @Override
@@ -116,5 +134,31 @@ public class BasicUserService implements UserService {
                 channelRepository.save(channel);
             }
         });
+    }
+
+    private Map<UUID, UserStatus> indexStatusByUserId(List<UserStatus> statuses) {
+        Map<UUID, UserStatus> map = new HashMap<>();
+        for (UserStatus status: statuses) {
+            map.put(status.getUserId(), status);
+        }
+        return map;
+    }
+
+    private List<UserResponseDTO> responseDTOList(Map<UUID, UserStatus> statusMap, List<User> users) {
+        List<UserResponseDTO> userResponseDTOS = new ArrayList<>();
+
+        for (User user: users) {
+            UserStatus status = statusMap.get(user.getId());
+
+            if (status == null) {
+                throw new IllegalStateException(
+                        "UserStatus가 없습니다.: userId=" + user.getId()
+                );
+            }
+
+            userResponseDTOS.add(UserMapper.toResponse(user, status));
+        }
+
+        return userResponseDTOS;
     }
 }
