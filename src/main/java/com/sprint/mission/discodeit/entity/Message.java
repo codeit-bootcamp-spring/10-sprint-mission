@@ -1,8 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.ToString;
+
 import java.io.Serial;
 import java.io.Serializable;
 
+@Getter
+@ToString(exclude = {"user", "channel"})
 public class Message extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -32,23 +37,5 @@ public class Message extends BaseEntity implements Serializable {
     // 메시지 고정/해제
     public void togglePin() {
         this.isPinned = !this.isPinned;
-    }
-
-    // --- getter ---
-    public String getContent() { return content; }
-    public User getUser() { return user; }
-    public Channel getChannel() { return channel; }
-    public boolean isEdited() { return isEdited; }
-    public boolean isPinned() { return isPinned; }
-
-    @Override
-    public String toString() {
-        return "Message{" +
-                "id=" + id +
-                ", content='" + content + '\'' +
-                ", isEdited=" + isEdited +
-                ", isPinned=" + isPinned +
-                ", updatedAt=" + updatedAt +
-                '}';
     }
 }

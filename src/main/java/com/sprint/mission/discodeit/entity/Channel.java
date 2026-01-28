@@ -1,11 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.ToString;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 
+@Getter
+@ToString(exclude = {"members", "messages"})
 public class Channel extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -14,7 +20,11 @@ public class Channel extends BaseEntity implements Serializable {
     private String description;
     private String type;        // 채팅 채널(TEXT), 공지 채널(ANNOUNCEMENT), 음성 채널(VOICE)
     private boolean isPublic;   // 공개/비공개 여부
+
+    @Getter(AccessLevel.NONE)
     private final List<User> members = new ArrayList<>();
+
+    @Getter(AccessLevel.NONE)
     private final List<Message> messages = new ArrayList<>();
 
     public Channel(String name, String description, String type, boolean isPublic) {
@@ -71,21 +81,6 @@ public class Channel extends BaseEntity implements Serializable {
     }
 
     // --- getter ---
-    public String getName() { return name; }
-    public String getDescription() { return description; }
-    public String getType() { return type; }
-    public boolean isPublic() { return isPublic; }
     public List<User> getMembers() { return Collections.unmodifiableList(members); }
     public List<Message> getMessages() { return Collections.unmodifiableList(messages); }
-
-    @Override
-    public String toString() {
-        return "Channel{" +
-                "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", type='" + type + '\'' +
-                ", isPublic=" + isPublic +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
 }

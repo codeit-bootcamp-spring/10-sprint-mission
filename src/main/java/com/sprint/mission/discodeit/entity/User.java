@@ -1,11 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.ToString;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 
+@Getter
+@ToString(exclude = {"joinedChannels", "myMessages"})
 public class User extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -15,7 +21,11 @@ public class User extends BaseEntity implements Serializable {
     private String email;
     private String password;
     private String status;
+
+    @Getter(AccessLevel.NONE)
     private final List<Channel> joinedChannels = new ArrayList<>();
+
+    @Getter(AccessLevel.NONE)
     private final List<Message> myMessages = new ArrayList<>();
 
 
@@ -79,21 +89,6 @@ public class User extends BaseEntity implements Serializable {
     }
 
     // --- getter ---
-    public String getName() { return name; }
-    public String getNickname() { return nickname; }
-    public String getEmail() { return email; }
-    public String getStatus() { return status; }
     public List<Channel> getJoinedChannels() { return Collections.unmodifiableList(joinedChannels); }
     public List<Message> getMyMessages() { return Collections.unmodifiableList(myMessages); }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "name='" + name + '\'' +
-                ", nickname='" + nickname + '\'' +
-                ", email='" + email + '\'' +
-                ", status='" + status + '\'' +
-                ", updatedAt=" + updatedAt +
-                '}';
-    }
 }
