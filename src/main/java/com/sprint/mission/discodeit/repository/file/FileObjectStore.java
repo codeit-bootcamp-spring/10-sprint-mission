@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import org.springframework.stereotype.Component;
+import com.sprint.mission.discodeit.entity.*;
+import lombok.Getter;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -12,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Getter
 public class FileObjectStore implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Path STORAGE_PATH = Path.of("./FileIOTestStorage/objectStorage.ser");
@@ -19,18 +18,8 @@ public class FileObjectStore implements Serializable {
     private final Map<UUID, User> usersData = new HashMap<>();
     private final Map<UUID, Channel> channelsData = new HashMap<>();
     private final Map<UUID, Message> messagesData = new HashMap<>();
-
-    public Map<UUID, User> getUsersData() {
-        return usersData;
-    }
-
-    public Map<UUID, Channel> getChannelsData() {
-        return channelsData;
-    }
-
-    public Map<UUID, Message> getMessagesData() {
-        return messagesData;
-    }
+    private final Map<UUID, UserStatus> userStatusesData = new HashMap<>();
+    private final Map<UUID, BinaryContent> binaryContentsData = new HashMap<>();
 
     public void saveData() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(STORAGE_PATH.toFile()))) {

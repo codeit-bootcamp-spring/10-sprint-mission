@@ -43,10 +43,17 @@ public class FileUserRepository implements UserRepository {
     public void delete(UUID userId) {
         data.remove(userId);
         fileObjectStore.saveData();
+
     }
 
     @Override
-    public boolean existByEmail(String newEmail) {
+    public boolean existUserName(String newUserName) {
+        return this.data.values().stream()
+                .anyMatch(user -> user.getUserName().equals(newUserName));
+    }
+
+    @Override
+    public boolean existEmail(String newEmail) {
         return this.data.values().stream()
                 .anyMatch(user -> user.getEmail().equals(newEmail));
     }
@@ -55,5 +62,11 @@ public class FileUserRepository implements UserRepository {
     public boolean isEmailUsedByOther(UUID userId, String newEmail) {
         return this.data.values().stream()
                 .anyMatch(user -> !user.getId().equals(userId) && user.getEmail().equals(newEmail));
+    }
+
+    @Override
+    public boolean isUserNameUsedByOther(UUID userId, String newUserName) {
+        return this.data.values().stream()
+                .anyMatch(user -> !user.getId().equals(userId) && user.getUserName().equals(newUserName));
     }
 }

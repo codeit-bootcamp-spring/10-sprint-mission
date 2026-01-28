@@ -16,6 +16,8 @@ public interface UserRepository { // 데이터 관련 로직(저장, 조회, 삭
 
     void delete(UUID userId);
 
-    boolean existByEmail(String newEmail);
+    boolean existUserName(String newUserName);
+    boolean existEmail(String newEmail);
     boolean isEmailUsedByOther(UUID userId, String newEmail);
+    boolean isUserNameUsedByOther(UUID userId, String newUserName);
 }
