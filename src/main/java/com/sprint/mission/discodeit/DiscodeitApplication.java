@@ -4,16 +4,18 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.service.util.FileUtil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+
+import java.nio.file.Paths;
 
 @SpringBootApplication
 public class DiscodeitApplication {
 
 	static User setupUser(UserService userService) {
-		return userService.createUser("woody@codeit.com", "woody1234", "woody", UserStatusType.ONLINE);
+		return userService.createUser("woody@codeit.com", "woody1234", "woody");
 	}
 
 	static Channel setupChannel(ChannelService channelService, User owner) {
@@ -33,6 +35,11 @@ public class DiscodeitApplication {
 		UserService userService = context.getBean(UserService.class);
 		ChannelService channelService = context.getBean(ChannelService.class);
 		MessageService messageService = context.getBean(MessageService.class);
+
+		// 파일 초기화
+		FileUtil.clearDirectory(Paths.get(System.getProperty("user.dir"), "data", "users"));
+        FileUtil.clearDirectory(Paths.get(System.getProperty("user.dir"), "data", "channels"));
+        FileUtil.clearDirectory(Paths.get(System.getProperty("user.dir"), "data", "messages"));
 
 		// 셋업 및 테스트 실행
 		try {
