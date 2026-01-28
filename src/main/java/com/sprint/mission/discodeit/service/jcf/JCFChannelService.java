@@ -81,6 +81,7 @@ public class JCFChannelService implements ChannelService {
 
         channel.addUser(user);
         user.addChannel(channel);
+
     }
 
     @Override
@@ -98,10 +99,10 @@ public class JCFChannelService implements ChannelService {
         user.removeChannel(channel);
     }
 
-    public void validateChannelInput(String name, String type){
-        if (name == null || name.isBlank()) throw new IllegalArgumentException("채널 이름은 필수입니다.");
-        if (type == null || type.isBlank()) throw new IllegalArgumentException("채널 타입은 필수입니다.");
-    }
+        public void validateChannelInput(String name, String type){
+            if (name == null || name.isBlank()) throw new IllegalArgumentException("채널 이름은 필수입니다.");
+            if (type == null || type.isBlank()) throw new IllegalArgumentException("채널 타입은 필수입니다.");
+        }
     private Channel validateChannelId(UUID id){
         return  Optional.ofNullable(data.get(id))
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다"));

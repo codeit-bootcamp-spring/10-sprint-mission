@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class Channel extends BaseEntity{
+public class Channel extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String name;
     private String type;
     private final Set<User> users = new HashSet<>();
@@ -41,5 +43,18 @@ public class Channel extends BaseEntity{
     public String toString() {
         return "채널[이름: " + name +
                 ", 타입: " + type + "]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Channel channel = (Channel) o;
+        return java.util.Objects.equals(getId(), channel.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(getId());
     }
 }

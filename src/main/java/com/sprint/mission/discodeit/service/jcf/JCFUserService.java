@@ -54,7 +54,7 @@ public class JCFUserService implements UserService {
         data.remove(id);
     }
 
-    public void validateUserInput(String name, String email){
+    private void validateUserInput(String name, String email){
         if (name == null || name.isBlank()) throw new IllegalArgumentException("이름은 필수입니다.");
         if (email == null || email.isBlank()) throw new IllegalArgumentException("이메일은 필수입니다.");
     }

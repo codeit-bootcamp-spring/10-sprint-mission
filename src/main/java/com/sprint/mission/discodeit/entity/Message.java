@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
-public class Message extends BaseEntity{
+import java.io.Serializable;
+
+public class Message extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String content;
     private final User user;
     private final Channel channel;
@@ -11,6 +14,7 @@ public class Message extends BaseEntity{
         this.user = user;
         this.channel = channel;
     }
+
     public String getContent() { return content; }
     public User getUser() { return user; }
     public Channel getChannel() { return channel; }
@@ -23,5 +27,18 @@ public class Message extends BaseEntity{
         return "메시지[채널: " + channel.getName() +
                 ", 작성자: " + user.getName() +
                 ", 내용: " + content +"]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Message message = (Message) o;
+        return java.util.Objects.equals(getId(), message.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(getId());
     }
 }
