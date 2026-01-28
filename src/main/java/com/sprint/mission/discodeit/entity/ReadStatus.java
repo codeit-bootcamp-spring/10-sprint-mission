@@ -18,12 +18,14 @@ public class ReadStatus implements Serializable {
     private UUID channelId;
     private Instant lastReadAt;
 
-    public ReadStatus(UUID userId, UUID channelId) {
+    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.userId = userId;
         this.channelId = channelId;
+        //this.lastReadAt = Instant.EPOCH; // 1970년, 유저 생성 이전에 생성된 메시지 안읽음 처리
+        this.lastReadAt = lastReadAt;
     }
 
     public void update(Instant newLastReadAt) {

@@ -8,9 +8,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class UserDto {
-    // =================================================================
-    // 1. 회원가입 요청 (Create)
-    // =================================================================
     public record CreateRequest(
             @NotBlank
             String username,
@@ -25,9 +22,6 @@ public class UserDto {
             BinaryContentDto.CreateRequest profileImage
     ) {}
 
-    // =================================================================
-    // 2. 응답 (Response)
-    // =================================================================
     public record Response(
             UUID id,
             Instant createdAt,
@@ -51,9 +45,6 @@ public class UserDto {
         }
     }
 
-    // =================================================================
-    // 3. 수정 요청 (Update)
-    // =================================================================
     public record UpdateRequest(
             @NotBlank
             String newUsername,

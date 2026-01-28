@@ -6,6 +6,6 @@ import com.sprint.mission.discodeit.entity.User;
 import java.util.UUID;
 
 public interface AuthService {
-    User login(LoginDto.LoginRequest loginRequest);
+    User login(LoginDto.LoginRequest request);
 
 }

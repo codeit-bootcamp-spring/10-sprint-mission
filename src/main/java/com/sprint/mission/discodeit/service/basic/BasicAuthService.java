@@ -16,11 +16,10 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
 
     @Override
-    public User login(LoginDto.LoginRequest loginRequest) {
-        String username = loginRequest.username();
-        String password = loginRequest.password();
+    public User login(LoginDto.LoginRequest request) {
+        String username = request.username();
+        String password = request.password();
 
-        User user = userRepository.findById()
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다:" + username));
 

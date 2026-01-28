@@ -28,17 +28,17 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    public User create(UserDto.CreateRequest createRequest) {
-        String username = createRequest.username();
-        String email = createRequest.email();
+    public User create(UserDto.CreateRequest request) {
+        String username = request.username();
+        String email = request.email();
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + email);
         }
         if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("이미 존재하는 사용자명입니다.: " + username);
         }
-        String password = createRequest.password();
-        UUID profileId = saveProfileImage(createRequest.profileImage());
+        String password = request.password();
+        UUID profileId = saveProfileImage(request.profileImage());
 
         User user = new User(username, email, password, profileId);
         User createdUser = userRepository.save(user);
@@ -63,12 +63,12 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, UserDto.UpdateRequest updateRequest) {
+    public User update(UUID userId, UserDto.UpdateRequest request) {
         User user=  userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다:" + userId));
 
-        String newUsername = updateRequest.newUsername();
-        String newEmail = updateRequest.newEmail();
+        String newUsername = request.newUsername();
+        String newEmail = request.newEmail();
         if(newUsername != null && !newUsername.equals(user.getUsername())) { // 값이 바뀌지 않으면 중복검사 X
             if (userRepository.existsByUsername(newUsername)) {
                 throw new IllegalArgumentException("이미 존재하는 사용자명입니다.: " + newUsername);
@@ -79,8 +79,8 @@ public class BasicUserService implements UserService {
                 throw new IllegalArgumentException("이미 존재하는 사용자명입니다.: " + newEmail);
             }
         }
-        String newPassword = updateRequest.newPassword();
-        UUID newProfileId = saveProfileImage(updateRequest.newProfileImage());
+        String newPassword = request.newPassword();
+        UUID newProfileId = saveProfileImage(request.newProfileImage());
 
         user.update(newUsername, newEmail, newPassword, newProfileId);
 
@@ -111,9 +111,8 @@ public class BasicUserService implements UserService {
     private UserDto.Response mapToDto (User user) {
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new NoSuchElementException("유저의 상태가 없습니다:" + user.getId()));
-        boolean isOnline = (userStatus != null) && userStatus.isOnline();
 
-        return UserDto.Response.from(user, isOnline);
+        return UserDto.Response.from(user, userStatus.isOnline());
     }
 
     private UUID saveProfileImage(BinaryContentDto.CreateRequest imageRequest) {
@@ -124,7 +123,7 @@ public class BasicUserService implements UserService {
         BinaryContent content = new BinaryContent(
                 imageRequest.fileName(),
                 imageRequest.contentType(),
-                imageRequest.content() // 혹은 bytes()
+                imageRequest.content()
         );
 
         return binaryContentRepository.save(content).getId();

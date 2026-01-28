@@ -4,9 +4,6 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public class BinaryContentDto {
-    // =================================================================
-    // 1. 파일 생성 요청 (Create)
-    // =================================================================
     public record CreateRequest(
             @NotBlank
             String fileName,
