@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentRequestDto;
-import com.sprint.mission.discodeit.dto.UserRequestDto;
+import com.sprint.mission.discodeit.dto.UserCreateRequestDto;
+import com.sprint.mission.discodeit.dto.UserFindingDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -24,29 +25,31 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    public User create(UserRequestDto userRequestDto) {
+    public User create(UserCreateRequestDto userCreateRequestDto) {
         //중복여부 검사 로직
         if (findAll().stream()
                 .anyMatch(user ->
-                        user.getUsername().equals(userRequestDto.username()) ||
-                                user.getEmail().equals(userRequestDto.email())
+                        user.username().equals(userCreateRequestDto.username()) ||
+                                user.email().equals(userCreateRequestDto.email())
                 )) throw new AssertionError("Username or Email already exists");
 
         User user;
-        if(userRequestDto.profileImage() != null){
-            BinaryContent profileImage = new BinaryContent(userRequestDto.profileImage().content());
+        //이미지 존재여부 분기
+        if(userCreateRequestDto.profileImage() != null){
+            BinaryContent profileImage = new BinaryContent(userCreateRequestDto.profileImage().content());
             binaryContentRepository.save(profileImage);
 
-            user = new User(userRequestDto.username(),
-                    userRequestDto.email(),
-                    userRequestDto.password(),
+            user = new User(userCreateRequestDto.username(),
+                    userCreateRequestDto.email(),
+                    userCreateRequestDto.password(),
                     profileImage.getId());
         }
-        else user = new User(userRequestDto.username(),
-                userRequestDto.email(),
-                userRequestDto.password(),
+        else user = new User(userCreateRequestDto.username(),
+                userCreateRequestDto.email(),
+                userCreateRequestDto.password(),
                 null);
 
+        //userstatus 생성
         UserStatus userStatus = new UserStatus(user.getId());
         userStatusRepository.save(userStatus);
 
@@ -54,14 +57,27 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User find(UUID userId) {
-        return userRepository.findById(userId)
+    public UserFindingDto find(UUID userId) {
+        User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+
+        UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId())
+                .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + targetUser.getId() + " not found"));
+
+        return new UserFindingDto(
+                targetUser.getUsername(),
+                targetUser.getEmail(),
+                targetUserStatus.isOnline()
+        );
     }
 
     @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserFindingDto> findAll() {
+        List<User> targetUsers = userRepository.findAll();
+
+        return targetUsers.stream()
+                .map(user -> find(user.getId()))
+                .toList();
     }
 
     @Override
