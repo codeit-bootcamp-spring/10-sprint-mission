@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -14,8 +16,11 @@ public class User extends BaseEntity implements Serializable {
     // 유저가 속한 채널 목록
     private final List<Channel> channels = new ArrayList<>();
 
+    @Getter
     private String name;
+    @Getter
     private String email;
+    @Getter
     private String profileImageUrl;
 
     // constructor
@@ -30,18 +35,6 @@ public class User extends BaseEntity implements Serializable {
     public List<Channel> getChannels() {
         return List.copyOf(this.channels);
     }     // 채널 객체를 직접 전달
-
-    public String getName() {
-        return this.name;
-    }
-
-    public String getEmail() {
-        return this.email;
-    }
-
-    public String getProfileImageUrl() {
-        return this.profileImageUrl;
-    }
 
     public void updateName(String name) {
         this.name = name;

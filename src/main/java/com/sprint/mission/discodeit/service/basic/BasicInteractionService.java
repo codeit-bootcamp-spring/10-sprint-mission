@@ -2,26 +2,21 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicInteractionService implements InteractionService {
 
     private final UserService userService;
     private final ChannelService channelService;
     private final MessageService messageService;
-
-    public BasicInteractionService(
-            UserService userService,
-            ChannelService channelService,
-            MessageService messageService) {
-        this.userService = userService;
-        this.channelService = channelService;
-        this.messageService = messageService;
-    }
 
     @Override
     public void join(UUID userId, UUID channelId) {
