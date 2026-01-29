@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 public class BinaryContentCreateRequestDTO {
+    private String fileName;
     private byte[] binaryContent;
     private BinaryContentType binaryContentType;
 }
