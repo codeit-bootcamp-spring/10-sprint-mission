@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
@@ -10,9 +9,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@Getter
 @ToString
-public class UserStatus {
+public class UserStatus implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final long ONLINE_THRESHOLD = 300L;
 
     private final UUID id = UUID.randomUUID();
@@ -20,7 +19,7 @@ public class UserStatus {
     private final long createdAt = Instant.now().getEpochSecond();
     private long updatedAt = createdAt;
     @Setter
-    private long lastOnlineTime;
+    private long lastOnlineTime = createdAt;
     private UserPresence presence = UserPresence.ONLINE;
 
     public UserPresence getPresence() {

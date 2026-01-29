@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -10,7 +9,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@Getter
 @ToString
 public class User implements Serializable {
     @ToString.Exclude
@@ -26,6 +24,8 @@ public class User implements Serializable {
     private String email;
     @NonNull
     private String password;
+    private final UUID profileId;
+    private final UUID readStatusId;
 
     public void update(String newUsername, String newEmail, String newPassword) {
         boolean anyValueUpdated = false;

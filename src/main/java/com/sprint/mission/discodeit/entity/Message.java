@@ -7,6 +7,8 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -26,6 +28,15 @@ public class Message implements Serializable {
     private UUID channelId;
     @NonNull
     private UUID authorId;
+    @ToString.Exclude
+    private final List<UUID> attachmentIds = new ArrayList<>();
+
+    public void addAttachment(UUID id) {
+        if (attachmentIds.contains(id)) {
+            throw new IllegalArgumentException("already contained, %s".formatted(id));
+        }
+        attachmentIds.add(id);
+    }
 
     public void update(String newContent) {
         boolean anyValueUpdated = false;

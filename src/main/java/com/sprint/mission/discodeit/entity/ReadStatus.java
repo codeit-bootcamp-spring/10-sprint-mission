@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -9,9 +8,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@Getter
 @ToString
-public class ReadStatus {
+public class ReadStatus implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final UUID id = UUID.randomUUID();
     private final UUID userId;
     private final UUID channelId;
@@ -27,5 +26,9 @@ public class ReadStatus {
     public void setUnRead() {
         type = ReadType.UNREAD;
         updatedAt = Instant.now().getEpochSecond();
+    }
+
+    public boolean isSameStatus(ReadType type) {
+        return this.type == type;
     }
 }
