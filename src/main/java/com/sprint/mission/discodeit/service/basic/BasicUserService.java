@@ -63,7 +63,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponseDto findUser(UUID userId) {
-        User user = checkNull(userId);
+        User user = getUser(userId);
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException());
 
@@ -97,8 +97,8 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponseDto addFriend(UUID senderId, UUID receiverId) {
-        User sender = checkNull(senderId);
-        User receiver = checkNull(receiverId);
+        User sender = getUser(senderId);
+        User receiver = getUser(receiverId);
 
         sender.addFriend(receiverId);
         receiver.addFriend(senderId);
@@ -110,7 +110,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public List<UserResponseDto> findFriends(UUID userId) {
-        User user = checkNull(userId);
+        User user = getUser(userId);
 
         List<UserResponseDto> friendList = user.getFriendsList().stream()
                 .map(this::findUser)
@@ -123,18 +123,20 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponseDto update(UUID userId, UserUpdateDto userUpdateDto) {
-        User user = checkNull(userId);
-
-
+        User user = getUser(userId);
+        // 이름 수정
         if(userUpdateDto.getName() != null){
             user.updateName(userUpdateDto.getName());
         }
+        // 이메일 수정
         if(userUpdateDto.getEmail() != null){
             user.updateEmail(userUpdateDto.getEmail());
         }
+        // 비밀번호 수정
         if(userUpdateDto.getPassword() != null){
             user.updatePassword(userUpdateDto.getPassword());
         }
+        // 프로필 수정(기존에 있던 binaryContent를 삭제하고 업데이트 dto에 있는 binaryContent를 생성
         if(userUpdateDto.getBinaryContentDto() != null){
             BinaryContentDto newBinaryContentDto = userUpdateDto.getBinaryContentDto();
 
@@ -160,7 +162,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
-        User user = checkNull(userId);
+        User user = getUser(userId);
 
         // 유저가 속한 채널에서 유저 id지우기
         List<UUID> channelList = new ArrayList<>(user.getChannelList());
@@ -181,7 +183,7 @@ public class BasicUserService implements UserService {
         // 친구 목록에서 유저 지우기
         List<UUID> friendList = new ArrayList<>(user.getFriendsList());
         for (UUID friendId : friendList) {
-            User friend = checkNull(friendId);
+            User friend = getUser(friendId);
             friend.getFriendsList().remove(userId); // 친구의 친구 목록에서 나 삭제
             userRepository.save(friendId,friend); // 변경된 친구저장
         }
@@ -202,7 +204,8 @@ public class BasicUserService implements UserService {
         return lastOnlineAt.isAfter(Instant.now().minus(Duration.ofMinutes(5)));
     }
 
-    private User checkNull(UUID userId){
+    // 유효성 검사
+    private User getUser(UUID userId){
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
