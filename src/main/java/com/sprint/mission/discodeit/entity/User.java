@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -11,8 +10,7 @@ import java.util.UUID;
 public class User extends BaseEntity {
     private String username;
     private String email;
-    @Getter(AccessLevel.NONE)
-    private transient String password;
+    private final String password;
     // 채널 참여 내역과 메시지 전송 내역을 기록하는 필드
     private List<UUID> joinedChannelIds;
     private List<UUID> sentMessageIds;
