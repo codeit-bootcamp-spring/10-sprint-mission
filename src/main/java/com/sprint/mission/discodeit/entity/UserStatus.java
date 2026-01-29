@@ -11,14 +11,16 @@ public class UserStatus {
     private Instant updatedAt;
     //
     private Instant lastActiveAt;  //마지막 접속 시간
-    private String userId;     //연결된 유저 ID
+    private UUID userId;     //연결된 유저 ID
+    private boolean isOnline;
 
-    public UserStatus(String userId) {
+    public UserStatus(UUID userId) {
         this.id = UUID.randomUUID().toString();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.lastActiveAt = Instant.now();
         this.userId = userId;
+        this.isOnline = false;
     }
 
     //참이면 온라인, 거짓이면 오프라인

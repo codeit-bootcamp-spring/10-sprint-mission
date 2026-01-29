@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -25,6 +26,11 @@ public class User implements Serializable {
         this.username = username;
         this.email = email;
         this.password = password;
+    }
+
+    public void updateProfileId(String profileId) {
+        this.profileId = profileId;
+        this.updatedAt = Instant.now();
     }
 
     public void update(String newUsername, String newEmail, String newPassword) {
