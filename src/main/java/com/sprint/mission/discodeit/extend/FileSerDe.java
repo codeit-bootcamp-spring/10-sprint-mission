@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.extend;
 
-import com.sprint.mission.discodeit.entity.Common;
+import com.sprint.mission.discodeit.entity.BaseEntity;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-public abstract class FileSerDe<T extends Common> {
+public abstract class FileSerDe<T extends BaseEntity> {
     private final Class<T> type;
 
     protected FileSerDe(Class<T> type) {
@@ -48,7 +48,7 @@ public abstract class FileSerDe<T extends Common> {
             return new ArrayList<>();
         }
 
-        try (Stream<Path> paths = Files.list(directory)){
+        try (Stream<Path> paths = Files.list(directory)) {
             return paths.map(path -> {
                 try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
                     Object obj = ois.readObject();

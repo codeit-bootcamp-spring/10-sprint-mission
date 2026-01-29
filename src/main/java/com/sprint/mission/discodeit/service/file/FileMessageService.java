@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Common;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -58,7 +55,7 @@ public class FileMessageService extends FileSerDe<Message> implements MessageSer
     @Override
     public List<Message> findAllMessages() {
         return loadAll(MESSAGE_DATA_DIRECTORY).stream()
-                .sorted(Comparator.comparingLong(Common::getCreatedAt))
+                .sorted(Comparator.comparing(BaseEntity::getCreatedAt))
                 .toList();
     }
 

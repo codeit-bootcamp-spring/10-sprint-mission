@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
+import lombok.Getter;
+
 import java.util.*;
 
-public class Channel extends Common {
-    private static final long serialVersionUID = 1L;
+@Getter
+public class Channel extends MutableEntity {
     private final Set<User> participants;
     private final List<Message> messages;
     private String title;
@@ -22,12 +23,15 @@ public class Channel extends Common {
     public Set<User> getParticipants() {
         return Collections.unmodifiableSet(this.participants);
     }
+
     public void addParticipant(User user) {
         participants.add(user);
     }
+
     public void removeParticipant(User user) {
         participants.remove(user);
     }
+
     public void updateParticipant(User user) {
         if (this.participants.removeIf(u -> Objects.equals(u.getId(), user.getId()))) {
             addParticipant(user);
@@ -38,12 +42,15 @@ public class Channel extends Common {
     public List<Message> getMessages() {
         return Collections.unmodifiableList(this.messages);
     }
+
     public void addMessage(Message message) {
         this.messages.add(message);
     }
+
     public void removeMessage(Message message) {
         this.messages.remove(message);
     }
+
     public void updateMessage(Message message) {
         for (int i = 0; i < this.messages.size(); i++) {
             if (this.messages.get(i).getId().equals(message.getId())) {
@@ -53,16 +60,12 @@ public class Channel extends Common {
         }
     }
 
-    public String getTitle() {
-        return this.title;
-    }
+
     public void updateTitle(String title) {
         this.title = title;
     }
 
-    public String getDescription() {
-        return this.description;
-    }
+
     public void updateDescription(String description) {
         this.description = description;
     }

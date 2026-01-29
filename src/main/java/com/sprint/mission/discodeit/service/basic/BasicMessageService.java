@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Common;
+import com.sprint.mission.discodeit.entity.BaseEntity;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -59,7 +59,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public List<Message> findAllMessages() {
         return messageRepository.findAll().stream()
-                .sorted(Comparator.comparingLong(Common::getCreatedAt))
+                .sorted(Comparator.comparing(BaseEntity::getCreatedAt))
                 .toList();
     }
 

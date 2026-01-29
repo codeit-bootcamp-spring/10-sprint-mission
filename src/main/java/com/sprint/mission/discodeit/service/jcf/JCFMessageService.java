@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Common;
+import com.sprint.mission.discodeit.entity.BaseEntity;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -55,7 +55,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public List<Message> findAllMessages() {
         return data.values().stream()
-                .sorted(Comparator.comparingLong(Common::getCreatedAt))
+                .sorted(Comparator.comparing(BaseEntity::getCreatedAt))
                 .toList();
     }
 
