@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
-import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +26,6 @@ public class BasicUserService implements UserService {
     private final MessageRepository messageRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
-    private final Filter filter;
 
     // 사용자 생성
     @Override
@@ -42,46 +42,29 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(newUserStatus);
 
         // 3. 선택적 프로필 이미지 생성 및 저장
-        UUID profileImageId = Optional.ofNullable(userCreateRequestDTO.getBinaryContentCreateRequestDTO().getBinaryContent())
+        Optional.ofNullable(userCreateRequestDTO.getBinaryContentCreateRequestDTO().getBinaryContent())
                 .map(content -> {
                     BinaryContent newBinaryContent = new BinaryContent(userCreateRequestDTO.getBinaryContentCreateRequestDTO());
                     binaryContentRepository.save(newBinaryContent);
                     return newBinaryContent.getId();
                 })
-                .orElse(null);
+                .ifPresent(newUser::updateProfileId);
 
         // 5. 응답 DTO 객체 생성 및 반환
-        return UserResponseDTO.builder()
-                .id(newUser.getId())
-                .email(newUser.getEmail())
-                .nickname(newUser.getNickname())
-                .createdAt(newUser.getCreatedAt())
-                .updatedAt(newUser.getUpdatedAt())
-                .profileId(profileImageId)
-                .status(newUserStatus.getStatus())
-                .build();
+        return toUserResponseDTO(newUser, newUserStatus);
     }
 
     // 사용자 단건 조회
     @Override
     public UserResponseDTO searchUser(UUID userId) {
         // 1. 사용자 존재 여부 확인
-        User targetUser = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+        User targetUser = findUserEntityById(userId);
 
         // 2. 사용자 상태 정보 조회
         UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
 
         // 2. 조회 응답 DTO 생성 및 반환
-        return UserResponseDTO.builder()
-                .id(targetUser.getId())
-                .email(targetUser.getEmail())
-                .nickname(targetUser.getNickname())
-                .createdAt(targetUser.getCreatedAt())
-                .updatedAt(targetUser.getUpdatedAt())
-                .profileId(targetUser.getProfileId())
-                .status(targetUserStatus.getStatus())
-                .build();
+        return toUserResponseDTO(targetUser, targetUserStatus);
     }
 
     // 사용자 전체 조회
@@ -93,15 +76,7 @@ public class BasicUserService implements UserService {
                     // 사용자 상태 조회
                     UserStatus userStatus = userStatusRepository.findById(user.getId());
                     // 사용자 -> 사용자 조회 응답 변환
-                    return UserResponseDTO.builder()
-                            .id(user.getId())
-                            .email(user.getEmail())
-                            .nickname(user.getNickname())
-                            .createdAt(user.getCreatedAt())
-                            .updatedAt(user.getUpdatedAt())
-                            .profileId(user.getProfileId())
-                            .status(userStatus.getStatus())
-                            .build();
+                    return toUserResponseDTO(user, userStatus);
                 })
                 .toList();
     }
@@ -118,10 +93,12 @@ public class BasicUserService implements UserService {
     @Override
     public UserResponseDTO updateUser(UserUpdateRequestDTO userUpdateRequestDTO) {
         // 1. 사용자 존재 여부 확인
-        User targetUser = userRepository.findById(userUpdateRequestDTO.getId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+        User targetUser = findUserEntityById(userUpdateRequestDTO.getId());
 
-        // 비밀번호 필드 변경
+        // 2. 사용자 상태 조회
+        UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
+
+        // 3. 비밀번호 필드 변경
         Optional.ofNullable(userUpdateRequestDTO.getPassword())
                 .ifPresent(password -> {
                     validateString(password, "[비밀 번호 변경 실패] 올바른 비밀 번호 형식이 아닙니다.");
@@ -137,15 +114,16 @@ public class BasicUserService implements UserService {
                     targetUser.updateNickname(nickname);
                 });
         // 상태 필드 변경
-        Optional.ofNullable(userUpdateRequestDTO.getUserStatusCreateRequestDTO().getUserStatusType())
+        Optional.ofNullable(userUpdateRequestDTO.getUserStatusCreateRequestDTO())
+                .map(UserStatusUpdateRequestDTO::getUserStatusType)
                 .ifPresent(userStatusType -> {
-                    UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
                     targetUserStatus.updateStatus(userStatusType);
                     userStatusRepository.save(targetUserStatus);
                 });
 
         // 프로필 이미지 변경
-        Optional.ofNullable(userUpdateRequestDTO.getBinaryContentCreateRequestDTO().getBinaryContent())
+        Optional.ofNullable(userUpdateRequestDTO.getBinaryContentCreateRequestDTO())
+                .map(BinaryContentCreateRequestDTO::getBinaryContent)
                 .map(binaryContent -> {
                     BinaryContent newBinaryContent = new BinaryContent(userUpdateRequestDTO.getBinaryContentCreateRequestDTO());
                     binaryContentRepository.save(newBinaryContent);
@@ -153,28 +131,18 @@ public class BasicUserService implements UserService {
                 })
                 .ifPresent(targetUser::updateProfileId);
 
-        // 3. 사용자 변경 내용 저장
+        // 4. 사용자 변경 내용 저장
         userRepository.save(targetUser);
 
-        // 4. 응답 DTO 변환 및 반환
-        UserStatus finalStatus = userStatusRepository.findById(targetUser.getId());
-        return UserResponseDTO.builder()
-                .id(targetUser.getId())
-                .email(targetUser.getEmail())
-                .nickname(targetUser.getNickname())
-                .createdAt(targetUser.getCreatedAt())
-                .updatedAt(targetUser.getUpdatedAt())
-                .profileId(targetUser.getProfileId())
-                .status(finalStatus.getStatus())
-                .build();
+        // 5. 응답 DTO 변환 및 반환
+        return toUserResponseDTO(targetUser, targetUserStatus);
     }
 
     // 사용자 삭제
     @Override
     public void deleteUser(UUID userId) {
         // 1. 사용자 존재 여부 확인
-        User targetUser = userRepository.findById(userId)
-                        .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+        User targetUser = findUserEntityById(userId);
 
         // 2. 삭제된 사용자가 참여한 모든 채널 내 멤버에서 사용자 연쇄 삭제
         channelRepository.findAll().stream()
@@ -186,11 +154,10 @@ public class BasicUserService implements UserService {
 
         // 삭제된 사용자가 발행한 메시지 연쇄 삭제
         messageRepository.findAll().stream()
-                .filter(message -> message != null && targetUser != null)
-                .filter(message -> message.getAuthorId().equals(userId))
+                .filter(message ->  message.getAuthorId().equals(userId))
                 .forEach(messageRepository::delete);
 
-        // 사용자 상태 연쇄 삭제
+        // 사용자 상태 연쇄 삭제 (추후 레파지토리에서 구현)
         userStatusRepository.findAll().stream()
                 .filter(userStatus -> userStatus.getUserId().equals(targetUser.getId()))
                 .forEach(userStatus -> userStatusRepository.delete(userStatus.getId()));
@@ -219,5 +186,24 @@ public class BasicUserService implements UserService {
     public void isNicknameDuplicate(String nickname) {
         if (userRepository.existsByNickname(nickname))
             throw new IllegalArgumentException("이미 존재하는 이름입니다.");
+    }
+
+    // 단일 엔티티 조회 및 반환
+    public User findUserEntityById(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+    }
+
+    // 엔티티 -> 응답 DTO 변환
+    public UserResponseDTO toUserResponseDTO(User user, UserStatus userStatus) {
+        return UserResponseDTO.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .profileId(user.getProfileId())
+                .status(userStatus.getStatus())
+                .build();
     }
 }
