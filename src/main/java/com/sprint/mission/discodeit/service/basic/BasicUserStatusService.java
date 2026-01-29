@@ -1,0 +1,68 @@
+package com.sprint.mission.discodeit.service.basic;
+
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusCreateDto;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDto;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.UserStatusService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
+@Service
+@RequiredArgsConstructor
+public class BasicUserStatusService implements UserStatusService {
+    private final UserStatusRepository userStatusRepository;
+    private final UserRepository userRepository;
+
+    @Override
+    public UserStatus create(UserStatusCreateDto dto) {
+        User user = userRepository.findById(dto.userId())
+                .orElseThrow(()->new NoSuchElementException("User not found"));
+        if(userStatusRepository.existsByUserId(dto.userId())) {
+            throw new IllegalStateException("UserStatus already exists");
+        }
+        return userStatusRepository.save(new UserStatus(dto.userId()));
+    }
+
+    @Override
+    public UserStatus update(UUID id, UserStatusUpdateDto dto) {
+        UserStatus status = userStatusRepository.find(id)
+                .orElseThrow(()->new NoSuchElementException("UserStatus not found"));
+        status.update();
+        return userStatusRepository.save(status);
+    }
+
+    @Override
+    public UserStatus updateByUserId(UUID userId, UserStatusUpdateDto dto) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(()->new NoSuchElementException("User not found"));
+        UserStatus status = userStatusRepository.findByUserId(userId)
+                .orElseThrow(()->new NoSuchElementException("UserStatus not found"));
+        status.update();
+        return userStatusRepository.save(status);
+    }
+
+    @Override
+    public UserStatus find(UUID id) {
+        return userStatusRepository.find(id)
+                .orElseThrow(()->new NoSuchElementException("User not found"));
+    }
+
+    @Override
+    public List<UserStatus> findAll() {
+        return userStatusRepository.findAll();
+    }
+
+    @Override
+    public void delete(UUID id) {
+        if(! userStatusRepository.existsById(id)){
+            throw new NoSuchElementException("UserStatus not found");
+        }
+        userStatusRepository.delete(id);
+    }
+}

@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### 파일 레포 디렉토리
+.discodeit
