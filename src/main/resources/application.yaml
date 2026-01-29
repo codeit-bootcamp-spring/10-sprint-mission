@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: discodeit
+# repo 구현체 선택
+discodeit:
+  repository:
+    type: file # jcf | file
+    file-directory: .discodeit # 파일레포 저장 위치
+
