@@ -4,9 +4,10 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class JCFUserRepository implements UserRepository {
-    private final Map<UUID, User> data = new HashMap<>();
+    private final Map<UUID, User> data = new ConcurrentHashMap<>();
 
     @Override
     public User save(User user){
@@ -17,6 +18,20 @@ public class JCFUserRepository implements UserRepository {
     @Override
     public Optional<User> findById(UUID id){
         return Optional.ofNullable(data.get(id));
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return data.values().stream()
+                .filter(user -> user.getEmail().equals(email))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<User> findByName(String name) {
+        return data.values().stream()
+                .filter(user -> user.getName().equals(name))
+                .findFirst();
     }
 
     @Override
