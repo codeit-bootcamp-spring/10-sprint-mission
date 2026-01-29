@@ -28,14 +28,14 @@ public class BasicReadStatusService implements ReadStatusService {
         Instant lastReadAt = request.lastReadAt();
 
         if (!userRepository.existsById(userId)) {
-            throw new RuntimeException("해당 유저를 찾을 수 없습니다:" + userId);
+            throw new NoSuchElementException("해당 유저를 찾을 수 없습니다:" + userId);
         }
         if (!channelRepository.existsById(channelId)) {
-            throw new RuntimeException("해당 채널을 찾을 수 없습니다: " + channelId);
+            throw new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + channelId);
         }
-        boolean isExist = readStatusRepository.findAllByChannelId(channelId).stream()
-                .anyMatch(readStatus -> readStatus.getUserId().equals(userId));
-        if(isExist) throw new RuntimeException("이미 해당 유저와 채널 간 ReadStatus가 존재합니다.");
+        boolean isExist = readStatusRepository.findAllByUserId(userId).stream() // (유저가 가입한 채널 수 < 채널에 가입한 유저 수) 일 확률이 높아서
+                .anyMatch(readStatus -> readStatus.getChannelId().equals(userId));
+        if(isExist) throw new IllegalArgumentException("이미 해당 유저와 채널 간 ReadStatus가 존재합니다.");
 
         ReadStatus readStatus = new ReadStatus(userId, channelId, lastReadAt);
         return readStatusRepository.save(readStatus);
