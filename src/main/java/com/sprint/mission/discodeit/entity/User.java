@@ -17,103 +17,55 @@ public class User implements Serializable {
     private final Instant createdAt;
     private Instant updatedAt;
 
-    private final String email;
+    private String email;
+    private String password;
     private String nickname;
-    private final List<Channel> channels;
-    private final List<Message> messages;
+    private UUID profileId; // BinaryContent
 
-    public User(String nickname, String email) {
+    public User(String email,
+                String password,
+                String nickname,
+                UUID profileId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
-        this.nickname = nickname;
+
         this.email = email;
-        this.channels = new ArrayList<>();
-        this.messages = new ArrayList<>();
+        this.password = password;
+        this.nickname = nickname;
+        this.profileId = profileId;
     }
 
-    public List<Channel> getChannels() {
-        return Collections.unmodifiableList(channels);
-    }
-
-    public List<Message> getMessages() {
-        return Collections.unmodifiableList(messages);
-    }
-
-    public void joinChannel(Channel channel) {
-        // 이미 가입한 채널이라면 return
-        if (channels.contains(channel)) {
-            return;
+    public void update(String newPassword, String newNickname) {
+        boolean anyValueUpdated = false;
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+        if (newNickname != null && !newNickname.equals(this.nickname)) {
+            this.nickname = newNickname;
+            anyValueUpdated = true;
         }
 
-        // 유저가 가입한 채널 목록에 채널 추가
-        channels.add(channel);
-
-        // 채널의 유저 목록에 유저가 없다면 유저 추가
-        if (!channel.getUsers().contains(this)) {
-            channel.addUser(this);
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
         }
-
-
-        // 수정 시각 갱신
-        update();
     }
 
-    public void leaveChannel(Channel channel) {
-        // 가입한 채널이 아니라면 return
-        if (!channels.contains(channel)) {
-            return;
+    public void changeProfileId(UUID newProfileId) {
+        if (!Objects.equals(this.profileId, newProfileId)) {
+            this.profileId = newProfileId;
+            this.updatedAt = Instant.now();
         }
-
-        // 유저가 가입한 채널 목록에서 채널 제거
-        channels.remove(channel);
-
-        // 채널의 유저 목록에 유저가 있다면 유저 제거
-        if (channel.getUsers().contains(this)) {
-            channel.removeUser(this);
-        }
-
-        // 수정 시각 갱신
-        update();
-    }
-
-    public void addMessage(Message message) {
-        // 유저가 작성한 메시지 목록에 메시지 추가
-        messages.add(message);
-        // 수정 시각 갱신
-        update();
-    }
-
-    public void removeMessage(Message message) {
-        // 유저가 작성한 메시지 목록에서 메시지 제거
-        messages.remove(message);
-        // 수정 시각 갱신
-        update();
-    }
-
-    public User updateUserNickname(String newNickname) {
-        // 닉네임 변경
-        this.nickname = newNickname;
-        // 수정 시각 갱신
-        update();
-        return this;
-    }
-
-    public void update() {
-        // 업데이트 시간 갱신
-        this.updatedAt = Instant.now();
     }
 
     @Override
     public String toString() {
         return String.format(
-                "User [id=%s, nickname=%s, email=%s, joinedChannels=%s, messageCount=%s]",
+                "User [id=%s, nickname=%s, email=%s]",
                 getId().toString().substring(0, 5),
                 nickname,
-                email,
-                channels.stream()
-                        .map(ch -> "[id=" + ch.getId().toString().substring(0, 5) + ", name=" + ch.getName() + "]").toList(),
-                messages.size()
+                email
         );
     }
 

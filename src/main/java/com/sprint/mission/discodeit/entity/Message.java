@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -14,61 +15,50 @@ public class Message implements Serializable {
     private final Instant createdAt;
     private Instant updatedAt;
 
-    private final Channel channel;
-    private final User user;
+    private final UUID channelId;
+    private final UUID authorId;
     private String content;
+    private List<UUID> attachmentIds; // BinaryContent
 
-    public Message(Channel channel, User user, String content) {
+    public Message(UUID channelId, UUID authorId, String content, List<UUID> attachmentIds) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
-        this.channel = channel;
-        this.user = user;
+        this.channelId = channelId;
+        this.authorId = authorId;
         this.content = content;
-    }
-
-    public void addToChannelAndUser() {
-        // 채널의 메시지 목록에 메시지 추가
-        channel.addMessage(this);
-        // 유저가 작성한 메시지 목록에 메시지 추가
-        user.addMessage(this);
-    }
-
-    public void removeFromChannelAndUser() {
-        // 채널의 메시지 목록에서 메시지 제거
-        channel.removeMessage(this);
-        // 유저가 작성한 메시지 목록에서 메시지 제거
-        user.removeMessage(this);
-    }
-
-    public Message updateMessageContent(String newContent) {
-        // 메시지 내용 변경
-        this.content = newContent;
-        // 수정 시각 갱신
-        update();
-        return this;
+        this.attachmentIds = attachmentIds;
     }
 
     public String formatForDisplay() {
         // 메시지 출력 전용
-        return "[" + channel.getName() + "] "
-                + user.getNickname() + ": "
-                + content;
+        return "[" + channelId.toString().substring(0, 5) + "] "
+                + authorId.toString().substring(0, 5) + ": "
+                + content
+                + attachmentIds;
     }
 
-    public void update() {
-        // 업데이트 시간 갱신
-        this.updatedAt = Instant.now();
+    public void update(String newContent) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
     @Override
     public String toString() {
         return String.format(
-                "Message [id=%s, content=%s, channel=%s, user=%s]",
+                "Message [id=%s, content=%s, attachmentIds=%s, channel=%s, user=%s]",
                 getId().toString().substring(0, 5),
                 content,
-                "[id=" + channel.getId().toString().substring(0, 5) + ", " + channel.getName() + "]",
-                "[id=" + user.getId().toString().substring(0, 5) + ", " + user.getNickname() + "]"
+                attachmentIds,
+                "[channelId=" + channelId.toString().substring(0, 5) + "]",
+                "[userId=" + authorId.toString().substring(0, 5) + "]"
         );
     }
 
