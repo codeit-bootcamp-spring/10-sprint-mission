@@ -15,4 +15,5 @@ public interface UserRepository {
     boolean existsByNickname(String nickname);
     boolean existsByEmailExceptUserId(String email, UUID exceptUserId);
     boolean existsByNicknameExceptUserId(String nickname, UUID exceptUserId);
+    Optional<User> findByEmailAndPassword(String email, String password);
 }
