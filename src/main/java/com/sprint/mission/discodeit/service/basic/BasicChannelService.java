@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.channeldto.ChannelViewDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PrivateChannelCreateDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PublicChannelCreateDTO;
+import com.sprint.mission.discodeit.dto.channeldto.UpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -155,10 +156,14 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(UUID channelId, String newName, String newDescription) {
-        Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
-        channel.update(newName, newDescription);
+    public Channel update(UpdateRequestDTO req) {
+        Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
+        Objects.requireNonNull(req.channelID(), "유효하지 않은 채널입니다.");
+        Objects.requireNonNull(req.channelID(), "유효하지 않은 이름입니다.");
+        Objects.requireNonNull(req.channelID(), "유효하지 않은 설명입니다.");
+
+        Channel channel = channelRepository.findById(req.channelID()).orElseThrow(() -> new IllegalStateException("해당 채널 존재하지 않음."));
+        channel.update(req.newName(), req.newDescription());
         return channelRepository.save(channel);
     }
 
