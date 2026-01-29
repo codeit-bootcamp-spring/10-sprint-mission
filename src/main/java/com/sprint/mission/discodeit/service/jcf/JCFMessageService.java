@@ -27,7 +27,7 @@ public class JCFMessageService implements MessageService {
     public Message createMessage(String content, UUID channelId, UUID userId) {
         Validators.validationMessage(content);
         Channel persistedChannel = channelService.readChannel(channelId);
-        User persistedUser = userService.readUser(userId);
+        User persistedUser = userService.find(userId);
         Message message = new Message(content, persistedChannel, persistedUser);
 
         persistedChannel.getMessages().add(message);
@@ -75,7 +75,7 @@ public class JCFMessageService implements MessageService {
     }
 
     public List<Message> readMessagesByUser(UUID userId) {
-        User user = userService.readUser(userId);
+        User user = userService.find(userId);
         return user.getMessages();
     }
 

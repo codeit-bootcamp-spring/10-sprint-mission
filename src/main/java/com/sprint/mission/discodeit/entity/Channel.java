@@ -1,11 +1,15 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class Channel extends CommonEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -20,20 +24,6 @@ public class Channel extends CommonEntity implements Serializable {
         this.channelName = channelName;
         this.channelDescription = channelDescription;
     }
-
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public ChannelType getChannelType() {
-        return type;
-    }
-
-    public String getChannelDescription() {
-        return channelDescription;
-    }
-
 
     public void updateChannelType(ChannelType type) {
         this.type = type;
@@ -50,11 +40,6 @@ public class Channel extends CommonEntity implements Serializable {
         update();
     }
 
-    public List<User> getJoinedUsers() {
-        return joinedUsers;
-    }
 
-    public List<Message> getMessages() {
-        return messages;
-    }
+
 }

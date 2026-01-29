@@ -28,17 +28,17 @@ public class FileUserService implements UserService {
     }
 
     @Override
-    public User readUser(UUID id) {
+    public User find(UUID id) {
         return validateExistenceUser(id); // 비즈니스 로직
     }
 
     @Override
-    public List<User> readAllUser() {
+    public List<User> findAll() {
         return fileUserRepository.findAll();
     } // 저장 로직
 
     @Override
-    public User updateUser(UUID id, String userName, String userEmail) {
+    public User update(UUID id, String userName, String userEmail) {
         User user = validateExistenceUser(id);// 비즈니스 로직
 
         Optional.ofNullable(userName)

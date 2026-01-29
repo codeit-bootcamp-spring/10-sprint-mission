@@ -10,18 +10,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
 import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
 import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
 
 import java.util.List;
 
@@ -44,13 +35,13 @@ public class JavaApplication {
         System.out.println("==기본 기능==");
 //        //---------------------------------1. user---------------------------------
 //        // 1-1. user 등록 및 조회
-        User user1 = userService.createUser("전창현", "ckdgus12@gmail.com");
+        User user1 = userService.create("전창현", "ckdgus12@gmail.com");
         System.out.println("1-1. 유저 등록 완료: " + user1.getUserName());
 
-        User user2 = userService.createUser("이한수", "gkstn13@naver.com");
+        User user2 = userService.create("이한수", "gkstn13@naver.com");
         System.out.println("1-1. 유저 등록 완료: " + user2.getUserName());
 
-        User user3 = userService.createUser("이백호", "qorgh@kongju.ac.kr");
+        User user3 = userService.create("이백호", "qorgh@kongju.ac.kr");
         System.out.println("1-1. 유저 등록 완료: " + user3.getUserName());
         System.out.println();
 
@@ -59,19 +50,19 @@ public class JavaApplication {
         System.out.println();
 
         // 1-3. user 정보 수정 및 조회
-        User updatedUser1 = userService.updateUser(user1.getId(), "김수한", "suhan78@gmail.com");
+        User updatedUser1 = userService.update(user1.getId(), "김수한", "suhan78@gmail.com");
         System.out.println("1-3-1. 유저 정보 수정 완료: " + "\n이름: " + updatedUser1.getUserName()
                 + "\n이메일: " + updatedUser1.getUserEmail());
         System.out.println("수정 시각: " + updatedUser1.getUpdatedAt());
         System.out.println();
 
-        User updatedUser2 = userService.updateUser(user2.getId(), "정몽주", null);
+        User updatedUser2 = userService.update(user2.getId(), "정몽주", null);
         System.out.println("1-3-2. 유저 이름 수정 완료: " + "\n이름: " + updatedUser2.getUserName()
                 + "\n이메일: " + updatedUser2.getUserEmail());
         System.out.println("수정 시각: " + updatedUser2.getUpdatedAt());
         System.out.println();
 
-        User updatedUser3 = userService.updateUser(user3.getId(), null, "backho@naver.com");
+        User updatedUser3 = userService.update(user3.getId(), null, "backho@naver.com");
         System.out.println("1-3-3. 유저 이메일 수정 완료: " + "\n이름: " + updatedUser3.getUserName()
                 + "\n이메일: " + updatedUser3.getUserEmail());
         System.out.println("수정 시각: " + updatedUser3.getUpdatedAt());
@@ -89,15 +80,15 @@ public class JavaApplication {
         //---------------------------------2. channel---------------------------------
         // 2-1. channel 등록 및 조회
         Channel channel1 = channelService.createChannel(ChannelType.PUBLIC,"채널1", "채널1 입니다.");
-        System.out.println("2-1. 채널 등록 완료: " + channel1.getChannelType() + " "
+        System.out.println("2-1. 채널 등록 완료: " + channel1.getType() + " "
                 + channel1.getChannelName());
 
         Channel channel2 = channelService.createChannel(ChannelType.PRIVATE,"채널2", "채널2 입니다.");
-        System.out.println("2-1. 채널 등록 완료: " + channel2.getChannelType() + " "
+        System.out.println("2-1. 채널 등록 완료: " + channel2.getType() + " "
                 + channel2.getChannelName());
 
         Channel channel3 = channelService.createChannel(ChannelType.PUBLIC,"채널3", "채널3 입니다.");
-        System.out.println("2-1. 채널 등록 완료: " + channel3.getChannelType() + " "
+        System.out.println("2-1. 채널 등록 완료: " + channel3.getType() + " "
                 + channel3.getChannelName());
         System.out.println();
 
@@ -107,7 +98,7 @@ public class JavaApplication {
 
         // 2-3. channel 정보 수정 및 조회
         Channel updatedChannel1 = channelService.updateChannel(channel1.getId(), ChannelType.PRIVATE,null, null);
-        System.out.println("2-3. 채널1 타입 수정 완료: " + updatedChannel1.getChannelType());
+        System.out.println("2-3. 채널1 타입 수정 완료: " + updatedChannel1.getType());
         System.out.println("수정 시각: " + updatedChannel1.getUpdatedAt());
         System.out.println();
 
@@ -209,29 +200,5 @@ public class JavaApplication {
         System.out.println();
 
         System.out.println("=== [종료] 서비스 테스트 ===");
-
-        /*
-        [서비스 구조 변화(차이점)ㅂ 정리]
-
-        - 초기 JCF*Service / File*Service 단계에서는
-         서비스가 비즈니스 로직과 저장 로직을 함께 가지고 있었다.
-         예를 들어, JCF*Service는 내부 컬렉션(ArrayList)을 기반으로 데이터를 직접 관리했고,
-         File*Service는 파일 직렬화/역직렬화까지 서비스가 직접 처리했다.
-
-       - 이후 Repository를 도입하면서,
-         저장 로직을 서비스에서 분리하여
-         JCF*Repository / File*Repository 구현체로 이동시켰다.
-         이 단계에서는 여전히
-         JCF*Service는 JCF*Repository에,
-         File*Service는 File*Repository에 각각 의존하는 구조였다.
-
-       - 마지막으로 Basic*Service를 도입하면서,
-         서비스는 저장 방식(JCF/File)을 전혀 알지 않고
-         Repository 인터페이스에만 의존하도록 변경했다.
-         그 결과, Service 코드는 그대로 유지한 채
-         main에서 주입하는 Repository 구현체만 바꿔
-         저장 방식을 유연하게 교체할 수 있게 되었다.
-        */
-
     }
 }

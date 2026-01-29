@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import com.sprint.mission.discodeit.dto.UserRequestCreateDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.Validators;
@@ -15,25 +18,44 @@ public class JCFUserService implements UserService {
     }
 
     @Override
-    public User createUser(String userName, String userEmail) {
-        Validators.validationUser(userName, userEmail); // 비즈니스 로직
-        validateDuplicationEmail(userEmail); // 비즈니스 로직
-        User user = new User(userName, userEmail);
-        return userRepository.save(user); // 저장 로직
+    public User create(UserRequestCreateDto request) {
+        Validators.validationUser(userName, userEmail);
+        validateDuplicationUserName(userName);
+        validateDuplicationEmail(userEmail);
+
+        UserRequestCreateDto.ProfileImageParam profile = request.profileImage();
+
+        User user;
+        if (profile != null) {
+            if(profile.data() == null || profile.data().length == 0) {
+                throw new IllegalArgumentException("프로필 이미지 데이터가 비어있습니다.");
+            }
+            if(profile.contentType() == null || profile.contentType().isBlank()) {
+                throw new IllegalArgumentException("contentType은 필수입니다.");
+            }
+
+            BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
+            user = new User(request.userName(), request.userEmail(), binaryContent.getId());
+        } else {
+            user = new User(request.userName(), request.userEmail(), null);
+        }
+        User savedUser = userRepository.save(user);
+        new UserStatus(savedUser.getId(), null);
+        return savedUser;
     }
 
     @Override
-    public User readUser(UUID id) {
+    public User find(UUID id) {
         return validateExistenceUser(id); // 비즈니스 로직
     }
 
     @Override
-    public List<User> readAllUser() {
+    public List<User> findAll() {
         return userRepository.findAll();
     } // 저장 로직
 
     @Override
-    public User updateUser(UUID id, String userName, String userEmail) {
+    public User update(UUID id, String userName, String userEmail) {
         User user = validateExistenceUser(id); // 비즈니스 로직
         Optional.ofNullable(userName)
                 .ifPresent(name -> {Validators.requireNotBlank(name, "userName");
@@ -70,6 +92,12 @@ public class JCFUserService implements UserService {
         }
     } // 비즈니스 로직 + 저장 로직
 
+    private void validateDuplicationUserName(String userName) {
+        if(userRepository.findAll().stream()
+                .anyMatch(user -> userName.equals(user.getUserName()))) {
+            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
+        }
+    }
 
     private User validateExistenceUser(UUID id) {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다."); // 비즈니스 로직

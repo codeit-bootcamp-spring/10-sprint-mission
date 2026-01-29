@@ -1,15 +1,21 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class Message extends CommonEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private final Channel channel;
     private final User user;
     private String content;
+    List<UUID> attachmentIds = new ArrayList<>();
 
 
     public Message(String content, Channel channel, User user) {
@@ -23,15 +29,5 @@ public class Message extends CommonEntity implements Serializable {
         update();
     }
 
-    public Channel getChannel() {
-        return channel;
-    }
 
-    public User getUser() {
-        return user;
-    }
-
-    public String getContent() {
-        return content;
-    }
 }

@@ -8,23 +8,18 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public abstract class CommonEntity implements Serializable {
+public class BinaryContent implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private final UUID id;
     private final Instant createdAt;
-    private Instant updatedAt;
+    private final byte[] data;
+    private final String contentType;
 
-    public CommonEntity() {
+    public BinaryContent(byte[] data, String contentType) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.updatedAt = createdAt;
+        this.data = data;
+        this.contentType = contentType;
     }
-
-
-
-    public void update() {
-        this.updatedAt = Instant.now();
-    }
-
 }
