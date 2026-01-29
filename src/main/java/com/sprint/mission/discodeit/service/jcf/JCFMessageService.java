@@ -1,6 +1,6 @@
 //// 기존 JCF 코드와 새로 받은 베이스 코드 간의 충돌로 인해 스프링이 실행되지 않는 문제로
 //// JCF 코드 주석처리 합니다.
-//
+
 //package com.sprint.mission.discodeit.service.jcf;
 //
 //import com.sprint.mission.discodeit.entity.Channel;
