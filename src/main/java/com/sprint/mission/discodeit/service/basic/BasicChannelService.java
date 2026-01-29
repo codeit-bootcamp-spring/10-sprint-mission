@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -91,16 +92,11 @@ public class BasicChannelService implements ChannelService {
 
     private ChannelResponseDto channelToDto(Channel channel) {
         Message lastMessage = messageRepository.findLastMessageByChannelId(channel.getId())
-               .orElse(null);//아직 메세지가 생성 안된경우
+                .orElse(null);//아직 메세지가 생성 안된경우
         List<UUID> memberIds = new ArrayList<>();
         readStatusRepository
                 .findAllByChannelId(channel.getId())
-                .forEach(s->memberIds.add(s.getUserId()));
-        return new ChannelResponseDto(channel.getId(),channel.getType(), channel.getName(),
-                channel.getDescription()
-                , channel.getCreatedAt()
-                , channel.getUpdatedAt()
-                ,lastMessage == null ?null:lastMessage.getCreatedAt()
-                ,memberIds);
+                .forEach(s -> memberIds.add(s.getUserId()));
+        return ChannelMapper.channelToDto(channel, lastMessage, memberIds);
     }
 }

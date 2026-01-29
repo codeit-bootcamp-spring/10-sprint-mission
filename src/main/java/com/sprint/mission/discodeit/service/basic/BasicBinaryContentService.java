@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDto;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
@@ -18,18 +20,20 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public BinaryContent create(BinaryContentCreateDto dto) {
-        return binaryContentRepository.save(new BinaryContent(dto.fileName(), dto.bytes()));
+    public BinaryContentResponseDto create(BinaryContentCreateDto dto) {
+        BinaryContent content = binaryContentRepository.save(new BinaryContent(dto.fileName(), dto.bytes()));
+        return BinaryContentMapper.contentToDto(content);
     }
 
     @Override
-    public BinaryContent find(UUID id) {
-        return binaryContentRepository.find(id)
+    public BinaryContentResponseDto find(UUID id) {
+        BinaryContent content = binaryContentRepository.find(id)
                 .orElseThrow(()-> new NoSuchElementException("No Such File: "+id));
+        return BinaryContentMapper.contentToDto(content);
     }
 
     @Override
-    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+    public List<BinaryContentResponseDto> findAllByIdIn(List<UUID> ids) {
         return ids.stream().map(this::find).toList();
     }
 

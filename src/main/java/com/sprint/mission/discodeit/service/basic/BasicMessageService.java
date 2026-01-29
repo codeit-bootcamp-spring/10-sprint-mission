@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -44,21 +45,21 @@ public class BasicMessageService implements MessageService {
                     });
         }
         Message message = new Message(dto.content(),dto.channelId(),dto.authorId(),attachmentIds);
-        return messageToDto(messageRepository.save(message));
+        return MessageMapper.messageToDto(messageRepository.save(message));
     }
 
     @Override
     public MessageResponseDto find(UUID messageId) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
-        return messageToDto(message);
+        return MessageMapper.messageToDto(message);
     }
 
     @Override
     public List<MessageResponseDto> findAllByChannelId(UUID channelId) {
         List<MessageResponseDto> response = new ArrayList<>();
         messageRepository.findAllByChannelId(channelId)
-                .forEach(message -> response.add(messageToDto(message)));
+                .forEach(message -> response.add(MessageMapper.messageToDto(message)));
         return response;
     }
 
@@ -67,7 +68,7 @@ public class BasicMessageService implements MessageService {
         Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + id + " not found"));
         message.update(dto.content(),null);//첨부파일 변경을 하려면 별도로 메서드 필요
-        return messageToDto(messageRepository.save(message));
+        return MessageMapper.messageToDto(messageRepository.save(message));
     }
 
     @Override
@@ -79,15 +80,5 @@ public class BasicMessageService implements MessageService {
         }
         messageRepository.deleteById(messageId);
 
-    }
-    private MessageResponseDto messageToDto(Message message) {
-        return new MessageResponseDto(message.getId(),
-                message.getContent(),
-                message.getChannelId(),
-                message.getAuthorId(),
-                message.getAttachmentIds(),
-                message.getCreatedAt(),
-                message.getUpdatedAt()
-        );
     }
 }

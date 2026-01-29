@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.user.UserLoginDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -22,18 +23,8 @@ public class BasicAuthService implements AuthService {
     public UserResponseDto login(UserLoginDto dto){
         User user = userRepository.findByUsernameAndPassword(dto.username(), dto.password())
                 .orElseThrow(()-> new IllegalArgumentException("잘못된 이름 또는 비밀번호"));
-        return userToDto(user);
-    }
-    private UserResponseDto userToDto(User user) {
-        UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("User with id " + user.getId() + " not found"));
-        return new UserResponseDto(user.getId()
-                ,user.getUsername()
-                ,user.getEmail()
-                ,user.getProfileId()
-                ,userStatus.isOnline()
-                ,user.getUpdatedAt()
-                ,user.getUpdatedAt()
-        );
+        UserStatus status = userStatusRepository.findByUserId(user.getId())
+                .orElseThrow(()->new NoSuchElementException("No User Status found, UserId: "+user.getId()));
+        return UserMapper.userToDto(user, status);
     }
 }

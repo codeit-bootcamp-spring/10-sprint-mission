@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -42,20 +43,20 @@ public class BasicUserService implements UserService {
                         .forEach(c->readStatusRepository.save(new ReadStatus(user.getId(),c.getId())));
         userRepository.save(user);
         userStatusRepository.save(userStatus);
-        return userToDto(user);
+        return UserMapper.userToDto(user,userStatus);
     }
     @Override
     public UserResponseDto find(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-        return userToDto(user);
+        return UserMapper.userToDto(user,findUserStatusByUserId(userId));
     }
 
     @Override
     public List<UserResponseDto> findAll() {
         List<User> users = userRepository.findAll();
         List<UserResponseDto> response = new ArrayList<>();
-        users.forEach(u-> response.add(userToDto(u)));
+        users.forEach(u-> response.add(UserMapper.userToDto(u,findUserStatusByUserId(u.getId()))));
         return response;
     }
 
@@ -69,7 +70,7 @@ public class BasicUserService implements UserService {
             binaryContentRepository.delete(user.getProfileId());//기존 프로필 사진 삭제
         }
         user.update(dto.username(), dto.email(), dto.password(),profile==null?null:profile.getId());
-        return userToDto(userRepository.save(user));
+        return UserMapper.userToDto(userRepository.save(user),findUserStatusByUserId(userId));
     }
 
     @Override
@@ -93,18 +94,9 @@ public class BasicUserService implements UserService {
         }
     }
 
-    private UserResponseDto userToDto(User user) {
-        UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("User with id " + user.getId() + " not found"));
-        return new UserResponseDto(
-                user.getId()
-                ,user.getUsername()
-                ,user.getEmail()
-                ,user.getProfileId()
-                ,userStatus.isOnline()
-                ,user.getCreatedAt()
-                ,user.getUpdatedAt()
-        );
+    private UserStatus findUserStatusByUserId(UUID userId) {
+      return userStatusRepository.findByUserId(userId)
+           .orElseThrow(() -> new NoSuchElementException("UserStatus with Userid " + userId + " not found"));
     }
 
 }
