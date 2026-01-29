@@ -38,7 +38,7 @@ public class BasicUserService implements UserService {
         User newUser = new User(userCreateRequestDTO);
         userRepository.save(newUser);
 
-        UserStatus newUserStatus = new UserStatus(newUser.getId());
+        UserStatus newUserStatus = new UserStatus(userCreateRequestDTO.getUserStatusCreateRequestDTO());
         userStatusRepository.save(newUserStatus);
 
         // 3. 선택적 프로필 이미지 생성 및 저장
@@ -169,11 +169,6 @@ public class BasicUserService implements UserService {
 
         // 3. 사용자 삭제
         userRepository.delete(targetUser);
-    }
-
-    @Override
-    public void updateUser(UUID userId, User user) {
-        userRepository.save(user);
     }
 
     // 유효성 검사 (이메일 중복)

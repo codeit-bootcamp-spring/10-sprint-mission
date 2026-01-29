@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequestDTO;
 import lombok.Getter;
 
 import java.time.Instant;
@@ -12,18 +13,19 @@ import static com.sprint.mission.discodeit.entity.UserStatusType.*;
 public class UserStatus extends BaseEntity {
     private UUID userId;                    // 사용자 고유 id (변경 불가능)
     private UserStatusType status;          // 사용자 접속 상태 (변경 가능)
-    private Instant lastOnlineTime;        // 마지막 접속 시간 (변경 가능)
+    private Instant lastOnlineTime;         // 마지막 접속 시간 (변경 가능)
 
-    public UserStatus(UUID userId) {
+    public UserStatus(UserStatusCreateRequestDTO userStatusCreateRequestDTO) {
         this.id = UUID.randomUUID();
-        this.userId = userId;
-        this.status = UserStatusType.OFFLINE;
+        this.userId = userStatusCreateRequestDTO.getUserId();
+        this.status = userStatusCreateRequestDTO.getUserStatusType();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.lastOnlineTime = Instant.now();
     }
 
-    public void isCurrentlyOnline() {       // 5분 전 이내 접속 이력이 있다면, 온라인 상태 유지
+    // 5분 전 이내 접속 이력이 있다면, 온라인 상태 유지
+    public void isCurrentlyOnline() {
         boolean fiveMinutesAgo = Instant.now()
                 .minus(5, ChronoUnit.MINUTES)
                 .isBefore(lastOnlineTime);

@@ -17,5 +17,7 @@ public class UserCreateRequestDTO {
     @NotBlank
     private String nickname;
 
-    BinaryContentCreateRequestDTO binaryContentCreateRequestDTO;
+    private UserStatusCreateRequestDTO userStatusCreateRequestDTO;
+
+    private BinaryContentCreateRequestDTO binaryContentCreateRequestDTO;
 }

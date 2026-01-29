@@ -24,9 +24,6 @@ public interface UserService {
     // 사용자 수정
     UserResponseDTO updateUser(UserUpdateRequestDTO userUpdateRequestDTO);
 
-    // 사용자 저장
-    void updateUser(UUID userId, User user);
-
     // 사용자 삭제
     void deleteUser(UUID userId);
 }
