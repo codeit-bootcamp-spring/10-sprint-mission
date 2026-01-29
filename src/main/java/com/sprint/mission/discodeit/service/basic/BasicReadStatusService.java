@@ -38,12 +38,15 @@ class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatus find(UUID id) {
-        return null;
+        return readStatusRepository.findById(id)
+                .orElseThrow(() -> new AssertionError("ReadStatus not found"));
     }
 
     @Override
     public List<ReadStatus> findAllByUserId(UUID userId) {
-        return List.of();
+        return readStatusRepository.findAll().stream()
+                .filter(readStatus -> readStatus.getUserID().equals(userId))
+                .toList();
     }
 
     @Override
