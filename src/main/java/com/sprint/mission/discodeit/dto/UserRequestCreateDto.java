@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record UserRequestCreateDto(String userName,
                                    String userEmail,
+                                   String userPassword,
                                    ProfileImageParam profileImage) {
 
 }

@@ -5,5 +5,6 @@ import java.util.UUID;
 public record UserRequestUpdateDto(UUID id,
                                    String userName,
                                    String userEmail,
+                                   String userPassword,
                                    ProfileImageParam profileImage) {
 }

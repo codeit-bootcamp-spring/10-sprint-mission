@@ -29,18 +29,19 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponseDto create(UserRequestCreateDto request) {
-            Validators.validationUser(request.userName(), request.userEmail());
+            Validators.validationUser(request.userName(), request.userEmail(), request.userPassword());
             validateDuplicationUserName(request.userName());
             validateDuplicationEmail(request.userEmail());
+            validateDuplicationUserPassword(request.userPassword());
 
         ProfileImageParam profile = request.profileImage();
         User user;
         validateProfileImageParam(profile);
         if(profile == null) {
-            user = new User(request.userName(), request.userEmail(), null);
+            user = new User(request.userName(), request.userEmail(), request.userPassword() ,null);
         } else {
             BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
-            user = new User(request.userName(), request.userEmail(), binaryContent.getId());
+            user = new User(request.userName(), request.userEmail(), request.userPassword(), binaryContent.getId());
         }
 
         User savedUser = userRepository.save(user);
@@ -77,6 +78,11 @@ public class BasicUserService implements UserService {
                 .ifPresent(email -> {Validators.requireNotBlank(email, "userEmail");
                         validateDuplicationEmail(email);
                         user.updateUserEmail(email);
+                });
+        Optional.ofNullable(request.userPassword())
+                .ifPresent(password -> {Validators.requireNotBlank(password, "userPassword");
+                        validateDuplicationUserPassword(password);
+                        user.updateUserPassword(password);
                 });
 
         ProfileImageParam profile = request.profileImage();
@@ -126,6 +132,14 @@ public class BasicUserService implements UserService {
         }
     }
 
+    private void validateDuplicationUserPassword(String userPassword) {
+        if(userRepository.findAll().stream()
+                .anyMatch(user -> userPassword.equals(user.getUserPassword())))
+        {
+            throw new IllegalArgumentException("이미 존재하는 비밀번호입니다.");
+        }
+    }
+
 
     private User validateExistenceUser(UUID id) {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
@@ -139,6 +153,7 @@ public class BasicUserService implements UserService {
                 user.getId(),
                 user.getUserName(),
                 user.getUserEmail(),
+                user.getUserPassword(),
                 user.getProfileId(),
                 online
         );

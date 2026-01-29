@@ -21,9 +21,10 @@ public class Validators {
         requireNotBlank(content, "content");
     }
 
-    public static void validationUser(String userName, String userEmail) {
+    public static void validationUser(String userName, String userEmail, String userPassword) {
         requireNotBlank(userName, "userName");
         requireNotBlank(userEmail, "userEmail");
+        requireNotBlank(userPassword, "userPassword");
     }
 
     public static void validationChannel(ChannelType type, String channelName, String channelDescription) {
