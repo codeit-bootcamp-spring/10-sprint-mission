@@ -101,43 +101,31 @@ public class BasicChannelService implements ChannelService {
                 );
         }
 
-    // 채널 리스트에서 각 채널마다 가장 최근 메세지의 시간 정보를 포함하고,
-    // userID 정보를 포함한 ChannelViewDTO의 리스트를 반환하는 메소드
 
+    // UserID를 통해 특정 유저가 볼 수 있는 Channel 목록을 조회하도록 하는 메소드
+    // Public 채널은 모든 유저에게 공개 가능
+    // Private 채널은 해당 유저가 가입되어 있을때만 공개 가능
     @Override
-    public List<ChannelViewDTO> findAll() {
-        List<ChannelViewDTO> list = new ArrayList<>();
+    public List<ChannelViewDTO> findAllByUserId(UUID userID) {
+       return channelRepository.findAll().stream()
+               .filter(c -> c.getType() == ChannelType.PUBLIC
+               || (c.getType() == ChannelType.PRIVATE && c.getUserList().contains(userID)))
+               .map(
+                       c -> {
+                           Message lastMessage = messageRepository.findByChannelId(c.getId())
+                                   .stream()
+                                   .max(Comparator.comparing(Message::getUpdatedAt))
+                                   .orElse(null);
 
-            // 1. 채널 리포지토리에서 findAll() 호출 -> 채널 리스트 반환
-            // 2. 채널 리스트에서 forEach 호출 -> 각 채널마다 최근 메시지 시간 정보들과 userID 정보를 구조화
-            // 3. 구조화한 것 그대로 ChannelViewDTO 생성 및 list에 추가 (private일 경우)
-            channelRepository
-                    .findAll()
-                    .forEach(
-                            c -> {
-                                Message message = messageRepository.findById(c.getId()).stream().max(Comparator.comparing(Message::getUpdatedAt)).get();
+                           return new ChannelViewDTO(
+                                   lastMessage == null ? null : lastMessage.getCreatedAt(),
+                                   lastMessage == null ? null : lastMessage.getUpdatedAt(),
+                                   c.getType() == ChannelType.PRIVATE ? c.getUserList() : Collections.emptyList()
+                           );
+                       }
+               ).toList();
+    }
 
-                                // 채널 타입이 Public이면..
-                                if(c.getType() == ChannelType.PUBLIC){
-                                    list.add(new ChannelViewDTO(
-                                        message.getCreatedAt(),
-                                        message.getUpdatedAt(),
-                                        null)
-                                    );
-                                }
-                                // 채널 타입이 Private이면..
-                                else{
-                                    list.add(new ChannelViewDTO(
-                                            message.getCreatedAt(),
-                                            message.getUpdatedAt(),
-                                            Collections.emptyList() // userID 정보(리스트) DTO에 삽입
-                                    ));
-                                }
-                            }
-                    );
-
-            return list; // DTO 리스트 반환
-        }
 
 
     @Override

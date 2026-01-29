@@ -12,7 +12,7 @@ public interface ChannelService {
     Channel createPublicChannel(PublicChannelCreateDTO req);
     Channel createPrivateChannel(PrivateChannelCreateDTO req);
     ChannelViewDTO find(UUID channelId);
-    List<ChannelViewDTO> findAll();
+    List<ChannelViewDTO> findAllByUserId(UUID userID);
     Channel join(UUID channelId, UUID userId);
     Channel leave(UUID channelId, UUID userId);
     Channel update(UUID channelId, String newName, String newDescription);
