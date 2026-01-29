@@ -35,8 +35,7 @@ public class BasicUserService implements UserService {
         User user = new User(userCreateDto.getName(),
                 userCreateDto.getEmail(),
                 userCreateDto.getPassword());
-        // 유저 저장
-        save(user);
+
         // 유저 dto 내부 받아온 파일 dto
         BinaryContentDto binaryContentDto = userCreateDto.getProfileImg();
         // 프로필 등록 여부 & binaryContent객체 생성
@@ -49,7 +48,10 @@ public class BasicUserService implements UserService {
                             binaryContentDto.getFileType());
             // binarycontent 저장
             binaryContentRepository.save(binaryContent.getId(),binaryContent);
+            user.addProfileImage(binaryContent.getId());
         }
+
+
 
         // 유저 상태 생성
         UserStatus userStatus = new UserStatus(user.getId());
