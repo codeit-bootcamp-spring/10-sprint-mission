@@ -21,7 +21,7 @@ public class User extends BaseEntity implements Serializable {
     private String nickname;
     private String email;
     private String password;
-    private UUID profileId; // 프로필 이미지 (BinaryContent 참조 ID)
+    private UUID profileImage; // 프로필 이미지 (BinaryContent 참조 ID)
 
     @Getter(AccessLevel.NONE)
     private final List<Channel> joinedChannels = new ArrayList<>();
@@ -57,8 +57,8 @@ public class User extends BaseEntity implements Serializable {
     }
 
     // 프로필 이미지 수정
-    public void updateProfile(UUID profileId) {
-        this.profileId = profileId;
+    public void updateProfileImage(UUID profileImage) {
+        this.profileImage = profileImage;
         this.updated();
     }
 

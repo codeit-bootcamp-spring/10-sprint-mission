@@ -1,72 +1,148 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
+@Service
+@RequiredArgsConstructor
 public class JCFUserService implements UserService {
     private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final UserStatusRepository userStatusRepository;
 
-    public JCFUserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    // 계정 생성
+    @Override
+    public UserResponse createAccount(UserCreateRequest request){
+        // username, email 중복 체크
+        validateDuplicateName(request.name());
+        validateDuplicateEmail(request.email());
+
+        // 유저 생성
+        User user = new User(
+                request.name(),
+                request.nickname(),
+                request.email(),
+                request.password()
+        );
+
+        // 프로필 이미지 설정
+        if (request.profileImageId() != null) {
+            binaryContentRepository.findById(request.profileImageId())
+                    .ifPresent(content -> user.updateProfileImage(content.getId())); // 존재하면 프로필 사진 셋팅
+        }
+
+        userRepository.save(user);
+
+        // 유저 상태 저장
+        UserStatus status = new UserStatus(user.getId(), Instant.now());
+        userStatusRepository.save(status);
+
+        return convertToResponse(user);
     }
 
-    // 유저 생성
+    // 단건 조회
     @Override
-    public User create(String name, String nickname, String email, String password){
-        User newUser = new User(name, nickname, email, password);
-        return userRepository.save(newUser);
+    public UserResponse getAccountById(UUID id) {
+        return convertToResponse(findUserById(id));
     }
 
-    // 유저 ID로 조회
+    // 전체 조회
     @Override
-    public User findById(UUID id){
-        return userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 ID입니다."));
+    public List<UserResponse> getAllAccounts() {
+        return userRepository.findAll().stream()
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
     }
 
-    // 유저 전부 조회
+    // 계정 정보 수정
     @Override
-    public List<User> findAll(){
-        return userRepository.findAll();
+    public UserResponse updateAccount(UUID id, UserUpdateRequest request){
+        User user = findUserById(id);
+
+        // 이름 수정 + 중복 체크
+        if (request.name() != null && !user.getName().equals(request.name())) {
+            validateDuplicateName(request.name());
+            user.updateName(request.name());
+        }
+
+        // 닉네임 수정
+        if (request.nickname() != null) {
+            user.updateNickname(request.nickname());
+        }
+
+        // 이메일 수정 + 중복 체크
+        if (request.email() != null && !user.getEmail().equals(request.email())) {
+            validateDuplicateEmail(request.email());
+            user.updateEmail(request.email());
+        }
+
+        // 프로필 이미지 수정
+        if (request.profileImageId() != null) {
+            binaryContentRepository.findById(request.profileImageId())
+                    .ifPresent(content -> user.updateProfileImage(content.getId()));
+        }
+
+        userRepository.save(user);
+
+        return convertToResponse(user);
     }
 
-    // 유저 정보 수정
+    // 계정 삭제
     @Override
-    public User update(UUID id, String name, String nickname, String email, UUID profileId, String password) {
-        User user = findById(id);
-
-        Optional.ofNullable(name).ifPresent(user::updateName);
-        Optional.ofNullable(nickname).ifPresent(user::updateNickname);
-        Optional.ofNullable(email).ifPresent(user::updateEmail);
-        Optional.ofNullable(profileId).ifPresent(user::updateProfile);
-        Optional.ofNullable(password).ifPresent(user::updatePassword);
-
-        return userRepository.save(user);
-    }
-
-    // 유저 삭제
-    @Override
-    public void delete(UUID id){
-        User user = findById(id);
+    public void deleteAccount(UUID id) {
+        User user = findUserById(id);
+        userStatusRepository.deleteByUserId(id);
         userRepository.delete(user);
     }
 
-    // 특정 유저가 참가한 채널 목록 조회
-    @Override
-    public List<Channel> findJoinedChannelsByUserId(UUID userId){
-        User user = findById(userId);
-        return user.getJoinedChannels();
+
+    // 엔티티 -> DTO 변환
+    private UserResponse convertToResponse(User user) {
+        boolean isOnline = userStatusRepository.findByUserId(user.getId())
+                .map(UserStatus::isOnline)
+                .orElse(false);
+
+        return new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getNickname(),
+                user.getEmail(),
+                user.getProfileImage(),
+                isOnline,
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
     }
 
-    // 특정 유저가 발행한 메시지 목록 조회
-    @Override
-    public List<Message> findMessagesByUserId(UUID userId){
-        User user = findById(userId);
-        return user.getMyMessages();
+    // 유저 검증
+    private User findUserById(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다."));
+    }
+
+    // 사용자명 중복 체크
+    private void validateDuplicateName(String name) {
+        if (userRepository.findByName(name).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
+        }
+    }
+
+    // 이메일 중복 체크
+    private void validateDuplicateEmail(String email) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+        }
     }
 }

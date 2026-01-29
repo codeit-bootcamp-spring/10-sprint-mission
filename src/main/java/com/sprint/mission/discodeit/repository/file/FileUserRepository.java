@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-@Repository
 public class FileUserRepository extends BaseFileRepository<User> implements UserRepository {
     public FileUserRepository() {
         super("users.ser");
@@ -23,6 +22,16 @@ public class FileUserRepository extends BaseFileRepository<User> implements User
     @Override
     public Optional<User> findById(UUID id){
         return Optional.ofNullable(loadData().get(id));
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        throw new UnsupportedOperationException("작업 예정");
+    }
+
+    @Override
+    public Optional<User> findByName(String name) {
+        throw new UnsupportedOperationException("작업 예정");
     }
 
     @Override
