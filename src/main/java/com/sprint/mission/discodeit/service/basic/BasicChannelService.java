@@ -1,12 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.IsPrivate;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.ClearMemory;
 import com.sprint.mission.discodeit.service.UserService;
@@ -19,17 +18,20 @@ import java.util.*;
 @RequiredArgsConstructor
 @Service
 public class BasicChannelService implements ChannelService, ClearMemory {
-    private final UserService userService;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
+    private final UserStatusRepository userStatusRepository;
+    private final UserMapper userMapper;
 
     @Override
     public Channel create(String name, IsPrivate isPrivate, UUID ownerId) {
-        User user = userService.findById(ownerId);
+        User user = userRepository.findById(ownerId)
+                .orElseThrow(() -> new IllegalArgumentException("일치하는 사용자가 없습니다."));
         Channel channel = new Channel(name, isPrivate, user);
         channelRepository.save(channel);
-        userService.updateLastActiveTime(ownerId);
+        userStatusRepository.findByUserId(ownerId)
+                .ifPresent(UserStatus::updateLastActiveTime);
         return channel;
     }
 
@@ -58,11 +60,12 @@ public class BasicChannelService implements ChannelService, ClearMemory {
     @Override
     public void joinChannel(UUID userId, UUID channelId) {
         Channel channel = findById(channelId);
-        User user = userService.findById(userId);
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("일치하는 사용자가 없습니다."));
         channel.addUser(user);
         channelRepository.save(channel);
         userRepository.save(user);
-        userService.updateLastActiveTime(userId);
+        userStatusRepository.findByUserId(userId).orElse(null).updateLastActiveTime();
+
     }
 
     @Override
@@ -76,24 +79,17 @@ public class BasicChannelService implements ChannelService, ClearMemory {
 
     @Override
     public List<User> getChannelUsers(UUID channelId) {
-        findById(channelId);
-        return channelRepository.readAll().stream()
-                .filter(ch -> ch.getId().equals(channelId))
-                .findFirst()
-                .map(Channel::getUsers)
-                .orElse(Collections.emptyList());
+        Channel channel = findById(channelId);
+        return channel.getUsers();
     }
 
     @Override
     public void delete(UUID id) {
-        findById(id);
+        Channel channel = findById(id);
 
         // 채널의 메시지 삭제하기
-        List<Message> remainMessages = messageRepository.readAll().stream()
-                .filter(msg -> !msg.getChannel().getId().equals(id))
-                .toList();
-
-        messageRepository.saveAll(remainMessages);
+        List<Message> messages = channel.getMessages();
+        messages.forEach(m ->messageRepository.delete(m.getId()));
 
         channelRepository.delete(id);
     }
