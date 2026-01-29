@@ -18,7 +18,7 @@ public class Channel extends BaseEntity implements Serializable {
 
     private String name;
     private String description;
-    private String type;        // 채팅 채널(TEXT), 공지 채널(ANNOUNCEMENT), 음성 채널(VOICE)
+    private ChannelType type;
     private boolean isPublic;   // 공개/비공개 여부
 
     @Getter(AccessLevel.NONE)
@@ -27,11 +27,11 @@ public class Channel extends BaseEntity implements Serializable {
     @Getter(AccessLevel.NONE)
     private final List<Message> messages = new ArrayList<>();
 
-    public Channel(String name, String description, String type, boolean isPublic) {
+    public Channel(String name, String description, ChannelType type, boolean isPublic) {
         super();
         this.name = name;
         this.description = description;
-        this.type = (type != null) ? type : "TEXT";
+        this.type = (type != null) ? type : ChannelType.TEXT;
         this.isPublic = isPublic;
     }
 

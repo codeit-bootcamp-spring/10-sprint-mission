@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -62,8 +63,8 @@ public class DiscodeitApplication {
 
 		System.out.println("\n========= [2. Channel 도메인 테스트] =========");
 		// 1. 등록
-		Channel channel1 = channelService.create("코딩 공부방", "공부합시다", "TEXT", false);
-		Channel channel2 = channelService.create("공지방", "공지방입니다", "ANNOUNCEMENT", true);
+		Channel channel1 = channelService.create("코딩 공부방", "공부합시다", ChannelType.TEXT, false);
+		Channel channel2 = channelService.create("공지방", "공지방입니다", ChannelType.ANNOUNCEMENT, true);
 		System.out.println("[등록] channel1, channel2 채널 생성 완료");
 
 		// 2. 조회 (단건, 다건)
@@ -144,7 +145,7 @@ public class DiscodeitApplication {
 
 		User testerA = userService.create("테스터A", "A", "a@test.com", "1111");
 		User testerB = userService.create("테스터B", "B", "b@test.com", "2222");
-		Channel projectChannel = channelService.create("프로젝트방", "협업용", "TEXT", true);
+		Channel projectChannel = channelService.create("프로젝트방", "협업용", ChannelType.TEXT, true);
 
 		// 1. 채널 참가
 		channelService.join(projectChannel.getId(), testerA.getId());

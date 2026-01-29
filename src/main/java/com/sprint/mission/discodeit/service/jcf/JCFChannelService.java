@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -20,7 +21,7 @@ public class JCFChannelService implements ChannelService {
 
     // 채널 생성
     @Override
-    public Channel create(String name, String description, String type, boolean isPublic) {
+    public Channel create(String name, String description, ChannelType type, boolean isPublic) {
         Channel newChannel = new Channel(name, description, type, isPublic);
         return channelRepository.save(newChannel);
     }

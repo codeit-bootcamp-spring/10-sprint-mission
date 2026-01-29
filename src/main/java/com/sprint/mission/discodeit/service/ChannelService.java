@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 
@@ -9,7 +10,7 @@ import java.util.List;
 
 
 public interface ChannelService {
-    Channel create(String name, String description, String type, boolean isPublic);
+    Channel create(String name, String description, ChannelType type, boolean isPublic);
 
     Channel findById(UUID id);
 
