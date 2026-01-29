@@ -2,12 +2,14 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
+@Setter
 @RequiredArgsConstructor
 public class User extends DefaultEntity implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -24,29 +26,10 @@ public class User extends DefaultEntity implements Serializable {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.profileId = profileId;
     }
 
-    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
-        boolean anyValueUpdated = false;
-        if (newUsername != null && !newUsername.equals(this.username)) {
-            this.username = newUsername;
-            anyValueUpdated = true;
-        }
-        if (newEmail != null && !newEmail.equals(this.email)) {
-            this.email = newEmail;
-            anyValueUpdated = true;
-        }
-        if (newPassword != null && !newPassword.equals(this.password)) {
-            this.password = newPassword;
-            anyValueUpdated = true;
-        }
-        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
-            this.password = newPassword;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
+    public void isUpdated(){
+        this.updatedAt = Instant.now();
     }
 }

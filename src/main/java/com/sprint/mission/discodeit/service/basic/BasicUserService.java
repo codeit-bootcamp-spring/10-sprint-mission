@@ -13,6 +13,8 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -85,26 +87,44 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userUpdateRequestDto.targetUserId())
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userUpdateRequestDto.targetUserId() + " not found"));
 
-        if(userUpdateRequestDto.profileImage() == null){
-            user.update(
-                    userUpdateRequestDto.newUsername(),
-                    userUpdateRequestDto.newEmail(),
-                    userUpdateRequestDto.newPassword(),
-                    null
-                    );
-        }
-        else{
-            BinaryContent profileImage = new BinaryContent(userUpdateRequestDto.profileImage().content());
+        BinaryContent newProfileImage;
+
+        if(userUpdateRequestDto.profileImage() != null){
+            newProfileImage = new BinaryContent(userUpdateRequestDto.profileImage().content());
 
             if(user.getProfileId() != null) binaryContentRepository.deleteById(user.getProfileId());
-            binaryContentRepository.save(profileImage);
+            binaryContentRepository.save(newProfileImage);
 
-            user.update(
-                    userUpdateRequestDto.newUsername(),
-                    userUpdateRequestDto.newEmail(),
-                    userUpdateRequestDto.newPassword(),
-                    profileImage.getId()
-            );
+        }
+        else{
+            newProfileImage = null;
+
+        }
+
+        boolean anyValueUpdated = false;
+        if (userUpdateRequestDto.newUsername() != null && !userUpdateRequestDto.newUsername().equals(user.getUsername())) {
+            user.setUsername(userUpdateRequestDto.newUsername());
+            anyValueUpdated = true;
+        }
+        if (userUpdateRequestDto.newEmail() != null && !userUpdateRequestDto.newEmail().equals(user.getEmail())) {
+            user.setEmail(userUpdateRequestDto.newEmail());
+            anyValueUpdated = true;
+        }
+        if (userUpdateRequestDto.newPassword() != null && !userUpdateRequestDto.newPassword().equals(user.getPassword())) {
+            user.setPassword(userUpdateRequestDto.newPassword());
+            anyValueUpdated = true;
+        }
+        if (newProfileImage != null && !Arrays.equals(binaryContentRepository
+                .findById(user.getProfileId())
+                .orElseThrow()
+                .getContent(), userUpdateRequestDto.profileImage().content()))
+        {
+            binaryContentRepository.deleteById(user.getProfileId());
+            user.setProfileId(newProfileImage.getId());
+            anyValueUpdated = true;
+        }
+        if (anyValueUpdated) {
+            user.isUpdated();
         }
 
         return userRepository.save(user);
@@ -112,6 +132,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
+        //유저가 검색되지 않는 경우
         if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User with id " + userId + " not found");
         }
@@ -119,11 +140,7 @@ public class BasicUserService implements UserService {
         User deletedUser = userRepository.findById(userId).get();
         binaryContentRepository.deleteById(deletedUser.getProfileId());//프로필 이미지 삭제
 
-        UserStatus userStatus = userStatusRepository.findAll().stream()
-                        .filter(userstat -> userstat.getUserID() == deletedUser.getId())
-                        .findFirst()
-                        .orElseThrow(()-> new NoSuchElementException("UserStatus with id " + deletedUser.getId() + " not found"));
-
+        UserStatus userStatus = userStatusRepository.findByUserId(userId).get();
         userStatusRepository.deleteById(userStatus.getId());//스테이터스 삭제
 
         userRepository.deleteById(userId);//유저레포지토리에서 삭제
