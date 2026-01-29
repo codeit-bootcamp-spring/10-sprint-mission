@@ -1,18 +1,22 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -20,51 +24,107 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
+    private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public Channel createChannel(String channelName) {
-        return channelRepository.save(new Channel(channelName));
-    }
+    public ChannelResponseDTO createPublicChannel(CreatePublicChannelRequestDTO dto) {
+        Objects.requireNonNull(dto.channelName(), "공개 채널의 이름은 null일 수 없습니다.");
 
-    @Override
-    public List<Channel> getChannelList() {
-        return channelRepository.findAll();
-    }
-
-    @Override
-    public List<Channel> getChannelsByUser(UUID userId) {
-        findUserOrThrow(userId);
-
-        return channelRepository.findAll().stream()
-                .filter(channel -> channel.getJoinedUsers().stream()
-                        .anyMatch(user -> user.getId().equals(userId)))
-                .toList();
-    }
-
-    @Override
-    public Channel getChannelInfoById(UUID channelId) {
-        return findChannelOrThrow(channelId);
-    }
-
-    @Override
-    public Channel updateChannelName(UUID channelId, String newChannelName) {
-        Channel channel = findChannelOrThrow(channelId);
-        channel.updateChannelName(newChannelName);
+        Channel channel = ChannelMapper.toPublicChannelEntity(dto);
         channelRepository.save(channel);
-        // 채널에 참여한 사용자쪽 파일 갱신
-        updateUserChannelName(channelId, newChannelName);
-        // 채널에 전송한 메시지쪽 파일 갱신
-        updateMessageChannelName(channelId, newChannelName);
-        return channel;
+        return ChannelMapper.toResponse(channel);
+    }
+
+    @Override
+    public ChannelResponseDTO createPrivateChannel(CreatePrivateChannelRequestDTO dto) {
+        Objects.requireNonNull(dto.joinedUserIds(), "joinedUserIds는 null값일 수 없습니다.");
+        if (dto.joinedUserIds().isEmpty()) {
+            throw new IllegalArgumentException("비공개 채널엔 최소 1명 이상 입장하여야 합니다.");
+        }
+        Instant currentTime = Instant.now();
+        // 유저 검증
+        dto.joinedUserIds().forEach(id -> findUserOrThrow(id));
+
+        Channel channel = ChannelMapper.toPrivateChannelEntity("");
+
+        for (UUID ids: dto.joinedUserIds()) {
+            channel.addUser(ids);
+        }
+
+        channelRepository.save(channel);
+
+        for (UUID userId: channel.getJoinedUserIds()) {
+            ReadStatus readStatus = new ReadStatus(userId, channel.getId(), currentTime);
+            readStatusRepository.save(readStatus);
+        }
+
+        return ChannelMapper.toResponse(channel);
+    }
+
+    @Override
+    public List<ChannelWithLastMessageDTO> findAllByUserId(UUID userId) {
+        findUserOrThrow(userId);
+        List<Channel> allChannels = channelRepository.findAll();
+        List<Channel> publicChannels
+                = allChannels.stream()
+                .filter(channel -> channel.getChannelType().equals(ChannelType.PUBLIC))
+                .toList();
+        List<Channel> privateChannels
+                = allChannels.stream()
+                .filter(channel -> channel.getChannelType().equals(ChannelType.PRIVATE))
+                .filter(channel -> channel.getJoinedUserIds().contains(userId))
+                .toList();
+
+        return withLastMessageDTOS(publicChannels, privateChannels);
+    }
+
+    @Override
+    public ChannelWithLastMessageDTO getChannelInfoById(UUID channelId) {
+        Channel channel = findChannelOrThrow(channelId);
+        Instant lastMessageAt = findLatestMessageAt(channelId);
+
+        List<UUID> joinUserIds = channel.getChannelType() == ChannelType.PRIVATE
+                ? channel.getJoinedUserIds()
+                : List.of();
+
+        return new ChannelWithLastMessageDTO(
+                channel.getId(),
+                channel.getChannelName(),
+                channel.getChannelType(),
+                joinUserIds,
+                lastMessageAt
+        );
+    }
+
+    @Override
+    public ChannelWithLastMessageDTO updateChannelName(
+            UpdateChannelRequestDTO dto
+    ) {
+        Channel channel = findChannelOrThrow(dto.channelId());
+
+        if (channel.getChannelType() == ChannelType.PRIVATE) {
+            throw new IllegalArgumentException("비공개 채널은 채널 이름을 바꿀 수 없습니다.");
+        }
+
+        channel.updateChannelName(dto.newChannelName());
+        channelRepository.save(channel);
+
+        return ChannelMapper.toWithLastMessage(channel, findLatestMessageAt(dto.channelId()));
     }
 
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = findChannelOrThrow(channelId);
         User user = findUserOrThrow(userId);
+
+        if (channel.getJoinedUserIds().stream()
+                .anyMatch(id -> id.equals(userId))) {
+            throw new IllegalArgumentException("해당 채널에 이미 참여하였습니다.");
+        }
+
         // 메모리 갱신
-        channel.addUser(user);
-        user.updateJoinedChannels(channel);
+        channel.addUser(user.getId());
+        user.updateJoinedChannels(channel.getId());
         // file 갱신
         channelRepository.save(channel);
         userRepository.save(user);
@@ -75,8 +135,13 @@ public class BasicChannelService implements ChannelService {
         Channel channel = findChannelOrThrow(channelId);
         User user = findUserOrThrow(userId);
 
+        if (channel.getJoinedUserIds().stream()
+                .noneMatch(id -> id.equals(userId))) {
+            throw new IllegalArgumentException("해당 채널에 참여하고 있지 않습니다.");
+        }
+
         channel.removeUser(user.getId());
-        user.removeChannel(channel);
+        user.removeChannel(channel.getId());
 
         channelRepository.save(channel);
         userRepository.save(user);
@@ -85,8 +150,9 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID channelId) {
         findChannelOrThrow(channelId);
-        channelRepository.deleteById(channelId);
+        readStatusRepository.deleteByChannelId(channelId);
         messageRepository.deleteByChannelId(channelId);
+        channelRepository.deleteById(channelId);
     }
 
     private Channel findChannelOrThrow(UUID channelId) {
@@ -105,29 +171,50 @@ public class BasicChannelService implements ChannelService {
                         new NoSuchElementException("해당 id를 가진 사용자가 존재하지 않습니다."));
     }
 
-    private void updateUserChannelName(UUID channelId, String newName) {
-        userRepository.findAll().forEach(user -> {
-            boolean updated = false;
+    private Instant findLatestMessageAt(UUID channelId) {
+        findChannelOrThrow(channelId);
 
-            for (Channel joinedChannel : user.getJoinedChannels()) {
-                if (joinedChannel.getId().equals(channelId)) {
-                    joinedChannel.updateChannelName(newName);
-                    updated = true;
-                }
-            }
+        List<Message> messages = messageRepository.findByChannelId(channelId);
+        if (messages == null || messages.isEmpty()) {
+            return null;
+        }
 
-            if (updated) {
-                userRepository.save(user);
-            }
-        });
+        return messages.stream()
+                .map(Message::getCreatedAt)
+                .max(Instant::compareTo)
+                .orElse(null);
     }
 
-    private void updateMessageChannelName(UUID channelId, String newName) {
-        messageRepository.findAll().stream()
-                .filter(message -> message.getSentChannel().getId().equals(channelId))
-                .forEach(message -> {
-                    message.getSentChannel().updateChannelName(newName);
-                    messageRepository.save(message);
-                });
+    private List<ChannelWithLastMessageDTO> withLastMessageDTOS(
+            List<Channel> publicChannels, List<Channel> privateChannels) {
+        return Stream.concat(
+                        publicChannels.stream(),   // PUBLIC 채널 리스트를 스트림으로 변환
+                        privateChannels.stream()   // PRIVATE 채널 리스트를 스트림으로 변환
+                )
+                // 이제 두 스트림이 하나로 합쳐짐 (PUBLIC + PRIVATE)
+                .map(channel -> {
+                    // 각 채널마다 가장 최근 메시지 시간 계산
+                    Instant lastMessageAt = findLatestMessageAt(channel.getId());
+
+                    // 채널 타입에 따라 joinedUserIds를 다르게 내려줌
+                    // PRIVATE → 참여자 목록
+                    // PUBLIC  → 빈 리스트
+                    List<UUID> joinedUserIdsToReturn =
+                            channel.getChannelType() == ChannelType.PRIVATE
+                                    ? channel.getJoinedUserIds()
+                                    : List.of();
+
+                    // 최종적으로 조회용 DTO 생성해서 반환
+                    return new ChannelWithLastMessageDTO(
+                            channel.getId(),
+                            channel.getChannelName(),
+                            channel.getChannelType(),
+                            joinedUserIdsToReturn,
+                            lastMessageAt
+                    );
+                })
+
+                // 모든 DTO를 List로 모아서 반환
+                .toList();
     }
 }
