@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -15,7 +16,7 @@ public class BinaryContentRepositoryImpl implements BinaryContentRepository{
     }
 
     @Override
-    public BinaryContent findById(UUID binaryContentId) {
+    public Optional<BinaryContent> findById(UUID binaryContentId) {
         return null;
     }
 

@@ -2,10 +2,10 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFUserRepository implements UserRepository {
@@ -20,11 +20,10 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User findById(UUID userId) {
+    public Optional<User> findById(UUID userId) {
         return data.stream()
                 .filter(u -> u.getId().equals(userId))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .findAny();
     }
 
     @Override

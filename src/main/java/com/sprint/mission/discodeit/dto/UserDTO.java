@@ -12,7 +12,7 @@ public class UserDTO {
             String username,
             String email,
             String password,
-            BinaryContentDTO.Create binaryContent
+            BinaryContentDTO.Create profile
     ) {}
 
     public record Response(
@@ -36,10 +36,11 @@ public class UserDTO {
     }
 
     public record Update(
+            UUID id,
             String username,
             String email,
             String password,
-            BinaryContentDTO.Create binaryContent
+            BinaryContentDTO.Create profile
     ) {}
 
     public record Login(

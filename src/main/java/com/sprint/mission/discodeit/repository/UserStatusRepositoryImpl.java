@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -14,12 +15,7 @@ public class UserStatusRepositoryImpl implements UserStatusRepository{
     }
 
     @Override
-    public UserStatus findById(UUID userStatusId) {
-        return null;
-    }
-
-    @Override
-    public UserStatus findByUserId(UUID userId) {
+    public Optional<UserStatus> findByUserId(UUID userId) {
         return null;
     }
 

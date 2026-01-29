@@ -15,25 +15,12 @@ public class User extends BaseEntity {
     private String password;
     @Getter
     private UUID profileId;
-    private final Set<UUID> channelIds;
 
-    public User(String username, String email, String password) {
+    public User(String username, String email, String password, UUID profileId) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.channelIds = new HashSet<>();
-    }
-
-    public void addChannel(UUID channelId) {
-        this.channelIds.add(channelId);
-    }
-
-    public void deleteChannel(UUID channelId) {
-        this.channelIds.remove(channelId);
-    }
-
-    public List<UUID> getChannelIds() {
-        return new ArrayList<>(channelIds);
+        this.profileId = profileId;
     }
 
     public void updateUsername(String username) {

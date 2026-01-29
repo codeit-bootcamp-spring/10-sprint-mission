@@ -2,10 +2,10 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class JCFChannelRepository implements ChannelRepository {
@@ -20,11 +20,10 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findById(UUID channelId) {
+    public Optional<Channel> findById(UUID channelId) {
         return data.stream()
                 .filter(c -> c.getId().equals(channelId))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+                .findAny();
     }
 
     @Override

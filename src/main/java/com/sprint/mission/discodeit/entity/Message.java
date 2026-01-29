@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.util.List;
 import java.util.UUID;
 
 public class Message extends BaseEntity {
@@ -14,21 +15,17 @@ public class Message extends BaseEntity {
     @Getter
     private final UUID channelId;
     @Getter
-    private UUID attachmentId;
+    private final List<UUID> attachmentIds;
 
-    public Message(String content, UUID channelId, UUID authorId) {
+    public Message(String content, UUID authorId, UUID channelId, List<UUID> attachmentIds) {
         this.content = content;
         this.authorId = authorId;
         this.channelId = channelId;
+        this.attachmentIds = attachmentIds;
     }
 
     public void update(String content) {
         this.content = content;
-        setUpdateAt();
-    }
-
-    public void updateAttachment(UUID attachmentId) {
-        this.attachmentId = attachmentId;
         setUpdateAt();
     }
 

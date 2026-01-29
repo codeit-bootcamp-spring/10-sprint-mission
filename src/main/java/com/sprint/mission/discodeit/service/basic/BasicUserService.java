@@ -8,7 +8,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,7 +16,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
-    private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
@@ -27,37 +25,45 @@ public class BasicUserService implements UserService {
     public UserDTO.Response create(UserDTO.Create request) {
         existsByUsername(request.username());
         existsByEmail(request.email());
-        User user = new User(request.username(), request.email(), request.password());
-        userRepository.save(user);
+
+        //프로필 설정하지 않으면 null
+        UUID profileId = null;
 
         //요청에 프로필이 있다면 binaryContent 객체 생성 후 저장
-        if (request.binaryContent() != null) {
-            BinaryContentDTO.Create profileDto = request.binaryContent();
-
+        if (request.profile() != null) {
+            BinaryContentDTO.Create profileDto = request.profile();
             BinaryContent profile = new BinaryContent(
                     profileDto.fileName(),
                     profileDto.bytes()
             );
-
             binaryContentRepository.save(profile);
-
-            user.updateProfileId(profile.getId());
-            userRepository.save(user);
+            //프로필 Id에 값을 넣어줌
+            profileId = profile.getId();
         }
+
+        User user = new User(
+                request.username(),
+                request.email(),
+                request.password(),
+                profileId
+        );
+        userRepository.save(user);
 
         //유저 상태 객체 생성 후 저장
         UserStatus status = new UserStatus(user.getId());
         status.updateOnline();
-
         userStatusRepository.save(status);
+
 
         return UserDTO.Response.of(user, status);
     }
 
     @Override
     public UserDTO.Response findById(UUID userId) {
-        User user = userRepository.findById(userId);
-        UserStatus status = userStatusRepository.findByUserId(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+        UserStatus status = userStatusRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상태 정보입니다."));
         return UserDTO.Response.of(user, status);
     }
 
@@ -65,27 +71,30 @@ public class BasicUserService implements UserService {
     public List<UserDTO.Response> findAll() {
         return userRepository.findAll().stream()
                 .map(user -> {
-                    UserStatus status = userStatusRepository.findByUserId(user.getId());
+                    UserStatus status = userStatusRepository.findByUserId(user.getId())
+                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상태 정보입니다."));
                     return UserDTO.Response.of(user, status);
                 })
                 .toList();
     }
 
     @Override
-    public UserDTO.Response update(UUID userId, UserDTO.Update request) {
-        User user = userRepository.findById(userId);
+    public UserDTO.Response update(UserDTO.Update request) {
+        User user = userRepository.findById(request.id())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         Optional.ofNullable(request.username()).ifPresent(user::updateUsername);
         Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
         Optional.ofNullable(request.password()).ifPresent(user::updatePassword);
 
-        if (request.binaryContent() != null) {
+        //요청에 프로필이 있다면 기존 프로필 확인 후 삭제, 없으면 binaryContent 객체 생성 후 저장
+        if (request.profile() != null) {
             if (user.getProfileId() != null) {
-                BinaryContent oldProfile = binaryContentRepository.findById(user.getProfileId());
-                binaryContentRepository.delete(oldProfile);
+                binaryContentRepository.findById(user.getProfileId())
+                        .ifPresent(binaryContentRepository::delete);
             }
 
-            BinaryContentDTO.Create profileDto = request.binaryContent();
+            BinaryContentDTO.Create profileDto = request.profile();
 
             BinaryContent newProfile = new BinaryContent(
                     profileDto.fileName(),
@@ -95,9 +104,12 @@ public class BasicUserService implements UserService {
 
             user.updateProfileId(newProfile.getId());
         }
+        //프로필 말고 다른 변경사항이 있을 수 있으니 if문 밖에서 저장
         userRepository.save(user);
 
-        UserStatus status = userStatusRepository.findByUserId(userId);
+        //유저 상태 객체 생성 후 저장
+        UserStatus status = userStatusRepository.findByUserId(request.id())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상태 정보입니다."));
         status.updateOnline();
 
         userStatusRepository.save(status);
@@ -106,31 +118,23 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
-        User user = userRepository.findById(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));;
 
         //유저 탈퇴시 유저 메세지 지우기
-        List<Message> messages = messageRepository.findAll().stream()
+        messageRepository.findAll().stream()
                 .filter(message -> message.getAuthorId().equals(userId))
-                .toList();
-        for (Message message : messages) {
-            messageRepository.delete(message);
-        }
-
-        //유저 탈퇴 시 채널에서 탈퇴
-        for (UUID channelId : user.getChannelIds()) {
-            Channel channel = channelRepository.findById(channelId);
-            channel.deleteUser(userId);
-            channelRepository.save(channel);
-        }
+                .forEach(messageRepository::delete);
 
         //유저 상태 삭제
-        UserStatus status = userStatusRepository.findByUserId(userId);
+        UserStatus status = userStatusRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 상태 정보입니다."));;
         userStatusRepository.delete(status);
 
         //유저 프로필 삭제
         if (user.getProfileId() != null) {
-            BinaryContent profile = binaryContentRepository.findById(user.getProfileId());
-            binaryContentRepository.delete(profile);
+            binaryContentRepository.findById(user.getProfileId())
+                    .ifPresent(binaryContentRepository::delete);
         }
 
         userRepository.delete(user);

@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -39,11 +40,10 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findById(UUID messageId) {
+    public Optional<Message> findById(UUID messageId) {
         return findAll().stream()
                 .filter(message -> message.getId().equals(messageId))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 아이디입니다."));
+                .findAny();
     }
 
     @Override

@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -39,11 +40,10 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findById(UUID channelId) {
+    public Optional<Channel> findById(UUID channelId) {
         return findAll().stream()
                 .filter(channel -> channel.getId().equals(channelId))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+                .findAny();
     }
 
     @Override
