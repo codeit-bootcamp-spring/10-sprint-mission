@@ -96,6 +96,12 @@ public class BasicMessageService implements MessageService {
         if (!messageRepository.existsById(messageId)) {
             throw new NoSuchElementException("Message with id " + messageId + " not found");
         }
+
+        //내부 파일들 바이너리레포에서 삭제
+        messageRepository.findById(messageId).orElseThrow()
+                .getAttachments().forEach(binaryContentRepository::deleteById);
+
+        // 메시지레포에서 삭제
         messageRepository.deleteById(messageId);
     }
 }
