@@ -18,7 +18,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContent create(BinaryContentCreateRequestDto binaryContentCreateRequestDto) {
-        return null;
+        return binaryContentRepository.save(new BinaryContent(binaryContentCreateRequestDto.content()));
     }
 
     @Override
