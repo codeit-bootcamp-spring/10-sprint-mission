@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.message.MessageCreateRequestDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -20,17 +23,32 @@ public class BasicMessageService implements MessageService {
     //
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message create(String content, UUID channelId, UUID authorId) {
-        if (!channelRepository.existsById(channelId)) {
-            throw new NoSuchElementException("Channel not found with id " + channelId);
+    public Message create(MessageCreateRequestDto messageCreateRequestDto) {
+        if (!channelRepository.existsById(messageCreateRequestDto.channelId())) {
+            throw new NoSuchElementException("Channel not found with id " + messageCreateRequestDto.channelId());
         }
-        if (!userRepository.existsById(authorId)) {
-            throw new NoSuchElementException("Author not found with id " + authorId);
+        if (!userRepository.existsById(messageCreateRequestDto.authorId())) {
+            throw new NoSuchElementException("Author not found with id " + messageCreateRequestDto.authorId());
         }
 
-        Message message = new Message(content, channelId, authorId);
+        List<UUID> attachmentListToId = messageCreateRequestDto.attachment().content()
+                .stream()
+                .map(binaryContent ->{
+                        BinaryContent b = new BinaryContent(binaryContent);
+                        binaryContentRepository.save(b);
+                        return b.getId();
+                })
+                .toList();
+
+        Message message = new Message(
+                messageCreateRequestDto.content(),
+                messageCreateRequestDto.channelId(),
+                messageCreateRequestDto.authorId(),
+                attachmentListToId
+        );
         return messageRepository.save(message);
     }
 

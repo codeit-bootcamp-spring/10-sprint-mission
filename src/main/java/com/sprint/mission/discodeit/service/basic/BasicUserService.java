@@ -38,7 +38,7 @@ public class BasicUserService implements UserService {
         User user;
         //이미지 존재여부 분기
         if(userCreateRequestDto.profileImage() != null){
-            BinaryContent profileImage = new BinaryContent(userCreateRequestDto.profileImage().content());
+            BinaryContent profileImage = new BinaryContent(userCreateRequestDto.profileImage().content().get(0));
             binaryContentRepository.save(profileImage);
 
             user = new User(userCreateRequestDto.username(),
@@ -90,7 +90,7 @@ public class BasicUserService implements UserService {
         BinaryContent newProfileImage;
 
         if(userUpdateRequestDto.profileImage() != null){
-            newProfileImage = new BinaryContent(userUpdateRequestDto.profileImage().content());
+            newProfileImage = new BinaryContent(userUpdateRequestDto.profileImage().content().get(0));
 
             if(user.getProfileId() != null) binaryContentRepository.deleteById(user.getProfileId());
             binaryContentRepository.save(newProfileImage);
@@ -117,7 +117,7 @@ public class BasicUserService implements UserService {
         if (newProfileImage != null && !Arrays.equals(binaryContentRepository
                 .findById(user.getProfileId())
                 .orElseThrow()
-                .getContent(), userUpdateRequestDto.profileImage().content()))
+                .getContent(), userUpdateRequestDto.profileImage().content().get(0)))
         {
             binaryContentRepository.deleteById(user.getProfileId());
             user.setProfileId(newProfileImage.getId());
