@@ -15,7 +15,7 @@ import java.util.*;
 public class JCFReadStatusRepository implements ReadStatusRepository {
     private final Map<UUID, ReadStatus> data;
 
-    public JCFReadStatusRepository(Map<UUID, ReadStatus> data) {
+    public JCFReadStatusRepository() {
         this.data = new HashMap<>();
     }
 
