@@ -1,18 +1,18 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.MessageDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -21,17 +21,23 @@ public class BasicMessageService implements MessageService {
     //
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
+
 
     @Override
-    public Message create(String content, UUID channelId, UUID authorId) {
-        if (!channelRepository.existsById(channelId)) {
-            throw new NoSuchElementException("Channel not found with id " + channelId);
+    public Message create(MessageDto.CreateRequest request) {
+        if (!channelRepository.existsById(request.channelId())) {
+            throw new NoSuchElementException("Channel not found with id " + request.channelId());
         }
-        if (!userRepository.existsById(authorId)) {
-            throw new NoSuchElementException("Author not found with id " + authorId);
+        if (!userRepository.existsById(request.authorId())) {
+            throw new NoSuchElementException("Author not found with id " + request.authorId());
         }
 
-        Message message = new Message(content, channelId, authorId);
+        List<UUID> attachmentIds = request.attachments().stream()
+                .map(this::saveAttachments)
+                .toList();
+
+        Message message = new Message(request.content(), request.channelId(), request.authorId(), attachmentIds);
         return messageRepository.save(message);
     }
 
@@ -42,12 +48,17 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> findAll() {
-        return messageRepository.findAll();
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return messageRepository.findAllByChannelId(channelId);
     }
 
     @Override
-    public Message update(UUID messageId, String newContent) {
+    public Message update(UUID messageId, MessageDto.UpdateRequest request) {
+        String newContent = request.content();
+        if (newContent == null) {
+            delete(messageId); // 메시지를 수정할 때 빈 메시지로 하면 삭제됨
+        }
+
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
         message.update(newContent);
@@ -56,9 +67,22 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public void delete(UUID messageId) {
-        if (!messageRepository.existsById(messageId)) {
-            throw new NoSuchElementException("Message with id " + messageId + " not found");
-        }
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+
+        message.getAttachmentIds()
+                .forEach(binaryContentRepository::deleteById);
+
         messageRepository.deleteById(messageId);
+    }
+
+    private UUID saveAttachments(BinaryContentDto.CreateRequest request) {
+        BinaryContent content = new BinaryContent(
+                request.fileName(),
+                request.contentType(),
+                request.content()
+        );
+
+        return binaryContentRepository.save(content).getId();
     }
 }

@@ -85,13 +85,6 @@ public class BasicUserService implements UserService {
         user.update(newUsername, newEmail, newPassword, newProfileId);
 
         return userRepository.save(user);
-
-
-
-
-
-
-
     }
 
     @Transactional
