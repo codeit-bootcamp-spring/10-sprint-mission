@@ -52,9 +52,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = new Channel(owner, ChannelType.PRIVATE, null, null);
 
         if (request.participantIds() != null && !request.participantIds().isEmpty()) {
-            // 혹시 모를 중복 방지
-            Set<UUID> participantIds = new HashSet<>(request.participantIds());
-            for (UUID participantId : participantIds) {
+            for (UUID participantId : request.participantIds()) {
                 User participant = validateAndGetUserByUserId(participantId);
                 linkMemberAndChannel(participant, channel);
                 ReadStatus participantReadStatus = new ReadStatus(participant.getId(), channel.getId());
@@ -193,9 +191,13 @@ public class BasicChannelService implements ChannelService {
         }
 
         linkMemberAndChannel(user, channel);
+        ReadStatus readStatus = new ReadStatus(userId, channelId);
+
         channelRepository.save(channel);
         // `linkMemberAndChannel` 메소드로 user의 joinChannelList에 해당 channel 추가 후, 저장
         userRepository.save(user);
+        readStatusRepository.save(readStatus);
+
         return channel;
     }
 
@@ -219,9 +221,14 @@ public class BasicChannelService implements ChannelService {
         }
 
         unlinkMemberAndChannel(user, channel);
+        ReadStatus readStatus = readStatusRepository.findByUserIdAndChannelId(userId, channelId)
+                .orElseThrow(() -> new NoSuchElementException("userId와 channelId에 해당하는 readStatus가 없습니다."));
+
         channelRepository.save(channel);
         // `unlinkMemberAndChannel` 메소드로 user의 joinChannelList에 해당 channel 삭제 후, 저장
         userRepository.save(user);
+        readStatusRepository.delete(readStatus.getId());
+
         return channel;
     }
 
