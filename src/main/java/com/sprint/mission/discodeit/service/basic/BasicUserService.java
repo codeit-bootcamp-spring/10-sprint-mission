@@ -10,7 +10,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
-import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -48,42 +47,46 @@ public class BasicUserService implements UserService {
                             binaryContentDto.getFileType());
             // binarycontent 저장
             binaryContentRepository.save(binaryContent.getId(),binaryContent);
+            // 연관성 주입
             user.addProfileImage(binaryContent.getId());
         }
 
-
-
+        // 유저정보 저장
+        userRepository.save(user.getId(),user);
         // 유저 상태 생성
         UserStatus userStatus = new UserStatus(user.getId());
         // 추후 메시지상태도 저장
         userStatusRepository.save(userStatus.getId(), userStatus);
 
-        return userMapper.toDto(user);
+        return userMapper.toDto(user,true);
     }
 
     @Override
     public UserResponseDto findUser(UUID userId) {
-        User user = CheckNull(userId);
-        UserStatus userStatus = userStatusRepository.findById(userId)
+        User user = checkNull(userId);
+        UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException());
 
-
-         // 추후 유저상태 서비스에서 가져오는 식으로 바꿔야할듯
+        // 추후 유저상태 서비스에서 가져오는 식으로 바꿔야할듯
         boolean online = false;
         if(userStatus != null){
             online = isOnline(userStatus.getLastOnlineAt());
         }
 
-        return userMapper.toDto(user);
+        return userMapper.toDto(user,online);
     }
 
     @Override
     public List<UserResponseDto> findAllUsers() {
         List<User> userList = new ArrayList<>(userRepository.findAll());
-
+        // 유저 상태들을 유저 아이디를 키로한 맵으로 가져옴
+        Map<UUID, UserStatus> userStatusMap = userStatusRepository.findAll();
         // 가져온 객체들을 dto로 변환
         List<UserResponseDto> dtoList = userList.stream()
-                .map(userMapper::toDto)
+                .map(user -> {
+                    boolean online = isOnline(userStatusMap.get(user.getId()).getLastOnlineAt());
+                    return userMapper.toDto(user, online);
+                })
                 .toList();
 
         System.out.println("[유저 전체 조회]");
@@ -94,23 +97,23 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponseDto addFriend(UUID senderId, UUID receiverId) {
-        User sender = CheckNull(senderId);
-        User receiver = CheckNull(receiverId);
+        User sender = checkNull(senderId);
+        User receiver = checkNull(receiverId);
 
         sender.addFriend(receiverId);
         receiver.addFriend(senderId);
-        save(sender);
-        save(receiver);
+        userRepository.save(senderId,sender);
+        userRepository.save(receiverId,receiver);
 
         return findUser(senderId);
     }
 
     @Override
     public List<UserResponseDto> findFriends(UUID userId) {
-        User user = CheckNull(userId);
+        User user = checkNull(userId);
 
         List<UserResponseDto> friendList = user.getFriendsList().stream()
-                .map(id -> findUser(id))
+                .map(this::findUser)
                 .filter(Objects::nonNull).toList();
 
         System.out.println("[친구 목록 조회]");
@@ -120,7 +123,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponseDto update(UUID userId, UserUpdateDto userUpdateDto) {
-        User user = CheckNull(userId);
+        User user = checkNull(userId);
 
 
         if(userUpdateDto.getName() != null){
@@ -132,18 +135,32 @@ public class BasicUserService implements UserService {
         if(userUpdateDto.getPassword() != null){
             user.updatePassword(userUpdateDto.getPassword());
         }
-        if(userUpdateDto.getProfileImageId() != null){
-            user.updateProfileImg(userUpdateDto.getProfileImageId());
+        if(userUpdateDto.getBinaryContentDto() != null){
+            BinaryContentDto newBinaryContentDto = userUpdateDto.getBinaryContentDto();
+
+            UUID oldProfileImageId = user.getProfileImageId();
+            if(oldProfileImageId != null){
+                binaryContentRepository.delete(oldProfileImageId);
+            }
+
+            BinaryContent newBinaryContent = new BinaryContent(user.getId(),
+                                null,
+                                    newBinaryContentDto.getFileData(),
+                                    newBinaryContentDto.getName(),
+                                    newBinaryContentDto.getFileType());
+            binaryContentRepository.save(newBinaryContent.getId(),newBinaryContent);
+
+            user.updateProfileImg(newBinaryContent.getId());
         }
         user.updateTimeStamp();
-        save(user);
+        userRepository.save(userId,user);
 
         return findUser(userId);
     }
 
     @Override
     public void delete(UUID userId) {
-        User user = CheckNull(userId);;
+        User user = checkNull(userId);
 
         // 유저가 속한 채널에서 유저 id지우기
         List<UUID> channelList = new ArrayList<>(user.getChannelList());
@@ -164,24 +181,19 @@ public class BasicUserService implements UserService {
         // 친구 목록에서 유저 지우기
         List<UUID> friendList = new ArrayList<>(user.getFriendsList());
         for (UUID friendId : friendList) {
-            User friend = userMapper.toEntity(findUser(friendId));
+            User friend = checkNull(friendId);
             friend.getFriendsList().remove(userId); // 친구의 친구 목록에서 나 삭제
-            save(friend); // 변경된 친구저장
+            userRepository.save(friendId,friend); // 변경된 친구저장
         }
 
         // 유저 상태 삭제
         userStatusRepository.deleteByUserId(user.getId());
 
         //유저의 binarycontent 삭제
-        binaryContentRepository.deleteByUserId(user.getId());
+        binaryContentRepository.delete(user.getProfileImageId());
 
         // 유저를 데이터에서 삭제
         userRepository.delete(userId);
-    }
-
-    @Override
-    public void save(User user) {
-        userRepository.save(user.getId(),user);
     }
 
     // 추후 UserStatucService로 이전
@@ -190,7 +202,7 @@ public class BasicUserService implements UserService {
         return lastOnlineAt.isAfter(Instant.now().minus(Duration.ofMinutes(5)));
     }
 
-    private User CheckNull(UUID userId){
+    private User checkNull(UUID userId){
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }

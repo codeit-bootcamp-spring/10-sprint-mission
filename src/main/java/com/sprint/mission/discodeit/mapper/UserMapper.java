@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
-    public UserResponseDto toDto(User user){
+    public UserResponseDto toDto(User user, boolean online){
         if(user == null) return null;
 
         return new UserResponseDto(user.getId()
@@ -16,12 +16,6 @@ public class UserMapper {
                 ,user.getMessageList()
                 ,user.getChannelList()
                 ,user.getFriendsList()
-                ,true);
-    }
-
-    public User toEntity(UserResponseDto dto){
-        if(dto == null) return null;
-
-        return new User(dto.getName(), dto.getEmail(),null);
+                ,online );
     }
 }

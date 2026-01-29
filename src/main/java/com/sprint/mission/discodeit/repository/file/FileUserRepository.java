@@ -15,9 +15,6 @@ import java.util.*;
 public class FileUserRepository implements UserRepository {
     private static final String USER_FILE = "data/user.ser";
 
-    public FileUserRepository(){
-
-    }
     @Override
     public Optional<User> findById(UUID userId) {
         Map<UUID , User> data = loadData();

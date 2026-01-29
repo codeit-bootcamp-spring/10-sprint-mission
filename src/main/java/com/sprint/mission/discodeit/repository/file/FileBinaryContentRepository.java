@@ -14,7 +14,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public void deleteByUserId(UUID userId) {
+    public void delete(UUID id) {
 
     }
 }

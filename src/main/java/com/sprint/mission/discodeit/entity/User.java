@@ -56,7 +56,7 @@ public class User extends BaseEntity{
 
     public void updateProfileImg(UUID profileImageId){this.profileImageId = profileImageId;}
 
-    public void updatePassword(String password){this.password = password}
+    public void updatePassword(String password){this.password = password;}
 
     @Override
     public String toString() {

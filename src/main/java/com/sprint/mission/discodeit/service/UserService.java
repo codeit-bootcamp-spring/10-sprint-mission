@@ -16,5 +16,4 @@ public interface UserService {
     List<UserResponseDto> findFriends(UUID userId);
     UserResponseDto update(UUID userId, UserUpdateDto userUpdateDto);
     void delete(UUID userId);
-    void save(User user);
 }
