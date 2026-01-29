@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -23,16 +25,23 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContent find(UUID binaryContentId) {
-        return null;
+        return binaryContentRepository.findById(binaryContentId)
+                .orElseThrow(() -> new AssertionError("BinaryContent not found"));
     }
 
     @Override
-    public BinaryContent findAllByIdln() {
-        return null;
+    public List<BinaryContent> findAllByIdIn(List<UUID> idList) {
+        List<BinaryContent> binaryContents = new ArrayList<>();
+
+        idList.forEach(id -> binaryContents.add(binaryContentRepository.findById(id)
+                .orElseThrow(() -> new AssertionError("BinaryContent not found"))));
+
+        return binaryContents;
+
     }
 
     @Override
     public void delete(UUID binaryContentId) {
-
+        binaryContentRepository.deleteById(binaryContentId);
     }
 }
