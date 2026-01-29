@@ -27,10 +27,10 @@ public class BasicMessageService implements MessageService {
     @Override
     public Message create(MessageDto.CreateRequest request) {
         if (!channelRepository.existsById(request.channelId())) {
-            throw new NoSuchElementException("Channel not found with id " + request.channelId());
+            throw new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + request.channelId());
         }
         if (!userRepository.existsById(request.authorId())) {
-            throw new NoSuchElementException("Author not found with id " + request.authorId());
+            throw new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + request.authorId());
         }
 
         List<UUID> attachmentIds = request.attachments().stream()
@@ -44,7 +44,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public Message find(UUID messageId) {
         return messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+                .orElseThrow(() -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다: " + messageId));
     }
 
     @Override
@@ -60,7 +60,7 @@ public class BasicMessageService implements MessageService {
         }
 
         Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+                .orElseThrow(() -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다: " + messageId));
         message.update(newContent);
         return messageRepository.save(message);
     }
@@ -68,7 +68,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public void delete(UUID messageId) {
         Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+                .orElseThrow(() -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다: " + messageId));
 
         message.getAttachmentIds()
                 .forEach(binaryContentRepository::deleteById);

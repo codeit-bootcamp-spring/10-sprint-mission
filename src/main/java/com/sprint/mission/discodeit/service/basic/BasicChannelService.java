@@ -79,7 +79,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public Channel update(UUID channelId, ChannelDto.UpdatePublicRequest request) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+                .orElseThrow(() -> new NoSuchElementException("해당 채널은 찾을 수 없습니다: " + channelId));
 
         if (channel.getType() == ChannelType.PUBLIC) {
             throw new IllegalArgumentException("비공개 채널은 수정할 수 없습니다:" + channelId);
@@ -92,7 +92,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void delete(UUID channelId) {
         if (!channelRepository.existsById(channelId)) {
-            throw new NoSuchElementException("Channel with id " + channelId + " not found");
+            throw new NoSuchElementException("해당 채널을 찾을 수 없습니다:" + channelId);
         }
 
         messageRepository.deleteByChannelId(channelId);

@@ -35,7 +35,7 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + email);
         }
         if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("이미 존재하는 사용자명입니다.: " + username);
+            throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + username);
         }
         String password = request.password();
         UUID profileId = saveProfileImage(request.profileImage());
@@ -51,7 +51,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto.Response find(UUID userId) {
         return userRepository.findById(userId)
-                .map(this::mapToDto) // 헬퍼 사용
+                .map(this::mapToDto)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다:" + userId));
     }
 
@@ -71,12 +71,12 @@ public class BasicUserService implements UserService {
         String newEmail = request.newEmail();
         if(newUsername != null && !newUsername.equals(user.getUsername())) { // 값이 바뀌지 않으면 중복검사 X
             if (userRepository.existsByUsername(newUsername)) {
-                throw new IllegalArgumentException("이미 존재하는 사용자명입니다.: " + newUsername);
+                throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + newUsername);
             }
         }
         if(newEmail != null && !newEmail.equals(user.getEmail())) { // 값이 바뀌지 않으면 중복검사 X
             if (userRepository.existsByEmail(newEmail)) {
-                throw new IllegalArgumentException("이미 존재하는 사용자명입니다.: " + newEmail);
+                throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + newEmail);
             }
         }
         String newPassword = request.newPassword();
