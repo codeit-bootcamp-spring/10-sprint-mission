@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.*;
@@ -25,28 +26,24 @@ public class BasicChatCoordinator {
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
 
-//    public BasicChatCoordinator(
-//            UserService userService,
-//            ChannelService channelService,
-//            MessageService messageService,
-//            UserRepository userRepository,
-//            ChannelRepository channelRepository,
-//            MessageRepository messageRepository
-//    ) {
-//        this.userService = userService;
-//        this.channelService = channelService;
-//        this.messageService = messageService;
-//        this.userRepository = userRepository;
-//        this.channelRepository = channelRepository;
-//        this.messageRepository = messageRepository;
-//    }
+    // 내부 헬퍼: DTO가 아닌 객체를 얻어야 join/Message이 가능
+    // -----------------------------
+    private User getUser(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 ID의 유저가 없습니다: " + userId));
+    }
 
+    private Channel getChannel(UUID channelId) {
+        return channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("해당 ID의 채널이 없습니다: " + channelId));
+    }
 
     // JOIN / LEAVE
-
     public void joinChannel(UUID userId, UUID channelId) {
-        User user = userService.findUserById(userId);
-        Channel channel = channelService.findChannelById(channelId);
+        //User user = userService.findUserById(userId);
+        User user = getUser(userId);
+        Channel channel = getChannel(channelId);
+        //Channel channel = channelService.findChannelById(channelId);
 
         user.joinChannel(channel);
 
@@ -56,8 +53,10 @@ public class BasicChatCoordinator {
     }
 
     public void leaveChannel(UUID userId, UUID channelId) {
-        User user = userService.findUserById(userId);
-        Channel channel = channelService.findChannelById(channelId);
+//        User user = userService.findUserById(userId);
+//        Channel channel = channelService.findChannelById(channelId);
+        User user = getUser(userId);
+        Channel channel = getChannel(channelId);
 
         user.leaveChannel(channel);
 
@@ -72,8 +71,8 @@ public class BasicChatCoordinator {
     public Message sendMessage(UUID userId, UUID channelId, String content) {
         Validation.notBlank(content, "메세지 내용");
 
-        User user = userService.findUserById(userId);
-        Channel channel = channelService.findChannelById(channelId);
+        User user = getUser(userId);
+        Channel channel = getChannel(channelId);
 
         // 메시지 생성/저장 (messages.dat 반영)
         Message message = messageService.createMessage(content, userId, channelId);
@@ -90,17 +89,17 @@ public class BasicChatCoordinator {
     }
 
     public List<Message> getMessagesInChannel(UUID channelId) {
-        Channel channel = channelService.findChannelById(channelId);
+        Channel channel = getChannel(channelId);
         return channel.getMessages();
     }
 
     public List<Channel> getChannelsByUser(UUID userId) {
-        User user = userService.findUserById(userId);
+        User user = getUser(userId);
         return user.getJoinedChannels();
     }
 
     public List<User> getUsersInChannel(UUID channelId) {
-        Channel channel = channelService.findChannelById(channelId);
+        Channel channel = getChannel(channelId);
         return channel.getParticipants();
     }
 
@@ -118,7 +117,6 @@ public class BasicChatCoordinator {
         // repo에서 삭제
         messageService.deleteMessage(messageId);
 
-        // 그래프 정리
         if (sender != null) sender.getMessages().remove(msg);
         if (channel != null) channel.getMessages().remove(msg);
 
@@ -133,7 +131,7 @@ public class BasicChatCoordinator {
     // 유저 삭제
 
     public void deleteUserClean(UUID userId) {
-        User user = userService.findUserById(userId);
+        User user = getUser(userId);
 
         // 채널 퇴장(양방향 정리) + 파일 반영
         List<Channel> joined = new ArrayList<>(user.getJoinedChannels());
@@ -163,7 +161,7 @@ public class BasicChatCoordinator {
     // 채널 삭제
 
     public void deleteChannelClean(UUID channelId) {
-        Channel channel = channelService.findChannelById(channelId);
+        Channel channel = getChannel(channelId);
 
         //  참가자 전부 퇴장
         List<User> participants = new ArrayList<>(channel.getParticipants());
@@ -190,9 +188,21 @@ public class BasicChatCoordinator {
     }
 
 
+
     //user 업데이트 및 채널,메세지 영속화
-    public User updateUserCascade(UUID userId, String newName, String newAlias) {
-        User updated = userService.updateUser(userId, newName, newAlias);
+    public void updateUserCascade(UUID userId, String newName, String newAlias) {
+        userService.updateUser(new UserUpdateRequest(
+                userId,
+                newName,
+                newAlias,
+                null,
+                null,
+                null
+        ));
+
+        // 유저를 repo로 가져와서 저장
+        User updatedEntity = getUser(userId);
+
         // 이 유저를 포함하는 채널들.... 저장?
         for(Channel ch: channelService.getChannelAll()) {
             boolean contains = ch.getParticipants().stream()
@@ -207,8 +217,7 @@ public class BasicChatCoordinator {
             }
         }
         // 유저 데이터도 한번 더 저장!!
-        userRepository.save(updated);
-        return updated;
+        userRepository.save(updatedEntity);
     }
 
     // Channel 업데이트 + 메세지 영속화

@@ -1,9 +1,7 @@
+/*
 package com.sprint.mission.discodeit.service.jcf;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.utils.Validation;
 import java.util.*;
@@ -31,7 +29,7 @@ public class JCFUserService implements UserService {
 
     // 생성
     @Override
-    public User createUser(String userName, String alias) {
+    public User createUser(String userName, String alias, String email, String password) {
         // 유효성 검사
         Validation.notBlank(userName, "이름");
         Validation.notBlank(alias, "별명");
@@ -45,7 +43,7 @@ public class JCFUserService implements UserService {
 //                user -> user.getAlias().equals(alias),
 //                "이미 존재하는 별명입니다: " + alias
 //        );
-        User user = new User(userName, alias);
+        User user = new User(userName, alias, email, password);
         userRepo.save(user);
         //data.put(user.getId(), user);
         return user;
@@ -60,7 +58,7 @@ public class JCFUserService implements UserService {
     }
 
     // ID로 유저을 조회
-    public User findUserById(UUID uuid) {
+    public void findUserById(UUID uuid) {
         return userRepo.findById(uuid)
                 .orElseThrow(() -> new NoSuchElementException("해당 ID의 유저가 없습니다: " + uuid));
     }
@@ -147,4 +145,4 @@ public class JCFUserService implements UserService {
 //        // 현재 uuid 채널의 참가자 리스트 반환.
 //    }
 
-
+*/

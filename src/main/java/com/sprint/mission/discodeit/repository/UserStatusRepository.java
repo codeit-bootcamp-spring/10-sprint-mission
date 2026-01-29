@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+
 public interface UserStatusRepository {
     void save(UserStatus userStatus);
 
@@ -14,4 +15,7 @@ public interface UserStatusRepository {
     List<UserStatus> findAll();
 
     void deleteById(UUID id);
+
+    //추가
+    Optional<UserStatus> findByUserId(UUID userId);
 }

@@ -1,3 +1,4 @@
+/*
 package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
@@ -570,99 +571,176 @@ public class JavaApplication {
 //        System.out.println("=====================================");
 
 
-    //  실행 시 기존 데이터 파일 삭제 (테스트용 초기화)
-        deleteIfExists(Path.of("users.dat"));
-        deleteIfExists(Path.of("channels.dat"));
-        deleteIfExists(Path.of("messages.dat"));
-        // 객체 생성
-        UserRepository userRepo = new FileUserRepository();
-        ChannelRepository channelRepo = new FileChannelRepository();
-        MessageRepository messageRepo = new FileMessageRepository();
+        //  실행 시 기존 데이터 파일 삭제 (테스트용 초기화)
+//        deleteIfExists(Path.of("users.dat"));
+//        deleteIfExists(Path.of("channels.dat"));
+//        deleteIfExists(Path.of("messages.dat"));
+//        // 객체 생성
+//        UserRepository userRepo = new FileUserRepository();
+//        ChannelRepository channelRepo = new FileChannelRepository();
+//        MessageRepository messageRepo = new FileMessageRepository();
+//
+//
+//
+//        UserService userService = new BasicUserService(userRepo, channelRepo);
+//        ChannelService channelService = new BasicChannelService(channelRepo);
+//        MessageService messageService = new BasicMessageService(messageRepo);
+//
+//        BasicChatCoordinator coordinator = new BasicChatCoordinator(
+//                userService, channelService, messageService,
+//                userRepo, channelRepo, messageRepo
+//        );
+//
+//        // 유저/채널 2개 생성
+//        User u1 = userService.createUser("종인", "jongin", "dfdf", "dfas");
+//        User u2 = userService.createUser("민수", "minsu", "dasfasd" , "sadf");
+//
+//        Channel general = channelService.createChannel("general");
+//        Channel music = channelService.createChannel("music");
+//
+//        // u2는 채널 2개 참가
+//        coordinator.joinChannel(u2.getId(), general.getId());
+//        coordinator.joinChannel(u2.getId(), music.getId());
+//
+//        // u2 메시지 3개 (general 2, music 1)
+//        Message g1 = coordinator.sendMessage(u2.getId(), general.getId(), "g-hello1");
+//        Message g2 = coordinator.sendMessage(u2.getId(), general.getId(), "g-hello2");
+//        Message m1 = coordinator.sendMessage(u2.getId(), music.getId(), "m-hello1");
+//
+//        System.out.println("=== BEFORE UPDATE (memory) ===");
+//        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
+//                userService, channelService, messageService);
+//
+//        // updateUserCascade
+//        coordinator.updateUserCascade(u2.getId(), "민수(수정)", "minsu2");
+//
+//        System.out.println(" AFTER updateUserCascade (memory) ");
+//        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
+//                userService, channelService, messageService);
+//
+//        // updateChannelCascade 검증 <music -> music-room>
+//        coordinator.updateChannelCascade(music.getId(), "music-room");
+//
+//        System.out.println(" AFTER updateChannelCascade (memory) ");
+//        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
+//                userService, channelService, messageService);
+//
+//        // RELOAD CHECK
+//        UserRepository userRepo2 = new FileUserRepository();
+//        ChannelRepository channelRepo2 = new FileChannelRepository();
+//        MessageRepository messageRepo2 = new FileMessageRepository();
+//
+//        UserService userService2 = new BasicUserService(userRepo2);
+//        ChannelService channelService2 = new BasicChannelService(channelRepo2);
+//        MessageService messageService2 = new BasicMessageService(messageRepo2);
+//
+//        System.out.println("AFTER UPDATE (reload from file)");
+//        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
+//                userService2, channelService2, messageService2);
+//
+//        System.out.println(" END ");
+//    }
+//
+//    private static void printCore(
+//            UUID u2Id, UUID generalId, UUID musicId,
+//            UUID g1Id, UUID g2Id, UUID m1Id,
+//            UserService userService, ChannelService channelService, MessageService messageService
+//    ) {
+//        User u2 = userService.findUserById(u2Id);
+//        Channel general = channelService.findChannelById(generalId);
+//        Channel music = channelService.findChannelById(musicId);
+//
+//        Message g1 = messageService.getMessageById(g1Id);
+//        Message g2 = messageService.getMessageById(g2Id);
+//        Message m1 = messageService.getMessageById(m1Id);
+//
+//        System.out.println("u2 별명 = " + u2.getAlias());
+//        System.out.println("general 참가자 = " + general.getParticipants());
+//        System.out.println("music 참가자   = " + music.getParticipants());
+//
+//        System.out.println("g1: " + g1.getSender().getAlias() + " -> " + g1.getChannel().getChannelName() + " | " + g1.getMessageContent());
+//        System.out.println("g2: " + g2.getSender().getAlias() + " -> " + g2.getChannel().getChannelName() + " | " + g2.getMessageContent());
+//        System.out.println("m1: " + m1.getSender().getAlias() + " -> " + m1.getChannel().getChannelName() + " | " + m1.getMessageContent());
+//        System.out.println();
+//    }
 
-        UserService userService = new BasicUserService(userRepo);
-        ChannelService channelService = new BasicChannelService(channelRepo);
-        MessageService messageService = new BasicMessageService(messageRepo);
 
-        BasicChatCoordinator coordinator = new BasicChatCoordinator(
-                userService, channelService, messageService,
-                userRepo, channelRepo, messageRepo
+    }
+}
+*/
+/*
+package com.sprint.mission.discodeit;
+
+import com.sprint.mission.discodeit.dto.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.UserResponse;
+import com.sprint.mission.discodeit.dto.UserUpdateRequest;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jcf.*;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
+
+import java.util.UUID;
+
+public class JavaApplication {
+
+    public static void main(String[] args) {
+
+        // ===== Repository 준비 =====
+        UserRepository userRepository = new JCFUserRepository();
+        UserStatusRepository userStatusRepository = new JCFUserStatusRepository();
+        BinaryContentRepository binaryContentRepository = new JCFBinaryContentRepository();
+
+        // ===== Service 생성 =====
+        UserService userService = new BasicUserService(
+                userRepository,
+                userStatusRepository,
+                binaryContentRepository
         );
 
-        // 유저/채널 2개 생성
-        User u1 = userService.createUser("종인", "jongin");
-        User u2 = userService.createUser("민수", "minsu");
+        System.out.println("=== 1. 유저 생성 ===");
+        UserCreateRequest createRequest = new UserCreateRequest(
+                "홍길동",
+                "gildong",
+                "gildong@test.com",
+                "1234",
+                null   // 프로필 이미지 없음
+        );
 
-        Channel general = channelService.createChannel("general");
-        Channel music = channelService.createChannel("music");
+        UserResponse created = userService.createUser(createRequest);
+        System.out.println(created);
 
-        // u2는 채널 2개 참가
-        coordinator.joinChannel(u2.getId(), general.getId());
-        coordinator.joinChannel(u2.getId(), music.getId());
+        UUID userId = created.id();
 
-        // u2 메시지 3개 (general 2, music 1)
-        Message g1 = coordinator.sendMessage(u2.getId(), general.getId(), "g-hello1");
-        Message g2 = coordinator.sendMessage(u2.getId(), general.getId(), "g-hello2");
-        Message m1 = coordinator.sendMessage(u2.getId(), music.getId(), "m-hello1");
+        System.out.println("\n=== 2. ID로 조회 ===");
+        UserResponse found = userService.findUserById(userId);
+        System.out.println(found);
 
-        System.out.println("=== BEFORE UPDATE (memory) ===");
-        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
-                userService, channelService, messageService);
+        System.out.println("\n=== 3. 유저 정보 수정 ===");
+        UserUpdateRequest updateRequest = new UserUpdateRequest(
+                userId,
+                "홍길동2",     // userName 변경
+                "gildong2",    // alias 변경
+                null,          // email 변경 안 함
+                null,          // password 변경 안 함
+                null           // 프로필 이미지 변경 안 함
+        );
 
-        // updateUserCascade
-        coordinator.updateUserCascade(u2.getId(), "민수(수정)", "minsu2");
+        UserResponse updated = userService.updateUser(updateRequest);
+        System.out.println(updated);
 
-        System.out.println(" AFTER updateUserCascade (memory) ");
-        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
-                userService, channelService, messageService);
+        System.out.println("\n=== 4. 전체 유저 조회 ===");
+        userService.getUserAll().forEach(System.out::println);
 
-        // updateChannelCascade 검증 <music -> music-room>
-        coordinator.updateChannelCascade(music.getId(), "music-room");
+        System.out.println("\n=== 5. 유저 삭제 ===");
+        userService.deleteUser(userId);
 
-        System.out.println(" AFTER updateChannelCascade (memory) ");
-        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
-                userService, channelService, messageService);
-
-        // RELOAD CHECK
-        UserRepository userRepo2 = new FileUserRepository();
-        ChannelRepository channelRepo2 = new FileChannelRepository();
-        MessageRepository messageRepo2 = new FileMessageRepository();
-
-        UserService userService2 = new BasicUserService(userRepo2);
-        ChannelService channelService2 = new BasicChannelService(channelRepo2);
-        MessageService messageService2 = new BasicMessageService(messageRepo2);
-
-        System.out.println("AFTER UPDATE (reload from file)");
-        printCore(u2.getId(), general.getId(), music.getId(), g1.getId(), g2.getId(), m1.getId(),
-                userService2, channelService2, messageService2);
-
-        System.out.println(" END ");
+        System.out.println("\n=== 6. 삭제 후 전체 조회 ===");
+        userService.getUserAll().forEach(System.out::println);
     }
-
-    private static void printCore(
-            UUID u2Id, UUID generalId, UUID musicId,
-            UUID g1Id, UUID g2Id, UUID m1Id,
-            UserService userService, ChannelService channelService, MessageService messageService
-    ) {
-        User u2 = userService.findUserById(u2Id);
-        Channel general = channelService.findChannelById(generalId);
-        Channel music = channelService.findChannelById(musicId);
-
-        Message g1 = messageService.getMessageById(g1Id);
-        Message g2 = messageService.getMessageById(g2Id);
-        Message m1 = messageService.getMessageById(m1Id);
-
-        System.out.println("u2 별명 = " + u2.getAlias());
-        System.out.println("general 참가자 = " + general.getParticipants());
-        System.out.println("music 참가자   = " + music.getParticipants());
-
-        System.out.println("g1: " + g1.getSender().getAlias() + " -> " + g1.getChannel().getChannelName() + " | " + g1.getMessageContent());
-        System.out.println("g2: " + g2.getSender().getAlias() + " -> " + g2.getChannel().getChannelName() + " | " + g2.getMessageContent());
-        System.out.println("m1: " + m1.getSender().getAlias() + " -> " + m1.getChannel().getChannelName() + " | " + m1.getMessageContent());
-        System.out.println();
-    }
-
 }
-
+*/
 
 
 

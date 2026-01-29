@@ -1,10 +1,10 @@
+/*
 package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.utils.Validation;
 
 import java.io.*;
-import java.time.temporal.ValueRange;
 import java.util.*;
 
 public class FileUserService implements UserService , Serializable {
@@ -15,7 +15,7 @@ public class FileUserService implements UserService , Serializable {
         this.data = loadFromFile();
     }
     @Override
-    public User createUser(String userName, String alias) {
+    public User createUser(String userName, String alias, String email, String password) {
         Validation.notBlank(userName, "이름");
         Validation.notBlank(alias, "별명");
 
@@ -24,7 +24,7 @@ public class FileUserService implements UserService , Serializable {
                 user->user.getAlias().equals(alias),
                 "이미 존재하는 별명입니다: " + alias
         );
-        User user = new User(userName, alias);
+        User user = new User(userName, alias, email, password);
         data.put(user.getId(), user);
         saveToFile();
         return user;
@@ -67,7 +67,7 @@ public class FileUserService implements UserService , Serializable {
     }
 
     @Override
-    public User findUserById(UUID id) {
+    public void findUserById(UUID id) {
         User user = data.get(id);
         if (user == null) {
             throw new NoSuchElementException("해당 ID의 유저가 없습니다: " + id);
@@ -97,3 +97,4 @@ public class FileUserService implements UserService , Serializable {
     }
 
 }
+*/
