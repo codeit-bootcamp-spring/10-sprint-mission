@@ -36,7 +36,6 @@ public class BasicMessageService implements MessageService {
         if (!userRepository.existsById(req.authorID())) {
             throw new NoSuchElementException("Author not found with id " + req.authorID());
         }
-
         // 입력받은 DTO에서 binaryContents를 뽑아오는데... 선택적이라 null일수도 있음 -> null 허용을 위해 Optional
         List<UUID> attachmentIds = Optional.ofNullable(req.binaryContents())
                 .orElse(List.of()) // 뽑았는데 null이 들어가있으면 빈 리스트를 반환?
@@ -61,8 +60,10 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> findAll() {
-        return messageRepository.findAll();
+    public List<Message> findallByChannelId(UUID channelId) {
+        Objects.requireNonNull(channelId, "유효하지 않은 채널id 입니다.");
+
+        return messageRepository.findByChannelId(channelId);
     }
 
     @Override
