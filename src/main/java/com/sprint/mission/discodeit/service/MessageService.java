@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.MessageResponseDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.MessageType;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,10 +13,10 @@ public interface MessageService {
     MessageResponseDTO createMessage(MessageCreateRequestDTO messageCreateRequestDTO);
 
     // 메시지 단건 조회
-    Message searchMessage(UUID targetMessageId);
+    MessageResponseDTO searchMessage(UUID targetMessageId);
 
-    // 메시지 전체 조회
-    List<Message> searchMessageAll();
+    // 특정 채널의 전체 메시지 목록 조회
+    List<MessageResponseDTO> searchMessageAllByChannelId(UUID channelId);
 
     // 메시지 수정
     Message updateMessage(UUID targetMessageId, String newMessage);

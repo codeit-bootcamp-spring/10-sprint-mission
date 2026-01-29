@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.MessageResponseDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -14,7 +14,6 @@ import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -64,36 +63,40 @@ public class BasicMessageService implements MessageService {
 
     // 메시지 단건 조회
     @Override
-    public Message searchMessage(UUID targetMessageId) {
-        return messageRepository.findById(targetMessageId)
+    public MessageResponseDTO searchMessage(UUID targetMessageId) {
+        // 1. 메시지 존재 여부 확인
+        Message targetMessage = messageRepository.findById(targetMessageId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
+
+        // 2. 응답 DTO 생성 및 반환
+        return toResponseDTO(targetMessage);
     }
 
-    // 메시지 전체 조회
+    // 특정 채널의 전체 메시지 목록 조회
     @Override
-    public List<Message> searchMessageAll() {
-        return messageRepository.findAll();
-    }
+    public List<MessageResponseDTO> searchMessageAllByChannelId(UUID channelId) {
+        // 1. 채널 존재 여부 확인
+        Channel taregetChannel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
-    // 특정 유저가 발행한 메시지 다건 조회
-    public List<Message> searchMessagesByUserId(UUID targetUserId) {
-        userRepository.findById(targetUserId).orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
-
-        List<Message> messages = searchMessageAll();               // 함수가 실행된 시점에서 가장 최신 메시지 목록
-
-        return messages.stream()
-                .filter(message -> message.getAuthorId().equals(targetUserId))
+        // 2. 특정 채널의 전체 메시지 응답 DTO 변환 및 반환
+        return messageRepository.findAll().stream()
+                .filter(message -> message.getChannelId().equals(taregetChannel.getId()))
+                // 메시지 -> 메시지 응답 반환
+                .map(this::toResponseDTO)
                 .toList();
     }
 
-    // 특정 채널의 메시지 발행 리스트 조회
-    public List<Message> searchMessagesByChannelId(UUID targetChannelId) {
-        channelRepository.findById(targetChannelId).orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+    // 특정 유저가 발행한 메시지 다건 조회
+    public List<MessageResponseDTO> searchMessagesByUserId(UUID targetUserId) {
+        // 1. 사용자 존재 여부 확인
+        User targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
 
-        List<Message> messages = searchMessageAll();
-
-        return messages.stream()
-                .filter(message -> message.getChannelId().equals(targetChannelId))
+        // 2. 특정 사용자가 발행한 전체 메시지 응답 DTO 변환 및 반환
+        return messageRepository.findAll().stream()
+                .filter(message -> message.getAuthorId().equals(targetUser.getId()))
+                .map(this::toResponseDTO)
                 .toList();
     }
 
