@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.*;
 
 
-public class FileUserService implements UserService {
+public class FileUserService implements UserService{
     private final String FILE_PATH = "users.dat";
     private MessageService messageService;
 

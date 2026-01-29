@@ -9,9 +9,13 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
@@ -19,24 +23,17 @@ public class BasicMessageService implements MessageService {
     private final UserService userService;
     private final ChannelService channelService;
 
-    public BasicMessageService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository, UserService userService, ChannelService channelService) {
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.messageRepository = messageRepository;
-        this.userService = userService;
-        this.channelService = channelService;
-    }
 
     @Override
-    public Message createMessage(UUID channelId, UUID userId, String content) {
+    public Message createMessage(UUID channelId, UUID authorId, String content) {
         Channel channel = channelService.getChannel(channelId);
-        User user = userService.getUser(userId);
+        User user = userService.getUser(authorId);
 
         if (!channel.getUsers().contains(user)) {
             throw new IllegalArgumentException("채널에 먼저 입장해야 메시지를 남길 수 있습니다.");
         }
         validateMessageContent(content);
-        Message message = new Message(channel, user, content);
+        Message message = new Message(channelId, authorId, content);
 
         channel.addMessage(message);
         user.addMessage(message);
@@ -68,8 +65,8 @@ public class BasicMessageService implements MessageService {
 
         messageRepository.save(message);
 
-        User msgUser = message.getUser();
-        if (msgUser != null && msgUser.getId() != null) {
+        User msgUser = message.getAuthorId();
+        if (msgUser != null) {
             User user = userRepository.findById(msgUser.getId())
                     .orElse(null);
 

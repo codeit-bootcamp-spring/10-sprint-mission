@@ -1,32 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import lombok.Getter;
 
+@Getter
 public class Message extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     private String content;
-    private final User user;
-    private final Channel channel;
+    private final UUID authorId;
+    private final UUID channelId;
+    private final List<UUID> attachmentIds;
 
-    public Message(Channel channel, User user, String content) {
+    public Message(UUID channelId, UUID authorId, String content, List<UUID> attachmentIds) {
         super();
         this.content = content;
-        this.user = user;
-        this.channel = channel;
+        this.authorId = authorId;
+        this.channelId = channelId;
+        this.attachmentIds = attachmentIds != null ? attachmentIds : new ArrayList<>();
     }
-
-    public String getContent() { return content; }
-    public User getUser() { return user; }
-    public Channel getChannel() { return channel; }
+    public Message(UUID channelId, UUID authorId, String content) {
+        this(channelId, authorId, content, null);
+    }
     public void updateContent(String content) {
         this.content = content;
         updateTimestamps();
     }
+
     @Override
     public String toString() {
-        return "메시지[채널: " + channel.getName() +
-                ", 작성자: " + user.getName() +
-                ", 내용: " + content +"]";
+        return "메시지[채널ID: " + channelId +
+                ", 작성자ID: " + authorId +
+                ", 내용: " + content + "]";
     }
 
     @Override

@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
-public class JCFUserService implements UserService {
+public class JCFUserService implements UserService{
     private final Map<UUID, User> data;
     private MessageService messageService;
     public JCFUserService() {

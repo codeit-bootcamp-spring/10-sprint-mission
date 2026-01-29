@@ -102,7 +102,7 @@ public class FileChannelService implements ChannelService {
         if (!channel.getUsers().contains(user)) throw new IllegalArgumentException("참가하고 있지 않은 채널입니다.");
         if (messageService != null) {
             List<Message> targetMessages = channel.getMessages().stream()
-                    .filter(m -> m.getUser().equals(user)).toList();
+                    .filter(m -> m.getAuthorId().equals(user.getId())).toList();
             targetMessages.forEach(m -> messageService.deleteMessage(m.getId()));
         }
         channel.removeUser(user);
