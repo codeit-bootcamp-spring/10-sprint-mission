@@ -1,9 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserInfo;
-import com.sprint.mission.discodeit.dto.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.UserInfoDto;
+import com.sprint.mission.discodeit.dto.UserCreateDto;
+import com.sprint.mission.discodeit.dto.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ClearMemory;
 import com.sprint.mission.discodeit.service.UserService;
@@ -21,9 +22,10 @@ public class BasicUserService implements UserService, ClearMemory {
     private final MessageRepository messageRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final UserMapper userMapper;
 
     @Override
-    public User create(UserCreateRequest request) {
+    public User create(UserCreateDto request) {
         userRepository.findByName(request.userName())
                 .ifPresent(u -> {
                     throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
@@ -46,38 +48,32 @@ public class BasicUserService implements UserService, ClearMemory {
     }
 
     @Override
-    public UserInfo findById(UUID id) {
+    public UserInfoDto findById(UUID id) {
         User user = userRepository.findById(id).orElseThrow(()
                 -> new NoSuchElementException("실패 : 존재하지 않는 사용자 ID입니다."));
-        return userToUserInfo(user);
-    }
-
-    public UserInfo userToUserInfo(User user) {
-        UserStatus userStatus = userStatusRepository.findByUserId(user.getId()).orElseThrow();
-
-        UserInfo userInfo = new UserInfo(user.getName(), user.getId(), userStatus.getStatusType(), user.getEmail(), user.getProfileId());
-        return userInfo;
+        UserStatus userStatus = userStatusRepository.findByUserId(user.getId()).orElse(null);
+        return userMapper.userToUserInfoDto(user, userStatus);
     }
 
     @Override
-    public List<UserInfo> findAll() {
+    public List<UserInfoDto> findAll() {
         List<User> users = userRepository.readAll();
         List<UserStatus> userStatuses = userStatusRepository.readAll();
         Map<UUID, UserStatus> statusMap
                 = userStatuses.stream().collect(Collectors.toMap(UserStatus::getUserId, us -> us));
-        List<UserInfo> infoList
+        List<UserInfoDto> infoList
                 = users.stream()
                 .map(u -> {
                     UserStatus userStatus = statusMap.get(u.getId());
                     StatusType status = (userStatus == null) ? StatusType.OFFLINE : userStatus.getStatusType();
-                    return new UserInfo(u.getName(), u.getId(), status, u.getEmail(), u.getProfileId());
+                    return new UserInfoDto(u.getName(), u.getId(), status, u.getEmail(), u.getProfileId());
                 })
                 .toList();
         return infoList;
     }
 
     @Override
-    public User update(UserUpdateRequest request) {
+    public User update(UserUpdateDto request) {
         User user = userRepository.findById(request.userId()).orElseThrow();
         user.updateName(request.newName()); // 이름 변경
 
@@ -112,15 +108,15 @@ public class BasicUserService implements UserService, ClearMemory {
 
     @Override
     public void delete(UUID id) {
-        UserInfo userInfo = findById(id);
+        UserInfoDto userInfoDto = findById(id);
 
         // 프로필 삭제
-        if(userInfo.profileId() != null) {
-            binaryContentRepository.delete(userInfo.profileId());
+        if(userInfoDto.profileId() != null) {
+            binaryContentRepository.delete(userInfoDto.profileId());
         }
 
         // UserStatus 삭제
-        userStatusRepository.deleteByUserId(userInfo.userId());
+        userStatusRepository.deleteByUserId(userInfoDto.userId());
 
         // 사용자가 등록되어 있는 채널들
         List<Channel> joinedChannels = channelRepository.readAll().stream()

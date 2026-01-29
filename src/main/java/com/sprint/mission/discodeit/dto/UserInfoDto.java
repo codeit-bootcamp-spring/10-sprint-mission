@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.entity.StatusType;
 
 import java.util.UUID;
 
-public record UserInfo(
+public record UserInfoDto(
 
         String userName,
         UUID userId,
