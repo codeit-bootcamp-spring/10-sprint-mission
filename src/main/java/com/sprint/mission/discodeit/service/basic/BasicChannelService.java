@@ -163,6 +163,9 @@ public class BasicChannelService implements ChannelService {
         Objects.requireNonNull(req.channelID(), "유효하지 않은 설명입니다.");
 
         Channel channel = channelRepository.findById(req.channelID()).orElseThrow(() -> new IllegalStateException("해당 채널 존재하지 않음."));
+        if(channel.getType() == ChannelType.PRIVATE){
+            throw new IllegalStateException("개인 채널은 업데이트가 불가능합니다.");
+        }
         channel.update(req.newName(), req.newDescription());
         return channelRepository.save(channel);
     }
