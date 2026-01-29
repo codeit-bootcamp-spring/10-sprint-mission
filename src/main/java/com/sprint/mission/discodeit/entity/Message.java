@@ -17,12 +17,15 @@ public class Message extends BaseEntity implements Serializable {
     private final User user;
     @Getter
     private final Channel channel;
+    @Getter
+    private final BinaryContent binaryContent;
 
     // constructor
-    public Message(String content, User user, Channel channel) {
+    public Message(String content, User user, Channel channel, BinaryContent binaryContent) {
         this.content = content;
         this.user = user;
         this.channel = channel;
+        this.binaryContent = binaryContent;
     }
 
     public UUID getUserId() {

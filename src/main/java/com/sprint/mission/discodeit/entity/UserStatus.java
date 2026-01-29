@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.Serial;
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
@@ -14,11 +15,12 @@ public class UserStatus extends BaseEntity{
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private final UUID userId;
+
     public enum Status {
         ONLINE, OFFLINE, AWAY
     }
 
-    private final User user;
     private Instant lastActiveTime = Instant.EPOCH;
 
     private Status status = Status.OFFLINE;

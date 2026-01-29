@@ -34,9 +34,9 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel findById(UUID id) {
-        Objects.requireNonNull(id, "채널 Id가 유효하지 않습니다.");
-        return Objects.requireNonNull(data.get(id), "Id에 해당하는 채널이 존재하지 않습니다.");
+    public Channel findById(UUID userId) {
+        Objects.requireNonNull(userId, "채널 Id가 유효하지 않습니다.");
+        return Objects.requireNonNull(data.get(userId), "Id에 해당하는 채널이 존재하지 않습니다.");
 
     }
 

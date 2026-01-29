@@ -25,9 +25,8 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel findById(UUID id) {
-        return channelRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
+    public Channel findById(UUID channelId) {
+        return Objects.requireNonNull(channelRepository.findById(channelId));
     }
 
     @Override

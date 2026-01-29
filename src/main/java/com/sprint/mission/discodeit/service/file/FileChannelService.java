@@ -37,9 +37,9 @@ public class FileChannelService implements ChannelService {
     }
 
     @Override
-    public Channel findById(UUID id) {
-        Objects.requireNonNull(id, "채널 Id가 유효하지 않습니다.");
-        Channel channel = data.get(id);
+    public Channel findById(UUID channelId) {
+        Objects.requireNonNull(channelId, "채널 Id가 유효하지 않습니다.");
+        Channel channel = data.get(channelId);
 
         return Objects.requireNonNull(channel, "Id에 해당하는 채널이 존재하지 않습니다.");
     }

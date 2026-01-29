@@ -17,28 +17,16 @@ public class BinaryContent implements Serializable {
     private final UUID id;
     private final Instant createdAt;
 
-    // 의존성 ID 필드
-    private final UUID userId;
-    private final UUID messageId;
-
     // 파일의 정보를 나타내는 필드
-    private final String fileName;
-    private final String fileUrl;
+    private final String filePath;
     private final String contentType;
 
-    public BinaryContent(UUID id, Instant createdAt, String fileName, String fileUrl,
-                          String contentType, UUID userId, UUID messageId) {
+    public BinaryContent(String filePath, String contentType) {
 
-        if ((userId == null) == (messageId == null)) {
-            throw new IllegalArgumentException("바이너리 데이터는 유저(프로필) 또는 메시지(첨부파일) 중 정확히 하나에만 귀속되어야 합니다.");
-        }
-
-        this.id = id;
-        this.createdAt = createdAt;
-        this.fileName = fileName;
-        this.fileUrl = fileUrl;
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.ofEpochSecond(System.currentTimeMillis());
+        this.filePath = filePath;
         this.contentType = contentType;
-        this.userId = userId;
-        this.messageId = messageId;
-    };
+
+    }
 }

@@ -27,7 +27,7 @@ public class JCFUserService implements UserService {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
 
-        User user = new User(request.name(), request.email(), request.profileImageUrl());
+        User user = new User(request.name(), request.email());
         data.put(user.getId(), user);
 
         return UserDto.UserResponse.from(user, new UserStatus(user));
@@ -54,7 +54,6 @@ public class JCFUserService implements UserService {
 
         Optional.ofNullable(request.name()).ifPresent(user::updateName);
         Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
-        Optional.ofNullable(request.profileImageUrl()).ifPresent(user::updateProfileImageUrl);
         data.put(userId, user);
 
         return UserDto.UserResponse.from(user, new UserStatus(user));

@@ -31,7 +31,7 @@ public class FileUserService implements UserService {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
 
-        User user = new User(request.name(), request.email(), request.profileImageUrl());
+        User user = new User(request.name(), request.email());
 
         // 저장 로직
         data.put(user.getId(), user);
@@ -60,7 +60,6 @@ public class FileUserService implements UserService {
 
         Optional.ofNullable(request.name()).ifPresent(user::updateName);
         Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
-        Optional.ofNullable(request.profileImageUrl()).ifPresent(user::updateProfileImageUrl);
 
         saveToFile();
         return UserDto.UserResponse.from(user, new UserStatus(user));

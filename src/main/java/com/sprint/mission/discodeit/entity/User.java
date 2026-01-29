@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class User extends BaseEntity implements Serializable {
     @Serial
@@ -15,19 +16,20 @@ public class User extends BaseEntity implements Serializable {
     // 유저가 속한 채널 목록
     private final List<Channel> channels = new ArrayList<>();
 
+    private UUID binaryContentId;
+
+
     @Getter
     private String name;
     @Getter
     private String email;
-    @Getter
-    private String profileImageUrl;
 
     // constructor
-    public User(String name, String email, String profileImageUrl) {
+    public User(String name, String email, UUID binaryContentId) {
         super();
         this.name = Objects.requireNonNull(name, "이름은 필수입니다.");
         this.email = Objects.requireNonNull(email, "이메일은 필수입니다.");
-        this.profileImageUrl = profileImageUrl;
+        this.binaryContentId = binaryContentId;
     }
 
     // Getter, update
@@ -45,10 +47,10 @@ public class User extends BaseEntity implements Serializable {
         updateTimestamp();
     }
 
-    public void updateProfileImageUrl(String profileImageUrl) {
-        this.profileImageUrl = profileImageUrl;
-        updateTimestamp();
+    public void updateBinaryContentId(UUID binaryContentId) {
+        this.binaryContentId = binaryContentId;
     }
+
 
     // 채널 참여 시 채널 목록에 채널 추가
     public void joinChannel(Channel channel) {

@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public interface UserRepository {
     void save(User user);
-    Optional<User> findById(UUID id);
+    User findById(UUID id);
     List<User> findAll();
     void delete(UUID id);
 }
