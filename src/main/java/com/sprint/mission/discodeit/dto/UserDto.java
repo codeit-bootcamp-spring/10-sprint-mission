@@ -48,11 +48,9 @@ public class UserDto {
     }
 
     public record UpdateRequest(
-            @NotBlank
             String newUsername,
-            @Email @NotBlank
+            @Email
             String newEmail,
-            @NotBlank
             String newPassword,
             // 선택적 프로필 이미지
             BinaryContentDto.CreateRequest newProfileImage

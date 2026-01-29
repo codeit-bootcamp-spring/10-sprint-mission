@@ -13,7 +13,6 @@ public class ChannelDto {
     public record CreatePublicRequest(
             @NotBlank
             String name,
-            @NotBlank
             String description
 
     ) {}
@@ -33,7 +32,7 @@ public class ChannelDto {
             Instant lastMessageAt
     ) {
         // factory method
-        // 채널의 정보 + readStatus에서 구한 채널에 속한 멤버의 정보 + messageRepo에서 채널 내 메시지 중 가장 느린 메시지
+        // 채널의 정보 + readStatus에서 구한 채널에 속한 멤버의 정보 + messageRepo에서 채널 내 메시지 중 가장 느린 메시지 생성 시간
         public static Response from(Channel channel, List<UUID> memberIds, Instant lastMessageAt ) {
             return new Response(
                     channel.getId(),
@@ -51,7 +50,6 @@ public class ChannelDto {
     public record UpdatePublicRequest(
             @NotBlank
             String newName,
-            @NotBlank
             String newDescription
 
     ){}
