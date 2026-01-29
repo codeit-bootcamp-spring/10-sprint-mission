@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ public class User extends CommonEntity{
     private String userName;
     private transient String password;
     private String email;
+    @Setter
+    private UUID profileId;
     private final List<UUID> channelIds = new ArrayList<>();
     private final List<UUID> messageIds = new ArrayList<>();
 
@@ -63,5 +66,9 @@ public class User extends CommonEntity{
     public void removeMessageId(UUID messageId) {
         messageIds.remove(messageId);
         this.updateAt = Instant.now();
+    }
+
+    public boolean isProfileImageUploaded() {
+        return profileId != null;
     }
 }

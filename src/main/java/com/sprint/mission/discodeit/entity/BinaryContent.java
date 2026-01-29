@@ -12,15 +12,11 @@ public class BinaryContent implements Serializable {
     private static final long serialVersionUID = 1L;
     private final UUID id;
     private final Instant createdAt;
-    private final UUID profileId;
-    private final UUID attachmentId;
     private final byte[] content;
 
-    public BinaryContent(UUID profileId, UUID attachmentId, byte[] content) {
+    public BinaryContent(byte[] content) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.profileId = profileId;
-        this.attachmentId = attachmentId;
         this.content = content;
     }
 
