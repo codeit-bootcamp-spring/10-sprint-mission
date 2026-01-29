@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> upstream/김혜성
 @rem
 @rem Copyright 2015 the original author or authors.
 @rem
@@ -88,6 +91,8 @@ exit /b 1
 if "%OS%"=="Windows_NT" endlocal
 
 :omega
+<<<<<<< HEAD
+=======
 =======
 @rem
 @rem Copyright 2015 the original author or authors.
@@ -179,3 +184,4 @@ if "%OS%"=="Windows_NT" endlocal
 
 :omega
 >>>>>>> 3a7b55e457e0d55f5042c220079e6b60cb0acc7f
+>>>>>>> upstream/김혜성

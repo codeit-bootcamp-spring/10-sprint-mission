@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.util.UUID;
 
+@Getter
 public class BaseEntity {
     protected UUID id;
     protected long createdAt;
@@ -10,12 +13,33 @@ public class BaseEntity {
     protected BaseEntity() {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
+<<<<<<< HEAD
+        this.updatedAt = System.currentTimeMillis();
+    }
+
+//    public Long getUpdatedAt() {
+//        return updatedAt;
+//    }
+//
+//    public void setUpdatedAt(Long updatedAt) {
+//        this.updatedAt = updatedAt;
+//    }
+//
+//    public Long getCreatedAt() {
+//        return createdAt;
+//    }
+//
+//    public UUID getId() {
+//        return id;
+//    }
+=======
         this.updatedAt = this.createdAt;
     }
 
     public UUID getId() {
         return id;
     }
+>>>>>>> upstream/김혜성
 
     public long getCreatedAt() {
         return createdAt;

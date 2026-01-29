@@ -3,9 +3,11 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-.kotlin
 
 ### IntelliJ IDEA ###
+<<<<<<< HEAD
+.idea
+=======
 <<<<<<< HEAD
 .idea
 =======
@@ -14,6 +16,7 @@ build/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+>>>>>>> upstream/김혜성
 *.iws
 *.iml
 *.ipr
