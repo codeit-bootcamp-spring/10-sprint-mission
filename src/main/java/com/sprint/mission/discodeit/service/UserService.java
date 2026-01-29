@@ -11,12 +11,15 @@ import java.util.UUID;
 
 public interface UserService {
     // CRUD
-    User create(UserCreateRequest req);
+    UserResponse create(UserCreateRequest req);
     UserResponse find(UUID id);
     List<UserResponse> findAll();
-    User updateName(UserUpdateRequest request);
+    UserResponse update(UserUpdateRequest request);
     default void update() {}
     void deleteUser(UUID userID);
 
     List<Channel> findJoinedChannels(UUID userID);
+    void validateName(String name);
+    void validateEmail(String email);
+
 }

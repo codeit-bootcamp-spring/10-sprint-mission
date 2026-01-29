@@ -26,24 +26,10 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public User create(UserCreateRequest request) {
-        // 이름, 이메일 같으면 안되는지 확인
-        userRepository.findAll().stream()
-                .filter(user -> user.getName().equals(request.name()))
-                .findFirst()
-                .ifPresent(
-                        u -> {
-                            throw new IllegalArgumentException("Already Present name");
-                        });
-
-        userRepository.findAll().stream()
-                .filter(user -> user.getEmail().equals(request.email()))
-                .findFirst()
-                .ifPresent(
-                        u -> {
-                            throw new IllegalArgumentException("Already Present email");
-                        }
-                );
+    public UserResponse create(UserCreateRequest request) {
+        // 이름, 이메일 유효성 검증
+        validateName(request.name());
+        validateEmail(request.email());
 
         // 선택적으로 프로필 등록
         UUID profileImageID = null;
@@ -55,13 +41,13 @@ public class BasicUserService implements UserService {
 
         // user 생성 with DTO
         User user = new User(request.name(), request.email(), request.password(), profileImageID);
+        User savedUser = userRepository.save(user);
 
         // userStatus 생성
-        UserStatus userStatus = new UserStatus(user.getId());
-        // userStatusRepository에 저장
+        UserStatus userStatus = new UserStatus(savedUser.getId());
         userStatusRepository.save(userStatus);
 
-        return userRepository.save(user);
+        return new UserResponse(user.getId(), user.getName(), new UserStatusResponse(userStatus.isOnline()));
     }
 
     @Override
@@ -87,58 +73,63 @@ public class BasicUserService implements UserService {
                 .toList();
     }
 
-    // 이름 업데이트가 맞나?
+    // 이름. 프로필 선택적 업데이트
+    // 업데이트 원하지 않는 경우 null을 전달하는게 맞나??
     @Override
-    public User updateName(UserUpdateRequest request) {
+    public UserResponse update(UserUpdateRequest request) {
         // user 조회
         User user = userRepository.find(request.userID())
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userID()));
 
-        // 동명이인 확인
-        userRepository.findAll().stream()
-                .filter(u -> u.getName().equals(request.name()))
-                .findFirst()
-                .ifPresent(
-                        u -> {
-                            throw new IllegalArgumentException("Already Present name");
-                        });
-
-        // user에서 이름 update
-        user.updateName(request.name());
-
-        Set<UUID> channelIDs = new HashSet<>();
-        // user의 channel, memberList에서 user이름 업데이트
-        for (Channel channel : user.getChannelsList()) {
-            for (User u : channel.getMembersList()) {
-                if (u.getId().equals(request.userID())) {
-                    u.updateName(request.name());
-                    channelIDs.add(channel.getId());
-                }
-            }
+        // user 이름 선택적 업데이트
+        if (request.name() != null){
+            // 동명이인 확인
+            validateName(request.name());
+            // user에서 이름 update
+            user.updateName(request.name());
         }
 
-        // -------------------------------------------
-
-        // 추가 수정
-        for (UUID channelID : channelIDs) {
-            channelService.updateName(channelID, request.name());
+        // user의 프로필 선택적 업데이트
+        if (request.profileImageID() != null) {
+            BinaryContent profile = binaryContentRepository.find(request.profileImageID());
+            user.updateProfileImageID(profile.getId());
         }
 
-        // message의 sender 이름 변경
-        Set<UUID> messageIDs = new HashSet<>();
-        for (Message message : user.getMessageList()) {
-            message.getSender().updateName(request.name());
-            messageIDs.add(message.getId());
-        }
+        UserStatus userStatus = userStatusRepository.findByUserID(user.getId());
 
-        // messageRepository save()
-        for (UUID messageID : messageIDs) {
-            messageRepository.save(messageRepository.find(messageID)
-                    .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageID)));
-        }
-
+        User savedUser = userRepository.save(user);
+//        Set<UUID> channelIDs = new HashSet<>();
+//        // user의 channel, memberList에서 user이름 업데이트
+//        for (Channel channel : user.getChannelsList()) {
+//            for (User u : channel.getMembersList()) {
+//                if (u.getId().equals(request.userID())) {
+//                    u.updateName(request.name());
+//                    channelIDs.add(channel.getId());
+//                }
+//            }
+//        }
+//
+//        // -------------------------------------------
+//
+//        // 추가 수정
+//        for (UUID channelID : channelIDs) {
+//            channelService.updateName(channelID, request.name());
+//        }
+//
+//        // message의 sender 이름 변경
+//        Set<UUID> messageIDs = new HashSet<>();
+//        for (Message message : user.getMessageList()) {
+//            message.getSender().updateName(request.name());
+//            messageIDs.add(message.getId());
+//        }
+//
+//        // messageRepository save()
+//        for (UUID messageID : messageIDs) {
+//            messageRepository.save(messageRepository.find(messageID)
+//                    .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageID)));
+//        }
         // [저장] 변경사항 저장
-        return userRepository.save(user);
+        return new UserResponse(savedUser.getId(), savedUser.getName(), new UserStatusResponse(userStatus.isOnline()));
     }
 
     // user가 해당 ch에서 보낸 msg 삭제 반영 X
@@ -148,32 +139,32 @@ public class BasicUserService implements UserService {
         User user = userRepository.find(userID)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
 
-        // messageRepository에서 user가 보낸 message 삭제
-        List<Message> messages = new ArrayList<>(user.getMessageList());
-        for (Message message : messages) {
-            if (message.getSender() != null && message.getSender().getId().equals(userID)) {
-                messageRepository.deleteMessage(message.getId());
-            }
-        }
-
-        // 삭제할 User의 channel 모두 탈퇴
-        List<UUID> channelIDs = new ArrayList<>();
-        for (Channel channel : user.getChannelsList()) {
-            channelIDs.add(channel.getId());
-        }
-
-        for (UUID channelID : channelIDs) {
-            channelService.leaveChannel(userID, channelID);
-        }
+//        // messageRepository에서 user가 보낸 message 삭제
+//        List<Message> messages = new ArrayList<>(user.getMessageList());
+//        for (Message message : messages) {
+//            if (message.getSender() != null && message.getSender().getId().equals(userID)) {
+//                messageRepository.deleteMessage(message.getId());
+//            }
+//        }
+//
+//        // 삭제할 User의 channel 모두 탈퇴
+//        List<UUID> channelIDs = new ArrayList<>();
+//        for (Channel channel : user.getChannelsList()) {
+//            channelIDs.add(channel.getId());
+//        }
+//
+//        for (UUID channelID : channelIDs) {
+//            channelService.leaveChannel(userID, channelID);
+//        }
 
         // userStatusRepo에서 삭제
-        userStatusRepository.deleteUserStatus(user.getId());
+        UserStatus userStatus = userStatusRepository.findByUserID(user.getId());
+        userStatusRepository.deleteUserStatus(userStatus.getId());
 
         // binaryContentRepo에서 삭제
         if(user.getProfileImageID() != null){
             binaryContentRepository.delete(user.getProfileImageID());
         }
-
         // [저장]
         userRepository.deleteUser(user);
     }
@@ -185,5 +176,27 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
         List<Channel> channels = new ArrayList<>(user.getChannelsList());
         return channels;
+    }
+
+    // User 이름 유효성 검증
+    @Override
+    public void validateName(String name){
+        userRepository.findAll().stream()
+                .filter(user -> user.getName().equals(name))
+                .findFirst()
+                .ifPresent(u -> {
+                    throw new IllegalArgumentException("Already Present name: " + name);
+                });
+    }
+
+    // 이메일 유효성 검증
+    @Override
+    public void validateEmail(String name){
+        userRepository.findAll().stream()
+                .filter(user -> user.getEmail().equals(name))
+                .findFirst()
+                .ifPresent(u -> {
+                    throw new IllegalArgumentException("Already Present email: " + name);
+                });
     }
 }

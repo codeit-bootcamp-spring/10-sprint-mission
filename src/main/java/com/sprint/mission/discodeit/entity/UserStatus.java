@@ -1,11 +1,15 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.time.Instant;
 import java.util.UUID;
 
 // 사용자 별 마지막 접속 시간
 public class UserStatus extends Base{
+    @Getter
     private final UUID userID;
+    @Getter
     private Instant lastLogin;
 
     public UserStatus(UUID userID) {
