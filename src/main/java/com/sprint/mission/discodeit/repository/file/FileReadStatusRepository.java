@@ -64,7 +64,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     public Optional<ReadStatus> findById(UUID id) {
         ReadStatus readStatus = null;
         Path path = resolvePath(id);
-        if(Files.notExists(path)) {
+        if(Files.exists(path)) {
             try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
                 readStatus = (ReadStatus) ois.readObject();
             } catch (IOException | ClassNotFoundException e) {

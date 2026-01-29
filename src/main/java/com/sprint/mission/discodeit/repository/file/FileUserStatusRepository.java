@@ -62,7 +62,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     public Optional<UserStatus> findById(UUID id) {
         UserStatus userStatus = null;
         Path path = resolvePath(id);
-        if(Files.notExists(path)) {
+        if(Files.exists(path)) {
             try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
                 userStatus = (UserStatus) ois.readObject();
             } catch (IOException | ClassNotFoundException e) {

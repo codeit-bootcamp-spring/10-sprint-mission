@@ -47,21 +47,21 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public BinaryContent save(BinaryContent BinaryContent) {
-        Path path = resolvePath(BinaryContent.getId());
+    public BinaryContent save(BinaryContent binaryContent) {
+        Path path = resolvePath(binaryContent.getId());
         try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
-            oos.writeObject(BinaryContent);
+            oos.writeObject(binaryContent);
         } catch (IOException e) {
             throw new RuntimeException(className + "파일 생성 실패", e);
         }
-        return BinaryContent;
+        return binaryContent;
     }
 
     @Override
     public Optional<BinaryContent> findById(UUID id) {
         BinaryContent binaryContent = null;
         Path path = resolvePath(id);
-        if(Files.notExists(path)) {
+        if(Files.exists(path)) {
             try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
                 binaryContent = (BinaryContent) ois.readObject();
             } catch (IOException | ClassNotFoundException e) {
