@@ -34,15 +34,12 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public List<BinaryContent> findAllByIn(List<UUID> binaryContentIds) {
-        return binaryContentIds.stream()
-                .map(id -> binaryContentRepository.findById(id)
-                        .orElseThrow(() -> new NoSuchElementException("파일이 사라졌습니다: " + id)))
-                .toList();
+        return binaryContentRepository.findAllByIn(binaryContentIds);
     }
 
     @Override
     public void delete(UUID binaryContentId) {
-        if (!binaryContentRepository.findById(binaryContentId).isPresent()) {
+        if (!binaryContentRepository.existsById(binaryContentId)) {
             throw new NoSuchElementException("해당 파일을 찾을 수 없습니다: " + binaryContentId);
         }
 

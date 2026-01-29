@@ -10,11 +10,15 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.validation.annotation.Validated;
 
 @SpringBootApplication
+@Transactional
+@Validated
 public class DiscodeitApplication {
 
     public static void main(String[] args) {
