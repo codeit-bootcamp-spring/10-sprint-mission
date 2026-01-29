@@ -88,7 +88,8 @@ public class BasicMessageService implements MessageService {
                 .toList();
     }
 
-    // 특정 유저가 발행한 메시지 다건 조회
+    // 특정 사욪자가 발행한 전체 메시지 목록 조회
+    @Override
     public List<MessageResponseDTO> searchMessagesByUserId(UUID targetUserId) {
         // 1. 사용자 존재 여부 확인
         User targetUser = userRepository.findById(targetUserId)
