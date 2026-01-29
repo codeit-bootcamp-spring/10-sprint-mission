@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.MessageResponseDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -19,10 +20,7 @@ public interface MessageService {
     List<MessageResponseDTO> searchMessageAllByChannelId(UUID channelId);
 
     // 메시지 수정
-    Message updateMessage(UUID targetMessageId, String newMessage);
-
-    // 메시지 저장
-    void updateMessage(UUID channelId, Channel channel);
+    MessageResponseDTO updateMessage(MessageUpdateRequestDTO messageUpdateRequestDTO);
 
     // 메시지 삭제
     void deleteMessage(UUID targetMessageId);

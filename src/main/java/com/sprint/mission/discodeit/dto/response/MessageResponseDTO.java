@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -17,4 +18,5 @@ public class MessageResponseDTO {
     private Instant createdAt;
     private Instant updatedAt;
     private MessageType messageType;
+    private List<UUID> attachmentIds;
 }

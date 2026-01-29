@@ -15,7 +15,7 @@ public class Message extends BaseEntity implements Serializable {
 
     private String message;                // 메시지 내용 (변경 가능)
     private UUID channelId;                // 메시지를 주고 받은 채널 id (변경 불가능)
-    private MessageType messageType;              // 메시지 타입 - 채팅, 디엠 (변경 불가능)
+    private MessageType messageType;       // 메시지 타입 - 채팅, 디엠 (변경 불가능)
     private UUID authorId;                 // 보낸 사람 id (변경 불가능)
     private List<UUID> attachmentIds;      // 메시지에 묶여있는 파일 목록 (변경 불가능)
 

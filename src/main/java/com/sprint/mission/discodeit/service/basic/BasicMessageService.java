@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.MessageResponseDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -102,30 +103,41 @@ public class BasicMessageService implements MessageService {
 
     // 메시지 수정
     @Override
-    public Message updateMessage(UUID targetMessageId, String newMessage) {
-        Message targetMessage = searchMessage(targetMessageId);
+    public MessageResponseDTO updateMessage(MessageUpdateRequestDTO messageUpdateRequestDTO) {
+        // 1. 메시지 존재 여부 확인
+        Message targetMessage = findMessageEntityById(messageUpdateRequestDTO.getId());
 
-        // 메시지 내용 수정
-        Optional.ofNullable(newMessage)
+        // 2. 메시지 내용 수정
+        Optional.ofNullable(messageUpdateRequestDTO.getMessage())
                 .ifPresent(message -> {
                     validateString(message, "[메시지 변경 실패] 올바른 메시지 형식이 아닙니다.");
                     validateDuplicateValue(targetMessage.getMessage(), message, "[메시지 변경 실패] 이전 메시지와 동일합니다.");
-                    targetMessage.updateMessage(newMessage);
+                    targetMessage.updateMessage(messageUpdateRequestDTO.getMessage());
                 });
 
+        // 3. 메시지 수정 내용 저장 및 응답 DTO 반환
         messageRepository.save(targetMessage);
-        return targetMessage;
+        return toResponseDTO(targetMessage);
     }
-
-    @Override
-    public void updateMessage(UUID channelId, Channel channel) {}
 
     // 메시지 삭제
     @Override
     public void deleteMessage(UUID targetMessageId) {
-        Message targetMessage = searchMessage(targetMessageId);
+        // 1. 메시지 존재 여부 확인
+        Message targetMessage = findMessageEntityById(targetMessageId);
 
+        // 2, 첨부파일 연쇄 삭제
+        targetMessage.getAttachmentIds()
+                .forEach(binaryContentRepository::delete);
+
+        // 3. 메시지 삭제
         messageRepository.delete(targetMessage);
+    }
+
+    // 메시지 엔티티 반환
+    public Message findMessageEntityById(UUID targetMessageId) {
+        return messageRepository.findById(targetMessageId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
     }
 
     // 응답 DTO 변환
@@ -138,6 +150,7 @@ public class BasicMessageService implements MessageService {
                 .createdAt(message.getCreatedAt())
                 .updatedAt(message.getUpdatedAt())
                 .messageType(message.getMessageType())
+                .attachmentIds(message.getAttachmentIds())
                 .build();
     }
 }
