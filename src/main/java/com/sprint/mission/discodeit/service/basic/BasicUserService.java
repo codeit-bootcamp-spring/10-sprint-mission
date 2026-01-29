@@ -25,22 +25,22 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public UserResponse createUser(UserCreateRequest userCreateRequest) {
+    public UserResponse createUser(UserCreateRequest request) {
         // email, userName `null` or `blank` 검증
-        ValidationMethods.validateNullBlankString(userCreateRequest.email(), "email");
-        ValidationMethods.validateNullBlankString(userCreateRequest.userName(), "userName");
+        ValidationMethods.validateNullBlankString(request.email(), "email");
+        ValidationMethods.validateNullBlankString(request.userName(), "userName");
         // email, userName 중복 확인
-        validateDuplicateEmail(userCreateRequest.email());
-        validateDuplicateUserName(userCreateRequest.userName());
+        validateDuplicateEmail(request.email());
+        validateDuplicateUserName(request.userName());
         // nickName, password, birthday `null` or `blank` 검증
-        ValidationMethods.validateNullBlankString(userCreateRequest.nickName(), "nickName");
-        ValidationMethods.validateNullBlankString(userCreateRequest.password(), "password");
-        ValidationMethods.validateNullBlankString(userCreateRequest.birthday(), "birthday");
+        ValidationMethods.validateNullBlankString(request.nickName(), "nickName");
+        ValidationMethods.validateNullBlankString(request.password(), "password");
+        ValidationMethods.validateNullBlankString(request.birthday(), "birthday");
 
-        User user = new User(userCreateRequest.email(), userCreateRequest.userName(), userCreateRequest.nickName(), userCreateRequest.password(), userCreateRequest.birthday());
+        User user = new User(request.email(), request.userName(), request.nickName(), request.password(), request.birthday());
 
-        if (userCreateRequest.profileImage() != null ) {
-            byte[] inputBinaryContent = userCreateRequest.profileImage().binaryContent();
+        if (request.profileImage() != null ) {
+            byte[] inputBinaryContent = request.profileImage().binaryContent();
 
             if (inputBinaryContent != null && inputBinaryContent.length != 0) {
                 BinaryContent binaryContent = new BinaryContent(inputBinaryContent);
@@ -97,46 +97,46 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse updateUserInfo(UserUpdateRequest userUpdateRequest) {
+    public UserResponse updateUserInfo(UserUpdateRequest request) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        ValidationMethods.validateId(userUpdateRequest.userId());
-        User user = userRepository.findById(userUpdateRequest.userId())
+        ValidationMethods.validateId(request.userId());
+        User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new NoSuchElementException("해당 userId로 유저를 찾을 수 없습니다."));
 
         // blank(+null) 검증
-        validateBlankUpdateParameters(userUpdateRequest);
+        validateBlankUpdateParameters(request);
 
         // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
-        boolean binaryContentChanged = isBinaryContentChanged(userUpdateRequest.profileImage(), user.getProfileId());
+        boolean binaryContentChanged = isBinaryContentChanged(request.profileImage(), user.getProfileId());
 
         // email or password or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
-        validateAllInputDuplicateOrEmpty(userUpdateRequest, user, binaryContentChanged);
+        validateAllInputDuplicateOrEmpty(request, user, binaryContentChanged);
 
         // 다른 사용자들의 email과 중복되는지 확인 후 email 업데이트
-        if (userUpdateRequest.email() != null && !user.getEmail().equals(userUpdateRequest.email())) {
-            validateDuplicateEmailForUpdate(userUpdateRequest.userId(), userUpdateRequest.email());
-            user.updateEmail(userUpdateRequest.email());
+        if (request.email() != null && !user.getEmail().equals(request.email())) {
+            validateDuplicateEmailForUpdate(request.userId(), request.email());
+            user.updateEmail(request.email());
         }
         // 다른 사용자들의 userName과 중복되는지 확인 후 userName 업데이트
-        if (userUpdateRequest.userName() != null && !user.getUserName().equals(userUpdateRequest.userName())) {
-            validateDuplicateUserNameForUpdate(userUpdateRequest.userId(), userUpdateRequest.userName());
-            user.updateUserName(userUpdateRequest.userName());
+        if (request.userName() != null && !user.getUserName().equals(request.userName())) {
+            validateDuplicateUserNameForUpdate(request.userId(), request.userName());
+            user.updateUserName(request.userName());
         }
 
         // filter로 중복 확인 후 업데이트(중복 확인 안하면 동일한 값을 또 업데이트함)
-        Optional.ofNullable(userUpdateRequest.password())
+        Optional.ofNullable(request.password())
                 .filter(p -> !user.getPassword().equals(p)) // !false(중복 아닌 값) -> true
                 .ifPresent(p -> user.updatePassword(p));
-        Optional.ofNullable(userUpdateRequest.nickName())
+        Optional.ofNullable(request.nickName())
                 .filter(n -> !user.getNickName().equals(n))
                 .ifPresent(n -> user.updateNickName(n));
-        Optional.ofNullable(userUpdateRequest.birthday())
+        Optional.ofNullable(request.birthday())
                 .filter(b -> !user.getBirthday().equals(b))
                 .ifPresent(b -> user.updateBirthday(b));
 
         UUID oldProfileId = user.getProfileId();
         if (binaryContentChanged) {
-            BinaryContent newBinaryContent = new BinaryContent(userUpdateRequest.profileImage().binaryContent());
+            BinaryContent newBinaryContent = new BinaryContent(request.profileImage().binaryContent());
             binaryContentRepository.save(newBinaryContent);
 
             user.updateProfileId(newBinaryContent.getId());
