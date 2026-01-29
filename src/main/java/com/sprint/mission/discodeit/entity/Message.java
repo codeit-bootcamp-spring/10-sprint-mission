@@ -1,11 +1,16 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
+import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class Message extends BaseEntity {
-    private User sender;
-    private Channel channel;
+    private UUID senderId;
+    private UUID channelId;
     private String content;
+    private List<UUID> attachments;
 
     public Message(User sender, Channel channel, String content) {
         channel.validateChannelMember(sender);
@@ -16,26 +21,6 @@ public class Message extends BaseEntity {
 
         sender.addMessage(this);
         channel.addMessage(this);
-    }
-
-    public User getSender() {
-        return sender;
-    }
-
-    public Channel getChannel() {
-        return channel;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public UUID getSenderId() {
-        return sender.getId();
-    }
-
-    public UUID getChannelId() {
-        return channel.getId();
     }
 
     public void updateContent(String content) {

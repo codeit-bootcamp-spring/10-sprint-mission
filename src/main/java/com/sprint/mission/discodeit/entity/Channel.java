@@ -1,15 +1,16 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import lombok.Getter;
 
+import java.util.*;
+
+@Getter
 public class Channel extends BaseEntity {
-    private User owner;
+    private UUID ownerId;
     private String name;
-    private Set<User> members;
-    private List<Message> messages;
+    private String description;
+    private Set<UUID> members;
+    private List<UUID> messages;
 
     public Channel(User user, String name) {
         this.owner = user;
@@ -18,22 +19,6 @@ public class Channel extends BaseEntity {
         this.members.add(user);
         this.messages = new ArrayList<>();
         user.addChannel(this);
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Set<User> getMembers() {
-        return members;
-    }
-
-    public List<Message> getMessages() {
-        return messages;
     }
 
     public void updateName(String name) {

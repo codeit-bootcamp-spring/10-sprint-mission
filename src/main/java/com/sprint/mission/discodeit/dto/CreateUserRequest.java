@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.dto;
 
 public record CreateUserRequest(
-        String nickName,
-        String userName,
+        String username,
+        String password,
         String email,
-        String phoneNumber
+        byte[] image
 ) {
 }
