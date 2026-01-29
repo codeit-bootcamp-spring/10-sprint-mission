@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.dto;
 
-public record BinaryContentCreateDto(
+public record BinaryContentCreateRequest(
         byte[] binaryContent
 ) {
-    public BinaryContentCreateDto {
+    public BinaryContentCreateRequest {
         if (binaryContent != null) {
             binaryContent = binaryContent.clone();
         }

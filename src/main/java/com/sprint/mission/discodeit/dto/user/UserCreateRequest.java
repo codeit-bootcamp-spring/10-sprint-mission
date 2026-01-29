@@ -1,13 +1,13 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateDto;
+import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 
-public record UserCreateDto(
+public record UserCreateRequest(
         String email,
         String userName,
         String nickName,
         String password,
         String birthday,
-        BinaryContentCreateDto profileImage
+        BinaryContentCreateRequest profileImage
 ) {
 }

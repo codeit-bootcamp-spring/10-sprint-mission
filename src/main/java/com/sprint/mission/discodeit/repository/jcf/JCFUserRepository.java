@@ -23,9 +23,9 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByEmailAndPassword(String email, String password) {
+    public Optional<User> findByUserNameAndPassword(String userName, String password) {
         return this.data.values().stream()
-                .filter(u -> u.getEmail().equals(email) && u.getPassword().equals(password))
+                .filter(u -> u.getEmail().equals(userName) && u.getPassword().equals(password))
                 .findFirst();
     }
 

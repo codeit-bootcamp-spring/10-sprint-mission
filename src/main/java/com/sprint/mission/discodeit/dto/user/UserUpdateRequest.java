@@ -1,16 +1,16 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateDto;
+import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 
 import java.util.UUID;
 
-public record UserUpdateDto(
+public record UserUpdateRequest(
         UUID userId,
         String email,
         String password,
         String userName,
         String nickName,
         String birthday,
-        BinaryContentCreateDto profileImage
+        BinaryContentCreateRequest profileImage
 ) {
 }

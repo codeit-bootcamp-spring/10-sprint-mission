@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.dto.user.UserCreateDto;
-import com.sprint.mission.discodeit.dto.user.UserInfoDto;
+import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -42,9 +42,9 @@ public class DiscodeitApplication {
 //		loadMessage(messageService);
 	}
 
-	static UserInfoDto setUser(UserService userService) {
-		UserCreateDto userCreateDto = new UserCreateDto("chung@codeit.com", "chung", "chungNick", "chung", "20000401", null);
-		return userService.createUser(userCreateDto);
+	static UserResponse setUser(UserService userService) {
+		UserCreateRequest userCreateRequest = new UserCreateRequest("chung@codeit.com", "chung", "chungNick", "chung", "20000401", null);
+		return userService.createUser(userCreateRequest);
 	}
 	static Channel setChannel(ChannelService channelService, User user) {
 		Channel channel = channelService.createChannel(user.getId(), ChannelType.PUBLIC, "c1", "c1");
