@@ -20,6 +20,8 @@ import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 
+// instant 타임 반복되니 메서드로 불리할 것
+
 @RequiredArgsConstructor
 @Service
 public class BasicChannelService implements ChannelService {
