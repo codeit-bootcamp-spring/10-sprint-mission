@@ -25,7 +25,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public UserResponse createUser(UserCreateRequest request) {
+    public User createUser(UserCreateRequest request) {
         // email, userName `null` or `blank` 검증
         ValidationMethods.validateNullBlankString(request.email(), "email");
         ValidationMethods.validateNullBlankString(request.userName(), "userName");
@@ -53,7 +53,7 @@ public class BasicUserService implements UserService {
 
         userRepository.save(user);
         userStatusRepository.save(userStatus);
-        return createUserInfo(user, userStatus);
+        return user;
     }
 
     @Override
@@ -65,39 +65,29 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 userId에 맞는 UserStatus가 없습니다."));
 
-        return createUserInfo(user, userStatus);
-    }
-
-    @Override
-    public Optional<User> findUserByUserNameAndPassword(String userName, String password) {
-        ValidationMethods.validateNullBlankString(userName, "userName");
-        ValidationMethods.validateNullBlankString(password, "password");
-
-        return userRepository.findByUserNameAndPassword(userName, password);
+        return createUserResponse(user, userStatus);
     }
 
     @Override
     public List<UserResponse> findAllUsers() {
-//        List<User> users = userRepository.findAll();
         List<UserStatus> userStatuses = userStatusRepository.findAll();
 
         List<UserResponse> userInfos = new ArrayList<>();
         userStatuses.forEach(status -> {
             User user = userRepository.findById(status.getUserId())
                     .orElseThrow(() -> new NoSuchElementException("status의 userId를 가진 유저가 존재하지 않음"));
-            userInfos.add(createUserInfo(user, status));
+            userInfos.add(createUserResponse(user, status));
         });
-//        Map<UUID, UserStatus> userStatusMap = new HashMap<>();
-//        userStatuses
-//                .forEach(status -> userStatusMap.put(status.getUserId(), status));
-//
-//        List<UserInfoDto> userInfos = new ArrayList<>();
-//        users.forEach(user -> userInfos.add(createUserInfo(user, userStatusMap.get(user.getId()))));
+
+//        userRepository.findAll().stream()
+//                .map(user -> findUserById(user.getId()))
+//                .toList();
+
         return userInfos;
     }
 
     @Override
-    public UserResponse updateUserInfo(UserUpdateRequest request) {
+    public User updateUserInfo(UserUpdateRequest request) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         ValidationMethods.validateId(request.userId());
         User user = userRepository.findById(request.userId())
@@ -149,12 +139,7 @@ public class BasicUserService implements UserService {
             binaryContentRepository.delete(oldProfileId);
         }
 
-        UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("해당 userId로 userStatus를 찾을 수 없습니다."));
-        userStatus.updateLastOnlineTime();
-        userStatusRepository.save(userStatus);
-
-        return createUserInfo(user, userStatus);
+        return user;
     }
 
     @Override
@@ -175,7 +160,7 @@ public class BasicUserService implements UserService {
         userRepository.delete(userId);
     }
 
-    private UserResponse createUserInfo(User user, UserStatus userStatus) {
+    private UserResponse createUserResponse(User user, UserStatus userStatus) {
         return new UserResponse(user.getId(), user.getEmail(), user.getUserName(), user.getNickName(),
                 user.getBirthday(), user.getProfileId(), userStatus.isOnlineStatus());
     }
@@ -194,21 +179,21 @@ public class BasicUserService implements UserService {
         }
     }
     // blank(+null) 검증
-    private void validateBlankUpdateParameters(UserUpdateRequest userUpdateRequest) {
-        if (userUpdateRequest.email() != null) ValidationMethods.validateNullBlankString(userUpdateRequest.email(), "email");
-        if (userUpdateRequest.password() != null) ValidationMethods.validateNullBlankString(userUpdateRequest.password(), "password");
-        if (userUpdateRequest.userName() != null) ValidationMethods.validateNullBlankString(userUpdateRequest.userName(), "userName");
-        if (userUpdateRequest.nickName() != null) ValidationMethods.validateNullBlankString(userUpdateRequest.nickName(), "nickName");
-        if (userUpdateRequest.birthday() != null) ValidationMethods.validateNullBlankString(userUpdateRequest.birthday(), "birthday");
-        if (userUpdateRequest.profileImage() != null) validateNullBlankBinaryContent(userUpdateRequest.profileImage().binaryContent());
+    private void validateBlankUpdateParameters(UserUpdateRequest request) {
+        if (request.email() != null) ValidationMethods.validateNullBlankString(request.email(), "email");
+        if (request.password() != null) ValidationMethods.validateNullBlankString(request.password(), "password");
+        if (request.userName() != null) ValidationMethods.validateNullBlankString(request.userName(), "userName");
+        if (request.nickName() != null) ValidationMethods.validateNullBlankString(request.nickName(), "nickName");
+        if (request.birthday() != null) ValidationMethods.validateNullBlankString(request.birthday(), "birthday");
+        if (request.profileImage() != null) validateNullBlankBinaryContent(request.profileImage().binaryContent());
     }
     // email or password or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
-    private void validateAllInputDuplicateOrEmpty(UserUpdateRequest userUpdateRequest, User user, boolean binaryContentChanged) {
-        if ((userUpdateRequest.email() == null || user.getEmail().equals(userUpdateRequest.email()))
-                && (userUpdateRequest.password() == null || user.getPassword().equals(userUpdateRequest.password()))
-                && (userUpdateRequest.nickName() == null || user.getNickName().equals(userUpdateRequest.nickName()))
-                && (userUpdateRequest.userName() == null || user.getUserName().equals(userUpdateRequest.userName()))
-                && (userUpdateRequest.birthday() == null || user.getBirthday().equals(userUpdateRequest.birthday()))
+    private void validateAllInputDuplicateOrEmpty(UserUpdateRequest request, User user, boolean binaryContentChanged) {
+        if ((request.email() == null || user.getEmail().equals(request.email()))
+                && (request.password() == null || user.getPassword().equals(request.password()))
+                && (request.nickName() == null || user.getNickName().equals(request.nickName()))
+                && (request.userName() == null || user.getUserName().equals(request.userName()))
+                && (request.birthday() == null || user.getBirthday().equals(request.birthday()))
                 && !binaryContentChanged
         ) {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");

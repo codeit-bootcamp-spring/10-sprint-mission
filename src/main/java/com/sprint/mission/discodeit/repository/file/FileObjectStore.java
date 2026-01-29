@@ -20,6 +20,7 @@ public class FileObjectStore implements Serializable {
     private final Map<UUID, Message> messagesData = new HashMap<>();
     private final Map<UUID, UserStatus> userStatusesData = new HashMap<>();
     private final Map<UUID, BinaryContent> binaryContentsData = new HashMap<>();
+    private final Map<UUID, ReadStatus> readStatusesData = new HashMap<>();
 
     public void saveData() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(STORAGE_PATH.toFile()))) {

@@ -1,15 +1,20 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -17,18 +22,18 @@ import java.util.*;
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final ReadStatusRepository readStatusRepository;
+    private final MessageRepository messageRepository;
 
     @Override
-    public Channel createChannel(UUID userId, ChannelType channelType, String channelName, String channelDescription) {
+    public Channel createPublicChannel(PublicChannelCreateRequest request) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User owner = validateAndGetUserByUserId(userId);
-        // channelType `null` 검증
-        validateNullChannelType(channelType);
+        User owner = validateAndGetUserByUserId(request.ownerId());
         // channelName과 channelDescription의 `null`, `blank` 검증
-        ValidationMethods.validateNullBlankString(channelName, "channelName");
-        ValidationMethods.validateNullBlankString(channelDescription, "channelDescription");
+        ValidationMethods.validateNullBlankString(request.channelName(), "channelName");
+        ValidationMethods.validateNullBlankString(request.channelDescription(), "channelDescription");
 
-        Channel channel = new Channel(owner, channelType, channelName, channelDescription);
+        Channel channel = new Channel(owner, ChannelType.PUBLIC, request.channelName(), request.channelDescription());
 
         // owner는 channel 생성 시 자동 join(channel의 member list에도 추가
         linkMemberAndChannel(owner, channel);
@@ -40,84 +45,104 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel findChannelById(UUID channelId) {
-        // Channel ID null 검증
-        ValidationMethods.validateId(channelId);
+    public Channel createPrivateChannel(PrivateChannelCreateRequest request) {
+        // 로그인 되어있는 user ID null / user 객체 존재 확인
+        User owner = validateAndGetUserByUserId(request.ownerId());
+        // PRIVATE 채널은 channelName과 channelDescription이 null
+        Channel channel = new Channel(owner, ChannelType.PRIVATE, null, null);
 
-        return channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
-    }
+        if (request.participantIds() != null && !request.participantIds().isEmpty()) {
+            // 혹시 모를 중복 방지
+            Set<UUID> participantIds = new HashSet<>(request.participantIds());
+            for (UUID participantId : participantIds) {
+                User participant = validateAndGetUserByUserId(participantId);
+                linkMemberAndChannel(participant, channel);
+                ReadStatus participantReadStatus = new ReadStatus(participant.getId(), channel.getId());
 
-    @Override
-    public List<Channel> findAllChannels() {
-        return channelRepository.findAll();
-    }
-
-    @Override
-    public List<Channel> findPublicOrPrivateChannel(ChannelType channelType) {
-        if (channelType == null) return findAllChannels();
-
-        switch (channelType) {
-            case PUBLIC -> {
-                return findAllChannels().stream()
-                        .filter(channel -> channel.getChannelType() == ChannelType.PUBLIC)
-                        .toList();
-            }
-            case PRIVATE -> {
-                return findAllChannels().stream()
-                        .filter(channel -> channel.getChannelType() == ChannelType.PRIVATE)
-                        .toList();
-            }
-            default -> {
-                return findAllChannels();
+                userRepository.save(participant);
+                readStatusRepository.save(participantReadStatus);
             }
         }
+        // owner는 channel 생성 시 자동 join(channel의 member list에도 추가
+        linkMemberAndChannel(owner, channel);
+        ReadStatus ownerReadStatus = new ReadStatus(owner.getId(), channel.getId());
+
+        channelRepository.save(channel);
+        readStatusRepository.save(ownerReadStatus);
+        // `linkMemberAndChannel` 메소드로 owner(user)의 joinChannelList에 해당 channel 추가 후, 저장
+        userRepository.save(owner);
+
+        return channel;
     }
 
     @Override
-    public List<Channel> findJoinChannelsByUserId(UUID userId) {
-        // 로그인 되어있는 user ID null & user 객체 존재 확인
-        User user = validateAndGetUserByUserId(userId);
+    public ChannelResponse findChannelById(UUID channelId) {
+        // Channel ID null 검증
+        ValidationMethods.validateId(channelId);
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
 
-        return user.getJoinChannelList();
+        Instant lastMessageTime = messageRepository.findByChannelId(channelId).stream()
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .findFirst()
+                .map(message -> message.getCreatedAt())
+                .orElse(null);
+
+        List<UUID> channelMembersIds = new ArrayList<>();
+        if (channel.getChannelType() == ChannelType.PRIVATE) {
+            channelMembersIds = channel.getChannelMembersList().stream()
+                    .map(user -> user.getId())
+                    .toList();
+        }
+
+        return createChannelPublicResponse(channel, lastMessageTime, channelMembersIds);
     }
 
     @Override
-    public List<Channel> findOwnerChannelsByUserId(UUID userId) {
-        // 로그인 되어있는 user ID null & user 객체 존재 확인
+    public List<ChannelResponse> findAllByUserId(UUID userId) {
+        // User ID null 검증
         validateUserByUserId(userId);
 
-        return findAllChannels().stream()
-                .filter(channel -> channel.getOwner().getId().equals(userId))
+        // 유저가 참여한 모든 채널
+        List<UUID> participatedChannelList = readStatusRepository.findAllByUserId(userId).stream()
+                .map(readStatus -> readStatus.getChannelId())
+                .toList();
+
+        // 모든 채널에서 PUBLIC인 채널 전체와 유저가 참여한 모든 채널 비교?
+        return channelRepository.findAll().stream()
+                .filter(channel -> channel.getChannelType() == ChannelType.PUBLIC || participatedChannelList.contains(channel.getId()))
+                .map(channel -> findChannelById(channel.getId()))
                 .toList();
     }
 
     @Override
-    public Channel updateChannelInfo(UUID ownerId, UUID channelId, ChannelType channelType, String channelName, String channelDescription) {
+    public Channel updateChannelInfo(ChannelUpdateRequest request) {
         // 로그인 되어있는 user ID null & user 객체 존재 확인
-        validateUserByUserId(ownerId);
-        // Channel ID null & channel 객체 존재 확인
-        Channel channel = findChannelById(channelId);
-        // channel owner의 user ID와 owner의 user ID가 동일한지 확인
-        verifyChannelOwner(channel, ownerId);
-        // blank 검증
-        if (channelName != null) ValidationMethods.validateNullBlankString(channelName, "channelName");
-        if (channelDescription != null) ValidationMethods.validateNullBlankString(channelDescription, "channelDescription");
+        validateUserByUserId(request.ownerId());
 
-        // channelType, channelName, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
-        if ((channelType == null || channel.getChannelType().equals(channelType))
-                && (channelName == null || channel.getChannelName().equals(channelName))
-                && (channelDescription == null || channel.getChannelDescription().equals(channelDescription))) {
-            throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
+        // Channel ID null & channel 객체 존재 확인
+        ValidationMethods.validateId(request.channelId());
+        Channel channel = channelRepository.findById(request.channelId())
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
+
+        // PRIVATE Channel일 경우 수정 불가
+        if (ChannelType.PRIVATE.equals(channel.getChannelType())) {
+            throw new IllegalStateException("PRIVATE인 Channel은 수정 불가능합니다.");
         }
 
-        Optional.ofNullable(channelType)
-                .filter(t -> !channel.getChannelType().equals(t))
-                .ifPresent(t -> channel.updateChannelType(t));
-        Optional.ofNullable(channelName)
+        // channel owner의 user ID와 owner의 user ID가 동일한지 확인
+        verifyChannelOwner(channel, request.ownerId());
+
+        // blank(+null) 검증
+        validateBlankUpdateParameters(request);
+
+        // channelType, channelName, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
+        validateAllInputDuplicateOrEmpty(request, channel);
+
+        Optional.ofNullable(request.channelName())
                 .filter(n -> !channel.getChannelName().equals(n))
                 .ifPresent(n -> channel.updateChannelName(n));
-        Optional.ofNullable(channelDescription)
+        Optional.ofNullable(request.channelDescription())
                 .filter(d -> !channel.getChannelDescription().equals(d))
                 .ifPresent(d -> channel.updateChannelDescription(d));
 
@@ -128,7 +153,9 @@ public class BasicChannelService implements ChannelService {
     @Override
     public Channel changeChannelOwner(UUID currentUserId, UUID channelId, UUID newOwnerId) {
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = findChannelById(channelId);
+        ValidationMethods.validateId(channelId);
+        Channel channel = validateAndGetChannelByChannelId(channelId);
+
         validateUserByUserId(currentUserId);
         User newOwner = validateAndGetUserByUserId(newOwnerId);
         // channel owner의 user ID와 owner의 user ID가 동일한지 확인
@@ -156,7 +183,8 @@ public class BasicChannelService implements ChannelService {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = findChannelById(channelId);
+        ValidationMethods.validateId(channelId);
+        Channel channel = validateAndGetChannelByChannelId(channelId);
 
         // 이미 참여한 채널인지 검증
         if (channel.getChannelMembersList().stream()
@@ -176,7 +204,8 @@ public class BasicChannelService implements ChannelService {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User user = validateAndGetUserByUserId(userId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = findChannelById(channelId);
+        ValidationMethods.validateId(channelId);
+        Channel channel = validateAndGetChannelByChannelId(channelId);
 
         // 참여한 채널인지 확인
         if (!channel.getChannelMembersList().stream()
@@ -200,12 +229,27 @@ public class BasicChannelService implements ChannelService {
     public void deleteChannel(UUID ownerId, UUID channelId) {
         // 로그인 되어있는 owner ID null & user 객체 존재 확인
         validateUserByUserId(ownerId);
+
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = findChannelById(channelId);
+        ValidationMethods.validateId(channelId);
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
+
         // channel owner의 user ID와 owner의 user ID가 동일한지 확인
         verifyChannelOwner(channel, ownerId);
 
-        // 메세지 삭제는 상위에서 진행
+        for (Message message : messageRepository.findByChannelId(channelId)) {
+            messageRepository.delete(message.getId());
+            User author = validateAndGetUserByUserId(message.getAuthor().getId());
+            Channel messageChannel = channel;
+
+            unlinkMessage(author, messageChannel, message);
+            userRepository.save(author);
+        }
+        for (ReadStatus readStatus : readStatusRepository.findAllByChannelId(channelId)) {
+            readStatusRepository.delete(readStatus.getId());
+        }
+
         // 참여했던 user 객체에서 해당 channel Id 삭제하기
         for (User member : channel.getChannelMembersList()) {
             unlinkMemberAndChannel(member, channel);
@@ -222,23 +266,45 @@ public class BasicChannelService implements ChannelService {
         user.leaveChannel(channel.getId());
         channel.removeMember(user.getId());
     }
+    public void unlinkMessage(User author, Channel channel, Message message) {
+        // author(user)의 writeMessageList에 저장된 message 객체 삭제
+        author.removeUserMessage(message.getId());
+        // channel의 channelMessagesList에 저장된 message 객체 삭제
+        channel.removeMessageInChannel(message.getId());
+    }
+    private ChannelResponse createChannelPublicResponse(Channel channel, Instant lastMessageTime, List<UUID> channelMembersIds) {
+        return new ChannelResponse(channel.getId(), channel.getOwner().getId(), channel.getChannelType(),
+                channel.getChannelName(), channel.getChannelDescription(), channelMembersIds, lastMessageTime);
+    }
 
     // validation
     //로그인 되어있는 user ID null & user 객체 존재 확인
     public void validateUserByUserId(UUID userId) {
+        ValidationMethods.validateId(userId);
         userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
     public User validateAndGetUserByUserId(UUID userId) {
+        ValidationMethods.validateId(userId);
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
-    // ChannelType null 검증
-    public void validateNullChannelType(ChannelType channelType) {
-        String message = "channelType이 null 입니다.";
-        Objects.requireNonNull(channelType, message);
+    public Channel validateAndGetChannelByChannelId(UUID channelId) {
+        return channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
     }
-
+    // blank(+null) 검증
+    private void validateBlankUpdateParameters(ChannelUpdateRequest request) {
+        if (request.channelName() != null) ValidationMethods.validateNullBlankString(request.channelName(), "channelName");
+        if (request.channelDescription() != null) ValidationMethods.validateNullBlankString(request.channelDescription(), "channelDescription");
+    }
+    // channelType, channelName, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
+    private void validateAllInputDuplicateOrEmpty(ChannelUpdateRequest request, Channel channel) {
+        if ((request.channelName() == null || channel.getChannelName().equals(request.channelName()))
+                && (request.channelDescription() == null || channel.getChannelDescription().equals(request.channelDescription()))) {
+            throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
+        }
+    }
     // channel owner의 user ID와 owner의 user ID가 동일한지 확인
     public void verifyChannelOwner(Channel channel, UUID ownerId) {
         // channel owner의 user Id와 owner의 user Id 동일한지 확인
