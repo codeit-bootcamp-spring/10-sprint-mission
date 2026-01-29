@@ -1,24 +1,23 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.user.LoginRequest;
+import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import java.util.UUID;
 import java.util.List;
 
 
 public interface UserService {
-    User create(String name, String nickname, String email, String password);
+    UserResponse signUp(UserCreateRequest request); // 회원가입
 
-    User findById(UUID id);
+    UserResponse getUserById(UUID id); // 단건 조회
 
-    List<User> findAll();
+    List<UserResponse> getAllUsers(); // 전체 조회
 
-    User update(UUID id, String name, String nickname, String email, UUID profileId, String password);
+    UserResponse updateProfile(UUID id, UserUpdateRequest request); // 프로필 수정
 
-    void delete(UUID id);
+    void deleteUser(UUID id); // 회원 탈퇴
 
-    List<Channel> findJoinedChannelsByUserId(UUID userId); // 특정 유저가 참가한 채널 목록 조회
-
-    List<Message> findMessagesByUserId(UUID userId); // 특정 유저가 발행한 메시지 목록 조회
+    UserResponse login(LoginRequest request); // 로그인
 }
