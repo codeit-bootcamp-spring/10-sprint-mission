@@ -27,7 +27,7 @@ public class Message extends BaseEntity implements Serializable {
     }
 
 
-    public void update(String newContent) {
+    public void update(String newContent, List<UUID> binaryContents) {
         boolean anyValueUpdated = false;
         if (newContent != null && !newContent.equals(this.content)) {
             this.content = newContent;

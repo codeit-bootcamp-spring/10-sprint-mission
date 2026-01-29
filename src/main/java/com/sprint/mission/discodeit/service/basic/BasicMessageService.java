@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.messagedto.CreateRequestDTO;
+import com.sprint.mission.discodeit.dto.messagedto.MessageUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -67,10 +68,31 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID messageId, String newContent) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
-        message.update(newContent);
+    public Message update(MessageUpdateRequestDto req) {
+        Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
+        Objects.requireNonNull(req.messageId(), "유효하지 않은 메시지ID 입니다.");
+
+        Message message = messageRepository.findById(req.messageId())
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + req.messageId() + " not found"));
+
+        if(req.newContent() != null){
+            message.setContent(req.newContent());
+        }
+
+        if(req.attachmentIdsToRemove() != null && !req.attachmentIdsToRemove().isEmpty()){
+            message.getAttachmentIds().removeAll(req.attachmentIdsToRemove());
+        }
+
+        if(req.attachmentsToAdd() != null && !req.attachmentsToAdd().isEmpty()){
+            message.getAttachmentIds().addAll(
+                    req.attachmentsToAdd().stream()
+                            .map(b -> {
+                                BinaryContent binaryContent = new BinaryContent(b.contentType(), b.file());
+                                return binaryContentRepository.save(binaryContent).getId();
+                            })
+                            .toList());
+        }
+
         return messageRepository.save(message);
     }
 
