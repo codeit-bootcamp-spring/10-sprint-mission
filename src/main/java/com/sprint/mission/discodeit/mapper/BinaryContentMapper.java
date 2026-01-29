@@ -15,6 +15,9 @@ public class BinaryContentMapper {
         );
     }
     public BinaryContent toEntity(BinaryContentCreateDto dto) {
-        return new BinaryContent(dto.fileName(), dto.bytes());
+        return new BinaryContent(
+                dto.fileName(),
+                dto.bytes()
+        );
     }
 }

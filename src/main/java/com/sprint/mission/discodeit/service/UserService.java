@@ -8,11 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    //User create(String username, String email, String password);
     UserResponseDto create(UserCreateDto userCreateDto);
     UserResponseDto find(UUID userId);
     List<UserResponseDto> findAll();
-    //User update(UUID userId, String newUsername, String newEmail, String newPassword);
     UserResponseDto update(UUID userId, UserUpdateDto userUpdateDto);
     void delete(UUID userId);
 }

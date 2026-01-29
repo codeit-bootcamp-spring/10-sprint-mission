@@ -48,6 +48,7 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(userStatus);
         return userMapper.toDto(user,userStatus);
     }
+
     @Override
     public UserResponseDto find(UUID userId) {
         User user = userRepository.findById(userId)

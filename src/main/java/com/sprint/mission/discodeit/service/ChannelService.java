@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    //Channel create(ChannelType type, String name, String description);
     ChannelResponseDto create(PublicChannelCreateDto channelCreateDto);
     ChannelResponseDto create(PrivateChannelCreateDto channelCreateDto);
     ChannelResponseDto find(UUID channelId);

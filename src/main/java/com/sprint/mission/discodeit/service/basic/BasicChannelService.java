@@ -37,6 +37,7 @@ public class BasicChannelService implements ChannelService {
                 .forEach(m->readStatusRepository.save(new ReadStatus(m.getId(),channel.getId())));
         return channelToDto(channel);
     }
+
     @Override
     public ChannelResponseDto create(PrivateChannelCreateDto dto) {
         Channel channel = channelMapper.toEntity(dto);

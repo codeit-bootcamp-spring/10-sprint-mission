@@ -12,17 +12,22 @@ public class UserMapper {
 
     public UserResponseDto toDto(User user, UserStatus userStatus) {
         return new UserResponseDto(
-                user.getId()
-                ,user.getUsername()
-                ,user.getEmail()
-                ,user.getProfileId()
-                ,userStatus.isOnline()
-                ,user.getCreatedAt()
-                ,user.getUpdatedAt()
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfileId(),
+                userStatus.isOnline(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
         );
     }
 
     public User toEntity(UserCreateDto dto, BinaryContent profile) {
-        return new User(dto.username(),dto.email(),dto.password(),profile==null?null:profile.getId());
+        return new User(
+                dto.username(),
+                dto.email(),
+                dto.password(),
+                profile==null?null:profile.getId()
+        );
     }
 }

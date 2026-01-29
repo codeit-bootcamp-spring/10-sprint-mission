@@ -14,11 +14,12 @@ import java.util.UUID;
 public class ChannelMapper {
     public ChannelResponseDto toDto(Channel channel, Message lastMessage, List<UUID> memberIds) {
         return new ChannelResponseDto(channel.getId(),channel.getType(), channel.getName(),
-                channel.getDescription()
-                , channel.getCreatedAt()
-                , channel.getUpdatedAt()
-                ,lastMessage == null ?null:lastMessage.getCreatedAt()//아직 채널에 메세지가 없는 경우
-                ,memberIds);
+                channel.getDescription(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
+                lastMessage == null ?null:lastMessage.getCreatedAt(),//아직 채널에 메세지가 없는 경우 null
+                memberIds
+        );
     }
 
     public Channel toEntity(PublicChannelCreateDto dto){

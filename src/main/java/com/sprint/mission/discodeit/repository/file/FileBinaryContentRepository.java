@@ -21,10 +21,13 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     private final String EXTENSION = ".ser";
 
     public FileBinaryContentRepository(
-            @Value("${discodeit.repository.file-directory}") String home) {
-        this.DIRECTORY = Paths.get(home //yaml에서 가져온 디렉토리 경로
-                , "file-data-map"//파일 저장 디렉토리 이름
-                , BinaryContent.class.getSimpleName());//클래스의 이름의 디렉토리
+            @Value("${discodeit.repository.file-directory}") String home
+    ) {
+        this.DIRECTORY = Paths.get(
+                home, //yaml에서 가져온 디렉토리 경로
+                 "file-data-map", //파일 저장 디렉토리 이름
+                BinaryContent.class.getSimpleName() //클래스의 이름의 디렉토리
+        );
         if (Files.notExists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);//디렉토리 없으면 생성
