@@ -28,6 +28,8 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     //
     private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentMapper binaryContentMapper;
+    private final MessageMapper messageMapper;
 
     @Override
     public MessageResponseDto create(MessageCreateDto dto) {
@@ -41,26 +43,26 @@ public class BasicMessageService implements MessageService {
         if(dto.attachments()!=null && !dto.attachments().isEmpty()){
             dto.attachments()
                     .forEach((attachment) -> {
-                        BinaryContent content = binaryContentRepository.save(BinaryContentMapper.toEntity(attachment));
+                        BinaryContent content = binaryContentRepository.save(binaryContentMapper.toEntity(attachment));
                         attachmentIds.add(content.getId());
                     });
         }
-        Message message = MessageMapper.toEntity(dto, attachmentIds);
-        return MessageMapper.toDto(messageRepository.save(message));
+        Message message = messageMapper.toEntity(dto, attachmentIds);
+        return messageMapper.toDto(messageRepository.save(message));
     }
 
     @Override
     public MessageResponseDto find(UUID messageId) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
-        return MessageMapper.toDto(message);
+        return messageMapper.toDto(message);
     }
 
     @Override
     public List<MessageResponseDto> findAllByChannelId(UUID channelId) {
         List<MessageResponseDto> response = new ArrayList<>();
         messageRepository.findAllByChannelId(channelId)
-                .forEach(message -> response.add(MessageMapper.toDto(message)));
+                .forEach(message -> response.add(messageMapper.toDto(message)));
         return response;
     }
 
@@ -69,7 +71,7 @@ public class BasicMessageService implements MessageService {
         Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + id + " not found"));
         message.update(dto.content(),null);//첨부파일 변경을 하려면 별도로 메서드 필요
-        return MessageMapper.toDto(messageRepository.save(message));
+        return messageMapper.toDto(messageRepository.save(message));
     }
 
     @Override

@@ -26,10 +26,11 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;//공개채널에 멤버추가를 위한 의존성
+    private final ChannelMapper channelMapper;
 
     @Override
     public ChannelResponseDto create(PublicChannelCreateDto dto) {
-        Channel channel = ChannelMapper.toEntity(dto);
+        Channel channel = channelMapper.toEntity(dto);
         channelRepository.save(channel);
         //모든 사용자가 멤버!
         userRepository.findAll()
@@ -38,7 +39,7 @@ public class BasicChannelService implements ChannelService {
     }
     @Override
     public ChannelResponseDto create(PrivateChannelCreateDto dto) {
-        Channel channel = ChannelMapper.toEntity(dto);
+        Channel channel = channelMapper.toEntity(dto);
         channelRepository.save(channel);
         dto.memberIds()
                 .forEach(m->readStatusRepository.save(new ReadStatus(m,channel.getId())));
@@ -96,6 +97,6 @@ public class BasicChannelService implements ChannelService {
         readStatusRepository
                 .findAllByChannelId(channel.getId())
                 .forEach(s -> memberIds.add(s.getUserId()));
-        return ChannelMapper.toDto(channel, lastMessage, memberIds);
+        return channelMapper.toDto(channel, lastMessage, memberIds);
     }
 }

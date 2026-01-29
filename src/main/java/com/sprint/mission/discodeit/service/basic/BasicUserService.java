@@ -27,6 +27,8 @@ public class BasicUserService implements UserService {
     //모든 멤버를 공개채널에 추가하기 위해..
     private final ReadStatusRepository readStatusRepository;
     private final ChannelRepository channelRepository;
+    private final UserMapper userMapper;
+    private final BinaryContentMapper binaryContentMapper;
 
     @Override
     public UserResponseDto create(UserCreateDto dto) {
@@ -35,29 +37,29 @@ public class BasicUserService implements UserService {
         //프로필 사진 없을때
         BinaryContent profile = null;
         if(dto.profileDto() != null) {
-            profile=binaryContentRepository.save(BinaryContentMapper.toEntity(dto.profileDto()));
+            profile=binaryContentRepository.save(binaryContentMapper.toEntity(dto.profileDto()));
         }
-        User user =  UserMapper.toEntity(dto, profile);
+        User user =  userMapper.toEntity(dto, profile);
         UserStatus userStatus = new UserStatus(user.getId());
         //모든 공개채널에 대한 읽기 상태 저장
         channelRepository.findAllPublic()
                         .forEach(c->readStatusRepository.save(new ReadStatus(user.getId(),c.getId())));
         userRepository.save(user);
         userStatusRepository.save(userStatus);
-        return UserMapper.toDto(user,userStatus);
+        return userMapper.toDto(user,userStatus);
     }
     @Override
     public UserResponseDto find(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-        return UserMapper.toDto(user,findUserStatusByUserId(userId));
+        return userMapper.toDto(user,findUserStatusByUserId(userId));
     }
 
     @Override
     public List<UserResponseDto> findAll() {
         List<User> users = userRepository.findAll();
         List<UserResponseDto> response = new ArrayList<>();
-        users.forEach(u-> response.add(UserMapper.toDto(u,findUserStatusByUserId(u.getId()))));
+        users.forEach(u-> response.add(userMapper.toDto(u,findUserStatusByUserId(u.getId()))));
         return response;
     }
 
@@ -67,11 +69,11 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
         BinaryContent profile = null;
         if(dto.profileDto() != null) {
-            profile =binaryContentRepository.save(BinaryContentMapper.toEntity(dto.profileDto()));
+            profile =binaryContentRepository.save(binaryContentMapper.toEntity(dto.profileDto()));
             binaryContentRepository.delete(user.getProfileId());//기존 프로필 사진 삭제
         }
         user.update(dto.username(), dto.email(), dto.password(),profile==null?null:profile.getId());
-        return UserMapper.toDto(userRepository.save(user),findUserStatusByUserId(userId));
+        return userMapper.toDto(userRepository.save(user),findUserStatusByUserId(userId));
     }
 
     @Override

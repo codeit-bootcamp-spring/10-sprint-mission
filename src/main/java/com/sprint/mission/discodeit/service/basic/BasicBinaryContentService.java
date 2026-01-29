@@ -17,18 +17,19 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentMapper binaryContentMapper;
 
     @Override
     public BinaryContentResponseDto create(BinaryContentCreateDto dto) {
-        BinaryContent content = binaryContentRepository.save(BinaryContentMapper.toEntity(dto));
-        return BinaryContentMapper.toDto(content);
+        BinaryContent content = binaryContentRepository.save(binaryContentMapper.toEntity(dto));
+        return binaryContentMapper.toDto(content);
     }
 
     @Override
     public BinaryContentResponseDto find(UUID id) {
         BinaryContent content = binaryContentRepository.find(id)
                 .orElseThrow(()-> new NoSuchElementException("No Such File: "+id));
-        return BinaryContentMapper.toDto(content);
+        return binaryContentMapper.toDto(content);
     }
 
     @Override

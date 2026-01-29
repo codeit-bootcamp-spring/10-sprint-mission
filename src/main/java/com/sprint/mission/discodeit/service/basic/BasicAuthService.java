@@ -18,6 +18,7 @@ import java.util.NoSuchElementException;
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
+    private final UserMapper userMapper;
 
     @Override
     public UserResponseDto login(UserLoginDto dto){
@@ -25,6 +26,6 @@ public class BasicAuthService implements AuthService {
                 .orElseThrow(()-> new IllegalArgumentException("잘못된 이름 또는 비밀번호"));
         UserStatus status = userStatusRepository.findByUserId(user.getId())
                 .orElseThrow(()->new NoSuchElementException("No User Status found, UserId: "+user.getId()));
-        return UserMapper.toDto(user, status);
+        return userMapper.toDto(user, status);
     }
 }
