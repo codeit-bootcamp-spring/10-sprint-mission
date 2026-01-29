@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+<<<<<<< HEAD
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -23,10 +24,61 @@ public class User implements Serializable {
         this.createdAt = Instant.now().getEpochSecond();
         //
         this.username = username;
+=======
+import java.io.Serializable;
+import java.util.UUID;
+
+public class User extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+
+    private String email;
+    private String username;
+
+    public User(String username, String email) {
+//        this.id = UUID.randomUUID();
+//        this.createdAt = System.currentTimeMillis();
+//        this.updatedAt = this.createdAt;
+
+        this.username = username;
+        this.email = email;
+    }
+
+//    public void update(UUID id,String username, String email) {
+//        this.username = username;
+//        this.id = UUID.randomUUID();
+//        this.email = email;
+//        this.updatedAt = System.currentTimeMillis();
+//    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public long getUpdatedAt() {
+        return updatedAt;
+    }
+
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setEmail(String email) {
+>>>>>>> upstream/김혜성
         this.email = email;
         this.password = password;
     }
 
+<<<<<<< HEAD
 //    public UUID getId() {
 //        return id;
 //    }
@@ -69,5 +121,9 @@ public class User implements Serializable {
         if (anyValueUpdated) {
             this.updatedAt = Instant.now().getEpochSecond();
         }
+=======
+    public void setUsername(String username) {
+        this.username = username;
+>>>>>>> upstream/김혜성
     }
 }

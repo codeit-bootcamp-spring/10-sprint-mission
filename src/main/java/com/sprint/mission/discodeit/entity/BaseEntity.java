@@ -6,13 +6,14 @@ import java.util.UUID;
 
 @Getter
 public class BaseEntity {
-    private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
+    protected UUID id;
+    protected long createdAt;
+    protected long updatedAt;
 
-    public BaseEntity() {
+    protected BaseEntity() {
         this.id = UUID.randomUUID();
         this.createdAt = System.currentTimeMillis();
+<<<<<<< HEAD
         this.updatedAt = System.currentTimeMillis();
     }
 
@@ -31,5 +32,25 @@ public class BaseEntity {
 //    public UUID getId() {
 //        return id;
 //    }
+=======
+        this.updatedAt = this.createdAt;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+>>>>>>> upstream/김혜성
+
+    public long getCreatedAt() {
+        return createdAt;
+    }
+
+    public long getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void touch() { // 수정 시점 갱신용 헬퍼
+        this.updatedAt = System.currentTimeMillis();
+    }
 
 }
