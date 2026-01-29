@@ -42,6 +42,7 @@ public class FileMessageRepository implements MessageRepository {
         return FileUtil.load(directory);
     }
 
+    // 메시지 삭제
     @Override
     public void delete(Message message) {
         try {
