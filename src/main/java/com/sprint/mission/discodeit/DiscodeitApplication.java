@@ -11,12 +11,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import java.util.UUID;
-
 @SpringBootApplication
 public class DiscodeitApplication {
 	static User setupUser(UserService userService) {
-		User user = userService.create("꼬야", "kkoyap@codeit.com", "kko123456", UUID.randomUUID());
+		// DTO 도입에 따른 테스트 코드 변경은 각 도메인 고도화 이후에 수정 예정
+		User user = userService.create("꼬야");
 		System.out.println("유저 생성 완료: " + user.getUsername());
 		return user;
 	}

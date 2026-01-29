@@ -44,8 +44,20 @@
 //    }
 //
 //    @Override
+//    public Optional<User> findByUsername(String username) {
+//        return findAll().stream()
+//                .filter(u -> u.getUsername().equals(username))
+//                .findFirst();
+//    }
+//
+//    @Override
 //    public List<User> findAll() {
 //        return new ArrayList<>(users);
+//    }
+//
+//    @Override
+//    public boolean existsById(UUID id) {
+//        return false;
 //    }
 //
 //    @Override

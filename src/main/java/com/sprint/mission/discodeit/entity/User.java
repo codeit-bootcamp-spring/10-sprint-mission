@@ -16,6 +16,7 @@ public class User extends BaseEntity {
     private String email;
     private String password; // 추가
     private UUID profileId; // 추가 - BinaryContent 참조용
+    private UserStatus status;
 
     private final List<Channel> channels = new ArrayList<>();
     private final List<Message> messages = new ArrayList<>();
@@ -26,6 +27,7 @@ public class User extends BaseEntity {
         this.email = email;
         this.password = password;
         this.profileId = profileId;
+        this.status = new UserStatus(this.getId());
     }
 
     public void update(String newUsername, String newEmail ,String newPassword, UUID newProfileId) {
@@ -100,6 +102,10 @@ public class User extends BaseEntity {
     private void validatePassword(String password) {
         if (password == null || password.length() < 8 || password.contains(" "))
             throw new IllegalArgumentException("비밀번호는 공백 없이 8자 이상이어야 합니다.");
+    }
+
+    public void setStatus(UserStatus status) {
+        this.status = status;
     }
 
     @Override
