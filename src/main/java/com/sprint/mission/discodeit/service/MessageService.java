@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Message;
-
 import java.util.List;
 import java.util.UUID;
+
+import com.sprint.mission.discodeit.dto.MessagePatchDTO;
+import com.sprint.mission.discodeit.dto.MessagePostDTO;
+import com.sprint.mission.discodeit.entity.Message;
 
 /**
  * 수정, 삭제 메서드를 작성할 때 파라미터로 객체 자체 보다는 id를 받는 것이 좋다.
@@ -13,15 +15,15 @@ import java.util.UUID;
  * 또한 id의 본래 역할(식별자)을 생각하면 id 전달히 더 타당하다고 볼 수 있다.
  */
 public interface MessageService {
-    Message create(UUID userId, String text, UUID channelId);
+	Message create(MessagePostDTO messagePostDTO);
 
-    Message findById(UUID id); // uuid로 단일 메시지 조회하기
+	Message findById(UUID id); // uuid로 단일 메시지 조회하기
 
-    List<Message> findByUser(UUID userId); // 특정 유저의 전체 메시지 조회하기
+	List<Message> findByUser(UUID userId); // 특정 유저의 전체 메시지 조회하기
 
-    List<Message> findByChannel(UUID channelId); // 특정 채닐의 전체 메시지 조회하기
+	List<Message> findByChannelId(UUID channelId); // 특정 채닐의 전체 메시지 조회하기
 
-    Message updateById(UUID messageId, String text); // 메시지 내용 수정
+	Message updateById(MessagePatchDTO messagePatchDTO); // 메시지 내용 수정
 
-    void delete(UUID messageId);
+	void delete(UUID messageId);
 }
