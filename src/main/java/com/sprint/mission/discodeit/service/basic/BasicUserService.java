@@ -1,15 +1,16 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class BasicUserService implements UserService {
     private final ChannelRepository channelRepository;
     private final UserMapper userMapper;
     private final UserStatusRepository userStatusRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
     public UserResponseDto create(UserCreateDto userCreateDto) {
@@ -33,32 +35,36 @@ public class BasicUserService implements UserService {
         User user = new User(userCreateDto.getName(),
                 userCreateDto.getEmail(),
                 userCreateDto.getPassword());
-
-        // 프로필 이미지 추가 선택
-        if(userCreateDto.getProfileImageId() != null){
-            user.addProfileImage(userCreateDto.getProfileImageId());
-        }
-        // 저장
+        // 유저 저장
         save(user);
-        // 저장후 유저 상태 생성
+        // 유저 dto 내부 받아온 파일 dto
+        BinaryContentDto binaryContentDto = userCreateDto.getProfileImg();
+        // 프로필 등록 여부 & binaryContent객체 생성
+        if(userCreateDto.getProfileImg() != null){
+            BinaryContent binaryContent =
+                    new BinaryContent(user.getId(),
+                            null,
+                            binaryContentDto.getFileData(),
+                            binaryContentDto.getName(),
+                            binaryContentDto.getFileType());
+            // binarycontent 저장
+            binaryContentRepository.save(binaryContent.getId(),binaryContent);
+        }
+
+        // 유저 상태 생성
         UserStatus userStatus = new UserStatus(user.getId());
         // 추후 메시지상태도 저장
+        userStatusRepository.save(userStatus.getId(), userStatus);
 
-        return new UserResponseDto(user.getId()
-                ,user.getName()
-                ,user.getEmail()
-                ,user.getProfileImageId()
-                ,user.getMessageList()
-                ,user.getChannelList()
-                ,user.getFriendsList()
-                ,true);
+        return userMapper.toDto(user);
     }
 
     @Override
     public UserResponseDto findUser(UUID userId) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
-         UserStatus userStatus = userStatusRepository.findById(userId);
+        User user = CheckNull(userId);
+        UserStatus userStatus = userStatusRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException());
+
 
          // 추후 유저상태 서비스에서 가져오는 식으로 바꿔야할듯
         boolean online = false;
@@ -66,14 +72,7 @@ public class BasicUserService implements UserService {
             online = isOnline(userStatus.getLastOnlineAt());
         }
 
-        return new UserResponseDto(user.getId()
-                ,user.getName()
-                ,user.getEmail()
-                ,user.getProfileImageId()
-                ,user.getMessageList()
-                ,user.getChannelList()
-                ,user.getFriendsList(),
-                online);
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -93,8 +92,8 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponseDto addFriend(UUID senderId, UUID receiverId) {
-        User sender = userMapper.toEntity(findUser(senderId));
-        User receiver = userMapper.toEntity(findUser(receiverId));
+        User sender = CheckNull(senderId);
+        User receiver = CheckNull(receiverId);
 
         sender.addFriend(receiverId);
         receiver.addFriend(senderId);
@@ -106,7 +105,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public List<UserResponseDto> findFriends(UUID userId) {
-        User user = userMapper.toEntity(findUser(userId));
+        User user = CheckNull(userId);
 
         List<UserResponseDto> friendList = user.getFriendsList().stream()
                 .map(id -> findUser(id))
@@ -118,10 +117,23 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDto update(UUID userId, String newName,String email, String password,UUID profileImageId) {
-        User user = userMapper.toEntity(findUser(userId));
+    public UserResponseDto update(UUID userId, UserUpdateDto userUpdateDto) {
+        User user = CheckNull(userId);
 
-        user.updateUser(newName,email,password,profileImageId);
+
+        if(userUpdateDto.getName() != null){
+            user.updateName(userUpdateDto.getName());
+        }
+        if(userUpdateDto.getEmail() != null){
+            user.updateEmail(userUpdateDto.getEmail());
+        }
+        if(userUpdateDto.getPassword() != null){
+            user.updatePassword(userUpdateDto.getPassword());
+        }
+        if(userUpdateDto.getProfileImageId() != null){
+            user.updateProfileImg(userUpdateDto.getProfileImageId());
+        }
+        user.updateTimeStamp();
         save(user);
 
         return findUser(userId);
@@ -129,7 +141,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
-        User user = userMapper.toEntity(findUser(userId));
+        User user = CheckNull(userId);;
 
         // 유저가 속한 채널에서 유저 id지우기
         List<UUID> channelList = new ArrayList<>(user.getChannelList());
@@ -155,6 +167,12 @@ public class BasicUserService implements UserService {
             save(friend); // 변경된 친구저장
         }
 
+        // 유저 상태 삭제
+        userStatusRepository.deleteByUserId(user.getId());
+
+        //유저의 binarycontent 삭제
+        binaryContentRepository.deleteByUserId(user.getId());
+
         // 유저를 데이터에서 삭제
         userRepository.delete(userId);
     }
@@ -164,8 +182,14 @@ public class BasicUserService implements UserService {
         userRepository.save(user.getId(),user);
     }
 
+    // 추후 UserStatucService로 이전
     private boolean isOnline(Instant lastOnlineAt){
         // 만약 최종접속시간이 현재시간의 5분전 이내라면 참 반환
         return lastOnlineAt.isAfter(Instant.now().minus(Duration.ofMinutes(5)));
+    }
+
+    private User CheckNull(UUID userId){
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
 }

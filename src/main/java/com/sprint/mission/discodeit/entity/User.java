@@ -48,22 +48,15 @@ public class User extends BaseEntity{
         }
     }
 
-    public void updateUser(String name,String email,String password, UUID profileImageId){
-        if(name != null) {
-            this.name = name;
-        }
-        if(email != null){
-            this.email = email;
-        }
-        if(password != null){
-            this.password = password;
-        }
-        if(profileImageId != null){
-            this.profileImageId = profileImageId;
-        }
+    public void updateName(String name){this.name = name;}
 
-        updateTimeStamp();
+    public void updateEmail(String email){
+        this.email = email;
     }
+
+    public void updateProfileImg(UUID profileImageId){this.profileImageId = profileImageId;}
+
+    public void updatePassword(String password){this.password = password}
 
     @Override
     public String toString() {

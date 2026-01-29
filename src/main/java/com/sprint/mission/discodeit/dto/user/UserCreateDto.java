@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.dto.user;
 
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import lombok.Getter;
 
 import java.util.UUID;
@@ -9,5 +11,5 @@ public class UserCreateDto {
     private String name;
     private String email;
     private String password;
-    private UUID profileImageId;
+    private BinaryContentDto profileImg;
 }

@@ -8,8 +8,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-@AllArgsConstructor
 @Getter
+@AllArgsConstructor
 public class UserResponseDto {
     private UUID userId;
     private String name;

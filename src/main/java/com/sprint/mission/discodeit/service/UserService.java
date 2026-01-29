@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface UserService {
     List<UserResponseDto> findAllUsers();
     UserResponseDto addFriend(UUID senderId, UUID recieverId);
     List<UserResponseDto> findFriends(UUID userId);
-    UserResponseDto update(UUID userId, String newName, String email, String password, UUID profileImageId);
+    UserResponseDto update(UUID userId, UserUpdateDto userUpdateDto);
     void delete(UUID userId);
     void save(User user);
 }
