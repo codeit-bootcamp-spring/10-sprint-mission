@@ -1,17 +1,20 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 @Getter
 @ToString
-public class BinaryContent {
+public class BinaryContent implements Serializable {
+    @ToString.Exclude
+    private static final long serialVersionUID = 1L;
+
     private final UUID id = UUID.randomUUID();
     private final long createdAt = Instant.now().getEpochSecond();
-    private final String url;
+    @Setter
+    private String url;
 }

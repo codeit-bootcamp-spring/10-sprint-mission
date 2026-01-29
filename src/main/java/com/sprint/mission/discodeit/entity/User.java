@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -14,6 +15,7 @@ public class User implements Serializable {
     @ToString.Exclude
     private static final long serialVersionUID = 1L;
 
+    @Getter
     private final UUID id = UUID.randomUUID();
     private final Long createdAt = Instant.now().getEpochSecond();
     private Long updatedAt = createdAt;
@@ -24,8 +26,10 @@ public class User implements Serializable {
     private String email;
     @NonNull
     private String password;
+    @Getter
     private final UUID profileId;
-    private final UUID readStatusId;
+    @Getter
+    private final UUID userStatusId;
 
     public void update(String newUsername, String newEmail, String newPassword) {
         boolean anyValueUpdated = false;
