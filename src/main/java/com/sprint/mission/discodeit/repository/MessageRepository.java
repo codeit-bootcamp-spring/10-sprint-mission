@@ -11,7 +11,7 @@ public interface MessageRepository {
 
     void delete(UUID messageId);
 
-    Message updateMessageData(UUID messageId, String messageData);
-
     List<Message> loadAll();
+
+    Message loadById(UUID messageId);
 }

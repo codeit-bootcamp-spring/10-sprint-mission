@@ -11,7 +11,7 @@ public interface ChannelRepository {
 
     void delete(UUID channelId);
 
-    Channel updateChannelname(UUID channelId, String name);
-
     List<Channel> loadAll();
+
+    Channel loadById(UUID channelId);
 }

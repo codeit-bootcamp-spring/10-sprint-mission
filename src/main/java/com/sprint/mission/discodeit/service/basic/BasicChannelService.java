@@ -3,15 +3,15 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Service("channelService")
 public class BasicChannelService implements ChannelService {
     private ChannelRepository channelRepository;
     private List<Channel> channelList;
@@ -56,7 +56,7 @@ public class BasicChannelService implements ChannelService {
 
     // 유저 참가
     public void joinUser(UUID userId, UUID channelId, BasicUserService userService) {
-        User user = userService.read(userId);
+        User user = userService.find(userId);
         Channel channel = this.read(channelId);
         user.getChannelList().add(channel);
         channel.getUserList().add(user);
@@ -64,7 +64,7 @@ public class BasicChannelService implements ChannelService {
 
     // 유저 탈퇴
     public void quitUser(UUID userId, UUID channelId, BasicUserService userService) {
-        User user = userService.read(userId);
+        User user = userService.find(userId);
         Channel channel = this.read(channelId);
         user.getChannelList().remove(channel);
         channel.getUserList().remove(user);
@@ -72,7 +72,7 @@ public class BasicChannelService implements ChannelService {
 
     // 특정 유저가 참가한 채널 리스트 조회
     public List<Channel> readUserChannelList(UUID userId, BasicUserService userService) {
-        User user = userService.read(userId);
+        User user = userService.find(userId);
         return user.getChannelList();
     }
 }

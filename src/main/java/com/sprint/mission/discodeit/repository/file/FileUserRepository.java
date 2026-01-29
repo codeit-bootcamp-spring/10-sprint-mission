@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Repository("userRepository")
 public class FileUserRepository implements UserRepository {
     private List<User> data;
 
@@ -70,5 +72,16 @@ public class FileUserRepository implements UserRepository {
     @Override
     public List<User> loadAll() {
         return deserialize();
+    }
+
+    @Override
+    public User loadById(UUID userId) {
+        this.data = deserialize();
+        for(User user : this.data) {
+            if (user.getId().equals(userId)) {
+                return user;
+            }
+        }
+        throw new NoSuchElementException();
     }
 }

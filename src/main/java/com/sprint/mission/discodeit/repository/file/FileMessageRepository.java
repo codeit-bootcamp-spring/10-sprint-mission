@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Repository("messageRepository")
 public class FileMessageRepository implements MessageRepository {
     private List<Message> data;
 
@@ -70,5 +72,16 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public List<Message> loadAll() {
         return deserialize();
+    }
+
+    @Override
+    public Message loadById(UUID messageId) {
+        this.data = deserialize();
+        for (Message message : this.data) {
+            if (message.getId().equals(messageId)) {
+                return message;
+            }
+        }
+        throw new NoSuchElementException();
     }
 }

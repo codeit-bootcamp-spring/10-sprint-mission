@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Repository("channelRepository")
 public class FileChannelRepository implements ChannelRepository {
     private List<Channel> data;
 
@@ -70,5 +72,16 @@ public class FileChannelRepository implements ChannelRepository {
     @Override
     public List<Channel> loadAll() {
         return deserialize();
+    }
+
+    @Override
+    public Channel loadById(UUID channelId) {
+        this.data = deserialize();
+        for (Channel channel : this.data) {
+            if (channel.getId().equals(channelId)) {
+                return channel;
+            }
+        }
+        throw new NoSuchElementException();
     }
 }

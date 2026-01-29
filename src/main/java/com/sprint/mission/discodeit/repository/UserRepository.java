@@ -11,7 +11,7 @@ public interface UserRepository {
 
     void delete(UUID userId);
 
-    User updateUserName(UUID userId, String name);
-
     List<User> loadAll();
+
+    User loadById(UUID userId);
 }

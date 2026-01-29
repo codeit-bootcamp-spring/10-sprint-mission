@@ -5,9 +5,11 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Service("messageService")
 public class BasicMessageService implements MessageService {
     private MessageRepository messageRepository;
     private BasicUserService userService;
@@ -21,7 +23,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public Message create(String msg, UUID userId, UUID channelId) {
-        User user = userService.read(userId);
+        User user = userService.find(userId);
         Channel channel = channelService.read(channelId);
         Message message = new Message(msg, user, channel);
         this.messageRepository.save(message);
@@ -57,7 +59,7 @@ public class BasicMessageService implements MessageService {
     // 특정 유저가 발행한 메시지 리스트 조회
     @Override
     public List<Message> readUserMessageList(UUID userId) {
-        User user = userService.read(userId);
+        User user = userService.find(userId);
         return user.getMessageList();
     }
 
