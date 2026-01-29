@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
+import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ public class BasicUserService implements UserService {
     private final MessageRepository messageRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
+    private final Filter filter;
 
     // 사용자 생성
     @Override
@@ -170,8 +172,11 @@ public class BasicUserService implements UserService {
     // 사용자 삭제
     @Override
     public void deleteUser(UUID userId) {
-        User targetUser = searchUser(userId);
+        // 1. 사용자 존재 여부 확인
+        User targetUser = userRepository.findById(userId)
+                        .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
 
+        // 2. 삭제된 사용자가 참여한 모든 채널 내 멤버에서 사용자 연쇄 삭제
         channelRepository.findAll().stream()
                 .filter(channel -> channel.getUserId().equals(userId))
                 .forEach(channel -> {
@@ -179,11 +184,23 @@ public class BasicUserService implements UserService {
                     channelRepository.save(channel);
                 });
 
-        messageRepository.findAll().stream()          // 모든 메시지에서 해당 유저가 작성한 메시지 제거
-                .filter(message -> message != null /*&& targetUser != null*/)
+        // 삭제된 사용자가 발행한 메시지 연쇄 삭제
+        messageRepository.findAll().stream()
+                .filter(message -> message != null && targetUser != null)
                 .filter(message -> message.getAuthorId().equals(userId))
                 .forEach(messageRepository::delete);
 
+        // 사용자 상태 연쇄 삭제
+        userStatusRepository.findAll().stream()
+                .filter(userStatus -> userStatus.getUserId().equals(targetUser.getId()))
+                .forEach(userStatus -> userStatusRepository.delete(userStatus.getId()));
+
+        // 사용자 프로필 이미지 연쇄 삭제
+        binaryContentRepository.findAll().stream()
+                .filter(binaryContent -> binaryContent.getId().equals(targetUser.getProfileId()))
+                .forEach(binaryContent -> binaryContentRepository.delete(binaryContent.getId()));
+
+        // 3. 사용자 삭제
         userRepository.delete(targetUser);
     }
 
