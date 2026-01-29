@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,13 +31,14 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatus find(UUID Id) {
-        return null;
+    public UserStatus find(UUID id) {
+        return userStatusRepository.findById(id)
+                .orElseThrow(() -> new AssertionError("UserStatus not found"));
     }
 
     @Override
-    public UserStatus findAll(UUID Id) {
-        return null;
+    public List<UserStatus> findAll(UUID id) {
+        return userStatusRepository.findAll();
     }
 
     @Override
