@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserInfoDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
@@ -38,13 +39,16 @@ public class BasicUserService implements UserService {
 
         User user = new User(userCreateDto.email(), userCreateDto.userName(), userCreateDto.nickName(), userCreateDto.password(), userCreateDto.birthday());
 
-        if (userCreateDto.binaryContent() != null && userCreateDto.binaryContent().length != 0) {
-            BinaryContent binaryContent = new BinaryContent(userCreateDto.binaryContent());
-            binaryContentRepository.save(binaryContent);
+        if (userCreateDto.profileImage() != null ) {
+            byte[] inputBinaryContent = userCreateDto.profileImage().binaryContent();
 
-            user.updateProfileId(binaryContent.getId());
+            if (inputBinaryContent != null && inputBinaryContent.length != 0) {
+                BinaryContent binaryContent = new BinaryContent(inputBinaryContent);
+                binaryContentRepository.save(binaryContent);
+
+                user.updateProfileId(binaryContent.getId());
+            }
         }
-
         UserStatus userStatus = new UserStatus(user.getId());
 
         userRepository.save(user);
@@ -60,7 +64,6 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 userId에 맞는 UserStatus가 없습니다."));
-//        userStatus.updateLastOnlineTime();
 
         return createUserInfo(user, userStatus);
     }
@@ -75,15 +78,21 @@ public class BasicUserService implements UserService {
 
     @Override
     public List<UserInfoDto> findAllUsers() {
-        List<User> users = userRepository.findAll();
+//        List<User> users = userRepository.findAll();
         List<UserStatus> userStatuses = userStatusRepository.findAll();
-        Map<UUID, UserStatus> userStatusMap = new HashMap<>();
-        userStatuses
-                .forEach(status -> userStatusMap.put(status.getUserId(), status));
 
         List<UserInfoDto> userInfos = new ArrayList<>();
-        users.forEach(user -> userInfos.add(createUserInfo(user, userStatusMap.get(user.getId()))));
-
+        userStatuses.forEach(status -> {
+            User user = userRepository.findById(status.getUserId())
+                    .orElseThrow(() -> new NoSuchElementException("status의 userId를 가진 유저가 존재하지 않음"));
+            userInfos.add(createUserInfo(user, status));
+        });
+//        Map<UUID, UserStatus> userStatusMap = new HashMap<>();
+//        userStatuses
+//                .forEach(status -> userStatusMap.put(status.getUserId(), status));
+//
+//        List<UserInfoDto> userInfos = new ArrayList<>();
+//        users.forEach(user -> userInfos.add(createUserInfo(user, userStatusMap.get(user.getId()))));
         return userInfos;
     }
 
@@ -95,36 +104,13 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 userId로 유저를 찾을 수 없습니다."));
 
         // blank(+null) 검증
-        if (userUpdateDto.email() != null) ValidationMethods.validateNullBlankString(userUpdateDto.email(), "email");
-        if (userUpdateDto.password() != null) ValidationMethods.validateNullBlankString(userUpdateDto.password(), "password");
-        if (userUpdateDto.userName() != null) ValidationMethods.validateNullBlankString(userUpdateDto.userName(), "userName");
-        if (userUpdateDto.nickName() != null) ValidationMethods.validateNullBlankString(userUpdateDto.nickName(), "nickName");
-        if (userUpdateDto.birthday() != null) ValidationMethods.validateNullBlankString(userUpdateDto.birthday(), "birthday");
-        if (userUpdateDto.binaryContent() != null) validateNullBlankBinaryContent(userUpdateDto.binaryContent());
+        validateBlankUpdateParameters(userUpdateDto);
 
-        boolean BinaryContentChanged = false;
-        if (userUpdateDto.binaryContent() != null) { // 새 BinaryContent 들어오는데
-            if (user.getProfileId() == null) { // 기존에 BinaryContent 없을 때
-                BinaryContentChanged = true; // 새로운 BinaryContent 들어옴
-            } else { //기존 프로필이 존재
-                BinaryContent oldBinaryContent = binaryContentRepository.findById(user.getProfileId())
-                        .orElseThrow(() -> new NoSuchElementException("해당 profileId에 해당하는 BinaryContent가 없습니다."));
-                // 새로 들어온 BinaryContent와 비교
-                // 같으면 -> false -> change 되지 않음
-                BinaryContentChanged = !Arrays.equals(oldBinaryContent.getContent(), userUpdateDto.binaryContent());
-            }
-        }
+        // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
+        boolean binaryContentChanged = isBinaryContentChanged(userUpdateDto.profileImage(), user.getProfileId());
 
         // email or password or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
-        if ((userUpdateDto.email() == null || user.getEmail().equals(userUpdateDto.email()))
-                && (userUpdateDto.password() == null || user.getPassword().equals(userUpdateDto.password()))
-                && (userUpdateDto.nickName() == null || user.getNickName().equals(userUpdateDto.nickName()))
-                && (userUpdateDto.userName() == null || user.getUserName().equals(userUpdateDto.userName()))
-                && (userUpdateDto.birthday() == null || user.getBirthday().equals(userUpdateDto.birthday()))
-                && !BinaryContentChanged
-        ) {
-            throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
-        }
+        validateAllInputDuplicateOrEmpty(userUpdateDto, user, binaryContentChanged);
 
         // 다른 사용자들의 email과 중복되는지 확인 후 email 업데이트
         if (userUpdateDto.email() != null && !user.getEmail().equals(userUpdateDto.email())) {
@@ -149,8 +135,8 @@ public class BasicUserService implements UserService {
                 .ifPresent(b -> user.updateBirthday(b));
 
         UUID oldProfileId = user.getProfileId();
-        if (BinaryContentChanged) {
-            BinaryContent newBinaryContent = new BinaryContent(userUpdateDto.binaryContent());
+        if (binaryContentChanged) {
+            BinaryContent newBinaryContent = new BinaryContent(userUpdateDto.profileImage().binaryContent());
             binaryContentRepository.save(newBinaryContent);
 
             user.updateProfileId(newBinaryContent.getId());
@@ -159,7 +145,7 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
 
         // BinaryContent가 교체되고, profileId가 null이 아닐 때
-        if (BinaryContentChanged && oldProfileId != null) {
+        if (binaryContentChanged && oldProfileId != null) {
             binaryContentRepository.delete(oldProfileId);
         }
 
@@ -206,6 +192,42 @@ public class BasicUserService implements UserService {
         if (userRepository.existUserName(newUserName)) {
             throw new IllegalArgumentException("동일한 userName이 존재합니다");
         }
+    }
+    // blank(+null) 검증
+    private void validateBlankUpdateParameters(UserUpdateDto userUpdateDto) {
+        if (userUpdateDto.email() != null) ValidationMethods.validateNullBlankString(userUpdateDto.email(), "email");
+        if (userUpdateDto.password() != null) ValidationMethods.validateNullBlankString(userUpdateDto.password(), "password");
+        if (userUpdateDto.userName() != null) ValidationMethods.validateNullBlankString(userUpdateDto.userName(), "userName");
+        if (userUpdateDto.nickName() != null) ValidationMethods.validateNullBlankString(userUpdateDto.nickName(), "nickName");
+        if (userUpdateDto.birthday() != null) ValidationMethods.validateNullBlankString(userUpdateDto.birthday(), "birthday");
+        if (userUpdateDto.profileImage() != null) validateNullBlankBinaryContent(userUpdateDto.profileImage().binaryContent());
+    }
+    // email or password or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
+    private void validateAllInputDuplicateOrEmpty(UserUpdateDto userUpdateDto, User user, boolean binaryContentChanged) {
+        if ((userUpdateDto.email() == null || user.getEmail().equals(userUpdateDto.email()))
+                && (userUpdateDto.password() == null || user.getPassword().equals(userUpdateDto.password()))
+                && (userUpdateDto.nickName() == null || user.getNickName().equals(userUpdateDto.nickName()))
+                && (userUpdateDto.userName() == null || user.getUserName().equals(userUpdateDto.userName()))
+                && (userUpdateDto.birthday() == null || user.getBirthday().equals(userUpdateDto.birthday()))
+                && !binaryContentChanged
+        ) {
+            throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
+        }
+    }
+    // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
+    private boolean isBinaryContentChanged (BinaryContentCreateDto binaryContentCreateDto, UUID profileId) {
+        if (binaryContentCreateDto != null) { // 새 BinaryContent 들어오는데
+            if (profileId == null) { // 기존에 BinaryContent 없을 때
+                return true; // 새로운 BinaryContent 들어옴
+            } else { //기존 프로필이 존재
+                BinaryContent oldBinaryContent = binaryContentRepository.findById(profileId)
+                        .orElseThrow(() -> new NoSuchElementException("해당 profileId에 해당하는 BinaryContent가 없습니다."));
+                // 새로 들어온 BinaryContent와 비교
+                // 같으면 -> false -> change 되지 않음
+                return !Arrays.equals(oldBinaryContent.getContent(), binaryContentCreateDto.binaryContent());
+            }
+        }
+        return false; // 새 BinaryContent 안들어옴
     }
     // binaryContent가 null 인지, 없는지 확인
     public static void validateNullBlankBinaryContent(byte[] binaryContent) {

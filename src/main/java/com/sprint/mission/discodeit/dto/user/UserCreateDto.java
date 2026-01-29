@@ -1,16 +1,13 @@
 package com.sprint.mission.discodeit.dto.user;
 
+import com.sprint.mission.discodeit.dto.BinaryContentCreateDto;
+
 public record UserCreateDto(
         String email,
         String userName,
         String nickName,
         String password,
         String birthday,
-        byte[] binaryContent
+        BinaryContentCreateDto profileImage
 ) {
-    public UserCreateDto {
-        if (binaryContent != null) {
-            binaryContent = binaryContent.clone();
-        }
-    }
 }
