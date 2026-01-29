@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -28,8 +29,10 @@ public class FileUserRepository implements UserRepository {
     private final String EXTENSION = ".ser";
     String className = this.getClass().getSimpleName();
 
-    public FileUserRepository() {
-        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", User.class.getSimpleName());
+    public FileUserRepository(@Value("${discodeit.repository.file-directory}") String directory) {
+        String currentDir = System.getProperty("user.dir");
+        this.DIRECTORY = Paths.get(currentDir, directory, className);
+
         if (Files.notExists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);
