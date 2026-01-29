@@ -38,3 +38,6 @@ out/
 
 ### 파일 레포 디렉토리
 .discodeit
+
+### 맥북설정 파일
+.DS_Store
