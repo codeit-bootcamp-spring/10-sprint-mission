@@ -30,9 +30,9 @@ public class User implements Serializable {
         this.password = password;
     }
 
-    public void update(String newUsername, String newEmail, String newPassword, UUID ProfileId) {
+    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
         boolean anyValueUpdated = false;
-        if (newUsername != null && !newUsername.equals(this.username)) {
+        if (newUsername != null && !newUsername.equals(this.username)) {//이름이 null이 아니고 기존꺼와 같지 않을때 변경.
             this.username = newUsername;
             anyValueUpdated = true;
         }
@@ -48,7 +48,10 @@ public class User implements Serializable {
         if (anyValueUpdated) {
             this.updatedAt = Instant.now();
         }
-        this.profileId = ProfileId;
+        if(newProfileId != null && !newProfileId.equals(this.profileId)) {
+            this.profileId = newProfileId;
+        }
+
     }
 
     @Override

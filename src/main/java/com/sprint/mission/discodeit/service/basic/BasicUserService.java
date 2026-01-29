@@ -51,11 +51,6 @@ public class BasicUserService implements UserService {
 
             BinaryContentRequestDto binaryContentDto = usercreateDto.binaryContentDto();
 
-            //이미 프로필 존재하는지 검증
-            if(user.getProfileId() != null){
-                throw new IllegalArgumentException("프로필이 이미 존재합니다.");
-            }
-
             //BinaryContent 생성&저장(프로필 등록)
             BinaryContent binaryContent = new BinaryContent(
                     user.getId(),
@@ -106,6 +101,8 @@ public class BasicUserService implements UserService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+
+        //유저의 이미지,이름,비밀번호 이런 모든걸 한번에 다 바꾼다.
         user.update(userUpdateDto.username(), userUpdateDto.email(), userUpdateDto.password(),user.getProfileId());
 
         if (userUpdateDto.binaryContentDto() != null) {
