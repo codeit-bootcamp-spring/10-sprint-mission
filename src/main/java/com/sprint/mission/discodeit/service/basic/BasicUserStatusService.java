@@ -42,8 +42,28 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public void update(UserStatusUpdateRequestDto userStatusUpdateRequestDto) {
+    public UserStatus update(UserStatusUpdateRequestDto userStatusUpdateRequestDto) {
+        //잘못 온 경우 올바르게 돌려주기
+        if(userStatusUpdateRequestDto.isUserId()) return updateByUserId(userStatusUpdateRequestDto);
 
+        UserStatus userStatus = userStatusRepository.findById(userStatusUpdateRequestDto.Id())
+                .orElseThrow(() -> new AssertionError("UserStatus not found"));
+
+        userStatus.setLastOnlineTime(userStatusUpdateRequestDto.lastOnlineTime());
+
+        return userStatusRepository.save(userStatus);
+    }
+
+    public UserStatus updateByUserId(UserStatusUpdateRequestDto userStatusUpdateRequestDto){
+        //잘못 온 경우 올바르게 돌려주기
+        if (!userStatusUpdateRequestDto.isUserId()) return update(userStatusUpdateRequestDto);
+
+        UserStatus userStatus = userStatusRepository.findByUserId(userStatusUpdateRequestDto.Id())
+                        .orElseThrow(() -> new AssertionError("UserStatus not found"));
+
+        userStatus.setLastOnlineTime(userStatusUpdateRequestDto.lastOnlineTime());
+
+        return userStatusRepository.save(userStatus);
     }
 
     @Override
