@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -10,7 +11,6 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,6 +21,7 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
+    private final ChannelMapper channelMapper;
 
     @Override
     public Channel createPublic(ChannelDto.CreatePublicRequest request) {
@@ -53,7 +54,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDto.Response find(UUID channelId) {
         return channelRepository.findById(channelId)
-                .map(this::mapToDto)
+                .map(this::toDto)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + channelId));
     }
 
@@ -72,7 +73,7 @@ public class BasicChannelService implements ChannelService {
                         channel.getType() == ChannelType.PUBLIC // 채널이 public이거나
                                 || userJoinedPrivateChannelIds.contains(channel.getId()) // 유저가 가입한 private 채널이거나
                 )
-                .map(this::mapToDto)
+                .map(this::toDto)
                 .toList();
     }
 
@@ -102,7 +103,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     // Helper
-    private ChannelDto.Response mapToDto(Channel channel) {
+    private ChannelDto.Response toDto(Channel channel) {
         List<UUID> memberIds = new ArrayList<>();
 
         if (channel.getType() == ChannelType.PRIVATE) { // private 채널일 경우
@@ -114,14 +115,7 @@ public class BasicChannelService implements ChannelService {
             memberIds = List.of();
         }
 
-        Instant lastMessageAt = messageRepository.findAllByChannelId(channel.getId()) // 채널id에 해당하는 메시지 전부 가져옴
-                .stream()
-                .max(Comparator.comparing(Message::getCreatedAt)) // 생성 시간이 가장 큰 메시지 가져옴
-                .map(Message::getCreatedAt)
-                .orElse(null);
-
-        return ChannelDto.Response.from(channel, memberIds, lastMessageAt);
+        return channelMapper.toResponse(channel, memberIds);
     }
-
 
 }

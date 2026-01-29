@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -16,9 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,17 +25,13 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
+    private final UserMapper userMapper;
 
     @Override
     public User create(UserDto.CreateRequest request) {
         String username = request.username();
         String email = request.email();
-        if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + email);
-        }
-        if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + username);
-        }
+        validationUser(null, username, email);
         String password = request.password();
         UUID profileId = saveProfileImage(request.profileImage());
 
@@ -51,14 +46,14 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto.Response find(UUID userId) {
         return userRepository.findById(userId)
-                .map(this::mapToDto)
+                .map(this::toDto)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다:" + userId));
     }
 
     @Override
     public List<UserDto.Response> findAll() {
         return userRepository.findAll().stream()
-                .map(this::mapToDto)
+                .map(this::toDto)
                 .toList();
     }
 
@@ -69,16 +64,7 @@ public class BasicUserService implements UserService {
 
         String newUsername = request.newUsername();
         String newEmail = request.newEmail();
-        if(newUsername != null && !newUsername.equals(user.getUsername())) { // 값이 바뀌지 않으면 중복검사 X
-            if (userRepository.existsByUsername(newUsername)) {
-                throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + newUsername);
-            }
-        }
-        if(newEmail != null && !newEmail.equals(user.getEmail())) { // 값이 바뀌지 않으면 중복검사 X
-            if (userRepository.existsByEmail(newEmail)) {
-                throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + newEmail);
-            }
-        }
+        validationUser(user, newUsername, newEmail);
         String newPassword = request.newPassword();
         UUID newProfileId = saveProfileImage(request.newProfileImage());
 
@@ -100,12 +86,23 @@ public class BasicUserService implements UserService {
         userRepository.deleteById(userId);
     }
 
+    // validation
+    private void validationUser(User user, String username, String email) {
+        if (userRepository.existsByEmail(email) && (user == null || !user.getEmail().equals(email))) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + email);
+        }
+
+        if (userRepository.existsByUsername(username) && (user == null || !user.getUsername().equals(username))) {
+            throw new IllegalArgumentException("이미 존재하는 사용자명입니다: " + username);
+        }
+    }
+
     // Helper
-    private UserDto.Response mapToDto (User user) {
+    private UserDto.Response toDto(User user) {
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new NoSuchElementException("유저의 상태가 없습니다:" + user.getId()));
 
-        return UserDto.Response.from(user, userStatus.isOnline());
+        return userMapper.toResponse(user, userStatus.isOnline());
     }
 
     private UUID saveProfileImage(BinaryContentDto.CreateRequest imageRequest) {

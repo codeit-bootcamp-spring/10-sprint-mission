@@ -32,20 +32,7 @@ public class UserDto {
             String email,
             boolean isOnline,       // UserStatus에서 계산된 값
             UUID profileId   // 이미지 ID
-    ) {
-        // factory method, user와 userStatus에서 구한 online 정보를 합쳐서 DTO로 만듬
-        public static Response from(User user, boolean isOnline) {
-            return new Response(
-                    user.getId(),
-                    user.getCreatedAt(),
-                    user.getUpdatedAt(),
-                    user.getUsername(),
-                    user.getEmail(),
-                    isOnline,
-                    user.getProfileId()
-            );
-        }
-    }
+    ) {}
 
     public record UpdateRequest(
             String newUsername,
