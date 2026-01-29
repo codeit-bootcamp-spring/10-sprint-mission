@@ -1,6 +1,6 @@
-package com.sprint.mission.discodeit.DTO.UserDTO;
+package com.sprint.mission.discodeit.dto.userdto;
 
-import com.sprint.mission.discodeit.DTO.BinaryContentRecord;
+import com.sprint.mission.discodeit.dto.BinaryContentRecord;
 
 import java.util.UUID;
 

@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -9,11 +11,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@RequiredArgsConstructor
 public class FileMessageRepository implements MessageRepository {
+    private ChannelRepository channelRepository;
     private final Path DIRECTORY;
     private final String EXTENSION = ".ser";
 
@@ -61,6 +66,13 @@ public class FileMessageRepository implements MessageRepository {
             }
         }
         return Optional.ofNullable(messageNullable);
+    }
+
+    // TODO
+    @Override
+    public List<Message> findByChannelId(UUID channelId) {
+        Objects.requireNonNull(channelId, "유효하지 않은 채널 ID");
+        return findAll().stream().filter(m -> channelId.equals(m.getChannelId())).toList();
     }
 
     @Override

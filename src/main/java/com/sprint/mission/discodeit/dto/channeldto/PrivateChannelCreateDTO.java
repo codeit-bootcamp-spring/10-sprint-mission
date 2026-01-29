@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.DTO.ChannelDTO;
+package com.sprint.mission.discodeit.dto.channeldto;
 
 import com.sprint.mission.discodeit.entity.User;
 

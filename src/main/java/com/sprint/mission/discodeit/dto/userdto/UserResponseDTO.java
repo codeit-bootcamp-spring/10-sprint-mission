@@ -1,9 +1,9 @@
-package com.sprint.mission.discodeit.DTO.UserDTO;
+package com.sprint.mission.discodeit.dto.userdto;
 
 import java.time.Instant;
 import java.util.UUID;
 
-public record UserReturnDTO(
+public record UserResponseDTO(
     UUID id,
     UUID profileID,
     String userName,

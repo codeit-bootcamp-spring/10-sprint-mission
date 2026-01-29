@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.DTO.BinaryContentRecord;
-import com.sprint.mission.discodeit.DTO.UserDTO.UserRegitrationRecord;
-import com.sprint.mission.discodeit.DTO.UserDTO.UserReturnDTO;
-import com.sprint.mission.discodeit.DTO.UserDTO.UserUpdateDTO;
+import com.sprint.mission.discodeit.dto.BinaryContentRecord;
+import com.sprint.mission.discodeit.dto.userdto.UserRegitrationRecord;
+import com.sprint.mission.discodeit.dto.userdto.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.mapper.UserDTOMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -31,14 +32,7 @@ public class BasicUserService implements UserService {
             throw new IllegalStateException("이미 존재하는 이름 or 이메일입니다.");
         }
 
-        UUID profileID = null;
-        if(req.binaryContentRecord() != null){
-            BinaryContentRecord p = req.binaryContentRecord();
-            BinaryContent binaryContent = new BinaryContent(p.contentType(), p.bytes());
-            profileID = binaryContentRepository.save(binaryContent).getId();
-        }
-
-        User user = new User(req.userName(), req.email(), req.password(), profileID);
+        User user = UserDTOMapper.regtoUser(req, binaryContentRepository);
         User savedUser = userRepository.save(user);
 
         userStatusRepository.save(new UserStatus(savedUser.getId()));
@@ -47,41 +41,33 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserReturnDTO find(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-        UserStatus userStatus = userStatusRepository.findByID(userId);
-
-        return new UserReturnDTO(user.getId(),
-                user.getProfileID(),
-                user.getUsername(),
-                user.getEmail(),
-                userStatus.isOnline(),
-                userStatus.getLastActiveAt(),
-                user.getCreatedAt(),
-                user.getUpdatedAt()
+    public UserResponseDTO find(UUID userId) {
+        return UserDTOMapper.userIdToResponse(
+                userId,
+                userRepository,
+                userStatusRepository
         );
-
     }
 
     @Override
-    public List<UserReturnDTO> findAll() {
-        List<UserReturnDTO> userDTOList;
+    public List<UserResponseDTO> findAll() {
+        List<UserResponseDTO> userDTOList;
         return userRepository
                 .findAll()
                 .stream()
                 .map(u -> {
-                    UserStatus userStatus = userStatusRepository.findByID(u.getId());
-                    boolean online = userStatus.isOnline();
-                    Instant lastActiveAt = userStatus.getLastActiveAt();
-                    return new UserReturnDTO(u.getId(),
-                            u.getProfileID(),
-                            u.getUsername(),
-                            u.getEmail(),
-                            online,
-                            lastActiveAt,
-                            u.getCreatedAt(),
-                            u.getUpdatedAt());
+//                    UserStatus userStatus = userStatusRepository.findByID(u.getId());
+//                    boolean online = userStatus.isOnline();
+//                    Instant lastActiveAt = userStatus.getLastActiveAt();
+//                    return new UserResponseDTO(u.getId(),
+//                            u.getProfileID(),
+//                            u.getUsername(),
+//                            u.getEmail(),
+//                            online,
+//                            lastActiveAt,
+//                            u.getCreatedAt(),
+//                            u.getUpdatedAt());
+                    return UserDTOMapper.userIdToResponse(u.getId(),userRepository, userStatusRepository);
                 }).toList();
     }
 
@@ -102,7 +88,7 @@ public class BasicUserService implements UserService {
             BinaryContentRecord binaryContentRecord = req.newProfile();
             BinaryContent binaryContent = new BinaryContent(
                     binaryContentRecord.contentType(),
-                    binaryContentRecord.bytes()
+                    binaryContentRecord.file()
             );
             BinaryContent saved = binaryContentRepository.save(binaryContent);
             newProfileId = saved.getId();
