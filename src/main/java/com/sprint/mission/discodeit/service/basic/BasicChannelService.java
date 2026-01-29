@@ -82,7 +82,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널은 찾을 수 없습니다: " + channelId));
 
-        if (channel.getType() == ChannelType.PUBLIC) {
+        if (channel.getType() == ChannelType.PRIVATE) {
             throw new IllegalArgumentException("비공개 채널은 수정할 수 없습니다:" + channelId);
         }
 
