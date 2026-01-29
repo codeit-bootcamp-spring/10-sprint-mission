@@ -11,7 +11,5 @@ public interface BinaryContentRepository {
 
     Optional<BinaryContent> findById(UUID id);
 
-    List<BinaryContent> findAllByIdIn(List<UUID> ids); // 메시지에 여러 파일이 첨부되어 있을 경우 한꺼번에 조회
-
     void delete(UUID id);
 }
