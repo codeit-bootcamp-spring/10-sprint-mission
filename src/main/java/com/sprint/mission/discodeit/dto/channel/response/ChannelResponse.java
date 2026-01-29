@@ -9,8 +9,6 @@ public record ChannelResponse(
         // Private인 경우: User id까지 추가해서 하도록
         UUID channelID,
         String name,
-        String descriptions,
-        Instant lastMessageTime,
-        List<UUID> userIDs
+        String descriptions
 ) {
 }

@@ -2,8 +2,11 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPrivate;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPublic;
+import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelFindResponse;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.channel.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -26,9 +29,11 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
     private final ReadStatusRepository ReadStatusRepository;
 
+    private final ChannelMapper channelMapper;
+
     // public Channel 생성
     @Override
-    public Channel createPublic(ChannelCreateRequestPublic request) {
+    public ChannelResponse createPublic(ChannelCreateRequestPublic request) {
         // 같은 이름 존재 check
         channelRepository.findAll().stream()
                 .filter(ch -> ch.getName().equals(request.name()))
@@ -37,16 +42,17 @@ public class BasicChannelService implements ChannelService {
                     throw new IllegalArgumentException("Already Present name");
                 });
 
-        Channel channel = new Channel(request.name());
+        Channel channel = channelMapper.toEntity(request);
+        Channel savedChannel = channelRepository.save(channel);
         // [저장]
-        return channelRepository.save(channel);
+        return channelMapper.toResponse(savedChannel);
     }
 
     // private Channel 생성 : 이름, description 생략 채널 참여 유저 정보 생성 + 유저 별 readStatus 정보
     @Override
-    public Channel createPrivate(ChannelCreateRequestPrivate request) {
+    public ChannelResponse createPrivate(ChannelCreateRequestPrivate request) {
         // channel 생성
-        Channel channel = new Channel();
+        Channel channel = channelMapper.toEntity(request);
 
         // private channel의 userList
         List<User> users = new ArrayList<>(request.users());
@@ -57,11 +63,13 @@ public class BasicChannelService implements ChannelService {
             ReadStatusRepository.save(status);
         }
 
-        return channelRepository.save(channel);
+        Channel savedChannel = channelRepository.save(channel);
+
+        return channelMapper.toResponse(savedChannel);
     }
 
     @Override
-    public ChannelResponse find(UUID id) {
+    public ChannelFindResponse find(UUID id) {
         // channel 조회
         Channel channel = channelRepository.find(id);
 
@@ -71,7 +79,7 @@ public class BasicChannelService implements ChannelService {
                                 .max(Instant::compareTo)
                                 .orElse(null);
 
-        if (lastCreatedAt != null) {
+        if (lastCreatedAt == null) {
             throw new IllegalStateException("lastCreatedAt is null");
         }
 
@@ -83,61 +91,69 @@ public class BasicChannelService implements ChannelService {
                     .toList();
         }
 
-        return new ChannelResponse(
+        return new ChannelFindResponse(
                 channel.getId(), channel.getName(), channel.getDescriptions(), lastCreatedAt, userIDs
         );
     }
 
     @Override
-    public List<ChannelResponse> findAllByUserID(UUID userID) {
+    public List<ChannelFindResponse> findAllByUserID(UUID userID) {
         // ChannelRepo channel 전체 조회
         List<Channel> channels = new ArrayList<>(channelRepository.findAll());
         // Channel전체 정보 담을 List 선언
-        List<ChannelResponse> channelResponses = new ArrayList<>();
+        List<ChannelFindResponse> channelResponses = new ArrayList<>();
 
         // Channel type에 따라 channelReponses에 저장
         for (Channel channel : channels) {
-            // channel의 가장 최근 시간
-            Instant lastCreatedAt = channel.getMessageList().stream()
-                                    .map(Base::getCreatedAt)
-                                    .max(Instant::compareTo)
-                                    .orElse(null);
+            boolean isPublic = channel.getDescriptions().equals("Public");
+            boolean isPrivate = channel.getDescriptions().equals("Private");
+            boolean isMember = channel.getMembersList().stream().anyMatch(user -> user.getId().equals(userID));
+            if (isPublic || (isPrivate && isMember)) {
+                // channel의 가장 최근 시간
+                Instant lastCreatedAt = channel.getMessageList().stream()
+                        .map(Base::getCreatedAt)
+                        .max(Instant::compareTo)
+                        .orElse(null);
 
-            // public일 경우 null
-            List<UUID> userIDs = null;
+                // public일 경우 null
+                List<UUID> userIDs = null;
+                // private일 경우 userIDs List 생성
+                if (channel.getDescriptions().equals("Private")) {
+                    userIDs = channel.getMembersList().stream()
+                            .map(User::getId)
+                            .toList();
+                }
 
-            // private일 경우 userIDs List 생성
-            if (channel.getDescriptions().equals("Private")) {
-                userIDs = channel.getMembersList().stream()
-                        .map(User::getId)
-                        .toList();
+                channelResponses.add(
+                        new ChannelFindResponse(
+                                channel.getId(),
+                                channel.getName(),
+                                channel.getDescriptions(),
+                                lastCreatedAt,
+                                userIDs
+                        )
+                );
             }
-
-            channelResponses.add(
-                    new ChannelResponse(
-                            channel.getId(), channel.getName(), channel.getDescriptions(), lastCreatedAt, userIDs
-                    )
-            );
         }
 
         return channelResponses;
     }
 
     @Override
-    public Channel updateName(UUID channelID, String name) {
+    public ChannelResponse updateName(ChannelUpdateRequest request) {
         // [저장] , 조회
-        Channel channel = channelRepository.find(channelID);
+        Channel channel = channelRepository.find(request.channelID());
 
         // 비즈니스
-        channel.updateName(name);
-        channelRepository.save(channel);
+        channel.updateName(request.name());
+        Channel savedChannel = channelRepository.save(channel);
 
         Set<UUID> userIds = new HashSet<>();
         // user에서도 변경된 이름으로 save되어야 함.
         for (User user : channel.getMembersList()) {
             for (Channel c : user.getChannelsList()) {
-                if (c.getId().equals(channelID)) {
-                    c.updateName(name);
+                if (c.getId().equals(request.channelID())) {
+                    c.updateName(request.name());
                     userIds.add(user.getId());
                     break;
                 }
@@ -152,7 +168,7 @@ public class BasicChannelService implements ChannelService {
 
 
         for (Message message : channel.getMessageList()) {
-            message.getChannel().updateName(name);
+            message.getChannel().updateName(request.name());
             messageIds.add(message.getId());
         }
 
@@ -161,7 +177,7 @@ public class BasicChannelService implements ChannelService {
             messageRepository.save(messageRepository.find(messageId).get());
         }
 
-        return channelRepository.save(channel);
+        return channelMapper.toResponse(savedChannel);
     }
 
     @Override
@@ -174,6 +190,8 @@ public class BasicChannelService implements ChannelService {
 
         // [비즈니스], 여기 삭제가 잘 되려나 ??
         members.forEach(user -> user.leaveChannel(channel));
+
+        ReadStatusRepository.deleteByChannelID(channelID);
 
         // [비즈니스]
         List<Message> messageList = new ArrayList<>(channel.getMessageList());

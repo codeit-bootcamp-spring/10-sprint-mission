@@ -1,8 +1,14 @@
-package com.sprint.mission.discodeit.service;
+package com.sprint.mission.discodeit.service.auth;
 
 import com.sprint.mission.discodeit.dto.auth.request.AuthServiceRequest;
+import com.sprint.mission.discodeit.dto.auth.response.AuthServiceResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.auth.AuthMapper;
+import com.sprint.mission.discodeit.mapper.user.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,8 +16,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
     private final UserRepository userRepository;
+    private final UserStatusRepository userStatusRepository;
+    private final AuthMapper authMapper;
 
-    public User login(AuthServiceRequest request){
+    public AuthServiceResponse login(AuthServiceRequest request){
         // name 같은 지 확인
         User user = userRepository.findAll().stream()
                 .filter(u -> u.getName().equals(request.username()))
@@ -23,7 +31,9 @@ public class AuthService {
             throw new IllegalArgumentException("Wrong password");
         }
 
-        // 유저 정보 반환, 얘도 DTO로 ??
-        return user;
+        UserStatus status = userStatusRepository.findByUserID(user.getId());
+
+        // 유저 정보 반환, DTO로 ??
+        return authMapper.toResponse(user, status);
     }
 }

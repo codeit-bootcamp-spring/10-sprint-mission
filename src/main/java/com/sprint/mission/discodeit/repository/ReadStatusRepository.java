@@ -9,4 +9,5 @@ public interface ReadStatusRepository {
     ReadStatus findAll();
     void save(ReadStatus readStatus);
     void delete(ReadStatus readStatus);
+    void deleteByChannelID(UUID channelID);
 }

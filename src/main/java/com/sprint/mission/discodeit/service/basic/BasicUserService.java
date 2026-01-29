@@ -2,9 +2,9 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserResponse;
-import com.sprint.mission.discodeit.dto.user.response.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.user.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -25,6 +25,8 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
 
+    private final UserMapper userMapper;
+
     @Override
     public UserResponse create(UserCreateRequest request) {
         // 이름, 이메일 유효성 검증
@@ -40,14 +42,14 @@ public class BasicUserService implements UserService {
         }
 
         // user 생성 with DTO
-        User user = new User(request.name(), request.email(), request.password(), profileImageID);
+        User user = userMapper.toEntity(request, profileImageID);
         User savedUser = userRepository.save(user);
 
         // userStatus 생성
         UserStatus userStatus = new UserStatus(savedUser.getId());
         userStatusRepository.save(userStatus);
 
-        return new UserResponse(user.getId(), user.getName(), new UserStatusResponse(userStatus.isOnline()));
+        return userMapper.toResponse(savedUser, userStatus);
     }
 
     @Override
@@ -58,7 +60,7 @@ public class BasicUserService implements UserService {
 
         // UserStatusRepo status 조회
         UserStatus status = userStatusRepository.find(id);
-        return new UserResponse(user.getId(), user.getName(), new UserStatusResponse(status.isOnline()));
+        return userMapper.toResponse(user, status);
     }
 
     @Override
@@ -68,7 +70,7 @@ public class BasicUserService implements UserService {
                 .map(
                         user -> {
                             UserStatus status = userStatusRepository.find(user.getId());
-                            return new UserResponse(user.getId(), user.getName(), new UserStatusResponse(status.isOnline()));
+                            return userMapper.toResponse(user, status);
                         })
                 .toList();
     }
@@ -82,18 +84,16 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userID()));
 
         // user 이름 선택적 업데이트
-        if (request.name() != null){
-            // 동명이인 확인
-            validateName(request.name());
-            // user에서 이름 update
-            user.updateName(request.name());
-        }
+        Optional.ofNullable(request.name()).ifPresent(name -> {
+            validateName(name);
+            user.updateName(name);
+        });
 
         // user의 프로필 선택적 업데이트
-        if (request.profileImageID() != null) {
-            BinaryContent profile = binaryContentRepository.find(request.profileImageID());
+        Optional.ofNullable(request.profileImageID()).ifPresent(id -> {
+            BinaryContent profile = binaryContentRepository.find(id);
             user.updateProfileImageID(profile.getId());
-        }
+        });
 
         UserStatus userStatus = userStatusRepository.findByUserID(user.getId());
 
@@ -129,7 +129,7 @@ public class BasicUserService implements UserService {
 //                    .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageID)));
 //        }
         // [저장] 변경사항 저장
-        return new UserResponse(savedUser.getId(), savedUser.getName(), new UserStatusResponse(userStatus.isOnline()));
+        return userMapper.toResponse(savedUser, userStatus);
     }
 
     // user가 해당 ch에서 보낸 msg 삭제 반영 X
@@ -178,6 +178,7 @@ public class BasicUserService implements UserService {
         return channels;
     }
 
+    // Repo쪽으로 이관해야함.
     // User 이름 유효성 검증
     @Override
     public void validateName(String name){
