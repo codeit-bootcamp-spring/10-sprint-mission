@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
@@ -11,8 +10,7 @@ import java.util.UUID;
 
 public interface UserService {
     // 사용자 생성
-    UserResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO,
-                               BinaryContentCreateRequestDTO binaryContentCreateRequestDTO);
+    UserResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO);
 
     // 사용자 단건 조회
     UserResponseDTO searchUser(UUID userId);

@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
@@ -28,7 +27,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 생성
     @Override
-    public UserResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO, BinaryContentCreateRequestDTO binaryContentCreateRequestDTO) {
+    public UserResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO) {
         // 1. 유효성 검증 (이메일 중복, 이름 중복)
         isEmailDuplicate(userCreateRequestDTO.getEmail());
         isNicknameDuplicate(userCreateRequestDTO.getNickname());
@@ -41,9 +40,9 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(newUserStatus);
 
         // 3. 선택적 프로필 이미지 생성 및 저장
-        UUID profileImageId = Optional.ofNullable(binaryContentCreateRequestDTO.getBinaryContent())
+        UUID profileImageId = Optional.ofNullable(userCreateRequestDTO.getBinaryContentCreateRequestDTO().getBinaryContent())
                 .map(content -> {
-                    BinaryContent newBinaryContent = new BinaryContent(binaryContentCreateRequestDTO);
+                    BinaryContent newBinaryContent = new BinaryContent(userCreateRequestDTO.getBinaryContentCreateRequestDTO());
                     binaryContentRepository.save(newBinaryContent);
                     return newBinaryContent.getId();
                 })
