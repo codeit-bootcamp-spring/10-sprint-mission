@@ -15,6 +15,11 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
 	}
 
 	@Override
+	public ReadStatus findByChannelId(UUID channelId) {
+		return null;
+	}
+
+	@Override
 	public void delete(UUID id) {
 
 	}
