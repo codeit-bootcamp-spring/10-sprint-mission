@@ -1,7 +1,7 @@
 server:
-  port: 8081
+  port: 8080
 
 discodeit:
   repository:
-    type: jcf   # jcf | file
+    type: file   # jcf | file
     file-directory: .discodeit

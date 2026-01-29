@@ -24,7 +24,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelMapper channelMapper;
 
     @Override
-    public Channel createPublic(ChannelDto.CreatePublicRequest request) {
+    public Channel create(ChannelDto.CreatePublicRequest request) {
         String channelName = request.name();
         String channelDescription = request.description();
         Channel channel = new Channel(ChannelType.PUBLIC, channelName, channelDescription);
@@ -32,7 +32,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel createPrivate(ChannelDto.CreatePrivateRequest request) {
+    public Channel create(ChannelDto.CreatePrivateRequest request) {
         request.memberIds() // 채널 멤버가 실제로 있는 유저인지 확인
                 .forEach(userId -> {
                     userRepository.findById(userId)
