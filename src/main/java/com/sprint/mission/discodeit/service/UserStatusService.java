@@ -13,6 +13,6 @@ public interface UserStatusService {
     List<UserStatus> findAll(UUID Id);
     UserStatus update(UserStatusUpdateRequestDto userStatusUpdateRequestDto);
     UserStatus updateByUserId(UserStatusUpdateRequestDto userStatusUpdateRequestDto);
-    void delete(UUID userId);
+    void delete(UUID id);
 
 }
