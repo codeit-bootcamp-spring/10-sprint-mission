@@ -11,14 +11,11 @@ public class ReadStatus {
     private Instant createdAt;
     private Instant updatedAt;
     //
-    private String userId; //누가
-    private String channelId; //어떤 채널에서
+    private UUID userId; //누가
+    private UUID channelId; //어떤 채널에서
     private Instant lastReadAt; //마지막으로 몇시에 읽었는지
 
-    public ReadStatus(String userId, String channelId) {
-        this.id = UUID.randomUUID().toString();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
+    public ReadStatus(UUID userId, UUID channelId) {
         this.userId = userId;
         this.channelId = channelId;
         this.lastReadAt = Instant.now();

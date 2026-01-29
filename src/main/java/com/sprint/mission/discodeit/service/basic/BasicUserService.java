@@ -84,7 +84,6 @@ public class BasicUserService implements UserService {
         user.update(dto.getNickname(), null, dto.getPassword());
 
         BinaryContentDto imageDto = dto.getProfileImage();
-
         if (imageDto != null && imageDto.getBytes() != null) {
             if (user.getProfileId() != null) {
                 binaryContentRepository.deleteById(user.getProfileId());
