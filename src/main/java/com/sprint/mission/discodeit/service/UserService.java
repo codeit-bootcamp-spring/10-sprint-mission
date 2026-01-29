@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    User create(UserCreateRequestDto userCreateRequestDto);
+    UserResponseDto create(UserCreateRequestDto userCreateRequestDto);
     UserResponseDto find(UUID userId);
     List<UserResponseDto> findAll();
     User update(UserUpdateRequestDto userUpdateRequestDto);

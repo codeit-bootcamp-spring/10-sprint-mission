@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.user.UserResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -24,9 +25,10 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
+    private final UserResponseMapper userResponseMapper;
 
     @Override
-    public User create(UserCreateRequestDto userCreateRequestDto) {
+    public UserResponseDto create(UserCreateRequestDto userCreateRequestDto) {
         //중복여부 검사 로직
         if (findAll().stream()
                 .anyMatch(user ->
@@ -50,11 +52,15 @@ public class BasicUserService implements UserService {
                 userCreateRequestDto.password(),
                 null);
 
-        //userstatus 생성
+        //userStatus 생성
         UserStatus userStatus = new UserStatus(user.getId());
         userStatusRepository.save(userStatus);
 
-        return userRepository.save(user);
+        //최종 저장
+        userRepository.save(user);
+
+        //저장된 데이터 리턴
+        return userResponseMapper.toDto(user, userStatus);
     }
 
     @Override

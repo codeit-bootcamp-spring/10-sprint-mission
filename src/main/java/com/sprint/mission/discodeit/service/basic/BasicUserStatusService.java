@@ -24,7 +24,7 @@ public class BasicUserStatusService implements UserStatusService {
         if(userStatusRepository.findAll()
                 .stream()
                 .anyMatch(userStatus ->
-                        userStatus.getUserID().equals(userStatusCreateRequestDto.userId())))
+                        userStatus.getUserId().equals(userStatusCreateRequestDto.userId())))
             throw new AssertionError("UserStatus already exists");
 
         return userStatusRepository.save(new UserStatus(userStatusCreateRequestDto.userId()));
