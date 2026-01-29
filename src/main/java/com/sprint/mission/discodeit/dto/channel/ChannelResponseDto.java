@@ -11,6 +11,6 @@ public record ChannelResponseDto(
         String name,
         String description,
         ChannelType type,
-        List<UUID> joinedUserIds //private 일때만 사용
+        List<UUID> joinedUser //private 일때만 사용
 ) {
 }

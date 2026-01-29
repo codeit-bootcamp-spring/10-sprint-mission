@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequestDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.DefaultEntity;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.mapper.channel.ChannelResponseMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -30,13 +31,26 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
 
-    public Channel createPublicChannel(PublicChannelCreateRequestDto requestDto) {
-        Channel channel = new Channel(PUBLIC, requestDto.name(), requestDto.description());
-        return channelRepository.save(channel);
+    private final ChannelResponseMapper channelResponseMapper;
+
+    private Instant findLastMessageTime(UUID channelId){
+        return messageRepository.findAll().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .map(message -> message.getCreatedAt())
+                .max(Instant::compareTo)
+                .orElse(null);
     }
 
     @Override
-    public Channel createPrivateChannel(PrivateChannelCreateRequestDto requestDto) {
+    public ChannelResponseDto createPublicChannel(PublicChannelCreateRequestDto requestDto) {
+        Channel channel = new Channel(PUBLIC, requestDto.name(), requestDto.description());
+        channelRepository.save(channel);
+
+        return channelResponseMapper.toDto(findLastMessageTime(channel.getId()), channel);
+    }
+
+    @Override
+    public ChannelResponseDto createPrivateChannel(PrivateChannelCreateRequestDto requestDto) {
         Channel channel = new Channel(PRIVATE, null, null);
         requestDto.userIds()
                 .forEach(user->{
@@ -44,7 +58,9 @@ public class BasicChannelService implements ChannelService {
                     readStatusRepository.save(new ReadStatus(user, channel.getId()));
                 });
 
-        return channelRepository.save(channel);
+        channelRepository.save(channel);
+
+        return channelResponseMapper.toDto(findLastMessageTime(channel.getId()), channel);
     }
 
     @Override
@@ -52,19 +68,9 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
-        Instant latest = messageRepository.findAll().stream()
-                .filter(message -> message.getChannelId().equals(channelId))
-                .map(message -> message.getCreatedAt())
-                .max(Instant::compareTo)
-                .orElse(null);
 
-        return new ChannelResponseDto(
-                latest,
-                channel.getName(),
-                channel.getDescription(),
-                channel.getType(),
-                channel.getJoinedUser()
-                );
+
+        return channelResponseMapper.toDto(findLastMessageTime(channelId), channel);
     }
 
     @Override
@@ -82,7 +88,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(ChannelUpdateRequestDto updateRequestDto) {
+    public ChannelResponseDto update(ChannelUpdateRequestDto updateRequestDto) {
         Channel channel = channelRepository.findById(updateRequestDto.channelId())
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + updateRequestDto.channelId() + " not found"));
 
@@ -90,7 +96,9 @@ public class BasicChannelService implements ChannelService {
 
         channel.update(updateRequestDto.newName(), updateRequestDto.newDescription());
 
-        return channelRepository.save(channel);
+        channelRepository.save(channel);
+
+        return channelResponseMapper.toDto(findLastMessageTime(channel.getId()), channel);
     }
 
     @Override
