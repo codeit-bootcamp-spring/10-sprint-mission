@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
-import com.sprint.mission.discodeit.entity.User;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,7 +18,7 @@ public interface UserService {
     List<UserResponseDTO> searchUserAll();
 
     // 채널 내 멤버 목록 조회
-    List<UUID> searchMembersByChannelId(UUID channelId);
+    List<UserResponseDTO> searchMembersByChannelId(UUID channelId);
 
     // 사용자 수정
     UserResponseDTO updateUser(UserUpdateRequestDTO userUpdateRequestDTO);

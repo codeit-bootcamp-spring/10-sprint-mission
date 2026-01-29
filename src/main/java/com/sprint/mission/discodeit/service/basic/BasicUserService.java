@@ -83,10 +83,19 @@ public class BasicUserService implements UserService {
 
     // 특정 채널의 참가자 목록 조회
     @Override
-    public List<UUID> searchMembersByChannelId(UUID channelId) {
-        return channelRepository.findById(channelId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."))
-                .getMembers();
+    public List<UserResponseDTO> searchMembersByChannelId(UUID channelId) {
+        // 1. 채널 존재 여부 확인
+        Channel targetChannel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+
+        // 2. 특정 채널의 참가자 목록 조회
+        return targetChannel.getMembers().stream()
+                .map(memberId -> {
+                    User user = findUserEntityById(memberId);
+                    UserStatus userStatus = userStatusRepository.findById(user.getId());
+                    return toUserResponseDTO(user,userStatus);
+                })
+                .toList();
     }
 
     // 사용자 정보 수정
