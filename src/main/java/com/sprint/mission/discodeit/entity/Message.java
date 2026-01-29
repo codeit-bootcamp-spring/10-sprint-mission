@@ -26,10 +26,14 @@ public class Message extends DefaultEntity implements Serializable {
         this.attachments = attachments;
     }
 
-    public void update(String newContent) {
+    public void update(String newContent, List<UUID> newAttachments) {
         boolean anyValueUpdated = false;
         if (newContent != null && !newContent.equals(this.content)) {
             this.content = newContent;
+            anyValueUpdated = true;
+        }
+        if (newAttachments != null && !newAttachments.equals(this.attachments)) {
+            this.attachments = newAttachments;
             anyValueUpdated = true;
         }
 

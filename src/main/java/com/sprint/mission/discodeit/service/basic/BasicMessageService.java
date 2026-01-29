@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequestDto;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -67,12 +68,28 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message update(UUID messageId, String newContent) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
-        message.update(newContent);
-        return messageRepository.save(message);
-    }
+    public Message update(MessageUpdateRequestDto messageUpdateRequestDto) {
+        Message message = messageRepository.findById(messageUpdateRequestDto.messageId())
+                .orElseThrow(() -> new NoSuchElementException(
+                            "Message with id " + messageUpdateRequestDto.messageId() + " not found"
+                    ));
+
+
+            List<UUID> newAttachmentIds = Optional.ofNullable(messageUpdateRequestDto.newAttachment())
+                    .map(attachmentDto -> attachmentDto.content())
+                    .map(contents -> contents.stream()
+                            .map(bytes -> {
+                                BinaryContent b = new BinaryContent(bytes);
+                                binaryContentRepository.save(b);
+                                return b.getId();
+                            })
+                            .toList()
+                    )
+                    .orElse(null);
+
+            message.update(messageUpdateRequestDto.newContent(), newAttachmentIds);
+            return messageRepository.save(message);
+        }
 
     @Override
     public void delete(UUID messageId) {
