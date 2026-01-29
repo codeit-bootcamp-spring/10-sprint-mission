@@ -1,34 +1,68 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
-public class Message extends BaseEntity{
+@Getter
+public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
     private String content;
-    private Channel channel;
-    private User user;
+    //
+    private UUID channelId;
+    private UUID authorId;
+    List<UUID> attachmentIds;
 
-    public User getUser() {
-        return user;
-    }
-
-    public Channel getChannel() {
-        return channel;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void updateContent(String newContent){
-        this.content = newContent;
-        super.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public Message(String content, Channel channel, User user) {
+    public Message(String content, UUID channelId, UUID authorId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        //
         this.content = content;
-        this.channel = channel;
-        this.user = user;
+        this.channelId = channelId;
+        this.authorId = authorId;
     }
 
+    public void update(String newContent) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
 
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
+    }
+
+//    public UUID getId() {
+//        return id;
+//    }
+//
+//    public Long getCreatedAt() {
+//        return createdAt;
+//    }
+//
+//    public Long getUpdatedAt() {
+//        return updatedAt;
+//    }
+//
+//    public String getContent() {
+//        return content;
+//    }
+//
+//    public UUID getChannelId() {
+//        return channelId;
+//    }
+//
+//    public UUID getAuthorId() {
+//        return authorId;
+//    }
 }
