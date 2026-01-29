@@ -35,4 +35,9 @@ public class User extends BaseEntity implements Serializable {
         this.nickname = newNickname;
         this.updatedAt = Instant.now();
     }
+
+    public void updateProfileId(UUID profileId) {
+        this.profileId = profileId;
+        this.updatedAt = Instant.now();
+    }
 }

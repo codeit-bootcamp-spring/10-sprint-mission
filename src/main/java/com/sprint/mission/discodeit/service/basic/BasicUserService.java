@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.response.UserCreateResponseDTO;
-import com.sprint.mission.discodeit.dto.response.UserSearchResponseDTO;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
@@ -28,7 +28,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 생성
     @Override
-    public UserCreateResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO, BinaryContentCreateRequestDTO binaryContentCreateRequestDTO) {
+    public UserResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO, BinaryContentCreateRequestDTO binaryContentCreateRequestDTO) {
         // 1. 유효성 검증 (이메일 중복, 이름 중복)
         isEmailDuplicate(userCreateRequestDTO.getEmail());
         isNicknameDuplicate(userCreateRequestDTO.getNickname());
@@ -50,7 +50,7 @@ public class BasicUserService implements UserService {
                 .orElse(null);
 
         // 5. 응답 DTO 객체 생성 및 반환
-        return UserCreateResponseDTO.builder()
+        return UserResponseDTO.builder()
                 .id(newUser.getId())
                 .email(newUser.getEmail())
                 .nickname(newUser.getNickname())
@@ -63,7 +63,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 단건 조회
     @Override
-    public UserSearchResponseDTO searchUser(UUID userId) {
+    public UserResponseDTO searchUser(UUID userId) {
         // 1. 사용자 존재 여부 확인
         User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
@@ -72,7 +72,7 @@ public class BasicUserService implements UserService {
         UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
 
         // 2. 조회 응답 DTO 생성 및 반환
-        return UserSearchResponseDTO.builder()
+        return UserResponseDTO.builder()
                 .id(targetUser.getId())
                 .email(targetUser.getEmail())
                 .nickname(targetUser.getNickname())
@@ -85,14 +85,14 @@ public class BasicUserService implements UserService {
 
     // 사용자 전체 조회
     @Override
-    public List<UserSearchResponseDTO> searchUserAll() {
+    public List<UserResponseDTO> searchUserAll() {
         // 1. 조회 응답 DTO 생성 및 반환
         return userRepository.findAll().stream()
                 .map(user -> {
                     // 사용자 상태 조회
                     UserStatus userStatus = userStatusRepository.findById(user.getId());
                     // 사용자 -> 사용자 조회 응답 변환
-                    return UserSearchResponseDTO.builder()
+                    return UserResponseDTO.builder()
                             .id(user.getId())
                             .email(user.getEmail())
                             .nickname(user.getNickname())
@@ -115,25 +115,57 @@ public class BasicUserService implements UserService {
 
     // 사용자 정보 수정
     @Override
-    public User updateUser(UUID userId, String newPassword, String newNickname, UserStatusType newUserStatus) {
-        User targetUser = searchUser(userId);
+    public UserResponseDTO updateUser(UserUpdateRequestDTO userUpdateRequestDTO) {
+        // 1. 사용자 존재 여부 확인
+        User targetUser = userRepository.findById(userUpdateRequestDTO.getId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
 
-        Optional.ofNullable(newPassword)        // 비밀번호 필드 변경
+        // 비밀번호 필드 변경
+        Optional.ofNullable(userUpdateRequestDTO.getPassword())
                 .ifPresent(password -> {
                     validateString(password, "[비밀 번호 변경 실패] 올바른 비밀 번호 형식이 아닙니다.");
-                    validateDuplicateValue(targetUser.getPassword(), newPassword, "[비밀 번호 변경 실패] 현재 비밀 번호와 일치합니다.");
+                    validateDuplicateValue(targetUser.getPassword(), password, "[비밀 번호 변경 실패] 현재 비밀 번호와 일치합니다.");
                     targetUser.updatePassword(password);
                 });
 
-        Optional.ofNullable(newNickname)        // 닉네임 필드 변경
+        // 닉네임 필드 변경
+        Optional.ofNullable(userUpdateRequestDTO.getNickname())
                 .ifPresent(nickname -> {
                     validateString(nickname, "[닉네임 변경 실패] 올바른 닉네임 형식이 아닙니다.");
-                    validateDuplicateValue(targetUser.getNickname(), newNickname, "[닉네임 변경 실패] 현재 닉네임과 일치합니다.");
+                    validateDuplicateValue(targetUser.getNickname(), nickname, "[닉네임 변경 실패] 현재 닉네임과 일치합니다.");
                     targetUser.updateNickname(nickname);
                 });
+        // 상태 필드 변경
+        Optional.ofNullable(userUpdateRequestDTO.getUserStatusCreateRequestDTO().getUserStatusType())
+                .ifPresent(userStatusType -> {
+                    UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
+                    targetUserStatus.updateStatus(userStatusType);
+                    userStatusRepository.save(targetUserStatus);
+                });
 
+        // 프로필 이미지 변경
+        Optional.ofNullable(userUpdateRequestDTO.getBinaryContentCreateRequestDTO().getBinaryContent())
+                .map(binaryContent -> {
+                    BinaryContent newBinaryContent = new BinaryContent(userUpdateRequestDTO.getBinaryContentCreateRequestDTO());
+                    binaryContentRepository.save(newBinaryContent);
+                    return newBinaryContent.getId();
+                })
+                .ifPresent(targetUser::updateProfileId);
+
+        // 3. 사용자 변경 내용 저장
         userRepository.save(targetUser);
-        return targetUser;
+
+        // 4. 응답 DTO 변환 및 반환
+        UserStatus finalStatus = userStatusRepository.findById(targetUser.getId());
+        return UserResponseDTO.builder()
+                .id(targetUser.getId())
+                .email(targetUser.getEmail())
+                .nickname(targetUser.getNickname())
+                .createdAt(targetUser.getCreatedAt())
+                .updatedAt(targetUser.getUpdatedAt())
+                .profileId(targetUser.getProfileId())
+                .status(finalStatus.getStatus())
+                .build();
     }
 
     // 사용자 삭제

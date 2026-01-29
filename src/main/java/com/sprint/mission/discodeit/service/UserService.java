@@ -2,29 +2,29 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.response.UserCreateResponseDTO;
-import com.sprint.mission.discodeit.dto.response.UserSearchResponseDTO;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatusType;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
     // 사용자 생성
-    UserCreateResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO, BinaryContentCreateRequestDTO binaryContentCreateRequestDTO);
+    UserResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO,
+                               BinaryContentCreateRequestDTO binaryContentCreateRequestDTO);
 
     // 사용자 단건 조회
-    UserSearchResponseDTO searchUser(UUID userId);
+    UserResponseDTO searchUser(UUID userId);
 
     // 사용자 전체 조회
-    List<UserSearchResponseDTO> searchUserAll();
+    List<UserResponseDTO> searchUserAll();
 
     // 채널 내 멤버 목록 조회
     List<UUID> searchMembersByChannelId(UUID channelId);
 
     // 사용자 수정
-    User updateUser(UUID userId, String newPassword, String newNickname, UserStatusType newUserStatus);
+    UserResponseDTO updateUser(UserUpdateRequestDTO userUpdateRequestDTO);
 
     // 사용자 저장
     void updateUser(UUID userId, User user);
