@@ -46,14 +46,20 @@ public class BasicUserService implements UserService {
                 );
 
         // 선택적으로 프로필 등록
+        UUID profileImageID = null;
+        if (request.profileImage() != null) {
+            BinaryContent profileImage = new BinaryContent(request.profileImage(), request.type());
+            profileImageID = profileImage.getId();
+            binaryContentRepository.save(profileImage);
+        }
 
         // user 생성 with DTO
-        User user = new User(request.name(), request.email(), request.password(), new BinaryContent());
+        User user = new User(request.name(), request.email(), request.password(), profileImageID);
 
         // userStatus 생성
         UserStatus userStatus = new UserStatus(user.getId());
-
         // userStatusRepository에 저장
+        userStatusRepository.save(userStatus);
 
         return userRepository.save(user);
     }
@@ -100,9 +106,7 @@ public class BasicUserService implements UserService {
         // user에서 이름 update
         user.updateName(request.name());
 
-
         Set<UUID> channelIDs = new HashSet<>();
-
         // user의 channel, memberList에서 user이름 업데이트
         for (Channel channel : user.getChannelsList()) {
             for (User u : channel.getMembersList()) {
@@ -132,6 +136,7 @@ public class BasicUserService implements UserService {
             messageRepository.save(messageRepository.find(messageID)
                     .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageID)));
         }
+
         // [저장] 변경사항 저장
         return userRepository.save(user);
     }
@@ -164,8 +169,10 @@ public class BasicUserService implements UserService {
         // userStatusRepo에서 삭제
         userStatusRepository.deleteUserStatus(user.getId());
 
-        // BinaryContent에서 삭제
-        // BinaryContentRepository.deleteBinaryContent(user.getBinaryContent().getId());
+        // binaryContentRepo에서 삭제
+        if(user.getProfileImageID() != null){
+            binaryContentRepository.delete(user.getProfileImageID());
+        }
 
         // [저장]
         userRepository.deleteUser(user);

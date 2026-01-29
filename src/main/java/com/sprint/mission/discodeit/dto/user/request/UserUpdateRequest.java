@@ -4,5 +4,6 @@ import java.util.UUID;
 
 public record UserUpdateRequest(
         UUID userID,
-        String name
+        String name,
+        UUID profileImageID
 ) { }
