@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentRequestDto;
 
 public record UserRequestDto(
 
-    String username,
+    String userName,
     String email,
     String password,
     BinaryContentRequestDto binaryContentDto

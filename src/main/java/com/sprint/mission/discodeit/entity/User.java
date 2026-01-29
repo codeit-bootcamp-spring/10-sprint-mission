@@ -16,7 +16,7 @@ public class User implements Serializable {
     private Instant createdAt;
     private Instant updatedAt;
     //
-    private String username;
+    private String userName;
     private String email;
     private String password;
     private UUID profileId; //BinaryContent의 id와 일치
@@ -25,15 +25,15 @@ public class User implements Serializable {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         //
-        this.username = username;
+        this.userName = username;
         this.email = email;
         this.password = password;
     }
 
     public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
         boolean anyValueUpdated = false;
-        if (newUsername != null && !newUsername.equals(this.username)) {//이름이 null이 아니고 기존꺼와 같지 않을때 변경.
-            this.username = newUsername;
+        if (newUsername != null && !newUsername.equals(this.userName)) {//이름이 null이 아니고 기존꺼와 같지 않을때 변경.
+            this.userName = newUsername;
             anyValueUpdated = true;
         }
         if (newEmail != null && !newEmail.equals(this.email)) {
@@ -57,7 +57,7 @@ public class User implements Serializable {
     @Override
     public String toString() {
         return "User{" +
-                "username='" + username + '\'' +
+                "username='" + userName + '\'' +
                 ", email='" + email + '\'' +
                 '}';
     }

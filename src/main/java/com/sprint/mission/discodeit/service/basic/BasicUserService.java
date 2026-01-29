@@ -29,7 +29,7 @@ public class BasicUserService implements UserService {
     public User create(UserRequestDto usercreateDto) {
 
         //username과 email은 다른 유저와 같으면 안된다.
-        if(!userRepository.existsByUsername(usercreateDto.username())){
+        if(!userRepository.existsByUsername(usercreateDto.userName())){
             throw new IllegalArgumentException("이미 있는 이름입니다.");
         }
         if(!userRepository.existsByEmail(usercreateDto.email())){
@@ -37,7 +37,7 @@ public class BasicUserService implements UserService {
         }
 
         User user = new User(
-                usercreateDto.username(),
+                usercreateDto.userName(),
                 usercreateDto.email(),
                 usercreateDto.password()
         );
@@ -71,7 +71,7 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = userStatusRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("사용자가 없습니다."));
         User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("사용자가 없습니다."));
 
-        UserResponseDto userFind = new UserResponseDto(user.getId(),user.getUsername(),user.getEmail(),userStatus.CheckOnline());
+        UserResponseDto userFind = new UserResponseDto(user.getId(),user.getUserName(),user.getEmail(),userStatus.CheckOnline());
 
         return userFind;
     }
@@ -86,7 +86,7 @@ public class BasicUserService implements UserService {
             UserStatus userStatus = userStatusRepository.findByUserId(user.getId()).orElse(null);
             boolean online =  userStatus != null && userStatus.CheckOnline();
 
-            return new UserResponseDto(user.getId(),user.getUsername(),user.getEmail(),online);
+            return new UserResponseDto(user.getId(),user.getUserName(),user.getEmail(),online);
 
         }).toList();
 
@@ -103,7 +103,7 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
         //유저의 이미지,이름,비밀번호 이런 모든걸 한번에 다 바꾼다.
-        user.update(userUpdateDto.username(), userUpdateDto.email(), userUpdateDto.password(),user.getProfileId());
+        user.update(userUpdateDto.userName(), userUpdateDto.email(), userUpdateDto.password(),user.getProfileId());
 
         if (userUpdateDto.binaryContentDto() != null) {
 

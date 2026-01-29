@@ -101,9 +101,15 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public boolean existsByUsername(String userName) {
+    public boolean existsByUsername(String userName) {//data 조회 방법이니 repository에 있는게 맞다.
         //userName 중복 검증 필요.
-        return true;
+        return findAll().stream().anyMatch(user -> user.getUserName().equals(userName));            //anyMatch(하나라도 true인 요소가 있으면 true를 반환)
+
+    }
+
+    @Override
+    public boolean existsByPassword(String password) {
+        return findAll().stream().anyMatch(user -> user.getPassword().equals(password));
     }
 
     @Override

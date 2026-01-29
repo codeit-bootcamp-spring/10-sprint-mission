@@ -5,7 +5,7 @@ import java.util.UUID;
 public record UserResponseDto(
 
     UUID userId,
-    String username,
+    String userName,
     String email,
     boolean online
 

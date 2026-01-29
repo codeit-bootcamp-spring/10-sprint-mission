@@ -15,5 +15,6 @@ public interface UserRepository {
 
     //검증용
     boolean existsByUsername(String username);
+    boolean existsByPassword(String password);
     boolean existsByEmail(String email);
 }
