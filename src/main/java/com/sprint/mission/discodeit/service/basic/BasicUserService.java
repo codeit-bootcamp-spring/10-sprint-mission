@@ -1,12 +1,15 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.ProfileImageParam;
 import com.sprint.mission.discodeit.dto.UserRequestCreateDto;
 import com.sprint.mission.discodeit.dto.UserRequestUpdateDto;
 import com.sprint.mission.discodeit.dto.UserResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.Validators;
 import lombok.RequiredArgsConstructor;
@@ -21,29 +24,25 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
+    private final UserStatusRepository userStatusRepository;
+    prviate final BinaryContentRepository binaryContentRepository;
 
     @Override
     public UserResponseDto create(UserRequestCreateDto request) {
-        Validators.validationUser(request.userName(), request.userEmail());
-        validateDuplicationUserName(request.userName());
-        validateDuplicationEmail(request.userEmail());
+            Validators.validationUser(request.userName(), request.userEmail());
+            validateDuplicationUserName(request.userName());
+            validateDuplicationEmail(request.userEmail());
 
-        UserRequestCreateDto.ProfileImageParam profile = request.profileImage();
-
+        ProfileImageParam profile = request.profileImage();
         User user;
-        if (profile != null) {
-            if(profile.data() == null || profile.data().length == 0) {
-                throw new IllegalArgumentException("프로필 이미지 데이터가 비어있습니다.");
-            }
-            if(profile.contentType() == null || profile.contentType().isBlank()) {
-                throw new IllegalArgumentException("contentType은 필수입니다.");
-            }
-
+        validateProfileImageParam(profile);
+        if(profile == null) {
+            user = new User(request.userName(), request.userEmail(), null);
+        } else {
             BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
             user = new User(request.userName(), request.userEmail(), binaryContent.getId());
-        } else {
-            user = new User(request.userName(), request.userEmail(), null);
         }
+
         User savedUser = userRepository.save(user);
         UserStatus userStatus = new UserStatus(savedUser.getId(), null);
         boolean online = userStatus.isOnline();
@@ -68,16 +67,24 @@ public class BasicUserService implements UserService {
     public UserResponseDto update(UserRequestUpdateDto request) {
         Validators.requireNonNull(request, "request");
         User user = validateExistenceUser(request.id());
+
         Optional.ofNullable(request.userName())
                 .ifPresent(name -> {Validators.requireNotBlank(name, "userName");
-                    validateDuplicationUserName(name);
-                    user.updateUserName(name);
+                        validateDuplicationUserName(name);
+                        user.updateUserName(name);
                 });
         Optional.ofNullable(request.userEmail())
                 .ifPresent(email -> {Validators.requireNotBlank(email, "userEmail");
-                    validateDuplicationEmail(email);
-                    user.updateUserEmail(email);
+                        validateDuplicationEmail(email);
+                        user.updateUserEmail(email);
                 });
+
+        ProfileImageParam profile = request.profileImage();
+        if(profile != null) {
+            validateProfileImageParam(profile);
+            BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
+            user.updateProfileImage(binaryContent.getId());
+        }
 
         User savedUser = userRepository.save(user);
         boolean online = resolveOnline(savedUser.getId());
@@ -86,28 +93,35 @@ public class BasicUserService implements UserService {
 
     @Override
     public void deleteUser(UUID userId) {
-        validateExistenceUser(userId);
+        User user = validateExistenceUser(userId);
+        UUID profileId = user.getProfileId();
+        if(profileId != null) {
+            BinaryContentRepository.deleteById(userId);
+        }
+
+        UserStatusRepository.deleteById(userId);
         userRepository.deleteById(userId);
     }
 
     @Override
     public List<User> readUsersByChannel(UUID channelId) {
         return userRepository.findAll().stream()
-                .filter(user -> user.getJoinedChannels().stream()
-                        .anyMatch(ch -> channelId.equals(ch.getId())))
+                .filter(user -> user.getJoinedChannelIds().contains(channelId))
                 .toList();
     }
 
     private void validateDuplicationEmail(String userEmail) {
         if(userRepository.findAll().stream()
-                .anyMatch(user -> userEmail.equals(user.getUserEmail()))) {
+                .anyMatch(user -> userEmail.equals(user.getUserEmail())))
+        {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
     }
 
     private void validateDuplicationUserName(String userName) {
         if(userRepository.findAll().stream()
-                .anyMatch(user -> userName.equals(user.getUserName()))) {
+        .anyMatch(user -> userName.equals(user.getUserName())))
+        {
             throw new IllegalArgumentException("이미 존재하는 이름입니다.");
         }
     }
@@ -132,5 +146,16 @@ public class BasicUserService implements UserService {
 
     private boolean resolveOnline(UUID userId) {
         return false;
+    }
+
+    private void validateProfileImageParam(ProfileImageParam profile) {
+        if (profile != null) {
+            if(profile.data() == null || profile.data().length == 0) {
+                throw new IllegalArgumentException("프로필 이미지 데이터가 비어있습니다.");
+            }
+            if(profile.contentType() == null || profile.contentType().isBlank()) {
+                throw new IllegalArgumentException("contentType은 필수입니다.");
+            }
+        }
     }
 }

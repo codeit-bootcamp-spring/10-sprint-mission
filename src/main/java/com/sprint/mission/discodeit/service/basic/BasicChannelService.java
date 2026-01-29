@@ -80,7 +80,7 @@ public class BasicChannelService implements ChannelService {
         }
 
         channel.getJoinedUsers().add(user);
-        user.getJoinedChannels().add(channel);
+        user.getJoinedChannelIds().add(channel);
 
         userRepository.save(user);
         channelRepository.save(channel);

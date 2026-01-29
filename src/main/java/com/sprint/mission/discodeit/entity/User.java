@@ -15,10 +15,9 @@ public class User extends CommonEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     private String userName;
     private String userEmail;
-    private String userPassword;
-    private final List<Message> messages = new ArrayList<>();
-    private final List<Channel> joinedChannels = new ArrayList<>();
-    private final UUID profileId;
+    private final List<UUID> messageIds = new ArrayList<>();
+    private final List<UUID> joinedChannelIds = new ArrayList<>();
+    private UUID profileId;
 
     public User(String userName, String userEmail, UUID profileId) {
         this.userName = userName;
@@ -33,6 +32,11 @@ public class User extends CommonEntity implements Serializable {
 
     public void updateUserEmail(String userEmail) {
         this.userEmail = userEmail;
+        update();
+    }
+
+    public void updateProfileImage(UUID profileImage) {
+        this.profileId = profileImage;
         update();
     }
 
