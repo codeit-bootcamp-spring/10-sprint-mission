@@ -52,22 +52,22 @@ public class FileMessageService implements MessageService {
     }
 
     @Override
-    public Message createMessage(UUID userId, UUID channelId, String content) {
-        User user = userService.findById(userId);
-        Channel channel = channelService.findById(channelId);
+    public Message create(String content, UUID channelId, UUID authorId) {
+        User author = userService.find(authorId);
+        Channel channel = channelService.find(channelId);
 
-        Message message = new Message(user, channel, content);
+        Message message = new Message(content,authorId, channelId);
         data.add(message);
         save();
         return message;
     }
 
     @Override
-    public Message findById(UUID id) {
+    public Message find(UUID messageId) {
         return data.stream()
-                .filter(m -> m.getId().equals(id))
+                .filter(m -> m.getId().equals(messageId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Message not found: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageId));
     }
 
     @Override
@@ -76,27 +76,19 @@ public class FileMessageService implements MessageService {
     }
 
     @Override
-    public void updateMessage(UUID id, String content, UUID userId, UUID channelId) {
-        Message message = findById(id);
+    public Message update(UUID messageId, String newContent) {
+        Message message = find(messageId);
 
-        Optional.ofNullable(content).ifPresent(message::setContent);
-
-        if (userId != null) {
-            User user = userService.findById(userId);
-            message.setUser(user);
-        }
-        if (channelId != null) {
-            Channel channel = channelService.findById(channelId);
-            message.setChannel(channel);
-        }
+        Optional.ofNullable(newContent).ifPresent(message::setContent);
 
         message.touch();
         save();
+        return message;
     }
 
     @Override
-    public void delete(UUID id) {
-        Message message = findById(id);
+    public void delete(UUID messageId) {
+        Message message = find(messageId);
         data.remove(message);
         save();
     }

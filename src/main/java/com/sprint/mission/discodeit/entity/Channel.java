@@ -7,11 +7,11 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class Channel implements Serializable {
+public class Channel extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
+    private long createdAt;
+    private long updatedAt;
     //
     private ChannelType type;
     private String name;
@@ -24,30 +24,6 @@ public class Channel implements Serializable {
         this.type = type;
         this.name = name;
         this.description = description;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public ChannelType getType() {
-        return type;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public void update(String newName, String newDescription) {
@@ -65,4 +41,13 @@ public class Channel implements Serializable {
             this.updatedAt = Instant.now().getEpochSecond();
         }
     }
+
+    public void updateChannelName(String name) {
+        this.name = name;
+    }
+
+    public void updateChannelDescription(String description) {
+        this.description = description;
+    }
+
 }

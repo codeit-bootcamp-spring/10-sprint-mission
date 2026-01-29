@@ -9,12 +9,12 @@ import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
-public class Message implements Serializable {
+public class Message extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
+    private long createdAt;
+    private long updatedAt;
     //
     private String content;
     //
@@ -30,30 +30,6 @@ public class Message implements Serializable {
         this.authorId = authorId;
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public UUID getChannelId() {
-        return channelId;
-    }
-
-    public UUID getAuthorId() {
-        return authorId;
-    }
-
     public void update(String newContent) {
         boolean anyValueUpdated = false;
         if (newContent != null && !newContent.equals(this.content)) {
@@ -64,5 +40,17 @@ public class Message implements Serializable {
         if (anyValueUpdated) {
             this.updatedAt = Instant.now().getEpochSecond();
         }
+    }
+
+    public void setChannelId(UUID channelId) {
+        this.channelId = channelId;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setAuthorId(UUID authorId) {
+        this.authorId = authorId;
     }
 }

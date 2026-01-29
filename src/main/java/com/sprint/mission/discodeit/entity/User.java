@@ -7,12 +7,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class User implements Serializable {
+public class User extends BaseEntity implements Serializable  {
     private static final long serialVersionUID = 1L;
 
     private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
+    private long createdAt;
+    private long updatedAt;
     //
     private String username;
     private String email;
@@ -69,5 +69,17 @@ public class User implements Serializable {
         if (anyValueUpdated) {
             this.updatedAt = Instant.now().getEpochSecond();
         }
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
