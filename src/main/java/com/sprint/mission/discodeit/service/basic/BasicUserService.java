@@ -175,7 +175,7 @@ public class BasicUserService implements UserService {
         userRepository.delete(userId);
     }
 
-    public UserInfoDto createUserInfo(User user, UserStatus userStatus) {
+    private UserInfoDto createUserInfo(User user, UserStatus userStatus) {
         return new UserInfoDto(user.getId(), user.getEmail(), user.getUserName(), user.getNickName(),
                 user.getBirthday(), user.getProfileId(), userStatus.isOnlineStatus());
     }
