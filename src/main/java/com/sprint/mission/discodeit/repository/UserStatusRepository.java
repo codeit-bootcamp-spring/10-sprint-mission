@@ -11,8 +11,11 @@ import java.util.UUID;
 public interface UserStatusRepository {
 
     UserStatus save(UserStatus userStatus);
-    Optional<UserStatus> findById(UUID userId);
+    Optional<UserStatus> findById(UUID Id);
     List<UserStatus> findAll();//관리자 입장에서 모든 사용자 상태 조회/test용
-    boolean existsById(UUID userId);
-    void deleteById(UUID userId);
+    boolean existsById(UUID Id);
+    void deleteById(UUID Id);
+
+    Optional<UserStatus> findByUserId(UUID userId);
+    void deleteByUserId(UUID userId);
 }

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
 public interface BinaryContentRepository {
 
     //프로필 이미지 업로드 or 메시지에 첨부
@@ -19,4 +18,9 @@ public interface BinaryContentRepository {
     List<BinaryContent> findAll();
     boolean existsById(UUID contentId);
     void deleteById(UUID contentId);
+
+    //프로필 존재여부
+    boolean existProfile(UUID userId);
+    //프로필 가져오기
+    Optional<BinaryContent> findByUserId(UUID userId);
 }

@@ -16,6 +16,7 @@ public class UserStatus {
     private Instant updatedAt;
     //
     private UUID userId;
+//    private boolean online;//시간에따라 계산되는 결과라 필드 x
 
     public UserStatus(UUID userId) {
         this.id = UUID.randomUUID();
@@ -28,11 +29,9 @@ public class UserStatus {
 
     //사용자 온라인 상태 체크
     public boolean CheckOnline(){
-        if(this.updatedAt == null){
-            return false;
-        }
+
         Instant fiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));//현재시각에서 5분을뺀 기준점
-        return this.updatedAt.isAfter(fiveMinutesAgo);//마지막 접속 시간이 그 시간 이후면 true(온라인)
+        return updatedAt.isAfter(fiveMinutesAgo);
 
     }
 

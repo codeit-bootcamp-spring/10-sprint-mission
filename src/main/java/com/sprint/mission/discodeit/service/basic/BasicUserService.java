@@ -1,7 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDto;
-import com.sprint.mission.discodeit.dto.UserCreateDto;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentRequestDto;
+import com.sprint.mission.discodeit.dto.user.UserRequestDto;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -21,37 +23,38 @@ import java.util.UUID;
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-//    private final UserStatusRepository userStatusRepository;
+    private final UserStatusRepository userStatusRepository;
 
     @Override
-    public User create(UserCreateDto userDto) {
+    public User create(UserRequestDto usercreateDto) {
 
         //username과 email은 다른 유저와 같으면 안된다.
-        if(!userRepository.existsByUsername(userDto.username())){
+        if(!userRepository.existsByUsername(usercreateDto.username())){
             throw new IllegalArgumentException("이미 있는 이름입니다.");
         }
-        if(!userRepository.existsByEmail(userDto.email())){
+        if(!userRepository.existsByEmail(usercreateDto.email())){
             throw new IllegalArgumentException("이미 있는 이메일입니다.");
         }
 
         User user = new User(
-                userDto.username(),
-                userDto.email(),
-                userDto.password()
+                usercreateDto.username(),
+                usercreateDto.email(),
+                usercreateDto.password()
         );
 
         //UserStatus를 같이 생성한다.
         UserStatus userStatus =  new UserStatus(user.getId());
-
-        //userStatus 저장로직(필요)
-
+        userStatusRepository.save(userStatus);
 
         //선택적으로 프로필 이미지를 같이 등록할 수 있다.
-        if(userDto.binaryContentDto() != null){
+        if(usercreateDto.binaryContentDto() != null){
 
-            BinaryContentDto binaryContentDto = userDto.binaryContentDto();
+            BinaryContentRequestDto binaryContentDto = usercreateDto.binaryContentDto();
 
-            //이미 프로필 존재하는지 검증(필요)
+            //이미 프로필 존재하는지 검증
+            if(user.getProfileId() != null){
+                throw new IllegalArgumentException("프로필이 이미 존재합니다.");
+            }
 
             //BinaryContent 생성&저장(프로필 등록)
             BinaryContent binaryContent = new BinaryContent(
@@ -62,29 +65,64 @@ public class BasicUserService implements UserService {
                     binaryContentDto.fileName()
             );
             binaryContentRepository.save(binaryContent);
-
-
+            user.setProfileId(binaryContent.getId());           //프로필로 지정한 이미지의 id를 user의 profileId로
         }
 
         return userRepository.save(user);
     }
 
     @Override
-    public User find(UUID userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+    public UserResponseDto find(UUID userId) {
+        UserStatus userStatus = userStatusRepository.findByUserId(userId).orElseThrow(() -> new NoSuchElementException("사용자가 없습니다."));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("사용자가 없습니다."));
+
+        UserResponseDto userFind = new UserResponseDto(user.getId(),user.getUsername(),user.getEmail(),userStatus.CheckOnline());
+
+        return userFind;
     }
 
     @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<UserResponseDto> findAll() {
+
+        List<User> users = userRepository.findAll();
+
+        //user를 DTO로 변환
+        return users.stream().map(user ->{
+            UserStatus userStatus = userStatusRepository.findByUserId(user.getId()).orElse(null);
+            boolean online =  userStatus != null && userStatus.CheckOnline();
+
+            return new UserResponseDto(user.getId(),user.getUsername(),user.getEmail(),online);
+
+        }).toList();
+
     }
 
     @Override
-    public User update(UUID userId, String newUsername, String newEmail, String newPassword) {
+    public User update(UUID userId,UserRequestDto userUpdateDto) {
+
+        //선택적으로 프로필 이미지를 할수도 있고 안할 수 도 있는거임.
+        //BinaryContent 자체는 수정이 안됨.
+        //user에서 profileId를 수정하는식으로 해야됨.
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-        user.update(newUsername, newEmail, newPassword);
+        user.update(userUpdateDto.username(), userUpdateDto.email(), userUpdateDto.password(),user.getProfileId());
+
+        if (userUpdateDto.binaryContentDto() != null) {
+
+            BinaryContentRequestDto dto = userUpdateDto.binaryContentDto();
+            BinaryContent newProfile = new BinaryContent(
+                    userId,//프로필 소유자 id
+                    null,
+                    dto.data(),
+                    dto.contentType(),
+                    dto.fileName()
+            );
+            binaryContentRepository.save(newProfile);
+
+            user.setProfileId(newProfile.getId());
+        }
+
         return userRepository.save(user);
     }
 
@@ -93,6 +131,10 @@ public class BasicUserService implements UserService {
         if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException("User with id " + userId + " not found");
         }
+        //유저가 삭제되면, 해당 BinaryContent와 UserStatus가 삭제된다.
+        User user = userRepository.findById(userId).orElse(null);
+        binaryContentRepository.deleteById(user.getProfileId());            //user의 profileId로 삭제
+        userStatusRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
     }
 }
