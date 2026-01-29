@@ -1,4 +1,12 @@
 package com.sprint.mission.discodeit.dto.user;
 
-public class UserUpdateRequest {
+import java.util.UUID;
+
+// 유저 정보 수정 시 필요한 데이터
+public record UserUpdateRequest(
+        UUID id,
+        String name,
+        String nickname,
+        UUID profileId
+) {
 }
