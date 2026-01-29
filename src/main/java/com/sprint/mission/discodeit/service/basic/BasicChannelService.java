@@ -1,10 +1,15 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.response.ChannelResponseDTO;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
@@ -23,17 +28,42 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
+    private final ReadStatusRepository readStatusRepository;
 
-    // 채널 생성
+    // 공개 채널 생성
     @Override
-    public Channel createChannel(String channelName, UUID userId, ChannelType channelType) {
-        User owner = userRepository.findById(userId)
+    public ChannelResponseDTO createPublicChannel(PublicChannelCreateRequestDTO publicChannelCreateRequestDTO) {
+        // 1. 사용자 존재 여부 확인
+        userRepository.findById(publicChannelCreateRequestDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
 
-        Channel newChannel = new Channel(channelName, owner.getId(), channelType);
+        // 2. 공개 채널 생성
+        Channel newChannel = new Channel(publicChannelCreateRequestDTO);
         channelRepository.save(newChannel);
 
-        return newChannel;
+        return toResponseDTO(newChannel);
+    }
+
+    // 비공개 채널 생성
+    @Override
+    public ChannelResponseDTO createPrivateChannel(PrivateChannelCreateRequestDTO privateChannelCreateRequestDTO) {
+        // 1. 사용자 존재 여부 확인
+        userRepository.findById(privateChannelCreateRequestDTO.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+
+        // 2. 비공개 채널 생성
+        Channel newChannel = new Channel(privateChannelCreateRequestDTO);
+        channelRepository.save(newChannel);
+
+        // 3. 비공개 채널 멤버마다 ReadStatus 생성
+        newChannel.getMembers()
+                .forEach(memberId -> {
+                    ReadStatusCreateRequestDTO readStatusCreateRequestDTO = new ReadStatusCreateRequestDTO(memberId, newChannel.getId());
+                    ReadStatus memeberReadStatus = new ReadStatus(readStatusCreateRequestDTO);
+                    readStatusRepository.save(memeberReadStatus);
+                });
+
+        return toResponseDTO(newChannel);
     }
 
     // 채널 단건 조회
@@ -133,5 +163,17 @@ public class BasicChannelService implements ChannelService {
         if (currentMembers.stream().noneMatch(member -> member.equals(userId))) {
             throw new IllegalArgumentException("해당 채널에 존재하는 사용자가 아닙니다.");
         }
+    }
+
+    public ChannelResponseDTO toResponseDTO(Channel channel) {
+        return ChannelResponseDTO.builder()
+                .channelId(channel.getId())
+                .channelName(channel.getChannelName())
+                .channelType(channel.getType())
+                .members(channel.getMembers())
+                .description(channel.getDescription())
+                .createdAt(channel.getCreatedAt())
+                .updatedAt(channel.getUpdatedAt())
+                .build();
     }
 }

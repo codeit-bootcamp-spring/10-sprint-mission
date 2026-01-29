@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequestDTO;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -16,18 +18,31 @@ public class Channel extends BaseEntity implements Serializable {
     private UUID userId;                // 채널 소유자 (변경 불가능)
     private List<UUID> members;         // 채널 참가자 (변경 가능)
     private ChannelType type;           // CHAT, VOICE (변경 불가능)
+    private String description;         // 채널 설명 (변경 가능)
 
-    public Channel(String channelName, UUID userId, ChannelType channelType) {
+    public Channel(PublicChannelCreateRequestDTO publicChannelCreateRequestDTO) {
         this.members = new ArrayList<>();
 
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
-        this.channelName = channelName;
-        this.userId = userId;
-        this.type = channelType;
+        this.channelName = publicChannelCreateRequestDTO.getChannelName();
+        this.userId = publicChannelCreateRequestDTO.getUserId();
+        this.type = publicChannelCreateRequestDTO.getChannelType();
+        this.description = publicChannelCreateRequestDTO.getDescription();
 
         this.members.add(userId);
+    }
+
+    public Channel(PrivateChannelCreateRequestDTO privateChannelCreateRequestDTO) {
+        this.members = new ArrayList<>();
+
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+        this.userId = privateChannelCreateRequestDTO.getUserId();
+        this.type = privateChannelCreateRequestDTO.getChannelType();
+        this.members =  privateChannelCreateRequestDTO.getMemberIds();
     }
 
     public void updateChannelName(String channelName) {
