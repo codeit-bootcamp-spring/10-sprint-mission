@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
-import com.sprint.mission.discodeit.dto.user.UserFindingDto;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -59,14 +58,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserFindingDto find(UUID userId) {
+    public UserResponseDto find(UUID userId) {
         User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
         UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId())
                 .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + targetUser.getId() + " not found"));
 
-        return new UserFindingDto(
+        return new UserResponseDto(
                 targetUser.getUsername(),
                 targetUser.getEmail(),
                 targetUserStatus.isOnline()
@@ -74,7 +73,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserFindingDto> findAll() {
+    public List<UserResponseDto> findAll() {
         List<User> targetUsers = userRepository.findAll();
 
         return targetUsers.stream()
