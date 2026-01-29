@@ -1,0 +1,41 @@
+package com.sprint.mission.discodeit.dto.user;
+
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+
+import java.time.Instant;
+import java.util.UUID;
+
+public record UserResponse(
+        UUID id,
+        String email,
+        String nickname,
+        UUID profileId,
+        UserStatusResponse status
+) {
+    public static UserResponse from(User user, UserStatus userStatus) {
+        return new UserResponse(
+                user.getId(),
+                user.getEmail(),
+                user.getNickname(),
+                user.getProfileId(),
+                UserStatusResponse.from(userStatus)
+        );
+    }
+
+    public record UserStatusResponse(
+            String status,
+            String displayName,
+            Instant accessTime,
+            boolean currentlyLoggedIn
+    ) {
+        public static UserStatusResponse from(UserStatus userStatus) {
+            return new UserStatusResponse(
+                    userStatus.getStatus().getUserStatus(),
+                    userStatus.getStatus().getDisplayName(),
+                    userStatus.getAccessTime(),
+                    userStatus.isCurrentlyLoggedIn()
+            );
+        }
+    }
+}
