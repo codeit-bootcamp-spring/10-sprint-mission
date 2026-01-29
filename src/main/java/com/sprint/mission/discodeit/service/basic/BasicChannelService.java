@@ -1,19 +1,16 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelFindDto;
+import com.sprint.mission.discodeit.dto.channel.ChannelResponseDto;
 import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequestDto;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequestDto;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequestDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.DefaultEntity;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +48,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelFindDto find(UUID channelId) {
+    public ChannelResponseDto find(UUID channelId) {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
@@ -61,7 +58,7 @@ public class BasicChannelService implements ChannelService {
                 .max(Instant::compareTo)
                 .orElse(null);
 
-        return new ChannelFindDto(
+        return new ChannelResponseDto(
                 latest,
                 channel.getName(),
                 channel.getDescription(),
@@ -71,8 +68,8 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public List<ChannelFindDto> findAllByUserId(UUID userId) {
-        List<ChannelFindDto> dtoList = new ArrayList<>();
+    public List<ChannelResponseDto> findAllByUserId(UUID userId) {
+        List<ChannelResponseDto> dtoList = new ArrayList<>();
 
         channelRepository.findAll()
                 .forEach(channel->{
