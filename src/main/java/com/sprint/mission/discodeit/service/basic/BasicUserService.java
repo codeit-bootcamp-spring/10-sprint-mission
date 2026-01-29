@@ -3,25 +3,21 @@ import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserResponse;
 import com.sprint.mission.discodeit.dto.UserUpdateRequest;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
+    private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
+
     // User 저장 및 조회용
     private final UserRepository userRepository;
     // UserStatus 저장/조회 -> 현재 로그인중인지.
@@ -33,10 +29,8 @@ public class BasicUserService implements UserService {
     // DTO로 입력받고, UserStatus 같이 생성.
     @Override
     public UserResponse createUser(UserCreateRequest request) {
-        Validation.notBlank(request.userName(), "이름");
-        Validation.notBlank(request.alias(), "별명");
-        Validation.notBlank(request.email(), "이메일");
-        Validation.notBlank(request.password(), "비밀번호");
+        // 공백 검사 (수정)
+        request.validate();
 
         // 중복 검사
         Validation.noDuplicate(
@@ -57,14 +51,13 @@ public class BasicUserService implements UserService {
                 request.email(),
                 request.password()
         );
+
         // 프로필 이미지가 있으면 BinaryContent 저장 후 profileId 연결
         if (request.profileImage() != null) {
             BinaryContent binaryContent = toBinaryContent(request.profileImage());
             binaryContentRepository.save(binaryContent);
             user.changeProfileId(binaryContent.getId());
         }
-
-        userRepository.save(user);
         userRepository.save(user);
 
         // UserStatus 생성/저장
@@ -93,6 +86,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public List<UserResponse> getUserByName(String userName) {
+        //username으로 repo에서 찾은 후에
         List<User> matches = userRepository.findAll().stream()
                 .filter(user -> user.getUserName().equals(userName))
                 .toList();
@@ -116,19 +110,6 @@ public class BasicUserService implements UserService {
         return toResponse(user, online);
     }
 
-
-    //    @Override
-//    public UserResponse updateUser(UUID uuid, String newName, String newAlias) {
-//        Validation.notBlank(newName, "이름");
-//        Validation.notBlank(newAlias, "별명");
-//        User existing = userRepository.findById(uuid)
-//                .orElseThrow(() -> new NoSuchElementException("수정할 유저가 없습니다: " + uuid));
-//
-//        existing.changeUserName(newName);
-//        existing.changeAlias(newAlias);
-//        userRepository.save(existing);
-//        return existing;
-//    }
 
     @Override
     public UserResponse updateUser(UserUpdateRequest request) {
@@ -173,6 +154,14 @@ public class BasicUserService implements UserService {
             user.changerPassword(request.password());
         }
         userRepository.save(user);
+        // 유저 정보 변경 후, 이 유저가 들어있는 채널들을 다시 저장해서 파일 반영
+        for (Channel ch : channelRepository.findAll()) {
+            boolean contains = ch.getParticipants().stream()
+                    .anyMatch(u -> u.getId().equals(user.getId()));
+            if (contains) {
+                channelRepository.save(ch);
+            }
+        }
 
         boolean online = findOnlineByUserId(user.getId());
         return toResponse(user, online);
@@ -185,6 +174,36 @@ public class BasicUserService implements UserService {
         //  없는 ID면 예외
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("삭제할 유저가 없습니다: " + userId));
+        // 참가한 채널 모두 퇴장 + 메모리 반영
+        List<Channel> joined = new ArrayList<>(user.getJoinedChannels());
+        for(Channel ch: joined) {
+            user.leaveChannel(ch);
+            channelRepository.save(ch);
+        }
+        userRepository.save(user);
+
+        // 유저의 메세지 전부 삭제 (수정)
+        List<Message> myMessages = messageRepository.findAll().stream()
+                .filter(m -> m.getSenderId().equals(userId))
+                .toList();
+
+        for (Message m : myMessages) {
+            UUID channelId = m.getChannelId();
+            UUID messageId = m.getId();
+
+            // 채널 쪽 messageIds에서도 제거(채널이 들고 있다면)
+            Channel ch = channelRepository.findById(channelId)
+                    .orElseThrow(() -> new NoSuchElementException("채널이 없습니다: " + channelId));
+            ch.getMessageIds().remove(m.getId());
+            channelRepository.save(ch);
+
+            // 유저쪽도 messageIds 에서 삭제
+            user.getMessageIds().remove(messageId);
+
+            // 메시지 삭제
+            messageRepository.delete(m.getId());
+        }
+
         //프로필 이미지 있으면 삭제
         if(user.getProfileId() != null){
             binaryContentRepository.delete(user.getProfileId());
@@ -194,9 +213,9 @@ public class BasicUserService implements UserService {
                 .ifPresent(status ->
                         userStatusRepository.deleteById(status.getId()));
 
+        // 최종 User 삭제
         userRepository.delete(userId);
     }
-
 
 
     // 메서드 모음

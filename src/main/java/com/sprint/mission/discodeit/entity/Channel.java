@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.lang.annotation.Inherited;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 public class Channel extends Basic implements Serializable {
@@ -14,7 +15,7 @@ public class Channel extends Basic implements Serializable {
 
     private String channelName;
     // 채널에 존재하는 메세지들과 유저들 리스트 생성
-    private List<Message> messages = new ArrayList<>();
+    private List<UUID> messageIds = new ArrayList<>();
     private List<User> participants = new ArrayList<>();
 
 
@@ -32,10 +33,11 @@ public class Channel extends Basic implements Serializable {
         update();
     }
 
-    public void addMessages(Message message) {
-        if (!messages.contains(message)) {
-            messages.add(message);
-            message.setChannel(this);
+    public void addMessages(UUID messageId) {
+        if (messageId == null) throw new IllegalArgumentException("messageId null 불가");
+        if (!messageIds.contains(messageId)) {
+            messageIds.add(messageId);
+            super.update();
         }
     }
 

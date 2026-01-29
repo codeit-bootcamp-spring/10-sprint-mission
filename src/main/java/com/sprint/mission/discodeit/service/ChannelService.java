@@ -25,7 +25,9 @@ public interface ChannelService {
     //id로 채널 조회
     Channel findChannelById(UUID id);
 
-    // 유저가 참여한 채널리스트
-//    List<Channel> getChannelsByUser(UUID uuid);
+
+    // 추가 ChatCoordinator 분산
+    void joinChannel(UUID userId, UUID channelId);
+    void leaveChannel(UUID userId, UUID channelId);
 
 }

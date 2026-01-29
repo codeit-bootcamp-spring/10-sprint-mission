@@ -176,6 +176,9 @@ public class DiscodeitApplication {
         System.out.println("\n ID로 유저 조회");
         System.out.println(userService.findUserById(user.id()));
 
+        System.out.println("\n 별명으로 유저 조회");
+        System.out.println(user);
+
         System.out.println("\n 유저 삭제");
         userService.deleteUser(user.id());
 
