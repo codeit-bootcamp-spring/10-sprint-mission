@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -21,15 +20,15 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContentResponseDto create(BinaryContentCreateDto dto) {
-        BinaryContent content = binaryContentRepository.save(new BinaryContent(dto.fileName(), dto.bytes()));
-        return BinaryContentMapper.contentToDto(content);
+        BinaryContent content = binaryContentRepository.save(BinaryContentMapper.toEntity(dto));
+        return BinaryContentMapper.toDto(content);
     }
 
     @Override
     public BinaryContentResponseDto find(UUID id) {
         BinaryContent content = binaryContentRepository.find(id)
                 .orElseThrow(()-> new NoSuchElementException("No Such File: "+id));
-        return BinaryContentMapper.contentToDto(content);
+        return BinaryContentMapper.toDto(content);
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
@@ -34,29 +35,29 @@ public class BasicUserService implements UserService {
         //프로필 사진 없을때
         BinaryContent profile = null;
         if(dto.profileDto() != null) {
-            profile=binaryContentRepository.save(new BinaryContent(dto.profileDto().fileName(), dto.profileDto().bytes()));
+            profile=binaryContentRepository.save(BinaryContentMapper.toEntity(dto.profileDto()));
         }
-        User user = new User(dto.username(),dto.email(),dto.password(),profile==null?null:profile.getId());
+        User user =  UserMapper.toEntity(dto, profile);
         UserStatus userStatus = new UserStatus(user.getId());
         //모든 공개채널에 대한 읽기 상태 저장
         channelRepository.findAllPublic()
                         .forEach(c->readStatusRepository.save(new ReadStatus(user.getId(),c.getId())));
         userRepository.save(user);
         userStatusRepository.save(userStatus);
-        return UserMapper.userToDto(user,userStatus);
+        return UserMapper.toDto(user,userStatus);
     }
     @Override
     public UserResponseDto find(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-        return UserMapper.userToDto(user,findUserStatusByUserId(userId));
+        return UserMapper.toDto(user,findUserStatusByUserId(userId));
     }
 
     @Override
     public List<UserResponseDto> findAll() {
         List<User> users = userRepository.findAll();
         List<UserResponseDto> response = new ArrayList<>();
-        users.forEach(u-> response.add(UserMapper.userToDto(u,findUserStatusByUserId(u.getId()))));
+        users.forEach(u-> response.add(UserMapper.toDto(u,findUserStatusByUserId(u.getId()))));
         return response;
     }
 
@@ -66,11 +67,11 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
         BinaryContent profile = null;
         if(dto.profileDto() != null) {
-            profile =binaryContentRepository.save(new BinaryContent(dto.profileDto().fileName(), dto.profileDto().bytes()));
+            profile =binaryContentRepository.save(BinaryContentMapper.toEntity(dto.profileDto()));
             binaryContentRepository.delete(user.getProfileId());//기존 프로필 사진 삭제
         }
         user.update(dto.username(), dto.email(), dto.password(),profile==null?null:profile.getId());
-        return UserMapper.userToDto(userRepository.save(user),findUserStatusByUserId(userId));
+        return UserMapper.toDto(userRepository.save(user),findUserStatusByUserId(userId));
     }
 
     @Override

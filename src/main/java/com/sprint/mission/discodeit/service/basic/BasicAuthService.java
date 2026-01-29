@@ -25,6 +25,6 @@ public class BasicAuthService implements AuthService {
                 .orElseThrow(()-> new IllegalArgumentException("잘못된 이름 또는 비밀번호"));
         UserStatus status = userStatusRepository.findByUserId(user.getId())
                 .orElseThrow(()->new NoSuchElementException("No User Status found, UserId: "+user.getId()));
-        return UserMapper.userToDto(user, status);
+        return UserMapper.toDto(user, status);
     }
 }

@@ -17,7 +17,6 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -30,7 +29,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelResponseDto create(PublicChannelCreateDto dto) {
-        Channel channel = new Channel(ChannelType.PUBLIC, dto.name(), dto.description());
+        Channel channel = ChannelMapper.toEntity(dto);
         channelRepository.save(channel);
         //모든 사용자가 멤버!
         userRepository.findAll()
@@ -39,7 +38,7 @@ public class BasicChannelService implements ChannelService {
     }
     @Override
     public ChannelResponseDto create(PrivateChannelCreateDto dto) {
-        Channel channel = new Channel(ChannelType.PRIVATE, null, null);
+        Channel channel = ChannelMapper.toEntity(dto);
         channelRepository.save(channel);
         dto.memberIds()
                 .forEach(m->readStatusRepository.save(new ReadStatus(m,channel.getId())));
@@ -97,6 +96,6 @@ public class BasicChannelService implements ChannelService {
         readStatusRepository
                 .findAllByChannelId(channel.getId())
                 .forEach(s -> memberIds.add(s.getUserId()));
-        return ChannelMapper.channelToDto(channel, lastMessage, memberIds);
+        return ChannelMapper.toDto(channel, lastMessage, memberIds);
     }
 }
