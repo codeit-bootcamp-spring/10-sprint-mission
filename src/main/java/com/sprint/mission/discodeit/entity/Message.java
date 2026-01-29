@@ -5,6 +5,8 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -15,11 +17,13 @@ public class Message extends BaseEntity implements Serializable {
     private String content;
     private UUID channelId;
     private UUID authorId;
+    private List<UUID> attachmentIds;
 
-    public Message(String content, UUID channelId, UUID authorId) {
+    public Message(String content, UUID channelId, UUID authorId, List<UUID> binaryContents){
         this.content = content;
         this.channelId = channelId;
         this.authorId = authorId;
+        this.attachmentIds = binaryContents == null ? new ArrayList<>() : new ArrayList<>(binaryContents);
     }
 
 

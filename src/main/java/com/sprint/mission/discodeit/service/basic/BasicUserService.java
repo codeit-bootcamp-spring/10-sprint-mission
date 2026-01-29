@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentRecord;
+import com.sprint.mission.discodeit.dto.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserRegitrationRecord;
 import com.sprint.mission.discodeit.dto.userdto.UserResponseDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
@@ -15,7 +15,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -85,10 +84,10 @@ public class BasicUserService implements UserService {
 
         UUID newProfileId = null;
         if(req.newProfile() != null){
-            BinaryContentRecord binaryContentRecord = req.newProfile();
+            BinaryContentDTO binaryContentDTO = req.newProfile();
             BinaryContent binaryContent = new BinaryContent(
-                    binaryContentRecord.contentType(),
-                    binaryContentRecord.file()
+                    binaryContentDTO.contentType(),
+                    binaryContentDTO.file()
             );
             BinaryContent saved = binaryContentRepository.save(binaryContent);
             newProfileId = saved.getId();

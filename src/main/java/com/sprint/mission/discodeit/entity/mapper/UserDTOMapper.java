@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.entity.mapper;
 
-import com.sprint.mission.discodeit.dto.BinaryContentRecord;
+import com.sprint.mission.discodeit.dto.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserRegitrationRecord;
 import com.sprint.mission.discodeit.dto.userdto.UserResponseDTO;
-import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -33,8 +32,8 @@ public class UserDTOMapper {
 
     public static User regtoUser(UserRegitrationRecord req, BinaryContentRepository binaryContentRepository){
         UUID profileID = null;
-        if(req.binaryContentRecord() != null){
-            BinaryContentRecord p = req.binaryContentRecord();
+        if(req.binaryContentDTO() != null){
+            BinaryContentDTO p = req.binaryContentDTO();
             BinaryContent binaryContent = new BinaryContent(p.contentType(), p.file());
             profileID = binaryContentRepository.save(binaryContent).getId();
         }

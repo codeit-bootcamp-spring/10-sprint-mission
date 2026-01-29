@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.dto.BinaryContentRecord;
+import com.sprint.mission.discodeit.dto.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserRegitrationRecord;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -19,7 +19,7 @@ import org.springframework.context.ApplicationContext;
 @SpringBootApplication
 public class DiscodeitApplication {
 	static User setupUser(UserService userService) {
-		User user = userService.create(new UserRegitrationRecord("성경","tjdrud@naver.com","hello123",new BinaryContentRecord("image", new byte[]{(byte) 4})));
+		User user = userService.create(new UserRegitrationRecord("성경","tjdrud@naver.com","hello123",new BinaryContentDTO("image", new byte[]{(byte) 4})));
 		return user;
 	}
 
