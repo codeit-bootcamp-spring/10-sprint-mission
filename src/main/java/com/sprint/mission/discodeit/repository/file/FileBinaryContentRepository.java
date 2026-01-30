@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class FileBinaryContentRepository extends AbstractFileRepository<BinaryContent> implements BinaryContentRepository {
@@ -25,4 +26,13 @@ public class FileBinaryContentRepository extends AbstractFileRepository<BinaryCo
         data.remove(id);
         writeToFile(data);
     }
+
+    @Override
+    public Optional<BinaryContent> findById(UUID id) {
+        Map<UUID, BinaryContent> data = load();
+        return data.values().stream()
+                .filter(bc -> bc.getId().equals(id))
+                .findFirst();
+    }
+
 }

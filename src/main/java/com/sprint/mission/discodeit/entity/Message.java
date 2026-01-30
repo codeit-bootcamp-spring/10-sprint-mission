@@ -17,12 +17,17 @@ public class Message extends BaseEntity implements  Serializable {
     private String content;
     private List<UUID> attachmentIds;   // 첨부파일
 
-    public Message(UUID senderId, UUID channelId, String content) {
+    public Message(UUID senderId, UUID channelId, String content, List<UUID> attachmentIds) {
         super(UUID.randomUUID(), Instant.now());
         this.channelId = channelId;
         this.content = content;
         this.senderId = senderId;
-        this.attachmentIds = new ArrayList<>();
+        if (attachmentIds == null) {
+            this.attachmentIds = new ArrayList<>();
+        }
+        else{
+            this.attachmentIds = attachmentIds;
+        }
     }
 
     public void updateContent(String content) {

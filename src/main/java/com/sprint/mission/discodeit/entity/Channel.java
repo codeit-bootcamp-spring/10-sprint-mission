@@ -30,6 +30,9 @@ public class Channel extends BaseEntity implements Serializable {
     }
 
     public UUID getLastMessageId(){
+        if (messageIds.isEmpty()) {
+            return null;
+        }
         return messageIds.get(messageIds.size() - 1);
     }
 
