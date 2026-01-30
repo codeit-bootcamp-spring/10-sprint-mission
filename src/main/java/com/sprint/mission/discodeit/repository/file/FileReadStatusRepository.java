@@ -54,4 +54,11 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         data.remove(readStatusId);
         fileObjectStore.saveData();
     }
+
+    @Override
+    public boolean existReadStatus(UUID userId, UUID channelId) {
+        return data.values().stream()
+                .anyMatch(readStatus -> readStatus.getUserId().equals(userId) && readStatus.getChannelId().equals(channelId));
+    }
+
 }

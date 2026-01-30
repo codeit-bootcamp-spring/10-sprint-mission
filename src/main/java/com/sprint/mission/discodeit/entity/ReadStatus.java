@@ -28,8 +28,8 @@ public class ReadStatus extends BaseEntity implements Serializable {
     }
 
     // update - 메세지 확인 시, 시간 업데이트
-    public void updateLastReadTime() {
-        this.lastReadTime = Instant.now();
+    public void updateLastReadTime(Instant lastReadTime) {
+        this.lastReadTime = lastReadTime;
         updateTime();
     }
 }
