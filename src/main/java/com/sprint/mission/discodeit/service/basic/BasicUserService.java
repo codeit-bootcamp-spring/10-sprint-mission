@@ -1,6 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.*;
+import com.sprint.mission.discodeit.dto.request.binaryContent.BinaryContentCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.user.MemberFindRequestDTO;
+import com.sprint.mission.discodeit.dto.request.user.UserCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.userStatus.UserStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
@@ -26,7 +30,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 생성
     @Override
-    public UserResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO) {
+    public UserResponseDTO create(UserCreateRequestDTO userCreateRequestDTO) {
         isEmailDuplicate(userCreateRequestDTO.getEmail());
         isNicknameDuplicate(userCreateRequestDTO.getNickname());
 
@@ -93,7 +97,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 정보 수정
     @Override
-    public UserResponseDTO updateUser(UserUpdateRequestDTO userUpdateRequestDTO) {
+    public UserResponseDTO update(UserUpdateRequestDTO userUpdateRequestDTO) {
         User targetUser = findUserEntityById(userUpdateRequestDTO.getId());
 
         UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
@@ -138,7 +142,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 삭제
     @Override
-    public void deleteUser(UUID userId) {
+    public void delete(UUID userId) {
         User targetUser = findUserEntityById(userId);
 
         // 삭제된 사용자가 참여한 모든 채널 내 멤버에서 사용자 연쇄 삭제

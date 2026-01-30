@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.request.MessageCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.MessageResponseDTO;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface MessageService {
     // 메시지 생성
-    MessageResponseDTO createMessage(MessageCreateRequestDTO messageCreateRequestDTO);
+    MessageResponseDTO create(MessageCreateRequestDTO messageCreateRequestDTO);
 
     // 메시지 단건 조회
     MessageResponseDTO findById(UUID targetMessageId);
@@ -24,8 +24,8 @@ public interface MessageService {
     List<MessageResponseDTO> findAllByUserId(UUID targetUserId);
 
     // 메시지 수정
-    MessageResponseDTO updateMessage(MessageUpdateRequestDTO messageUpdateRequestDTO);
+    MessageResponseDTO update(MessageUpdateRequestDTO messageUpdateRequestDTO);
 
     // 메시지 삭제
-    void deleteMessage(UUID targetMessageId);
+    void delete(UUID targetMessageId);
 }

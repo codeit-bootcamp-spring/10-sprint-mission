@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.request.MemberFindRequestDTO;
-import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.user.MemberFindRequestDTO;
+import com.sprint.mission.discodeit.dto.request.user.UserCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
 
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface UserService {
     // 사용자 생성
-    UserResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO);
+    UserResponseDTO create(UserCreateRequestDTO userCreateRequestDTO);
 
     // 사용자 단건 조회
     UserResponseDTO findById(UUID userId);
@@ -22,8 +22,8 @@ public interface UserService {
     List<UserResponseDTO> findMembersByChannelId(MemberFindRequestDTO memberFindRequestDTO);
 
     // 사용자 수정
-    UserResponseDTO updateUser(UserUpdateRequestDTO userUpdateRequestDTO);
+    UserResponseDTO update(UserUpdateRequestDTO userUpdateRequestDTO);
 
     // 사용자 삭제
-    void deleteUser(UUID userId);
+    void delete(UUID userId);
 }

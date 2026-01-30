@@ -1,6 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.*;
+import com.sprint.mission.discodeit.dto.request.channel.ChannelMemberRequestDTO;
+import com.sprint.mission.discodeit.dto.request.channel.ChannelUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.readStatus.ReadStatusCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.ChannelResponseDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -92,7 +96,7 @@ public class BasicChannelService implements ChannelService {
 
     // 채널 정보 수정
     @Override
-    public ChannelResponseDTO updateChannel(ChannelUpdateRequestDTO channelUpdateRequestDTO) {
+    public ChannelResponseDTO update(ChannelUpdateRequestDTO channelUpdateRequestDTO) {
         Channel targetChannel = findEntityById(channelUpdateRequestDTO.getId());
 
         // Private 채널 제외
@@ -121,7 +125,7 @@ public class BasicChannelService implements ChannelService {
 
     // 채널 삭제
     @Override
-    public void deleteChannel(UUID targetChannelId) {
+    public void delete(UUID targetChannelId) {
         Channel targetChannel = findEntityById(targetChannelId);
 
         // 해당 채널에서 발행된 메시지 연쇄 삭제

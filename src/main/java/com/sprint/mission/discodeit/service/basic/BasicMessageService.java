@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.MessageCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.MessageResponseDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -32,7 +32,7 @@ public class BasicMessageService implements MessageService {
 
     // 메시지 생성
     @Override
-    public MessageResponseDTO createMessage(MessageCreateRequestDTO messageCreateRequestDTO) {
+    public MessageResponseDTO create(MessageCreateRequestDTO messageCreateRequestDTO) {
         // 1, 사용자 및 채널 존재 여부 확인
         userRepository.findById(messageCreateRequestDTO.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
@@ -112,7 +112,7 @@ public class BasicMessageService implements MessageService {
 
     // 메시지 수정
     @Override
-    public MessageResponseDTO updateMessage(MessageUpdateRequestDTO messageUpdateRequestDTO) {
+    public MessageResponseDTO update(MessageUpdateRequestDTO messageUpdateRequestDTO) {
         // 1. 메시지 존재 여부 확인
         Message targetMessage = findMessageEntityById(messageUpdateRequestDTO.getId());
 
@@ -131,7 +131,7 @@ public class BasicMessageService implements MessageService {
 
     // 메시지 삭제
     @Override
-    public void deleteMessage(UUID targetMessageId) {
+    public void delete(UUID targetMessageId) {
         // 1. 메시지 존재 여부 확인
         Message targetMessage = findMessageEntityById(targetMessageId);
 
