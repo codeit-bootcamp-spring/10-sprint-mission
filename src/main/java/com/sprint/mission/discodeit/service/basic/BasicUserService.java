@@ -39,8 +39,10 @@ public class BasicUserService implements UserService {
 
         // profile image가 존재한다면 생성
         BinaryContent profileImage = null;
-        if(userInfo.profileImage() != null)
+        if(userInfo.profileImage() != null) {
             profileImage = new BinaryContent(userInfo.profileImage());
+            user.setProfileId(profileImage.getId());
+        }
 
         // 반환 Dto 만들기
         UserInfoWithProfile response = new UserInfoWithProfile(user.getUserName(), user.getEmail(),
