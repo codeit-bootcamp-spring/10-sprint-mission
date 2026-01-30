@@ -14,4 +14,5 @@ public interface MessageRepository {
     void deleteById(UUID id);
     Optional<Message> findTopByChannelIdOrderByCreatedAtDesc(UUID channelId);
     void deleteByChannelId(UUID channelId);
+    List<Message> findAllByChannelId(UUID channelId);
 }
