@@ -139,8 +139,20 @@ public class BasicChannelService implements ChannelService {
     // 채널 삭제
     @Override
     public void deleteChannel(UUID targetChannelId) {
-        Channel targetChannel = findById(targetChannelId);
+        // 1. 채널 존재 유무 확인
+        Channel targetChannel = findEntityById(targetChannelId);
 
+        // 2. 메시지 연쇄 삭제
+        messageRepository.findAll().stream()
+                .filter(message -> message.getChannelId().equals(targetChannelId))
+                .forEach(messageRepository::delete);
+
+        // 3. 읽음 상태 연쇄 삭제
+        readStatusRepository.findAll().stream()
+                .filter(readStatus -> readStatus.getChannelId().equals(targetChannelId))
+                .forEach(readStatusRepository::delete);
+
+        // 4. 채널 삭제
         channelRepository.delete(targetChannel);
     }
 

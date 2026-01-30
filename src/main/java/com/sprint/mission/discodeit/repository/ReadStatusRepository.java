@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ReadStatusRepository {
@@ -11,6 +12,9 @@ public interface ReadStatusRepository {
     // 읽음 상태 단건 조회
     ReadStatus findById(UUID readStatusId);
 
+    // 읽음 상태 전체 조회
+    List<ReadStatus> findAll();
+
     // 읽음 상태 삭제
-    void delete(UUID readStatusId);
+    void delete(ReadStatus readStatus);
 }
