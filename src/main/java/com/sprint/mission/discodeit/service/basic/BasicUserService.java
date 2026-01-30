@@ -42,6 +42,7 @@ public class BasicUserService implements UserService {
         if(userInfo.profileImage() != null) {
             profileImage = new BinaryContent(userInfo.profileImage());
             user.setProfileId(profileImage.getId());
+            contentRepository.save(profileImage);
         }
 
         // 반환 Dto 만들기
@@ -50,7 +51,6 @@ public class BasicUserService implements UserService {
 
         // Repo 저장
         userStatusRepository.save(status);
-        contentRepository.save(profileImage);
         userRepository.save(user);
         return response;
     }
