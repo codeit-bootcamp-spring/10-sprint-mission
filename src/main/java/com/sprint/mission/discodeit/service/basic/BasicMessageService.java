@@ -22,10 +22,10 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageResponseDto create(MessageCreateDto dto) {
         if (!channelRepository.existsById(dto.getChannelId())) {
-            throw new NoSuchElementException("Channel not found");
+            throw new NoSuchElementException("채널을 찾을 수 없습니다.");
         }
         if (!userRepository.existsById(dto.getSenderId())) {
-            throw new NoSuchElementException("User not found");
+            throw new NoSuchElementException("유저를 찾을 수 없습니다.");
         }
 
         Message message = new Message(dto.getSenderId(), dto.getChannelId(), dto.getContent());
@@ -54,7 +54,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageResponseDto update(MessageUpdateDto dto) {
         Message message = messageRepository.findById(dto.getMessageId())
-                .orElseThrow(() -> new NoSuchElementException("Message not found"));
+                .orElseThrow(() -> new NoSuchElementException("메시지를 찾을 수 없습니다."));
 
         if (dto.getContent() != null && !dto.getContent().isBlank()) {
             message.updateContent(dto.getContent());
@@ -67,7 +67,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public void delete(UUID messageId) {
         Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message not found"));
+                .orElseThrow(() -> new NoSuchElementException("메시지를 찾을 수 없습니다."));
 
         if (message.getAttachmentIds() != null) {
             for (UUID fileId : message.getAttachmentIds()) {
@@ -92,7 +92,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageResponseDto find(UUID id) {
         Message message = messageRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Message not found"));
+                .orElseThrow(() -> new NoSuchElementException("메시지를 찾을 수 없습니다."));
         return convertToResponseDto(message);
     }
 }
