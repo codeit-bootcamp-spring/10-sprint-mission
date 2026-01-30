@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserResponse;
 import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.utils.Validation;
@@ -24,6 +25,10 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     // BinaryContent 저장/조회 (프로필 이미지..)
     private final BinaryContentRepository binaryContentRepository;
+
+    // Mapper 클래스 따로
+    private final UserMapper userMapper;
+
 
 
     // DTO로 입력받고, UserStatus 같이 생성.
@@ -54,7 +59,7 @@ public class BasicUserService implements UserService {
 
         // 프로필 이미지가 있으면 BinaryContent 저장 후 profileId 연결
         if (request.profileImage() != null) {
-            BinaryContent binaryContent = toBinaryContent(request.profileImage());
+            BinaryContent binaryContent = userMapper.toBinaryContent(request.profileImage());
             binaryContentRepository.save(binaryContent);
             user.changeProfileId(binaryContent.getId());
         }
@@ -65,14 +70,14 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(userStatus);
 
         // 응답 DTO로 반환 ->
-        return toResponse(user, userStatus.isOnline());
+        return userMapper.toResponse(user, userStatus.isOnline());
     }
 
 
     @Override
     public List<UserResponse> getUserAll() {
         return userRepository.findAll().stream()
-                .map(user -> toResponse(user, findOnlineByUserId(user.getId())))
+                .map(user -> userMapper.toResponse(user, findOnlineByUserId(user.getId())))
                 .toList();
     }
 
@@ -96,7 +101,7 @@ public class BasicUserService implements UserService {
 
         // response DTO로 반환.
         return matches.stream()
-                .map(user -> toResponse(user, findOnlineByUserId(user.getId())))
+                .map(user -> userMapper.toResponse(user, findOnlineByUserId(user.getId())))
                 .toList();
     }
 
@@ -107,7 +112,7 @@ public class BasicUserService implements UserService {
                         new NoSuchElementException("해당 ID의 유저가 없습니다: " + id));
 
         boolean online = findOnlineByUserId(id);
-        return toResponse(user, online);
+        return userMapper.toResponse(user, online);
     }
 
 
@@ -153,6 +158,18 @@ public class BasicUserService implements UserService {
             Validation.notBlank(request.password(), "비밀번호");
             user.changerPassword(request.password());
         }
+        // 프로필 이미지 변경
+        if(request.ProfileImage() != null){
+            // 기존 이미지 삭제
+            if(user.getProfileId() != null) {
+                binaryContentRepository.delete(user.getProfileId());
+            }
+            BinaryContent newProfile = userMapper.toBinaryContent(request.ProfileImage());
+            binaryContentRepository.save(newProfile);
+
+            // 유저한테 새로운 profileID 반영
+            user.changeProfileId(newProfile.getId());
+        }
         userRepository.save(user);
         // 유저 정보 변경 후, 이 유저가 들어있는 채널들을 다시 저장해서 파일 반영
         for (Channel ch : channelRepository.findAll()) {
@@ -164,7 +181,7 @@ public class BasicUserService implements UserService {
         }
 
         boolean online = findOnlineByUserId(user.getId());
-        return toResponse(user, online);
+        return userMapper.toResponse(user, online);
     }
 
 
@@ -220,21 +237,21 @@ public class BasicUserService implements UserService {
 
     // 메서드 모음
 
-    private BinaryContent toBinaryContent(BinaryContentCreateRequest request) {
-        return new BinaryContent(request.fileName(), request.contentType(), request.bytes());
-    }
-
-    // 생성, 수정 시 reponse DTO 반영하는
-    public UserResponse toResponse(User user, boolean online){
-        return new UserResponse(
-                user.getId(),
-                user.getUserName(),
-                user.getAlias(),
-                user.getEmail(),
-                online,
-                user.getProfileId()
-        );
-    }
+//    private BinaryContent toBinaryContent(BinaryContentCreateRequest request) {
+//        return new BinaryContent(request.fileName(), request.contentType(), request.bytes());
+//    }
+//
+//    // 생성, 수정 시 reponse DTO 반영하는
+//    public UserResponse toResponse(User user, boolean online){
+//        return new UserResponse(
+//                user.getId(),
+//                user.getUserName(),
+//                user.getAlias(),
+//                user.getEmail(),
+//                online,
+//                user.getProfileId()
+//        );
+//    }
     // use
     private boolean findOnlineByUserId(UUID userId) {
         return userStatusRepository.findByUserId(userId)

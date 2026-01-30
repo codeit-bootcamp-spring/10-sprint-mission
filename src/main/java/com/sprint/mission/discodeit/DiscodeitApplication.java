@@ -4,9 +4,7 @@ package com.sprint.mission.discodeit;
 import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserResponse;
 import com.sprint.mission.discodeit.repository.*;
-import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
-import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+
 import com.sprint.mission.discodeit.repository.jcf.JCFBinaryContentRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.repository.jcf.JCFUserStatusRepository;
@@ -15,6 +13,7 @@ import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicChatCoordinator;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -31,15 +30,16 @@ import static java.nio.file.Files.deleteIfExists;
 
 
 @SpringBootApplication
-public class DiscodeitApplication {
+@RequiredArgsConstructor
+public class DiscodeitApplication implements CommandLineRunner {
 
-	public static void main(String[] args) throws IOException {
+//	public static void main(String[] args) throws IOException {
         //  실행 시 기존 데이터 파일 삭제 (테스트용 초기화)
-        deleteIfExists(Path.of("users.dat"));
-        deleteIfExists(Path.of("channels.dat"));
-        deleteIfExists(Path.of("messages.dat"));
-        ApplicationContext context =
-                SpringApplication.run(DiscodeitApplication.class, args);
+//        deleteIfExists(Path.of("users.dat"));
+//        deleteIfExists(Path.of("channels.dat"));
+//        deleteIfExists(Path.of("messages.dat"));
+//        ApplicationContext context =
+//                SpringApplication.run(DiscodeitApplication.class, args);
 //		System.out.println("===========스프링 빈 체크!!!!!=============");
 //		for(String beanName : context.getBeanDefinitionNames()) {
 //			System.out.println(beanName);
@@ -134,62 +134,58 @@ public class DiscodeitApplication {
         // =========================
         // Repository (JCF 기반)
         // =========================
-        UserRepository userRepository = new JCFUserRepository();
-        UserStatusRepository userStatusRepository = new JCFUserStatusRepository();
-        BinaryContentRepository binaryContentRepository = new JCFBinaryContentRepository();
+            private final UserService userService;
+            private final ChannelService channelService;
+            private final MessageService messageService;
 
+            public static void main(String[] args){
+                    SpringApplication.run(DiscodeitApplication.class, args);
+            }
 
-        // Service
-        UserService userService = new BasicUserService(
-                userRepository,
-                userStatusRepository,
-                binaryContentRepository
-        );
+                    @Override
+                    public void run (String...args){
+                            System.out.println("=== [Spring + JCF] 간단 테스트 시작 ===");
 
+                            // 1) 유저 생성
+                            UserResponse u1 = userService.createUser(new UserCreateRequest(
+                                    "홍길동", "gildong", "gildong@test.com", "1234", null
+                            ));
+                            UserResponse u2 = userService.createUser(new UserCreateRequest(
+                                    "김철수", "chulsoo", "chulsoo@test.com", "1234", null
+                            ));
+                            System.out.println("[유저 생성] " + u1);
+                            System.out.println("[유저 생성] " + u2);
 
-        System.out.println("\n 유저 생성");
-        UserResponse user = userService.createUser(
-                new UserCreateRequest(
-                        "최종인",
-                        "jongin",
-                        "jongin@test.com",
-                        "0312",
-                        null   // 프로필 이미지x
-                )
-        );
+                            // 2) 채널 생성
+                            var ch1 = channelService.createChannel("general");
+                            System.out.println("[채널 생성] " + ch1.getId() + " / " + ch1.getChannelName());
 
-        UserResponse user2 = userService.createUser(
-                new UserCreateRequest(
-                        "김수빈",
-                        "subin",
-                        "subin@test.com",
-                        "1116",
-                        null
-                )
-        );
+                            // 3) 채널 참가/퇴장 (채널 서비스에 join/leave를 옮겨두신 버전 기준)
+                            channelService.joinChannel(u1.id(), ch1.getId());
+                            channelService.joinChannel(u2.id(), ch1.getId());
+                            System.out.println("[채널 참가] participants=" + ch1.getParticipants().size());
 
-        System.out.println(user);
+                            // 4) 메세지 전송 (Message는 senderId/channelId만 들고 있는 구조 기준)
+                            var m1 = messageService.createMessage("안녕하세요!", u1.id(), ch1.getId());
+                            var m2 = messageService.createMessage("반가워요!", u2.id(), ch1.getId());
+                            System.out.println("[메세지 생성] " + m1.getId());
+                            System.out.println("[메세지 생성] " + m2.getId());
 
-        System.out.println("\n 전체 유저 조회");
-        userService.getUserAll().forEach(System.out::println);
+                            // 5) 조회 예시: senderId로 필터링 (ID-only 기준)
+                            System.out.println("[홍길동이 보낸 메세지 수] " +
+                                    messageService.getAllMessagesResponse().stream().filter(m -> m.senderId().equals(u1.id())).count());
 
-        System.out.println("\n ID로 유저 조회");
-        System.out.println(userService.findUserById(user.id()));
+                            // 6) 메세지 삭제 (ID-only + messageIds 정리 버전 deleteMessage 기준)
+                            messageService.deleteMessage(m1.getId());
+                            System.out.println("[메세지 삭제] " + m1.getId());
 
-        System.out.println("\n 별명으로 유저 조회");
-        System.out.println(user);
+                            // 7) 유저 업데이트/삭제도 원하면 여기서 호출 가능
+                            // userService.updateUser(...)
+                            // userService.deleteUser(u2.id());
 
-        System.out.println("\n 유저 삭제");
-        userService.deleteUser(user.id());
+                            System.out.println("=== [Spring + JCF] 테스트 종료 ===");
 
-        System.out.println("\n 삭제 후 전체 유저 조회");
-        userService.getUserAll().forEach(System.out::println);
-
-        System.out.println("\n=== Discodeit 실행 종료 ===");
-
-
-
-    }
+            }
 
 
 }
