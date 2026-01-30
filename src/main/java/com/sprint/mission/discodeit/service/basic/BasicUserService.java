@@ -4,10 +4,7 @@ import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequsetDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
@@ -27,6 +24,7 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final ReadStatusRepository readStatusRepository;
 
     @Override
     public UserResponseDto create(UserCreateRequestDto userCreateRequestDto) {
@@ -164,14 +162,19 @@ public class BasicUserService implements UserService {
     public void delete(UUID userId) {
         User user = getUser(userId);
 
-        // 유저가 속한 채널에서 유저 id지우기
-        List<UUID> channelList = new ArrayList<>(user.getChannelList());
-        for (UUID channelId : channelList) {
-            Channel channel = channelRepository.findById(channelId)
-                    .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
-            channel.getUserList().remove(userId);
-            channelRepository.save(channel);
-        }
+        // 유저를 가지고 있는 readStatus를 통해서 채널 조회
+        List<UUID> channelList = readStatusRepository.findAll().stream()
+                .filter(readStatus -> readStatus.getUserId().equals(userId))
+                .map(ReadStatus::getChannelId)
+                .toList();
+        // 채널에서 유저삭제
+        channelList.stream()
+                .map(channelId -> channelRepository.findById(channelId)
+                        .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다.")))
+                .forEach(channel ->
+                        {   channel.getUserList().remove(userId);
+                            channelRepository.save(channel);
+                        });
 
         // 유저가 쓴 메시지 삭제
         List<UUID> messageList = new ArrayList<>(user.getMessageList());

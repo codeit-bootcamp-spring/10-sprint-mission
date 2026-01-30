@@ -44,16 +44,10 @@ public class BasicChannelService implements ChannelService {
     public ChannelResponseDto createPrivate(ChannelCreatePrivateDto channelCreatePrivateDto){
         // 채널 생성
         Channel channel = new Channel(channelCreatePrivateDto.getChannelName());
-        // 입력으로 들어온 정해진 인원수 채널에 포함 및 유저 당 readStatus도 생성 후 저장
-        channelCreatePrivateDto.getUserList().stream()
-                        .map(userId -> userRepository.findById(userId)
-                                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다.")))
-                        .forEach(user ->
-                                {   channel.addUsers(user.getId());
-                                    user.addChannel(channel.getId());
-                                    userRepository.save(user);
-                                    readStatusRepository.save(new ReadStatus(user.getId(), channel.getId()));
-                                });
+        // 입력으로 들어온 유저 당 readStatus도 생성 후 저장
+        channelCreatePrivateDto.getUserList()
+                        .forEach(userId ->
+                                readStatusRepository.save(new ReadStatus(userId, channel.getId())));
 
 
         channel.setChannelType(PRIVATE);
@@ -72,10 +66,10 @@ public class BasicChannelService implements ChannelService {
         Arrays.stream(userId)
                 .map(id -> userRepository.findById(id)
                         .orElseThrow(() -> new NoSuchElementException("해당 유저가 없습니다")))
-                .forEach(user -> {
+                .forEach(user ->
+                {
                     channel.addUsers(user.getId());
-                    user.addChannel(channelId);
-                    userRepository.save(user);
+                    readStatusRepository.save(new ReadStatus(user.getId(), channel.getId()));
                 });
         channelRepository.save(channel);
         return channelMapper.toPublicDto(channel);
@@ -98,16 +92,21 @@ public class BasicChannelService implements ChannelService {
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
 
         System.out.println("[" + user + "가 속한 채널 조회]");
-
+        List<ReadStatus> readStatusList = readStatusRepository.findAll();
         // 공용채널 조회
-        List<ChannelResponseDto> publicList = user.getChannelList().stream()
-                .map(this::getChannel)
+        List<ChannelResponseDto> publicList = readStatusList.stream()
+                .filter(readStatus -> readStatus.getUserId().equals(userId))
+                .map(readStatus ->
+                    getChannel(readStatus.getChannelId()))
                 .filter(channel -> channel.getChannelType() == ChannelType.PUBLIC)
                 .map(channelMapper::toPublicDto)
                 .toList();
+
         // 개인채널 조회
-        List<ChannelResponseDto> privateList = user.getChannelList().stream()
-                .map(this::getChannel)
+        List<ChannelResponseDto> privateList = readStatusList.stream()
+                .filter(readStatus -> readStatus.getUserId().equals(userId))
+                .map(readStatus ->
+                        getChannel(readStatus.getChannelId()))
                 .filter(channel -> channel.getChannelType() == ChannelType.PRIVATE)
                 .map(channelMapper::toPrivateDto)
                 .toList();
@@ -139,15 +138,6 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void delete(UUID channelId) {
         Channel channel = getChannel(channelId);
-
-        // 채널이 삭제될때 이 채널이 속해있는 유저의 채널리스트에서 채널 삭제
-        List<UUID> userList = new ArrayList<>(channel.getUserList());
-        userList.stream().map(userId -> userRepository.findById(userId)
-                        .orElseThrow(() -> new NoSuchElementException("해당 유저가 없습니다")))
-                .forEach(user -> {
-                    user.getChannelList().remove(channelId);
-                    userRepository.save(user);
-                });
 
         // 채널이 삭제될때 채널에 속해있던 메시지들 전부 삭제
         List<UUID> messageList = new ArrayList<>(channel.getMessageList());

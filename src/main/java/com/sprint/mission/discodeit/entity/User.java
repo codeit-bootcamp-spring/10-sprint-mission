@@ -14,7 +14,6 @@ public class User extends BaseEntity{
     private UUID profileImageId;
     private String password;
     private final List<UUID> messageList;
-    private final List<UUID> channelList;
     private final List<UUID> friendsList;
 
     public User(String name, String email, String password){
@@ -22,18 +21,11 @@ public class User extends BaseEntity{
         this.email = email;
         this.password = password;
         this.messageList = new ArrayList<>();
-        this.channelList = new ArrayList<>();
         this.friendsList = new ArrayList<>();
     }
 
     public void addProfileImage(UUID binaryContentId){
         this.profileImageId = binaryContentId;
-    }
-
-    public void addChannel(UUID channdId){
-        if(!this.getChannelList().contains(channdId)){
-            this.getChannelList().add(channdId);
-        }
     }
 
     public void addMessage(UUID messaageId){
