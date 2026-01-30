@@ -42,6 +42,17 @@ public class FileChannelRepository extends AbstractFileRepository<Channel> imple
     }
 
     @Override
+    public void deleteMessageByMessageId(UUID channelId, UUID messageId) {
+        Map<UUID, Channel> data = load();
+        Channel channel = data.get(channelId);
+        if (channel != null) {
+            if (channel.getMessageIds().removeIf(id -> id.equals(messageId))) {
+                writeToFile(data);
+            }
+        }
+    }
+
+    @Override
     public void clear() {
         writeToFile(new HashMap<UUID, Channel>());
     }

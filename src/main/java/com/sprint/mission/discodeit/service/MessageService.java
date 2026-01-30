@@ -13,7 +13,7 @@ public interface MessageService {
     MessageInfoDto create(MessageCreateDto messageCreateDto);
 
     // Read
-    Message findById(UUID id);
+    MessageInfoDto findById(UUID id);
 
     // ReadAll
     List<MessageInfoDto> findAllByChannelId(UUID channelId);

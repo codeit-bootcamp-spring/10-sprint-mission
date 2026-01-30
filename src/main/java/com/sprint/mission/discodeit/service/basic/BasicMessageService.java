@@ -59,11 +59,11 @@ public class BasicMessageService implements MessageService, ClearMemory {
     }
 
     @Override
-    public Message findById(UUID id) {
+    public MessageInfoDto findById(UUID id) {
         Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 메시지 ID입니다."));
 
-        return message;
+        return messageMapper.toMessageInfoDto(message);
     }
 
     @Override
@@ -76,10 +76,17 @@ public class BasicMessageService implements MessageService, ClearMemory {
 
     @Override
     public MessageInfoDto update(MessageUpdateDto messageUpdateDto) {
-        Message message = findById(messageUpdateDto.id());
+        Message message = messageRepository.findById(messageUpdateDto.id())
+                .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 없습니다."));
         validateAttachments(messageUpdateDto.attachmentIds());
-        message.updateContent(messageUpdateDto.newContent());
+
+        // 기존 첨부파일 삭제
+        if(!message.getAttachmentIds().isEmpty()) {
+            binaryContentRepository.deleteByIds(message.getAttachmentIds());
+        }
         message.updateAttachmentIds(messageUpdateDto.attachmentIds());
+        message.updateContent(messageUpdateDto.newContent());
+
         messageRepository.save(message);
         return messageMapper.toMessageInfoDto(message);
     }
@@ -125,6 +132,12 @@ public class BasicMessageService implements MessageService, ClearMemory {
 //    }
     @Override
     public void delete(UUID id) {
+        Message message = messageRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 메시지가 없습니다."));
+        // 첨부파일 삭제
+        binaryContentRepository.deleteByIds(message.getAttachmentIds());
+        // 채널에 등록된 메시지 삭제
+        channelRepository.deleteMessageByMessageId(message.getChannelId(), id);
+        // 메시지 자체 삭제
         messageRepository.delete(id);
     }
 
