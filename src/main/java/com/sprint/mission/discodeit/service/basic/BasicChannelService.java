@@ -37,10 +37,13 @@ public class BasicChannelService implements ChannelService {
 
         // owner는 channel 생성 시 자동 join(channel의 member list에도 추가
         linkMemberAndChannel(owner, channel);
+        ReadStatus participantReadStatus = new ReadStatus(owner.getId(), channel.getId());
 
         channelRepository.save(channel);
         // `linkMemberAndChannel` 메소드로 owner(user)의 joinChannelList에 해당 channel 추가 후, 저장
+        readStatusRepository.save(participantReadStatus);
         userRepository.save(owner);
+
         return channel;
     }
 
