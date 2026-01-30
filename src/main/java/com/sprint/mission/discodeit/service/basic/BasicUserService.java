@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDTO;
-import com.sprint.mission.discodeit.dto.user.UserCreateDTO;
+import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
-import com.sprint.mission.discodeit.dto.user.UserUpdateDTO;
+import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -27,7 +27,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public UserResponseDTO createUser(UserCreateDTO dto) {
+    public UserResponseDTO createUser(CreateUserRequestDTO dto) {
         if (userRepository.existsByUsername(dto.username())) {
             throw new IllegalArgumentException("이미 사용중인 username입니다.");
         }
@@ -89,7 +89,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUser(UserUpdateDTO dto) {
+    public UserResponseDTO updateUser(UpdateUserRequestDTO dto) {
         User user = findUserInfoById(dto.userId());
 
         if (dto.username() != null) {
@@ -129,7 +129,7 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다."));
     }
 
-    private void updateUserName(UserUpdateDTO dto, User user) {
+    private void updateUserName(UpdateUserRequestDTO dto, User user) {
         if (!user.getUsername().equals(dto.username())){
             if (userRepository.existsByUsername(dto.username())) {
                 throw new IllegalArgumentException("이미 사용중인 username입니다.");
@@ -140,13 +140,13 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
     }
 
-    private void updateUserStatus(UserUpdateDTO dto) {
+    private void updateUserStatus(UpdateUserRequestDTO dto) {
         UserStatus status = userStatusRepository.findByUserId(dto.userId());
         status.updateStatusType(dto.statusType());
         userStatusRepository.save(status);
     }
 
-    private void updateUserProfileImage(UserUpdateDTO dto, User user) {
+    private void updateUserProfileImage(UpdateUserRequestDTO dto, User user) {
         if (dto.profileImage() == null) {
             throw new IllegalArgumentException("profile 값이 존재하지 않습니다.");
         }

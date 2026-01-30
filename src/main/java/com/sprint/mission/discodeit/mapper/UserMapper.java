@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.user.UserCreateDTO;
+import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -8,7 +8,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import java.util.*;
 
 public class UserMapper {
-    public static User toEntity(UserCreateDTO dto, UUID profileImageId) {
+    public static User toEntity(CreateUserRequestDTO dto, UUID profileImageId) {
         return new User(
                 dto.username(),
                 dto.email(),
