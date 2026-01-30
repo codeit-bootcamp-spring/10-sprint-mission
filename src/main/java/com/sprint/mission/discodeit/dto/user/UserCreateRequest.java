@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import java.util.UUID;
+import com.sprint.mission.discodeit.dto.content.BinaryContentDto;
 
 // 유저 생성 시 필요한 데이터
 public record UserCreateRequest(
@@ -8,6 +8,6 @@ public record UserCreateRequest(
         String nickname,
         String email,
         String password,
-        UUID profileImageId
+        BinaryContentDto profileImage
 ) {
 }
