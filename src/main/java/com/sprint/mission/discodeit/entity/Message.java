@@ -17,7 +17,7 @@ public class Message extends BaseEntity {
     // 연결되어 있는 id들
     private List<UUID> attachmentIds;
 
-    public Message(UUID sentUserId, UUID sentChannelId, String content) {
+    public Message(UUID sentUserId, UUID sentChannelId, String content, List<UUID> attachmentIds) {
         // id 자동생성 및 초기화
         super();
         // content 초기화
@@ -26,7 +26,7 @@ public class Message extends BaseEntity {
         this.sentUserId = sentUserId;
         // sentChannelId 초기화는 메시지 전송 시점에 설정
         this.sentChannelId = sentChannelId;
-        this.attachmentIds = new ArrayList<>();
+        this.attachmentIds = attachmentIds;
     }
 
     public void updateContent(String content) {
