@@ -40,9 +40,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatus findReadStatusById(UUID readStatusId) {
-        ValidationMethods.validateId(readStatusId);
-        return readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new NoSuchElementException("해당 ReadStatus가 없습니다"));
+        return validateAndGetReadStatusByReadStatusId(readStatusId);
     }
 
     @Override
