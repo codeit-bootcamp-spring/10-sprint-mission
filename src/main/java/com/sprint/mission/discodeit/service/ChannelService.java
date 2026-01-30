@@ -19,7 +19,7 @@ public interface ChannelService {
     ChannelInfoDto findById(UUID id);
 
     // ReadAll
-    List<Channel> findAll();
+    List<ChannelInfoDto> findAllByUserId(UUID userId);
 
     // Update
     Channel update(UUID id, String name, IsPrivate isPrivate, UUID ownerId);

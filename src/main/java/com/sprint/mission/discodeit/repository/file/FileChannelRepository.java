@@ -29,7 +29,7 @@ public class FileChannelRepository extends AbstractFileRepository<Channel> imple
     }
 
     @Override
-    public List<Channel> readAll() {
+    public List<Channel> findAll() {
         Map<UUID, Channel> data = load();
         return List.copyOf(data.values());
     }

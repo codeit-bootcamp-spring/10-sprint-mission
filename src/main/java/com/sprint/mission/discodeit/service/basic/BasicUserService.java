@@ -101,7 +101,7 @@ public class BasicUserService implements UserService, ClearMemory {
     @Override
     public List<Channel> getUserChannels(UUID id) {
         findById(id);
-        return channelRepository.readAll().stream()
+        return channelRepository.findAll().stream()
                 .filter(ch -> ch.getUsers().stream().anyMatch(u -> u.getId().equals(id)))
                 .toList();
     }
@@ -119,7 +119,7 @@ public class BasicUserService implements UserService, ClearMemory {
         userStatusRepository.deleteByUserId(userInfoDto.userId());
 
         // 사용자가 등록되어 있는 채널들
-        List<Channel> joinedChannels = channelRepository.readAll().stream()
+        List<Channel> joinedChannels = channelRepository.findAll().stream()
                 .filter(ch -> ch.getUsers().stream()
                         .anyMatch(u -> u.getId().equals(id)))
                 .toList();

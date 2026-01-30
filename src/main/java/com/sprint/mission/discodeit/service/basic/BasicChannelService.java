@@ -67,10 +67,17 @@ public class BasicChannelService implements ChannelService, ClearMemory {
     }
 
     @Override
-    public List<Channel> findAll() {
-        return channelRepository.readAll();
+    public List<ChannelInfoDto> findAllByUserId(UUID userId) {
+        return channelRepository.findAll().stream()
+                .filter(ch -> isVisibleToUser(ch, userId))
+                .map(ch -> channelMapper.toChannelInfoDto(ch, messageRepository))
+                .toList();
     }
 
+    private boolean isVisibleToUser(Channel channel, UUID userId){
+        return channel.getIsPrivate().equals(IsPrivate.PUBLIC)
+                || channel.getUserIds().contains(userId);
+    }
     @Override
     public Channel update(UUID id, String name, IsPrivate isPrivate, UUID ownerId) {
         Channel channel = findById(id);
