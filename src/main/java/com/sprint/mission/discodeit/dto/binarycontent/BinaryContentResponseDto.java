@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.dto.binarycontent;
 
-public record BinaryContentCreateRequestDto(
-        //생성용 Dto
+import java.util.UUID;
+
+public record BinaryContentResponseDto(
+        UUID id,
         byte[] content
 ) {
 }
