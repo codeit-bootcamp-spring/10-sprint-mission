@@ -30,11 +30,11 @@ public class BasicUserService implements UserService {
     @Override
     public UserResponseDto create(UserCreateRequestDto userCreateRequestDto) {
         //중복여부 검사 로직
-        if (findAll().stream()
+        if (userRepository.findAll().stream()
                 .anyMatch(user ->
-                        user.username().equals(userCreateRequestDto.username()) ||
-                                user.email().equals(userCreateRequestDto.email())
-                )) throw new AssertionError("Username or Email already exists");
+                        user.getUsername().equals(userCreateRequestDto.username()) ||
+                                user.getEmail().equals(userCreateRequestDto.email())
+                )) throw new IllegalArgumentException("Username or Email already exists");
 
         User user;
         //이미지 존재여부 분기

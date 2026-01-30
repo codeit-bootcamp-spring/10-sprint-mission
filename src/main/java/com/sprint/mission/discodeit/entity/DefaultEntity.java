@@ -2,11 +2,12 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public abstract class DefaultEntity {
+public abstract class DefaultEntity implements Serializable {
     //공통필드
     protected final UUID id;
     protected final Instant createdAt;
