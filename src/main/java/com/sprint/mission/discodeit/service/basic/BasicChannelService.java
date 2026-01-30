@@ -184,8 +184,9 @@ public class BasicChannelService implements ChannelService {
 
 		// message와 readStatus도 삭제한다.
 		channel.getMessageIds().forEach(messageRepository::delete);
-		readStatusRepository.delete(
-			readStatusRepository.findByChannelId(channelId).getId()
+		readStatusRepository.findByChannelId(channelId).forEach(readStatus -> {
+				readStatusRepository.delete(readStatus.getId());
+			}
 		);
 
 		// 채널 삭제
