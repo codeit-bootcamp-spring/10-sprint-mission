@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.request.ChannelUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequestDTO;
@@ -106,19 +107,33 @@ public class BasicChannelService implements ChannelService {
 
     // 채널 정보 수정
     @Override
-    public Channel updateChannel(UUID targetChannelId, String newChannelName) {
-        Channel targetChannel = findById(targetChannelId);
+    public ChannelResponseDTO updateChannel(ChannelUpdateRequestDTO channelUpdateRequestDTO) {
+        // 1. 채널 존재 여부 확인
+        Channel targetChannel = findEntityById(channelUpdateRequestDTO.getId());
 
-        // 채널 이름 변경
-        Optional.ofNullable(newChannelName)
+        // 2. Private 채널 제외
+        if (channelUpdateRequestDTO.getChannelType() == ChannelType.PRIVATE)
+            throw new RuntimeException("Private 채널은 설정 및 정보를 변경할 수 없습니다.");
+
+        // 3. 채널 이름 변경
+        Optional.ofNullable(channelUpdateRequestDTO.getChannelName())
                 .ifPresent(channelName -> {
                     validateString(channelName, "[채널 이름 변경 실패] 올바른 채널 이름 형식이 아닙니다.");
                     validateDuplicateValue(targetChannel.getChannelName(), channelName, "[채널 이름 변경 실패] 현재 채널 이름과 동일합니다.");
-                    targetChannel.updateChannelName(newChannelName);
+                    targetChannel.updateChannelName(channelUpdateRequestDTO.getChannelName());
                 });
 
+        // 채널 설명 변경
+        Optional.ofNullable(channelUpdateRequestDTO.getChannelDescription())
+                .ifPresent(channelDescription -> {
+                    validateString(channelDescription, "[채널 설명 변경 실패] 올바른 채널 설명 형식이 아닙니다.");
+                    validateDuplicateValue(targetChannel.getDescription(), channelDescription, "[채널 설명 변경 실패] 현재 채널 설명과 동일합니다.");
+                    targetChannel.updateChannelDescription(channelUpdateRequestDTO.getChannelDescription());
+                });
+
+        // 3. 수정된 채널 저장 및 응답 DTO 생성
         channelRepository.save(targetChannel);
-        return targetChannel;
+        return toResponseDTO(targetChannel);
     }
 
     // 채널 삭제
@@ -175,6 +190,12 @@ public class BasicChannelService implements ChannelService {
         if (currentMembers.stream().noneMatch(member -> member.equals(userId))) {
             throw new IllegalArgumentException("해당 채널에 존재하는 사용자가 아닙니다.");
         }
+    }
+
+    // 채널 엔티티 반환
+    public Channel findEntityById(UUID channelId) {
+        return channelRepository.findById(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
     }
 
     // 가장 최근 메시지 시간 정보 조회

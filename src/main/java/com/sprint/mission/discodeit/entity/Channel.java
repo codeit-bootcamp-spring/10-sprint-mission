@@ -17,7 +17,7 @@ public class Channel extends BaseEntity implements Serializable {
     private String channelName;         // 채널 이름 (변경 가능)
     private UUID userId;                // 채널 소유자 (변경 불가능)
     private List<UUID> members;         // 채널 참가자 (변경 가능)
-    private ChannelType type;           // CHAT, VOICE (변경 불가능)
+    private ChannelType type;           // PUBLIC, PRIVATE (변경 불가능)
     private String description;         // 채널 설명 (변경 가능)
 
     public Channel(PublicChannelCreateRequestDTO publicChannelCreateRequestDTO) {
@@ -47,6 +47,11 @@ public class Channel extends BaseEntity implements Serializable {
 
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateChannelDescription(String description) {
+        this.description = description;
         this.updatedAt = Instant.now();
     }
 
