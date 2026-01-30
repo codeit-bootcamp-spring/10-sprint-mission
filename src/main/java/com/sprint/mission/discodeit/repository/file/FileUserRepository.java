@@ -30,7 +30,7 @@ public class FileUserRepository implements UserRepository {
     @Override
     public Optional<User> findByUserNameAndPassword(String userName, String password) {
         return this.data.values().stream()
-                .filter(u -> u.getEmail().equals(userName) && u.getPassword().equals(password))
+                .filter(u -> u.getUserName().equals(userName) && u.getPassword().equals(password))
                 .findFirst();
     }
 
