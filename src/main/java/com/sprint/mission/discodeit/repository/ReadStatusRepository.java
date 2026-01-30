@@ -14,4 +14,11 @@ public interface ReadStatusRepository {
 //    List<ReadStatus> findAll();
     boolean existsById(UUID userId,UUID channelId);
     void deleteById(UUID userId,UUID channelId);
+
+    //특정 채널에서의 userId들
+    List<UUID> findUserIdsByChannelId(UUID channelId);
+    //특정 유저의 channelId들
+    List<UUID> findChannelIdsByUserId(UUID userId);
+    //특정 채널의 readStatus 삭제
+    void deleteByChannelId(UUID channelId);
 }
