@@ -46,7 +46,7 @@ public class User extends BaseEntity implements Serializable {
                 "email = " + email + ", " +
                 "nickName = " + nickName + ", " +
                 "userName = " + userName + ", " +
-                "password = " + password + ", " +
+//                "password = " + password + ", " +
                 "birthday = " + birthday + ", " +
 //                "joinChannelList = " + joinChannelList + ", " +
 //                "writeMessageList = " + writeMessageList +
