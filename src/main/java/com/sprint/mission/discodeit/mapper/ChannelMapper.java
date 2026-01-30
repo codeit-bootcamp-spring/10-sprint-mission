@@ -16,13 +16,15 @@ public class ChannelMapper {
     public static Channel toPublicChannelEntity(CreatePublicChannelRequestDTO dto) {
         return new Channel(
                 dto.channelName(),
+                dto.description(),
                 ChannelType.PUBLIC
         );
     }
 
-    public static Channel toPrivateChannelEntity(String channelName) {
+    public static Channel toPrivateChannelEntity(String channelName, String description) {
         return new Channel(
                 channelName,
+                description,
                 ChannelType.PRIVATE
         );
     }
@@ -31,6 +33,7 @@ public class ChannelMapper {
         return new ChannelResponseDTO(
                 channel.getId(),
                 channel.getChannelName(),
+                channel.getDescription(),
                 channel.getChannelType(),
                 channel.getJoinedUserIds()
         );

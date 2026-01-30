@@ -45,15 +45,15 @@ public class BasicChannelService implements ChannelService {
         // 유저 검증
         dto.joinedUserIds().forEach(id -> findUserOrThrow(id));
 
-        Channel channel = ChannelMapper.toPrivateChannelEntity("");
+        Channel channel = ChannelMapper.toPrivateChannelEntity(null, null);
 
-        for (UUID ids: dto.joinedUserIds()) {
+        for (UUID ids : dto.joinedUserIds()) {
             channel.addUser(ids);
         }
 
         channelRepository.save(channel);
 
-        for (UUID userId: channel.getJoinedUserIds()) {
+        for (UUID userId : channel.getJoinedUserIds()) {
             ReadStatus readStatus = new ReadStatus(userId, channel.getId(), currentTime);
             readStatusRepository.save(readStatus);
         }
@@ -97,18 +97,23 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelWithLastMessageDTO updateChannelName(
+    public ChannelWithLastMessageDTO updateChannel(
             UpdateChannelRequestDTO dto
     ) {
         Channel channel = findChannelOrThrow(dto.channelId());
 
         if (channel.getChannelType() == ChannelType.PRIVATE) {
-            throw new IllegalArgumentException("비공개 채널은 채널 이름을 바꿀 수 없습니다.");
+            throw new IllegalArgumentException("비공개 채널은 수정할 수 없습니다.");
         }
 
-        channel.updateChannelName(dto.newChannelName());
-        channelRepository.save(channel);
+        if (dto.newChannelName() != null) {
+            updateChannelName(dto, channel);
+        }
+        if (dto.newChannelDescription() != null) {
+            updateChannelDescription(dto, channel);
+        }
 
+        channelRepository.save(channel);
         return ChannelMapper.toWithLastMessage(channel, findLatestMessageAt(dto.channelId()));
     }
 
@@ -216,5 +221,23 @@ public class BasicChannelService implements ChannelService {
 
                 // 모든 DTO를 List로 모아서 반환
                 .toList();
+    }
+
+    private void updateChannelName(UpdateChannelRequestDTO dto, Channel channel) {
+        if (!dto.newChannelName().equals(channel.getChannelName())) {
+            if (channelRepository.existsByChannelName(dto.newChannelName())) {
+                throw new IllegalArgumentException("이미 사용중인 channelName입니다.");
+            }
+        }
+
+        channel.updateChannelName(dto.newChannelName());
+    }
+
+    private void updateChannelDescription(UpdateChannelRequestDTO dto, Channel channel) {
+        if (dto.newChannelDescription().equals(channel.getDescription())) {
+            throw new IllegalArgumentException("같은 description으로 바꿀 수 없습니다.");
+        }
+
+        channel.updateDescription(dto.newChannelDescription());
     }
 }

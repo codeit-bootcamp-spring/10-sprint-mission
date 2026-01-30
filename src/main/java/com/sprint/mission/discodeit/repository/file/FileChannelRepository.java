@@ -34,6 +34,12 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
+    public boolean existsByChannelName(String channelName) {
+        return data.values().stream()
+                .anyMatch(channel -> channel.getChannelName().equals(channelName));
+    }
+
+    @Override
     public void deleteById(UUID channelId) {
         data.remove(channelId);
         saveToFile();
