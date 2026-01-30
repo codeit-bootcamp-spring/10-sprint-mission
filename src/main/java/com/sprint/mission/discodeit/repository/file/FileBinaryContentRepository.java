@@ -1,6 +1,8 @@
-package com.sprint.mission.discodeit.repository;
+package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -8,8 +10,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class BinaryContentRepositoryImpl implements BinaryContentRepository{
-
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+public class FileBinaryContentRepository implements BinaryContentRepository {
     @Override
     public BinaryContent save(BinaryContent binaryContent) {
         return null;
@@ -17,7 +19,7 @@ public class BinaryContentRepositoryImpl implements BinaryContentRepository{
 
     @Override
     public Optional<BinaryContent> findById(UUID binaryContentId) {
-        return null;
+        return Optional.empty();
     }
 
     @Override
