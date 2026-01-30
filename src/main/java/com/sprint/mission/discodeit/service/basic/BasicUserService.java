@@ -89,9 +89,7 @@ public class BasicUserService implements UserService {
     @Override
     public User updateUserInfo(UserUpdateRequest request) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        ValidationMethods.validateId(request.userId());
-        User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new NoSuchElementException("해당 userId로 유저를 찾을 수 없습니다."));
+        User user = validateAndGetUserByUserId(request.userId());
 
         // blank(+null) 검증
         validateBlankUpdateParameters(request);
@@ -145,9 +143,7 @@ public class BasicUserService implements UserService {
     @Override
     public void deleteUser(UUID userId) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        ValidationMethods.validateId(userId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 userId로 유저를 찾을 수 없습니다."));
+        User user = validateAndGetUserByUserId(userId);
 
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 userId로 userStatus를 찾을 수 없습니다."));
@@ -166,6 +162,12 @@ public class BasicUserService implements UserService {
     }
 
     //// validation
+    // user ID null & user 객체 존재 확인
+    public User validateAndGetUserByUserId(UUID userId) {
+        ValidationMethods.validateId(userId);
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+    }
     // email이 이미 존재하는지 확인
     private void validateDuplicateEmail(String newEmail) {
         if (userRepository.existEmail(newEmail)) {
