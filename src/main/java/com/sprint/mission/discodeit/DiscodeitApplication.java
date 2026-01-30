@@ -34,12 +34,12 @@ public class DiscodeitApplication {
 		loadUser(userService);
 
 		// 유저 생성
-//		try {
-//			User user = setUser(userService);
-//			System.out.println("\n user = " + user);
-//		} catch (Exception e) {
-//			System.out.println(e);
-//		}
+		try {
+			User user = setUser(userService);
+			System.out.println("\n user = " + user);
+		} catch (Exception e) {
+			System.out.println(e);
+		}
 
 		// 로그인?
 		UserResponse loginUser = userLogin(authService);
@@ -49,9 +49,9 @@ public class DiscodeitApplication {
 		loadChannel(loginUser, channelService);
 		loadMessage(loginUser, channelService, messageService);
 
-//		// 채널 생성
+		// 채널 생성
 //		try {
-//			Channel channel = setChannel(loginUser, userService, channelService);
+//			Channel channel = setChannel(loginUser, channelService);
 //			System.out.println("\n channel = " + channel);
 //		} catch (Exception e) {
 //			System.out.println(e);
@@ -68,15 +68,16 @@ public class DiscodeitApplication {
 	// 로그인
 	static UserResponse userLogin(AuthService authService) {
 		System.out.println("\n========== hyun 로그인 ==========");
-		String un = "hyun"; // hyun / chung /
-		String pw = "hyun1234"; // hyun1234 / chung /
+		String un = "hyun"; // hyun / chung / jung /
+		String pw = "hyun1234"; // hyun1234 / chung / jung /
 		LoginRequest loginRequest = new LoginRequest(un, pw);
 		return authService.login(loginRequest);
 	}
 	// 유저 생성
 	static User setUser(UserService userService) {
 //		UserCreateRequest userCreateRequest = new UserCreateRequest("hyun@codeit.com", "hyun", "hyunNick", "hyun1234", "20000401", null);
-		UserCreateRequest userCreateRequest = new UserCreateRequest("chung@codeit.com", "chung", "chungNick", "chung", "20000401", null);
+//		UserCreateRequest userCreateRequest = new UserCreateRequest("chung@codeit.com", "chung", "chungNick", "chung", "20000401", null);
+		UserCreateRequest userCreateRequest = new UserCreateRequest("jung@codeit.com", "jung", "jungNick", "jung", "20000401", null);
 		return userService.createUser(userCreateRequest);
 	}
 	// 채널 생성
