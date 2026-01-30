@@ -4,9 +4,7 @@ import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.ChannelResponseDTO;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -15,6 +13,8 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -68,33 +68,46 @@ public class BasicChannelService implements ChannelService {
 
     // 채널 단건 조회
     @Override
-    public Channel searchChannel(UUID targetChannelId) {
-        return channelRepository.findById(targetChannelId)
+    public ChannelResponseDTO findById(UUID targetChannelId) {
+        // 1. 채널 존재 여부 확인
+        Channel targetChannel = channelRepository.findById(targetChannelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+
+        // 2. 채널 응답 DTO 생성 및 반환
+        return toResponseDTO(targetChannel);
     }
 
-    // 채널 다건 조회
+    // 공개 채널 전체 조회
     @Override
-    public List<Channel> searchChannelAll() {
-        return channelRepository.findAll();
+    public List<ChannelResponseDTO> findAll() {
+        // 1. 전체 채널 목록 조회
+        List<Channel> channels = channelRepository.findAll();
+
+        // 2. 전체 채널 목록 응답 DTO 생성 및 반환
+        return channelRepository.findAll().stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 
-    // 특정 유저가 참가한 채널 리스트 조회
-    public List<Channel> searchChannelsByUserId(UUID userId) {
-        userRepository.findById(userId).orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
+    // 비공개 채널 전체 조회 (해당 사용자가 참여한 전체 채널)
+    public List<ChannelResponseDTO> findAllByUserId(UUID userId) {
+        // 1. 사용자 존재 여부 확인
+        userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
 
-        List<Channel> channels = searchChannelAll();        // 함수가 실행된 시점에서 가장 최신 채널 목록
-
-        return channels.stream()
+        // 2. 해당 사용자가 참여한 전체 채널 목록 응답 DTO 생성 및 반환
+        return channelRepository.findAll().stream()
+                .filter(channel -> channel.getType() == ChannelType.PRIVATE)
                 .filter(channel -> channel.getMembers().stream()
                         .anyMatch(memberId -> memberId.equals(userId)))
+                .map(this::toResponseDTO)
                 .toList();
     }
 
     // 채널 정보 수정
     @Override
     public Channel updateChannel(UUID targetChannelId, String newChannelName) {
-        Channel targetChannel = searchChannel(targetChannelId);
+        Channel targetChannel = findById(targetChannelId);
 
         // 채널 이름 변경
         Optional.ofNullable(newChannelName)
@@ -108,22 +121,20 @@ public class BasicChannelService implements ChannelService {
         return targetChannel;
     }
 
-    @Override
-    public void updateChannel(UUID id, Channel channel) {}
-
     // 채널 삭제
     @Override
     public void deleteChannel(UUID targetChannelId) {
-        Channel targetChannel = searchChannel(targetChannelId);
+        Channel targetChannel = findById(targetChannelId);
 
         channelRepository.delete(targetChannel);
     }
 
     // 채널 참가자 초대
+    @Override
     public void inviteMembers(UUID targetUserId, UUID targetChannelId) {
         User newUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
-        Channel targetChannel = searchChannel(targetChannelId);
+        Channel targetChannel = findById(targetChannelId);
 
         validateMemberExists(targetUserId, targetChannelId);
 
@@ -132,10 +143,11 @@ public class BasicChannelService implements ChannelService {
     }
 
     // 채널 퇴장
+    @Override
     public void leaveMembers(UUID targetUserId, UUID targetChannelId) {
         User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
-        Channel targetChannel = searchChannel(targetChannelId);
+        Channel targetChannel = findById(targetChannelId);
 
         validateUserNotInChannel(targetUserId, targetChannelId);
 
@@ -165,15 +177,26 @@ public class BasicChannelService implements ChannelService {
         }
     }
 
+    // 가장 최근 메시지 시간 정보 조회
+    public Instant getLastMessageAt(UUID targetChannelId) {
+        return messageRepository.findAll().stream()
+                .filter(message -> message.getChannelId().equals(targetChannelId))
+                .max(Comparator.comparing(Message::getCreatedAt))
+                .map(Message::getCreatedAt)
+                .orElse(null);
+    }
+
     public ChannelResponseDTO toResponseDTO(Channel channel) {
         return ChannelResponseDTO.builder()
-                .channelId(channel.getId())
+                .id(channel.getId())
+                .userId(channel.getUserId())
                 .channelName(channel.getChannelName())
+                .members((channel.getType() == ChannelType.PRIVATE)? channel.getMembers() : List.of())
                 .channelType(channel.getType())
-                .members(channel.getMembers())
                 .description(channel.getDescription())
                 .createdAt(channel.getCreatedAt())
                 .updatedAt(channel.getUpdatedAt())
+                .lastMessageAt(getLastMessageAt(channel.getId()))
                 .build();
     }
 }
