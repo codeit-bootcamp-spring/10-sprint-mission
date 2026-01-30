@@ -1,7 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -17,22 +21,55 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
-
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
 
+    private final ReadStatusRepository readStatusRepository;
+
+    // Public 채널 생성
     @Override
-    public Channel createChannel(String channelName) {
-        Validation.notBlank(channelName, "채널 이름");
+    public Channel createPublicChannel(PublicChannelCreateRequest request) {
+        request.validate();
         Validation.noDuplicate(
                 channelRepository.findAll(),
-                ch -> ch.getChannelName().equals(channelName),
-                "이미 존재하는 채널명입니다: " + channelName
+                ch -> ch.getChannelName().equals(request.name()),
+                "이미 존재하는 채널명입니다: " + request.name()
         );
-        Channel channel = new Channel(channelName);
+
+        Channel channel = new Channel(request.name());
         channelRepository.save(channel);
         return channel;
     }
+
+    // Priavte 채널 생성 (DM... 1대1)
+    @Override
+    public Channel createPrivateChannel(PrivateChannelCreateRequest request) {
+        request.validate();
+        // 채널에 참여한 유저들 확인
+        List<User> participants = request.participantUserIds().stream()
+                .map(id -> userRepository.findById(id)
+                        .orElseThrow(()->new NoSuchElementException("참여 유저가 없습니다.")))
+                .toList();
+        // Private 채널 생성!!
+        // name 은 알아서? uuid string으로
+        String privateName = "AUTO: " + UUID.randomUUID();
+        Channel channel = new Channel(privateName);
+        //채널에 참가자 등록
+        for(User u : participants) {
+            channel.addParticipant(u);
+        }
+        // 채널 저장
+        channelRepository.save(channel);
+        // 참여 유저별 status 저장
+        for(User u:participants){
+            ReadStatus readStatus = new ReadStatus(u.getId(), channel.getId());
+            readStatusRepository.save(readStatus);
+        }
+        return channel;
+
+
+    }
+
     @Override
     public List<Channel> getChannelAll() {
         return channelRepository.findAll();

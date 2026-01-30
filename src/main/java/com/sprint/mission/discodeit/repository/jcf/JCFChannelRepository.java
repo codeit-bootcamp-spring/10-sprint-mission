@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.stereotype.Repository;
 
@@ -28,4 +29,6 @@ public class JCFChannelRepository implements ChannelRepository {
     public List<Channel> findAll() {
         return new ArrayList<>(data.values());
     }
+
+
 }
