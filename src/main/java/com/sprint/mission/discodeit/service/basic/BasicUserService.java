@@ -130,9 +130,8 @@ public class BasicUserService implements UserService {
             channel.removeUserId(userId);
             channelRepository.save(channel);
         });
-        contentRepository.deleteById(user.getProfileId());
         if(user.isProfileImageUploaded())
-            userRepository.deleteById(userId);
+            contentRepository.deleteById(user.getProfileId());
         userStatusRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
     }
