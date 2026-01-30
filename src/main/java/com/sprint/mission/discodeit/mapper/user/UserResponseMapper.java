@@ -1,0 +1,16 @@
+package com.sprint.mission.discodeit.mapper.user;
+
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+
+@Mapper(componentModel = "spring")
+public interface UserResponseMapper {
+    @Mapping(source = "user.id", target = "id")
+    @Mapping(source = "user.username", target = "username")
+    @Mapping(source = "user.email", target = "email")
+    @Mapping(target = "isOnline", expression = "java(status.isOnline())")
+    UserResponseDto toDto(User user, UserStatus status);
+}
