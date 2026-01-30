@@ -87,27 +87,60 @@ public class BasicUserService implements UserService {
     @Override
     public UserResponse updateUser(UserUpdateRequest request) {
         // DTO 검증
-        if (request == null || request.userId() == null) {
+        if (request == null || request.id() == null) {
             throw new RuntimeException("유저가 존재하지 않습니다.");
         }
 
         // 수정 대상 유저가 존재하는지 검증
-        User user = userRepository.findUserById(request.userId())
+        User user = userRepository.findUserById(request.id())
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
-        // 닉네님 중복 확인
-        validateUpdateUniqueness(user.getId(), request.nickname());
+        // 수정 DTO 데이터 확인
+        String newPassword = request.newPassword();
+        String newNickname = request.newNickname();
+        BinaryContentCreateRequest newProfile = request.newProfile();
 
-        // 유저 정보 수정
-        user.update(request.password(), request.nickname());
-
-        // 유저 프로필 이미지 변경
-        if (request.newProfile() != null) {
-            changeProfile(user, request.newProfile());
+        // 새로운 비밀번호가 blank면 예외
+        if (newPassword != null && newPassword.isBlank()) {
+            throw new RuntimeException("비밀번호가 필요합니다.");
         }
 
-        // 유저 저장
+        // 새로운 닉네임이 blank면 예외
+        if (newNickname != null) {
+            if (newNickname.isBlank()) {
+                throw new RuntimeException("닉네임이 필요합니다.");
+            }
+            // null, blank 모두 아니면 기존 닉네임과 일치하는지 확인
+            if (!newNickname.equals(user.getNickname())) {
+                // 새로운 닉네임이라면 중복 체크
+                validateUpdateUniqueness(user.getId(), newNickname);
+            }
+
+
+            validateUpdateUniqueness(user.getId(), newNickname);
+        }
+
+        // null이 아니면 새로운 데이터 주입, null이면 기존 데이터 유지
+        String resolvedPassword = (newPassword != null) ? newPassword : user.getPassword();
+        String resolvedNickname = (newNickname != null) ? newNickname : user.getNickname();
+
+        // null이 아니면 새로운 데이터 주입, null이면 기존 데이터 유지
+        UUID oldProfileId = user.getProfileId();
+        UUID resolvedProfileId = oldProfileId;
+        if (newProfile != null) {
+            // 새로운 프로필을 프로필 저장소에 저장
+            BinaryContent saved = saveProfile(newProfile);
+            resolvedProfileId = saved.getId();
+        }
+
+        // 유저 정보 수정 및 저장
+        user.update(resolvedPassword, resolvedNickname, resolvedProfileId);
         userRepository.saveUser(user);
+
+        // 프로필 교체 시에만 기존 파일 삭제
+        if (newProfile != null && oldProfileId != null && !oldProfileId.equals(resolvedProfileId)) {
+            binaryContentRepository.deleteById(oldProfileId);
+        }
 
         // 유저 상태 조회
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
@@ -115,6 +148,7 @@ public class BasicUserService implements UserService {
 
         return UserResponse.from(user, userStatus);
     }
+
 
     @Override
     public void deleteUser(UUID userId) {
@@ -156,10 +190,8 @@ public class BasicUserService implements UserService {
     }
 
     private void validateUpdateUniqueness(UUID userId, String newNickname) {
-        if (newNickname != null && !newNickname.isBlank()) {
-            if (userRepository.existsByNicknameExceptUserId(newNickname, userId)) {
-                throw new RuntimeException("이미 사용 중인 닉네임입니다.");
-            }
+        if (userRepository.existsByNicknameExceptUserId(newNickname, userId)) {
+            throw new RuntimeException("이미 사용 중인 닉네임입니다.");
         }
     }
 
@@ -173,20 +205,5 @@ public class BasicUserService implements UserService {
                 request.bytes()
         );
         return binaryContentRepository.save(binaryContent);
-    }
-
-    private void changeProfile(User user, BinaryContentCreateRequest request) {
-        // 기존 프로필 이미지 ID 조회
-        UUID oldProfileId = user.getProfileId();
-        // 새로운 프로필 이미지 저장
-        BinaryContent saved = saveProfile(request);
-
-        // 유저 프로필 이미지 변경
-        user.changeProfileId(saved.getId());
-
-        // 기존 프로필 이미지 삭제
-        if (oldProfileId != null && !oldProfileId.equals(saved.getId())) {
-            binaryContentRepository.deleteById(oldProfileId);
-        }
     }
 }

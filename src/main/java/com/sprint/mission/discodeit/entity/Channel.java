@@ -17,7 +17,6 @@ public class Channel implements Serializable {
     private String name;
 
     public Channel(String name) {
-
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
@@ -25,15 +24,9 @@ public class Channel implements Serializable {
     }
 
     public void update(String newName) {
-        boolean anyValueUpdated = false;
-        if (newName != null && !newName.equals(this.name)) {
-            this.name = newName;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
+        this.name = newName;
+        // 업데이트 시간 갱신
+        this.updatedAt = Instant.now();
     }
 
     @Override

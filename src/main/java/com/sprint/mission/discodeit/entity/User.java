@@ -22,10 +22,7 @@ public class User implements Serializable {
     private String nickname;
     private UUID profileId; // BinaryContent
 
-    public User(String email,
-                String password,
-                String nickname,
-                UUID profileId) {
+    public User(String email, String password, String nickname, UUID profileId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
@@ -36,27 +33,12 @@ public class User implements Serializable {
         this.profileId = profileId;
     }
 
-    public void update(String newPassword, String newNickname) {
-        boolean anyValueUpdated = false;
-        if (newPassword != null && !newPassword.equals(this.password)) {
-            this.password = newPassword;
-            anyValueUpdated = true;
-        }
-        if (newNickname != null && !newNickname.equals(this.nickname)) {
-            this.nickname = newNickname;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
-    }
-
-    public void changeProfileId(UUID newProfileId) {
-        if (!Objects.equals(this.profileId, newProfileId)) {
-            this.profileId = newProfileId;
-            this.updatedAt = Instant.now();
-        }
+    public void update(String newPassword, String newNickname, UUID newProfileId) {
+        this.password = newPassword;
+        this.nickname = newNickname;
+        this.profileId = newProfileId;
+        // 업데이트 시간 갱신
+        this.updatedAt = Instant.now();
     }
 
     @Override

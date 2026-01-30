@@ -24,6 +24,7 @@ public class Message implements Serializable {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
+
         this.channelId = channelId;
         this.authorId = authorId;
         this.content = content;
@@ -39,15 +40,9 @@ public class Message implements Serializable {
     }
 
     public void update(String newContent) {
-        boolean anyValueUpdated = false;
-        if (newContent != null && !newContent.equals(this.content)) {
-            this.content = newContent;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
+        this.content = newContent;
+        // 업데이트 시간 갱신
+        this.updatedAt = Instant.now();
     }
 
     @Override
