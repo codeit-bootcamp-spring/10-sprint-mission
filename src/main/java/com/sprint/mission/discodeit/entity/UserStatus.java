@@ -32,8 +32,8 @@ public class UserStatus extends BaseEntity implements Serializable {
 
     // update
     // 유저 온라인 상태 주기적? 업데이트?
-    public void updateLastOnlineTime() {
-        this.lastOnlineTime = Instant.now();
+    public void updateLastOnlineTime(Instant lastOnlineTime) {
+        this.lastOnlineTime = lastOnlineTime;
         updateTime();
     }
 

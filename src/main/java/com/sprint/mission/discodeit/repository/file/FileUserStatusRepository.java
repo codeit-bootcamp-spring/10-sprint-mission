@@ -44,4 +44,10 @@ public class FileUserStatusRepository implements UserStatusRepository {
         data.remove(userStatusId);
         fileObjectStore.saveData();
     }
+
+    @Override
+    public boolean existUserStatus(UUID userId) {
+        return data.values().stream()
+                .anyMatch(userStatus -> userStatus.getUserId().equals(userId));
+    }
 }
