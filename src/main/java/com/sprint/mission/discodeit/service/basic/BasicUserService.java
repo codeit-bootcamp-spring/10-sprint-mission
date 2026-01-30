@@ -56,14 +56,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserInfoWithStatus getUser(UUID userId) {
+    public UserInfoWithStatus findUser(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
         return toUserInfoWithStatus(user);
     }
 
     @Override
-    public List<UserInfoWithStatus> getAllUsers() {
+    public List<UserInfoWithStatus> findAll() {
         return userRepository.findAll()
                 .stream()
                 .map(this::toUserInfoWithStatus)
@@ -71,7 +71,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserInfo> getUsersByChannelId(UUID channelId) {
+    public List<UserInfo> findAllByChannelId(UUID channelId) {
         return userRepository.findAll()
                 .stream()
                 .filter(user -> user.getChannelIds().contains(channelId))

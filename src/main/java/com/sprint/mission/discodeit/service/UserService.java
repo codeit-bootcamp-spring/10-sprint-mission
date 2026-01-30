@@ -7,9 +7,9 @@ import java.util.UUID;
 
 public interface UserService {
     UserInfoWithProfile createUser(UserCreateInfo userInfo);
-    UserInfoWithStatus getUser(UUID userId);
-    List<UserInfoWithStatus> getAllUsers();
-    List<UserInfo> getUsersByChannelId(UUID channelId);
+    UserInfoWithStatus findUser(UUID userId);
+    List<UserInfoWithStatus> findAll();
+    List<UserInfo> findAllByChannelId(UUID channelId);
     UserInfo updateUser(UserUpdateInfo updateInfo);
     void deleteUser(UUID userId);
 }
