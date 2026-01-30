@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.NoSuchElementException;
 
 @Service
@@ -34,7 +35,7 @@ public class BasicAuthService implements AuthService {
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않은 userStatus입니다."));
 
         // 온라인 상태 업데이트
-        userStatus.updateLastOnlineTime();
+        userStatus.updateLastOnlineTime(Instant.now());
         userStatusRepository.save(userStatus);
 
         return createUserInfo(user, userStatus);
