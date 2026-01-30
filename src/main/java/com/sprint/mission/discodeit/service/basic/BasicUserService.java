@@ -84,7 +84,11 @@ public class BasicUserService implements UserService {
     @Override
     public UserResponseDTO findByUserId(UUID userId) {
         return UserMapper.toResponse(
-                findUserInfoById(userId), userStatusRepository.findByUserId(userId)
+                findUserInfoById(userId),
+                userStatusRepository.findByUserId(userId)
+                        .orElseThrow(() -> new NoSuchElementException(
+                                "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
+                        ))
         );
     }
 
@@ -105,6 +109,9 @@ public class BasicUserService implements UserService {
         return UserMapper.toResponse(
                 user,
                 userStatusRepository.findByUserId(dto.userId())
+                        .orElseThrow(() -> new NoSuchElementException(
+                                "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + dto.userId()
+                        ))
         );
     }
 
@@ -113,7 +120,10 @@ public class BasicUserService implements UserService {
         User user = findUserInfoById(userId);
         UUID binaryContentId = user.getProfileImageId();
 
-        userStatusRepository.deleteById(userStatusRepository.findByUserId(userId).getId());
+        userStatusRepository.deleteById(userStatusRepository.findByUserId(userId)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
+                )).getId());
         if (binaryContentId != null){
             binaryContentRepository.deleteById(binaryContentId);
         }
@@ -141,7 +151,10 @@ public class BasicUserService implements UserService {
     }
 
     private void updateUserStatus(UpdateUserRequestDTO dto) {
-        UserStatus status = userStatusRepository.findByUserId(dto.userId());
+        UserStatus status = userStatusRepository.findByUserId(dto.userId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + dto.userId()
+                ));
         status.updateStatusType(dto.statusType());
         userStatusRepository.save(status);
     }
