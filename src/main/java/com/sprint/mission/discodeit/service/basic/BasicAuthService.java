@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -14,6 +15,7 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public User login(LoginDto.LoginRequest request) {
@@ -23,7 +25,7 @@ public class BasicAuthService implements AuthService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다:" + username));
 
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
         }
 

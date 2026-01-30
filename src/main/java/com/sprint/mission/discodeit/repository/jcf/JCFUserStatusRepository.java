@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
@@ -42,8 +41,13 @@ public class JCFUserStatusRepository implements UserStatusRepository {
 
     @Override
     public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
+    }
+
+    @Override
+    public boolean existsByUserId(UUID userId) {
         return this.data.values().stream()
-                .anyMatch(userStatus -> userStatus.getUserId().equals(id));
+                .anyMatch(userStatus -> userStatus.getUserId().equals(userId));
     }
 
     @Override

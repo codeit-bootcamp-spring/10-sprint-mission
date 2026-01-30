@@ -109,6 +109,11 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     @Override
+    public boolean existsByUserId(UUID userId) {
+        return findByUserId(userId).isPresent();
+    }
+
+    @Override
     public void deleteById(UUID id) {
         Path path = resolvePath(id);
         try {

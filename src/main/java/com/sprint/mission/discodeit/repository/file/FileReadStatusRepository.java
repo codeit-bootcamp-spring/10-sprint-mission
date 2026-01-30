@@ -109,6 +109,13 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
+    public boolean existsByUserIdAndChannelId(UUID userId, UUID channelId) {
+        return this.findAllByUserId(userId)
+                .stream()
+                .anyMatch(rs -> rs.getChannelId().equals(channelId));
+    }
+
+    @Override
     public boolean existsById(UUID id) {
         Path path = resolvePath(id);
         return Files.exists(path);

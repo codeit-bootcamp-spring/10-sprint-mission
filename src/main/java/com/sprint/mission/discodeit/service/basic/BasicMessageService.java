@@ -34,7 +34,9 @@ public class BasicMessageService implements MessageService {
             throw new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + request.authorId());
         }
 
-        List<UUID> attachmentIds = request.attachments().stream()
+        List<UUID> attachmentIds = Optional.ofNullable(request.attachments())
+                .orElse(List.of())
+                .stream()
                 .map(this::saveAttachments)
                 .toList();
 
@@ -55,15 +57,23 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
+        if(!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("해당 채널을 찾을 수 없습니다: "  + channelId);
+        }
         return messageRepository.findAllByChannelId(channelId);
     }
 
     @Override
     public Message update(UUID messageId, MessageDto.UpdateRequest request) {
         String newContent = request.content();
-        if (newContent == null) {
-            delete(messageId); // 메시지를 수정할 때 빈 메시지로 하면 삭제됨
-        }
+
+        // 메시지를 수정할 때 빈 메시지로 바꿀 때 삭제되는 로직을 구현하려고 하였음
+        // 그러나 삭제 로직이 업데이트에 들어있어서 책임 분리가 필요함
+        // 실제 서비스 시에는 프론트엔드에서 빈 메시지로 수정 시에 delete를 호출하도록 하는게 맞는 설계일 듯 함
+//        if (newContent == null) {
+//            delete(messageId); // 메시지를 수정할 때 빈 메시지로 하면 삭제됨
+//            return null;
+//        }
 
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다: " + messageId));

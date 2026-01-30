@@ -33,13 +33,11 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel create(ChannelDto.CreatePrivateRequest request) {
-        request.memberIds() // 채널 멤버가 실제로 있는 유저인지 확인
-                .forEach(userId -> {
-                    userRepository.findById(userId)
-                            .orElseThrow(NoSuchElementException::new);
-                        }
+        Set<UUID> memberIds = new HashSet<>(request.memberIds()); // 유저 중복 검출
 
-                );
+        memberIds.forEach(userId -> // 멤버가 실제로 존재하는 유저인지 확인
+                userRepository.findById(userId)
+                            .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다." + userId)));
 
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         Channel createChannel = channelRepository.save(channel);
@@ -60,16 +58,19 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<ChannelDto.Response> findAllByUserId(UUID userId) {
-
+        if (!userRepository.existsById(userId)) {
+            throw new RuntimeException("해당 유저를 찾을 수 없습니다." + userId);
+        }
 
         // 유저가 가입한 private 채널 목록
-        Set<UUID> userJoinedPrivateChannelIds = readStatusRepository.findAllByUserId(userId).stream()
+        Set<UUID> userJoinedPrivateChannelIds =
+                readStatusRepository.findAllByUserId(userId).stream()
                 .map(ReadStatus::getChannelId)
                 .collect(Collectors.toSet());
 
         // 모든 채널에서
         return channelRepository.findAll().stream()
-                .filter(channel ->
+                .filter(channel -> // 아래의 조건이 참이면 가져옴
                         channel.getType() == ChannelType.PUBLIC // 채널이 public이거나
                                 || userJoinedPrivateChannelIds.contains(channel.getId()) // 유저가 가입한 private 채널이거나
                 )

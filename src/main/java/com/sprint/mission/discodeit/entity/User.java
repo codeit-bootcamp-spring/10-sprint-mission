@@ -28,7 +28,7 @@ public class User implements Serializable {
         this.email = email;
         this.password = password;
         //
-        this.profileId = UUID.randomUUID();
+        this.profileId = profileId;
     }
 
     public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
