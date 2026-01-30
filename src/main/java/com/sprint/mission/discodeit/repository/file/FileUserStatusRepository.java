@@ -2,11 +2,13 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
+@Profile("file")
 public class FileUserStatusRepository extends BaseFileRepository<UserStatus> implements UserStatusRepository {
     public FileUserStatusRepository() {
         super("user_status.ser");

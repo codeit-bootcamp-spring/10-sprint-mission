@@ -2,11 +2,13 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
+@Profile("file")
 public class FileBinaryContentRepository extends BaseFileRepository<BinaryContent> implements BinaryContentRepository {
     public FileBinaryContentRepository() {
         super("contents.ser");
