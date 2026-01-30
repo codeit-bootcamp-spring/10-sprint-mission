@@ -28,11 +28,18 @@ public class FileObjectStore implements Serializable {
     }
 
     public void saveData() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(storagePath.toFile()))) {
-            oos.writeObject(this);
+        try {
+            if (storagePath.getParent() != null) {
+                Files.createDirectories(storagePath.getParent());
+            }
+
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(storagePath.toFile()))) {
+                oos.writeObject(this);
+            }
         } catch (IOException | IllegalStateException e) {
             System.out.println(e);
         }
+
     }
     public static FileObjectStore loadData(Path storagePath) {
         // 파일 존재 X
