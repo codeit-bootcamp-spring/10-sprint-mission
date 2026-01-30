@@ -1,27 +1,47 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class Channel extends BaseEntity implements Serializable {
-    private static final long serialVersion = 1L;
-
+    private static final long serialVersionUID = 1L;
+    private UUID id;
+    private long createdAt;
+    private long updatedAt;
+    //
+    private ChannelType type;
     private String name;
     private String description;
 
-    public Channel(String name, String description) {
-//        this.id = UUID.randomUUID();
-//        this.createdAt = System.currentTimeMillis();
-//        this.updatedAt = this.createdAt;
-
+    public Channel(ChannelType type, String name, String description) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now().getEpochSecond();
+        //
+        this.type = type;
         this.name = name;
         this.description = description;
     }
 
-    public void updateChannel (String name, String description) {
-        this.name = name;
-        this.description = description;
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
+
     public void updateChannelName(String name) {
         this.name = name;
     }
@@ -30,24 +50,4 @@ public class Channel extends BaseEntity implements Serializable {
         this.description = description;
     }
 
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-
-
 }
-
