@@ -15,6 +15,4 @@ public interface UserService {
     UserDto.Response update(UserDto.UpdateRequest request);
 
     void delete(UUID id);
-
-    void save(User user);
 }

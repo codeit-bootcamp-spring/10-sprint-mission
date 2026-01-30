@@ -1,17 +1,16 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.*;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,32 +29,18 @@ public class BasicUserService implements UserService {
     @Autowired(required = false)
     private BinaryContentRepository  binaryContentRepository;
 
-    private ChannelService channelService;
-    private MessageService messageService;
-
-    public void setChannelService(ChannelService channelService) {
-        this.channelService = channelService;
-    }
-
-    public void setMessageService(MessageService messageService) {
-        this.messageService = messageService;
-    }
-
-    @Override
-    public void save(User user) {
-        userRepository.save(user);
-    }
-
     @Override
     public UserDto.Response create(UserDto.CreateRequest request) {
         validateDuplicateEmail(request.email());
         validateDuplicateUserName(request.username());
 
+        UUID profileImageId = processImage(null, request.profileImage());
+
         User newUser = new User(
                 request.username(),
                 request.email(),
                 request.password(),
-                request.profileId()
+                profileImageId
         );
         UserStatus status = new UserStatus(newUser.getId());
         newUser.setStatus(status);
@@ -69,19 +54,24 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserDto.Response findById(UUID id) {
-        return convertToResponse(findUserEntityById(id));
+        User user = findUserEntityById(id);
+        loadUserStatus(user);
+        return convertToResponse(user);
     }
 
     @Override
     public List<UserDto.Response> findAll() {
         return userRepository.findAll().stream()
+                .peek(this ::loadUserStatus)
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public List<User> findUsersByChannelId(UUID channelId) {
-        return channelService.findById(channelId).getMembers();
+        return channelRepository.findById(channelId)
+                .map(channel -> channel.getMembers())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 채널입니다."));
     }
 
     @Override
@@ -92,11 +82,13 @@ public class BasicUserService implements UserService {
             validateDuplicateEmail(request.email());
         }
 
+        UUID newProfileId = processImage(user.getProfileId(), request.profileImage());
+
         user.update(
                 request.username(),
                 request.email(),
                 request.password(),
-                request.profileId()
+                newProfileId
         );
 
         userRepository.save(user);
@@ -154,6 +146,7 @@ public class BasicUserService implements UserService {
         }
     }
 
+    // [헬퍼 메서드]: 엔티티를 클라이언트 응답용 DTO로 변환 및 데이터 가공
     private UserDto.Response convertToResponse(User user) {
         return new UserDto.Response(
                 user.getId(),
@@ -162,5 +155,32 @@ public class BasicUserService implements UserService {
                 user.getProfileId(),
                 user.getStatus() != null && user.getStatus().isOnline()
         );
+    }
+
+    // [헬퍼 메서드]: 이미지 생성(create) 및 기존 이미지 수정(update)
+    private UUID processImage(UUID existingId, UserDto.BinaryContentDto imageDto) {
+        if (imageDto == null || binaryContentRepository == null) return existingId;
+
+        // 기존 이미지가 있으면 삭제 (Update)
+        if (existingId != null) {
+            binaryContentRepository.delete(existingId);
+        }
+
+        // 새 이미지 저장
+        BinaryContent newImage = new BinaryContent(
+                UUID.randomUUID(),
+                imageDto.fileName(),
+                imageDto.data(),
+                Instant.now()
+        );
+        binaryContentRepository.save(newImage);
+        return newImage.getId();
+    }
+
+    // [헬퍼 메서드]: 조회(findById, findAll) 시 회원 온라인 상태 확인
+    private void loadUserStatus(User user) {
+        if (userStatusRepository != null) {
+            userStatusRepository.findById(user.getId()).ifPresent(user::setStatus);
+        }
     }
 }

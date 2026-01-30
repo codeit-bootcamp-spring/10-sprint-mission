@@ -1,15 +1,18 @@
 package com.sprint.mission.discodeit.dto;
 
-import com.sprint.mission.discodeit.entity.UserStatus;
-
 import java.util.UUID;
 
 public class UserDto {
+    public record BinaryContentDto(
+            String fileName,
+            byte[] data
+    ) {}
+
     public record CreateRequest(
             String username,
             String email,
             String password,
-            UUID profileId
+            BinaryContentDto profileImage
     ) {}
     
     public record UpdateRequest(
@@ -17,7 +20,7 @@ public class UserDto {
             String username,
             String email,
             String password,
-            UUID profileId
+            BinaryContentDto profileImage
     ) {}
     
     public record Response(
