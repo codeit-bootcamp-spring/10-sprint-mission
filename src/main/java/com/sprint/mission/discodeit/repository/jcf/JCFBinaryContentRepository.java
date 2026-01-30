@@ -4,9 +4,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
@@ -25,7 +23,12 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public void delete(UUID id){
+    public List<BinaryContent> findAll(){
+        return new ArrayList<>(data.values());
+    }
+
+    @Override
+    public void deleteById(UUID id){
         data.remove(id);
     }
 }

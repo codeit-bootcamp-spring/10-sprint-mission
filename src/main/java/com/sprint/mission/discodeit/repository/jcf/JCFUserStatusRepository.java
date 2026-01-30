@@ -4,9 +4,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
@@ -23,6 +21,11 @@ public class JCFUserStatusRepository implements UserStatusRepository {
     @Override
     public Optional<UserStatus> findByUserId(UUID userId){
         return Optional.ofNullable(data.get(userId));
+    }
+
+    @Override
+    public List<UserStatus> findAll(){
+        return new ArrayList<>(data.values());
     }
 
     // 유저 삭제 시 해당 유저의 접속 상태 데이터 삭제
