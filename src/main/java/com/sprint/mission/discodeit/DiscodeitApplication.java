@@ -34,9 +34,7 @@ public class DiscodeitApplication {
 		);
 	}
 
-	static ChannelResponseDto setupPrivateChannel(ChannelService channelService) {
-		List<UUID> userIds = new ArrayList<>();
-		userIds.add(UUID.randomUUID());
+	static ChannelResponseDto setupPrivateChannel(ChannelService channelService, List<UUID> userIds) {
 		return channelService.createPrivateChannel(
 				new PrivateChannelCreateRequestDto(userIds)
 		);
@@ -56,11 +54,14 @@ public class DiscodeitApplication {
 		MessageService messageService = context.getBean(MessageService.class);
 
 		// 셋업
-		UserResponseDto userResponseDto = setupUser(userService);
+		UserResponseDto user1 = setupUser(userService);
 		ChannelResponseDto channel1 = setupPublicChannel(channelService);
-		//ChannelResponseDto channel2 = setupPrivateChannel(channelService);
+
+		List<UUID> userIds = new ArrayList<>();
+		userIds.add(user1.id());
+		ChannelResponseDto channel2 = setupPrivateChannel(channelService, userIds);
 		// 테스트
-		//messageCreateTest(messageService, channel, user);
+		//messageCreateTest(messageService, channel1, user);
 	}
 
 }

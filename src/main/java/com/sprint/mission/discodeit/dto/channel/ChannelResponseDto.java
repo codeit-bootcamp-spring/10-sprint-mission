@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record ChannelResponseDto(
+        UUID id,
         Instant lastMessageTime,
         String name,
         String description,

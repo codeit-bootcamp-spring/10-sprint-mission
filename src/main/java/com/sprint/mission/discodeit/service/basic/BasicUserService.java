@@ -71,11 +71,7 @@ public class BasicUserService implements UserService {
         UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId())
                 .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + targetUser.getId() + " not found"));
 
-        return new UserResponseDto(
-                targetUser.getUsername(),
-                targetUser.getEmail(),
-                targetUserStatus.isOnline()
-        );
+        return userResponseMapper.toDto(targetUser, targetUserStatus);
     }
 
     @Override

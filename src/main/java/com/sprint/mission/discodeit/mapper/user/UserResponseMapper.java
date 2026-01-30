@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserResponseMapper {
+    @Mapping(source = "user.id", target = "id")
     @Mapping(source = "user.username", target = "username")
     @Mapping(source = "user.email", target = "email")
     @Mapping(target = "isOnline", expression = "java(status.isOnline())")
