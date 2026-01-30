@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.request;
+package com.sprint.mission.discodeit.dto.request.channel;
 
 import com.sprint.mission.discodeit.entity.ChannelType;
 import jakarta.validation.constraints.NotBlank;
@@ -8,13 +8,16 @@ import lombok.Getter;
 import java.util.UUID;
 
 @Getter
-public class PublicChannelCreateRequestDTO {
+public class ChannelUpdateRequestDTO {
     @NotNull
-    private UUID userId;
+    private UUID id;
 
     @NotNull
+    private ChannelType channelType;
+
+    @NotBlank
     private String channelName;
 
     @NotBlank
-    private String description;
+    private String channelDescription;
 }

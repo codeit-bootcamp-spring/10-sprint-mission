@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.binaryContent.BinaryContentCreateRequestDTO;
 import lombok.Getter;
 
 import java.time.Instant;

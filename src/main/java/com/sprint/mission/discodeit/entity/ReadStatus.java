@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.readStatus.ReadStatusCreateRequestDTO;
 import lombok.Getter;
 
 import java.time.Instant;

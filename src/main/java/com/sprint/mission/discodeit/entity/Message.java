@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.request.MessageCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequestDTO;
 import lombok.Getter;
 
 import java.io.Serializable;

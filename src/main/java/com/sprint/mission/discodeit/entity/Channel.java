@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateRequestDTO;
 import lombok.Getter;
 
 import java.io.Serializable;
