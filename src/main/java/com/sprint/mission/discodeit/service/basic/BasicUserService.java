@@ -38,7 +38,7 @@ public class BasicUserService implements UserService {
         User newUser = new User(userCreateRequestDTO);
         userRepository.save(newUser);
 
-        UserStatus newUserStatus = new UserStatus(userCreateRequestDTO.getUserStatusCreateRequestDTO());
+        UserStatus newUserStatus = new UserStatus(userCreateRequestDTO.getUserId());
         userStatusRepository.save(newUserStatus);
 
         // 3. 선택적 프로필 이미지 생성 및 저장

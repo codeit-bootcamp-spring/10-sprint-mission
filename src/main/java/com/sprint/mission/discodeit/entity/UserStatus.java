@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequestDTO;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.time.Instant;
@@ -15,10 +15,10 @@ public class UserStatus extends BaseEntity {
     private UserStatusType status;          // 사용자 접속 상태 (변경 가능)
     private Instant lastOnlineTime;         // 마지막 접속 시간 (변경 가능)
 
-    public UserStatus(UserStatusCreateRequestDTO userStatusCreateRequestDTO) {
+    public UserStatus(UUID userId) {
         this.id = UUID.randomUUID();
-        this.userId = userStatusCreateRequestDTO.getUserId();
-        this.status = userStatusCreateRequestDTO.getUserStatusType();
+        this.userId = userId;
+        this.status = ONLINE;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.lastOnlineTime = Instant.now();
