@@ -2,7 +2,9 @@ package com.sprint.mission.discodeit.util;
 
 import com.sprint.mission.discodeit.entity.ChannelType;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class Validators {
 
@@ -27,11 +29,18 @@ public class Validators {
         requireNotBlank(userPassword, "userPassword");
     }
 
-    public static void validationChannel(ChannelType type, String channelName, String channelDescription) {
-        requireNonNull(type, "type");
-        requireNotBlank(channelName, "channelName");
-        requireNotBlank(channelDescription, "channelDescription");
+    public static void validateCreatePublicChannel(String name, String description) {
+        requireNotBlank(name, "channelName");
+        requireNotBlank(description, "channelDescription");
     }
+
+    public static void validateCreatePrivateChannel(List<UUID> joinedUserIds) {
+        if (joinedUserIds == null || joinedUserIds.isEmpty()) {
+            throw new IllegalArgumentException("joinedUserIds는 필수입니다.");
+        }
+    }
+
+
 
 
 

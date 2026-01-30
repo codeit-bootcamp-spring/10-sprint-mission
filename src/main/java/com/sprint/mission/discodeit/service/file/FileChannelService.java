@@ -33,12 +33,12 @@ public class FileChannelService implements ChannelService {
     }
 
     @Override
-    public Channel readChannel(UUID id) {
+    public Channel find(UUID id) {
         return validateExistenceChannel(id);
     }
 
     @Override
-    public List<Channel> readAllChannel() {
+    public List<Channel> findAllByUserId() {
         return fileChannelRepository.findAll();
     }
 

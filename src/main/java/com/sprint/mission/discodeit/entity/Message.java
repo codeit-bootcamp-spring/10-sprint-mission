@@ -14,6 +14,8 @@ public class Message extends CommonEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     private final Channel channel;
     private final User user;
+    private UUID authorId;
+    private UUID channelId;
     private String content;
     List<UUID> attachmentIds = new ArrayList<>();
 

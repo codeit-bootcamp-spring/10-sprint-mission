@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -26,7 +25,7 @@ public class JCFMessageService implements MessageService {
     @Override
     public Message createMessage(String content, UUID channelId, UUID userId) {
         Validators.validationMessage(content);
-        Channel persistedChannel = channelService.readChannel(channelId);
+        Channel persistedChannel = channelService.find(channelId);
         User persistedUser = userService.find(userId);
         Message message = new Message(content, persistedChannel, persistedUser);
 
@@ -70,7 +69,7 @@ public class JCFMessageService implements MessageService {
     }
 
     public List<Message> readMessagesByChannel(UUID channelId) {
-        Channel channel = channelService.readChannel(channelId);
+        Channel channel = channelService.find(channelId);
         return channel.getMessages();
     }
 

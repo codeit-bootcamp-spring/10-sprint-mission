@@ -63,7 +63,7 @@ public class FileUserService implements UserService {
 
 
     @Override
-    public List<User> readUsersByChannel(UUID channelId) {
+    public List<User> findUsersByChannel(UUID channelId) {
         return fileUserRepository.findAll().stream()
                 .filter(user -> user.getJoinedChannels().stream()
                         .anyMatch(ch -> channelId.equals(ch.getId())))

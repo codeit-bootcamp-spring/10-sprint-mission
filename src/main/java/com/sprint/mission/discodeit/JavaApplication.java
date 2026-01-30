@@ -79,21 +79,21 @@ public class JavaApplication {
 
         //---------------------------------2. channel---------------------------------
         // 2-1. channel 등록 및 조회
-        Channel channel1 = channelService.createChannel(ChannelType.PUBLIC,"채널1", "채널1 입니다.");
+        Channel channel1 = channelService.createPublic(ChannelType.PUBLIC,"채널1", "채널1 입니다.");
         System.out.println("2-1. 채널 등록 완료: " + channel1.getType() + " "
                 + channel1.getChannelName());
 
-        Channel channel2 = channelService.createChannel(ChannelType.PRIVATE,"채널2", "채널2 입니다.");
+        Channel channel2 = channelService.createPublic(ChannelType.PRIVATE,"채널2", "채널2 입니다.");
         System.out.println("2-1. 채널 등록 완료: " + channel2.getType() + " "
                 + channel2.getChannelName());
 
-        Channel channel3 = channelService.createChannel(ChannelType.PUBLIC,"채널3", "채널3 입니다.");
+        Channel channel3 = channelService.createPublic(ChannelType.PUBLIC,"채널3", "채널3 입니다.");
         System.out.println("2-1. 채널 등록 완료: " + channel3.getType() + " "
                 + channel3.getChannelName());
         System.out.println();
 
         // 2-2. user 다건 조회
-        System.out.println("2-2. 채널 다건 조회: " + "총" + channelService.readAllChannel().size() + "개");
+        System.out.println("2-2. 채널 다건 조회: " + "총" + channelService.findAllByUserId().size() + "개");
         System.out.println();
 
         // 2-3. channel 정보 수정 및 조회
@@ -118,7 +118,7 @@ public class JavaApplication {
         System.out.println();
 
         // 2-5. channel 다건 재조회로 정보 삭제 확인
-        System.out.println("2-5. channel 다건 재조회: " + "총" + channelService.readAllChannel().size() + "개");
+        System.out.println("2-5. channel 다건 재조회: " + "총" + channelService.findAllByUserId().size() + "개");
         System.out.println();
 
 //        ---------------------------------3. message---------------------------------
@@ -158,7 +158,7 @@ public class JavaApplication {
         channelService.joinChannel(channel2.getId(), user2.getId());
 
 //         1-1. channel 참가자 목록(name) 조회
-        List<User> userList = userService.readUsersByChannel(channel1.getId());
+        List<User> userList = userService.findUsersByChannel(channel1.getId());
         List<String> userNames = userList.stream()
                 .map(User::getUserName)
                 .toList();

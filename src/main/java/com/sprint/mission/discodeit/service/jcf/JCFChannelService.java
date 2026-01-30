@@ -2,10 +2,8 @@ package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.Validators;
@@ -30,12 +28,12 @@ public class JCFChannelService implements ChannelService {
     }
 
     @Override
-    public Channel readChannel(UUID id) {
+    public Channel find(UUID id) {
         return validateExistenceChannel(id);
     }
 
     @Override
-    public List<Channel> readAllChannel() {
+    public List<Channel> findAllByUserId() {
         return channelRepository.findAll();
     }
 
@@ -61,13 +59,13 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void deleteChannel(UUID id) {
-        Channel channel = readChannel(id);
+        Channel channel = find(id);
         channelRepository.deleteById(id);
     }
 
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
-        Channel channel = readChannel(channelId);
+        Channel channel = find(channelId);
         User user = userService.find(userId);
 
         boolean alreadyJoined = channel.getJoinedUsers().stream()
@@ -83,7 +81,7 @@ public class JCFChannelService implements ChannelService {
 
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
-        Channel channel = readChannel(channelId);
+        Channel channel = find(channelId);
         User user = userService.find(userId);
 
         boolean alreadyLeaved = channel.getJoinedUsers().stream()

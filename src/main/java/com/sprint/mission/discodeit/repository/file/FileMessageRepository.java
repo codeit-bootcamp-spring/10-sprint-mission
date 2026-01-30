@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.util.Validators;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.IntStream;
 
@@ -83,5 +84,12 @@ public class FileMessageRepository implements MessageRepository {
         saveMessages();
     }
 
+    @Override
+    public Optional<Instant> findLatestCreatedAtByChannelId(UUID channelId) {
+        return data.stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .map(Message::getCreatedAt)
+                .max(Comparator.naturalOrder());
+    }
 
 }

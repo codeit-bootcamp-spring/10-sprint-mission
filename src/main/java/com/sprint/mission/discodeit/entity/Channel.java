@@ -16,8 +16,8 @@ public class Channel extends CommonEntity implements Serializable {
     private ChannelType type;
     private String channelName;
     private String channelDescription;
-    private final ArrayList<User> joinedUsers = new ArrayList<>();
-    private final ArrayList<Message> messages = new ArrayList<>();
+    private final ArrayList<UUID> joinedUserIds = new ArrayList<>();
+    private final ArrayList<UUID> messageIds = new ArrayList<>();
 
     public Channel(ChannelType type, String channelName, String channelDescription) {
         this.type = type;

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.dto.UserRequestCreateDto;
+import com.sprint.mission.discodeit.dto.user.UserRequestCreateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -78,7 +78,7 @@ public class JCFUserService implements UserService {
 
 
     @Override
-    public List<User> readUsersByChannel(UUID channelId) {
+    public List<User> findUsersByChannel(UUID channelId) {
         return userRepository.findAll().stream()
                 .filter(user -> user.getJoinedChannels().stream()
                         .anyMatch(ch -> channelId.equals(ch.getId())))

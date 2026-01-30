@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.ProfileImageParam;
-import com.sprint.mission.discodeit.dto.UserRequestCreateDto;
-import com.sprint.mission.discodeit.dto.UserRequestUpdateDto;
-import com.sprint.mission.discodeit.dto.UserResponseDto;
+import com.sprint.mission.discodeit.dto.common.ProfileImageParam;
+import com.sprint.mission.discodeit.dto.user.UserRequestCreateDto;
+import com.sprint.mission.discodeit.dto.user.UserRequestUpdateDto;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -15,7 +15,6 @@ import com.sprint.mission.discodeit.util.Validators;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -110,9 +109,10 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<User> readUsersByChannel(UUID channelId) {
+    public List<UserResponseDto> findUsersByChannel(UUID channelId) {
         return userRepository.findAll().stream()
                 .filter(user -> user.getJoinedChannelIds().contains(channelId))
+                .map(u -> toDto(u, resolveOnline(u.getId())))
                 .toList();
     }
 
@@ -153,7 +153,6 @@ public class BasicUserService implements UserService {
                 user.getId(),
                 user.getUserName(),
                 user.getUserEmail(),
-                user.getUserPassword(),
                 user.getProfileId(),
                 online
         );

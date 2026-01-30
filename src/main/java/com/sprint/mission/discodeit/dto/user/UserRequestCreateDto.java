@@ -1,6 +1,6 @@
-package com.sprint.mission.discodeit.dto;
+package com.sprint.mission.discodeit.dto.user;
 
-import java.util.UUID;
+import com.sprint.mission.discodeit.dto.common.ProfileImageParam;
 
 public record UserRequestCreateDto(String userName,
                                    String userEmail,
