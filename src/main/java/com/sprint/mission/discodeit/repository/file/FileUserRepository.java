@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.DuplicationEmailException;
 import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,71 +15,64 @@ public class FileUserRepository implements UserRepository {
 
     private static final String FILE_PATH = "users.dat";
 
-    // 파일에서 Map 로드
-    private Map<UUID, User> load() {
+    private Map<UUID, User> loadUserFile(){
         File file = new File(FILE_PATH);
-        if (!file.exists()) return new LinkedHashMap<>();
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+        if (!file.exists()){
+            return new HashMap<>();
+        } try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))){
             return (Map<UUID, User>) ois.readObject();
-        } catch (Exception e) {
+        }  catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    // 파일에 Map 저장
-    private void save(Map<UUID, User> users) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+    private void saveUserFile(Map<UUID, User> users){
+        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
             oos.writeObject(users);
-        } catch (IOException e) {
+        } catch (IOException e){
             throw new RuntimeException(e);
         }
     }
 
-    // 초기화
-    public void resetUserFile() {
-        save(new LinkedHashMap<>());
+    public void resetUserFile(){
+        saveUserFile(new LinkedHashMap<>());
     }
 
     @Override
-    public User createUser(User user) {
-        Map<UUID, User> users = load();
-        if (users.values().stream().anyMatch(u -> u.getUserEmail().equals(user.getUserEmail()))) {
-            throw new DuplicationEmailException();
-        }
+    public User save(User user) {
+        Map<UUID, User> users = loadUserFile();
         users.put(user.getId(), user);
-        save(users);
+        saveUserFile(users);
         return user;
     }
 
     @Override
-    public User findUser(UUID userId) {
-        User user = load().get(userId);
-        if (user == null) throw new UserNotFoundException();
-        return user;
+    public Optional<User> findById(UUID id) {
+        return Optional.ofNullable(loadUserFile().get(id));
     }
 
     @Override
-    public List<User> findAllUser() {
-        return new ArrayList<>(load().values());
+    public List<User> findAll() {
+        return new ArrayList<>(loadUserFile().values());
     }
 
     @Override
-    public User updateUser(UUID userId, String userName, String userEmail) {
-        Map<UUID, User> users = load();
-        User user = users.get(userId);
-        if (user == null) throw new UserNotFoundException();
-
-        user.update(userName, userEmail);
-        save(users);
-        return user;
-    }
-
-    @Override
-    public User deleteUser(UUID userId) {
-        Map<UUID, User> users = load();
-        User removed = users.remove(userId);
+    public void delete(UUID id) {
+        Map<UUID, User> users = loadUserFile();
+        User removed = users.remove(id);
         if (removed == null) throw new UserNotFoundException();
-        save(users);
-        return removed;
+        saveUserFile(users);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return loadUserFile().values().stream()
+                .anyMatch(user -> user.getEmail().equals(email));
+    }
+
+    @Override
+    public boolean existsByName(String name) {
+        return loadUserFile().values().stream()
+                .anyMatch(user -> user.getName().equals(name));
     }
 }

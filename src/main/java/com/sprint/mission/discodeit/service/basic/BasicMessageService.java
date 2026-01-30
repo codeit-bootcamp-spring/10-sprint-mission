@@ -11,12 +11,12 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
 
@@ -29,7 +29,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public Message createMessage(UUID userId, UUID channelId, String content) {
         // 존재 여부만 검증
-        userService.findUser(userId);
+        userService.find(userId);
         channelService.findChannel(channelId);
 
         return messageRepository.createMessage(userId, channelId, content);
@@ -54,7 +54,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public List<Message> findAllByUserMessage(UUID userId) {
         // 1. 유저 존재 확인
-        userRepository.findUser(userId);
+        userRepository.findById(userId);
 
         // 2. 전체 채널 탐색
         List<Message> result = channelRepository.findAllChannel().stream()

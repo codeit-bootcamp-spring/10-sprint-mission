@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 public class ChannelView {
     public static String viewChannel(Channel channel) {
-        String memberNames = channel.getChannelUser().stream()
-                .map(User::getUserName)
+        String memberNames = channel.getChannelUsers().stream()
+                .map(User::getName)
                 .collect(Collectors.joining(" , "));
         return "[" + channel.getChannelName() + "]\n" + memberNames;
     }

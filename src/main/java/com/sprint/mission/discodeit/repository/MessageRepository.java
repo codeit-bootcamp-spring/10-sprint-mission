@@ -1,12 +1,11 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.entity.Message;
-import org.springframework.stereotype.Repository;
 
+import com.sprint.mission.discodeit.entity.Message;
 import java.util.List;
 import java.util.UUID;
 
-@Repository
+
 public interface MessageRepository {
     Message createMessage(UUID userId, UUID channelId, String content);
     Message findMessage(UUID messageId);

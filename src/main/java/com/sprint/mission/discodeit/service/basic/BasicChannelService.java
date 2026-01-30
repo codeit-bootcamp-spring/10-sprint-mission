@@ -7,13 +7,14 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
 
@@ -45,7 +46,8 @@ public class BasicChannelService implements ChannelService {
     @Override
     public Channel userAddChannel(UUID channelId, UUID userId) {
         Channel channel = channelRepository.findChannel(channelId);
-        User user = userRepository.findUser(userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
 
         if (channel.hasChannelUser(user)) {
             throw new AlreadyJoinedChannelException();
@@ -77,7 +79,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel findByUserChannel(UUID userId) {
-        userRepository.findUser(userId);
+        userRepository.findById(userId);
         return channelRepository.findByUserId(userId);
     }
 
