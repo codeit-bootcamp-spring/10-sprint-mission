@@ -1,25 +1,25 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.dto.UserInfoDto;
+import com.sprint.mission.discodeit.dto.UserCreateDto;
+import com.sprint.mission.discodeit.dto.UserUpdateDto;
+import com.sprint.mission.discodeit.entity.*;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
     // Create
-    User create(String name, UserStatus status);
+    User create(UserCreateDto request);
 
     // Read
-    User findById(UUID id);
+    UserInfoDto findById(UUID id);
 
     // ReadAll
-    List<User> readAll();
+    List<UserInfoDto> findAll();
 
     // Update
-    User update(UUID id, String newName, UserStatus newStatus);
+    User update(UserUpdateDto request);
 
     // User가 보낸 모든 메시지 조회
     List<Message> getUserMessages(UUID id);
@@ -30,4 +30,5 @@ public interface UserService {
     // Delete
     void delete(UUID id);
 
+    public void updateLastActiveTime(UUID id);
 }

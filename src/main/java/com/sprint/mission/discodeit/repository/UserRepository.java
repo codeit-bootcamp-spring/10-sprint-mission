@@ -13,6 +13,8 @@ public interface UserRepository {
 
     public Optional<User> findByName(String name);
 
+    public Optional<User> findByEmail(String email);
+
     public List<User> readAll();
 
     public void delete(UUID id);

@@ -24,7 +24,7 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public List<Channel> readAll() {
+    public List<Channel> findAll() {
         return new ArrayList<>(data.values());
     }
 

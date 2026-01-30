@@ -2,14 +2,16 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+@Repository
 public class FileChannelRepository extends AbstractFileRepository<Channel> implements ChannelRepository {
 
-    public FileChannelRepository(String path) {
-        super(path);
+    public FileChannelRepository() {
+        super("Channel.ser");
     }
 
     @Override
@@ -27,7 +29,7 @@ public class FileChannelRepository extends AbstractFileRepository<Channel> imple
     }
 
     @Override
-    public List<Channel> readAll() {
+    public List<Channel> findAll() {
         Map<UUID, Channel> data = load();
         return List.copyOf(data.values());
     }
@@ -37,6 +39,17 @@ public class FileChannelRepository extends AbstractFileRepository<Channel> imple
         Map<UUID, Channel> data = load();
         data.remove(id);
         writeToFile(data);
+    }
+
+    @Override
+    public void deleteMessageByMessageId(UUID channelId, UUID messageId) {
+        Map<UUID, Channel> data = load();
+        Channel channel = data.get(channelId);
+        if (channel != null) {
+            if (channel.getMessageIds().removeIf(id -> id.equals(messageId))) {
+                writeToFile(data);
+            }
+        }
     }
 
     @Override
