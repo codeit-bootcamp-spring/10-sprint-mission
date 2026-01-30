@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.entity;
+import com.sprint.mission.discodeit.dto.MessageDto;
 import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 import java.util.UUID;
 
 public class Message extends BaseEntity implements Serializable {
@@ -18,14 +20,14 @@ public class Message extends BaseEntity implements Serializable {
     @Getter
     private final Channel channel;
     @Getter
-    private final BinaryContent binaryContent;
+    private List<UUID> binaryContentId;
 
     // constructor
-    public Message(String content, User user, Channel channel, BinaryContent binaryContent) {
-        this.content = content;
-        this.user = user;
-        this.channel = channel;
-        this.binaryContent = binaryContent;
+    public Message(MessageDto.MessageRequest request, List<UUID> binaryContentIds) {
+        this.content = request.content();
+        this.user = request.user();
+        this.channel = request.channel();
+        this.binaryContentId = binaryContentIds;
     }
 
     public UUID getUserId() {

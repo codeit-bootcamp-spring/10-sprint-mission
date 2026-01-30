@@ -1,7 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,20 +18,28 @@ import java.util.*;
 public class BasicMessageService implements MessageService {
 
     private final MessageRepository messageRepository;
-    private final UserService userService;
-    private final ChannelService channelService;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message create(String content, UUID userId, UUID channelId) {
-        User user = userService.findById(userId);
-        Channel channel = channelService.findById(channelId);
-
-        Objects.requireNonNull(content, "내용은 필수입니다.");
-        if (!channel.getUsers().contains(user)) {
+    public Message create(MessageDto.MessageRequest request, List<BinaryContentDto.BinaryContentRequest> fileInfo) {
+        // 입력값 검증
+        Objects.requireNonNull(request.content(), "내용은 필수입니다.");
+        if (!request.channel().getUsers().contains(request.user())) {
             throw new IllegalArgumentException("채널 멤버가 아닙니다.");
         }
+        //
+        List<UUID> binaryContentIds = new ArrayList<>();
 
-        Message message = new Message(content, user, channel);
+        fileInfo.forEach(fileInform -> {
+            BinaryContent binaryContent = new BinaryContent(fileInform);
+            binaryContentRepository.save(binaryContent);
+            binaryContentIds.add(binaryContent.getId());
+        });
+
+
+        Message message = new Message(request, binaryContentIds);
         messageRepository.save(message);
         channel.addMessage(message);
         channelService.update(channel.getId(), null, null);

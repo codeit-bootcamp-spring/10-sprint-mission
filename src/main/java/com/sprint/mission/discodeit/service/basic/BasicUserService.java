@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -24,7 +25,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public UserDto.UserResponse create(UserDto.UserRequest request) {
+    public UserDto.UserResponse create(UserDto.UserRequest request, String filePath) {
         Objects.requireNonNull(request.name(), "유저 이름은 필수 항목입니다.");
         Objects.requireNonNull(request.email(), "이메일은 필수 항목입니다.");
 
@@ -38,10 +39,10 @@ public class BasicUserService implements UserService {
 
         // 유저 상태, 프로필 이미지 객체
 
-        BinaryContent binaryContent = new BinaryContent(request.filePath(), "image");
+        BinaryContent binaryContent = new BinaryContent(filePath, "image");
 
-        User user = new User(request.name(), request.email(), binaryContent.getId(), request.password());
-        UserStatus userStatus = new UserStatus(user.getId());
+        User user = new User(request, binaryContent.getId());
+        UserStatus userStatus = new UserStatus(user);
 
         // 레포 저장
         userRepository.save(user);
@@ -71,14 +72,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserDto.UserResponse update(UUID userId, UserDto.UserRequest request) {
+    public UserDto.UserResponse update(UUID userId, UserDto.UserRequest request, String filePath) {
         User user = Objects.requireNonNull(userRepository.findById(userId), "해당 유저가 존재하지 않습니다.");
         UserStatus status = Objects.requireNonNull(userStatusRepository.findByUserId(user.getId()), "유저 상태 정보가 없습니다.");
         Optional.ofNullable(request.name()).ifPresent(user::updateName);
         Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
         Optional.ofNullable(request.password()).ifPresent(user::updatePassword);
         // 새로운 content 객체를 생성하여 대체
-        Optional.ofNullable(request.filePath()).ifPresent(filePath -> user.updateBinaryContentId(new BinaryContent(filePath, "image").getId()));
+        Optional.ofNullable(filePath).ifPresent(path -> user.updateBinaryContentId(new BinaryContent(path, "image").getId()));
 
         userRepository.save(user);
         return UserDto.UserResponse.from(user, status);

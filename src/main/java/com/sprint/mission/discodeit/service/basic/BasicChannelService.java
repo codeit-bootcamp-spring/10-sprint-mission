@@ -23,18 +23,18 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public Channel createPublic(ChannelDto.ChannelRequest request) {
+    public ChannelDto.ChannelResponsePublic createPublic(ChannelDto.ChannelRequest request) {
         // 단체톡방
         Objects.requireNonNull(request.name(), "채널 이름은 필수입니다.");
         Objects.requireNonNull(request.description(), "채널 설명은 필수입니다.");
 
-        Channel channel = new Channel(request.name(), request.description());
+        Channel channel = new Channel(request);
         channelRepository.save(channel);
-        return channel;
+        return ChannelDto.ChannelResponsePublic.from(channel);
     }
 
     @Override
-    public Channel createPrivate(List<UUID> userIds) {
+    public ChannelDto.ChannelResponsePrivate createPrivate(List<UUID> userIds) {
         // 익명톡방
         List<User> users = userIds.stream().map(userId -> Objects.requireNonNull(userRepository.findById(userId))).toList();
 
@@ -45,7 +45,7 @@ public class BasicChannelService implements ChannelService {
             readStatusRepository.save(readStatus);
         });
         channelRepository.save(channel);
-        return channel;
+        return ChannelDto.ChannelResponsePrivate.from(channel);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(UUID channelId, ChannelDto.ChannelRequest request) {
+    public ChannelDto.ChannelResponsePublic update(UUID channelId, ChannelDto.ChannelRequest request) {
         // PUBLIC 채널만 수정 가능
         if (channelRepository.findById(channelId).getType().equals(Channel.channelType.PRIVATE))
             throw new IllegalStateException("개인 대화방 정보는 수정할 수 없습니다.");
@@ -78,7 +78,7 @@ public class BasicChannelService implements ChannelService {
         Optional.ofNullable(request.name()).ifPresent(channel::updateName);
         Optional.ofNullable(request.description()).ifPresent(channel::updateDescription);
         channelRepository.save(channel);
-        return channel;
+        return ChannelDto.ChannelResponsePublic.from(channel);
     }
 
     @Override

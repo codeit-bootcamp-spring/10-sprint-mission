@@ -12,8 +12,7 @@ public class ChannelDto {
     public record ChannelRequest(
             String name,
             String description
-    ) {
-    }
+    ) {}
 
     public interface ChannelResponse {
     }

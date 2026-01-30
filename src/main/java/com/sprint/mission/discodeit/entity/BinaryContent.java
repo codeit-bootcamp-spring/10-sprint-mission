@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -21,12 +22,12 @@ public class BinaryContent implements Serializable {
     private final String filePath;
     private final String contentType;
 
-    public BinaryContent(String filePath, String contentType) {
+    public BinaryContent(BinaryContentDto.BinaryContentRequest request) {
 
         this.id = UUID.randomUUID();
         this.createdAt = Instant.ofEpochSecond(System.currentTimeMillis());
-        this.filePath = filePath;
-        this.contentType = contentType;
+        this.filePath = request.filePath();
+        this.contentType = request.contentType();
 
     }
 }

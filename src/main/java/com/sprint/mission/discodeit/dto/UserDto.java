@@ -12,10 +12,8 @@ public class UserDto {
     public record UserRequest(
             String name,
             String email,
-            String password,
-            String filePath
-    ) {
-    }
+            String password
+    ) {}
 
     // 응답 DTO -- 온라인 상태 포함, 패스워드 제외
     public record UserResponse(

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.UserDto;
 import lombok.Getter;
 
 import java.io.Serial;
@@ -27,11 +28,11 @@ public class User extends BaseEntity implements Serializable {
     private String password;
 
     // constructor
-    public User(String name, String email, UUID binaryContentId, String password) {
+    public User(UserDto.UserRequest request, UUID binaryContentId) {
         super();
-        this.name = Objects.requireNonNull(name, "이름은 필수입니다.");
-        this.email = Objects.requireNonNull(email, "이메일은 필수입니다.");
-        this.password = Objects.requireNonNull(password, "비밀번호는 필수입니다.");
+        this.name = Objects.requireNonNull(request.name(), "이름은 필수입니다.");
+        this.email = Objects.requireNonNull(request.email(), "이메일은 필수입니다.");
+        this.password = Objects.requireNonNull(request.password(), "비밀번호는 필수입니다.");
         this.binaryContentId = binaryContentId;
     }
 

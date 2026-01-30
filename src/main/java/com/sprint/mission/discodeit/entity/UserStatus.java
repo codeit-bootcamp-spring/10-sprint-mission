@@ -15,7 +15,7 @@ public class UserStatus extends BaseEntity{
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private final UUID userId;
+    private final User user;
 
     public enum Status {
         ONLINE, OFFLINE, AWAY

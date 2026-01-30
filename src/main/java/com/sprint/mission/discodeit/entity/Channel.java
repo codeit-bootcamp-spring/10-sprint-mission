@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.ChannelDto;
 import lombok.Getter;
 
 import java.io.Serial;
@@ -28,9 +29,9 @@ public class Channel extends BaseEntity implements Serializable {
     private Instant lastMessageAt;
 
     // Public 생성자
-    public Channel(String name, String description) {
-        this.name = name;
-        this.description = description;
+    public Channel(ChannelDto.ChannelRequest request) {
+        this.name = request.name();
+        this.description = request.description();
         this.type = channelType.PUBLIC;
         this.lastMessageAt = Instant.now();
     }
