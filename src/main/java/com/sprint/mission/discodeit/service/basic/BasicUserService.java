@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.*;
 import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
@@ -30,19 +27,17 @@ public class BasicUserService implements UserService {
     // 사용자 생성
     @Override
     public UserResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO) {
-        // 1. 유효성 검증 (이메일 중복, 이름 중복)
         isEmailDuplicate(userCreateRequestDTO.getEmail());
         isNicknameDuplicate(userCreateRequestDTO.getNickname());
 
-        // 2. User 생성, UserStatus 같이 생성
         User newUser = new User(userCreateRequestDTO);
         userRepository.save(newUser);
 
         UserStatus newUserStatus = new UserStatus(userCreateRequestDTO.getUserId());
         userStatusRepository.save(newUserStatus);
 
-        // 3. 선택적 프로필 이미지 생성 및 저장
         Optional.ofNullable(userCreateRequestDTO.getBinaryContentCreateRequestDTO().getBinaryContent())
+                // 선택적 프로필 이미지 생성
                 .map(content -> {
                     BinaryContent newBinaryContent = new BinaryContent(userCreateRequestDTO.getBinaryContentCreateRequestDTO());
                     binaryContentRepository.save(newBinaryContent);
@@ -50,32 +45,26 @@ public class BasicUserService implements UserService {
                 })
                 .ifPresent(newUser::updateProfileId);
 
-        // 5. 응답 DTO 객체 생성 및 반환
         return toResponseDTO(newUser, newUserStatus);
     }
 
     // 사용자 단건 조회
     @Override
     public UserResponseDTO findById(UUID userId) {
-        // 1. 사용자 존재 여부 확인
         User targetUser = findUserEntityById(userId);
 
-        // 2. 사용자 상태 정보 조회
         UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
 
-        // 2. 조회 응답 DTO 생성 및 반환
         return toResponseDTO(targetUser, targetUserStatus);
     }
 
     // 사용자 전체 조회
     @Override
     public List<UserResponseDTO> findAll() {
-        // 1. 조회 응답 DTO 생성 및 반환
         return userRepository.findAll().stream()
                 .map(user -> {
-                    // 사용자 상태 조회
+                    // 사용자별 상태 조회
                     UserStatus userStatus = userStatusRepository.findById(user.getId());
-                    // 사용자 -> 사용자 조회 응답 변환
                     return toResponseDTO(user, userStatus);
                 })
                 .toList();
@@ -83,12 +72,16 @@ public class BasicUserService implements UserService {
 
     // 특정 채널의 참가자 목록 조회
     @Override
-    public List<UserResponseDTO> findMembersByChannelId(UUID channelId) {
-        // 1. 채널 존재 여부 확인
-        Channel targetChannel = channelRepository.findById(channelId)
+    public List<UserResponseDTO> findMembersByChannelId(MemberFindRequestDTO memberFindRequestDTO) {
+        Channel targetChannel = channelRepository.findById(memberFindRequestDTO.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
-        // 2. 특정 채널의 참가자 목록 조회
+        // Private 채널은 채널 참여자만 조회 가능
+        if (targetChannel.getType() == ChannelType.PRIVATE &&
+                !targetChannel.getMembers().contains(memberFindRequestDTO.getRequesterId())) {
+                throw new RuntimeException("비공개 채널의 멤버 목록은 해당 채널 참여자만 조회할 수 있습니다.");
+        }
+
         return targetChannel.getMembers().stream()
                 .map(memberId -> {
                     User user = findUserEntityById(memberId);
@@ -101,13 +94,11 @@ public class BasicUserService implements UserService {
     // 사용자 정보 수정
     @Override
     public UserResponseDTO updateUser(UserUpdateRequestDTO userUpdateRequestDTO) {
-        // 1. 사용자 존재 여부 확인
         User targetUser = findUserEntityById(userUpdateRequestDTO.getId());
 
-        // 2. 사용자 상태 조회
         UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
 
-        // 3. 비밀번호 필드 변경
+        // 비밀번호 필드 변경
         Optional.ofNullable(userUpdateRequestDTO.getPassword())
                 .ifPresent(password -> {
                     validateString(password, "[비밀 번호 변경 실패] 올바른 비밀 번호 형식이 아닙니다.");
@@ -140,20 +131,17 @@ public class BasicUserService implements UserService {
                 })
                 .ifPresent(targetUser::updateProfileId);
 
-        // 4. 사용자 변경 내용 저장
         userRepository.save(targetUser);
 
-        // 5. 응답 DTO 변환 및 반환
         return toResponseDTO(targetUser, targetUserStatus);
     }
 
     // 사용자 삭제
     @Override
     public void deleteUser(UUID userId) {
-        // 1. 사용자 존재 여부 확인
         User targetUser = findUserEntityById(userId);
 
-        // 2. 삭제된 사용자가 참여한 모든 채널 내 멤버에서 사용자 연쇄 삭제
+        // 삭제된 사용자가 참여한 모든 채널 내 멤버에서 사용자 연쇄 삭제
         channelRepository.findAll().stream()
                 .filter(channel -> channel.getUserId().equals(userId))
                 .forEach(channel -> {
@@ -166,7 +154,7 @@ public class BasicUserService implements UserService {
                 .filter(message ->  message.getAuthorId().equals(userId))
                 .forEach(messageRepository::delete);
 
-        // 사용자 상태 연쇄 삭제 (추후 레파지토리에서 구현)
+        // 사용자 상태 연쇄 삭제
         userStatusRepository.findAll().stream()
                 .filter(userStatus -> userStatus.getUserId().equals(targetUser.getId()))
                 .forEach(userStatus -> userStatusRepository.delete(userStatus.getId()));
@@ -176,7 +164,6 @@ public class BasicUserService implements UserService {
                 .filter(binaryContent -> binaryContent.getId().equals(targetUser.getProfileId()))
                 .forEach(binaryContent -> binaryContentRepository.delete(binaryContent.getId()));
 
-        // 3. 사용자 삭제
         userRepository.delete(targetUser);
     }
 
