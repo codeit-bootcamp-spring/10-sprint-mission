@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDTO;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
-import com.sprint.mission.discodeit.dto.message.SendMessageRequestDTO;
+import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -29,7 +29,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageResponseDTO createMessage(SendMessageRequestDTO dto) {
+    public MessageResponseDTO createMessage(CreateMessageRequestDTO dto) {
         User user = findUserOrThrow(dto.sentUserId());
         Channel channel = findChannelOrThrow(dto.sentChannelId());
         List<UUID> attachments = new ArrayList<>();
@@ -40,21 +40,7 @@ public class BasicMessageService implements MessageService {
 
         if (attachmentDTOs != null && !attachmentDTOs.isEmpty()) {
             for (BinaryContentCreateDTO bcDTO: attachmentDTOs) {
-                if(bcDTO == null) {
-                    throw new IllegalArgumentException("bcDTO는 null일 수 없습니다.");
-                }
-
-                if (bcDTO.data() == null) {
-                    throw new IllegalArgumentException("data의 값은 null일 수 없습니다.");
-                }
-
-                if (bcDTO.contentType() == null) {
-                    throw new IllegalArgumentException("contentType은 null일 수 없습니다.");
-                }
-
-                if (bcDTO.filename() == null) {
-                    throw new IllegalArgumentException("filename은 null일 수 없습니다.");
-                }
+                checkDTOHasNull(bcDTO);
 
                 BinaryContent bc
                         = BinaryContentMapper.toEntity(user.getId(), message.getId(), bcDTO);
@@ -140,5 +126,23 @@ public class BasicMessageService implements MessageService {
         return userRepository.findById(userId)
                 .orElseThrow(() ->
                         new NoSuchElementException("해당 id를 가진 사용자가 존재하지 않습니다."));
+    }
+
+    private void checkDTOHasNull(BinaryContentCreateDTO dto) {
+        if(dto == null) {
+            throw new IllegalArgumentException("bcDTO는 null일 수 없습니다.");
+        }
+
+        if (dto.data() == null) {
+            throw new IllegalArgumentException("data의 값은 null일 수 없습니다.");
+        }
+
+        if (dto.contentType() == null) {
+            throw new IllegalArgumentException("contentType은 null일 수 없습니다.");
+        }
+
+        if (dto.filename() == null) {
+            throw new IllegalArgumentException("filename은 null일 수 없습니다.");
+        }
     }
 }

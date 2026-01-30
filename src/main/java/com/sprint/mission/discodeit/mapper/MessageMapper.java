@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
-import com.sprint.mission.discodeit.dto.message.SendMessageRequestDTO;
+import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.entity.Message;
 
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class MessageMapper {
-    public static Message toEntity(SendMessageRequestDTO dto, List<UUID> attachments) {
+    public static Message toEntity(CreateMessageRequestDTO dto, List<UUID> attachments) {
         return new Message(
                 dto.sentUserId(),
                 dto.sentChannelId(),
