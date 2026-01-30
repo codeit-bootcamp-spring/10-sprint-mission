@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.binaryContent.model;
+package com.sprint.mission.discodeit.entity.status;
 
 import java.time.Instant;
 import java.util.UUID;

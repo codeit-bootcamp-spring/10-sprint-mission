@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.userStatus.model;
+package com.sprint.mission.discodeit.entity.status;
 
 import java.time.Duration;
 import java.time.Instant;

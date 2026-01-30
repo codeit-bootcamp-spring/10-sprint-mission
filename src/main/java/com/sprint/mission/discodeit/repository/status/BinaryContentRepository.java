@@ -1,6 +1,6 @@
-package com.sprint.mission.discodeit.binaryContent.repository;
+package com.sprint.mission.discodeit.repository.status;
 
-import com.sprint.mission.discodeit.binaryContent.model.BinaryContent;
+import com.sprint.mission.discodeit.entity.status.BinaryContent;
 import java.util.Optional;
 import java.util.UUID;
 

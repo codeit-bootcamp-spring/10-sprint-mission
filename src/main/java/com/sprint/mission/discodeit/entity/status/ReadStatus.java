@@ -1,7 +1,6 @@
-package com.sprint.mission.discodeit.readStatus.model;
+package com.sprint.mission.discodeit.entity.status;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class ReadStatus {
