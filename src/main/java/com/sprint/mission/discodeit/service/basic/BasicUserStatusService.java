@@ -1,8 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusCreateRequestDto;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.userstatus.UserStatusResponseMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -17,9 +19,11 @@ import java.util.UUID;
 public class BasicUserStatusService implements UserStatusService {
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
+    //
+    private final UserStatusResponseMapper userStatusResponseMapper;
 
     @Override
-    public UserStatus create(UserStatusCreateRequestDto userStatusCreateRequestDto) {
+    public UserStatusResponseDto create(UserStatusCreateRequestDto userStatusCreateRequestDto) {
         if(!userRepository.existsById(userStatusCreateRequestDto.userId())) throw new AssertionError("User not found");
         if(userStatusRepository.findAll()
                 .stream()
@@ -27,22 +31,26 @@ public class BasicUserStatusService implements UserStatusService {
                         userStatus.getUserId().equals(userStatusCreateRequestDto.userId())))
             throw new AssertionError("UserStatus already exists");
 
-        return userStatusRepository.save(new UserStatus(userStatusCreateRequestDto.userId()));
+        UserStatus userstatus = userStatusRepository.save(new UserStatus(userStatusCreateRequestDto.userId()));
+        return userStatusResponseMapper.toDto(userstatus);
     }
 
     @Override
-    public UserStatus find(UUID id) {
-        return userStatusRepository.findById(id)
+    public UserStatusResponseDto find(UUID id) {
+        UserStatus userStatus = userStatusRepository.findById(id)
                 .orElseThrow(() -> new AssertionError("UserStatus not found"));
+        return userStatusResponseMapper.toDto(userStatus);
     }
 
     @Override
-    public List<UserStatus> findAll(UUID id) {
-        return userStatusRepository.findAll();
+    public List<UserStatusResponseDto> findAll(UUID id) {
+        return userStatusRepository.findAll().stream()
+                .map(userStatusResponseMapper::toDto)
+                .toList();
     }
 
     @Override
-    public UserStatus update(UserStatusUpdateRequestDto userStatusUpdateRequestDto) {
+    public UserStatusResponseDto update(UserStatusUpdateRequestDto userStatusUpdateRequestDto) {
         //잘못 온 경우 올바르게 돌려주기
         if(userStatusUpdateRequestDto.isUserId()) return updateByUserId(userStatusUpdateRequestDto);
 
@@ -51,10 +59,11 @@ public class BasicUserStatusService implements UserStatusService {
 
         userStatus.setLastOnlineTime(userStatusUpdateRequestDto.lastOnlineTime());
 
-        return userStatusRepository.save(userStatus);
+        userStatusRepository.save(userStatus);
+        return userStatusResponseMapper.toDto(userStatus);
     }
 
-    public UserStatus updateByUserId(UserStatusUpdateRequestDto userStatusUpdateRequestDto){
+    public UserStatusResponseDto updateByUserId(UserStatusUpdateRequestDto userStatusUpdateRequestDto){
         //잘못 온 경우 올바르게 돌려주기
         if (!userStatusUpdateRequestDto.isUserId()) return update(userStatusUpdateRequestDto);
 
@@ -63,7 +72,9 @@ public class BasicUserStatusService implements UserStatusService {
 
         userStatus.setLastOnlineTime(userStatusUpdateRequestDto.lastOnlineTime());
 
-        return userStatusRepository.save(userStatus);
+        userStatusRepository.save(userStatus);
+
+        return userStatusResponseMapper.toDto(userStatus);
     }
 
     @Override

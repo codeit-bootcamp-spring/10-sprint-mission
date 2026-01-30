@@ -39,14 +39,22 @@ public class BasicMessageService implements MessageService {
             throw new NoSuchElementException("Author not found with id " + messageCreateRequestDto.authorId());
         }
 
-        List<UUID> attachmentListToId = messageCreateRequestDto.attachment().content()
-                .stream()
-                .map(binaryContent ->{
+        List<UUID> attachmentListToId;
+        if(messageCreateRequestDto.attachment() != null){
+            attachmentListToId = messageCreateRequestDto.attachment()
+                    .content()
+                    .stream()
+                    .map(binaryContent ->{
                         BinaryContent b = new BinaryContent(binaryContent);
                         binaryContentRepository.save(b);
                         return b.getId();
-                })
-                .toList();
+                    })
+                    .toList();
+        }
+        else{
+            attachmentListToId = null;
+        }
+
 
         Message message = new Message(
                 messageCreateRequestDto.content(),
