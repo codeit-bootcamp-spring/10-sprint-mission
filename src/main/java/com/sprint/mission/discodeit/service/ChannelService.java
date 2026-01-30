@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.request.ChannelMemberRequestDTO;
 import com.sprint.mission.discodeit.dto.request.ChannelUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequestDTO;
@@ -31,8 +32,8 @@ public interface ChannelService {
     void deleteChannel(UUID targetChannelId);
 
     // 채널 참가자 초대
-    void inviteMember(UUID targetUserId, UUID targetChannelId);
+    void inviteMember(ChannelMemberRequestDTO channelMemberRequestDTO);
 
     // 채널 퇴장
-    void leaveMember(UUID targetUserId, UUID targetChannelId);
+    void leaveMember(ChannelMemberRequestDTO channelMemberRequestDTO);
 }
