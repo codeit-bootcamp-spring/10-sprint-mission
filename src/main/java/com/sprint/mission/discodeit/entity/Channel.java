@@ -4,12 +4,14 @@ import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.*;
 
 public class Channel extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    public enum channelType {PRIVATE, PUBLIC}
     // 채널에 속한 메세지 목록
     private final List<Message> messages = new ArrayList<>();
     // 채널에 참여한 유저 목록
@@ -20,17 +22,25 @@ public class Channel extends BaseEntity implements Serializable {
     private String name;
     @Getter
     private String description;
+    @Getter
+    private final channelType type;
+    @Getter
+    private Instant lastMessageAt;
 
-    // constructor
+    // Public 생성자
     public Channel(String name, String description) {
         this.name = name;
         this.description = description;
+        this.type = channelType.PUBLIC;
+        this.lastMessageAt = Instant.now();
     }
 
-    // Getter, update
-//    public List<User> getUsers() {
-//        return List.copyOf(this.users);
-//    }
+    // Private 생성자
+    public Channel(List<User> users){
+        users.addAll(this.users);
+        this.type = channelType.PRIVATE;
+        this.lastMessageAt = Instant.now();
+    }
 
     public void updateName(String name) {
         this.name = name;
@@ -58,6 +68,7 @@ public class Channel extends BaseEntity implements Serializable {
     // 메세지 목록에 메세지 추가 + 채널 수정 시간 갱신
     public void addMessage(Message message) {
         this.messages.add(message);
+        this.lastMessageAt = Instant.ofEpochSecond(System.currentTimeMillis());
         this.updateTimestamp();
     }
 

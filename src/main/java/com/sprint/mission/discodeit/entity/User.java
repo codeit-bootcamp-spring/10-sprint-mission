@@ -23,12 +23,15 @@ public class User extends BaseEntity implements Serializable {
     private String name;
     @Getter
     private String email;
+    @Getter
+    private String password;
 
     // constructor
-    public User(String name, String email, UUID binaryContentId) {
+    public User(String name, String email, UUID binaryContentId, String password) {
         super();
         this.name = Objects.requireNonNull(name, "이름은 필수입니다.");
         this.email = Objects.requireNonNull(email, "이메일은 필수입니다.");
+        this.password = Objects.requireNonNull(password, "비밀번호는 필수입니다.");
         this.binaryContentId = binaryContentId;
     }
 
@@ -44,6 +47,11 @@ public class User extends BaseEntity implements Serializable {
 
     public void updateEmail(String email) {
         this.email = email;
+        updateTimestamp();
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
         updateTimestamp();
     }
 

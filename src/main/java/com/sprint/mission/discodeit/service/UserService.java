@@ -8,9 +8,9 @@ import java.util.UUID;
 
 public interface UserService {
     // 사용자 관련 기능 정의
-    UserDto.UserResponse create(UserDto.UserCreateRequest request);
+    UserDto.UserResponse create(UserDto.UserRequest request);
     UserDto.UserResponse findById(UUID id);
     List<UserDto.UserResponse> findAll();
-    UserDto.UserResponse update(UUID userId, UserDto.UserUpdateRequest request);
+    UserDto.UserResponse update(UUID userId, UserDto.UserRequest request);
     void delete(UUID userId);
 }

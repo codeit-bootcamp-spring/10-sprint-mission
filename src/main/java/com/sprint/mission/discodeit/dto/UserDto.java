@@ -8,25 +8,18 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class UserDto {
-    // 생성 요청 DTO
-    public record UserCreateRequest(
+    // 요청 DTO
+    public record UserRequest(
             String name,
             String email,
             String password,
             String filePath
-    ) {}
-
-    // 수정 요청 DTO
-    public record UserUpdateRequest(
-            String name,
-            String email,
-            String filepath,
-            UUID contentId
-    ) {}
+    ) {
+    }
 
     // 응답 DTO -- 온라인 상태 포함, 패스워드 제외
     public record UserResponse(
-            UUID id,
+            UUID userId,
             String name,
             String email,
             boolean isOnline, // UserStatus 기반 온라인 여부

@@ -27,6 +27,6 @@ public abstract class BaseEntity implements Serializable {
 
     // update
     protected void updateTimestamp() {
-        this.updatedAt = Instant.ofEpochSecond(System.currentTimeMillis());
+        this.updatedAt = Instant.now();
     }
 }
