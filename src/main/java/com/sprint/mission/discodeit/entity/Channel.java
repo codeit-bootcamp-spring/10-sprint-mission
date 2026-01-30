@@ -14,17 +14,23 @@ public class Channel implements Serializable {
     private final Instant createdAt;
     private Instant updatedAt;
 
+    private ChannelType type;
     private String name;
+    private String description;
 
-    public Channel(String name) {
+    public Channel(ChannelType type, String name, String description) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
+
+        this.type = type;
         this.name = name;
+        this.description = description;
     }
 
-    public void update(String newName) {
+    public void update(String newName, String newDescription) {
         this.name = newName;
+        this.description = newDescription;
         // 업데이트 시간 갱신
         this.updatedAt = Instant.now();
     }
