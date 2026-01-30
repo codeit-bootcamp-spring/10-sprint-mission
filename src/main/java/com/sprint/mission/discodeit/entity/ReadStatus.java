@@ -8,21 +8,18 @@ import java.util.UUID;
 
 @Getter
 public class ReadStatus extends BaseEntity{
-    @Setter
-    private UUID userId;
-    @Setter
-    private UUID channelId;
+    private final UUID userId;
+    private final UUID channelId;
     private Instant lastReadAt;
 
-    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
+    public ReadStatus(UUID userId, UUID channelId) {
         this.userId = userId;
         this.channelId = channelId;
-        this.lastReadAt = lastReadAt;
+        this.lastReadAt = Instant.now();
     }
-
-    public void setLastReadAt() {
-        lastReadAt = Instant.now();
-        updatedAt = lastReadAt;
+    public void updateLastReadAt(Instant lastReadAt) {
+        this.lastReadAt = lastReadAt;
+        updatedAt = Instant.now();
     }
 
     @Override
