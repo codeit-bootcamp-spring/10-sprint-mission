@@ -2,11 +2,16 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 public class JCFMessageRepository implements MessageRepository {
 
     private final List<Message> data = new ArrayList<>();
@@ -19,16 +24,15 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findMessageById(UUID messageId) {
+    public Optional<Message> findById(UUID messageId) {
         return data.stream()
                 .filter(m -> m.getId().equals(messageId))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 아이디입니다."));
+                .findFirst();
     }
 
     @Override
-    public List<Message> findAllMessages() {
-        return new ArrayList<>(data);
+    public List<Message> findAll() {
+        return List.copyOf(data);
     }
 
     @Override

@@ -2,16 +2,21 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileMessageRepository implements MessageRepository {
 
     private static final Path dirPath = Paths.get(System.getProperty("user.dir") + "/data/messages");
@@ -37,20 +42,19 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findMessageById(UUID messageId) {
-        return findAllMessages().stream()
+    public Optional<Message> findById(UUID messageId) {
+        return findAll().stream()
                 .filter(message -> message.getId().equals(messageId))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 아이디입니다."));
+                .findAny();
     }
 
     @Override
-    public List<Message> findAllMessages() {
+    public List<Message> findAll() {
         if(!Files.exists(dirPath)) {
-            return new ArrayList<>();
+            return List.of();
         }
-        try {
-            List<Message> list = Files.list(dirPath)
+        try (Stream<Path> stream = Files.list(dirPath)){
+            return stream
                     .map(path -> {
                         try (
                                 FileInputStream fis = new FileInputStream(path.toFile());
@@ -63,7 +67,6 @@ public class FileMessageRepository implements MessageRepository {
                         }
                     })
                     .collect(Collectors.toList());
-            return list;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -73,7 +76,9 @@ public class FileMessageRepository implements MessageRepository {
     public void delete(Message message) {
         File file = new File(dirPath.toFile(), message.getId().toString() + ".ser");
         if (file.exists()) {
-            file.delete();
+            if (!file.delete()) {
+                throw new RuntimeException("메시지 파일 삭제 실패");
+            }
         }
     }
 

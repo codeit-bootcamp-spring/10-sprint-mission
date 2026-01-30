@@ -2,16 +2,21 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileChannelRepository implements ChannelRepository {
 
     private static final Path dirPath = Paths.get(System.getProperty("user.dir") + "/data/channels");
@@ -37,20 +42,19 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel findChannelById(UUID channelId) {
-        return findAllChannel().stream()
+    public Optional<Channel> findById(UUID channelId) {
+        return findAll().stream()
                 .filter(channel -> channel.getId().equals(channelId))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+                .findAny();
     }
 
     @Override
-    public List<Channel> findAllChannel() {
-        if(!Files.exists(dirPath)) {
-            return new ArrayList<>();
+    public List<Channel> findAll() {
+        if (!Files.exists(dirPath)) {
+            return List.of();
         }
-        try {
-            List<Channel> list = Files.list(dirPath)
+        try (Stream<Path> stream = Files.list(dirPath)) {
+            return stream
                     .map(path -> {
                         try (
                                 FileInputStream fis = new FileInputStream(path.toFile());
@@ -63,7 +67,6 @@ public class FileChannelRepository implements ChannelRepository {
                         }
                     })
                     .collect(Collectors.toList());
-            return list;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -72,8 +75,11 @@ public class FileChannelRepository implements ChannelRepository {
     @Override
     public void delete(Channel channel) {
         File file = new File(dirPath.toFile(), channel.getId().toString() + ".ser");
+
         if (file.exists()) {
-            file.delete();
+            if (!file.delete()) {
+                throw new RuntimeException("채널 파일 삭제 실패");
+            }
         }
     }
 
