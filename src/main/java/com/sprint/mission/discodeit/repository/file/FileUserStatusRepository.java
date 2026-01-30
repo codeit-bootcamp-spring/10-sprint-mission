@@ -1,4 +1,41 @@
-package com.sprint.mission.discodeit.repository;
+package com.sprint.mission.discodeit.repository.file;
 
-public class FileUserStatusRepository {
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.*;
+
+@Repository
+public class FileUserStatusRepository extends BaseFileRepository<UserStatus> implements UserStatusRepository {
+    public FileUserStatusRepository() {
+        super("user_status.ser");
+    }
+
+    @Override
+    public UserStatus save(UserStatus status) {
+        Map<UUID, UserStatus> data = loadData();
+        data.put(status.getUserId(), status);
+        saveData(data);
+        return status;
+    }
+
+    // 특정 유저의 접속 상태 조회
+    @Override
+    public Optional<UserStatus> findByUserId(UUID userId) {
+        return Optional.ofNullable(loadData().get(userId));
+    }
+
+    @Override
+    public List<UserStatus> findAll() {
+        return new ArrayList<>(loadData().values());
+    }
+
+    // 유저 삭제 시 해당 유저의 접속 상태 데이터 삭제
+    @Override
+    public void deleteByUserId(UUID userId) {
+        Map<UUID, UserStatus> data = loadData();
+        data.remove(userId);
+        saveData(data);
+    }
 }
