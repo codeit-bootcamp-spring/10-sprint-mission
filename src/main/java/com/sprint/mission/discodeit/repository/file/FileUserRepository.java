@@ -37,6 +37,13 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByEmail(String email) {
+        return findAll().stream()
+                .filter(u -> u.getEmail().equals(email))
+                .findFirst();
+    }
+
+    @Override
     public List<User> findAll() {
         Path userPath = Path.of("./users");
         if(Files.exists(userPath)) {
