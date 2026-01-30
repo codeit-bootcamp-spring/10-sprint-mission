@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    UserResponseDto create(UserCreateRequestDto userCreateRequestDto);
+    UserResponseDto create(UserCreateRequestDto dto);
     UserResponseDto findUser(UUID userId);
     List<UserResponseDto> findAllUsers();
     UserResponseDto addFriend(UUID senderId, UUID recieverId);
     List<UserResponseDto> findFriends(UUID userId);
-    UserResponseDto update(UUID userId, UserUpdateRequsetDto userUpdateRequsetDto);
+    UserResponseDto update(UUID userId, UserUpdateRequsetDto dto);
     void delete(UUID userId);
 }

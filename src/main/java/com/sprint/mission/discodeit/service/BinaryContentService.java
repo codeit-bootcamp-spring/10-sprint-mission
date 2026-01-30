@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateDto;
 
 public interface BinaryContentService {
-    BinaryContentDto create(BinaryContentDto binaryContentDto);
+    BinaryContentCreateDto create(BinaryContentCreateDto dto);
 }

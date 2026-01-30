@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -22,12 +23,17 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
     @Override
     public void save(ReadStatus readStatus) {
+        Map<UUID, ReadStatus> data = loadData();
+        data.put(readStatus.getId(), readStatus);
+        saveData(data);
 
     }
 
     @Override
     public void delete(UUID id) {
-
+        Map<UUID, ReadStatus> data = loadData();
+        data.remove(id);
+        saveData(data);
     }
 
     private Map<UUID, ReadStatus> loadData(){

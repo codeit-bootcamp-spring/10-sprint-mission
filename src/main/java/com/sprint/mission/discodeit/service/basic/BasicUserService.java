@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequsetDto;
@@ -27,22 +27,22 @@ public class BasicUserService implements UserService {
     private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public UserResponseDto create(UserCreateRequestDto userCreateRequestDto) {
+    public UserResponseDto create(UserCreateRequestDto dto) {
         // 유저 객체 생성
-        User user = new User(userCreateRequestDto.getName(),
-                userCreateRequestDto.getEmail(),
-                userCreateRequestDto.getPassword());
+        User user = new User(dto.getName(),
+                dto.getEmail(),
+                dto.getPassword());
 
         // 유저 dto 내부 받아온 파일 dto
-        BinaryContentDto binaryContentDto = userCreateRequestDto.getProfileImg();
+        BinaryContentCreateDto binaryContentCreateDto = dto.getProfileImg();
         // 프로필 등록 여부 & binaryContent객체 생성
-        if(userCreateRequestDto.getProfileImg() != null){
+        if(dto.getProfileImg() != null){
             BinaryContent binaryContent =
                     new BinaryContent(user.getId(),
                             null,
-                            binaryContentDto.getFileData(),
-                            binaryContentDto.getName(),
-                            binaryContentDto.getFileType());
+                            binaryContentCreateDto.getFileData(),
+                            binaryContentCreateDto.getName(),
+                            binaryContentCreateDto.getFileType());
             // binarycontent 저장
             binaryContentRepository.save(binaryContent);
             // 연관성 주입
@@ -120,23 +120,23 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDto update(UUID userId, UserUpdateRequsetDto userUpdateRequsetDto) {
+    public UserResponseDto update(UUID userId, UserUpdateRequsetDto dto) {
         User user = getUser(userId);
         // 이름 수정
-        if(userUpdateRequsetDto.getName() != null){
-            user.updateName(userUpdateRequsetDto.getName());
+        if(dto.getName() != null){
+            user.updateName(dto.getName());
         }
         // 이메일 수정
-        if(userUpdateRequsetDto.getEmail() != null){
-            user.updateEmail(userUpdateRequsetDto.getEmail());
+        if(dto.getEmail() != null){
+            user.updateEmail(dto.getEmail());
         }
         // 비밀번호 수정
-        if(userUpdateRequsetDto.getPassword() != null){
-            user.updatePassword(userUpdateRequsetDto.getPassword());
+        if(dto.getPassword() != null){
+            user.updatePassword(dto.getPassword());
         }
         // 프로필 수정(기존에 있던 binaryContent를 삭제하고 업데이트 dto에 있는 binaryContent를 생성
-        if(userUpdateRequsetDto.getBinaryContentDto() != null){
-            BinaryContentDto newBinaryContentDto = userUpdateRequsetDto.getBinaryContentDto();
+        if(dto.getBinaryContentCreateDto() != null){
+            BinaryContentCreateDto newBinaryContentCreateDto = dto.getBinaryContentCreateDto();
 
             UUID oldProfileImageId = user.getProfileImageId();
             if(oldProfileImageId != null){
@@ -145,9 +145,9 @@ public class BasicUserService implements UserService {
 
             BinaryContent newBinaryContent = new BinaryContent(user.getId(),
                                 null,
-                                    newBinaryContentDto.getFileData(),
-                                    newBinaryContentDto.getName(),
-                                    newBinaryContentDto.getFileType());
+                                    newBinaryContentCreateDto.getFileData(),
+                                    newBinaryContentCreateDto.getName(),
+                                    newBinaryContentCreateDto.getFileType());
             binaryContentRepository.save(newBinaryContent);
 
             user.updateProfileImg(newBinaryContent.getId());

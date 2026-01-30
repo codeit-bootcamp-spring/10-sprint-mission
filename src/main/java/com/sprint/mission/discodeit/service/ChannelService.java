@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    ChannelResponseDto createPublic(ChannelCreatePublicDto channelCreatePublicDto);
-    ChannelResponseDto createPrivate(ChannelCreatePrivateDto channelCreatePrivateDto);
+    ChannelResponseDto createPublic(ChannelCreatePublicDto dto);
+    ChannelResponseDto createPrivate(ChannelCreatePrivateDto dto);
     ChannelResponseDto joinUsers(UUID channelId, UUID ...userId);
     ChannelResponseDto findChannel(UUID channelId);
     List<ChannelResponseDto> findAllChannelsByUserId(UUID userId);
-    ChannelResponseDto update(ChannelUpdateDto channelUpdateDto);
+    ChannelResponseDto update(ChannelUpdateDto dto);
     void delete(UUID channelId);
 }

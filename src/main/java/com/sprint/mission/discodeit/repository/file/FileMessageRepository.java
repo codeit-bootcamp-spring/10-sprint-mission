@@ -15,9 +15,8 @@ public class FileMessageRepository implements MessageRepository {
     private static final String MESSAGE_FILE = "data/message.ser";
 
     @Override
-    public Message findById(UUID messageId) {
-        Map<UUID,Message> data = loadData();
-        return data.get(messageId);
+    public Optional<Message> findById(UUID messageId) {
+        return Optional.ofNullable(loadData().get(messageId));
     }
 
     @Override

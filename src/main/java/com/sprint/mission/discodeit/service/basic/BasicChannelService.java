@@ -32,20 +32,20 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     // 공용 채널
-    public ChannelResponseDto createPublic(ChannelCreatePublicDto channelCreatePublicDto) {
+    public ChannelResponseDto createPublic(ChannelCreatePublicDto dto) {
         // 채널 생성
-        Channel channel = new Channel(channelCreatePublicDto.getChannelName());
+        Channel channel = new Channel(dto.getChannelName());
         channel.setChannelType(ChannelType.PUBLIC);
         // 채널 저장
         channelRepository.save(channel);
         return channelMapper.toPublicDto(channel);
     }
     // 개인 채널
-    public ChannelResponseDto createPrivate(ChannelCreatePrivateDto channelCreatePrivateDto){
+    public ChannelResponseDto createPrivate(ChannelCreatePrivateDto dto){
         // 채널 생성
-        Channel channel = new Channel(channelCreatePrivateDto.getChannelName());
+        Channel channel = new Channel(dto.getChannelName());
         // 입력으로 들어온 유저 당 readStatus도 생성 후 저장
-        channelCreatePrivateDto.getUserList()
+        dto.getUserList()
                         .forEach(userId ->
                                 readStatusRepository.save(new ReadStatus(userId, channel.getId())));
 
@@ -122,13 +122,13 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelResponseDto update(ChannelUpdateDto channelUpdateDto) {
-        Channel channel = getChannel(channelUpdateDto.getId());
-        if(channelUpdateDto.getChannelType() == ChannelType.PRIVATE){
+    public ChannelResponseDto update(ChannelUpdateDto dto) {
+        Channel channel = getChannel(dto.getId());
+        if(dto.getChannelType() == ChannelType.PRIVATE){
             throw new IllegalStateException("Private 채널은 수정할 수 없습니다");
         }
         // 채널 업데이트
-        channel.updateChannel(channelUpdateDto.getChannelName());
+        channel.updateChannel(dto.getChannelName());
         // 채널 갱신
         channelRepository.save(channel);
 
@@ -141,8 +141,9 @@ public class BasicChannelService implements ChannelService {
 
         // 채널이 삭제될때 채널에 속해있던 메시지들 전부 삭제
         List<UUID> messageList = new ArrayList<>(channel.getMessageList());
-        messageList.stream().map(messageRepository::findById)
-                .filter(Objects::nonNull).forEach(message ->{
+        messageList.stream().map(messageId -> messageRepository.findById(messageId)
+                        .orElseThrow(() -> new NoSuchElementException("해당 메시지가 없습니다.")))
+                .forEach(message ->{
                 messageRepository.delete(message.getId());
                 // 유저가 가지고 있던 메시지도 삭제
                 User author = userRepository.findById(message.getUserId())

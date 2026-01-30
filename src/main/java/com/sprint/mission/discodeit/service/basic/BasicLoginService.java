@@ -18,12 +18,12 @@ public class BasicLoginService implements LoginService {
     private final UserMapper userMapper;
 
     @Override
-    public UserResponseDto login(UserLoginRequestDto userLoginRequestDto) {
+    public UserResponseDto login(UserLoginRequestDto dto) {
         // 이름과 일치하는 객체 찾기
-        User user = userRepository.findByName(userLoginRequestDto.getName())
+        User user = userRepository.findByName(dto.getName())
                 .orElseThrow(() -> new NoSuchElementException("해당 유저가 없습니다!"));
         // 이름이 일치하고 비밀번호가 일치하는 겍체 찾기
-        if(!userLoginRequestDto.getPassword().equals(user.getPassword())){
+        if(!dto.getPassword().equals(user.getPassword())){
             throw new NoSuchElementException("해당 유저가 없습니다!");
         }
 
