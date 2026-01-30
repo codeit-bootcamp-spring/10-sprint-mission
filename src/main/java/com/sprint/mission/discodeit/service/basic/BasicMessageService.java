@@ -64,7 +64,7 @@ public class BasicMessageService implements MessageService {
 
     // 메시지 단건 조회
     @Override
-    public MessageResponseDTO searchMessage(UUID targetMessageId) {
+    public MessageResponseDTO findById(UUID targetMessageId) {
         // 1. 메시지 존재 여부 확인
         Message targetMessage = messageRepository.findById(targetMessageId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
@@ -73,9 +73,17 @@ public class BasicMessageService implements MessageService {
         return toResponseDTO(targetMessage);
     }
 
+    // 메시지 전체 조회
+    @Override
+    public List<MessageResponseDTO> findAll() {
+        return messageRepository.findAll().stream()
+                .map(this::toResponseDTO)
+                .toList();
+    }
+
     // 특정 채널의 전체 메시지 목록 조회
     @Override
-    public List<MessageResponseDTO> searchMessageAllByChannelId(UUID channelId) {
+    public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
         // 1. 채널 존재 여부 확인
         Channel taregetChannel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
@@ -90,7 +98,7 @@ public class BasicMessageService implements MessageService {
 
     // 특정 사욪자가 발행한 전체 메시지 목록 조회
     @Override
-    public List<MessageResponseDTO> searchMessagesByUserId(UUID targetUserId) {
+    public List<MessageResponseDTO> findAllByUserId(UUID targetUserId) {
         // 1. 사용자 존재 여부 확인
         User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));

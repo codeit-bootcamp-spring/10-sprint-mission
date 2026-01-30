@@ -160,7 +160,7 @@ public class BasicChannelService implements ChannelService {
 
     // 채널 참가자 초대
     @Override
-    public void inviteMembers(UUID targetUserId, UUID targetChannelId) {
+    public void inviteMember(UUID targetUserId, UUID targetChannelId) {
         User newUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
         Channel targetChannel = findEntityById(targetChannelId);
@@ -173,7 +173,7 @@ public class BasicChannelService implements ChannelService {
 
     // 채널 퇴장
     @Override
-    public void leaveMembers(UUID targetUserId, UUID targetChannelId) {
+    public void leaveMember(UUID targetUserId, UUID targetChannelId) {
         User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
         Channel targetChannel = findEntityById(targetChannelId);
@@ -221,6 +221,7 @@ public class BasicChannelService implements ChannelService {
 //                .orElse(null);
 //    }
 
+    // 응답 DTO 생성 및 반환
     public ChannelResponseDTO toResponseDTO(Channel channel) {
         return ChannelResponseDTO.builder()
                 .id(channel.getId())

@@ -51,12 +51,12 @@ public class BasicUserService implements UserService {
                 .ifPresent(newUser::updateProfileId);
 
         // 5. 응답 DTO 객체 생성 및 반환
-        return toUserResponseDTO(newUser, newUserStatus);
+        return toResponseDTO(newUser, newUserStatus);
     }
 
     // 사용자 단건 조회
     @Override
-    public UserResponseDTO searchUser(UUID userId) {
+    public UserResponseDTO findById(UUID userId) {
         // 1. 사용자 존재 여부 확인
         User targetUser = findUserEntityById(userId);
 
@@ -64,26 +64,26 @@ public class BasicUserService implements UserService {
         UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
 
         // 2. 조회 응답 DTO 생성 및 반환
-        return toUserResponseDTO(targetUser, targetUserStatus);
+        return toResponseDTO(targetUser, targetUserStatus);
     }
 
     // 사용자 전체 조회
     @Override
-    public List<UserResponseDTO> searchUserAll() {
+    public List<UserResponseDTO> findAll() {
         // 1. 조회 응답 DTO 생성 및 반환
         return userRepository.findAll().stream()
                 .map(user -> {
                     // 사용자 상태 조회
                     UserStatus userStatus = userStatusRepository.findById(user.getId());
                     // 사용자 -> 사용자 조회 응답 변환
-                    return toUserResponseDTO(user, userStatus);
+                    return toResponseDTO(user, userStatus);
                 })
                 .toList();
     }
 
     // 특정 채널의 참가자 목록 조회
     @Override
-    public List<UserResponseDTO> searchMembersByChannelId(UUID channelId) {
+    public List<UserResponseDTO> findMembersByChannelId(UUID channelId) {
         // 1. 채널 존재 여부 확인
         Channel targetChannel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
@@ -93,7 +93,7 @@ public class BasicUserService implements UserService {
                 .map(memberId -> {
                     User user = findUserEntityById(memberId);
                     UserStatus userStatus = userStatusRepository.findById(user.getId());
-                    return toUserResponseDTO(user,userStatus);
+                    return toResponseDTO(user,userStatus);
                 })
                 .toList();
     }
@@ -144,7 +144,7 @@ public class BasicUserService implements UserService {
         userRepository.save(targetUser);
 
         // 5. 응답 DTO 변환 및 반환
-        return toUserResponseDTO(targetUser, targetUserStatus);
+        return toResponseDTO(targetUser, targetUserStatus);
     }
 
     // 사용자 삭제
@@ -199,7 +199,7 @@ public class BasicUserService implements UserService {
     }
 
     // 엔티티 -> 응답 DTO 변환
-    public UserResponseDTO toUserResponseDTO(User user, UserStatus userStatus) {
+    public UserResponseDTO toResponseDTO(User user, UserStatus userStatus) {
         return UserResponseDTO.builder()
                 .id(user.getId())
                 .email(user.getEmail())

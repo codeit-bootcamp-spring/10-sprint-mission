@@ -12,13 +12,13 @@ public interface UserService {
     UserResponseDTO createUser(UserCreateRequestDTO userCreateRequestDTO);
 
     // 사용자 단건 조회
-    UserResponseDTO searchUser(UUID userId);
+    UserResponseDTO findById(UUID userId);
 
     // 사용자 전체 조회
-    List<UserResponseDTO> searchUserAll();
+    List<UserResponseDTO> findAll();
 
     // 채널 내 멤버 목록 조회
-    List<UserResponseDTO> searchMembersByChannelId(UUID channelId);
+    List<UserResponseDTO> findMembersByChannelId(UUID channelId);
 
     // 사용자 수정
     UserResponseDTO updateUser(UserUpdateRequestDTO userUpdateRequestDTO);

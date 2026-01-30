@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.request.ChannelUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.ChannelResponseDTO;
-import com.sprint.mission.discodeit.entity.Channel;
 
 import java.util.List;
 import java.util.UUID;
@@ -32,8 +31,8 @@ public interface ChannelService {
     void deleteChannel(UUID targetChannelId);
 
     // 채널 참가자 초대
-    void inviteMembers(UUID targetUserId, UUID targetChannelId);
+    void inviteMember(UUID targetUserId, UUID targetChannelId);
 
     // 채널 퇴장
-    void leaveMembers(UUID targetUserId, UUID targetChannelId);
+    void leaveMember(UUID targetUserId, UUID targetChannelId);
 }
