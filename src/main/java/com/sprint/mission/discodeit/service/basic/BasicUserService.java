@@ -102,7 +102,8 @@ public class BasicUserService implements UserService {
 
         // profileId가 존재하면 업데이트
         if(updateInfo.profileId() != null) {
-            contentRepository.deleteById(findUser.getProfileId());
+            if(findUser.isProfileImageUploaded())
+                contentRepository.deleteById(findUser.getProfileId());
             BinaryContent newContent = new BinaryContent(updateInfo.profileImage());
             findUser.setProfileId(newContent.getId());
             contentRepository.save(newContent);
