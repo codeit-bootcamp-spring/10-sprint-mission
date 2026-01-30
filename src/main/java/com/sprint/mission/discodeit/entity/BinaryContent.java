@@ -25,7 +25,7 @@ public class BinaryContent implements Serializable {
     public BinaryContent(byte[] content) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.content = content;
+        this.content = content.clone();
     }
 
     // getter

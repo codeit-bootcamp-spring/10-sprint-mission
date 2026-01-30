@@ -5,10 +5,7 @@ import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +21,7 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
     public Channel createPublicChannel(PublicChannelCreateRequest request) {
@@ -249,11 +247,15 @@ public class BasicChannelService implements ChannelService {
         verifyChannelOwner(channel, ownerId);
 
         for (Message message : messageRepository.findByChannelId(channelId)) {
-            messageRepository.delete(message.getId());
             User author = validateAndGetUserByUserId(message.getAuthor().getId());
-            Channel messageChannel = channel;
+            unlinkMessage(author, channel, message);
 
-            unlinkMessage(author, messageChannel, message);
+            if (message.getAttachmentIds() != null && !message.getAttachmentIds().isEmpty()) {
+                for (UUID attachmentId : message.getAttachmentIds()) {
+                    binaryContentRepository.delete(attachmentId);
+                }
+            }
+            messageRepository.delete(message.getId());
             userRepository.save(author);
         }
         for (ReadStatus readStatus : readStatusRepository.findAllByChannelId(channelId)) {
