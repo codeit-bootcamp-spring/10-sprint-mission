@@ -7,5 +7,5 @@ public record UserCreateRequest (
         String userName,
         String email,
         String password,
-        Optional<ProfileImageCreateRequest> profileImage
+        ProfileImageCreateRequest profileImage
 ) {}

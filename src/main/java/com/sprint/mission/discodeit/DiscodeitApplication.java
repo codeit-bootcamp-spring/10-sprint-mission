@@ -41,7 +41,7 @@ public class DiscodeitApplication {
 						"김코딩",
 						"kim@codeit.com",
 						"123123",
-						Optional.empty()
+						null
 				)
 		);
 

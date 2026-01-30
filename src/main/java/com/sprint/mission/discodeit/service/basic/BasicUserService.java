@@ -54,8 +54,8 @@ public class BasicUserService implements UserService {
         UserStatus status = new UserStatus(user.getId(), Instant.now());
 
         //프로필 이미지저장 (있다면)
-        if (request.profileImage().isPresent()) {
-            ProfileImageCreateRequest imgReq = request.profileImage().get();
+        if (request.profileImage() != null) {
+            ProfileImageCreateRequest imgReq = request.profileImage();
 
             BinaryContent image = new BinaryContent(
                     imgReq.fileName(),

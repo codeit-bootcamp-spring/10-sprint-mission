@@ -8,13 +8,10 @@ import java.util.List;
 
 public interface ChannelRepository {
 
-    void userAddChannel(UUID channelId, UUID userId);
+    Channel saveChannel(Channel channel);
     Channel createChannel(Channel channel);
-    Channel findChannel(UUID id);
+    Channel findChannel(UUID channelId);
     List<Channel> findAllChannel();
     void deleteChannel(UUID id);
-    boolean existsByNameChannel(String channelName);
-    Channel findByUserId(UUID userId);
-    String findAllUserInChannel(UUID channelId);
 
 }
