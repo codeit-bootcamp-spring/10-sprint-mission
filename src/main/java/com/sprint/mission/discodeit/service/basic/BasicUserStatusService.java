@@ -60,15 +60,15 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatus updateUserStatusByUserId(UUID userId, Instant lastOnlineTime) {
-        if (lastOnlineTime == null) {
+    public UserStatus updateUserStatusByUserId(UUID userId, UserStatusUpdateRequest request) {
+        if (request.lastOnlineTime() == null) {
             throw new IllegalArgumentException("lastOnlineTime null로 입력되었습니다.");
         }
 
         validateUserByUserId(userId);
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
 
-        userStatus.updateLastOnlineTime(lastOnlineTime);
+        userStatus.updateLastOnlineTime(request.lastOnlineTime());
         userStatusRepository.save(userStatus);
 
         return userStatus;

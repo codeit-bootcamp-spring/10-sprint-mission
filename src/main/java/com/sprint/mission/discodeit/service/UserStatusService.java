@@ -20,7 +20,7 @@ public interface UserStatusService {
 
     // update
     UserStatus updateUserStatus(UserStatusUpdateRequest request);
-    UserStatus updateUserStatusByUserId(UUID userId, Instant lastReadTime);
+    UserStatus updateUserStatusByUserId(UUID userId, UserStatusUpdateRequest request);
 
     // delete
     void deleteUserStatus(UUID userStatusId);
