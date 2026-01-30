@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.binaryContent.model;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -10,10 +10,10 @@ public class BinaryContent {
     private final UUID id;
     private final String contentType;
     private final long size;
-    private final byte[] data; // 실제로는 파일 경로나 스토리지 키를 쓸 수도 있음
-    private final LocalDateTime createdAt;
+    private final byte[] data;
+    private final Instant createdAt;
 
-    public BinaryContent(UUID id, String contentType, long size, byte[] data, LocalDateTime createdAt) {
+    public BinaryContent(UUID id, String contentType, long size, byte[] data, Instant createdAt) {
         this.id = id;
         this.contentType = contentType;
         this.size = size;
@@ -27,7 +27,7 @@ public class BinaryContent {
                 contentType,
                 data.length,
                 data,
-                LocalDateTime.now()
+                Instant.now()
         );
     }
 
@@ -36,5 +36,5 @@ public class BinaryContent {
     public String getContentType() { return contentType; }
     public long getSize() { return size; }
     public byte[] getData() { return data; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
+    public Instant getCreatedAt() { return createdAt; }
 }
