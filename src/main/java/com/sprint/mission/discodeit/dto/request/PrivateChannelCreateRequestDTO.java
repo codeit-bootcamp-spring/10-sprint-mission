@@ -12,8 +12,5 @@ public class PrivateChannelCreateRequestDTO {
     @NotNull
     private UUID userId;
 
-    @NotNull
-    private ChannelType channelType;
-
     private List<UUID> memberIds;
 }

@@ -28,7 +28,7 @@ public class Channel extends BaseEntity implements Serializable {
         this.updatedAt = Instant.now();
         this.channelName = publicChannelCreateRequestDTO.getChannelName();
         this.userId = publicChannelCreateRequestDTO.getUserId();
-        this.type = publicChannelCreateRequestDTO.getChannelType();
+        this.type = ChannelType.PUBLIC;
         this.description = publicChannelCreateRequestDTO.getDescription();
 
         this.members.add(userId);
@@ -41,7 +41,7 @@ public class Channel extends BaseEntity implements Serializable {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.userId = privateChannelCreateRequestDTO.getUserId();
-        this.type = privateChannelCreateRequestDTO.getChannelType();
+        this.type = ChannelType.PRIVATE;
         this.members =  privateChannelCreateRequestDTO.getMemberIds();
     }
 

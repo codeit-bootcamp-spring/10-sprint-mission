@@ -15,9 +15,6 @@ public class PublicChannelCreateRequestDTO {
     @NotNull
     private String channelName;
 
-    @NotNull
-    private ChannelType channelType;
-
     @NotBlank
     private String description;
 }
