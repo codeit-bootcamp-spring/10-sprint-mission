@@ -23,8 +23,8 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public Optional<BinaryContent> findById(UUID BinaryContentId) {
-        return Optional.ofNullable(data.get(BinaryContentId));
+    public Optional<BinaryContent> findById(UUID binaryContentId) {
+        return Optional.ofNullable(data.get(binaryContentId));
     }
 
     @Override
