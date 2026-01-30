@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto;
+package com.sprint.mission.discodeit.dto.binarycontent;
 
 public record BinaryContentCreateDTO(
         byte[] data,
