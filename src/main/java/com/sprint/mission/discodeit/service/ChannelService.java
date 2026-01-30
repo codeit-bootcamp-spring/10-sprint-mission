@@ -13,7 +13,7 @@ public interface ChannelService {
 
     List<ChannelWithLastMessageDTO> findAllByUserId(UUID userId);
 
-    ChannelWithLastMessageDTO getChannelInfoById(UUID channelId);
+    ChannelWithLastMessageDTO findByChannelId(UUID channelId);
 
     ChannelWithLastMessageDTO updateChannelName(UpdateChannelRequestDTO dto);
 

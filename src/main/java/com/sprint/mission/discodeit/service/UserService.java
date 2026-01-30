@@ -10,11 +10,11 @@ import java.util.UUID;
 public interface UserService {
     UserResponseDTO createUser(UserCreateDTO dto);
 
-    List<UserResponseDTO> getUserList();
+    List<UserResponseDTO> findAll();
 
-    List<UserResponseDTO> getUsersByChannel(UUID channelId);
+    List<UserResponseDTO> findAllByChannel(UUID channelId);
 
-    UserResponseDTO getUserInfoByUserId(UUID userId);
+    UserResponseDTO findByUserId(UUID userId);
 
     UserResponseDTO updateUser(UserUpdateDTO dto);
 

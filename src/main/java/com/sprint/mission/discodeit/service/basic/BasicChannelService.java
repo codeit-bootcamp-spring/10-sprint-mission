@@ -79,7 +79,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelWithLastMessageDTO getChannelInfoById(UUID channelId) {
+    public ChannelWithLastMessageDTO findByChannelId(UUID channelId) {
         Channel channel = findChannelOrThrow(channelId);
         Instant lastMessageAt = findLatestMessageAt(channelId);
 

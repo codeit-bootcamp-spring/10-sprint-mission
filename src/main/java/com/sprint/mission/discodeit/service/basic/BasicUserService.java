@@ -59,7 +59,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserResponseDTO> getUserList() {
+    public List<UserResponseDTO> findAll() {
         List<User> users = userRepository.findAll();
         List<UserStatus> statuses = userStatusRepository.findAll();
 
@@ -67,7 +67,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserResponseDTO> getUsersByChannel(UUID channelId) {
+    public List<UserResponseDTO> findAllByChannel(UUID channelId) {
         if (channelRepository.findById(channelId).isEmpty()) {
             throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
         }
@@ -82,7 +82,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDTO getUserInfoByUserId(UUID userId) {
+    public UserResponseDTO findByUserId(UUID userId) {
         return UserMapper.toResponse(
                 findUserInfoById(userId), userStatusRepository.findByUserId(userId)
         );
