@@ -28,6 +28,14 @@ public class JCFMessageRepository implements MessageRepository {
         return this.data.values().stream().toList();
     }
 
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return this.data.values().stream()
+                .filter(m -> m.getChannelId().equals(channelId))
+                .sorted(Comparator.comparing(Message::getCreatedAt))
+                .toList();
+    }
+
+
     @Override
     public boolean existsById(UUID id) {
         return this.data.containsKey(id);
@@ -37,4 +45,20 @@ public class JCFMessageRepository implements MessageRepository {
     public void deleteById(UUID id) {
         this.data.remove(id);
     }
+
+    @Override
+    public Optional<Message> findLatestByChannelId(UUID channelId) {
+        return findAll().stream()
+                .filter(m -> m.getChannelId().equals(channelId))
+                .min((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
+    }
+
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        List<Message> targets = findAll().stream()
+                .filter(m -> m.getChannelId().equals(channelId))
+                .toList();
+        targets.forEach(m -> deleteById(m.getId()));
+    }
+
 }
