@@ -57,24 +57,16 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserInfoWithStatus getUser(UUID userId) {
-        return userRepository.findById(userId)
-                .map(user -> {
-                    UserStatus status = userStatusRepository.findByUserId(userId)
-                            .orElseThrow(() -> new NoSuchElementException("해당 사용자의 상태 정보를 찾을 수 없습니다."));
-                    return new UserInfoWithStatus(user.getUserName(), user.getEmail(), status.isOnline());
-                })
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+        return toUserInfoWithStatus(user);
     }
 
     @Override
     public List<UserInfoWithStatus> getAllUsers() {
         return userRepository.findAll()
                 .stream()
-                .map(user -> {
-                    UserStatus status = userStatusRepository.findByUserId(user.getId())
-                            .orElseThrow(() -> new NoSuchElementException("해당 사용자의 상태 정보를 찾을 수 없습니다."));
-                    return new UserInfoWithStatus(user.getUserName(), user.getEmail(), status.isOnline());
-                })
+                .map(this::toUserInfoWithStatus)
                 .toList();
     }
 
@@ -135,6 +127,12 @@ public class BasicUserService implements UserService {
             contentRepository.deleteById(user.getProfileId());
         userStatusRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
+    }
+
+    private UserInfoWithStatus toUserInfoWithStatus(User user) {
+        UserStatus status = userStatusRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자의 상태 정보를 찾을 수 없습니다."));
+        return new UserInfoWithStatus(user.getUserName(), user.getEmail(), status.isOnline());
     }
 
     private void validateUserExist(String userName) {
