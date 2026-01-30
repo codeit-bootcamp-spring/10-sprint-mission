@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.UUID;
 
 public class Message extends BaseEntity {
-    private static final long serialVersionUID = 1L;
-
     @Getter
     private String content;
     @Getter

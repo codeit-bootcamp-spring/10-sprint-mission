@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public interface MessageService {
     MessageDTO.Response create(MessageDTO.Create createRequest);
-    List<MessageDTO.Response> findAllByChannelId(UUID channelId);
     MessageDTO.Response findById(UUID messageId);
+    List<MessageDTO.Response> findAllByChannelId(UUID channelId);
     MessageDTO.Response update(UUID authorId, MessageDTO.Update updateRequest);
     void delete(UUID authorId, UUID messageId);
 }

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ChannelDTO;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -19,6 +20,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
     private final ReadStatusRepository readStatusRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
     public ChannelDTO.Response createPrivate(UUID creatorId, ChannelDTO.CreatePrivate createRequest) {
@@ -27,7 +29,7 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
         //채널 참여자 ReadStatus 생성
         List<UUID> memberIds = new ArrayList<>(createRequest.userIds());
-        //채널 생성자 목록에 추가
+        //채널 생성자를 참여자 목록에 추가
         memberIds.add(creatorId);
         for (UUID memberId : memberIds) {
             ReadStatus status = new ReadStatus(memberId, channel.getId());
@@ -98,6 +100,11 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalArgumentException("PRIVATE 채널은 가입할 수 없습니다.");
         }
 
+        readStatusRepository.findByUserIdAndChannelId(userId, channelId)
+                .ifPresent(status -> {
+                    throw new IllegalStateException("이미 가입 중인 채널입니다.");
+                });
+
         ReadStatus status = new ReadStatus(userId, channelId);
         readStatusRepository.save(status);
     }
@@ -105,7 +112,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void leaveChannel(UUID userId, UUID channelId) {
         ReadStatus status = readStatusRepository.findByUserIdAndChannelId(userId, channelId)
-                .orElseThrow(() -> new IllegalArgumentException("가입하지 않은 채널입니다."));
+                .orElseThrow(() -> new IllegalStateException("가입하지 않은 채널입니다."));
         readStatusRepository.delete(status);
     }
 
@@ -129,10 +136,18 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
 
-        //채널 삭제 시 채널에 있는 메세지 지우기
-        messageRepository.findAll().stream()
+        //채널 삭제 시 채널에 있는 메시지 지우기
+        List<Message> messages = messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
-                .forEach(messageRepository::delete);
+                .toList();
+        //메시지 속 첨부파일 삭제
+        for (Message message : messages) {
+            for (UUID attachmentId : message.getAttachmentIds()) {
+                binaryContentRepository.findById(attachmentId)
+                        .ifPresent(binaryContentRepository::delete);
+            }
+            messageRepository.delete(message);
+        }
 
         //채널 삭제 시 ReadStatus 지우기
         readStatusRepository.findAllByChannelId(channelId)

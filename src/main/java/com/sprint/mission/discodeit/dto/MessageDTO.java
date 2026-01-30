@@ -12,8 +12,7 @@ public class MessageDTO {
             UUID authorId,
             UUID channelId,
             List<BinaryContentDTO.Create> attachments
-    ) {
-    }
+    ) {}
 
     public record Response(
             UUID id,
@@ -39,6 +38,5 @@ public class MessageDTO {
             UUID id,
             String content,
             UUID authorId
-    ) {
-    }
+    ) {}
 }

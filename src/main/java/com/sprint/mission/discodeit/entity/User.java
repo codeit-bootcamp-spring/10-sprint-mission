@@ -5,8 +5,6 @@ import lombok.Getter;
 import java.util.*;
 
 public class User extends BaseEntity {
-    private static final long serialVersionUID = 1L;
-
     @Getter
     private String username;
     @Getter

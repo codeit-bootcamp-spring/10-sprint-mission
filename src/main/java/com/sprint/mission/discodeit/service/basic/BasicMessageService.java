@@ -29,11 +29,11 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageDTO.Response create(MessageDTO.Create request) {
 
-        channelRepository.findById(request.channelId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
-
         userRepository.findById(request.authorId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+
+        channelRepository.findById(request.channelId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
 
         readStatusRepository.findByUserIdAndChannelId(request.authorId(), request.channelId())
                 .orElseThrow(() -> new IllegalArgumentException("채널에 참가하지 않은 유저는 글을 작성할 수 없습니다."));
@@ -63,18 +63,18 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
+    public MessageDTO.Response findById(UUID messageId) {
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
+        return MessageDTO.Response.of(message);
+    }
+
+    @Override
     public List<MessageDTO.Response> findAllByChannelId(UUID channelId) {
         return messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
                 .map(MessageDTO.Response::of)
                 .toList();
-    }
-
-    @Override
-    public MessageDTO.Response findById(UUID messageId) {
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
-        return MessageDTO.Response.of(message);
     }
 
     @Override

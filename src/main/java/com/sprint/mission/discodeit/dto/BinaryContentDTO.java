@@ -24,4 +24,6 @@ public class BinaryContentDTO {
             );
         }
     }
+
+    //BinaryContent는 불변이기때문에 수정할 수 없음
 }

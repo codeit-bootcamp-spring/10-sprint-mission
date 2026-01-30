@@ -20,6 +20,11 @@ public class ReadStatusRepositoryImpl implements ReadStatusRepository{
     }
 
     @Override
+    public Optional<ReadStatus> findById(UUID readStatusId) {
+        return Optional.empty();
+    }
+
+    @Override
     public List<ReadStatus> findAllByUserId(UUID userId) {
         return List.of();
     }

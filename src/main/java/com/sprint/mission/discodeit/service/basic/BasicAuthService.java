@@ -28,11 +28,7 @@ public class BasicAuthService implements AuthService {
         }
 
         UserStatus status = userStatusRepository.findByUserId(user.getId())
-                .orElseGet(() -> {
-                    UserStatus newStatus = new UserStatus(user.getId());
-                    userStatusRepository.save(newStatus);
-                    return newStatus;
-                });
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 UserStatus입니다."));
 
         status.updateOnline();
         userStatusRepository.save(status);

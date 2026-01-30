@@ -23,6 +23,6 @@ public class BinaryContent implements Serializable {
         this.fileName = fileName;
         this.bytes = bytes;
         this.id = UUID.randomUUID();
-        createdAt = Instant.now();
+        this.createdAt = Instant.now();
     }
 }

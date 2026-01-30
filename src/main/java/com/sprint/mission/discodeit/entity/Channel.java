@@ -5,10 +5,8 @@ import lombok.Getter;
 import java.util.*;
 
 public class Channel extends BaseEntity {
-    private static final long serialVersionUID = 1L;
-
     @Getter
-    private ChannelType type;
+    private final ChannelType type;
     @Getter
     private String channelName;
     @Getter

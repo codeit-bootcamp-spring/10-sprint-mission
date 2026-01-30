@@ -15,6 +15,11 @@ public class UserStatusRepositoryImpl implements UserStatusRepository{
     }
 
     @Override
+    public Optional<UserStatus> findById(UUID userStatusId) {
+        return Optional.empty();
+    }
+
+    @Override
     public Optional<UserStatus> findByUserId(UUID userId) {
         return null;
     }
