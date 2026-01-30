@@ -59,7 +59,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public List<ChannelDto.Response> findAllByUserId(UUID userId) {
         if (!userRepository.existsById(userId)) {
-            throw new RuntimeException("해당 유저를 찾을 수 없습니다." + userId);
+            throw new NoSuchElementException("해당 유저를 찾을 수 없습니다." + userId);
         }
 
         // 유저가 가입한 private 채널 목록

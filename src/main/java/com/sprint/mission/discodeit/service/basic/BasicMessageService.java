@@ -2,13 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +18,7 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final ReadStatusRepository readStatusRepository;
 
 
     @Override
@@ -32,6 +28,12 @@ public class BasicMessageService implements MessageService {
 
         if (!userRepository.existsById(request.authorId())) {
             throw new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + request.authorId());
+        }
+
+        if (channel.getType() == ChannelType.PRIVATE) {
+            if (!readStatusRepository.existsByUserIdAndChannelId(request.authorId(), channel.getId())){
+                throw new IllegalArgumentException("비공개 채널에는 채널 멤버만 메시지를 전송할 수 있습니다.");
+            }
         }
 
         List<UUID> attachmentIds = Optional.ofNullable(request.attachments())

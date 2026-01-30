@@ -78,6 +78,7 @@ public class BasicUserService implements UserService {
         // password 업데이트는 엔티티 내 메서드를 따로 만들어서 책임 분리로 개선할 여지가 있음
         user.update(newUsername, newEmail, newPassword, newProfileId);
 
+        // 기존 프로필 삭제는 실패해도 유저 업데이트와는 별개로 성공해야 하므로 개선 여지 있음
         if (oldProfileId != null && !oldProfileId.equals(newProfileId)) {
             binaryContentRepository.deleteById(oldProfileId);
         }
