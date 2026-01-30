@@ -32,6 +32,7 @@ public class JCFMessageRepository implements MessageRepository {
     public List<Message> findByChannelId(UUID channelId) {
         return data.values().stream()
                 .filter(message -> message.getSentChannelId().equals(channelId))
+                .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
                 .toList();
     }
 
