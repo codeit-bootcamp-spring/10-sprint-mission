@@ -18,8 +18,8 @@ public class ReadStatus extends BaseEntity{
         lastReadAt = Instant.MIN;
     }
 
-    public void updateLastReadAt(){
-        lastReadAt = Instant.now();
+    public void updateLastReadAt(Instant lastReadAt){
+        this.lastReadAt = lastReadAt;
     }
 
     public boolean isUnread(Instant messageCreatedAt){

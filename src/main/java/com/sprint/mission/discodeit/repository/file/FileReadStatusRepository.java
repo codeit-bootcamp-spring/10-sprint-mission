@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -37,6 +38,21 @@ public class FileReadStatusRepository extends AbstractFileRepository<ReadStatus>
                         rs.getUserId().equals(userId)
                                 && rs.getChannelId().equals(channelId)
                 );
+    }
+
+    @Override
+    public Optional<ReadStatus> findById(UUID id) {
+        Map<UUID, ReadStatus> data = load();
+        ReadStatus readStatus = data.get(id);
+        return Optional.ofNullable(readStatus);
+    }
+
+    @Override
+    public List<ReadStatus> findAllByUserId(UUID userId) {
+        Map<UUID, ReadStatus> data = load();
+        return data.values().stream()
+                .filter(rs -> rs.getUserId().equals(userId))
+                .toList();
     }
 
 }
