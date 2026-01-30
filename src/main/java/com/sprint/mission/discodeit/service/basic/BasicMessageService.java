@@ -79,10 +79,8 @@ public class BasicMessageService implements MessageService {
     public List<MessageResponseDto> findallByChannelId(UUID channelId) {
         List<Message> messages = messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
+                .sorted((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()))
                 .toList();
-
-        //시간 순으로 정렬
-        messages.sort((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()));
 
         return messages.stream()
                 .map(messageResponseMapper::toDto)

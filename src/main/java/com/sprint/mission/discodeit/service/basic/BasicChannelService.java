@@ -79,9 +79,12 @@ public class BasicChannelService implements ChannelService {
 
         channelRepository.findAll()
                 .forEach(channel->{
-            if(channel.getJoinedUser().contains(userId) || channel.getType()==PUBLIC){
-                dtoList.add(find(channel.getId()));
-            }
+                    if (channel.getType() == PUBLIC) {
+                        dtoList.add(find(channel.getId()));
+                    }
+                    else if(channel.getJoinedUser().contains(userId)){
+                        dtoList.add(find(channel.getId()));
+                    }
         });
 
         return dtoList;
