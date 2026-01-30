@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
-import com.sprint.mission.discodeit.dto.user.UserCreateDto;
+import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
-import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequsetDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
@@ -29,16 +29,16 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public UserResponseDto create(UserCreateDto userCreateDto) {
+    public UserResponseDto create(UserCreateRequestDto userCreateRequestDto) {
         // 유저 객체 생성
-        User user = new User(userCreateDto.getName(),
-                userCreateDto.getEmail(),
-                userCreateDto.getPassword());
+        User user = new User(userCreateRequestDto.getName(),
+                userCreateRequestDto.getEmail(),
+                userCreateRequestDto.getPassword());
 
         // 유저 dto 내부 받아온 파일 dto
-        BinaryContentDto binaryContentDto = userCreateDto.getProfileImg();
+        BinaryContentDto binaryContentDto = userCreateRequestDto.getProfileImg();
         // 프로필 등록 여부 & binaryContent객체 생성
-        if(userCreateDto.getProfileImg() != null){
+        if(userCreateRequestDto.getProfileImg() != null){
             BinaryContent binaryContent =
                     new BinaryContent(user.getId(),
                             null,
@@ -46,17 +46,17 @@ public class BasicUserService implements UserService {
                             binaryContentDto.getName(),
                             binaryContentDto.getFileType());
             // binarycontent 저장
-            binaryContentRepository.save(binaryContent.getId(),binaryContent);
+            binaryContentRepository.save(binaryContent);
             // 연관성 주입
             user.addProfileImage(binaryContent.getId());
         }
 
         // 유저정보 저장
-        userRepository.save(user.getId(),user);
+        userRepository.save(user);
         // 유저 상태 생성
         UserStatus userStatus = new UserStatus(user.getId());
         // 추후 메시지상태도 저장
-        userStatusRepository.save(userStatus.getId(), userStatus);
+        userStatusRepository.save(userStatus);
 
         return userMapper.toDto(user,true);
     }
@@ -102,8 +102,8 @@ public class BasicUserService implements UserService {
 
         sender.addFriend(receiverId);
         receiver.addFriend(senderId);
-        userRepository.save(senderId,sender);
-        userRepository.save(receiverId,receiver);
+        userRepository.save(sender);
+        userRepository.save(receiver);
 
         return findUser(senderId);
     }
@@ -122,23 +122,23 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDto update(UUID userId, UserUpdateDto userUpdateDto) {
+    public UserResponseDto update(UUID userId, UserUpdateRequsetDto userUpdateRequsetDto) {
         User user = getUser(userId);
         // 이름 수정
-        if(userUpdateDto.getName() != null){
-            user.updateName(userUpdateDto.getName());
+        if(userUpdateRequsetDto.getName() != null){
+            user.updateName(userUpdateRequsetDto.getName());
         }
         // 이메일 수정
-        if(userUpdateDto.getEmail() != null){
-            user.updateEmail(userUpdateDto.getEmail());
+        if(userUpdateRequsetDto.getEmail() != null){
+            user.updateEmail(userUpdateRequsetDto.getEmail());
         }
         // 비밀번호 수정
-        if(userUpdateDto.getPassword() != null){
-            user.updatePassword(userUpdateDto.getPassword());
+        if(userUpdateRequsetDto.getPassword() != null){
+            user.updatePassword(userUpdateRequsetDto.getPassword());
         }
         // 프로필 수정(기존에 있던 binaryContent를 삭제하고 업데이트 dto에 있는 binaryContent를 생성
-        if(userUpdateDto.getBinaryContentDto() != null){
-            BinaryContentDto newBinaryContentDto = userUpdateDto.getBinaryContentDto();
+        if(userUpdateRequsetDto.getBinaryContentDto() != null){
+            BinaryContentDto newBinaryContentDto = userUpdateRequsetDto.getBinaryContentDto();
 
             UUID oldProfileImageId = user.getProfileImageId();
             if(oldProfileImageId != null){
@@ -150,12 +150,12 @@ public class BasicUserService implements UserService {
                                     newBinaryContentDto.getFileData(),
                                     newBinaryContentDto.getName(),
                                     newBinaryContentDto.getFileType());
-            binaryContentRepository.save(newBinaryContent.getId(),newBinaryContent);
+            binaryContentRepository.save(newBinaryContent);
 
             user.updateProfileImg(newBinaryContent.getId());
         }
         user.updateTimeStamp();
-        userRepository.save(userId,user);
+        userRepository.save(user);
 
         return findUser(userId);
     }
@@ -167,11 +167,10 @@ public class BasicUserService implements UserService {
         // 유저가 속한 채널에서 유저 id지우기
         List<UUID> channelList = new ArrayList<>(user.getChannelList());
         for (UUID channelId : channelList) {
-            Channel channel = channelRepository.findById(channelId);
-            if (channel != null) {
-                channel.getUserList().remove(userId);
-                channelRepository.save(channelId, channel);
-            }
+            Channel channel = channelRepository.findById(channelId)
+                    .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
+            channel.getUserList().remove(userId);
+            channelRepository.save(channel);
         }
 
         // 유저가 쓴 메시지 삭제
@@ -185,7 +184,7 @@ public class BasicUserService implements UserService {
         for (UUID friendId : friendList) {
             User friend = getUser(friendId);
             friend.getFriendsList().remove(userId); // 친구의 친구 목록에서 나 삭제
-            userRepository.save(friendId,friend); // 변경된 친구저장
+            userRepository.save(friend); // 변경된 친구저장
         }
 
         // 유저 상태 삭제

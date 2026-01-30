@@ -27,9 +27,9 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void save(UUID messageId, Message message) {
+    public void save(Message message) {
         Map<UUID, Message> data = loadData();
-        data.put(messageId, message);
+        data.put(message.getId(), message);
         saveData(data);
     }
 

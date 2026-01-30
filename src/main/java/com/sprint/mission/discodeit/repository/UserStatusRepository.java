@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface UserStatusRepository {
-    void save(UUID id, UserStatus userStatus);
+    void save(UserStatus userStatus);
     Optional<UserStatus> findByUserId(UUID id);
     Map<UUID, UserStatus> findAll();
     void deleteByUserId(UUID userId);

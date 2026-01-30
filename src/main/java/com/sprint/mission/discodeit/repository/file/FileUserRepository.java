@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
@@ -23,15 +24,22 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByName(String name) {
+        return loadData().values().stream()
+                .filter(user-> user.getName().equals(name))
+                .findFirst();
+    }
+
+    @Override
     public List<User> findAll() {
         Map<UUID, User> data = loadData();
         return new ArrayList<>(data.values());
     }
 
     @Override
-    public void save(UUID userId, User user) {
+    public void save(User user) {
         Map<UUID, User> data = loadData();
-        data.put(userId,user);
+        data.put(user.getId(),user);
         saveData(data);
     }
 

@@ -12,7 +12,7 @@ import java.util.*;
 
 @Repository
 public class FileUserStatusRepository implements UserStatusRepository {
-    private static final String STATUS_FILE = "data/userStatus.ser";
+    private static final String USER_STATUS_FILE = "data/userStatus.ser";
 
     @Override
     public Optional<UserStatus> findByUserId(UUID id) {
@@ -25,7 +25,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
 
     @Override
-    public void save(UUID id, UserStatus userStatus) {
+    public void save(UserStatus userStatus) {
 
     }
 
@@ -35,7 +35,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     private Map<UUID, UserStatus> loadData(){
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(STATUS_FILE))){
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(USER_STATUS_FILE))){
             return (Map<UUID,UserStatus>) ois.readObject();
         }
         catch(Exception e){
@@ -44,7 +44,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     private void saveData(Map<UUID, UserStatus> data){
-        try(ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream(STATUS_FILE)))){
+        try(ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream(USER_STATUS_FILE)))){
             oos.writeObject(data);
         }
         catch (Exception e){

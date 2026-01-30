@@ -5,6 +5,6 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import java.util.UUID;
 
 public interface BinaryContentRepository {
-    void save(UUID id, BinaryContent binaryContent);
+    void save(BinaryContent binaryContent);
     void delete(UUID id);
 }

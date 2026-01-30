@@ -9,7 +9,7 @@ import java.util.UUID;
 @Repository
 public class FileBinaryContentRepository implements BinaryContentRepository {
     @Override
-    public void save(UUID id, BinaryContent binaryContent) {
+    public void save(BinaryContent binaryContent) {
 
     }
 

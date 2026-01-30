@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.type.FileType;
 import lombok.Getter;
-import org.springframework.web.service.annotation.GetExchange;
 
 import java.time.Instant;
 import java.util.UUID;

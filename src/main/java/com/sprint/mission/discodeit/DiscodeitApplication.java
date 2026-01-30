@@ -35,8 +35,8 @@ public class DiscodeitApplication {
 		userService.addFriend(user1.getId(), user2.getId());
 
 		//채널 생성
-		Channel channel1 = channelService.create("스프린트");
-		Channel channel2 = channelService.create("코드잇");
+		Channel channel1 = channelService.createPublic("스프린트");
+		Channel channel2 = channelService.createPublic("코드잇");
 
 		// 채널 참여
 		test(() -> channelService.joinUsers(channel1.getId(), user1.getId(),user2.getId()));

@@ -1,16 +1,20 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.type.ChannelType;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
+@Setter
 public class Channel extends BaseEntity {
     private String channelName;
     private List<UUID> userList;
     private List<UUID> messageList;
+    private ChannelType channelType;
 
     public Channel(String channelName) {
         this.channelName = channelName;

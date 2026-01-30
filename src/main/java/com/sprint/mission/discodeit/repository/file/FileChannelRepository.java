@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import ch.qos.logback.core.pattern.parser.OptionTokenizer;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.stereotype.Repository;
@@ -15,9 +16,8 @@ public class FileChannelRepository implements ChannelRepository {
     private static final String CHANNEL_FILE = "data/channel.ser";
 
     @Override
-    public Channel findById(UUID channelId) {
-        Map<UUID, Channel> data = loadData();
-        return data.get(channelId);
+    public Optional<Channel> findById(UUID channelId) {
+        return Optional.ofNullable(loadData().get(channelId));
     }
 
     @Override
@@ -27,9 +27,9 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void save(UUID channelId, Channel channel) {
+    public void save(Channel channel) {
         Map<UUID, Channel> data = loadData();
-        data.put(channelId, channel);
+        data.put(channel.getId(), channel);
         saveData(data);
     }
 
