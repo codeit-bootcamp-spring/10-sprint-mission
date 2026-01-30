@@ -4,19 +4,24 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.UUID;
 
 @Getter
-abstract class CommonEntity implements Serializable {
+public class BinaryContent implements Serializable {
     private static final long serialVersionUID = 1L;
-    protected final UUID id;
-    protected Instant createdAt;
-    protected Instant updateAt;
+    private final UUID id;
+    private final Instant createdAt;
+    private final byte[] content;
 
-    public CommonEntity() {
+    public BinaryContent(byte[] content) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.updateAt = this.createdAt;
+        this.content = content;
+    }
+
+    public byte[] getContent() {
+        return Arrays.copyOf(content, content.length);
     }
 
     @Override
@@ -24,7 +29,7 @@ abstract class CommonEntity implements Serializable {
         if (this == obj) return true;
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
-        return id.equals(((CommonEntity) obj).id);
+        return id.equals(((BinaryContent) obj).id);
     }
 
     @Override

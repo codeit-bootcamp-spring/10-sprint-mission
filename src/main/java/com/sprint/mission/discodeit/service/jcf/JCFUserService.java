@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -45,7 +43,11 @@ public class JCFUserService implements UserService {
 
     @Override
     public List<User> getUsersByChannelId(UUID channelId) {
-        return channelService.getChannel(channelId).getUsers();
+        List<User> result = new ArrayList<>();
+        channelService.getChannel(channelId)
+                .getUserIds()
+                .forEach(userId -> result.add(getUser(userId)));
+        return result;
     }
 
     @Override
@@ -63,9 +65,13 @@ public class JCFUserService implements UserService {
 
     @Override
     public void deleteUser(UUID userId) {
-        User target = getUser(userId);
-        target.getMessages().forEach(message -> messageService.deleteMessage(message.getId()));
-        target.getChannels().forEach(channel -> channelService.leaveChannel(channel.getId(), userId));
+        Optional<User> deleteUser = data.stream()
+                .filter(user -> user.getId().equals(userId))
+                .findAny();
+        if(deleteUser.isEmpty()) return;
+        User target = deleteUser.get();
+        target.getMessageIds().forEach(messageId -> messageService.deleteMessage(messageId));
+        target.getChannelIds().forEach(channelId -> channelService.leaveChannel(channelId, userId));
         data.remove(target);
     }
 

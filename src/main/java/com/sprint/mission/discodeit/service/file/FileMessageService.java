@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -26,8 +24,8 @@ public class FileMessageService implements MessageService {
     }
 
     @Override
-    public Message createMessage(String content, User sender, Channel channel) {
-        Message message = new Message(content, sender, channel);
+    public Message createMessage(String content, UUID senderId, UUID channelId) {
+        Message message = new Message(content, senderId, senderId);
         save(message);
         return message;
     }
@@ -75,12 +73,20 @@ public class FileMessageService implements MessageService {
 
     @Override
     public List<Message> getMessagesByUserId(UUID userId) {
-        return userService.getUser(userId).getMessages();
+        List<Message> result = new ArrayList<>();
+        userService.getUser(userId)
+                .getMessageIds()
+                .forEach(messageId -> result.add(getMessage(messageId)));
+        return result;
     }
 
     @Override
     public List<Message> getMessagesByChannelId(UUID channelId) {
-        return channelService.getChannel(channelId).getMessages();
+        List<Message> result = new ArrayList<>();
+        channelService.getChannel(channelId)
+                .getMessageIds()
+                .forEach(messageId -> result.add(getMessage(messageId)));
+        return result;
     }
 
     @Override
