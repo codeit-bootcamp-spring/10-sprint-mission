@@ -3,10 +3,8 @@ package com.sprint.mission.discodeit.repository.jcf;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
 
 public class JCFMessageRepository implements MessageRepository {
     private final List<Message> data;       // 모든 메시지
@@ -42,4 +40,14 @@ public class JCFMessageRepository implements MessageRepository {
     public void delete(Message message) {
         data.remove(message);
     }
+
+    @Override
+    public Instant getLastMessageAt(UUID channelId) {
+        return findAll().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .max(Comparator.comparing(Message::getCreatedAt))
+                .map(Message::getCreatedAt)
+                .orElse(null);
+    }
+
 }

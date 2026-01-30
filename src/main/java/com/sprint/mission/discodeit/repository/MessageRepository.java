@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.Message;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,4 +19,7 @@ public interface MessageRepository {
 
     // 메시지 삭제
     void delete(Message message);
+
+    // 특정 채널에서 마지막으로 발행된 메시지 시간 조회
+    Instant getLastMessageAt(UUID channelId);
 }

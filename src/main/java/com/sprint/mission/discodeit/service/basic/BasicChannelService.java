@@ -212,14 +212,14 @@ public class BasicChannelService implements ChannelService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
     }
 
-    // 가장 최근 메시지 시간 정보 조회
-    public Instant getLastMessageAt(UUID targetChannelId) {
-        return messageRepository.findAll().stream()
-                .filter(message -> message.getChannelId().equals(targetChannelId))
-                .max(Comparator.comparing(Message::getCreatedAt))
-                .map(Message::getCreatedAt)
-                .orElse(null);
-    }
+    // 가장 최근 메시지 시간 정보 조회 (메세지 레파지토리 구현)
+//    public Instant getLastMessageAt(UUID targetChannelId) {
+//        return messageRepository.findAll().stream()
+//                .filter(message -> message.getChannelId().equals(targetChannelId))
+//                .max(Comparator.comparing(Message::getCreatedAt))
+//                .map(Message::getCreatedAt)
+//                .orElse(null);
+//    }
 
     public ChannelResponseDTO toResponseDTO(Channel channel) {
         return ChannelResponseDTO.builder()
@@ -231,7 +231,7 @@ public class BasicChannelService implements ChannelService {
                 .description(channel.getDescription())
                 .createdAt(channel.getCreatedAt())
                 .updatedAt(channel.getUpdatedAt())
-                .lastMessageAt(getLastMessageAt(channel.getId()))
+                .lastMessageAt(messageRepository.getLastMessageAt(channel.getId()))
                 .build();
     }
 }
