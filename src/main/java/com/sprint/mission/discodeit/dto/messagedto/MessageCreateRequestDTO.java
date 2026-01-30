@@ -5,7 +5,7 @@ import com.sprint.mission.discodeit.dto.BinaryContentDTO;
 import java.util.List;
 import java.util.UUID;
 
-public record CreateRequestDTO(
+public record MessageCreateRequestDTO(
         String content,
         UUID channelID,
         UUID authorID,
