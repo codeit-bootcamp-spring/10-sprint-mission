@@ -21,7 +21,7 @@ public abstract class BaseEntity implements Serializable {
     // constructor
     protected BaseEntity() {
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.ofEpochSecond(System.currentTimeMillis());
+        this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
     }
 

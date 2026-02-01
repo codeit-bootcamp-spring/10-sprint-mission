@@ -38,7 +38,8 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDto.ChannelResponsePrivate createPrivate(List<UUID> userIds) {
         // 익명톡방
-        List<User> users = userIds.stream().map(userId -> Objects.requireNonNull(userRepository.findById(userId))).toList();
+        List<User> users = userIds.stream().map(userId ->
+                Objects.requireNonNull(userRepository.findById(userId))).toList();
 
         Channel channel = new Channel(users);
 

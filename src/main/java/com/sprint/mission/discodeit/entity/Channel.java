@@ -38,7 +38,7 @@ public class Channel extends BaseEntity implements Serializable {
 
     // Private 생성자
     public Channel(List<User> users){
-        users.addAll(this.users);
+        this.users.addAll(users);
         this.type = channelType.PRIVATE;
         this.lastMessageAt = Instant.now();
     }
@@ -69,7 +69,7 @@ public class Channel extends BaseEntity implements Serializable {
     // 메세지 목록에 메세지 추가 + 채널 수정 시간 갱신
     public void addMessage(Message message) {
         this.messages.add(message);
-        this.lastMessageAt = Instant.ofEpochSecond(System.currentTimeMillis());
+        this.lastMessageAt = Instant.now();
         this.updateTimestamp();
     }
 
