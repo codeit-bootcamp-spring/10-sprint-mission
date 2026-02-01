@@ -82,10 +82,8 @@ public class BasicUserService implements UserService {
     @Override
     public User updateUserInfo(UserUpdateRequest request) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = validateAndGetUserByUserId(request.userId());
-
-        // blank(+null) 검증
-        validateBlankUpdateParameters(request);
+        User user = userRepository.findById(request.userId())
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
 
         // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
         boolean binaryContentChanged = isBinaryContentChanged(request.profileImage(), user.getProfileId());
@@ -172,15 +170,6 @@ public class BasicUserService implements UserService {
         if (userRepository.existUserName(newUserName)) {
             throw new IllegalArgumentException("동일한 userName이 존재합니다");
         }
-    }
-    // blank(+null) 검증
-    private void validateBlankUpdateParameters(UserUpdateRequest request) {
-        if (request.email() != null) ValidationMethods.validateNullBlankString(request.email(), "email");
-        if (request.password() != null) ValidationMethods.validateNullBlankString(request.password(), "password");
-        if (request.userName() != null) ValidationMethods.validateNullBlankString(request.userName(), "userName");
-        if (request.nickName() != null) ValidationMethods.validateNullBlankString(request.nickName(), "nickName");
-        if (request.birthday() != null) ValidationMethods.validateNullBlankString(request.birthday(), "birthday");
-        if (request.profileImage() != null) validateNullBlankBinaryContent(request.profileImage().binaryContent());
     }
     // email or password or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
     private void validateAllInputDuplicateOrEmpty(UserUpdateRequest request, User user, boolean binaryContentChanged) {

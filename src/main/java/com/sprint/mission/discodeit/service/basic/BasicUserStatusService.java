@@ -23,7 +23,8 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatus createUserStatus(UserStatusCreateRequest request) {
-        validateUserByUserId(request.userId());
+        userRepository.findById(request.userId())
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
 
         if (userStatusRepository.existUserStatus(request.userId())) {
             throw new IllegalArgumentException("이미 존재하는 UserStatus가 있습니다.");

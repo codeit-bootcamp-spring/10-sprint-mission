@@ -26,7 +26,7 @@ public interface MessageService {
 
     // U. 수정
     // 메시지 수정
-    Message updateMessageContent(MessageUpdateRequest messageUpdateRequest);
+    Message updateMessageContent(MessageUpdateRequest request);
 
     // D. 삭제
     void deleteMessage(UUID userId, UUID messageId);

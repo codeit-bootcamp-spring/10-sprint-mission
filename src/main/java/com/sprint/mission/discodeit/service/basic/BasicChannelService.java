@@ -25,10 +25,9 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel createPublicChannel(PublicChannelCreateRequest request) {
-        // `*Controller` 만들면 삭제
-        User owner = validateAndGetUserByUserId(request.ownerId());
-//        ValidationMethods.validateNullBlankString(request.channelName(), "channelName");
-//        ValidationMethods.validateNullBlankString(request.channelDescription(), "channelDescription");
+        // user 객체 존재 확인
+        User owner = userRepository.findById(request.ownerId())
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
 
         Channel channel = new Channel(owner, ChannelType.PUBLIC, request.channelName(), request.channelDescription());
 
@@ -46,8 +45,10 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel createPrivateChannel(PrivateChannelCreateRequest request) {
-        // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User owner = validateAndGetUserByUserId(request.ownerId());
+        // user 객체 존재 확인
+        User owner = userRepository.findById(request.ownerId())
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+
         // PRIVATE 채널은 channelName과 channelDescription이 null
         Channel channel = new Channel(owner, ChannelType.PRIVATE, null, null);
 
@@ -115,10 +116,9 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel updateChannelInfo(ChannelUpdateRequest request) {
-        // 로그인 되어있는 user ID null & user 객체 존재 확인
-        validateUserByUserId(request.ownerId());
-
-//        ValidationMethods.validateId(request.channelId());
+        // user 객체 존재 확인
+        userRepository.findById(request.ownerId())
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
 
         // channel 객체 존재 확인
         Channel channel = channelRepository.findById(request.channelId())
@@ -305,11 +305,6 @@ public class BasicChannelService implements ChannelService {
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
     }
-    // `*Controller` 만들면 삭제
-//    private void validateBlankUpdateParameters(ChannelUpdateRequest request) {
-//        if (request.channelName() != null) ValidationMethods.validateNullBlankString(request.channelName(), "channelName");
-//        if (request.channelDescription() != null) ValidationMethods.validateNullBlankString(request.channelDescription(), "channelDescription");
-//    }
     // channelType, channelName, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
     private void validateAllInputDuplicateOrEmpty(ChannelUpdateRequest request, Channel channel) {
         if ((request.channelName() == null || channel.getChannelName().equals(request.channelName()))

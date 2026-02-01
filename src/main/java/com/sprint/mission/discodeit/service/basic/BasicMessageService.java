@@ -31,9 +31,12 @@ public class BasicMessageService implements MessageService {
     @Override
     public Message createMessage(MessageCreateRequest request) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User author = validateAndGetUserByUserId(request.authorId());
+        User author = userRepository.findById(request.authorId())
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(request.channelId());
+        Channel channel = channelRepository.findById(request.channelId())
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
 
         // author의 channel 참여 여부 확인
         if (!channel.getChannelMembersList().stream()
@@ -93,13 +96,15 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message updateMessageContent(MessageUpdateRequest messageUpdateRequest) {
+    public Message updateMessageContent(MessageUpdateRequest request) {
         // Message ID null & Message 객체 존재 확인
-        Message message = validateAndGetMessageByMessageId(messageUpdateRequest.messageId());
-        // requestUser가 해당 message를 작성한 게 맞는지 확인
-        verifyMessageAuthor(message, messageUpdateRequest.requestUserId());
+        Message message = messageRepository.findById(request.messageId())
+                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
 
-        message.updateContent(messageUpdateRequest.content());
+        // requestUser가 해당 message를 작성한 게 맞는지 확인
+        verifyMessageAuthor(message, request.requestUserId());
+
+        message.updateContent(request.content());
         messageRepository.save(message);
         return message;
     }
