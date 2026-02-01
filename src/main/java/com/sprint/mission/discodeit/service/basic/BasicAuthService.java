@@ -22,9 +22,9 @@ public class BasicAuthService implements AuthService {
 
     @Override
     public UserResponse login(LoginRequest loginRequest) {
-        // userName과 password null/blank 검증
-        ValidationMethods.validateNullBlankString(loginRequest.userName(), "userName");
-        ValidationMethods.validateNullBlankString(loginRequest.password(), "password");
+        // `*Controller` 만들면 삭제
+//        ValidationMethods.validateNullBlankString(loginRequest.userName(), "userName");
+//        ValidationMethods.validateNullBlankString(loginRequest.password(), "password");
 
         // 유저 검증, 없으면 예외 발생
         User user = userRepository.findByUserNameAndPassword(loginRequest.userName(), loginRequest.password())

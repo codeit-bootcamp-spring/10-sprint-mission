@@ -75,9 +75,9 @@ public class DiscodeitApplication {
 	}
 	// 유저 생성
 	static User setUser(UserService userService) {
-//		UserCreateRequest userCreateRequest = new UserCreateRequest("hyun@codeit.com", "hyun", "hyunNick", "hyun1234", "20000401", null);
+		UserCreateRequest userCreateRequest = new UserCreateRequest("hyun@codeit.com", "hyun", "hyunNick", "hyun1234", "20000401", null);
 //		UserCreateRequest userCreateRequest = new UserCreateRequest("chung@codeit.com", "chung", "chungNick", "chung", "20000401", null);
-		UserCreateRequest userCreateRequest = new UserCreateRequest("jung@codeit.com", "jung", "jungNick", "jung", "20000401", null);
+//		UserCreateRequest userCreateRequest = new UserCreateRequest("jung@codeit.com", "jung", "jungNick", "jung", "20000401", null);
 		return userService.createUser(userCreateRequest);
 	}
 	// 채널 생성

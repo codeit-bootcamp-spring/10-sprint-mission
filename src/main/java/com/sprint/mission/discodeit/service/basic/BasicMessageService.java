@@ -34,8 +34,6 @@ public class BasicMessageService implements MessageService {
         User author = validateAndGetUserByUserId(request.authorId());
         // Channel ID null & channel 객체 존재 확인
         Channel channel = validateAndGetChannelByChannelId(request.channelId());
-        // String `null` or `blank` 검증
-        ValidationMethods.validateNullBlankString(request.content(), "content");
 
         // author의 channel 참여 여부 확인
         if (!channel.getChannelMembersList().stream()
@@ -100,9 +98,6 @@ public class BasicMessageService implements MessageService {
         Message message = validateAndGetMessageByMessageId(messageUpdateRequest.messageId());
         // requestUser가 해당 message를 작성한 게 맞는지 확인
         verifyMessageAuthor(message, messageUpdateRequest.requestUserId());
-
-        // content `null` or `blank` 검증
-        ValidationMethods.validateNullBlankString(messageUpdateRequest.content(), "content");
 
         message.updateContent(messageUpdateRequest.content());
         messageRepository.save(message);

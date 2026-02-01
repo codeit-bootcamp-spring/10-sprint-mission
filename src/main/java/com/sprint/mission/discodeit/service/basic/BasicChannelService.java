@@ -25,11 +25,10 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel createPublicChannel(PublicChannelCreateRequest request) {
-        // 로그인 되어있는 user ID null / user 객체 존재 확인
+        // `*Controller` 만들면 삭제
         User owner = validateAndGetUserByUserId(request.ownerId());
-        // channelName과 channelDescription의 `null`, `blank` 검증
-        ValidationMethods.validateNullBlankString(request.channelName(), "channelName");
-        ValidationMethods.validateNullBlankString(request.channelDescription(), "channelDescription");
+//        ValidationMethods.validateNullBlankString(request.channelName(), "channelName");
+//        ValidationMethods.validateNullBlankString(request.channelDescription(), "channelDescription");
 
         Channel channel = new Channel(owner, ChannelType.PUBLIC, request.channelName(), request.channelDescription());
 
@@ -119,8 +118,9 @@ public class BasicChannelService implements ChannelService {
         // 로그인 되어있는 user ID null & user 객체 존재 확인
         validateUserByUserId(request.ownerId());
 
-        // Channel ID null & channel 객체 존재 확인
-        ValidationMethods.validateId(request.channelId());
+//        ValidationMethods.validateId(request.channelId());
+
+        // channel 객체 존재 확인
         Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
 
@@ -132,8 +132,8 @@ public class BasicChannelService implements ChannelService {
         // channel owner의 user ID와 owner의 user ID가 동일한지 확인
         verifyChannelOwner(channel, request.ownerId());
 
-        // blank(+null) 검증
-        validateBlankUpdateParameters(request);
+        // `*Controller` 만들면 삭제
+//        validateBlankUpdateParameters(request);
 
         // channelType, channelName, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
         validateAllInputDuplicateOrEmpty(request, channel);
@@ -305,11 +305,11 @@ public class BasicChannelService implements ChannelService {
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
     }
-    // blank(+null) 검증
-    private void validateBlankUpdateParameters(ChannelUpdateRequest request) {
-        if (request.channelName() != null) ValidationMethods.validateNullBlankString(request.channelName(), "channelName");
-        if (request.channelDescription() != null) ValidationMethods.validateNullBlankString(request.channelDescription(), "channelDescription");
-    }
+    // `*Controller` 만들면 삭제
+//    private void validateBlankUpdateParameters(ChannelUpdateRequest request) {
+//        if (request.channelName() != null) ValidationMethods.validateNullBlankString(request.channelName(), "channelName");
+//        if (request.channelDescription() != null) ValidationMethods.validateNullBlankString(request.channelDescription(), "channelDescription");
+//    }
     // channelType, channelName, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
     private void validateAllInputDuplicateOrEmpty(ChannelUpdateRequest request, Channel channel) {
         if ((request.channelName() == null || channel.getChannelName().equals(request.channelName()))

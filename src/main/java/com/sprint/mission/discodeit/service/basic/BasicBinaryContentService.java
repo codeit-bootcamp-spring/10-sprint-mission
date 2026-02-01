@@ -20,10 +20,6 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContent createBinaryContent(BinaryContentCreateRequest request) {
-        if (request.binaryContent() == null || request.binaryContent().length == 0) {
-            throw new IllegalArgumentException("binaryContent에 값이 존재하지 않습니다.");
-        }
-
         BinaryContent binaryContent = new BinaryContent(request.binaryContent());
         binaryContentRepository.save(binaryContent);
         return binaryContent;

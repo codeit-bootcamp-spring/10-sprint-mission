@@ -53,9 +53,6 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatus updateReadStatus(ReadStatusUpdateRequest request) {
-        if (request.lastReadTime() == null) {
-            throw new IllegalArgumentException("lastReadTime이 null로 입력되었습니다.");
-        }
         ReadStatus readStatus = validateAndGetReadStatusByReadStatusId(request.readStatusId());
 
         readStatus.updateLastReadTime(request.lastReadTime());

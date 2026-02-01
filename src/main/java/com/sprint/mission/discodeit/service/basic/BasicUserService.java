@@ -26,16 +26,9 @@ public class BasicUserService implements UserService {
 
     @Override
     public User createUser(UserCreateRequest request) {
-        // email, userName `null` or `blank` 검증
-        ValidationMethods.validateNullBlankString(request.email(), "email");
-        ValidationMethods.validateNullBlankString(request.userName(), "userName");
         // email, userName 중복 확인
         validateDuplicateEmail(request.email());
         validateDuplicateUserName(request.userName());
-        // nickName, password, birthday `null` or `blank` 검증
-        ValidationMethods.validateNullBlankString(request.nickName(), "nickName");
-        ValidationMethods.validateNullBlankString(request.password(), "password");
-        ValidationMethods.validateNullBlankString(request.birthday(), "birthday");
 
         User user = new User(request.email(), request.userName(), request.nickName(), request.password(), request.birthday());
 
