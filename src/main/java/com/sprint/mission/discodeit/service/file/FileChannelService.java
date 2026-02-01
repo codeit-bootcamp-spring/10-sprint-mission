@@ -32,7 +32,12 @@ public class FileChannelService implements ChannelService {
             List<Channel> loaded = (List<Channel>) ois.readObject();
             data.clear();
             data.addAll(loaded);
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (InvalidClassException e) {
+            // 이전 버전 파일 무시하고 새로 시작
+            System.out.println("이전 버전 파일을 무시하고 새로 시작합니다: " + e.getMessage());
+            data.clear(); // 기존 데이터 초기화
+        }
+        catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
