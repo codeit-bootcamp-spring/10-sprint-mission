@@ -29,41 +29,48 @@ public class BasicUserService implements UserService {
         validateDuplicateName(request.name());
         validateDuplicateEmail(request.email());
 
+        // 프로필 사진 설정
+        UUID profileId = null;
+        if (request.profileImage() != null) {
+            BinaryContent profileImage = new BinaryContent(
+                    request.profileImage().fileName(),
+                    request.profileImage().data()
+            );
+            binaryContentRepository.save(profileImage);
+            profileId = profileImage.getId();
+        }
+
         // 유저 생성
         User user = new User(
                 request.name(),
                 request.nickname(),
                 request.email(),
-                request.password()
+                request.password(),
+                profileId
         );
-
-        // 프로필 이미지 설정
-        if (request.profileImageId() != null) {
-            binaryContentRepository.findById(request.profileImageId())
-                    .ifPresent(content -> user.updateProfileImage(content.getId())); // 존재하면 프로필 사진 셋팅
-        }
-
         userRepository.save(user);
 
-        // 유저 상태 저장
+        // 유저 상태 생성
         UserStatus status = new UserStatus(user.getId(), Instant.now());
         userStatusRepository.save(status);
 
-        return convertToResponse(user);
+        return convertToResponse(user, status);
     }
 
     // 단건 조회
     @Override
     public UserResponse getAccountById(UUID id) {
-        return convertToResponse(findUserById(id));
+        User user = findUserById(id);
+        UserStatus status = getUserStatus(id);
+        return convertToResponse(user, status);
     }
 
     // 전체 조회
     @Override
     public List<UserResponse> getAllAccounts() {
         return userRepository.findAll().stream()
-                .map(this::convertToResponse)
-                .collect(Collectors.toList());
+                .map(user -> convertToResponse(user, getUserStatus(user.getId())))
+                .toList();
     }
 
     // 계정 정보 수정
@@ -72,54 +79,76 @@ public class BasicUserService implements UserService {
         User user = findUserById(id);
 
         // 이름 수정 + 중복 체크
-        if (request.name() != null && !user.getName().equals(request.name())) {
-            validateDuplicateName(request.name());
-            user.updateName(request.name());
-        }
+        Optional.ofNullable(request.name())
+                .filter(name -> !name.equals(user.getName()))
+                .ifPresent(name -> {
+                    validateDuplicateName(name);
+                    user.updateName(name);
+                });
 
         // 닉네임 수정
-        if (request.nickname() != null) {
-            user.updateNickname(request.nickname());
-        }
+        Optional.ofNullable(request.nickname()).ifPresent(user::updateNickname);
 
         // 이메일 수정 + 중복 체크
-        if (request.email() != null && !user.getEmail().equals(request.email())) {
-            validateDuplicateEmail(request.email());
-            user.updateEmail(request.email());
-        }
+        Optional.ofNullable(request.email())
+                .filter(email -> !email.equals(user.getEmail()))
+                .ifPresent(email -> {
+                    validateDuplicateEmail(email);
+                    user.updateEmail(email);
+                });
 
-        // 프로필 이미지 수정
-        if (request.profileImageId() != null) {
-            binaryContentRepository.findById(request.profileImageId())
-                    .ifPresent(content -> user.updateProfileImage(content.getId()));
+        // 프로필 사진 수정
+        if (request.profileImage() != null) {
+            if (user.getProfileId() != null){
+                binaryContentRepository.deleteById(user.getProfileId());
+            }
+            BinaryContent newImage = new BinaryContent(
+                    request.profileImage().fileName(),
+                    request.profileImage().data()
+            );
+            binaryContentRepository.save(newImage);
+            user.updateProfileImage(newImage.getId());
         }
 
         userRepository.save(user);
+        UserStatus status = getUserStatus(id);
 
-        return convertToResponse(user);
+        return convertToResponse(user, status);
     }
 
     // 계정 삭제
     @Override
     public void deleteAccount(UUID id) {
         User user = findUserById(id);
+
+        // 유저 상태 삭제
         userStatusRepository.deleteByUserId(id);
+
+        // 프로필 사진 삭제
+        if (user.getProfileId() != null) {
+            binaryContentRepository.deleteById(user.getProfileId());
+        }
+
+        // 유저 삭제
         userRepository.delete(user);
     }
 
 
+    // 유저 상태 조회
+    private UserStatus getUserStatus(UUID userId) {
+        return userStatusRepository.findByUserId(userId).orElse(null);
+    }
+
     // 엔티티 -> DTO 변환
-    private UserResponse convertToResponse(User user) {
-        boolean isOnline = userStatusRepository.findByUserId(user.getId())
-                .map(UserStatus::isOnline)
-                .orElse(false);
+    private UserResponse convertToResponse(User user, UserStatus status) {
+        boolean isOnline = (status != null) && status.isOnline();
 
         return new UserResponse(
                 user.getId(),
                 user.getName(),
                 user.getNickname(),
                 user.getEmail(),
-                user.getProfileImage(),
+                user.getProfileId(),
                 isOnline,
                 user.getCreatedAt(),
                 user.getUpdatedAt()

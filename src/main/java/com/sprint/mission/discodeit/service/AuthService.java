@@ -1,4 +1,4 @@
 package com.sprint.mission.discodeit.service;
 
-public interface AuthService {
+public class AuthService {
 }
