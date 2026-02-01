@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -21,6 +22,7 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
+    private final MessageRepository messageRepository;
 
     @Override
     public ChannelDto.ChannelResponsePublic createPublic(ChannelDto.ChannelRequest request) {
@@ -62,11 +64,11 @@ public class BasicChannelService implements ChannelService {
         // 유저 ID를 받아서 해당 유저가 볼 수 있는 채널 목록만 표시
         return channelRepository.findAll().stream()
                 .<ChannelDto.ChannelResponse>map(channel -> {
-            if (channel.getType().equals(Channel.channelType.PRIVATE) &&
-                    (channel.getUsers().get(0).getId().equals(userId) || channel.getUsers().get(1).getId().equals(userId)))
-                return ChannelDto.ChannelResponsePrivate.from(channel);
-            else return ChannelDto.ChannelResponsePublic.from(channel);
-        }).toList();
+                    if (channel.getType().equals(Channel.channelType.PRIVATE) &&
+                            (channel.getUsers().get(0).getId().equals(userId) || channel.getUsers().get(1).getId().equals(userId)))
+                        return ChannelDto.ChannelResponsePrivate.from(channel);
+                    else return ChannelDto.ChannelResponsePublic.from(channel);
+                }).toList();
     }
 
     @Override
@@ -83,7 +85,16 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public void delete(UUID channelId) {
-        findById(channelId);
+        // 입력값 검증
+        Channel channel = Objects.requireNonNull(channelRepository.findById(channelId), "해당 채널이 존재하지 않습니다.");
+        // 채널에 참가한 유저 리스트에서 채널 삭제
+        channel.getUsers().forEach(user -> user.leaveChannel(channel));
+        // 채널에 작성되었던 메세지 객체 전체 삭제
+        channel.getMessages().forEach(message -> messageRepository.delete(message.getId()));
+        // 연결된 ReadStatus 삭제
+        readStatusRepository.findAllByChannelId(channelId).forEach(readStatus ->
+                readStatusRepository.delete(readStatus.getId()));
+        // 채널 삭제
         channelRepository.delete(channelId);
     }
 }

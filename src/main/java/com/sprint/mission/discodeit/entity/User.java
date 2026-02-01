@@ -17,8 +17,8 @@ public class User extends BaseEntity implements Serializable {
     // 유저가 속한 채널 목록
     private final List<Channel> channels = new ArrayList<>();
 
+    @Getter
     private UUID binaryContentId;
-
 
     @Getter
     private String name;

@@ -6,4 +6,6 @@ public class BinaryContentDto {
             String filePath,
             String contentType
     ) {}
+
+
 }

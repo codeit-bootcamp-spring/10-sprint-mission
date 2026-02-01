@@ -20,14 +20,14 @@ public class Message extends BaseEntity implements Serializable {
     @Getter
     private final Channel channel;
     @Getter
-    private List<UUID> binaryContentId;
+    private List<UUID> binaryContentIds;
 
     // constructor
     public Message(MessageDto.MessageRequest request, List<UUID> binaryContentIds) {
         this.content = request.content();
         this.user = request.user();
         this.channel = request.channel();
-        this.binaryContentId = binaryContentIds;
+        this.binaryContentIds = binaryContentIds;
     }
 
     public UUID getUserId() {

@@ -39,7 +39,7 @@ public class BasicUserService implements UserService {
 
         // 유저 상태, 프로필 이미지 객체
 
-        BinaryContent binaryContent = new BinaryContent(filePath, "image");
+        BinaryContent binaryContent = new BinaryContent(new BinaryContentDto.BinaryContentRequest(filePath, "image"));
 
         User user = new User(request, binaryContent.getId());
         UserStatus userStatus = new UserStatus(user);
@@ -79,7 +79,8 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
         Optional.ofNullable(request.password()).ifPresent(user::updatePassword);
         // 새로운 content 객체를 생성하여 대체
-        Optional.ofNullable(filePath).ifPresent(path -> user.updateBinaryContentId(new BinaryContent(path, "image").getId()));
+        Optional.ofNullable(filePath).ifPresent(path ->
+                user.updateBinaryContentId(new BinaryContent(new BinaryContentDto.BinaryContentRequest(path, "image")).getId()));
 
         userRepository.save(user);
         return UserDto.UserResponse.from(user, status);
@@ -87,15 +88,14 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
-        // 존재 여부 확인
-        Objects.requireNonNull(userRepository.findById(userId), "해당 유저가 존재하지 않습니다.");
-        channelRepository.findAll().stream().map(channel -> {
-            if (channel.getUsers().contains(userRepository.findById(userId))){
+        // 입력값 검증
+        User user = Objects.requireNonNull(userRepository.findById(userId), "해당 유저가 존재하지 않습니다.");
+        // 유저가 참가했던 채널들에서 해당 유저 삭제
+        user.getChannels().forEach(channel -> channel.removeUser(userRepository.findById(userId)));
 
-            }
-        })
-        userStatusRepository.deleteById(userId);
-        binaryContentRepository.deleteById(userId);
+        // userStatus, binaryContent 객체 삭제
+        userStatusRepository.deleteById(userStatusRepository.findByUserId(userId).getId());
+        binaryContentRepository.deleteById(user.getBinaryContentId());
 
         userRepository.delete(userId);
     }
