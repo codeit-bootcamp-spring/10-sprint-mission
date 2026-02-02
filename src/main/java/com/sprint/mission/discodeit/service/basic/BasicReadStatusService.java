@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -60,16 +61,41 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public List<RSResponseDTO> findAllByUserId(UUID userId) {
-        return List.of();
+        Objects.requireNonNull(userId,"유효하지 않은 유저 ID 입니다.");
+
+        return readStatusRepository.findAll().stream()
+                .filter(rs -> userId.equals(rs.getUserID()))
+                .map(readStatusDTOMapper::rsToResponse
+                ).toList();
+
     }
 
     @Override
     public RSResponseDTO update(RSUpdateRequestDTO req) {
-        return null;
+        Objects.requireNonNull(req, "유효하지 않은 요청입니다!");
+
+        ReadStatus readStatus = readStatusRepository
+                .findAll()
+                .stream()
+                .filter(rs -> req.id().equals(rs.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 ReadStatus 입니다!"));
+        readStatus.update(req.lastReadAt());
+
+        return new RSResponseDTO(readStatus.getId(),
+                req.channelId(),
+                req.userId(),
+                readStatus.getLastReadAt(),
+                readStatus.getCreatedAt(),
+                readStatus.getUpdatedAt());
+
     }
 
     @Override
     public void delete(UUID id) {
+        Objects.requireNonNull(id, "유효하지 않은 ID입니다.");
+
+        readStatusRepository.deleteByID(id);
 
     }
 }

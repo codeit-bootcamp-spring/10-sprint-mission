@@ -10,6 +10,5 @@ public record RSResponseDTO(
         Instant lastReadAt,
         Instant createdAt,
         Instant updatedAt
-
 ) {
 }

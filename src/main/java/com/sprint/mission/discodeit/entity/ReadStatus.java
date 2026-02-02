@@ -28,5 +28,10 @@ public class ReadStatus extends BaseEntity {
         return lastReadAt.isAfter(Instant.EPOCH);
     }
 
+    public void update(Instant lastReadAt){
+        this.lastReadAt = lastReadAt;
+        setUpdatedAt(Instant.now()); // 업데이트 날짜 최신화
+    }
+
 
 }

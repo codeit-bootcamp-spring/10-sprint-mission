@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity.mapper;
 
 import com.sprint.mission.discodeit.dto.readstatusdto.RSCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.readstatusdto.RSResponseDTO;
+import com.sprint.mission.discodeit.dto.readstatusdto.RSUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 
 import java.util.Objects;
@@ -22,4 +23,5 @@ public class ReadStatusDTOMapper {
                 readStatus.getUpdatedAt()
         );
     }
+
 }
