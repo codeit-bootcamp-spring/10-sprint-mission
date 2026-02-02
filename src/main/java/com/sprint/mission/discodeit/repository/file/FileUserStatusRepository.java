@@ -38,7 +38,7 @@ public class FileUserStatusRepository extends AbstractFileRepository<UserStatus>
         return userStatus;
     }
 
-    public List<UserStatus> readAll(){
+    public List<UserStatus> findAll(){
         Map<UUID, UserStatus> data = load();
         return data.values().stream().toList();
     }

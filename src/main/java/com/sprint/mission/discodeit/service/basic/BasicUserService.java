@@ -43,7 +43,7 @@ public class BasicUserService implements UserService, ClearMemory {
         } else {
             user = new User(request.userName(), request.email(), request.password(), null);
         }
-        UserStatus userStatus = new UserStatus(user);
+        UserStatus userStatus = new UserStatus(user.getId());
         userStatusRepository.save(userStatus);
         userRepository.save(user);
         return userMapper.toUserInfoDto(user, userStatus);
@@ -60,7 +60,7 @@ public class BasicUserService implements UserService, ClearMemory {
     @Override
     public List<UserInfoDto> findAll() {
         List<User> users = userRepository.readAll();
-        List<UserStatus> userStatuses = userStatusRepository.readAll();
+        List<UserStatus> userStatuses = userStatusRepository.findAll();
         Map<UUID, UserStatus> statusMap
                 = userStatuses.stream().collect(Collectors.toMap(UserStatus::getUserId, us -> us));
         List<UserInfoDto> infoList
@@ -79,7 +79,7 @@ public class BasicUserService implements UserService, ClearMemory {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-                .orElseGet(() -> new UserStatus(user));
+                .orElseGet(() -> new UserStatus(user.getId()));
         user.updateName(request.newName()); // 이름 변경
 
         if (request.imageBytes() != null) {  // 프로필 변경
@@ -94,10 +94,6 @@ public class BasicUserService implements UserService, ClearMemory {
         userRepository.save(user);
         return userMapper.toUserInfoDto(user, userStatus);
     }
-
-
-
-
 
     @Override
     public void delete(UUID id) {

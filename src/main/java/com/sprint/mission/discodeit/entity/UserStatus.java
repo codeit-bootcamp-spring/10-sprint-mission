@@ -11,10 +11,14 @@ public class UserStatus extends BaseEntity {
     private final UUID userId;
     private StatusType statusType;
 
-    public UserStatus(User user) {
+    public UserStatus(UUID userId) {
         super(UUID.randomUUID(), Instant.now());
-        this.userId = user.getId();
+        this.userId = userId;
         this.statusType = StatusType.ONLINE;
+    }
+
+    public void updateStatusType(StatusType statusType) {
+        this.statusType = statusType;
     }
 
     public boolean isOnline() {

@@ -17,7 +17,7 @@ public interface UserService {
     // ReadAll
     List<UserInfoDto> findAll();
 
-    List<UserInfoDto> findAllByChannelId(UUID channelId);
+//    List<UserInfoDto> findAllByChannelId(UUID channelId);
 
     // Update
     UserInfoDto update(UserUpdateDto request);

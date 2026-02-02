@@ -24,7 +24,7 @@ public class BasicAuthService implements AuthService {
                 .filter(u -> u.getPassword().equals(request.password()))
                 .orElseThrow(() -> new IllegalArgumentException("해당 정보와 일치하는 사용자가 없습니다."));
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-                .orElseGet(() -> new UserStatus(user));
+                .orElseGet(() -> new UserStatus(user.getId()));
         userStatus.updateLastActiveTime();
         userStatusRepository.save(userStatus);
         return userMapper.toUserInfoDto(user, userStatus);
