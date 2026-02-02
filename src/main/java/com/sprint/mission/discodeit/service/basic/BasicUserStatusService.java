@@ -96,7 +96,7 @@ public class BasicUserStatusService implements UserStatusService {
     // 단일 엔티티 반환
     public UserStatus findEntityById(UUID userStatusId) {
         return userStatusRepository.findById(userStatusId);
-                //.orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+                //.orElseThrow(() -> new IllegalArgumentException("해당 사용자의 상태가 존재하지 않습니다."));
     }
 
     // 응답 DTO 생성 및 반환
