@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.dto.BinaryContentInfoDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 
@@ -34,6 +35,14 @@ public class FileBinaryContentRepository extends AbstractFileRepository<BinaryCo
         return data.values().stream()
                 .filter(bc -> bc.getId().equals(id))
                 .findFirst();
+    }
+
+    @Override
+    public List<BinaryContent> findAllByIdIn(List<UUID> idList) {
+        Map<UUID, BinaryContent> data = load();
+        return data.values().stream()
+                .filter(bc -> idList.contains(bc.getId()))
+                .toList();
     }
 
     @Override
