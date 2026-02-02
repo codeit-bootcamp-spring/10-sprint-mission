@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -13,7 +14,7 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.util.FileIo;
 
 @Repository
-// @RequiredArgsConstructor
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileUserStatusRepository implements UserStatusRepository {
 	private final FileIo<UserStatus> fileIo;
 

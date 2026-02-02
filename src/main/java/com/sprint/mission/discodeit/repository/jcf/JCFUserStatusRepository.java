@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JCFUserStatusRepository implements UserStatusRepository {
 	private final List<UserStatus> data;
 

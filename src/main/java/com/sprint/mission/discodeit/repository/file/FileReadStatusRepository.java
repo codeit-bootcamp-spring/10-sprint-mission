@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -14,6 +15,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.util.FileIo;
 
 @Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileReadStatusRepository implements ReadStatusRepository {
 	private final FileIo<ReadStatus> fileIo;
 

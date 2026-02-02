@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
@@ -14,6 +15,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.util.FileIo;
 
 @Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileChannelRepository implements ChannelRepository {
 	private final FileIo<Channel> channelFileIo;
 	private final FileIo<User> userFileIo;

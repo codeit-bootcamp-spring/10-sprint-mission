@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JCFReadStatusRepository implements ReadStatusRepository {
 	private final List<ReadStatus> data;
 

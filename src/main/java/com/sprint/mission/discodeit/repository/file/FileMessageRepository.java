@@ -5,6 +5,7 @@ import static com.sprint.mission.discodeit.util.FilePath.*;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import com.sprint.mission.discodeit.entity.Channel;
@@ -14,6 +15,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.util.FileIo;
 
 @Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileMessageRepository implements MessageRepository {
 
 	private final FileIo<Message> messageFileIo;
