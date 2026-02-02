@@ -31,4 +31,8 @@ public class Message extends Base  {
         this.contents = contents;
         updateUpdatedAt();
     }
+
+    public void addAttachment(UUID attachmentID){
+        attachmentIDs.add(attachmentID);
+    }
 }

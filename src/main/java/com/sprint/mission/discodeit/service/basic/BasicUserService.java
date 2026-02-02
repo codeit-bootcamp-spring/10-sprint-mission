@@ -90,9 +90,10 @@ public class BasicUserService implements UserService {
         });
 
         // user의 프로필 선택적 업데이트
-        Optional.ofNullable(request.profileImageID()).ifPresent(id -> {
-            BinaryContent profile = binaryContentRepository.find(id);
-            user.updateProfileImageID(profile.getId());
+        Optional.ofNullable(request.profileImage()).ifPresent( image -> {
+                BinaryContent newProfile = new BinaryContent(image, request.type());
+                binaryContentRepository.save(newProfile);
+                user.updateProfileImageID(newProfile.getId());
         });
 
         UserStatus userStatus = userStatusRepository.findByUserID(user.getId());

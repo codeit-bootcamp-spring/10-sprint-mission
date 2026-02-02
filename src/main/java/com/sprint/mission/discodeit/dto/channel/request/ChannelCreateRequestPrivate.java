@@ -8,7 +8,5 @@ import java.util.UUID;
 
 // Private Channel은 name, descriptions 없어야 함
 public record ChannelCreateRequestPrivate(
-        String name,
-        List<User> users,
-        String descriptions
+        List<User> users
 ) {}

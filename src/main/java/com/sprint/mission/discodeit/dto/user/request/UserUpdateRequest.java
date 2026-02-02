@@ -6,5 +6,6 @@ import java.util.UUID;
 public record UserUpdateRequest(
         UUID userID,
         String name,
-        UUID profileImageID
+        String type,
+        byte[] profileImage
 ) { }
