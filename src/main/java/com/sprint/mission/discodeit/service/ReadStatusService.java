@@ -17,6 +17,9 @@ public interface ReadStatusService {
     // 읽음 상태 전체 조회
     List<ReadStatusResponseDTO> findAll();
 
+    // 특정 사용자의 읽음 상태 조회
+    ReadStatusResponseDTO findAllByReadStatusId(UUID userId);
+
     // 읽음 상태 수정
     ReadStatusResponseDTO update(ReadStatusUpdateRequestDTO readStatusUpdateRequestDTO);
 

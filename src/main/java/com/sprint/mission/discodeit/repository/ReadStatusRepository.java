@@ -17,4 +17,7 @@ public interface ReadStatusRepository {
 
     // 읽음 상태 삭제
     void delete(ReadStatus readStatus);
+
+    // 유효성 검사 (중복 객체 확인)
+    Boolean existsByUserIdAndChannelId(UUID userId, UUID channelId);
 }
