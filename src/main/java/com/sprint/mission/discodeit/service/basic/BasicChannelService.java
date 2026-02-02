@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.CreatePublicChannelRequestDto;
 import com.sprint.mission.discodeit.dto.UpdateChannelRequestDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -16,12 +15,9 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +32,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = new Channel(ChannelType.PUBLIC, dto.getName(), dto.getDescription());
         channelRepository.save(channel);
         // 공개 채널은 참여자 목록 없음
-        return new ChannelDto(channel, null, Collections.emptyList());
+        return new ChannelDto(channel, null, List.of());
     }
 
     @Override
@@ -72,7 +68,7 @@ public class BasicChannelService implements ChannelService {
                             .anyMatch(rs -> rs.getChannelId().equals(channel.getId()));
                 })
                 .map(channelMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

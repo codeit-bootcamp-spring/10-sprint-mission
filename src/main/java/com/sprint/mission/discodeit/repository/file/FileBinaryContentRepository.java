@@ -8,6 +8,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -61,6 +62,18 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         }
         return Optional.ofNullable(contentNullable);
     }
+
+//    @Override
+//    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+//        if (ids.isEmpty()) {
+//            return List.of();
+//        }
+//        return ids.stream()
+//                .map(this::findById)
+//                .filter(Optional::isPresent)
+//                .map(Optional::get)
+//                .toList();
+//    }
 
     @Override
     public void deleteById(UUID id) {

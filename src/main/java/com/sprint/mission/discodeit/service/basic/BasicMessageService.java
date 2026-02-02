@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -63,7 +62,7 @@ public class BasicMessageService implements MessageService {
 
         return messageRepository.findAllByChannelId(channelId).stream()
                 .map(messageMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

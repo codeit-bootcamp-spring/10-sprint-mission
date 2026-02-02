@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.CreateReadStatusRequestDto;
 import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.UpdateReadStatusRequestDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -63,7 +61,7 @@ public class BasicReadStatusService implements ReadStatusService {
         }
         return readStatusRepository.findAllByUserId(userId).stream()
                 .map(readStatusMapper::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override

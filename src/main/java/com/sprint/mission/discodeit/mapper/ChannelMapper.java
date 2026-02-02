@@ -11,10 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -34,9 +32,9 @@ public class ChannelMapper {
             participantIds = readStatusRepository.findAllByChannelId(channel.getId())
                     .stream()
                     .map(ReadStatus::getUserId)
-                    .collect(Collectors.toList());
+                    .toList();
         } else {
-            participantIds = Collections.emptyList();
+            participantIds = List.of();
         }
 
         return new ChannelDto(channel, lastMessageAt, participantIds);
