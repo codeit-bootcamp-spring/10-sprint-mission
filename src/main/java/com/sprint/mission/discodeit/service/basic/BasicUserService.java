@@ -55,7 +55,7 @@ public class BasicUserService implements UserService {
     // 사용자 단건 조회
     @Override
     public UserResponseDTO findById(UUID userId) {
-        User targetUser = findUserEntityById(userId);
+        User targetUser = findEntityById(userId);
 
         UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
 
@@ -88,7 +88,7 @@ public class BasicUserService implements UserService {
 
         return targetChannel.getMembers().stream()
                 .map(memberId -> {
-                    User user = findUserEntityById(memberId);
+                    User user = findEntityById(memberId);
                     UserStatus userStatus = userStatusRepository.findById(user.getId());
                     return toResponseDTO(user,userStatus);
                 })
@@ -98,7 +98,7 @@ public class BasicUserService implements UserService {
     // 사용자 정보 수정
     @Override
     public UserResponseDTO update(UserUpdateRequestDTO userUpdateRequestDTO) {
-        User targetUser = findUserEntityById(userUpdateRequestDTO.getId());
+        User targetUser = findEntityById(userUpdateRequestDTO.getId());
 
         UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId());
 
@@ -143,7 +143,7 @@ public class BasicUserService implements UserService {
     // 사용자 삭제
     @Override
     public void delete(UUID userId) {
-        User targetUser = findUserEntityById(userId);
+        User targetUser = findEntityById(userId);
 
         // 삭제된 사용자가 참여한 모든 채널 내 멤버에서 사용자 연쇄 삭제
         channelRepository.findAll().stream()
@@ -184,7 +184,7 @@ public class BasicUserService implements UserService {
     }
 
     // 단일 엔티티 조회 및 반환
-    public User findUserEntityById(UUID userId) {
+    public User findEntityById(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
     }

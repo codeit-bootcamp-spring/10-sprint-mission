@@ -144,8 +144,8 @@ public class BasicMessageService implements MessageService {
     }
 
     // 메시지 엔티티 반환
-    public Message findMessageEntityById(UUID targetMessageId) {
-        return messageRepository.findById(targetMessageId)
+    public Message findMessageEntityById(UUID messageId) {
+        return messageRepository.findById(messageId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
     }
 
