@@ -30,7 +30,7 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("중복된 사용자 정보가 존재합니다.");
         }
 
-        String profileId = null;
+        UUID profileId = null;
         BinaryContentDto imageDto = dto.getProfileImage();
 
         if (imageDto != null && imageDto.getBytes() != null) {

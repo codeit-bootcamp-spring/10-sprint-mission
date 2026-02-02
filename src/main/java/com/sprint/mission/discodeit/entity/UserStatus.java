@@ -6,7 +6,7 @@ import java.util.UUID;
 
 @Getter
 public class UserStatus {
-    private String id;
+    private UUID id;
     private Instant createdAt;
     private Instant updatedAt;
     //
@@ -15,7 +15,7 @@ public class UserStatus {
     private boolean isOnline;
 
     public UserStatus(UUID userId) {
-        this.id = UUID.randomUUID().toString();
+        this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.lastActiveAt = Instant.now();
@@ -23,14 +23,13 @@ public class UserStatus {
         this.isOnline = false;
     }
 
-    //참이면 온라인, 거짓이면 오프라인
-    public boolean isOnline() {
-        Instant fiveMinutesAgo = Instant.now().minusSeconds(5*60);
-        return lastActiveAt.isAfter(fiveMinutesAgo);
-    }
     //활동 로그 업데이트
-    public void updateLastActiveAt() {
+    public void updateStatus() {
         this.lastActiveAt = Instant.now();
         this.updatedAt = Instant.now();
+    }
+    //참이면 온라인, 거짓이면 오프라인
+    public boolean isOnline() {
+        return lastActiveAt.isAfter(Instant.now().minusSeconds(5 * 60));
     }
 }
