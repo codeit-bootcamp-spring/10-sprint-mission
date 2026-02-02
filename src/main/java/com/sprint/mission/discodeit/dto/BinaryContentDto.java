@@ -9,6 +9,6 @@ public final class BinaryContentDto {
     private BinaryContentDto() {}
 
     public record createRequest(BinaryContentType contentType, String filename, Byte[] contentBytes) {}
-    public record response(UUID uuid, Instant createdAt, Instant updatedAt,
+    public record response(UUID uuid, Instant createdAt,
                            BinaryContentType contentType, String filename, Byte[] content) { }
 }

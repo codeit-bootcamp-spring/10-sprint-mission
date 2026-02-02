@@ -2,31 +2,33 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 @Getter
 public class Message extends MutableEntity {
-    private Channel channel;
-    private User user;
+    private final UUID channelId;
+    private final UUID authorId;
+    private List<UUID> attachmentIds;
     private String message;
 
-    public Message(Channel channel, User user, String message) {
+    public Message(UUID channelId, UUID userId, String message) {
         super();
-        this.channel = channel;
-        this.user = user;
+        this.channelId = channelId;
+        this.authorId = userId;
         this.message = message;
     }
 
-    public void updateChannelIfSameId(Channel channel) {
-        if (Objects.equals(getChannel().getId(), channel.getId())) {
-            this.channel = channel;
-        }
+    public List<UUID> getAttachmentIds() {
+        return Collections.unmodifiableList(this.attachmentIds);
     }
-
-    public void updateUserIfSameId(User user) {
-        if (Objects.equals(getUser().getId(), user.getId())) {
-            this.user = user;
-        }
+    public void addAttachmentId(UUID attachmentId) {
+        this.attachmentIds.add(attachmentId);
+    }
+    public void removeAttachmentId(UUID attachmentId) {
+        this.attachmentIds.remove(attachmentId);
     }
 
     public void updateMessage(String message) {
@@ -35,6 +37,6 @@ public class Message extends MutableEntity {
 
     @Override
     public String toString() {
-        return String.format("'채널명: %s / 유저: %s / 채팅메세지: %s'", getChannel().getTitle(), getUser().getName(), getMessage());
+        return String.format("'채널ID: %s / 유저ID: %s / 채팅메세지: %s'", getChannelId(), getAuthorId(), getMessage());
     }
 }
