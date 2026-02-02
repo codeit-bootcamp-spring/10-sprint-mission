@@ -54,13 +54,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public void delete(UUID targetBinaryContentId) {
         BinaryContent targetBinaryContent = findEntityById(targetBinaryContentId);
-        binaryContentRepository.delete(targetBinaryContent.getId());
+        binaryContentRepository.delete(targetBinaryContent);
     }
 
     // 단일 엔티티 조회
     public BinaryContent findEntityById(UUID binaryContentId) {
-        return binaryContentRepository.findById(binaryContentId);
-        //.orElseThrow(() -> new IllegalArgumentException("해당 첨부 파일이 존재하지 않습니다."));
+        return binaryContentRepository.findById(binaryContentId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 첨부 파일이 존재하지 않습니다."));
     }
 
     // 응답 DTO 생성 및 반환

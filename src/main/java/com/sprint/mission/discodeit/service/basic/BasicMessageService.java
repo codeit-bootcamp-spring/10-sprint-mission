@@ -137,7 +137,7 @@ public class BasicMessageService implements MessageService {
 
         // 2, 첨부파일 연쇄 삭제
         targetMessage.getAttachmentIds()
-                .forEach(binaryContentRepository::delete);
+                .forEach(binaryContentId -> binaryContentRepository.delete(binaryContentId));
 
         // 3. 메시지 삭제
         messageRepository.delete(targetMessage);

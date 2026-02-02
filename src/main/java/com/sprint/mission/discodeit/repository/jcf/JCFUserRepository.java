@@ -2,12 +2,14 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
 public class JCFUserRepository implements UserRepository {
     private final List<User> data;      // 모든 사용자
 
@@ -18,7 +20,7 @@ public class JCFUserRepository implements UserRepository {
     // 사용자 저장
     @Override
     public void save(User user) {
-        data.removeIf(eexistUser -> eexistUser.getId().equals(user.getId()));
+        data.removeIf(existUser -> existUser.getId().equals(user.getId()));
 
         data.add(user);
     }
@@ -46,12 +48,14 @@ public class JCFUserRepository implements UserRepository {
     // 유효성 검증 (이메일 중복)
     @Override
     public boolean existsByEmail(String email) {
-        return data.stream().anyMatch(user -> user.getEmail().equals(email));
+        return data.stream()
+                .anyMatch(user -> user.getEmail().equals(email));
     }
 
     // 유효성 검증 (이름 중복)
     @Override
     public boolean existsByNickname(String nickname) {
-        return data.stream().anyMatch(user -> user.getNickname().equals(nickname));
+        return data.stream()
+                .anyMatch(user -> user.getNickname().equals(nickname));
     }
 }

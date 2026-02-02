@@ -2,10 +2,12 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.*;
 
+@Repository
 public class JCFMessageRepository implements MessageRepository {
     private final List<Message> data;       // 모든 메시지
 
