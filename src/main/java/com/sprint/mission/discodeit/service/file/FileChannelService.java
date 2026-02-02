@@ -25,95 +25,96 @@ public class FileChannelService {
 		userFileIo = new FileIo<>(Paths.get(directory + User.class.getSimpleName().toLowerCase()));
 		this.userFileIo.init();
 
-        userService = FileUserService.getInstance();
-    }
+		userService = FileUserService.getInstance();
+	}
 
-    public static ChannelService getInstance() {
-        if (instance == null) instance = new FileChannelService();
-        return instance;
-    }
+	public static ChannelService getInstance() {
+		// if (instance == null)
+		// 	instance = new FileChannelService();
+		return instance;
+	}
 
-    @Override
-    public Channel create(String name) {
-        Channel newChannel = new Channel(name);
+	public Channel create(String name) {
+		//        Channel newChannel = new Channel(name);
+		//
+		//        List<Channel> channels = channelFileIo.load();
+		//        channels.add(newChannel);
+		//        channelFileIo.save(newChannel.getId(), newChannel);
+		//
+		//        return newChannel;
+		return null;
+	}
 
-        List<Channel> channels = channelFileIo.load();
-        channels.add(newChannel);
-        channelFileIo.save(newChannel.getId(), newChannel);
+	public ChannelResponseDTO findById(UUID channelId) {
+		//        return channelFileIo.load().stream()
+		//            .filter(ch -> ch.getId().equals(channelId))
+		//            .findFirst()
+		//            .orElseThrow(
+		//                () -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
+		//            );
+		return null;
+	}
 
-        return newChannel;
-    }
+	public List<ChannelResponseDTO> findAllChannel() {
+		//        return channelFileIo.load();
+		return null;
+	}
 
-    @Override
-    public Channel findById(UUID channelId) {
-        return channelFileIo.load().stream()
-            .filter(ch -> ch.getId().equals(channelId))
-            .findFirst()
-            .orElseThrow(
-                () -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
-            );
-    }
+	public Channel updateName(UUID channelId, String name) {
+		//        Channel updateChannel = this.findById(channelId);
+		//
+		//        updateChannel.updateName(name);
+		//        channelFileIo.save(channelId, updateChannel);
+		//
+		//        return updateChannel;
+		return null;
+	}
 
-    @Override
-    public List<Channel> findAllChannel() {
-        return channelFileIo.load();
-    }
+	public Channel addUser(UUID channelId, UUID userId) {
+		//        Channel channel = this.findById(channelId);
+		//        User user = userService.findById(userId);
+		//
+		//        channel.addUserId(user);
+		//        channelFileIo.save(channelId, channel);
+		//        userFileIo.save(userId, user);
+		//
+		//        return channel;
 
-    @Override
-    public Channel updateName(UUID channelId, String name) {
-        Channel updateChannel = this.findById(channelId);
+		return null;
+	}
 
-        updateChannel.updateName(name);
-        channelFileIo.save(channelId, updateChannel);
+	public boolean deleteUser(UUID channelId, UUID userId) {
+		//        boolean result = false;
+		//        Channel channel = this.findById(channelId);
+		//        User user = userService.findById(userId);
+		//
+		//        // 해당 채널에 유저가 속해있는지 확인한 후 내보낸다.
+		//        // 이때 유저 쪽도 채널 정보를 제거해야 한다.
+		//        if (this.isUserInvolved(channelId, userId)) {
+		//            result = channel.getUserIds().removeIf(u -> u.getId().equals(userId));
+		//            result = result && user.getChannelList().removeIf(ch -> ch.getId().equals(channelId));
+		//
+		//            channelFileIo.save(channelId, channel);
+		//            userFileIo.save(userId, user);
+		//        }
 
-        return updateChannel;
-    }
+		return false;
+	}
 
-    @Override
-    public Channel addUser(UUID channelId, UUID userId) {
-        Channel channel = this.findById(channelId);
-        User user = userService.findById(userId);
+	public void delete(UUID channelId) {
+		try {
+			channelFileIo.delete(channelId);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
 
-        channel.addUser(user);
-        channelFileIo.save(channelId, channel);
-        userFileIo.save(userId, user);
+	public boolean isUserInvolved(UUID channelId, UUID userId) {
+		//        Channel channel = this.findById(channelId);
+		//        User user = userService.findById(userId);
+		//
+		//        return channel.getUserIds().contains(user);
 
-        return channel;
-    }
-
-    @Override
-    public boolean deleteUser(UUID channelId, UUID userId) {
-        boolean result = false;
-        Channel channel = this.findById(channelId);
-        User user = userService.findById(userId);
-
-        // 해당 채널에 유저가 속해있는지 확인한 후 내보낸다.
-        // 이때 유저 쪽도 채널 정보를 제거해야 한다.
-        if (this.isUserInvolved(channelId, userId)) {
-            result = channel.getUserList().removeIf(u -> u.getId().equals(userId));
-            result = result && user.getChannelList().removeIf(ch -> ch.getId().equals(channelId));
-
-            channelFileIo.save(channelId, channel);
-            userFileIo.save(userId, user);
-        }
-
-        return result;
-    }
-
-    @Override
-    public void delete(UUID channelId) {
-        try {
-            channelFileIo.delete(channelId);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    @Override
-    public boolean isUserInvolved(UUID channelId, UUID userId) {
-        Channel channel = this.findById(channelId);
-        User user = userService.findById(userId);
-
-        return channel.getUserList().contains(user);
-    }
+		return false;
+	}
 }
