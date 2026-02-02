@@ -80,7 +80,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
     @Override
     public List<ReadStatus> findAll() {
-        if (Files.exists(dirPath)) {
+        if (!Files.exists(dirPath)) {
             return List.of();
         }
         try (Stream<Path> stream = Files.list(dirPath)) {

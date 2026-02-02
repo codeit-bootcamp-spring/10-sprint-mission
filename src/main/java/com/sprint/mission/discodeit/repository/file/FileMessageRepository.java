@@ -32,7 +32,7 @@ public class FileMessageRepository implements MessageRepository {
             try {
                 Files.createDirectories(dirPath);
             } catch (IOException e) {
-                throw new RuntimeException("메시지 데이터 폴더 생성 실패", e);
+                throw new RuntimeException("Message 데이터 폴더 생성 실패", e);
             }
         }
     }
@@ -52,7 +52,7 @@ public class FileMessageRepository implements MessageRepository {
         try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))){
             return Optional.ofNullable((Message) ois.readObject());
         } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException("메시지 데이터 조회 실패", e);
+            throw new RuntimeException("Message 데이터 조회 실패", e);
         }
     }
 
@@ -67,12 +67,12 @@ public class FileMessageRepository implements MessageRepository {
                         try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
                             return (Message) ois.readObject();
                         } catch (IOException | ClassNotFoundException e) {
-                            throw new RuntimeException("메시지 데이터 조회 실패", e);
+                            throw new RuntimeException("Message 데이터 조회 실패", e);
                         }
                     })
                     .toList();
         } catch (IOException e) {
-            throw new RuntimeException("메시지 데이터 목록 조회 실패", e);
+            throw new RuntimeException("Message 데이터 목록 조회 실패", e);
         }
     }
 
@@ -82,7 +82,7 @@ public class FileMessageRepository implements MessageRepository {
         try {
             Files.deleteIfExists(path);
         } catch (IOException e) {
-            throw new RuntimeException("메시지 데이터 삭제 실패", e);
+            throw new RuntimeException("Message 데이터 삭제 실패", e);
         }
     }
 
@@ -91,7 +91,7 @@ public class FileMessageRepository implements MessageRepository {
         try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
             oos.writeObject(message);
         } catch (IOException e) {
-            throw new RuntimeException("메시지 데이터 저장 실패", e);
+            throw new RuntimeException("Message 데이터 저장 실패", e);
         }
     }
 }
