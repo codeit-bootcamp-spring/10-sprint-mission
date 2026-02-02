@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
-    private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
     private final ReadStatusRepository readStatusRepository;
@@ -41,9 +39,6 @@ public class BasicChannelService implements ChannelService {
         if (dto.joinedUserIds().isEmpty()) {
             throw new IllegalArgumentException("비공개 채널엔 최소 1명 이상 입장하여야 합니다.");
         }
-        Instant currentTime = Instant.now();
-        // 유저 검증
-        dto.joinedUserIds().forEach(id -> findUserOrThrow(id));
 
         Channel channel = ChannelMapper.toPrivateChannelEntity(null, null);
 
@@ -54,7 +49,7 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
 
         for (UUID userId : channel.getJoinedUserIds()) {
-            ReadStatus readStatus = new ReadStatus(userId, channel.getId(), currentTime);
+            ReadStatus readStatus = new ReadStatus(userId, channel.getId());
             readStatusRepository.save(readStatus);
         }
 
@@ -63,7 +58,6 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<ChannelWithLastMessageDTO> findAllByUserId(UUID userId) {
-        findUserOrThrow(userId);
         List<Channel> allChannels = channelRepository.findAll();
         List<Channel> publicChannels
                 = allChannels.stream()
@@ -120,7 +114,6 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = findChannelOrThrow(channelId);
-        User user = findUserOrThrow(userId);
 
         if (channel.getJoinedUserIds().stream()
                 .anyMatch(id -> id.equals(userId))) {
@@ -128,28 +121,34 @@ public class BasicChannelService implements ChannelService {
         }
 
         // 메모리 갱신
-        channel.addUser(user.getId());
-        user.updateJoinedChannels(channel.getId());
+        channel.addUser(userId);
+
+        if (!readStatusRepository.existsByUserIdAndChannelId(userId, channelId)) {
+            // 채널에 참여했을 때 읽음 상태 저장
+            readStatusRepository.save(new ReadStatus(userId, channelId));
+        }
+
         // file 갱신
         channelRepository.save(channel);
-        userRepository.save(user);
     }
 
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = findChannelOrThrow(channelId);
-        User user = findUserOrThrow(userId);
 
         if (channel.getJoinedUserIds().stream()
                 .noneMatch(id -> id.equals(userId))) {
             throw new IllegalArgumentException("해당 채널에 참여하고 있지 않습니다.");
         }
 
-        channel.removeUser(user.getId());
-        user.removeChannel(channel.getId());
+        if (readStatusRepository.existsByUserIdAndChannelId(userId, channelId)) {
+            // 채널을 떠날 때 읽음 상태 삭제
+            readStatusRepository.deleteByUserIdAndChannelId(userId, channelId);
+        }
+
+        channel.removeUser(userId);
 
         channelRepository.save(channel);
-        userRepository.save(user);
     }
 
     @Override
@@ -166,14 +165,6 @@ public class BasicChannelService implements ChannelService {
         return channelRepository.findById(channelId)
                 .orElseThrow(() ->
                         new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다."));
-    }
-
-    private User findUserOrThrow(UUID userId) {
-        Objects.requireNonNull(userId, "userId는 null값일 수 없습니다.");
-
-        return userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new NoSuchElementException("해당 id를 가진 사용자가 존재하지 않습니다."));
     }
 
     private Instant findLatestMessageAt(UUID channelId) {

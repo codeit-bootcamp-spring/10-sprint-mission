@@ -18,6 +18,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     @Override
     public UserStatus save(UserStatus userStatus) {
         data.put(userStatus.getId(), userStatus);
+        saveToFile();
         return userStatus;
     }
 
@@ -47,6 +48,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     @Override
     public void deleteById(UUID userStatusId) {
         data.remove(userStatusId);
+        saveToFile();
     }
 
     @SuppressWarnings("unchecked")

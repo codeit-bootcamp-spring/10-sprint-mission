@@ -18,6 +18,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     @Override
     public BinaryContent save(BinaryContent binaryContent) {
         data.put(binaryContent.getId(), binaryContent);
+        saveToFile();
         return binaryContent;
     }
 
@@ -50,6 +51,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     @Override
     public void deleteById(UUID binaryContentId) {
         data.remove(binaryContentId);
+        saveToFile();
     }
 
     @SuppressWarnings("unchecked")

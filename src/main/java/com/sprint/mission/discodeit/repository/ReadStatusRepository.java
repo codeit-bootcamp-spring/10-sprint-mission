@@ -23,4 +23,6 @@ public interface ReadStatusRepository {
     void deleteById(UUID readStatusId);
 
     void deleteByChannelId(UUID channelId);
+
+    void deleteByUserIdAndChannelId(UUID userId, UUID channelId);
 }

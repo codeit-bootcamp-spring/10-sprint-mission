@@ -18,6 +18,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     @Override
     public ReadStatus save(ReadStatus readStatus) {
         data.put(readStatus.getId(), readStatus);
+        saveToFile();
         return readStatus;
     }
 
@@ -50,6 +51,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     @Override
     public void deleteById(UUID readStatusId) {
         data.remove(readStatusId);
+        saveToFile();
     }
 
     @Override
@@ -57,6 +59,15 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         data.values().removeIf(
                 readStatus -> readStatus.getChannelId().equals(channelId)
         );
+        saveToFile();
+    }
+
+    @Override
+    public void deleteByUserIdAndChannelId(UUID userId, UUID channelId) {
+        data.values().removeIf(rs ->
+                rs.getUserId().equals(userId) && rs.getChannelId().equals(channelId)
+        );
+        saveToFile();
     }
 
     @SuppressWarnings("unchecked")

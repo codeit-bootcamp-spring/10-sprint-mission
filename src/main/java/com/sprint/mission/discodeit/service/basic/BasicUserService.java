@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
-import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
 import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
@@ -22,8 +21,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
-    private final MessageRepository messageRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
 
@@ -68,9 +65,6 @@ public class BasicUserService implements UserService {
 
     @Override
     public List<UserResponseDTO> findAllByChannel(UUID channelId) {
-        if (channelRepository.findById(channelId).isEmpty()) {
-            throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
-        }
 
         List<User> users = userRepository.findAll().stream()
                 .filter(user -> user.getJoinedChannelIds().stream()
