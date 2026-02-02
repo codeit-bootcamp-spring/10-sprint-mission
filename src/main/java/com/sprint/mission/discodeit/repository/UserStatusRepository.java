@@ -11,5 +11,6 @@ public interface UserStatusRepository {
     public UserStatus deleteById(UUID id);
     public UserStatus deleteByUserId(UUID userID);
     public Optional<UserStatus> findById(UUID id);
+    public Optional<UserStatus> findByUserId(UUID id);
     public List<UserStatus> findAll();
 }

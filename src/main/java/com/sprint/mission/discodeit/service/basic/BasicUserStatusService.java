@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.userstatusdto.USRequestDTO;
-import com.sprint.mission.discodeit.dto.userstatusdto.USResponseDTO;
+import com.sprint.mission.discodeit.dto.userstatusdto.UserStateRequestDTO;
+import com.sprint.mission.discodeit.dto.userstatusdto.UserStateResponseDTO;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.entity.mapper.UserStatusDTOMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -25,7 +25,7 @@ public class BasicUserStatusService implements UserStatusService {
 
 
     @Override
-    public USResponseDTO create(USRequestDTO req) {
+    public UserStateResponseDTO create(UserStateRequestDTO req) {
         Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
 
         if(userRepository.findById(req.userID()).isEmpty()){
@@ -48,7 +48,7 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public List<USResponseDTO> findAll() {
+    public List<UserStateResponseDTO> findAll() {
 
         return userStatusRepository.findAll()
                 .stream()
@@ -57,7 +57,7 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public USResponseDTO update(USRequestDTO req) {
+    public UserStateResponseDTO update(UserStateRequestDTO req) {
         Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
         userRepository.findById(req.userID()).orElseThrow(()->new IllegalStateException("해당 유저가 존재하지 않습니다!"));
         UserStatus userStatus = userStatusRepository.findById(req.id()).orElseThrow(() -> new NoSuchElementException("해당 User Status는 존재하지 않습니다!"));
@@ -69,7 +69,7 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public USResponseDTO updateByUserId(UUID userId) {
+    public UserStateResponseDTO updateByUserId(UUID userId) {
         Objects.requireNonNull(userId, "유효하지 않은 ID 입니다!");
 
         if (userRepository.findById(userId).stream().noneMatch(u -> userId.equals(u.getId()))) {

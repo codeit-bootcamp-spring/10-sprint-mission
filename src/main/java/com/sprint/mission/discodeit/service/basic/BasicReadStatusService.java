@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.readstatusdto.RSCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.readstatusdto.RSResponseDTO;
-import com.sprint.mission.discodeit.dto.readstatusdto.RSUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
@@ -28,7 +28,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
 
     @Override
-    public RSResponseDTO create(RSCreateRequestDTO req) {
+    public ReadStatusResponseDTO create(ReadStatusCreateRequestDTO req) {
         Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
 
         Channel channel = channelRepository.findById(req.channelId())
@@ -53,14 +53,14 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public RSResponseDTO find(UUID rsId) {
+    public ReadStatusResponseDTO find(UUID rsId) {
         Objects.requireNonNull(rsId,"유효하지 않은 ReadStatus ID 입니다.");
         ReadStatus readStatus = readStatusRepository.findByID(rsId);
         return readStatusDTOMapper.rsToResponse(readStatus);
     }
 
     @Override
-    public List<RSResponseDTO> findAllByUserId(UUID userId) {
+    public List<ReadStatusResponseDTO> findAllByUserId(UUID userId) {
         Objects.requireNonNull(userId,"유효하지 않은 유저 ID 입니다.");
 
         return readStatusRepository.findAll().stream()
@@ -71,7 +71,7 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public RSResponseDTO update(RSUpdateRequestDTO req) {
+    public ReadStatusResponseDTO update(ReadStatusUpdateRequestDTO req) {
         Objects.requireNonNull(req, "유효하지 않은 요청입니다!");
 
         ReadStatus readStatus = readStatusRepository
@@ -84,7 +84,7 @@ public class BasicReadStatusService implements ReadStatusService {
         readStatus.update(req.lastReadAt());
         ReadStatus saved = readStatusRepository.save(readStatus);
 
-        return new RSResponseDTO(readStatus.getId(),
+        return new ReadStatusResponseDTO(readStatus.getId(),
                 req.channelId(),
                 req.userId(),
                 saved.getLastReadAt(),

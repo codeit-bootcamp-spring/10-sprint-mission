@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.messagedto;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDTO;
 
 import java.util.List;
 import java.util.UUID;

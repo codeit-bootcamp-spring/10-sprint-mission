@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserResponseDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
