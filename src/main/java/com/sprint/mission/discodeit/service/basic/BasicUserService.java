@@ -21,13 +21,8 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
-
-    // TODO: 추후 각 파일 리포지토리 고도화 시에 @Autowired 제거
-    @Autowired(required = false)
-    private UserStatusRepository  userStatusRepository;
-
-    @Autowired(required = false)
-    private BinaryContentRepository  binaryContentRepository;
+    private final UserStatusRepository  userStatusRepository;
+    private final BinaryContentRepository  binaryContentRepository;
 
     @Override
     public UserDto.Response create(UserDto.CreateRequest request) {

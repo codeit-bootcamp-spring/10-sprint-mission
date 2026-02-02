@@ -21,10 +21,7 @@ import java.util.UUID;
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
-
-    // TODO: 추후 각 파일 리포지토리 고도화 시에 @Autowired 제거
-    @Autowired(required = false)
-    private ReadStatusRepository readStatusRepository;
+    private final ReadStatusRepository readStatusRepository;
 
     @Override
     public ChannelDto.Response createPublicChannel(ChannelDto.CreatePublicRequest request) {

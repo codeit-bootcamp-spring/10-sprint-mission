@@ -23,9 +23,7 @@ public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
-
-    @Autowired(required = false)
-    private BinaryContentRepository binaryContentRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
     public MessageDto.Response create(MessageDto.CreateRequest request) {

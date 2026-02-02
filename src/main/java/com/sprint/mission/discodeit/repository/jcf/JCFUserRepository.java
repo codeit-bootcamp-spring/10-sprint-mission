@@ -1,67 +1,52 @@
-//package com.sprint.mission.discodeit.repository.jcf;
-//
-//import com.sprint.mission.discodeit.entity.User;
-//import com.sprint.mission.discodeit.repository.UserRepository;
-//
-//import java.util.ArrayList;
-//import java.util.List;
-//import java.util.Optional;
-//import java.util.UUID;
-//
-//public class JCFUserRepository implements UserRepository {
-//    private final List<User> users = new ArrayList<>();
-//
-//    @Override
-//    public User save(User user) {
-//        int index = -1;
-//        for (int i = 0; i <= users.size(); i++) {
-//            if (users.get(i).getId().equals(user.getId())) {
-//                index = i;
-//                break;
-//            }
-//        }
-//
-//        if (index != -1) {
-//            users.set(index, user);
-//        } else {
-//            users.add(user);
-//        }
-//        return user;
-//    }
-//
-//    @Override
-//    public Optional<User> findById(UUID id) {
-//        return users.stream()
-//                .filter(u -> u.getId().equals(id))
-//                .findFirst();
-//    }
-//
-//    @Override
-//    public Optional<User> findByEmail(String email) {
-//        return users.stream()
-//                .filter(u -> u.getEmail().equals(email))
-//                .findFirst();
-//    }
-//
-//    @Override
-//    public Optional<User> findByUsername(String username) {
-//        return findAll().stream()
-//                .filter(u -> u.getUsername().equals(username))
-//                .findFirst();
-//    }
-//
-//    @Override
-//    public List<User> findAll() {
-//        return new ArrayList<>(users);
-//    }
-//
-//    @Override
-//    public boolean existsById(UUID id) {
-//        return false;
-//    }
-//
-//    @Override
-//    public void delete(UUID id) {
-//        users.removeIf(u -> u.getId().equals(id));
-//    }
-//}
+package com.sprint.mission.discodeit.repository.jcf;
+
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.*;
+
+@Repository
+public class JCFUserRepository implements UserRepository {
+    private final Map<UUID, User> storage = new HashMap<>();
+
+    @Override
+    public User save(User user) {
+        storage.put(user.getId(), user);
+        return user;
+    }
+
+    @Override
+    public Optional<User> findById(UUID id) {
+        return Optional.ofNullable(storage.get(id));
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return storage.values().stream()
+                .filter(u -> u.getEmail().equals(email))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return storage.values().stream()
+                .filter(u -> u.getUsername().equals(username))
+                .findFirst();
+    }
+
+    @Override
+    public List<User> findAll() {
+        return new ArrayList<>(storage.values());
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return storage.containsKey(id);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        storage.remove(id);
+    }
+}

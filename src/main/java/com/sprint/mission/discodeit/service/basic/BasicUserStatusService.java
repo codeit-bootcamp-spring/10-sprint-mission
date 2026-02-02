@@ -17,9 +17,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicUserStatusService implements UserStatusService {
     private final UserRepository userRepository;
-
-    @Autowired(required = false)
-    private UserStatusRepository userStatusRepository;
+    private final UserStatusRepository userStatusRepository;
 
     @Override
     public UserStatusDto.Response create(UserStatusDto.CreateRequest request) {

@@ -18,9 +18,7 @@ import java.util.UUID;
 public class BasicReadStatusService implements ReadStatusService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
-
-    @Autowired(required = false)
-    private ReadStatusRepository readStatusRepository;
+    private final ReadStatusRepository readStatusRepository;
 
     @Override
     public ReadStatusDto.Response create(ReadStatusDto.CreateRequest request) {
