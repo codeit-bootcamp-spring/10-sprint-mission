@@ -21,12 +21,14 @@ public class User extends BaseEntity implements Serializable  {
     private String password;
 
     public User(String username, String email, String password) {
-        this.id = UUID.randomUUID();
+        this.id = UUID.randomUUID();  // 명시적으로 ID 생성
         this.createdAt = Instant.now();
-        //
+        this.updatedAt = Instant.now();
+
         this.username = username;
         this.email = email;
         this.password = password;
+        this.profileImageId = null;
     }
 
     public void update(String newUsername, String newEmail, String newPassword) {

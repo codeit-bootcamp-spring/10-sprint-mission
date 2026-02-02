@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.file;
 
+import com.sprint.mission.discodeit.dto.UserResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -53,7 +54,7 @@ public class FileMessageService implements MessageService {
 
     @Override
     public Message create(String content, UUID channelId, UUID authorId) {
-        User author = userService.find(authorId);
+        UserResponse author = userService.find(authorId);
         Channel channel = channelService.find(channelId);
 
         Message message = new Message(content,authorId, channelId);

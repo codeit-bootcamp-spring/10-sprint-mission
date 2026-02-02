@@ -7,15 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateUserRequest {
+public class LoginRequest {
     private String username;
-    private String email;
     private String password;
-
-    // 선택적 프로필 이미지
-    private ProfileImageData profileImage;// null 가능
-
-    public void create(CreateUserRequest createUserRequest){
-
-    }
 }

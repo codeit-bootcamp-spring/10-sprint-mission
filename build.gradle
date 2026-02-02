@@ -12,6 +12,8 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.springframework:spring-tx'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -22,6 +24,7 @@ dependencies {
 
 //    test 환경
     testImplementation('org.projectlombok:lombok')
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testAnnotationProcessor('org.projectlombok:lombok')
 
 }

@@ -17,25 +17,28 @@ public class UserStatus {
     private String status; // "ONLINE","OFFLINE","AWAY"
     private Instant lastActiveAt;
 
-    public UserStatus(UUID id, UUID userId, Instant lastSeenAt,
-                      Instant createdAt, Instant updatedAt) {
-        this.id = id;
+    public UserStatus(UUID userId,String status,Instant lastActiveAt) {
+        this.id = UUID.randomUUID();
         this.userId = userId;
-        this.lastSeenAt = lastSeenAt;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.status = status;
+        this.lastActiveAt = lastActiveAt;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
     }
 
-    public static UserStatus create(UUID userId) {
-        Instant now = Instant.now();
-        return new UserStatus(UUID.randomUUID(), userId, now, now, now);
-    }
+//    public static UserStatus create(UUID userId) {
+//        Instant now = Instant.now();
+//        return new UserStatus(id, userId, now, now, now);
+//    }
 
-    public void updateLastSeenAt() {
+    public void updateLastActiveAt(Instant now) {
         this.lastSeenAt = Instant.now();
         this.updatedAt = Instant.now();
     }
 
+    public void updateStatus(String status) {
+        this.status = null;
+    }
     /**
      * 마지막 접속 시간이 현재로부터 5분 이내이면 온라인으로 판단
      */
@@ -43,4 +46,5 @@ public class UserStatus {
         Instant fiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
         return lastSeenAt.isAfter(fiveMinutesAgo);
     }
+
 }
