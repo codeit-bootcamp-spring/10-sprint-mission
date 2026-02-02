@@ -114,10 +114,17 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(UUID channelId, String newName, String newDescription) {
+    public Channel update(UUID channelId,ChannelRequestDto channelUpdateDto) {//DTO를 활용하여 파라미터를 그룹화합니다. 수정대상 객체의 ID 파라미터,수정할 값 파라미터
+
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
-        channel.update(newName, newDescription);
+
+        //PRIVATE 채널은 수정할 수 없습니다.
+        if(channel.getType() == PRIVATE) {
+            throw new IllegalStateException("PRIVATE 채널은 수정이 불가능합니다.");
+        }
+
+        channel.update(channelUpdateDto.name(), channelUpdateDto.discription());
         return channelRepository.save(channel);
     }
 
