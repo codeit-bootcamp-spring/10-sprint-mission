@@ -21,9 +21,9 @@ public class FileChannelRepository implements ChannelRepository {
 	private final FileIo<User> userFileIo;
 
 	private FileChannelRepository(@Value("${discodeit.repository.file-directory}") String directory) {
-		channelFileIo = new FileIo<>(Paths.get(directory + Channel.class.getSimpleName().toLowerCase()));
+		channelFileIo = new FileIo<>(Paths.get(directory).resolve(Channel.class.getSimpleName().toLowerCase()));
 		this.channelFileIo.init();
-		userFileIo = new FileIo<>(Paths.get(directory + User.class.getSimpleName().toLowerCase()));
+		userFileIo = new FileIo<>(Paths.get(directory).resolve(User.class.getSimpleName().toLowerCase()));
 		this.userFileIo.init();
 	}
 

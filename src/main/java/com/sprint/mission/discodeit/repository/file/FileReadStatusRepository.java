@@ -20,7 +20,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 	private final FileIo<ReadStatus> fileIo;
 
 	public FileReadStatusRepository(@Value("${discodeit.repository.file-directory}") String directory) {
-		this.fileIo = new FileIo<>(Paths.get(directory + ReadStatus.class.getSimpleName().toLowerCase()));
+		this.fileIo = new FileIo<>(Paths.get(directory).resolve(ReadStatus.class.getSimpleName().toLowerCase()));
 	}
 
 	@Override

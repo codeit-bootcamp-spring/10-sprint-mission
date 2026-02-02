@@ -19,7 +19,7 @@ public class FileUserRepository implements UserRepository {
 	private final FileIo<User> fileIo;
 
 	private FileUserRepository(@Value("${discodeit.repository.file-directory}") String directory) {
-		fileIo = new FileIo<User>(Paths.get(directory + User.class.getSimpleName().toLowerCase()));
+		fileIo = new FileIo<User>(Paths.get(directory).resolve(User.class.getSimpleName().toLowerCase()));
 		fileIo.init();
 	}
 

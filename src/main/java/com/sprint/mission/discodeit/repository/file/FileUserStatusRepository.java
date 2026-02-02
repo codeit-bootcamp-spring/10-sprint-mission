@@ -19,7 +19,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 	private final FileIo<UserStatus> fileIo;
 
 	public FileUserStatusRepository(@Value("${discodeit.repository.file-directory}") String directory) {
-		this.fileIo = new FileIo<>(Paths.get(directory + UserStatus.class.getSimpleName().toLowerCase()));
+		this.fileIo = new FileIo<>(Paths.get(directory).resolve(UserStatus.class.getSimpleName().toLowerCase()));
 	}
 
 	@Override

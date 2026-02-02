@@ -29,11 +29,11 @@ public class FileMessageService implements MessageService {
 	private FileIo<Channel> channelFileIo;
 
 	private FileMessageService(@Value("${discodeit.repository.file-directory}") String directory) {
-		this.messageFileIo = new FileIo<>(Paths.get(directory + Message.class.getSimpleName().toLowerCase()));
+		this.messageFileIo = new FileIo<>(Paths.get(directory).resolve(Message.class.getSimpleName().toLowerCase()));
 		messageFileIo.init();
-		this.userFileIo = new FileIo<>(Paths.get(directory + User.class.getSimpleName().toLowerCase()));
+		this.userFileIo = new FileIo<>(Paths.get(directory).resolve(User.class.getSimpleName().toLowerCase()));
 		userFileIo.init();
-		this.channelFileIo = new FileIo<>(Paths.get(directory + Channel.class.getSimpleName().toLowerCase()));
+		this.channelFileIo = new FileIo<>(Paths.get(directory).resolve(Channel.class.getSimpleName().toLowerCase()));
 		channelFileIo.init();
 
 		this.userService = FileUserService.getInstance();

@@ -18,7 +18,7 @@ public class FileUserService implements UserService {
 	private final FileIo<User> fileIo;
 
 	private FileUserService(@Value("${discodeit.repository.file-directory}") String directory) {
-		this.fileIo = new FileIo<>(Paths.get(directory + User.class.getSimpleName().toLowerCase()));
+		this.fileIo = new FileIo<>(Paths.get(directory).resolve(User.class.getSimpleName().toLowerCase()));
 		this.fileIo.init();
 	}
 

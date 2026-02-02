@@ -20,7 +20,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 	private final FileIo<BinaryContent> fileIo;
 
 	public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory}") String directory) {
-		this.fileIo = new FileIo<>(Paths.get(directory + BinaryContent.class.getSimpleName().toLowerCase()));
+		this.fileIo = new FileIo<>(Paths.get(directory).resolve(BinaryContent.class.getSimpleName().toLowerCase()));
 	}
 
 	@Override
