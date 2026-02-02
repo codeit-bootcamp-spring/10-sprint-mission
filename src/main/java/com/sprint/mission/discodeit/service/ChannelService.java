@@ -4,10 +4,6 @@ import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
 import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 
 import java.util.UUID;
 import java.util.List;
@@ -22,7 +18,7 @@ public interface ChannelService {
 
     List<ChannelResponse> getAllByUserId(UUID userId); // 유저별 참여하고 있는 채널 전체 조회
 
-    ChannelResponse updateChannel(UUID id, ChannelUpdateRequest request); // 체널 정보 수정
+    ChannelResponse update(UUID id, ChannelUpdateRequest request); // 체널 정보 수정
 
     void deleteByChannelId(UUID channelId);
 }

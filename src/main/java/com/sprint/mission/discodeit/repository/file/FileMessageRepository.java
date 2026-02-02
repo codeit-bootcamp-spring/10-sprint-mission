@@ -33,9 +33,17 @@ public class FileMessageRepository extends BaseFileRepository<Message> implement
     }
 
     @Override
-    public void delete(Message message){
+    public List<Message> findAllByChannelId(UUID channelId){
         Map<UUID, Message> data = loadData();
-        data.remove(message.getId());
+        return data.values().stream()
+                .filter(message -> message.getChannel().getId().equals(channelId))
+                .toList();
+    }
+
+    @Override
+    public void deleteById(UUID id){
+        Map<UUID, Message> data = loadData();
+        data.remove(id);
         saveData(data);
     }
 

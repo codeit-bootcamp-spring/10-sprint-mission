@@ -90,7 +90,7 @@ public class BasicChannelService implements ChannelService{
 
     // 채널 정보 수정
     @Override
-    public ChannelResponse updateChannel(UUID id, ChannelUpdateRequest request) {
+    public ChannelResponse update(UUID id, ChannelUpdateRequest request) {
         Channel channel = getOrThrowChannel(id);
 
         // PRIVATE 채널은 수정할 수 없음
@@ -113,20 +113,6 @@ public class BasicChannelService implements ChannelService{
         channelRepository.deleteById(id);
     }
 
-    // 엔티티 -> DTO 변환
-    private ChannelResponse convertToResponse(Channel channel, Instant lastMessageAt, List<UUID> memberIds) {
-        return new ChannelResponse(
-                channel.getId(),
-                channel.getName(),
-                channel.getDescription(),
-                channel.getType(),
-                channel.isPublic(),
-                lastMessageAt,
-                memberIds,
-                channel.getCreatedAt(),
-                channel.getUpdatedAt()
-        );
-    }
 
     // 특정 채널의 가장 최근 메시지 시각 조회
     private Instant getLastMessageAt(UUID channelId) {
@@ -157,5 +143,20 @@ public class BasicChannelService implements ChannelService{
     private void validateUserExists(UUID userId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
+    }
+
+    // 엔티티 -> DTO 변환
+    private ChannelResponse convertToResponse(Channel channel, Instant lastMessageAt, List<UUID> memberIds) {
+        return new ChannelResponse(
+                channel.getId(),
+                channel.getName(),
+                channel.getDescription(),
+                channel.getType(),
+                channel.isPublic(),
+                lastMessageAt,
+                memberIds,
+                channel.getCreatedAt(),
+                channel.getUpdatedAt()
+        );
     }
 }

@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,107 +19,120 @@ public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final ReadStatusRepository readStatusRepository;
 
-    // 메시지 생성
     @Override
-    public Message create(String content, UUID userId, UUID channelId) {
-        validateAccess(userId, channelId); // 권한 확인
+    public MessageResponse create(MessageCreateRequest request) {
+        validateAccess(request.authorId(), request.channelId());
 
-        User author = findUserOrThrow(userId);
-        Channel channel = findChannelOrThrow(channelId);
+        User author = getOrThrowUser(request.authorId());
+        Channel channel = getOrThrowChannel(request.channelId());
 
-        Message newMessage = new Message(content,author, channel);
+        Message newMessage = new Message(request.content(), author, channel);
 
-        author.addMessage(newMessage);
-        channel.addMessage(newMessage);
+        // 첨부파일 등록
+        if (request.attachmentIds() != null) {
+            request.attachmentIds().forEach(attachmentId -> {
+                if (!binaryContentRepository.findById(attachmentId).isPresent()) {
+                    throw new NoSuchElementException("존재하지 않는 첨부파일입니다.");
+                }
+                newMessage.addAttachment(attachmentId);
+            });
+        }
 
-        userRepository.save(author);
-        channelRepository.save(channel);
-        return messageRepository.save(newMessage);
+        messageRepository.save(newMessage);
+        return convertToResponse(newMessage);
     }
 
-    // 메시지 ID로 조회
+
     @Override
-    public Message findById(UUID id){
-        return messageRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 메시지 ID입니다."));
-    }
-
-    // 메시지 전부 조회
-    @Override
-    public List<Message> findAll() {
-        return messageRepository.findAll();
-    }
-
-    // 메시지 수정
-    @Override
-    public Message update(UUID id, String content) {
-        Message message = findById(id);
-        message.update(content); // 여기서 isEdited가 true로 변함
-
-        messageRepository.save(message);
-        userRepository.save(message.getUser());
-        channelRepository.save(message.getChannel());
-
-        return message;
-    }
-
-    // 메시지 삭제
-    @Override
-    public void delete(UUID id) {
-        Message message = findById(id);
-
-        User author = message.getUser();
-        Channel channel = message.getChannel();
-
-        author.removeMessage(message);
-        channel.removeMessage(message);
-
-        userRepository.save(author);
-        channelRepository.save(channel);
-        messageRepository.delete(message);
-    }
-
-    // 메시지 고정
-    @Override
-    public Message togglePin(UUID id){
-        Message message = findById(id);
-        message.togglePin();
-
-        messageRepository.save(message);
-        channelRepository.save(message.getChannel());
-        userRepository.save(message.getUser());
-
-        return message;
+    public MessageResponse getMessageById(UUID id) {
+        Message message = getOrThrowMessage(id);
+        return convertToResponse(message);
     }
 
     // 특정 채널의 메시지 목록 조회
     @Override
-    public List<Message> findAllByChannelId(UUID channelId, UUID userId) { // 특정 채널의 메시지 조회
+    public List<MessageResponse> getAllByChannelId(UUID channelId, UUID userId) {
         validateAccess(userId, channelId);
-        Channel channel = findChannelOrThrow(channelId);
-        return channel.getMessages();
+
+        return messageRepository.findAllByChannelId(channelId).stream()
+                .map(this::convertToResponse)
+                .toList();
     }
 
-    // 권한 확인
+    @Override
+    public MessageResponse update(UUID id, MessageUpdateRequest request) {
+        Message message = getOrThrowMessage(id);
+        message.update(request.content());
+        messageRepository.save(message);
+        return convertToResponse(message);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        Message message = getOrThrowMessage(id);
+
+        // 첨부파일 삭제
+        if (message.getAttachmentIds() != null) {
+            message.getAttachmentIds().forEach(attachmentId -> {
+                binaryContentRepository.deleteById(attachmentId);
+            });
+        }
+
+        messageRepository.deleteById(id);
+    }
+
+    // 메시지 고정
+    @Override
+    public MessageResponse togglePin(UUID id){
+        Message message = getOrThrowMessage(id);
+        message.togglePin();
+
+        messageRepository.save(message);
+        return convertToResponse(message);
+    }
+
+
+    // 접근 권한 확인 (비공개 채널 여부 체크)
     private void validateAccess(UUID userId, UUID channelId) {
-        // 채널 멤버 확인
-        User user = findUserOrThrow(userId);
-        Channel channel = findChannelOrThrow(channelId);
-        if (!channel.isMember(user)) {
-            throw new IllegalArgumentException("채널 멤버만 접근할 수 있습니다.");
+        Channel channel = getOrThrowChannel(channelId);
+        if (!channel.isPublic()) {
+            readStatusRepository.findByUserIdAndChannelId(userId, channelId)
+                    .orElseThrow(() -> new IllegalArgumentException("채널 접근 권한이 없습니다."));
         }
     }
 
-    // 헬퍼 메서드 - 저장소에서 유저 조회
-    private User findUserOrThrow(UUID userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 ID입니다."));
+    // 유저 검증
+    private User getOrThrowUser(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다."));
     }
 
-    // 헬퍼 메서드 - 저장소에서 채널 조회
-    private Channel findChannelOrThrow(UUID channelId) {
-        return channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널 ID입니다."));
+    // 채널 검증
+    private Channel getOrThrowChannel(UUID id) {
+        return channelRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다."));
+    }
+
+    // 메시지 검증
+    private Message getOrThrowMessage(UUID id) {
+        return messageRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다."));
+    }
+
+    // 엔티티 -> DTO 변환
+    private MessageResponse convertToResponse(Message message) {
+        return new MessageResponse(
+                message.getId(),
+                message.getContent(),
+                message.getUser().getId(),
+                message.getChannel().getId(),
+                message.isPinned(),
+                message.getAttachmentIds(),
+                message.getCreatedAt(),
+                message.getUpdatedAt()
+        );
     }
 }

@@ -13,7 +13,9 @@ public interface MessageRepository {
 
     List<Message> findAll();
 
-    void delete(Message message);
+    List<Message> findAllByChannelId(UUID channelId);
+
+    void deleteById(UUID id);
 
     void deleteByChannelId(UUID channelId); // 특정 채널의 모든 메시지 삭제
 }

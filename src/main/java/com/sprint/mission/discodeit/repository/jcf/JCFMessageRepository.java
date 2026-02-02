@@ -29,8 +29,15 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void delete(Message message){
-        data.remove(message.getId());
+    public List<Message> findAllByChannelId(UUID channelId){
+        return data.values().stream()
+                .filter(message -> message.getChannel().getId().equals(channelId))
+                .toList();
+    }
+
+    @Override
+    public void deleteById(UUID id){
+        data.remove(id);
     }
 
     // 특정 채널의 모든 메시지 삭제

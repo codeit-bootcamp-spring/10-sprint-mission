@@ -138,22 +138,6 @@ public class BasicUserService implements UserService {
         return userStatusRepository.findByUserId(userId).orElse(null);
     }
 
-    // 엔티티 -> DTO 변환
-    private UserResponse convertToResponse(User user, UserStatus status) {
-        boolean isOnline = (status != null) && status.isOnline();
-
-        return new UserResponse(
-                user.getId(),
-                user.getName(),
-                user.getNickname(),
-                user.getEmail(),
-                user.getProfileId(),
-                isOnline,
-                user.getCreatedAt(),
-                user.getUpdatedAt()
-        );
-    }
-
     // 유저 검증
     private User validateUserExists(UUID id) {
         return userRepository.findById(id)
@@ -172,5 +156,21 @@ public class BasicUserService implements UserService {
         if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
+    }
+
+    // 엔티티 -> DTO 변환
+    private UserResponse convertToResponse(User user, UserStatus status) {
+        boolean isOnline = (status != null) && status.isOnline();
+
+        return new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getNickname(),
+                user.getEmail(),
+                user.getProfileId(),
+                isOnline,
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
     }
 }
