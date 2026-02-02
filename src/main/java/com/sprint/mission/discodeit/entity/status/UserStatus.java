@@ -14,7 +14,7 @@ public class UserStatus {
     private Instant lastSeenAt;
     private final Instant createdAt;
     private Instant updatedAt;
-    private String status;
+    private String status; // "ONLINE","OFFLINE","AWAY"
     private Instant lastActiveAt;
 
     public UserStatus(UUID id, UUID userId, Instant lastSeenAt,
