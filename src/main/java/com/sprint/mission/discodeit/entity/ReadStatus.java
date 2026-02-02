@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
+import lombok.Locked;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -30,4 +31,5 @@ public class ReadStatus {
     public void markAsRead(){
         this.updatedAt = Instant.now();
     }
+
 }

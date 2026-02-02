@@ -12,6 +12,8 @@ public interface ReadStatusRepository {
     ReadStatus save(ReadStatus readStatus);//사용자가 채널에 참가할때등등
     Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId);
     ReadStatus findById(UUID readStatusId);
+    List<ReadStatus> findAllByUserId(UUID userId);
+    void delete(UUID readStatusId);
     boolean existsById(UUID userId,UUID channelId);
     void deleteById(UUID userId,UUID channelId);
 
