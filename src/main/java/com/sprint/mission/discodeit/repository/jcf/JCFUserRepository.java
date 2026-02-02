@@ -37,4 +37,14 @@ public class JCFUserRepository implements UserRepository {
     public void deleteById(UUID id) {
         this.data.remove(id);
     }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return false;
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return false;
+    }
 }

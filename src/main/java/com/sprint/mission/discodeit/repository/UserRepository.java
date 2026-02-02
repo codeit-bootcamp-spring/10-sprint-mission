@@ -12,4 +12,9 @@ public interface UserRepository {
     List<User> findAll();
     boolean existsById(UUID id);
     void deleteById(UUID id);
+
+    // 중복 체크용 메서드 추가
+    boolean existsByUsername(String username);
+    boolean existsByEmail(String email);
+
 }
