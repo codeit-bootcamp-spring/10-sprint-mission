@@ -5,9 +5,11 @@ import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import com.sprint.mission.discodeit.dto.user.response.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+@Component
 public class UserMapper {
     // Entity -> DTO
     public UserResponse toResponse(User user, UserStatus userStatus) {

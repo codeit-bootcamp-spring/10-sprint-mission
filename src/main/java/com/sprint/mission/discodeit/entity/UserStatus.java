@@ -6,10 +6,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 // 사용자 별 마지막 접속 시간
+@Getter
 public class UserStatus extends Base{
-    @Getter
     private final UUID userID;
-    @Getter
     private Instant lastLogin;
 
     public UserStatus(UUID userID) {
@@ -18,8 +17,9 @@ public class UserStatus extends Base{
         lastLogin = Instant.now();
     }
 
-    public void updatelastLogin() {
+    public void updateLastLogin() {
         lastLogin = Instant.now();
+        updateUpdatedAt();
     }
 
     // 5분 이내면 online

@@ -1,20 +1,20 @@
 package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.*;
 
+
+@Getter
 public class Channel extends Base  {
     // 필드
-    @Getter
     private String name;
-    @Getter
     private final List<User> membersList;
-    @Getter
     private final List<Message> messageList;
-    @Getter
     private final String descriptions;
+
     // 생성자
     public Channel(String name) {
         super();

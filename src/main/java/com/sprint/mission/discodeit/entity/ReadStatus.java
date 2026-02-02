@@ -11,7 +11,6 @@ import java.util.UUID;
 public class ReadStatus extends Base{
     private final UUID userID;
     private final UUID channelID;
-
     Instant lastReadTime;
 
     public ReadStatus(UUID userID, UUID channelID) {
@@ -23,6 +22,7 @@ public class ReadStatus extends Base{
 
     public void updateLastReadTime() {
         lastReadTime = Instant.now();
+        updateUpdatedAt();
     }
 
 }

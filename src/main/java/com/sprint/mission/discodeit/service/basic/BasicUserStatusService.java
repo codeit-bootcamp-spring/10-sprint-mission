@@ -43,7 +43,7 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusResponse update(UserStatusUpdateRequest request) {
         UserStatus userStatus = userStatusRepository.find(request.userStatusID())
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + request.userStatusID()));
-        userStatus.updatelastLogin();
+        userStatus.updateLastLogin();
         UserStatus newUserStatus = userStatusRepository.save(userStatus);
         return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
     }
@@ -52,7 +52,7 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusResponse updateByUserID(UUID userID) {
         UserStatus userStatus = userStatusRepository.findByUserID(userID)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
-        userStatus.updatelastLogin();
+        userStatus.updateLastLogin();
         UserStatus newUserStatus = userStatusRepository.save(userStatus);
         return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
     }

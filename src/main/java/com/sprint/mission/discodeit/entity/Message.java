@@ -6,15 +6,12 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class Message extends Base  {
     // 필드
-    @Getter
     private String contents;
-    @Getter
     private final User sender;
-    @Getter
     private final Channel channel;
-    @Getter
     private List<UUID> attachmentIDs;
 
     // 생성자

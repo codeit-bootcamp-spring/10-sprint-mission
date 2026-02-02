@@ -26,12 +26,13 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContentResponse find(UUID contentID) {
-        BinaryContent binaryContent = binaryContentRepository.find(contentID);
+        BinaryContent binaryContent = binaryContentRepository.find(contentID)
+                .orElseThrow(() -> new IllegalArgumentException("BinaryContent not found: " + contentID));
         return new BinaryContentResponse(binaryContent.getId(), binaryContent.getData(), binaryContent.getContentType());
     }
 
     @Override
-    public List<BinaryContentResponse> findAllByIDIN(List<UUID> contentIDs) {
+    public List<BinaryContentResponse> findAllByIdIn(List<UUID> contentIDs) {
         if (contentIDs.isEmpty()) {
             return List.of();
         }
@@ -39,7 +40,8 @@ public class BasicBinaryContentService implements BinaryContentService {
         List<BinaryContent> contents = new ArrayList<>();
 
         for (UUID contentID : contentIDs) {
-            BinaryContent content = binaryContentRepository.find(contentID);
+            BinaryContent content = binaryContentRepository.find(contentID)
+                    .orElseThrow(() -> new IllegalArgumentException("BinaryContent not found: " + contentID));
             contents.add(content);
         }
 
@@ -54,7 +56,8 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public void delete(UUID contentID) {
-        BinaryContent binaryContent = binaryContentRepository.find(contentID);
+        BinaryContent binaryContent = binaryContentRepository.find(contentID)
+                .orElseThrow(() -> new IllegalArgumentException("BinaryContent not found: " + contentID));
         binaryContentRepository.delete(binaryContent.getId());
     }
 }

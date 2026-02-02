@@ -4,7 +4,9 @@ import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPriv
 import com.sprint.mission.discodeit.dto.channel.request.ChannelCreateRequestPublic;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
 import com.sprint.mission.discodeit.entity.Channel;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ChannelMapper {
     // public 일때
 

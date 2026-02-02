@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.message.CreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -28,7 +28,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageResponse create(CreateRequest request) {
+    public MessageResponse create(MessageCreateRequest request) {
         User sender = userRepository.find(request.userID())
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userID()));
         Channel channel = channelRepository.find(request.channelId());
@@ -43,9 +43,9 @@ public class BasicMessageService implements MessageService {
         if(request.attachments() != null){
             for(BinaryContentCreateRequest req : request.attachments()){
                 BinaryContent attachment = new BinaryContent(req.bytes(), req.contentType());
-                binaryContentRepository.save(attachment);
+                BinaryContent newAttachment = binaryContentRepository.save(attachment);
 
-                attachments.add(attachment.getId());
+                attachments.add(newAttachment.getId());
             }
         }
 
@@ -82,7 +82,32 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<MessageResponse> findAllByUserID() {
+    public List<MessageResponse> findAllByUserID(UUID userID) {
+        return messageRepository.findAll().stream()
+                .filter(msg -> msg.getSender().getId().equals(userID))
+                .map(msg -> new MessageResponse(
+                        msg.getId(),
+                        msg.getContents(),
+                        msg.getSender().getId(),
+                        msg.getChannel().getId(), msg.getAttachmentIDs()
+                )).toList();
+    }
+
+    @Override
+    public List<MessageResponse> findAllByChannelID(UUID channelID) {
+        return messageRepository.findAll().stream()
+                .filter(msg -> msg.getChannel().getId().equals(channelID))
+                .map(msg -> new MessageResponse(
+                        msg.getId(),
+                        msg.getContents(),
+                        msg.getSender().getId(),
+                        msg.getChannel().getId(),
+                        msg.getAttachmentIDs()
+                )).toList();
+    }
+
+    @Override
+    public List<MessageResponse> findAll() {
         return messageRepository.findAll().stream()
                 .map(msg -> new MessageResponse(
                         msg.getId(),
@@ -100,7 +125,7 @@ public class BasicMessageService implements MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("Message not found: " + request.messageID()));
 
         // content update
-        if (request.content() == null) {
+        if (request.content() != null) {
             msg.updateContents(request.content());
 
         }
@@ -117,9 +142,10 @@ public class BasicMessageService implements MessageService {
         UUID userID = msg.getSender().getId();
         UUID channelID = msg.getChannel().getId();
 
-        // sender에서 반영
+        // sender의 messageList에 반영
         User sender = userRepository.find(userID)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
+
         for(Message m : sender.getMessageList()){
             if(m.getId().equals(msg.getId())){
                 m.updateContents(request.content());
@@ -135,7 +161,9 @@ public class BasicMessageService implements MessageService {
             }
         }
         channelRepository.save(channel);
-        messageRepository.save(msg);
+
+        msg = messageRepository.save(msg);
+
         return new MessageResponse(
                 msg.getId(),
                 msg.getContents(),
