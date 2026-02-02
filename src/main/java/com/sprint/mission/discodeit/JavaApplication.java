@@ -1,35 +1,47 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFReadStatusRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
+import com.sprint.mission.discodeit.repository.jcf.JCFUserStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.context.ApplicationContext;
-
-import java.util.List;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 
 public class JavaApplication {
     public static void main(String[] args) {
-        ApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
+        UserRepository userRepository = new JCFUserRepository();
+        ChannelRepository channelRepository = new JCFChannelRepository();
+        MessageRepository messageRepository = new JCFMessageRepository();
+        ReadStatusRepository readStatusRepository = new JCFReadStatusRepository();
+        UserStatusRepository userStatusRepository = new JCFUserStatusRepository();
+        BinaryContentRepository binaryContentRepository = new JCFBinaryContentRepository();
 
-        // 2. Context에서 Service 빈(Bean) 가져오기 (수동 생성 코드 대체)
-        UserService userService = context.getBean(UserService.class);
-        ChannelService channelService = context.getBean(ChannelService.class);
-        MessageService messageService = context.getBean(MessageService.class);
+        UserMapper userMapper = new UserMapper();
+        ChannelMapper channelMapper = new ChannelMapper();
+        MessageMapper messageMapper = new MessageMapper();
 
-        // 3. 테스트를 모아둔 DiscodeitApplication 빈 가져오기
-        DiscodeitApplication app = context.getBean(DiscodeitApplication.class);
+        UserService userService = new BasicUserService(userRepository, userStatusRepository, binaryContentRepository, channelRepository, messageRepository, userMapper);
+        ChannelService channelService = new BasicChannelService(userRepository, channelRepository, messageRepository, readStatusRepository, channelMapper);
+        MessageService messageService = new BasicMessageService(userRepository, channelRepository, messageRepository, binaryContentRepository, messageMapper);
 
-        // 4. 테스트 실행
-        System.out.println("=== 정상 흐름 테스트 ===");
+        DiscodeitApplication app = new DiscodeitApplication();
+
+        System.out.println("=== JavaApplication (수동 초기화) 테스트 ===");
         app.runTest(userService, channelService, messageService);
-
-        System.out.println("\n=== 유효성 검증 실패 테스트 ===");
-        app.runValidationTest(userService, channelService, messageService);
     }
 }

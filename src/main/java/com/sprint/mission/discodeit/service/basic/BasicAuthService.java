@@ -16,7 +16,8 @@ import java.util.Optional;
 public class BasicAuthService {
 
     private final UserRepository userRepository;
-//    private final UserStatusRepository userStatusRepository;
+    private final UserStatusRepository userStatusRepository;
+    private User loggedInUser;
 
     public UserResponse login(LoginRequest request) {
         Optional<User> userOptional = userRepository.findAll().stream()
@@ -33,15 +34,31 @@ public class BasicAuthService {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
+        this.loggedInUser = user;
+
         return toResponse(user);
     }
 
-    private UserResponse toResponse(User user) {
-//        boolean isOnline = userStatusRepository.findByUserId(user.getId())
-//                .map(UserStatus::isOnline)
-//                .orElse(false);
+    public void logout() {
+        this.loggedInUser = null;
+    }
 
-        boolean isOnline = false;
+    public boolean isLoggedIn() {
+        return loggedInUser != null;
+    }
+
+    public UserResponse getCurrentUser() {
+        if (loggedInUser == null) {
+            return null;
+        }
+        return toResponse(loggedInUser);
+    }
+
+    private UserResponse toResponse(User user) {
+        boolean isOnline = userStatusRepository.findByUserId(user.getId())
+                .map(UserStatus::isOnline)
+                .orElse(false);
+
         return new UserResponse(
                 user.getId(),
                 user.getName(),

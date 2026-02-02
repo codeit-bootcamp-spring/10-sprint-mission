@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.ChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.ChannelResponse;
 import com.sprint.mission.discodeit.dto.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -18,20 +19,20 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Primary
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
     private final ReadStatusRepository readStatusRepository;
+    private final ChannelMapper channelMapper;
 
     @Override
     public ChannelResponse createChannel(ChannelCreateRequest request) {
         if ("PRIVATE".equals(request.getType())) {
-            return toResponse(createPrivateChannel(request));
+            return channelMapper.toResponse(createPrivateChannel(request));
         } else {
-            return toResponse(createPublicChannel(request));
+            return channelMapper.toResponse(createPublicChannel(request));
         }
     }
 
@@ -69,7 +70,14 @@ public class BasicChannelService implements ChannelService {
     public ChannelResponse getChannel(UUID id) {
         Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
-        return toResponse(channel);
+        return channelMapper.toResponse(channel);
+    }
+
+    @Override
+    public List<ChannelResponse> getAllChannels() {
+        return channelRepository.findAll().stream()
+                .map(channelMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -79,7 +87,7 @@ public class BasicChannelService implements ChannelService {
 
         return channelRepository.findAll().stream()
                 .filter(channel -> canUserAccessChannel(channel, userId))
-                .map(this::toResponse)
+                .map(channelMapper::toResponse)
                 .sorted(Comparator.comparing(ChannelResponse::getLastMessageAt, Comparator.nullsLast(Comparator.reverseOrder())))
                 .collect(Collectors.toList());
     }
@@ -88,7 +96,7 @@ public class BasicChannelService implements ChannelService {
         if ("PUBLIC".equals(channel.getType())) {
             return true;
         }
-        return channel.getUsers().stream().anyMatch(u -> u.getId().equals(userId));
+        return readStatusRepository.findByUserIdAndChannelId(userId, channel.getId()).isPresent();
     }
 
     @Override
@@ -105,7 +113,7 @@ public class BasicChannelService implements ChannelService {
         Optional.ofNullable(request.getDescription()).ifPresent(channel::updateDescription);
         
         channelRepository.save(channel);
-        return toResponse(channel);
+        return channelMapper.toResponse(channel);
     }
 
     @Override
@@ -153,7 +161,7 @@ public class BasicChannelService implements ChannelService {
         ReadStatus readStatus = new ReadStatus(user.getId(), channel.getId());
         readStatusRepository.save(readStatus);
 
-        return toResponse(channel);
+        return channelMapper.toResponse(channel);
     }
 
     @Override
@@ -177,29 +185,5 @@ public class BasicChannelService implements ChannelService {
                 .filter(rs -> rs.getChannelId().equals(channelId) && rs.getUserId().equals(userId))
                 .findFirst()
                 .ifPresent(rs -> readStatusRepository.delete(rs.getId()));
-    }
-
-    private ChannelResponse toResponse(Channel channel) {
-        List<UUID> participantIds = null;
-        
-        if ("PRIVATE".equals(channel.getType())) {
-            participantIds = channel.getUsers().stream()
-                    .map(User::getId)
-                    .collect(Collectors.toList());
-        }
-
-        Instant lastMessageAt = channel.getMessages().stream()
-                .map(Message::getCreatedAt)
-                .max(Comparator.naturalOrder())
-                .orElse(channel.getCreatedAt());
-
-        return new ChannelResponse(
-                channel.getId(),
-                channel.getName(),
-                channel.getType(),
-                channel.getDescription(),
-                participantIds,
-                lastMessageAt
-        );
     }
 }

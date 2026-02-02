@@ -1,29 +1,24 @@
 package com.sprint.mission.discodeit.dto;
 
 import lombok.Getter;
-import java.util.UUID;
 
 @Getter
 public class UserCreateRequest {
     private final String name;
     private final String email;
     private final String password;
-    private final String profileFileName;
-    private final byte[] profileContent;
-    private final String contentType;
+    private final BinaryContentRequest binaryContent;
 
-    public UserCreateRequest(String name, String email, String password, String profileFileName, byte[] profileContent, String contentType) {
+    public UserCreateRequest(String name, String email, String password, BinaryContentRequest binaryContent) {
         validate(name, email, password);
         this.name = name;
         this.email = email;
         this.password = password;
-        this.profileFileName = profileFileName;
-        this.profileContent = profileContent;
-        this.contentType = contentType;
+        this.binaryContent = binaryContent;
     }
 
     public UserCreateRequest(String name, String email, String password) {
-        this(name, email, password, null, null, null);
+        this(name, email, password, null);
     }
 
     private void validate(String name, String email, String password) {

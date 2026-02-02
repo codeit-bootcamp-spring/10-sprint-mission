@@ -8,22 +8,18 @@ public class UserUpdateRequest {
     private final UUID id;
     private final String name;
     private final String email;
-    private final String profileFileName;
-    private final byte[] profileContent;
-    private final String contentType;
+    private final BinaryContentRequest binaryContent;
 
-    public UserUpdateRequest(UUID id, String name, String email, String profileFileName, byte[] profileContent, String contentType) {
+    public UserUpdateRequest(UUID id, String name, String email, BinaryContentRequest binaryContent) {
         validate(id, name, email);
         this.id = id;
         this.name = name;
         this.email = email;
-        this.profileFileName = profileFileName;
-        this.profileContent = profileContent;
-        this.contentType = contentType;
+        this.binaryContent = binaryContent;
     }
 
     public UserUpdateRequest(UUID id, String name, String email) {
-        this(id, name, email, null, null, null);
+        this(id, name, email, null);
     }
 
     private void validate(UUID id, String name, String email) {

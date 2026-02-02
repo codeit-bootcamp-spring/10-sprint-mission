@@ -29,6 +29,14 @@ public class Message extends BaseEntity implements Serializable {
         updateTimestamps();
     }
 
+    public void updateAttachments(List<UUID> attachmentIds) {
+        this.attachmentIds.clear();
+        if (attachmentIds != null) {
+            this.attachmentIds.addAll(attachmentIds);
+        }
+        updateTimestamps();
+    }
+
     @Override
     public String toString() {
         return "메시지[채널ID: " + channelId +

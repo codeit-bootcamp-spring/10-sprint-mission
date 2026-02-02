@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentRequest;
 import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserResponse;
 import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +15,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@Primary
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
@@ -26,10 +26,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
-
-    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
-            "image/jpeg", "image/png", "image/gif", "image/webp"
-    );
+    private final UserMapper userMapper;
 
     @Override
     public UserResponse createUser(UserCreateRequest request) {
@@ -41,12 +38,14 @@ public class BasicUserService implements UserService {
         }
 
         UUID profileId = null;
-        if (request.getProfileContent() != null && request.getProfileContent().length > 0) {
-            validateContentType(request.getContentType());
+        BinaryContentRequest file = request.getBinaryContent();
+        
+        if (file != null && file.getContent() != null && file.getContent().length > 0) {
+            validateContentType(file.getContentType());
             BinaryContent content = new BinaryContent(
-                    request.getProfileContent(),
-                    request.getProfileFileName(),
-                    request.getContentType()
+                    file.getContent(),
+                    file.getFileName(),
+                    file.getContentType()
             );
             binaryContentRepository.save(content);
             profileId = content.getId();
@@ -87,16 +86,17 @@ public class BasicUserService implements UserService {
             user.updateEmail(request.getEmail());
         }
 
-        if (request.getProfileContent() != null && request.getProfileContent().length > 0) {
-            validateContentType(request.getContentType());
+        BinaryContentRequest file = request.getBinaryContent();
+        if (file != null && file.getContent() != null && file.getContent().length > 0) {
+            validateContentType(file.getContentType());
             
             if (user.getProfileId() != null) {
                 binaryContentRepository.delete(user.getProfileId());
             }
             BinaryContent content = new BinaryContent(
-                    request.getProfileContent(),
-                    request.getProfileFileName(),
-                    request.getContentType()
+                    file.getContent(),
+                    file.getFileName(),
+                    file.getContentType()
             );
             binaryContentRepository.save(content);
             user.updateProfileId(content.getId());
@@ -142,17 +142,11 @@ public class BasicUserService implements UserService {
                 .map(UserStatus::isOnline)
                 .orElse(false);
 
-        return new UserResponse(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                isOnline,
-                user.getProfileId()
-        );
+        return userMapper.toResponse(user, isOnline);
     }
 
     private void validateContentType(String contentType) {
-        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType.toLowerCase())) {
+        if (contentType == null || !ImageType.isAllowed(contentType)) {
             throw new IllegalArgumentException("허용되지 않는 파일 형식입니다. (허용: jpg, png, gif, webp)");
         }
     }
