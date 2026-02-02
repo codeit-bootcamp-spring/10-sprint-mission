@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.entity.status;
 
+import lombok.Getter;
+
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class UserStatus {
+    // Getters
     private final UUID id;
     private final UUID userId;
     private Instant lastSeenAt;
@@ -38,10 +42,4 @@ public class UserStatus {
         return lastSeenAt.isAfter(fiveMinutesAgo);
     }
 
-    // Getters
-    public UUID getId() { return id; }
-    public UUID getUserId() { return userId; }
-    public Instant getLastSeenAt() { return lastSeenAt; }
-    public Instant getCreatedAt() { return createdAt; }
-    public Instant getUpdatedAt() { return updatedAt; }
 }
