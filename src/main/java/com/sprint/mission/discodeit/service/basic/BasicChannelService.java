@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.channel.CreatePrivateChannelRequestDto;
-import com.sprint.mission.discodeit.dto.channel.CreatePublicChannelRequestDto;
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelRequestCreateDto;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelRequestCreateDto;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponseDto;
-import com.sprint.mission.discodeit.dto.channel.UpdateChannelRequestDto;
+import com.sprint.mission.discodeit.dto.channel.ChannelRequestUpdateDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.util.Validators;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
 
 import java.time.Instant;
 import java.util.List;
@@ -29,7 +28,7 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
 
     @Override
-    public ChannelResponseDto createPublic(CreatePublicChannelRequestDto request) {
+    public ChannelResponseDto createPublic(PublicChannelRequestCreateDto request) {
         Validators.validateCreatePublicChannel(request.channelName(), request.channelDescription());
         Channel channel = new Channel(ChannelType.PUBLIC, request.channelName(), request.channelDescription());
 
@@ -38,7 +37,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelResponseDto createPrivate(CreatePrivateChannelRequestDto request) {
+    public ChannelResponseDto createPrivate(PrivateChannelRequestCreateDto request) {
         Validators.validateCreatePrivateChannel(request.joinedUserIds());
         List<User> users = request.joinedUserIds().stream()
                 .map(id -> userRepository.findById(id)
@@ -91,7 +90,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelResponseDto updateChannel(UpdateChannelRequestDto request) {
+    public ChannelResponseDto updateChannel(ChannelRequestUpdateDto request) {
         Validators.requireNonNull(request, "request");
         Channel channel = validateExistenceChannel(request.id());
 

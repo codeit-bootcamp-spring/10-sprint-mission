@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.util;
 
-import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.dto.message.MessageRequestCreateDto;
 
 import java.util.List;
 import java.util.Objects;
@@ -21,6 +21,12 @@ public class Validators {
 
     public static void validationMessage(String content) {
         requireNotBlank(content, "content");
+    }
+
+    public static void validateCreateMessageRequest(MessageRequestCreateDto request) {
+        requireNonNull(request, "request");
+        requireNonNull(request.channelId(), "channelId");
+        requireNonNull(request.authorId(), "authorId");
     }
 
     public static void validationUser(String userName, String userEmail, String userPassword) {

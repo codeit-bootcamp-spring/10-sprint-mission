@@ -22,9 +22,4 @@ public class BinaryContent implements Serializable {
         this.data = data;
         this.contentType = contentType;
     }
-
-    public void update(byte[] data, String contentType) {
-        this.data = data;
-        this.contentType = contentType;
-    }
 }

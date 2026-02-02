@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.common.ProfileImageParam;
+import com.sprint.mission.discodeit.dto.common.BinaryContentParam;
 import com.sprint.mission.discodeit.dto.user.UserRequestCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserRequestUpdateDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
@@ -33,7 +33,7 @@ public class BasicUserService implements UserService {
             validateDuplicationEmail(request.userEmail());
             validateDuplicationUserPassword(request.userPassword());
 
-        ProfileImageParam profile = request.profileImage();
+        BinaryContentParam profile = request.profileImage();
         User user;
         validateProfileImageParam(profile);
         if(profile == null) {
@@ -84,7 +84,7 @@ public class BasicUserService implements UserService {
                         user.updateUserPassword(password);
                 });
 
-        ProfileImageParam profile = request.profileImage();
+        BinaryContentParam profile = request.profileImage();
         if(profile != null) {
             validateProfileImageParam(profile);
             BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
@@ -101,10 +101,10 @@ public class BasicUserService implements UserService {
         User user = validateExistenceUser(userId);
         UUID profileId = user.getProfileId();
         if(profileId != null) {
-            BinaryContentRepository.deleteById(userId);
+            binaryContentRepository.deleteById(profileId);
         }
 
-        UserStatusRepository.deleteById(userId);
+        userStatusRepository.deleteById(userId);
         userRepository.deleteById(userId);
     }
 
@@ -162,7 +162,7 @@ public class BasicUserService implements UserService {
         return false;
     }
 
-    private void validateProfileImageParam(ProfileImageParam profile) {
+    private void validateProfileImageParam(BinaryContentParam profile) {
         if (profile != null) {
             if(profile.data() == null || profile.data().length == 0) {
                 throw new IllegalArgumentException("프로필 이미지 데이터가 비어있습니다.");

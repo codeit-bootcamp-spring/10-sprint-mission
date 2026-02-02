@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.sprint.mission.discodeit.dto.common.ProfileImageParam;
+import com.sprint.mission.discodeit.dto.common.BinaryContentParam;
 
 public record UserRequestCreateDto(String userName,
                                    String userEmail,
                                    String userPassword,
-                                   ProfileImageParam profileImage) {
+                                   BinaryContentParam profileImage) {
 
 }

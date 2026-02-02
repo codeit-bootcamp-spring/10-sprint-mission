@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.common;
 
-public record ProfileImageParam(
+public record BinaryContentParam(
         byte[] data,
         String contentType
 ) {}

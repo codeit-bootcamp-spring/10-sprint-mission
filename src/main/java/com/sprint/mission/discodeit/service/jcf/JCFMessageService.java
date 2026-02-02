@@ -23,7 +23,7 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message createMessage(String content, UUID channelId, UUID userId) {
+    public Message create(String content, UUID channelId, UUID userId) {
         Validators.validationMessage(content);
         Channel persistedChannel = channelService.find(channelId);
         User persistedUser = userService.find(userId);
@@ -37,17 +37,17 @@ public class JCFMessageService implements MessageService {
     }
 
     @Override
-    public Message readMessage(UUID id) {
+    public Message find(UUID id) {
         return validateExistenceMessage(id);
     }
 
     @Override
-    public List<Message> readAllMessage() {
+    public List<Message> findByChannelId() {
         return messageRepository.findAll();
     }
 
     @Override
-    public Message updateMessage(UUID id, String content) {
+    public Message update(UUID id, String content) {
         Message message = validateExistenceMessage(id);
         Optional.ofNullable(content)
                 .ifPresent(cont -> {Validators.requireNotBlank(cont, "content");

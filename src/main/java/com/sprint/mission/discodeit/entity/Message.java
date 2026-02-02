@@ -12,18 +12,18 @@ import java.util.UUID;
 public class Message extends CommonEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
-    private final Channel channel;
-    private final User user;
-    private UUID authorId;
-    private UUID channelId;
+    private final UUID authorId;
+    private final UUID channelId;
     private String content;
     List<UUID> attachmentIds = new ArrayList<>();
 
 
-    public Message(String content, Channel channel, User user) {
+    public Message(String content, UUID authorId, UUID channelId, List<UUID> attachmentIds) {
         this.content = content;
-        this.channel = channel;
-        this.user = user;
+        this.authorId = authorId;
+        this.channelId = channelId;
+        this.attachmentIds = attachmentIds;
+
     }
 
     public void updateContent(String content) {

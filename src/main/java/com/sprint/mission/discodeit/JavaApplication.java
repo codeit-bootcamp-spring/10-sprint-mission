@@ -123,22 +123,22 @@ public class JavaApplication {
 
 //        ---------------------------------3. message---------------------------------
         // 3-1. message 등록 및 조회
-        Message message1 = messageService.createMessage("안녕하세요", channel1.getId(), user1.getId());
+        Message message1 = messageService.create("안녕하세요", channel1.getId(), user1.getId());
         System.out.println("3-1. 메시지 등록 완료: [" + user1.getUserName() + "] " + message1.getContent());
 
-        Message message2 = messageService.createMessage("식사 맛있게 하세요", channel1.getId(), user2.getId());
+        Message message2 = messageService.create("식사 맛있게 하세요", channel1.getId(), user2.getId());
         System.out.println("3-1. 메시지 등록 완료: [" + user2.getUserName() + "] " + message2.getContent());
 
-        Message message3 = messageService.createMessage("수고하셨습니다", channel1.getId(), user2.getId());
+        Message message3 = messageService.create("수고하셨습니다", channel1.getId(), user2.getId());
         System.out.println("3-1. 메시지 등록 완료: [" + user2.getUserName() + "] " + message3.getContent());
         System.out.println();
 
         // 3-2. message 다건 조회
-        System.out.println("3-2. 메세지 다건 조회: " + "총" + messageService.readAllMessage().size() + "개");
+        System.out.println("3-2. 메세지 다건 조회: " + "총" + messageService.findByChannelId().size() + "개");
         System.out.println();
 
         // 3-3. message 수정 및 조회
-        Message updatedMessage2 = messageService.updateMessage(message2.getId(), "안녕히가세요");
+        Message updatedMessage2 = messageService.update(message2.getId(), "안녕히가세요");
         System.out.println("3-3. 메세지 내용 수정 완료: [" + user2.getUserName() + "] " + updatedMessage2.getContent());
         System.out.println("수정 시각: " + updatedMessage2.getUpdatedAt());
         System.out.println();
@@ -148,7 +148,7 @@ public class JavaApplication {
         System.out.println();
 
         // 3-5. message 다건 재조회
-        System.out.println("3-5. 메세지 다건 재조회: " + "총" + messageService.readAllMessage().size() + "개");
+        System.out.println("3-5. 메세지 다건 재조회: " + "총" + messageService.findByChannelId().size() + "개");
         System.out.println();
 
 //         -----------------------1. 채널의 참가자 목록/메시지 조회-----------------------
