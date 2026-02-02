@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
+@Getter
 public class Channel extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -44,22 +47,6 @@ public class Channel extends BaseEntity implements Serializable {
     }
 
     // Getter
-    public User getOwner() {
-        return owner;
-    }
-
-    public ChannelType getChannelType() {
-        return channelType;
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public String getChannelDescription() {
-        return channelDescription;
-    }
-
     public List<User> getChannelMembersList() {
         return channelMembersList.stream().toList();
     }

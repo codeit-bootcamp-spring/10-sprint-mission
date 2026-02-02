@@ -1,9 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.*;
 
+@Getter
 public class User extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -12,6 +15,8 @@ public class User extends BaseEntity implements Serializable {
     private String nickName;
     private String password;
     private String birthday;
+
+    private UUID profileId; // 프로필 이미지
 
     // 연관
     // 해당 유저가 참여 중인 채널 List
@@ -26,6 +31,7 @@ public class User extends BaseEntity implements Serializable {
         this.nickName = nickName;
         this.password = password; // 해싱?
         this.birthday = birthday;
+        this.profileId = null;
 
         joinChannelList = new ArrayList<>();
         writeMessageList = new ArrayList<>();
@@ -40,7 +46,7 @@ public class User extends BaseEntity implements Serializable {
                 "email = " + email + ", " +
                 "nickName = " + nickName + ", " +
                 "userName = " + userName + ", " +
-                "password = " + password + ", " +
+//                "password = " + password + ", " +
                 "birthday = " + birthday + ", " +
 //                "joinChannelList = " + joinChannelList + ", " +
 //                "writeMessageList = " + writeMessageList +
@@ -48,26 +54,6 @@ public class User extends BaseEntity implements Serializable {
     }
 
     // Getter
-    public String getEmail() {
-        return email;
-    }
-
-    public String getNickName() {
-        return nickName;
-    }
-
-    public String getUserName() {
-        return userName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getBirthday() {
-        return birthday;
-    }
-
     public List<Channel> getJoinChannelList() {
         return joinChannelList.stream().toList();
     }
@@ -100,6 +86,11 @@ public class User extends BaseEntity implements Serializable {
 
     public void updateBirthday(String birthday) {
         this.birthday = birthday;
+        updateTime();
+    }
+
+    public void updateProfileId(UUID profileId) { // BinaryContent의 id
+        this.profileId = profileId;
         updateTime();
     }
 
