@@ -7,9 +7,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -27,8 +25,7 @@ public class DiscodeitApplication {
         ChannelService channelService;
         MessageService messageService;
 
-        User user1 = basicUserService.create("곽인성","kis2690@naver.com","1234");
-        System.out.println(basicUserService.find(user1.getId()));
+
 
 
 

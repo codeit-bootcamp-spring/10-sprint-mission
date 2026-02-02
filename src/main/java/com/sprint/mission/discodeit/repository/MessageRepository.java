@@ -18,4 +18,5 @@ public interface MessageRepository {
     Instant findLstMessageTimeByChannelId(UUID channelId);
     //특정채널내 메시지
     void deleteAllMessagesByChannelId(UUID channelId);
+    List<Message>findByChannelId(UUID channelId);
 }

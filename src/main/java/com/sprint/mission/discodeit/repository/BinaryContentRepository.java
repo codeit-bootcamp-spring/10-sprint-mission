@@ -23,4 +23,5 @@ public interface BinaryContentRepository {
     boolean existProfile(UUID userId);
     //프로필 가져오기
     Optional<BinaryContent> findByUserId(UUID userId);
+    Optional<BinaryContent> findByAuthorId(UUID authorId);
 }

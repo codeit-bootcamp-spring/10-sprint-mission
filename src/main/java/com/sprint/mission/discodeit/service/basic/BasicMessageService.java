@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.message.MessageRequestDto;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -18,45 +20,48 @@ public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
 
 
     @Override
-    public Message create(String content, UUID channelId, UUID authorId) {
-        if (!channelRepository.existsById(channelId)) {
-            throw new NoSuchElementException("Channel not found with id " + channelId);
+    public Message create(MessageRequestDto messageCreateDto) {//DTO를 활용해 파라미터를 그룹화 합니다.
+        if (!channelRepository.existsById(messageCreateDto.channelId())) {
+            throw new NoSuchElementException("Channel not found with id " + messageCreateDto.channelId());
         }
-        if (!userRepository.existsById(authorId)) {
-            throw new NoSuchElementException("Author not found with id " + authorId);
+        if (!userRepository.existsById(messageCreateDto.authorId())) {
+            throw new NoSuchElementException("Author not found with id " + messageCreateDto.authorId());
         }
 
-        Message message = new Message(content, channelId, authorId);
+        Message message = new Message(
+                messageCreateDto.content(),
+                messageCreateDto.channelId(),
+                messageCreateDto.authorId(),
+                messageCreateDto.attachmentIds()
+        );
+
         return messageRepository.save(message);
     }
 
     @Override
-    public Message find(UUID messageId) {
-        return messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+    public List<Message> findallByChannelId(UUID channelId) {
+
+        return messageRepository.findByChannelId(channelId);
     }
 
     @Override
-    public List<Message> findAll() {
-        return messageRepository.findAll();
-    }
-
-    @Override
-    public Message update(UUID messageId, String newContent) {
+    public Message update(UUID messageId, MessageRequestDto messageUpdateDto) {//DTO를 활용해 파라미터를 그룹화 합니다.
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
-        message.update(newContent);
+        message.update(messageUpdateDto.content());
         return messageRepository.save(message);
     }
 
     @Override
     public void delete(UUID messageId) {
-        if (!messageRepository.existsById(messageId)) {
-            throw new NoSuchElementException("Message with id " + messageId + " not found");
+        Message message = messageRepository.findById(messageId).orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
+        for (UUID attachmentId : message.getAttachmentIds()) {
+            binaryContentRepository.deleteById(attachmentId);
         }
         messageRepository.deleteById(messageId);
     }

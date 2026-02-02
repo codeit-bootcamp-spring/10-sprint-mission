@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,14 +22,18 @@ public class Message implements Serializable {
     private UUID authorId;
     private List<UUID> attachmentIds; //BinaryContent id의 List(한 메시지당 여러 파일 첨부 가능)
 
-    public Message(String content, UUID channelId, UUID authorId) {
+    public Message(String content, UUID channelId, UUID authorId,List<UUID> attachmentIds) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         //
         this.content = content;
         this.channelId = channelId;
         this.authorId = authorId;
-        //첨부파일이 있는 메시지 초기화(필요)
+        this.attachmentIds = attachmentIds != null
+                ? new ArrayList<>(attachmentIds)
+                : new ArrayList<>();
+
+
     }
 
     public void update(String newContent) {
