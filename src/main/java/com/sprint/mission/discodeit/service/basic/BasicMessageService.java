@@ -30,27 +30,21 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public MessageResponseDTO createMessage(CreateMessageRequestDTO dto) {
-        User user = findUserOrThrow(dto.sentUserId());
-        Channel channel = findChannelOrThrow(dto.sentChannelId());
+        findUserOrThrow(dto.sentUserId());
+        findChannelOrThrow(dto.sentChannelId());
         List<UUID> attachments = new ArrayList<>();
         // 껍데기 생성
         Message message = MessageMapper.toEntity(dto, attachments);
 
-        List<CreateBinaryContentRequestDTO> attachmentDTOs = dto.attachmentDTOs();
-
-        if (attachmentDTOs != null && !attachmentDTOs.isEmpty()) {
-            for (CreateBinaryContentRequestDTO bcDTO: attachmentDTOs) {
-                checkDTOHasNull(bcDTO);
-
-                BinaryContent bc
-                        = BinaryContentMapper.toMessageAttachmentEntity(user.getId(), message.getId(), bcDTO);
-
+        var payloads = dto.attachmentDTOs();
+        if (payloads != null && !payloads.isEmpty()) {
+            for (var payload : payloads) {
+                BinaryContent bc = BinaryContentMapper.toEntity(dto.sentUserId(), message.getId(), payload);
                 binaryContentRepository.save(bc);
-
                 attachments.add(bc.getId());
             }
-
         }
+        messageRepository.save(message);
         // 영속화
         messageRepository.save(message);
 

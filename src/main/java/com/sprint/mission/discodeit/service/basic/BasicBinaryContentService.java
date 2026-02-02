@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -20,25 +21,12 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public BinaryContentResponseDTO createProfile(UUID userId, CreateBinaryContentRequestDTO dto) {
-        Objects.requireNonNull(userId, "userId는 null값일 수 없습니다.");
-
+    public BinaryContentResponseDTO create(CreateBinaryContentRequestDTO dto) {
         validateCreateRequest(dto);
+        CreateBinaryContentPayloadDTO payload
+                = new CreateBinaryContentPayloadDTO(dto.data(), dto.contentType(), dto.filename());
 
-        BinaryContent binaryContent = BinaryContentMapper.toProfileEntity(userId, dto);
-        binaryContentRepository.save(binaryContent);
-
-        return BinaryContentMapper.toResponse(binaryContent);
-    }
-
-    @Override
-    public BinaryContentResponseDTO createMessageAttachment(UUID userId, UUID messageId, CreateBinaryContentRequestDTO dto) {
-        Objects.requireNonNull(userId, "userId는 null값일 수 없습니다.");
-        Objects.requireNonNull(messageId, "messageId는 null값일 수 없습니다.");
-
-        validateCreateRequest(dto);
-
-        BinaryContent binaryContent = BinaryContentMapper.toMessageAttachmentEntity(userId, messageId, dto);
+        BinaryContent binaryContent = BinaryContentMapper.toEntity(dto.userId(), dto.messageId(), payload);
         binaryContentRepository.save(binaryContent);
 
         return BinaryContentMapper.toResponse(binaryContent);
@@ -88,6 +76,10 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     private void validateCreateRequest(CreateBinaryContentRequestDTO dto) {
         Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
+
+        if (dto.userId() == null) {
+            throw new IllegalArgumentException("userId는 null값일 수 없습니다.");
+        }
 
         if (dto.data() == null || dto.data().length == 0) {
             throw new IllegalArgumentException("data는 null/empty값일 수 없습니다.");

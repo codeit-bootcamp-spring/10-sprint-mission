@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDTO;
-import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 
 import java.util.ArrayList;
@@ -9,16 +9,16 @@ import java.util.List;
 import java.util.UUID;
 
 public class BinaryContentMapper {
-    public static BinaryContent toProfileEntity(UUID userId, CreateBinaryContentRequestDTO dto) {
-        return new BinaryContent(
-                userId,
-                dto.data(),
-                dto.contentType(),
-                dto.filename()
-        );
-    }
+    public static BinaryContent toEntity(UUID userId, UUID messageId, CreateBinaryContentPayloadDTO dto) {
+        if (messageId == null) {
+            return new BinaryContent(
+                    userId,
+                    dto.data(),
+                    dto.contentType(),
+                    dto.filename()
+            );
+        }
 
-    public static BinaryContent toMessageAttachmentEntity(UUID userId, UUID messageId, CreateBinaryContentRequestDTO dto) {
         return new BinaryContent(
                 userId,
                 messageId,

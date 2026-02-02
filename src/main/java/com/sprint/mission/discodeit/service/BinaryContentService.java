@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface BinaryContentService {
-    BinaryContentResponseDTO createProfile(UUID userId, CreateBinaryContentRequestDTO dto);
-
-    BinaryContentResponseDTO createMessageAttachment(UUID userId, UUID messageId, CreateBinaryContentRequestDTO dto);
+    BinaryContentResponseDTO create(CreateBinaryContentRequestDTO dto);
 
     BinaryContentResponseDTO findById(UUID binaryContentId);
 
