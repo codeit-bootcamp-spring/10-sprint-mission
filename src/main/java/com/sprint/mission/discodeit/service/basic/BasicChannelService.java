@@ -132,9 +132,6 @@ public class BasicChannelService implements ChannelService {
         // channel owner의 user ID와 owner의 user ID가 동일한지 확인
         verifyChannelOwner(channel, request.ownerId());
 
-        // `*Controller` 만들면 삭제
-//        validateBlankUpdateParameters(request);
-
         // channelType, channelName, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
         validateAllInputDuplicateOrEmpty(request, channel);
 

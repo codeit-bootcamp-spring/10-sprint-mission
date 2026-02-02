@@ -22,10 +22,6 @@ public class BasicAuthService implements AuthService {
 
     @Override
     public UserResponse login(LoginRequest loginRequest) {
-        // `*Controller` 만들면 삭제
-//        ValidationMethods.validateNullBlankString(loginRequest.userName(), "userName");
-//        ValidationMethods.validateNullBlankString(loginRequest.password(), "password");
-
         // 유저 검증, 없으면 예외 발생
         User user = userRepository.findByUserNameAndPassword(loginRequest.userName(), loginRequest.password())
                 .orElseThrow(() -> new IllegalArgumentException("정확하지 않은 userName과 password입니다."));

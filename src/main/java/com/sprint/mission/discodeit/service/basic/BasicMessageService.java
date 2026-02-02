@@ -174,14 +174,12 @@ public class BasicMessageService implements MessageService {
         channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
     }
-
     // Message ID null & Message 객체 존재 확인
     public Message validateAndGetMessageByMessageId(UUID messageId) {
         ValidationMethods.validateId(messageId);
         return messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
     }
-
 
     // message의 author와 삭제 요청한 user가 동일한지
     public void verifyMessageAuthor(Message message, UUID userId) {

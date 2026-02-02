@@ -72,10 +72,6 @@ public class BasicUserService implements UserService {
             userInfos.add(createUserResponse(user, status));
         });
 
-//        userRepository.findAll().stream()
-//                .map(user -> findUserById(user.getId()))
-//                .toList();
-
         return userInfos;
     }
 
