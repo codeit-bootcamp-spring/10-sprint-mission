@@ -1,183 +1,239 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
-import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.basic.BasicChannelService;
-import com.sprint.mission.discodeit.service.basic.BasicMessageService;
-import com.sprint.mission.discodeit.service.basic.BasicUserService;
+import com.sprint.mission.discodeit.dto.channel.CreatePrivateChannelRequestDTO;
+import com.sprint.mission.discodeit.dto.channel.CreatePublicChannelRequestDTO;
+import com.sprint.mission.discodeit.dto.channel.UpdateChannelRequestDTO;
+import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
+import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.readstatus.UpdateReadStatusRequestDTO;
+import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
+import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
+import com.sprint.mission.discodeit.dto.userstatus.UpdateStatusByUserIdRequestDTO;
+import com.sprint.mission.discodeit.entity.UserStatusType;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @SpringBootApplication
 public class DiscodeitApplication {
 
 	public static void main(String[] args) {
-		ConfigurableApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
+		ConfigurableApplicationContext context =
+				SpringApplication.run(DiscodeitApplication.class, args);
 
 		// =========================
-		// Repository 초기화 (File)
+		// Service Bean 가져오기
 		// =========================
-		UserRepository userRepository = context.getBean(UserRepository.class);
-		ChannelRepository channelRepository = context.getBean(ChannelRepository.class);
-		MessageRepository messageRepository = context.getBean(MessageRepository.class);
+		var userService = context.getBean(com.sprint.mission.discodeit.service.UserService.class);
+		var channelService = context.getBean(com.sprint.mission.discodeit.service.ChannelService.class);
+		var messageService = context.getBean(com.sprint.mission.discodeit.service.MessageService.class);
+		var readStatusService = context.getBean(com.sprint.mission.discodeit.service.ReadStatusService.class);
+		var userStatusService = context.getBean(com.sprint.mission.discodeit.service.UserStatusService.class);
 
 		// =========================
-		// Service 초기화 (Basic)
+		// 0) Repository 구현체 확인
 		// =========================
-		UserService userService =
-				new BasicUserService(
-						userRepository,
-						channelRepository,
-						messageRepository
-				);
-
-		ChannelService channelService =
-				new BasicChannelService(
-						userRepository,
-						channelRepository,
-						messageRepository
-				);
-
-		MessageService messageService =
-				new BasicMessageService(
-						userRepository,
-						channelRepository,
-						messageRepository
-				);
+		System.out.println("===== Repository Bean Check =====");
+		System.out.println("UserRepository         = " + context.getBean(com.sprint.mission.discodeit.repository.UserRepository.class).getClass());
+		System.out.println("ChannelRepository       = " + context.getBean(com.sprint.mission.discodeit.repository.ChannelRepository.class).getClass());
+		System.out.println("MessageRepository       = " + context.getBean(com.sprint.mission.discodeit.repository.MessageRepository.class).getClass());
+		System.out.println("ReadStatusRepository    = " + context.getBean(com.sprint.mission.discodeit.repository.ReadStatusRepository.class).getClass());
+		System.out.println("UserStatusRepository    = " + context.getBean(com.sprint.mission.discodeit.repository.UserStatusRepository.class).getClass());
+		System.out.println("=================================\n");
 
 		// =========================
-		// 유저 서비스 테스트
+		// 1) UserService 테스트
+		// - 유저 생성 시 UserStatus 자동 생성됨
 		// =========================
-		System.out.println("===== 유저 서비스 테스트 (File) =====");
+		System.out.println("===== UserService Test =====");
 
-		User alice = userService.createUser(
-				"Alice",
-				"alice@gmail.com",
-				"1234"
-		);
-		User bob = userService.createUser(
-				"Bob",
-				"bob@gmail.com",
-				"1234"
+		var alice = userService.createUser(
+				new CreateUserRequestDTO(
+						"alice@gmail.com",
+						"Alice",
+						"1234",
+						null
+				)
 		);
 
-		System.out.println("유저 생성 후: " + userService.getUserList());
+		var bob = userService.createUser(
+				new CreateUserRequestDTO(
+						"bob@gmail.com",
+						"Bob",
+						"1234",
+						null
+				)
+		);
 
-		userService.updateUserName(alice.getId(), "AliceUpdated");
-		System.out.println("유저 이름 수정 후: " + userService.getUserList());
+		UUID aliceId = alice.userId();
+		UUID bobId = bob.userId();
 
-		UUID aliceId = alice.getId();
-		userService.deleteUser(aliceId);
-		System.out.println("유저 삭제 후: " + userService.getUserList());
+		System.out.println("유저 생성 후(findAll): " + userService.findAll());
+		System.out.println("Alice userStatus(auto): " + userService.findByUserId(aliceId).userStatus());
+		System.out.println("Bob userStatus(auto): " + userService.findByUserId(bobId).userStatus());
 
+		// 유저 수정
+		userService.updateUser(
+				new UpdateUserRequestDTO(
+						aliceId,
+						"Charlie",
+						UserStatusType.DO_NOT_DISTURB,
+						null
+				)
+		);
+		System.out.println("유저 수정 후(findByUserId): " + userService.findByUserId(aliceId));
 		System.out.println();
 
 		// =========================
-		// 채널 서비스 테스트
+		// 2) ChannelService 테스트
+		// - private 채널 생성 시 ReadStatus 자동 생성
+		// - public 채널은 join 해야 ReadStatus 생성
 		// =========================
-		System.out.println("===== 채널 서비스 테스트 (File) =====");
+		System.out.println("===== ChannelService Test =====");
 
-		Channel noticeChannel = channelService.createChannel("공지 채널");
-		Channel chatChannel = channelService.createChannel("잡담 채널");
-
-		System.out.println("채널 생성 후: " + channelService.getChannelList());
-
-		// 채널 참여
-		channelService.joinChannel(noticeChannel.getId(), bob.getId());
-		channelService.joinChannel(chatChannel.getId(), bob.getId());
-
-		System.out.println(
-				"Bob이 참여한 채널: " +
-						channelService.getChannelsByUser(bob.getId())
+		// (A) 비공개 채널 생성: joinedUserIds만 받음
+		var privateChannel = channelService.createPrivateChannel(
+				new CreatePrivateChannelRequestDTO(
+						List.of(aliceId, bobId)
+				)
 		);
+		UUID privateChannelId = privateChannel.channelId();
 
-		// 채널 이름 수정
-		channelService.updateChannelName(
-				noticeChannel.getId(),
-				"공지사항 채널"
+		System.out.println("비공개 채널 생성 후(findByChannelId): " + channelService.findByChannelId(privateChannelId));
+
+		// ✅ 비공개 채널은 자동 ReadStatus 생성되어야 함
+		System.out.println("비공개 채널 생성 직후 Alice ReadStatus: " + readStatusService.findAllByUserId(aliceId));
+		System.out.println("비공개 채널 생성 직후 Bob ReadStatus: " + readStatusService.findAllByUserId(bobId));
+
+		// (B) 공개 채널 생성
+		var publicChannel = channelService.createPublicChannel(
+				new CreatePublicChannelRequestDTO(
+						"공지 채널",
+						"공지 올리는 곳"
+				)
 		);
-		System.out.println("채널 이름 수정 후: " + channelService.getChannelList());
+		UUID publicChannelId = publicChannel.channelId();
 
-		// 채널 나가기
-		channelService.leaveChannel(chatChannel.getId(), bob.getId());
-		System.out.println(
-				"채널 나간 후 Bob의 채널: " +
-						channelService.getChannelsByUser(bob.getId())
+		System.out.println("공개 채널 생성 후(findByChannelId): " + channelService.findByChannelId(publicChannelId));
+
+		// ✅ join 전: ReadStatus 없어야 함(목록 출력로 확인)
+		System.out.println("공개 채널 join 전 Bob ReadStatus: " + readStatusService.findAllByUserId(bobId));
+
+		// join 후: ReadStatus 생성되어야 함
+		channelService.joinChannel(publicChannelId, bobId);
+		System.out.println("공개 채널 join 후 Bob ReadStatus: " + readStatusService.findAllByUserId(bobId));
+
+		// 채널 수정
+		channelService.updateChannel(
+				new UpdateChannelRequestDTO(
+						publicChannelId,
+						"공지사항 채널",
+						"공지/안내",
+						null
+				)
 		);
-
+		System.out.println("공개 채널 수정 후(findByChannelId): " + channelService.findByChannelId(publicChannelId));
 		System.out.println();
 
 		// =========================
-		// 메시지 서비스 테스트
+		// 3) MessageService 테스트 (공개 채널에 메시지)
 		// =========================
-		System.out.println("===== 메시지 서비스 테스트 (File) =====");
+		System.out.println("===== MessageService Test =====");
 
-		Message m1 = messageService.sendMessage(
-				bob.getId(),
-				noticeChannel.getId(),
-				"안녕하세요."
-		);
-		Message m2 = messageService.sendMessage(
-				bob.getId(),
-				noticeChannel.getId(),
-				"공지 확인 부탁드립니다."
+		var m1 = messageService.createMessage(
+				new CreateMessageRequestDTO(
+						"Hello",
+						bobId,
+						publicChannelId,
+						List.of()
+				)
 		);
 
-		System.out.println("메시지 전송 후 전체 메시지:");
-		System.out.println(messageService.getAllMessages());
-
-		System.out.println(
-				"Bob의 메시지 목록: " +
-						messageService.getMessageListByUser(bob.getId())
+		var m2 = messageService.createMessage(
+				new CreateMessageRequestDTO(
+						"공지 확인 부탁드립니다.",
+						bobId,
+						publicChannelId,
+						List.of()
+				)
 		);
 
-		System.out.println(
-				"공지 채널 메시지 목록: " +
-						messageService.getMessageListByChannel(noticeChannel.getId())
-		);
+		UUID m1Id = m1.messageId();
+		UUID m2Id = m2.messageId();
+
+		System.out.println("채널 메시지(findAllByChannelId): " + messageService.findAllByChannelId(publicChannelId));
+		System.out.println("Bob 메시지(findAllByUserId): " + messageService.findAllByUserId(bobId));
 
 		// 메시지 수정
 		messageService.updateMessage(
-				m1.getId(),
-				"안녕하세요! 수정된 메시지입니다."
+				new UpdateMessageRequestDTO(
+						m1Id,
+						"안녕하세요! 수정된 메시지입니다."
+				)
 		);
-		System.out.println("메시지 수정 후:");
-		System.out.println(messageService.getAllMessages());
+		System.out.println("m1 수정 후(findByMessageId): " + messageService.findByMessageId(m1Id));
 
 		// 메시지 삭제
-		messageService.deleteMessage(m2.getId());
-		System.out.println("메시지 삭제 후:");
-		System.out.println(messageService.getAllMessages());
-
+		messageService.deleteMessage(m2Id);
+		System.out.println("m2 삭제 후(채널 메시지): " + messageService.findAllByChannelId(publicChannelId));
 		System.out.println();
 
 		// =========================
-		// 채널 삭제 테스트
+		// 4) ReadStatusService 테스트
+		// - 공개 채널 join 후 생성된 ReadStatus 찾아서 update
 		// =========================
-		System.out.println("===== 채널 삭제 테스트 (File) =====");
+		System.out.println("===== ReadStatusService Test =====");
 
-		channelService.deleteChannel(noticeChannel.getId());
+		ReadStatusResponseDTO publicRs = readStatusService.findAllByUserId(bobId).stream()
+				.filter(rs -> rs.channelId().equals(publicChannelId))
+				.findFirst()
+				.orElseThrow(() -> new IllegalStateException("공개 채널 join 후 ReadStatus가 생성되지 않았습니다."));
 
-		System.out.println("채널 삭제 후 채널 목록:");
-		System.out.println(channelService.getChannelList());
+		UUID rsId = publicRs.statusId();
 
-		System.out.println(
-				"채널 삭제 후 메시지 존재 여부: " +
-						messageService.getAllMessages()
+		readStatusService.updateReadStatus(
+				new UpdateReadStatusRequestDTO(
+						rsId,
+						Instant.now()
+				)
 		);
-	}
 
+		System.out.println("ReadStatus 수정 후(findById): " + readStatusService.findById(rsId));
+		System.out.println();
+
+		// =========================
+		// 5) UserStatusService 테스트
+		// - 유저 생성 시 자동 생성되므로 update만 확인
+		// =========================
+		System.out.println("===== UserStatusService Test =====");
+
+		userStatusService.updateStatusByUserId(
+				bobId,
+				new UpdateStatusByUserIdRequestDTO(
+						bobId,
+						UserStatusType.DO_NOT_DISTURB
+				)
+		);
+
+		System.out.println("Bob status 변경 후(UserService로 확인): " + userService.findByUserId(bobId).userStatus());
+		System.out.println();
+
+		// =========================
+		// 6) Cleanup (선택)
+		// =========================
+		System.out.println("===== Cleanup =====");
+
+		channelService.deleteChannel(publicChannelId);
+		channelService.deleteChannel(privateChannelId);
+
+		userService.deleteUser(aliceId);
+
+		System.out.println("최종 유저 목록(findAll): " + userService.findAll());
+		System.out.println("\n===== Test Done =====");
+	}
 }
