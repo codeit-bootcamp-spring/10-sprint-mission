@@ -51,7 +51,7 @@
 //    }
 //
 //    @Override
-//    public Channel read(UUID id) {
+//    public Channel findById(UUID id) {
 //        for (Channel channel : deserialize()) {
 //            if (channel.getId().equals(id)) {
 //                return channel;
@@ -61,7 +61,7 @@
 //    }
 //
 //    @Override
-//    public List<Channel> readAll() {
+//    public List<Channel> findAll() {
 //        return deserialize();
 //    }
 //
@@ -95,7 +95,7 @@
 //        User user = userService.find(userId);
 //        Channel channel;
 //        try {
-//            channel = this.read(channelId);
+//            channel = this.findById(channelId);
 //            user.getChannelList().add(channel);
 //            channel.getUserList().add(user);
 //        } catch (NoSuchElementException e) {
@@ -107,7 +107,7 @@
 //    public void quitUser(UUID userId, UUID channelId, FileUserService userService) {
 //        User user = userService.find(userId);
 //        try {
-//            Channel channel = this.read(channelId);
+//            Channel channel = this.findById(channelId);
 //            user.getChannelList().remove(channel);
 //            channel.getUserList().remove(user);
 //        } catch (NoSuchElementException e) {

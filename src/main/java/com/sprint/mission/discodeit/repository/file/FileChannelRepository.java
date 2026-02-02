@@ -56,7 +56,6 @@ public class FileChannelRepository implements ChannelRepository {
         }
     }
 
-    @Override
     public Channel updateChannelname(UUID channelId, String name) {
         this.data = deserialize();
         for (Channel channel : this.data) {

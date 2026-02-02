@@ -49,7 +49,7 @@
 //
 //    // 특정 채널의 참가한 유저 목록 조회
 //    public List<User> readChannelUserList(UUID channelId, JCFChannelService channelService) {
-//        Channel channel = channelService.read(channelId);
+//        Channel channel = channelService.findById(channelId);
 //        return channel.getUserList();
 //    }
 //}

@@ -65,7 +65,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     public UserStatus loadById(UUID userId) {
         this.data = deserialize();
         for(UserStatus userStatus : this.data) {
-            if (userStatus.getUserID().equals(userId)) {
+            if (userStatus.getUserId().equals(userId)) {
                 return userStatus;
             }
         }

@@ -15,8 +15,10 @@ public class User extends BaseDomain implements Serializable {
     private String email;
     private UUID profileId;
     private String password;
-    private List<Message> messageList;
-    private List<Channel> channelList;
+    private List<UUID> messageList;
+    private List<UUID> channelList;
+//    private List<Message> messageList;
+//    private List<Channel> channelList;
 
     private static final long serialVersionUID = 1L;
 

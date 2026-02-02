@@ -51,7 +51,7 @@
 //    @Override
 //    public Message create(String msg, UUID userId, UUID channelId) {
 //        User user = userService.find(userId);
-//        Channel channel = channelService.read(channelId);
+//        Channel channel = channelService.findById(channelId);
 //        Message message = new Message(msg, user, channel);
 //        this.data.add(message);
 //        serialize(this.data);
@@ -59,7 +59,7 @@
 //    }
 //
 //    @Override
-//    public Message read(UUID id) {
+//    public Message findById(UUID id) {
 //        for (Message message : deserialize()) {
 //            if (message.getId().equals(id)) {
 //                return message;
@@ -69,7 +69,7 @@
 //    }
 //
 //    @Override
-//    public List<Message> readAll() {
+//    public List<Message> findAll() {
 //        return deserialize();
 //    }
 //
@@ -108,7 +108,7 @@
 //    // 특정 채널의 발행된 메시지 목록 조회
 //    @Override
 //    public List<Message> readChannelMessageList(UUID channelId) {
-//        Channel channel = channelService.read(channelId);
+//        Channel channel = channelService.findById(channelId);
 //        return channel.getMessagesList();
 //    }
 //}

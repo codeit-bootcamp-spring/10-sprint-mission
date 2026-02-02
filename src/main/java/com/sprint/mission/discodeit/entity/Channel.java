@@ -12,23 +12,39 @@ import java.util.UUID;
 public class Channel extends BaseDomain implements Serializable {
     // 필드
     private String channelName;
-    private List<User> userList;
-    private List<Message> messagesList;
+    private String description;
+//    private List<User> userList;
+    private List<UUID> userList;
+//    private List<Message> messagesList;
+    private List<UUID> messagesList;
+    private boolean isPrivate;
 
     private static final long serialVersionUID = 1L;
 
     // 생성자
     public Channel() {
         super();
-        this.channelName = "기본 이름";
+        this.channelName = "private";
+        this.description = "";
         this.userList = new ArrayList<>();
         this.messagesList = new ArrayList<>();
+        isPrivate = true;
     }
     public Channel(String channelName) {
         super();
         this.channelName = channelName;
+        this.description = "";
         this.userList = new ArrayList<>();
         this.messagesList = new ArrayList<>();
+        isPrivate = false;
+    }
+    public Channel(String channelName, String description) {
+        super();
+        this.channelName = channelName;
+        this.description = description;
+        this.userList = new ArrayList<>();
+        this.messagesList = new ArrayList<>();
+        isPrivate = false;
     }
 
     // 메소드
@@ -54,6 +70,11 @@ public class Channel extends BaseDomain implements Serializable {
 
     public void updateChannelName(String name) {
         this.channelName = name;
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateChannelDescription(String description) {
+        this.description = description;
         this.updatedAt = Instant.now();
     }
 

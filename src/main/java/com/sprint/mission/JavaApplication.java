@@ -319,10 +319,10 @@
 //        try {
 //            System.out.println(basicJCFUserService.find(jcfUserId));
 //            System.out.println(basicFileUserService.find(fileUserId));
-//            System.out.println(basicJCFChannelService.read(jcfChannelId));
-//            System.out.println(basicFileChannelService.read(fileChannelId));
-//            System.out.println(basicJCFMessageService.read(jcfMessageId));
-//            System.out.println(basicFileMessageService.read(fileMessageId));
+//            System.out.println(basicJCFChannelService.findById(jcfChannelId));
+//            System.out.println(basicFileChannelService.findById(fileChannelId));
+//            System.out.println(basicJCFMessageService.findById(jcfMessageId));
+//            System.out.println(basicFileMessageService.findById(fileMessageId));
 //        } catch (Exception e) {
 //            System.out.println("find 실패");
 //        }
@@ -336,12 +336,12 @@
 //            System.out.println(basicFileUserService.findAll());
 //            System.out.println();
 //            System.out.println("Basic*Channel");
-//            System.out.println(basicJCFChannelService.readAll());
-//            System.out.println(basicFileChannelService.readAll());
+//            System.out.println(basicJCFChannelService.findAll());
+//            System.out.println(basicFileChannelService.findAll());
 //            System.out.println();
 //            System.out.println("Basic*Message");
-//            System.out.println(basicJCFMessageService.readAll());
-//            System.out.println(basicFileMessageService.readAll());
+//            System.out.println(basicJCFMessageService.findAll());
+//            System.out.println(basicFileMessageService.findAll());
 //        } catch (Exception e) {
 //            System.out.println("findAll 실패");
 //        }
@@ -355,13 +355,13 @@
 //            basicFileUserService.updateUser(fileUserId, "변경된 황민재File");
 //            System.out.println(basicFileUserService.find(fileUserId));
 //            basicJCFChannelService.updateChannelname(jcfChannelId, "변경된 배이직 JCF 채널");
-//            System.out.println(basicJCFChannelService.read(jcfChannelId));
+//            System.out.println(basicJCFChannelService.findById(jcfChannelId));
 //            basicFileChannelService.updateChannelname(fileChannelId, "변경된 배이직 File 채널");
-//            System.out.println(basicFileChannelService.read(fileChannelId));
+//            System.out.println(basicFileChannelService.findById(fileChannelId));
 //            basicJCFMessageService.updateMessageData(jcfMessageId, "변경된 JCF메시지 입니다.");
-//            System.out.println(basicJCFMessageService.read(jcfMessageId));
+//            System.out.println(basicJCFMessageService.findById(jcfMessageId));
 //            basicFileMessageService.updateMessageData(fileMessageId, "변경된 File메시지 입니다.");
-//            System.out.println(basicFileMessageService.read(fileMessageId));
+//            System.out.println(basicFileMessageService.findById(fileMessageId));
 //        } catch (Exception e) {
 //            System.out.println("update 실패");
 //        }
@@ -386,22 +386,22 @@
 //            System.out.println("fileUserId 검색 실패");
 //        }
 //        try {
-//            System.out.println(basicJCFChannelService.read(jcfChannelId));
+//            System.out.println(basicJCFChannelService.findById(jcfChannelId));
 //        } catch (Exception e) {
 //            System.out.println("jcfChannelId검색 실패");
 //        }
 //        try {
-//            System.out.println(basicFileChannelService.read(fileChannelId));
+//            System.out.println(basicFileChannelService.findById(fileChannelId));
 //        }catch (Exception e) {
 //            System.out.println("fileChannelId검색 실패");
 //        }
 //        try {
-//            System.out.println(basicJCFMessageService.read(jcfMessageId));
+//            System.out.println(basicJCFMessageService.findById(jcfMessageId));
 //        } catch (Exception e) {
 //            System.out.println("jcfMessageId검색 실패");
 //        }
 //        try {
-//            System.out.println(basicFileMessageService.read(fileMessageId));
+//            System.out.println(basicFileMessageService.findById(fileMessageId));
 //        } catch (Exception e) {
 //            System.out.println("fileMessageId검색 실패");
 //        }

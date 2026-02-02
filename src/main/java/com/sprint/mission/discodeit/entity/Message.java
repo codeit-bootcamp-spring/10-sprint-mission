@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,12 +19,19 @@ public class Message extends BaseDomain implements Serializable {
     private static final long serialVersionUID = 1L;
 
     // 생성자
-
     public Message(UUID channelId, UUID userId, String msg) {
         super();
         this.channelId = channelId;
         this.userId = userId;
         this.msg = msg;
+        this.attachmentIds = new ArrayList<>();
+    }
+    public Message(UUID channelId, UUID userId, String msg, List<UUID> attachmentIds) {
+        super();
+        this.channelId = channelId;
+        this.userId = userId;
+        this.msg = msg;
+        this.attachmentIds = attachmentIds;
     }
 
 

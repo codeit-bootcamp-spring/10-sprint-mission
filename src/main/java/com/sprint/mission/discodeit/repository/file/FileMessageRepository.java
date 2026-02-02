@@ -57,6 +57,17 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
+    public void deleteByChannelId(UUID channelId) {
+        this.data = deserialize();
+        for (Message message : this.data) {
+            if (message.getChannelId().equals(channelId)) {
+                this.data.remove(message);
+                serialize(this.data);
+                break;
+            }
+        }
+    }
+
     public Message updateMessageData(UUID messageId, String messageData) {
         this.data = deserialize();
         for (Message message : this.data) {

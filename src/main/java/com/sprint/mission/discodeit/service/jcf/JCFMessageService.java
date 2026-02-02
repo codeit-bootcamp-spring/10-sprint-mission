@@ -26,32 +26,32 @@
 //    @Override
 //    public Message create(String msg, UUID userId, UUID channelId) {
 //        User user = userService.find(userId);
-//        Channel channel = channelService.read(channelId);
+//        Channel channel = channelService.findById(channelId);
 //        Message message = new Message(msg, user, channel);
 //        data.put(message.getId(), message);
 //        return message;
 //    }
 //
 //    @Override
-//    public Message read(UUID id) {
+//    public Message findById(UUID id) {
 //        Message message = Optional.ofNullable(data.get(id)).orElseThrow(() -> new NoSuchElementException());
 //        return message;
 //    }
 //
 //    @Override
-//    public List<Message> readAll() {
+//    public List<Message> findAll() {
 //        return new ArrayList<>(this.data.values());
 //    }
 //
 //    @Override
 //    public Message updateMessageData(UUID id, String messageData) throws NoSuchElementException{
-//        this.read(id).updateText(messageData);
-//        return this.read(id);
+//        this.findById(id).updateText(messageData);
+//        return this.findById(id);
 //    }
 //
 //    @Override
 //    public void delete(UUID id) throws NoSuchElementException{
-//        this.read(id);
+//        this.findById(id);
 //        this.data.remove(id);
 //    }
 //
@@ -65,7 +65,7 @@
 //    // 특정 채널의 발행된 메시지 목록 조회
 //    @Override
 //    public List<Message> readChannelMessageList(UUID channelId) {
-//        Channel channel = channelService.read(channelId);
+//        Channel channel = channelService.findById(channelId);
 //        return channel.getMessagesList();
 //    }
 //}

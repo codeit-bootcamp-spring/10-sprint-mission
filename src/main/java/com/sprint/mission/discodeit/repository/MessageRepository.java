@@ -11,6 +11,8 @@ public interface MessageRepository {
 
     void delete(UUID messageId);
 
+    void deleteByChannelId(UUID channelId);
+
     List<Message> loadAll();
 
     Message loadById(UUID messageId);

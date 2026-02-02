@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.entity.DTO.UserCreateDTO;
-import com.sprint.mission.discodeit.entity.DTO.UserFindAllDTO;
-import com.sprint.mission.discodeit.entity.DTO.UserFindDTO;
-import com.sprint.mission.discodeit.entity.DTO.UserUpdateDTO;
+import com.sprint.mission.discodeit.dto.user.UserCreateDTO;
+import com.sprint.mission.discodeit.dto.user.UserFindAllDTO;
+import com.sprint.mission.discodeit.dto.user.UserFindDTO;
+import com.sprint.mission.discodeit.dto.user.UserUpdateDTO;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -28,13 +28,15 @@ public class BasicUserService implements UserService {
 
     @Override
     public User create(UserCreateDTO userCreateDTO) {
-        if (isExist(userCreateDTO.name(), userCreateDTO.email())) throw new NoSuchElementException();
+        if (isExistName(userCreateDTO.name()) || isExistEmail(userCreateDTO.email())) throw new NoSuchElementException();
 
         User user;
-        if (userCreateDTO.profile() == null) {
+        if (userCreateDTO.profileImage() == null) {
             user = new User(userCreateDTO.name(), userCreateDTO.email(), userCreateDTO.password());
         } else {
-            user = new User(userCreateDTO.name(), userCreateDTO.email(), userCreateDTO.password(), userCreateDTO.profile().getId());
+            BinaryContent profile = new BinaryContent(userCreateDTO.profileImage().fileName(), userCreateDTO.profileImage().fileType());
+            user = new User(userCreateDTO.name(), userCreateDTO.email(), userCreateDTO.password(), profile.getId());
+            this.binaryContentRepository.save(profile);
         }
 
         UserStatus userStatus = new UserStatus(user.getId());
@@ -45,19 +47,21 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserFindDTO find(UUID id) {
-        UserFindDTO userReadDTO;
-        User user;
-        UserStatus userStatus;
+        UserFindDTO userFindDTO;
+        User user = this.userRepository.loadById(id);
+        UserStatus userStatus = this.userStatusRepository.loadById(id);
+        userFindDTO = new UserFindDTO(user, userStatus);
+        return userFindDTO;
 
-        for (User userCheck : this.userRepository.loadAll()) {
-            if (userCheck.getId().equals(id)) {
-                user = userCheck;
-                userStatus = this.userStatusRepository.loadById(id);
-                userReadDTO = new UserFindDTO(user, userStatus);
-                return userReadDTO;
-            }
-        }
-        throw new NoSuchElementException();
+//        for (User userCheck : this.userRepository.loadAll()) {
+//            if (userCheck.getId().equals(id)) {
+//                user = userCheck;
+//                userStatus = this.userStatusRepository.loadById(id);
+//                userFindDTO = new UserFindDTO(user, userStatus);
+//                return userFindDTO;
+//            }
+//        }
+//        throw new NoSuchElementException();
     }
 
     @Override
@@ -69,9 +73,9 @@ public class BasicUserService implements UserService {
 
     @Override
     public User updateUser(UserUpdateDTO userUpdateDTO) {
-        if (isExist(userUpdateDTO.userId())) throw new NoSuchElementException();
+        if (isExistId(userUpdateDTO.userId())) throw new NoSuchElementException();
         User user = find(userUpdateDTO.userId()).user();
-        if (userUpdateDTO.name().isEmpty()) {
+        if (!userUpdateDTO.name().isEmpty()) {
             user.updateName(userUpdateDTO.name());
         }
         if (userUpdateDTO.profile() != null) {
@@ -92,16 +96,23 @@ public class BasicUserService implements UserService {
     }
 
     // 중복 검사
-    public boolean isExist(String name, String email) {
+    public boolean isExistName(String name) {
         for (User user : this.userRepository.loadAll()) {
             String userName = user.getName();
-            String userEmail = user.getEmail();
-            if (userName.equals(name) || userEmail.equals(email))
+            if (userName.equals(name))
                 return true;
         }
         return false;
     }
-    public boolean isExist(UUID userId) {
+    public boolean isExistEmail(String email) {
+        for (User user : this.userRepository.loadAll()) {
+            String userEmail = user.getEmail();
+            if (userEmail.equals(email))
+                return true;
+        }
+        return false;
+    }
+    public boolean isExistId(UUID userId) {
         for (User user : this.userRepository.loadAll()) {
             if (user.getId().equals(userId))
                 return true;
@@ -109,9 +120,9 @@ public class BasicUserService implements UserService {
         return false;
     }
 
-    // 특정 채널의 참가한 유저 목록 조회
-    public List<User> readChannelUserList(UUID channelId, BasicChannelService channelService) {
-        Channel channel = channelService.read(channelId);
-        return channel.getUserList();
-    }
+//    // 특정 채널의 참가한 유저 목록 조회
+//    public List<User> readChannelUserList(UUID channelId, BasicChannelService channelService) {
+//        Channel channel = channelService.findById(channelId);
+//        return channel.getUserList();
+//    }
 }

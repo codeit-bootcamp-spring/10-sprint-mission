@@ -25,25 +25,25 @@
 //    }
 //
 //    @Override
-//    public Channel read(UUID id) {
+//    public Channel findById(UUID id) {
 //        Channel channel = Optional.ofNullable(data.get(id)).orElseThrow(() -> new NoSuchElementException());
 //        return channel;
 //    }
 //
 //    @Override
-//    public List<Channel> readAll() {
+//    public List<Channel> findAll() {
 //        return new ArrayList<>(this.data.values());
 //    }
 //
 //    @Override
 //    public Channel updateChannelname(UUID id, String name) {
-//        this.read(id).updateChannelName(name);
-//        return this.read(id);
+//        this.findById(id).updateChannelName(name);
+//        return this.findById(id);
 //    }
 //
 //    @Override
 //    public void delete(UUID id) {
-//        this.read(id);
+//        this.findById(id);
 //        this.data.remove(id);
 //    }
 //
