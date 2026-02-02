@@ -33,6 +33,10 @@ public class User implements Serializable {
     @Getter
     private final UUID userStatusId;
 
+    public boolean isCorrectPassword(String password) {
+        return this.password.equals(password);
+    }
+
     public void update(String newUsername, String newEmail, String newPassword) {
         boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {

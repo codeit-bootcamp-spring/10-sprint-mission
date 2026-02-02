@@ -51,6 +51,15 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    public UserResponse find(String username, String password) {
+        User user = userRepository.findAll().stream().filter(user1 -> user1.getUsername().equals(username))
+                .filter(user1 -> user1.isCorrectPassword(password))
+                .findFirst().orElseThrow(() -> new NoSuchElementException("incorrect username or password"));
+        UserStatus userStatus = getUserStatus(user.getUserStatusId());
+        return getUserResponse(user, userStatus);
+    }
+
+    @Override
     public UserResponse find(UUID userId) {
         User user = getUser(userId);
         UserStatus userStatus = getUserStatus(user.getUserStatusId());
