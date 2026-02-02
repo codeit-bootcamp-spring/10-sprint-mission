@@ -24,13 +24,13 @@ public class BasicChannelService implements ChannelService {
 
     public PublicChannelInfo createPublicChannel(PublicChannelInfo channelInfo) {
         validateChannelExist(channelInfo.channelName());
-        Channel channel = new Channel(channelInfo.channelName(), ChannelType.PUBLIC, channelInfo.description());
+        Channel channel = ChannelMapper.toChannel(channelInfo);
         channelRepository.save(channel);
         return ChannelMapper.toPublicChannelInfo(channel);
     }
 
     public PrivateChannelInfo createPrivateChannel(PrivateChannelCreateInfo channelInfo) {
-        Channel channel = new Channel(null, ChannelType.PRIVATE, null);
+        Channel channel = ChannelMapper.toChannel(channelInfo);
         channelInfo.userIds().forEach(userId -> {
             joinChannel(channel.getId(), userId);
             ReadStatus readStatus = new ReadStatus(channel.getId(), userId);

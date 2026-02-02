@@ -52,4 +52,28 @@ public final class ChannelMapper {
     public static PrivateChannelCreateInfo toPrivateChannelCreateInfo(Channel channel) {
         return new PrivateChannelCreateInfo(channel.getUserIds());
     }
+
+    public static Channel toChannel(ChannelInfo channelInfo) {
+        return new Channel(
+                channelInfo.channelName(),
+                channelInfo.channelType(),
+                channelInfo.description()
+        );
+    }
+
+    public static Channel toChannel(PublicChannelInfo channelInfo) {
+        return new Channel(
+                channelInfo.channelName(),
+                ChannelType.PUBLIC,
+                channelInfo.description()
+        );
+    }
+
+    public static Channel toChannel(PrivateChannelCreateInfo channelInfo) {
+        return new Channel(
+                null,
+                ChannelType.PRIVATE,
+                null
+        );
+    }
 }
