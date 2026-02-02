@@ -42,7 +42,7 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public User saveUser(User user) {
+    public User save(User user) {
         // 경로 생성 (user-id.ser)
         Path filePath = userFilePath(user.getId());
 
@@ -58,7 +58,7 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findUserById(UUID userId) {
+    public Optional<User> findById(UUID userId) {
         return Optional.ofNullable(data.get(userId));
     }
 
@@ -68,7 +68,7 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public void deleteUser(UUID userId) {
+    public void delete(UUID userId) {
         deleteFileAndRemoveFromData(userId);
     }
 

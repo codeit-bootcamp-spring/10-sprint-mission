@@ -26,13 +26,13 @@ public class JCFUserService implements UserService {
         // 새로운 유저 생성
         User user = new User(nickname, email);
         // 유저 저장소에 저장
-        return userRepository.saveUser(user);
+        return userRepository.save(user);
     }
 
     @Override
     public User findUserById(UUID userId) {
         // 존재하는 유저인지 검색 및 검증, 존재하지 않으면 예외 발생
-        return userRepository.findUserById(userId)
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
     }
 
@@ -67,12 +67,12 @@ public class JCFUserService implements UserService {
         // 메시지를 가지고 있는 채널과 유저의 메시지 목록에서 제거
         messages.forEach(Message::removeFromChannelAndUser);
         // 메시지 저장소에서 메시지 제거
-        messages.forEach(m -> messageRepository.deleteMessage(m.getId()));
+        messages.forEach(m -> messageRepository.delete(m.getId()));
         // 유저가 가입한 모든 채널에서 탈퇴 처리
         List<Channel> channels = new ArrayList<>(user.getChannels());
         channels.forEach(ch -> ch.removeUser(user));
 
         // 관계를 정리한 후 유저 삭제, 저장소에서 제거
-        userRepository.deleteUser(userId);
+        userRepository.delete(userId);
     }
 }

@@ -35,7 +35,7 @@ public class BasicChannelService implements ChannelService {
 
         // 비공개 채널 생성 및 저장
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
-        channelRepository.saveChannel(channel);
+        channelRepository.save(channel);
 
         // 비공개 채널 참여자의 읽음 상태를 초기값으로 생성 및 저장
         for (UUID userId : request.userIds()) {
@@ -53,7 +53,7 @@ public class BasicChannelService implements ChannelService {
 
         // 공개 채널 생성 및 저장
         Channel channel = new Channel(ChannelType.PUBLIC, request.name(), request.description());
-        channelRepository.saveChannel(channel);
+        channelRepository.save(channel);
 
         return ChannelResponse.from(channel, null, List.of());
     }
@@ -65,7 +65,7 @@ public class BasicChannelService implements ChannelService {
         }
 
         // 채널이 존재하는지 검색 및 검증
-        Channel channel = channelRepository.findChannelById(channelId)
+        Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
 
         // 응답 DTO 생성 및 반환
@@ -113,7 +113,7 @@ public class BasicChannelService implements ChannelService {
         }
 
         // 수정 대상 채널이 존재하는지 검증
-        Channel channel = channelRepository.findChannelById(request.id())
+        Channel channel = channelRepository.findById(request.id())
                 .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
 
         // 비공개 채널일 경우 수정 불가
@@ -141,7 +141,7 @@ public class BasicChannelService implements ChannelService {
 
         // 채널 정보 수정 및 저장
         channel.update(resolvedName, resolvedDescription);
-        channelRepository.saveChannel(channel);
+        channelRepository.save(channel);
 
         // 응답 DTO 생성 및 반환
         return toResponse(channel);
@@ -154,7 +154,7 @@ public class BasicChannelService implements ChannelService {
         }
 
         // 삭제 대상 채널이 존재하는지 검증
-        channelRepository.findChannelById(channelId)
+        channelRepository.findById(channelId)
                 .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
 
         // 삭제 채널의 메시지 제거
@@ -162,7 +162,7 @@ public class BasicChannelService implements ChannelService {
         // 삭제 채널의 ReadStatus 제거
         readStatusRepository.deleteAllByChannelId(channelId);
         // 채널 삭제
-        channelRepository.deleteChannel(channelId);
+        channelRepository.delete(channelId);
     }
 
     private void validateCreatePrivateRequest(PrivateChannelCreateRequest request) {

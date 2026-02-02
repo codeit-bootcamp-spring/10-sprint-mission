@@ -46,7 +46,7 @@ public class BasicUserService implements UserService {
         );
 
         // 유저 저장
-        userRepository.saveUser(user);
+        userRepository.save(user);
 
         // 유저 상태 저장, 기본값 오프라인
         UserStatus userStatus = new UserStatus(user.getId(), UserStatus.Status.OFFLINE);
@@ -58,11 +58,11 @@ public class BasicUserService implements UserService {
     @Override
     public UserResponse findUserById(UUID userId) {
         // 조회 대상 유저가 존재하는지 검증
-        User user = userRepository.findUserById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // 유저 상태 조회 (null 값 처리 필요)
-        UserStatus userStatus = userStatusRepository.findByUserId(userId)
+        UserStatus userStatus = userStatusRepository.findById(userId)
                 .orElse(null);
 
         return UserResponse.from(user, userStatus);
@@ -76,7 +76,7 @@ public class BasicUserService implements UserService {
 
         for (User user : users) {
             // 유저 상태 조회 (null 값 처리 필요)
-            UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
+            UserStatus userStatus = userStatusRepository.findById(user.getId())
                     .orElse(null);
             responses.add(UserResponse.from(user, userStatus));
         }
@@ -92,7 +92,7 @@ public class BasicUserService implements UserService {
         }
 
         // 수정 대상 유저가 존재하는지 검증
-        User user = userRepository.findUserById(request.id())
+        User user = userRepository.findById(request.id())
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // 수정 DTO 데이터 확인
@@ -135,15 +135,15 @@ public class BasicUserService implements UserService {
 
         // 유저 정보 수정 및 저장
         user.update(resolvedPassword, resolvedNickname, resolvedProfileId);
-        userRepository.saveUser(user);
+        userRepository.save(user);
 
         // 프로필 교체 시에만 기존 파일 삭제
         if (newProfile != null && oldProfileId != null && !oldProfileId.equals(resolvedProfileId)) {
-            binaryContentRepository.deleteById(oldProfileId);
+            binaryContentRepository.delete(oldProfileId);
         }
 
         // 유저 상태 조회
-        UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
+        UserStatus userStatus = userStatusRepository.findById(user.getId())
                 .orElse(null);
 
         return UserResponse.from(user, userStatus);
@@ -153,18 +153,18 @@ public class BasicUserService implements UserService {
     @Override
     public void deleteUser(UUID userId) {
         // 삭제 대상 유저가 존재하는지 검증
-        User user = userRepository.findUserById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // 유저 프로필 이미지 조회 후 삭제
         if (user.getProfileId() != null) {
-            binaryContentRepository.deleteById(user.getProfileId());
+            binaryContentRepository.delete(user.getProfileId());
         }
         // 유저 상태 삭제
-        userStatusRepository.deleteByUserId(userId);
+        userStatusRepository.delete(userId);
 
         // 유저 삭제
-        userRepository.deleteUser(user.getId());
+        userRepository.delete(user.getId());
     }
 
     private void validateCreateRequest(UserCreateRequest request) {

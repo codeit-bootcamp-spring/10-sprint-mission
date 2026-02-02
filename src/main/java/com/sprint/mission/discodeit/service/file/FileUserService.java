@@ -31,12 +31,12 @@ public class FileUserService implements UserService {
         User user = new User(nickname, email);
 
         // 유저 저장
-        return userRepository.saveUser(user);
+        return userRepository.save(user);
     }
 
     @Override
     public User findUserById(UUID userId) {
-        return userRepository.findUserById(userId)
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
     }
 
@@ -48,16 +48,16 @@ public class FileUserService implements UserService {
     @Override
     public User updateUserNickname(UUID userId, String newNickname) {
         // 수정 대상 유저가 존재하는지 검색 및 검증
-        User user = userRepository.findUserById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
         // 유저 닉네임 수정
         user.updateUserNickname(newNickname);
 
         // 수정된 유저 저장
-        userRepository.saveUser(user);
+        userRepository.save(user);
         // 유저의 가입 채널과 작성 메시지에 수정 내용 반영
-        user.getChannels().forEach(channelRepository::saveChannel);
-        user.getMessages().forEach(messageRepository::saveMessage);
+        user.getChannels().forEach(channelRepository::save);
+        user.getMessages().forEach(messageRepository::save);
 
         return user;
     }
@@ -81,15 +81,15 @@ public class FileUserService implements UserService {
         // 유저가 가입한 채널 탈퇴 처리
         for (Channel channel : channels) {
             channel.removeUser(user);
-            channelRepository.saveChannel(channel);
+            channelRepository.save(channel);
         }
         // 유저가 작성한 메시지 삭제 처리
         for (Message message : messages) {
             message.removeFromChannelAndUser();
-            messageRepository.deleteMessage(message.getId());
+            messageRepository.delete(message.getId());
         }
 
         // 유저 삭제
-        userRepository.deleteUser(user.getId());
+        userRepository.delete(user.getId());
     }
 }

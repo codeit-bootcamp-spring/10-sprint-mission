@@ -18,13 +18,13 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message saveMessage(Message message) {
+    public Message save(Message message) {
         data.put(message.getId(), message);
         return message;
     }
 
     @Override
-    public Optional<Message> findMessageByMessageId(UUID messageId) {
+    public Optional<Message> findById(UUID messageId) {
         return Optional.ofNullable(data.get(messageId));
     }
 
@@ -34,7 +34,7 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void deleteMessage(UUID messageId) {
+    public void delete(UUID messageId) {
         data.remove(messageId);
     }
 }

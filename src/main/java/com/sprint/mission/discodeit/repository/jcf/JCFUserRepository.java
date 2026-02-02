@@ -18,13 +18,13 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public User saveUser(User user) {
+    public User save(User user) {
         data.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public Optional<User> findUserById(UUID userId) {
+    public Optional<User> findById(UUID userId) {
         return Optional.ofNullable(data.get(userId));
     }
 
@@ -34,7 +34,7 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public void deleteUser(UUID userId) {
+    public void delete(UUID userId) {
         data.remove(userId);
     }
 }

@@ -38,7 +38,7 @@ public class JCFMessageService implements MessageService {
 
         // 메시지 생성 및 추가
         Message message = new Message(channel, user, content);
-        messageRepository.saveMessage(message);
+        messageRepository.save(message);
         // 채널과 유저가 가지고 있는 메시지 목록에 추가
         message.addToChannelAndUser();
 
@@ -84,7 +84,7 @@ public class JCFMessageService implements MessageService {
         Channel channel = channelService.findChannelById(channelId);
 
         // 메시지가 존재하지 않을 경우 예외 발생
-        Message message = messageRepository.findMessageByMessageId(messageId)
+        Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
 
         // 채널이 맞지 않을 경우 예외 발생
@@ -111,7 +111,7 @@ public class JCFMessageService implements MessageService {
         // 채널과 유저가 가지고 있는 메시지 목록에서 삭제
         message.removeFromChannelAndUser();
         // 메시지 삭제
-        messageRepository.deleteMessage(messageId);
+        messageRepository.delete(messageId);
     }
 
     private Message validateMessageAccess(UUID channelId, UUID userId, UUID messageId) {
@@ -127,7 +127,7 @@ public class JCFMessageService implements MessageService {
         }
 
         // 메시지가 존재하지 않을 경우 예외 발생
-        Message message = messageRepository.findMessageByMessageId(messageId)
+        Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
 
         // 채널이 맞지 않을 경우 예외 발생

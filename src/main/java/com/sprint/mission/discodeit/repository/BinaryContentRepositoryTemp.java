@@ -20,7 +20,7 @@ public class BinaryContentRepositoryTemp implements BinaryContentRepository {
     }
 
     @Override
-    public void deleteById(UUID contentId) {
+    public void delete(UUID contentId) {
 
     }
 }

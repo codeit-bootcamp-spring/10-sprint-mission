@@ -42,7 +42,7 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message saveMessage(Message message) {
+    public Message save(Message message) {
         // 경로 생성 (message-id.ser)
         Path filePath = messageFilePath(message.getId());
 
@@ -58,7 +58,7 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Optional<Message> findMessageByMessageId(UUID messageId) {
+    public Optional<Message> findById(UUID messageId) {
         return Optional.ofNullable(data.get(messageId));
     }
 
@@ -68,7 +68,7 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void deleteMessage(UUID messageId) {
+    public void delete(UUID messageId) {
         deleteFileAndRemoveFromData(messageId);
     }
 

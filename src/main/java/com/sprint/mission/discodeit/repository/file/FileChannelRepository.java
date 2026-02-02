@@ -42,7 +42,7 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Channel saveChannel(Channel channel) {
+    public Channel save(Channel channel) {
         // 경로 생성 (channel-id.ser)
         Path filePath = channelFilePath(channel.getId());
 
@@ -58,7 +58,7 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public Optional<Channel> findChannelById(UUID channelId) {
+    public Optional<Channel> findById(UUID channelId) {
         return Optional.ofNullable(data.get(channelId));
     }
 
@@ -68,7 +68,7 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void deleteChannel(UUID channelId) {
+    public void delete(UUID channelId) {
         deleteFileAndRemoveFromData(channelId);
     }
 

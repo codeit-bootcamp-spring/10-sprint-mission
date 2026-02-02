@@ -15,12 +15,12 @@ public class UserStatusRepositoryTemp implements UserStatusRepository {
     }
 
     @Override
-    public Optional<UserStatus> findByUserId(UUID userId) {
+    public Optional<UserStatus> findById(UUID userId) {
         return Optional.empty();
     }
 
     @Override
-    public void deleteByUserId(UUID userId) {
+    public void delete(UUID userId) {
 
     }
 }

@@ -20,7 +20,7 @@ public class AuthService {
         User user = validateLoginRequest(request);
 
         // 유저 상태 조회
-        UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
+        UserStatus userStatus = userStatusRepository.findById(user.getId())
                 .orElse(null);
 
         return UserResponse.from(user, userStatus);

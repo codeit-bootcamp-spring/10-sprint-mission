@@ -28,18 +28,18 @@ public class FileChannelService implements ChannelService {
     @Override
     public Channel createChannel(String name, UUID ownerId) {
         // 존재하는 유저인지 검증
-        User owner = userRepository.findUserById(ownerId)
+        User owner = userRepository.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
         // 채널 생성
         Channel channel = new Channel(name, owner);
 
         // 채널 저장
-        return channelRepository.saveChannel(channel);
+        return channelRepository.save(channel);
     }
 
     @Override
     public Channel findChannelById(UUID channelId) {
-        return channelRepository.findChannelById(channelId)
+        return channelRepository.findById(channelId)
                 .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
     }
 
@@ -60,10 +60,10 @@ public class FileChannelService implements ChannelService {
         // 채널 이름 수정
         channel.updateChannelName(newName);
         // 수정된 채널 저장
-        channelRepository.saveChannel(channel);
+        channelRepository.save(channel);
         // 채널에 가입된 유저와 작성된 메시지에 수정 내용 반영
-        channel.getUsers().forEach(userRepository::saveUser);
-        channel.getMessages().forEach(messageRepository::saveMessage);
+        channel.getUsers().forEach(userRepository::save);
+        channel.getMessages().forEach(messageRepository::save);
 
         return channel;
     }
@@ -73,7 +73,7 @@ public class FileChannelService implements ChannelService {
         // 삭제 대상 채널이 존재하는지 검색 및 검증
         Channel channel = findChannelById(channelId);
         // 채널 권한 확인, 채널 소유자만 삭제 가능
-        User owner = userRepository.findUserById(userId)
+        User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
         if (!channel.getOwner().equals(owner)) {
             throw new RuntimeException("해당 채널에 대한 권한이 없습니다.");
@@ -86,16 +86,16 @@ public class FileChannelService implements ChannelService {
         // 채널에 가입된 유저들 탈퇴 처리
         for (User user : users) {
             user.leaveChannel(channel);
-            userRepository.saveUser(user);
+            userRepository.save(user);
         }
         // 채널에 작성된 메시지 삭제 처리
         for (Message message : messages) {
             message.removeFromChannelAndUser();
-            messageRepository.deleteMessage(message.getId());
+            messageRepository.delete(message.getId());
         }
 
         // 채널 삭제
-        channelRepository.deleteChannel(channel.getId());
+        channelRepository.delete(channel.getId());
     }
 
     @Override
@@ -103,7 +103,7 @@ public class FileChannelService implements ChannelService {
         // 유저가 가입하려는 채널이 존재하는지 검색 및 검증
         Channel channel = findChannelById(channelId);
         // 존재하는 유저인지 검색 및 검증
-        User user = userRepository.findUserById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // 가입 여부 확인, 가입되어 있는 유저라면 예외 발생
@@ -118,8 +118,8 @@ public class FileChannelService implements ChannelService {
         // 채널 가입
         channel.addUser(user);
         // 채널 가입 반영
-        userRepository.saveUser(user);
-        channelRepository.saveChannel(channel);
+        userRepository.save(user);
+        channelRepository.save(channel);
     }
 
     @Override
@@ -127,7 +127,7 @@ public class FileChannelService implements ChannelService {
         // 유저가 탈퇴하려는 채널이 존재하는지 검색 및 검증
         Channel channel = findChannelById(channelId);
         // 존재하는 유저인지 검색 및 검증
-        User user = userRepository.findUserById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // 가입 여부 확인, 가입되어 있지 않은 유저라면 예외 발생
@@ -142,8 +142,8 @@ public class FileChannelService implements ChannelService {
         // 채널 탈퇴
         channel.removeUser(user);
         // 채널 탈퇴 반영
-        userRepository.saveUser(user);
-        channelRepository.saveChannel(channel);
+        userRepository.save(user);
+        channelRepository.save(channel);
     }
 
     @Override

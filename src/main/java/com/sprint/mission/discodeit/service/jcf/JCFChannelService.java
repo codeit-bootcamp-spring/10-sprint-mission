@@ -33,13 +33,13 @@ public class JCFChannelService implements ChannelService {
         Channel channel = new Channel(name, owner);
 
         // 채널 추가
-        return channelRepository.saveChannel(channel);
+        return channelRepository.save(channel);
     }
 
     @Override
     public Channel findChannelById(UUID channelId) {
         // 존재하는 채널인지 검색 및 검증, 존재하지 않으면 예외 발생
-        return channelRepository.findChannelById(channelId)
+        return channelRepository.findById(channelId)
                 .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
     }
 
@@ -76,13 +76,13 @@ public class JCFChannelService implements ChannelService {
         // 메시지를 가지고 있는 채널과 유저의 메시지 목록에서 제거
         messages.forEach(Message::removeFromChannelAndUser);
         // 메시지 저장소에서 메시지 제거
-        messages.forEach(m -> messageRepository.deleteMessage(m.getId()));
+        messages.forEach(m -> messageRepository.delete(m.getId()));
         // 채널에 가입된 모든 유저 탈퇴 처리
         List<User> users = new ArrayList<>(channel.getUsers());
         users.forEach(u -> u.leaveChannel(channel));
 
         // 관계를 정리한 후 채널 삭제, 저장소에서 제거
-        channelRepository.deleteChannel(channel.getId());
+        channelRepository.delete(channel.getId());
     }
 
     @Override
