@@ -10,11 +10,12 @@ package com.sprint.mission.discodeit.repository;
 @Repository
 public interface ReadStatusRepository {
     void save(ReadStatus readStatus);
-    Optional<ReadStatus> findById(String id);
-    List<ReadStatus> findByUserId(String userId);
-    void deleteById(String id);
+    Optional<ReadStatus> findById(UUID id);
+    void deleteById(UUID id);
     List<ReadStatus> findAllByUserId(UUID userId);
     List<ReadStatus> findAllByChannelId(UUID channelId);
     void deleteByChannelId(UUID channelId);
+
+    Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId);
 
 }

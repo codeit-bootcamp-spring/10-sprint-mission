@@ -7,7 +7,7 @@ import java.util.UUID;
 
 @Getter
 public class ReadStatus {
-    private String id;
+    private UUID id;
     private Instant createdAt;
     private Instant updatedAt;
     //
@@ -16,14 +16,16 @@ public class ReadStatus {
     private Instant lastReadAt; //마지막으로 몇시에 읽었는지
 
     public ReadStatus(UUID userId, UUID channelId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
         this.userId = userId;
         this.channelId = channelId;
         this.lastReadAt = Instant.now();
     }
 
     //읽은 시간 업데이트
-    public void updateLastReadAt() {
-        this.lastReadAt = Instant.now();
+    public void updateLastReadAt(Instant lastReadAt) {
+        this.lastReadAt = lastReadAt;
         this.updatedAt = Instant.now();
     }
 }
