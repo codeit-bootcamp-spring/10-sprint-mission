@@ -1,37 +1,42 @@
 package com.sprint.mission.discodeit.dto;
 
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.status.UserStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserResponse {
     private UUID id;
     private String username;
     private String email;
-    private UUID profileImageId; // null 가능
-    private boolean isOnline;
+    // password는 제외
+    private UUID profileImageId;  // BinaryContent ID
+    // 온라인 상태 정보 포함
+    private String status;        // ONLINE, OFFLINE, AWAY 등
+    private Instant lastActiveAt;
     private Instant createdAt;
     private Instant updatedAt;
 
-    public UserResponse(UUID id, String username, String email, UUID profileImageId,
-                        boolean isOnline, Instant createdAt, Instant updatedAt) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.profileImageId = profileImageId;
-        this.isOnline = isOnline;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+    // Entity -> DTO 변환 메서드
+    public static UserResponse from(User user, UserStatus userStatus) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .profileImageId(user.getProfileImageId())
+                .status(userStatus != null ? userStatus.getStatus() : "OFFLINE")
+                .lastActiveAt(userStatus != null ? userStatus.getLastActiveAt() : null)
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
     }
-
-//    // Getters
-//    public UUID getId() { return id; }
-//    public String getUsername() { return username; }
-//    public String getEmail() { return email; }
-//    public UUID getProfileImageId() { return profileImageId; }
-//    public boolean isOnline() { return isOnline; }
-//    public Instant getCreatedAt() { return createdAt; }
-//    public Instant getUpdatedAt() { return updatedAt; }
 }

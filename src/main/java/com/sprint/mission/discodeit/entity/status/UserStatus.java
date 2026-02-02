@@ -14,6 +14,8 @@ public class UserStatus {
     private Instant lastSeenAt;
     private final Instant createdAt;
     private Instant updatedAt;
+    private String status;
+    private Instant lastActiveAt;
 
     public UserStatus(UUID id, UUID userId, Instant lastSeenAt,
                       Instant createdAt, Instant updatedAt) {
@@ -41,5 +43,4 @@ public class UserStatus {
         Instant fiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
         return lastSeenAt.isAfter(fiveMinutesAgo);
     }
-
 }

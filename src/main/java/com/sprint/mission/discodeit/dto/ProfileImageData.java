@@ -1,18 +1,15 @@
 package com.sprint.mission.discodeit.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ProfileImageData {
+    private String fileName;
     private String contentType;
     private byte[] data;
-
-    public ProfileImageData(String contentType, byte[] data) {
-        this.contentType = contentType;
-        this.data = data;
-    }
-
-//    // Getters
-//    public String getContentType() { return contentType; }
-//    public byte[] getData() { return data; }
+    private Long size;
 }

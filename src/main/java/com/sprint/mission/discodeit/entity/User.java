@@ -13,9 +13,9 @@ public class User extends BaseEntity implements Serializable  {
     private static final long serialVersionUID = 1L;
 
     private UUID id;
+    private UUID profileImageId;
     private Instant createdAt;
     private Instant updatedAt;
-    //
     private String username;
     private String email;
     private String password;
@@ -48,7 +48,7 @@ public class User extends BaseEntity implements Serializable  {
             this.updatedAt = Instant.now();
         }
     }
-    
+
 }
 
 
