@@ -16,5 +16,5 @@ public interface UserService {
     Optional<UserDto.response> findUserByMail(String mail);
     List<UserDto.response> findAllUsers();
     UserDto.response updateUser(UUID uuid, UserDto.updateRequest userReq, BinaryContentDto.createRequest profileReq);
-    void deleteUserById(UUID uuid);
+    void deleteUser(UUID uuid);
 }

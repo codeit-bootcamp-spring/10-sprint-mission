@@ -6,55 +6,57 @@ import java.util.*;
 
 @Getter
 public class Channel extends MutableEntity {
-    private final Set<User> participants;
-    private final List<Message> messages;
+    private final Set<UUID> participants;
+    private final List<UUID> messages;
     private String title;
     private String description;
+    private ChannelType channelType;
 
-    public Channel(String title, String description) {
+    public Channel(ChannelType channelType, String title, String description) {
         super();
         this.participants = new HashSet<>();
         this.messages = new ArrayList<>();
+        this.channelType = channelType;
         this.title = title;
         this.description = description;
     }
 
     // participants
-    public Set<User> getParticipants() {
+    public Set<UUID> getParticipants() {
         return Collections.unmodifiableSet(this.participants);
     }
 
-    public void addParticipant(User user) {
-        participants.add(user);
+    public void addParticipant(UUID userId) {
+        participants.add(userId);
     }
 
-    public void removeParticipant(User user) {
-        participants.remove(user);
+    public void removeParticipant(UUID userId) {
+        participants.remove(userId);
     }
 
-    public void updateParticipant(User user) {
-        if (this.participants.removeIf(u -> Objects.equals(u.getId(), user.getId()))) {
-            addParticipant(user);
+    public void updateParticipant(UUID userId) {
+        if (this.participants.removeIf(u -> Objects.equals(u, userId))) {
+            addParticipant(userId);
         }
     }
 
     // messages
-    public List<Message> getMessages() {
+    public List<UUID> getMessages() {
         return Collections.unmodifiableList(this.messages);
     }
 
-    public void addMessage(Message message) {
-        this.messages.add(message);
+    public void addMessage(UUID messageId) {
+        this.messages.add(messageId);
     }
 
-    public void removeMessage(Message message) {
-        this.messages.remove(message);
+    public void removeMessage(UUID messageId) {
+        this.messages.remove(messageId);
     }
 
-    public void updateMessage(Message message) {
+    public void updateMessage(UUID messageId) {
         for (int i = 0; i < this.messages.size(); i++) {
-            if (this.messages.get(i).getId().equals(message.getId())) {
-                this.messages.set(i, message);
+            if (this.messages.get(i).equals(messageId)) {
+                this.messages.set(i, messageId);
                 break;
             }
         }
@@ -64,7 +66,6 @@ public class Channel extends MutableEntity {
     public void updateTitle(String title) {
         this.title = title;
     }
-
 
     public void updateDescription(String description) {
         this.description = description;

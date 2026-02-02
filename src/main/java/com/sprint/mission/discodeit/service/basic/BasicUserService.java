@@ -88,28 +88,11 @@ public class BasicUserService implements UserService {
         user.updateUpdatedAt();
         userRepository.save(user);
 
-        // 다른 객체도 변경
-        channelRepository.findAll().forEach(c -> {
-            c.getParticipants().stream()
-                    .filter(u -> Objects.equals(u.getId(), user.getId()))
-                    .findFirst()
-                    .ifPresent(u -> {
-                        c.updateParticipant(user);
-                        channelRepository.save(c);
-                    });
-        });
-        messageRepository.findAll().stream()
-                .filter(m -> Objects.equals(m.getUser().getId(), user.getId()))
-                .forEach(m -> {
-                    m.updateUserIfSameId(user);
-                    messageRepository.save(m);
-                });
-
         return toResponse(user);
     }
 
     @Override
-    public void deleteUserById(UUID uuid) {
+    public void deleteUser(UUID uuid) {
         User user = userRepository.findById(uuid)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
         deleteProcess(user);

@@ -26,45 +26,45 @@ public class User extends MutableEntity {
     }
 
     // joinedChannels
-//    public Set<Channel> getJoinedChannels() {
-//        return Collections.unmodifiableSet(this.joinedChannels);
-//    }
-//
-//    public void addJoinedChannels(Channel channel) {
-//        this.joinedChannels.add(channel);
-//    }
-//
-//    public void removeJoinedChannels(Channel channel) {
-//        this.joinedChannels.remove(channel);
-//    }
-//
-//    public void updateJoinedChannel(Channel channel) {
-//        if (this.joinedChannels.removeIf(c -> Objects.equals(c.getId(), channel.getId()))) {
-//            addJoinedChannels(channel);
-//        }
-//    }
-//
-//    // messageHistory
-//    public List<Message> getMessageHistory() {
-//        return Collections.unmodifiableList(this.messageHistory);
-//    }
-//
-//    public void addMessageHistory(Message message) {
-//        this.messageHistory.add(message);
-//    }
-//
-//    public void removeMessageHistory(Message message) {
-//        this.messageHistory.remove(message);
-//    }
-//
-//    public void updateMessageHistory(Message message) {
-//        for (int i = 0; i < this.messageHistory.size(); i++) {
-//            if (this.messageHistory.get(i).getId().equals(message.getId())) {
-//                this.messageHistory.set(i, message);
-//                break;
-//            }
-//        }
-//    }
+    public Set<UUID> getJoinedChannels() {
+        return Collections.unmodifiableSet(this.joinedChannels);
+    }
+
+    public void addJoinedChannels(UUID channelId) {
+        this.joinedChannels.add(channelId);
+    }
+
+    public void removeJoinedChannels(UUID channelId) {
+        this.joinedChannels.remove(channelId);
+    }
+
+    public void updateJoinedChannel(UUID channelId) {
+        if (this.joinedChannels.removeIf(c -> Objects.equals(c, channelId))) {
+            addJoinedChannels(channelId);
+        }
+    }
+
+    // messageHistory
+    public List<UUID> getMessageHistory() {
+        return Collections.unmodifiableList(this.messageHistory);
+    }
+
+    public void addMessageHistory(UUID messageId) {
+        this.messageHistory.add(messageId);
+    }
+
+    public void removeMessageHistory(UUID messageId) {
+        this.messageHistory.remove(messageId);
+    }
+
+    public void updateMessageHistory(UUID messageId) {
+        for (int i = 0; i < this.messageHistory.size(); i++) {
+            if (this.messageHistory.get(i).equals(messageId)) {
+                this.messageHistory.set(i, messageId);
+                break;
+            }
+        }
+    }
 
     public void updateAccountId(String accountId) {
         this.accountId = accountId;

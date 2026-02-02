@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ReadStausRepository {
+public interface ReadStatusRepository {
     ReadStatus save(ReadStatus readStatus);
     Optional<ReadStatus> findById(UUID uuid);
     List<ReadStatus> findAll();
+    List<ReadStatus> findAllByChannelId(UUID channelId);
     void deleteById(UUID uuid);
+    void deleteAllByChannelId(UUID channelId);
 }
