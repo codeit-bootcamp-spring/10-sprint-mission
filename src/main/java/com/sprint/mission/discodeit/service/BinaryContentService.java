@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import com.sprint.mission.discodeit.dto.BinaryContentPostDTO;
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class BinaryContentService {
+	@Qualifier("JCFBinaryContentRepository")
 	private final BinaryContentRepository binaryContentRepository;
 
 	private final BinaryContentMapper binaryContentMapper;
