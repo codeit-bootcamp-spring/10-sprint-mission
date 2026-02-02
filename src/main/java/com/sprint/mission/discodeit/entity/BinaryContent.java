@@ -4,12 +4,14 @@ import lombok.Getter;
 
 @Getter
 public class BinaryContent extends ImmutableEntity {
-    private final BinaryContent contentType;
-    private final Byte[] bytes;
+    private final BinaryContentType contentType;
+    private final String fileName;
+    private final Byte[] contentBytes;
 
-    public BinaryContent(BinaryContent contentType, Byte[] bytes) {
+    public BinaryContent(BinaryContentType contentType, String fileName, Byte[] contentBytes) {
         super();
         this.contentType = contentType;
-        this.bytes = bytes;
+        this.fileName = fileName;
+        this.contentBytes = contentBytes;
     }
 }

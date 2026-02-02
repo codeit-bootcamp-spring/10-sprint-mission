@@ -6,7 +6,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 public final class BinaryContentDto {
-    public record createRequest(BinaryContentType contentType, Byte[] contentBytes) {}
+    private BinaryContentDto() {}
+
+    public record createRequest(BinaryContentType contentType, String filename, Byte[] contentBytes) {}
     public record response(UUID uuid, Instant createdAt, Instant updatedAt,
-                           BinaryContentType contentType, Byte[] content) { }
+                           BinaryContentType contentType, String filename, Byte[] content) { }
 }
