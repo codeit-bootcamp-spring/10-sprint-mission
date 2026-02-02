@@ -70,7 +70,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelInfo updateChannel(PublicChannelInfo channelInfo) {
+    public ChannelInfo updateChannel(UpdateChannelInfo channelInfo) {
         validateChannelExist(channelInfo.channelName());
         Channel findChannel = channelRepository.findByName(channelInfo.channelName())
                 .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다."));
@@ -79,8 +79,6 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalStateException("해당 채널은 수정할 수 없습니다.");
         Optional.ofNullable(channelInfo.channelName())
                 .ifPresent(findChannel::updateChannelName);
-        Optional.ofNullable(channelInfo.channelType())
-                .ifPresent(findChannel::updateChannelType);
         Optional.ofNullable(channelInfo.description())
                 .ifPresent(findChannel::updateDescription);
 
