@@ -41,26 +41,29 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelDto.response getChannel(UUID uuid) {
+    public ChannelDto.response findChannel(UUID uuid) {
         return channelRepository.findById(uuid)
                 .map(this::toResponse)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
     }
 
     @Override
-    public Optional<ChannelDto.response> findChannelByTitle(String title) {
+    public ChannelDto.response findChannelByTitle(String title) {
         return channelRepository.findAll().stream()
                 .filter(c -> Objects.equals(c.getTitle(), title))
                 .map(this::toResponse)
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
     }
 
     @Override
     public List<ChannelDto.response> findAllByUserId(UUID userId) {
+        getUserOrThrow(userId);
+
         return channelRepository.findAll().stream()
                 // PUBLIC 채널 전부 + userId가 참여한 PRIVATE 채널
                 .filter(c -> Objects.equals(c.getChannelType(), ChannelType.PUBLIC)
-                                    || c.getParticipants().contains(userId))
+                                || c.getParticipants().contains(userId))
                 .map(this::toResponse)
                 .toList();
     }
@@ -93,8 +96,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = getChannelOrThrow(channelId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+        User user = getUserOrThrow(userId);
 
         if (channel.getParticipants().stream()
                 .anyMatch(u -> Objects.equals(u, userId))) {
@@ -121,8 +123,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = getChannelOrThrow(channelId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+        User user = getUserOrThrow(userId);
 
         if (channel.getParticipants().stream()
                 .anyMatch(u -> Objects.equals(u, userId))) {
@@ -150,12 +151,20 @@ public class BasicChannelService implements ChannelService {
     }
 
     private void validateDuplicateTitle(String title) {
-        findChannelByTitle(title).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 채널명입니다"); });
+        channelRepository.findAll().stream()
+                .filter(c -> Objects.equals(c.getTitle(), title))
+                .findFirst()
+                .ifPresent(u -> { throw new IllegalStateException("이미 존재하는 채널명입니다"); });
     }
 
-    private Channel getChannelOrThrow(UUID uuid) {
-        return channelRepository.findById(uuid)
+    private Channel getChannelOrThrow(UUID channelId) {
+        return channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+    }
+
+    private User getUserOrThrow(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
     }
 
     private ChannelDto.response toResponse(Channel channel) {

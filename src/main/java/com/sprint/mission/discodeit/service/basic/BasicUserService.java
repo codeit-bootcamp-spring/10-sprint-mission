@@ -42,22 +42,24 @@ public class BasicUserService implements UserService {
 
 
     @Override
-    public UserDto.response getUser(UUID uuid) {
+    public UserDto.response findUser(UUID uuid) {
         return userRepository.findById(uuid)
                 .map(this::toResponse)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
     }
 
     @Override
-    public Optional<UserDto.response> findUserByAccountId(String accountId) {
+    public UserDto.response findUserByAccountId(String accountId) {
         return findUserEntityByAccountId(accountId)
-                .map(this::toResponse);
+                .map(this::toResponse)
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
     }
 
     @Override
-    public Optional<UserDto.response> findUserByMail(String mail) {
+    public UserDto.response findUserByMail(String mail) {
         return findUserEntityByMail(mail)
-                .map(this::toResponse);
+                .map(this::toResponse)
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
     }
 
     @Override

@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface ReadStatusService {
     ReadStatusDto.response createReadStatus(ReadStatusDto.createRequest dto);
-    Optional<ReadStatusDto.response> findById(UUID uuid);
+    ReadStatusDto.response findById(UUID uuid);
     List<ReadStatusDto.response> findAllByUserId(UUID userId);
     ReadStatusDto.response updateReadStatus(ReadStatusDto.updateRequest dto);
     void deleteReadStatusById(UUID uuid);
