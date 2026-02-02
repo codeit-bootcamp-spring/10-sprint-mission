@@ -23,7 +23,7 @@ public class BasicUserService implements UserService {
     private final MessageRepository messageRepository;
 
     @Override
-    public User createUser(UserDto.createRequest userReq, BinaryContentDto.createRequest profileReq) {
+    public UserDto.response createUser(UserDto.createRequest userReq, BinaryContentDto.createRequest profileReq) {
         userRepository.findAll().forEach(u -> {
             if (Objects.equals(u.getAccountId(), userReq.accountId())) throw new IllegalStateException("이미 존재하는 accountId입니다");
             if (Objects.equals(u.getMail(), userReq.mail())) throw new IllegalStateException("이미 존재하는 mail입니다");
@@ -36,7 +36,8 @@ public class BasicUserService implements UserService {
         // profile 이미지를 같이 추가하면
         processUpdateProfile(user, profileReq);
 
-        return userRepository.save(user);
+        userRepository.save(user);
+        return toResponse(user);
     }
 
 
@@ -66,7 +67,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User updateUser(UUID uuid, UserDto.updateRequest userReq, BinaryContentDto.createRequest profileReq) {
+    public UserDto.response updateUser(UUID uuid, UserDto.updateRequest userReq, BinaryContentDto.createRequest profileReq) {
         User user = userRepository.findById(uuid)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
 
@@ -104,26 +105,12 @@ public class BasicUserService implements UserService {
                     messageRepository.save(m);
                 });
 
-        return user;
+        return toResponse(user);
     }
 
     @Override
-    public void deleteUser(UUID uuid) {
+    public void deleteUserById(UUID uuid) {
         User user = userRepository.findById(uuid)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-        deleteProcess(user);
-    }
-
-    @Override
-    public void deleteUserByAccountId(String accountId) {
-        User user = findUserEntityByAccountId(accountId)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-        deleteProcess(user);
-    }
-
-    @Override
-    public void deleteUserByMail(String mail) {
-        User user = findUserEntityByMail(mail)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
         deleteProcess(user);
     }

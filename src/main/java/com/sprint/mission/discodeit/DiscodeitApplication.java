@@ -6,12 +6,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
-import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
-import com.sprint.mission.discodeit.repository.file.FileUserRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFChannelRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFMessageRepository;
-import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -107,7 +101,7 @@ public class DiscodeitApplication {
 		// 삭제
 		System.out.println("<삭제>");
 		System.out.print("\t= uuid 삭제: ");
-		userTest.userService.deleteUser(user1.getId());
+		userTest.userService.deleteUserById(user1.getId());
 		System.out.println("... 성공");
 		System.out.print("\t= accountId 삭제: ");
 		userTest.userService.deleteUserByAccountId(user2.getAccountId());
@@ -249,7 +243,7 @@ public class DiscodeitApplication {
 		System.out.println();
 
 		// 테스트파일 전부 삭제
-		messageTest.userService.deleteUser(user1.getId());
+		messageTest.userService.deleteUserById(user1.getId());
 		messageTest.channelService.deleteChannel(channel1.getId());
 		messageTest.channelService.deleteChannel(channel2.getId());
 	}
@@ -323,14 +317,14 @@ public class DiscodeitApplication {
 		System.out.println("\t= Channel1 소속된 유저: " + test.channelService.getChannel(channel1.getId()).getParticipants());
 
 		// user1 삭제
-		test.userService.deleteUser(user1.getId());
+		test.userService.deleteUserById(user1.getId());
 
 		// user1 삭제 후
 		System.out.println("User 1(AAA) 삭제 후:");
 		System.out.println("\t= Channel1 소속된 유저: " + test.channelService.getChannel(channel1.getId()).getParticipants());
 
 		// 테스트파일 전부 삭제
-		test.userService.deleteUser(user2.getId());
+		test.userService.deleteUserById(user2.getId());
 		test.channelService.deleteChannel(channel1.getId());
 	}
 }

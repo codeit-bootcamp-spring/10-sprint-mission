@@ -15,9 +15,6 @@ import com.sprint.mission.discodeit.repository.jcf.JCFUserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.basic.BasicChannelService;
-import com.sprint.mission.discodeit.service.basic.BasicMessageService;
-import com.sprint.mission.discodeit.service.basic.BasicUserService;
 
 import java.util.UUID;
 
@@ -124,7 +121,7 @@ public class JavaApplication {
         // 삭제
         System.out.println("<삭제>");
         System.out.print("\t= uuid 삭제: ");
-        userTest.userService.deleteUser(user1.getId());
+        userTest.userService.deleteUserById(user1.getId());
         System.out.println("... 성공");
         System.out.print("\t= accountId 삭제: ");
         userTest.userService.deleteUserByAccountId(user2.getAccountId());
@@ -274,7 +271,7 @@ public class JavaApplication {
         System.out.println();
 
         // 테스트파일 전부 삭제
-        messageTest.userService.deleteUser(user1.getId());
+        messageTest.userService.deleteUserById(user1.getId());
         messageTest.channelService.deleteChannel(channel1.getId());
         messageTest.channelService.deleteChannel(channel2.getId());
     }
@@ -352,14 +349,14 @@ public class JavaApplication {
         System.out.println("\t= Channel1 소속된 유저: " + test.channelService.getChannel(channel1.getId()).getParticipants());
 
         // user1 삭제
-        test.userService.deleteUser(user1.getId());
+        test.userService.deleteUserById(user1.getId());
 
         // user1 삭제 후
         System.out.println("User 1(AAA) 삭제 후:");
         System.out.println("\t= Channel1 소속된 유저: " + test.channelService.getChannel(channel1.getId()).getParticipants());
 
         // 테스트파일 전부 삭제
-        test.userService.deleteUser(user2.getId());
+        test.userService.deleteUserById(user2.getId());
         test.channelService.deleteChannel(channel1.getId());
     }
 }
