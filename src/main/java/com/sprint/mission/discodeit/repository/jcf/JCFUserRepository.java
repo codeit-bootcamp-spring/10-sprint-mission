@@ -41,8 +41,8 @@ public class JCFUserRepository implements UserRepository {
 
     // 사용자 삭제
     @Override
-    public void delete(User targetUser) {
-        data.remove(targetUser);
+    public void delete(User user) {
+        data.remove(user);
     }
 
     // 유효성 검증 (이메일 중복)
