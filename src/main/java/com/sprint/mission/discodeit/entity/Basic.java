@@ -33,16 +33,16 @@ public class Basic implements Serializable {
 
 
     // 생성시간이나 업데이트 시간 가져올떈 보기 편하게!!!
-    public String getCreatedAt() {
-        return format(createdAt);
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
-    public String getUpdatedAt() {
+    public Instant getUpdatedAt() {
 //        if (updatedAt == null) return "X"; // 아직 수정된 적 없으면 표시만
 //        return new java.text.SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
 //                .format(new java.util.Date(instant));
 //    }
-        return updatedAt == null ? "X" : format(updatedAt);
+        return updatedAt;
     }
 
     private String format(Instant instant) {

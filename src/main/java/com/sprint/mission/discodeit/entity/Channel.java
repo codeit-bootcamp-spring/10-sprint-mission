@@ -13,6 +13,7 @@ public class Channel extends Basic implements Serializable {
     private static final long serialVersionUID = 1L;
 
 
+    private final ChannelType channelType;
     private String channelName;
     // 채널에 존재하는 메세지들과 유저들 리스트 생성
     private List<UUID> messageIds = new ArrayList<>();
@@ -21,8 +22,16 @@ public class Channel extends Basic implements Serializable {
 
     public Channel(String channelName){
         super(); // 채널에도 ID 와 create 일자 생성..?
+        this.channelType = ChannelType.PUBLIC;
         this.channelName = channelName;
     }
+
+    public Channel(ChannelType channelType) {
+        super();
+        if (channelType == null) throw new IllegalArgumentException("type은 null일 수 없습니다.");
+        this.channelType = channelType;
+    }
+
 
 //    getter setter
 //    public String getChannelName() { return channelName; }
