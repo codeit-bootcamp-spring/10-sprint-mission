@@ -43,7 +43,7 @@ public class BasicMessageService implements MessageService {
                 checkDTOHasNull(bcDTO);
 
                 BinaryContent bc
-                        = BinaryContentMapper.toEntity(user.getId(), message.getId(), bcDTO);
+                        = BinaryContentMapper.toMessageAttachmentEntity(user.getId(), message.getId(), bcDTO);
 
                 binaryContentRepository.save(bc);
 
