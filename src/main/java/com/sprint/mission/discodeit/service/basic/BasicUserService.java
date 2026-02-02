@@ -54,7 +54,6 @@ public class BasicUserService implements UserService {
             //BinaryContent 생성&저장(프로필 등록)
             BinaryContent binaryContent = new BinaryContent(
                     user.getId(),
-                    null,
                     binaryContentDto.data(),
                     binaryContentDto.contentType(),
                     binaryContentDto.fileName()
@@ -110,7 +109,6 @@ public class BasicUserService implements UserService {
             BinaryContentRequestDto dto = userUpdateDto.binaryContentDto();
             BinaryContent newProfile = new BinaryContent(
                     userId,//프로필 소유자 id
-                    null,
                     dto.data(),
                     dto.contentType(),
                     dto.fileName()

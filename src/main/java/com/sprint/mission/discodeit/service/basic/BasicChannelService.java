@@ -30,7 +30,7 @@ public class BasicChannelService implements ChannelService {
 
 
     @Override
-    public Channel createPrivateChannel(ChannelRequestDto channelCreateDto) { //type Private 일때
+    public ChannelResponseDto createPrivateChannel(ChannelRequestDto channelCreateDto) { //type Private 일때
 
         //User 정보를 받아서 User별 ReadStatus 정보를 생성
         User user = userRepository.findById(channelCreateDto.userDto().userId()).orElseThrow(() -> new NoSuchElementException("유저가 없음"));
@@ -38,14 +38,32 @@ public class BasicChannelService implements ChannelService {
         ReadStatus readStatus = new ReadStatus(user.getId(),channel.getId());
         readStatusRepository.save(readStatus);
 
-        return channel;
+        List<UUID> users = new ArrayList<>(List.of(user.getId()));
+
+        return new ChannelResponseDto(
+                null,
+                null,
+                null,
+                users
+        );
 
     }
     @Override
-    public Channel createPublicChannel(ChannelRequestDto channelCreateDto) { //type PUBLIC 일때
+    public ChannelResponseDto createPublicChannel(ChannelRequestDto channelCreateDto) { //type PUBLIC 일때
 
+        User user = userRepository.findById(channelCreateDto.userDto().userId()).orElseThrow(() -> new NoSuchElementException("유저가 없음"));
         Channel channel = channelRepository.save(new Channel(PUBLIC, channelCreateDto.name(), channelCreateDto.discription()));
-        return channel;
+        ReadStatus readStatus = new ReadStatus(user.getId(),channel.getId());
+        readStatusRepository.save(readStatus);
+
+        List<UUID> users = new ArrayList<>(List.of(user.getId()));
+        return new ChannelResponseDto(
+                channel.getName(),
+                channel.getDescription(),
+                null,
+                users
+
+        );
 
     }
 

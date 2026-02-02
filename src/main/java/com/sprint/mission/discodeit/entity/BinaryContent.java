@@ -13,17 +13,17 @@ public class BinaryContent {
     //
     //User,Message 객체로 안받고 id로 받는 이유는 결합도 낮추기 위해.
     private UUID userId;
-    private UUID messageId;
+//    private UUID messageId;
     private byte[] data;
     private String contentType;
     private String fileName;
 
-    public BinaryContent(UUID userId,UUID messageId,byte[] data, String contentType, String fileName) {
+    public BinaryContent(UUID userId,byte[] data, String contentType, String fileName) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         //
         this.userId = userId;
-        this.messageId = messageId;
+//        this.messageId = messageId;
         this.data = data;
         this.contentType = contentType;
         this.fileName = fileName;
