@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository
 @Profile("jcf")
 public class JCFUserStatusRepository implements UserStatusRepository {
-    private final Map<UUID, UserStatus> data = new ConcurrentHashMap<>();
+    private final Map<UUID, UserStatus> data = new HashMap<>();
 
     @Override
     public UserStatus save(UserStatus status){
@@ -27,7 +27,7 @@ public class JCFUserStatusRepository implements UserStatusRepository {
 
     @Override
     public List<UserStatus> findAll(){
-        return new ArrayList<>(data.values());
+        return data.values().stream().toList();
     }
 
     // 유저 삭제 시 해당 유저의 접속 상태 데이터 삭제

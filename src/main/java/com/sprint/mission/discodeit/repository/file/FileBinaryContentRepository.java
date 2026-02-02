@@ -29,7 +29,7 @@ public class FileBinaryContentRepository extends BaseFileRepository<BinaryConten
 
     @Override
     public List<BinaryContent> findAll() {
-        return new ArrayList<>(loadData().values());
+        return loadData().values().stream().toList();
     }
 
     @Override

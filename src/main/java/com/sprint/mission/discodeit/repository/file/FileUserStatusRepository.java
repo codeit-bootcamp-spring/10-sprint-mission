@@ -30,7 +30,7 @@ public class FileUserStatusRepository extends BaseFileRepository<UserStatus> imp
 
     @Override
     public List<UserStatus> findAll() {
-        return new ArrayList<>(loadData().values());
+        return loadData().values().stream().toList();
     }
 
     // 유저 삭제 시 해당 유저의 접속 상태 데이터 삭제

@@ -43,7 +43,7 @@ public class FileUserRepository extends BaseFileRepository<User> implements User
 
     @Override
     public List<User> findAll(){
-        return new ArrayList<>(loadData().values());
+        return loadData().values().stream().toList();
     }
 
     @Override

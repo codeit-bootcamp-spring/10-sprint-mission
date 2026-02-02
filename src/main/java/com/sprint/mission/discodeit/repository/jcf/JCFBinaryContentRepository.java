@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository
 @Profile("jcf")
 public class JCFBinaryContentRepository implements BinaryContentRepository {
-    private final Map<UUID, BinaryContent> data = new ConcurrentHashMap<>();
+    private final Map<UUID, BinaryContent> data = new HashMap<>();
 
     @Override
     public BinaryContent save(BinaryContent binaryContent){
@@ -26,7 +26,7 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
 
     @Override
     public List<BinaryContent> findAll(){
-        return new ArrayList<>(data.values());
+        return data.values().stream().toList();
     }
 
     @Override

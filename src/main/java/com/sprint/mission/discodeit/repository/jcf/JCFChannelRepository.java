@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @Profile("jcf")
@@ -26,7 +25,7 @@ public class JCFChannelRepository implements ChannelRepository {
 
     @Override
     public List<Channel> findAll(){
-        return new ArrayList<>(data.values());
+        return data.values().stream().toList();
     }
 
     // PUBLIC 채널 전부 조회
@@ -34,7 +33,7 @@ public class JCFChannelRepository implements ChannelRepository {
     public List<Channel> findAllPublic() {
         return data.values().stream()
                 .filter(Channel::isPublic)
-                .collect(Collectors.toCollection(ArrayList::new));
+                .toList();
     }
 
     @Override

@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @Profile("jcf")
@@ -32,7 +31,7 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
     public List<ReadStatus> findAllByUserId(UUID userId) {
         return data.values().stream()
                 .filter(readStatus -> readStatus.getUserId().equals(userId))
-                .collect(Collectors.toCollection(ArrayList::new));
+                .toList();
     }
 
     // 특정 채널에 참여 중인 모든 유저의 읽음 상태 조회
@@ -40,7 +39,7 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
     public List<ReadStatus> findAllByChannelId(UUID channelId) {
         return data.values().stream()
                 .filter(readStatus -> readStatus.getChannelId().equals(channelId))
-                .collect(Collectors.toCollection(ArrayList::new));
+                .toList();
     }
 
     @Override

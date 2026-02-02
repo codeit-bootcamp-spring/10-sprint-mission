@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @Profile("file")
@@ -36,7 +35,7 @@ public class FileReadStatusRepository extends BaseFileRepository<ReadStatus> imp
         Map<UUID, ReadStatus> data = loadData();
         return data.values().stream()
                 .filter(readStatus -> readStatus.getUserId().equals(userId))
-                .collect(Collectors.toCollection(ArrayList::new));
+                .toList();
     }
 
     // 특정 채널에 참여 중인 모든 유저의 읽음 상태 조회
@@ -45,7 +44,7 @@ public class FileReadStatusRepository extends BaseFileRepository<ReadStatus> imp
         Map<UUID, ReadStatus> data = loadData();
         return data.values().stream()
                 .filter(readStatus -> readStatus.getChannelId().equals(channelId))
-                .collect(Collectors.toCollection(ArrayList::new));
+                .toList();
     }
 
     @Override

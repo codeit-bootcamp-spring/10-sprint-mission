@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @Profile("file")
@@ -30,14 +29,14 @@ public class FileChannelRepository extends BaseFileRepository<Channel> implement
 
     @Override
     public List<Channel> findAll(){
-        return new ArrayList<>(loadData().values());
+        return loadData().values().stream().toList();
     }
 
     @Override
     public List<Channel> findAllPublic() {
         return loadData().values().stream()
                 .filter(Channel::isPublic)
-                .collect(Collectors.toCollection(ArrayList::new));
+                .toList();
     }
 
     @Override
