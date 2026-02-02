@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -35,7 +37,7 @@ public class DiscodeitApplication {
 		// 등록
 		UserCreateRequest userReq = new UserCreateRequest("김철수", "철수", "kcs@example.com", "1234", null);
 		UserResponse user1 = userService.createAccount(userReq);
-		System.out.println("[등록] user1 계정 및 UserStatus 생성 완료. ID: " + user1.id());
+		System.out.println("[등록] user1 계정 및 UserStatus 생성 완료");
 
 		// 시간 타입(Instant) 확인
 		System.out.println("[시간 확인] 생성 시간 타입: " + user1.createdAt().getClass().getSimpleName());
@@ -50,15 +52,20 @@ public class DiscodeitApplication {
 		PrivateChannelCreateRequest pReq = new PrivateChannelCreateRequest(memberIds, TEXT);
 
 		ChannelResponse pChannel = channelService.createPrivateChannel(pReq);;
-		System.out.println("[등록] PRIVATE 채널 생성 완료. 멤버: " + pChannel.memberIds());
+		System.out.println("[등록] PRIVATE 채널 생성 완료");
 
 
 		System.out.println("\n========= [3. Message 고도화 테스트] =========");
 		// 다중 첨부파일 메시지 생성
-		UUID fileId = UUID.randomUUID();
-		MessageCreateRequest mReq = new MessageCreateRequest("첨부파일 테스트", user1.id(), pChannel.id(), List.of(fileId));
+		BinaryContentRepository contentRepo = context.getBean(BinaryContentRepository.class);
+		BinaryContent realFile = contentRepo.save(new BinaryContent("test_image.png", new byte[]{1, 2, 3}));
+
+		List<UUID> attachmentIds = List.of(realFile.getId());
+
+		MessageCreateRequest mReq = new MessageCreateRequest("첨부파일 테스트", user1.id(), pChannel.id(), attachmentIds);
 		MessageResponse msg = messageService.create(mReq);
 		System.out.println("[등록] 메시지 생성 완료. 첨부파일 수: " + msg.attachmentIds().size());
+
 
 		System.out.println("\n========= [4. 연쇄 삭제 테스트] =========");
 		// 메시지 삭제 시 첨부파일 삭제 확인

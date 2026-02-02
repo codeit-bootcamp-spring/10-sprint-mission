@@ -47,7 +47,7 @@ public class BasicChannelService implements ChannelService{
         request.memberIds().forEach(memberId -> {
             validateUserExists(memberId);
 
-            ReadStatus readStatus = new ReadStatus(channel.getId(), memberId, Instant.now());
+            ReadStatus readStatus = new ReadStatus(memberId, channel.getId(), Instant.now());
             readStatusRepository.save(readStatus);
         });
 
