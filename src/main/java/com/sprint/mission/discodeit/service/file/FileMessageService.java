@@ -50,7 +50,7 @@
 //
 //    @Override
 //    public Message create(String msg, UUID userId, UUID channelId) {
-//        User user = userService.find(userId);
+//        User user = userService.findById(userId);
 //        Channel channel = channelService.findById(channelId);
 //        Message message = new Message(msg, user, channel);
 //        this.data.add(message);
@@ -101,7 +101,7 @@
 //    // 특정 유저가 발행한 메시지 리스트 조회
 //    @Override
 //    public List<Message> readUserMessageList(UUID userId) {
-//        User user = userService.find(userId);
+//        User user = userService.findById(userId);
 //        return user.getMessageList();
 //    }
 //

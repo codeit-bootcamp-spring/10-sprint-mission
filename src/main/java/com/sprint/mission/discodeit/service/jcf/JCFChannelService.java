@@ -48,14 +48,14 @@
 //    }
 //
 //    public void joinUser(UUID userId, UUID channelId, JCFUserService userService) {
-//        User user = userService.find(userId);
+//        User user = userService.findById(userId);
 //        Channel channel = data.get(channelId);
 //        user.getChannelList().add(channel);
 //        channel.getUserList().add(user);
 //    }
 //
 //    public void quitUser(UUID userId, UUID channelId, JCFUserService userService) {
-//        User user = userService.find(userId);
+//        User user = userService.findById(userId);
 //        Channel channel = data.get(channelId);
 //        user.getChannelList().remove(channel);
 //        channel.getUserList().remove(user);
@@ -63,7 +63,7 @@
 //
 //    // 특정 유저가 참가한 채널 리스트 조회
 //    public List<Channel> readUserChannelList(UUID userId, JCFUserService userService) {
-//        User user = userService.find(userId);
+//        User user = userService.findById(userId);
 //        return user.getChannelList();
 //    }
 //}

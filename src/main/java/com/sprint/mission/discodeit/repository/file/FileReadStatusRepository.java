@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.stereotype.Repository;
 
@@ -74,10 +73,10 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public ReadStatus loadById(UUID id) {
+    public ReadStatus loadById(UUID readStatusId) {
         this.data = deserialize();
         for(ReadStatus readStatus : this.data) {
-            if (readStatus.getId().equals(id)) {
+            if (readStatus.getId().equals(readStatusId)) {
                 return readStatus;
             }
         }

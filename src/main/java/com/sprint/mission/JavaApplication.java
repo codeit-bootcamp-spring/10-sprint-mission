@@ -26,12 +26,12 @@
 ////
 ////        // 조회(단건)
 ////        try {
-////            System.out.println(jcfU1.find(userId1));
+////            System.out.println(jcfU1.findById(userId1));
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("해당 유저가 존재하지 않습니다.");
 ////        }
 ////        try {
-////            System.out.println(jcfUserEmpty.find(UUID.randomUUID()));
+////            System.out.println(jcfUserEmpty.findById(UUID.randomUUID()));
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("해당 유저가 존재하지 않습니다.");
 ////        }
@@ -54,7 +54,7 @@
 ////
 ////        // 수정된 데이터 조회
 ////        try {
-////            System.out.println(jcfU1.find(userId1));
+////            System.out.println(jcfU1.findById(userId1));
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("조회할 유저가 존재하지 않습니다.");
 ////        }
@@ -73,7 +73,7 @@
 ////
 ////        // 조회를 통해 삭제되었는지 확인
 ////        try {
-////            System.out.println(jcfU1.find(userId1));
+////            System.out.println(jcfU1.findById(userId1));
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("조회할 유저가 존재하지 않습니다.");
 ////        }
@@ -90,12 +90,12 @@
 ////
 ////        // 조회(단건)
 ////        try {
-////            System.out.println(jcfC1.find(channelId1));
+////            System.out.println(jcfC1.findById(channelId1));
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("해당 채널이 존재하지 않습니다.");
 ////        }
 ////        try {
-////            System.out.println(jcfUserEmpty.find(UUID.randomUUID()));
+////            System.out.println(jcfUserEmpty.findById(UUID.randomUUID()));
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("해당 채널이 존재하지 않습니다.");
 ////        }
@@ -118,7 +118,7 @@
 ////
 ////        // 수정된 데이터 조회
 ////        try {
-////            System.out.println(jcfC1.find(channelId1));
+////            System.out.println(jcfC1.findById(channelId1));
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("조회할 채널이 존재하지 않습니다.");
 ////        }
@@ -137,7 +137,7 @@
 ////
 ////        // 조회를 통해 삭제되었는지 확인
 ////        try {
-////            jcfC2.find(channelId1);
+////            jcfC2.findById(channelId1);
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("조회할 채널이 존재하지 않습니다.");
 ////        }
@@ -161,12 +161,12 @@
 ////
 ////        // 조회(단건)
 ////        try {
-////            System.out.println(jcfM1.find(messageId1));
+////            System.out.println(jcfM1.findById(messageId1));
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("해당 메시지가 존재하지 않습니다.");
 ////        }
 ////        try {
-////            System.out.println(jcfUserEmpty.find(UUID.randomUUID()));
+////            System.out.println(jcfUserEmpty.findById(UUID.randomUUID()));
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("해당 메시지가 존재하지 않습니다.");
 ////        }
@@ -189,7 +189,7 @@
 ////
 ////        // 수정된 데이터 조회
 ////        try {
-////            System.out.println(jcfM1.find(messageId1));
+////            System.out.println(jcfM1.findById(messageId1));
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("조회할 메시지가 존재하지 않습니다.");
 ////        }
@@ -208,7 +208,7 @@
 ////
 ////        // 조회를 통해 삭제되었는지 확인
 ////        try {
-////            jcfM1.find(messageId1);
+////            jcfM1.findById(messageId1);
 ////        } catch (NoSuchElementException e) {
 ////            System.out.println("조회할 메시지가 존재하지 않습니다.");
 ////        }
@@ -264,9 +264,9 @@
 //        fUserService.create("허문수");
 //        fUserService.create("홍길동");
 //
-//        // find 테스트
+//        // findById 테스트
 //        try {
-//            System.out.println(fUserService.find(fileUId));
+//            System.out.println(fUserService.findById(fileUId));
 //        } catch (NoSuchElementException e) {
 //            System.out.println("유저가 없습니다.");
 //        }
@@ -315,16 +315,16 @@
 //
 //        System.out.println();
 //
-//        // find
+//        // findById
 //        try {
-//            System.out.println(basicJCFUserService.find(jcfUserId));
-//            System.out.println(basicFileUserService.find(fileUserId));
+//            System.out.println(basicJCFUserService.findById(jcfUserId));
+//            System.out.println(basicFileUserService.findById(fileUserId));
 //            System.out.println(basicJCFChannelService.findById(jcfChannelId));
 //            System.out.println(basicFileChannelService.findById(fileChannelId));
 //            System.out.println(basicJCFMessageService.findById(jcfMessageId));
 //            System.out.println(basicFileMessageService.findById(fileMessageId));
 //        } catch (Exception e) {
-//            System.out.println("find 실패");
+//            System.out.println("findById 실패");
 //        }
 //
 //        System.out.println();
@@ -351,9 +351,9 @@
 //        // update
 //        try {
 //            basicJCFUserService.updateUser(jcfUserId, "변경된 황민재JCF");
-//            System.out.println(basicJCFUserService.find(jcfUserId));
+//            System.out.println(basicJCFUserService.findById(jcfUserId));
 //            basicFileUserService.updateUser(fileUserId, "변경된 황민재File");
-//            System.out.println(basicFileUserService.find(fileUserId));
+//            System.out.println(basicFileUserService.findById(fileUserId));
 //            basicJCFChannelService.updateChannelname(jcfChannelId, "변경된 배이직 JCF 채널");
 //            System.out.println(basicJCFChannelService.findById(jcfChannelId));
 //            basicFileChannelService.updateChannelname(fileChannelId, "변경된 배이직 File 채널");
@@ -376,12 +376,12 @@
 //        basicJCFMessageService.delete(jcfMessageId);
 //        basicFileMessageService.delete(fileMessageId);
 //        try {
-//            System.out.println(basicJCFUserService.find(jcfUserId));
+//            System.out.println(basicJCFUserService.findById(jcfUserId));
 //        } catch (Exception e) {
 //            System.out.println("jcfUserId 검색 실패");
 //        }
 //        try {
-//            System.out.println(basicFileUserService.find(fileUserId));
+//            System.out.println(basicFileUserService.findById(fileUserId));
 //        } catch (Exception e) {
 //            System.out.println("fileUserId 검색 실패");
 //        }

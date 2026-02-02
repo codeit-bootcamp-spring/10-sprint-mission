@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.message.MessageCreateDTO;
+import com.sprint.mission.discodeit.dto.message.MessageDTO;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateDTO;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -32,30 +35,48 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message create(MessageCreateDTO messageCreateDTO) {
+    public MessageDTO create(MessageCreateDTO messageCreateDTO) {
         Message message;
-        if (messageCreateDTO.attachmentIds().isEmpty()) {
+        if (messageCreateDTO.attachments().isEmpty()) {
             message = new Message(messageCreateDTO.channelId(),
                     messageCreateDTO.userId(),
                     messageCreateDTO.msg());
         } else {
+            List<UUID> attachmentList = new ArrayList<>();
+            for (BinaryContentDTO binaryContentDTO : messageCreateDTO.attachments()) {
+                BinaryContent attachment =  new BinaryContent(binaryContentDTO.fileName(),
+                    binaryContentDTO.fileType(),
+                    binaryContentDTO.bytes());
+                attachmentList.add(attachment.getId());
+                this.binaryContentRepository.save(attachment);
+            }
             message = new Message(messageCreateDTO.channelId(),
                     messageCreateDTO.userId(),
                     messageCreateDTO.msg(),
-                    messageCreateDTO.attachmentIds());
+                    attachmentList);
         }
         this.messageRepository.save(message);
-        return message;
+
+        MessageDTO messageDTO = new MessageDTO(message.getId(), message);
+        return messageDTO;
     }
 
     @Override
-    public Message findById(UUID messageId) {
-        return this.messageRepository.loadById(messageId);
+    public MessageDTO findById(UUID messageId) {
+        Message message = this.messageRepository.loadById(messageId);
+        return new MessageDTO(message.getId(), message);
     }
 
     @Override
-    public List<Message> findAll() {
-        return this.messageRepository.loadAll();
+    public List<MessageDTO> findAll() {
+        List<MessageDTO> messageDTOList = new ArrayList<>();
+
+        for (Message message : this.messageRepository.loadAll()) {
+            MessageDTO messageDTO = new MessageDTO(message.getId(), message);
+            messageDTOList.add(messageDTO);
+        }
+
+        return messageDTOList;
     }
 
     public List<Message> findallByChannelId(UUID channelId) {
@@ -71,15 +92,15 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message updateMessageData(MessageUpdateDTO messageUpdateDTO) {
-        this.findById(messageUpdateDTO.messageId()).updateText(messageUpdateDTO.msg());
+    public MessageDTO updateMessageData(MessageUpdateDTO messageUpdateDTO) {
+        this.findById(messageUpdateDTO.messageId()).message().updateText(messageUpdateDTO.msg());
 
         return this.findById(messageUpdateDTO.messageId());
     }
 
     @Override
     public void delete(UUID messageId) {
-        for (UUID attachMent : this.findById(messageId).getAttachmentIds()) {
+        for (UUID attachMent : this.findById(messageId).message().getAttachmentIds()) {
             this.binaryContentRepository.delete(attachMent);
         }
         this.messageRepository.delete(messageId);

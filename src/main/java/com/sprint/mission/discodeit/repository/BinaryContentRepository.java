@@ -7,11 +7,11 @@ import java.util.UUID;
 
 public interface BinaryContentRepository {
 
-    void save(BinaryContent profile);
+    void save(BinaryContent binaryContent);
 
-    void delete(UUID profileId);
+    void delete(UUID binaryContentId);
 
     List<BinaryContent> loadAll();
 
-    BinaryContent loadById(UUID profileId);
+    BinaryContent loadById(UUID binaryContentId);
 }

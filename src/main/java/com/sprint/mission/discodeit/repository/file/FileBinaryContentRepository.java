@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.stereotype.Repository;
 
@@ -40,16 +39,16 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public void save(BinaryContent profile) {
-        this.data.add(profile);
+    public void save(BinaryContent binaryContent) {
+        this.data.add(binaryContent);
         serialize(this.data);
     }
 
     @Override
-    public void delete(UUID profileId) {
+    public void delete(UUID binaryContentId) {
         this.data = deserialize();
         for (BinaryContent binaryContent : this.data) {
-            if (binaryContent.getId().equals(profileId)) {
+            if (binaryContent.getId().equals(binaryContentId)) {
                 this.data.remove(binaryContent);
                 serialize(this.data);
                 break;
@@ -63,10 +62,10 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public BinaryContent loadById(UUID profileId) {
+    public BinaryContent loadById(UUID binaryContentId) {
         this.data = deserialize();
         for(BinaryContent binaryContent : this.data) {
-            if (binaryContent.getId().equals(profileId)) {
+            if (binaryContent.getId().equals(binaryContentId)) {
                 return binaryContent;
             }
         }

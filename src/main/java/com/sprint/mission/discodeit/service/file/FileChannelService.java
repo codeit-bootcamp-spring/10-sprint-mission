@@ -92,7 +92,7 @@
 //
 //    // 유저 참가
 //    public void joinUser(UUID userId, UUID channelId, FileUserService userService) {
-//        User user = userService.find(userId);
+//        User user = userService.findById(userId);
 //        Channel channel;
 //        try {
 //            channel = this.findById(channelId);
@@ -105,7 +105,7 @@
 //
 //    // 유저 탈퇴
 //    public void quitUser(UUID userId, UUID channelId, FileUserService userService) {
-//        User user = userService.find(userId);
+//        User user = userService.findById(userId);
 //        try {
 //            Channel channel = this.findById(channelId);
 //            user.getChannelList().remove(channel);
@@ -118,7 +118,7 @@
 //
 //    // 특정 유저가 참가한 채널 리스트 조회
 //    public List<Channel> readUserChannelList(UUID userId, FileUserService userService) {
-//        User user = userService.find(userId);
+//        User user = userService.findById(userId);
 //        return user.getChannelList();
 //    }
 //}

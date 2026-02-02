@@ -29,24 +29,27 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel createPrivateChannel(ChannelCreatePrivateDTO channelDTO) {
+    public ChannelDTO createPrivateChannel(ChannelCreatePrivateDTO channelCreateDTO) {
         Channel channel;
         channel = new Channel();
 
-        ReadStatus readStatus = new ReadStatus(channel.getId(), channelDTO.user().getId());
+        ReadStatus readStatus = new ReadStatus(channel.getId(), channelCreateDTO.user().getId());
 
         this.channelRepository.save(channel);
         this.readStatusRepository.save(readStatus);
 
-        return channel;
+        ChannelDTO channelDTO = new ChannelDTO(channel.getId(), channel);
+        return channelDTO;
     }
 
     @Override
-    public Channel createPublicChannel(ChannelCreatePublicDTO channelDTO) {
+    public ChannelDTO createPublicChannel(ChannelCreatePublicDTO channelCreateDTO) {
         Channel channel;
-        channel = new Channel(channelDTO.channelName(), channelDTO.description());
+        channel = new Channel(channelCreateDTO.channelName(), channelCreateDTO.description());
         this.channelRepository.save(channel);
-        return channel;
+
+        ChannelDTO channelDTO = new ChannelDTO(channel.getId(), channel);
+        return channelDTO;
     }
 
     @Override
@@ -119,7 +122,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel updateChannelname(ChannelUpdateDTO channelUpdateDTO) {
+    public ChannelDTO updateChannelname(ChannelUpdateDTO channelUpdateDTO) {
         if (!channelUpdateDTO.name().isEmpty()) {
             this.findById(channelUpdateDTO.channelId()).channel().updateChannelName(channelUpdateDTO.name());
         }
@@ -127,7 +130,8 @@ public class BasicChannelService implements ChannelService {
             this.findById(channelUpdateDTO.channelId()).channel().updateChannelDescription(channelUpdateDTO.description());
         }
 
-        return this.findById(channelUpdateDTO.channelId()).channel();
+        ChannelDTO channelDTO = new ChannelDTO(this.findById(channelUpdateDTO.channelId()).channel().getId(), this.findById(channelUpdateDTO.channelId()).channel());
+        return channelDTO;
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
@@ -13,5 +14,9 @@ public class ReadStatus extends BaseDomain{
         super();
         this.channelId = channelId;
         this.userId = userId;
+    }
+
+    public void updateTime() {
+        this.updatedAt = Instant.now();
     }
 }

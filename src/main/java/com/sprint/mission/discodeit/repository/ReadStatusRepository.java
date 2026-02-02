@@ -15,5 +15,5 @@ public interface ReadStatusRepository {
 
     List<ReadStatus> loadAll();
 
-    ReadStatus loadById(UUID id);
+    ReadStatus loadById(UUID readStatusId);
 }

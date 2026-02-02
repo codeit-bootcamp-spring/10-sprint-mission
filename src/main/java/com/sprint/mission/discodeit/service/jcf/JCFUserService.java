@@ -25,7 +25,7 @@
 //    }
 //
 //    @Override
-//    public User find(UUID id) {
+//    public User findById(UUID id) {
 //        User user = Optional.ofNullable(data.get(id)).orElseThrow(() -> new NoSuchElementException());
 //        return user;
 //    }
@@ -37,13 +37,13 @@
 //
 //    @Override
 //    public User updateUser(UUID id, String name) {
-//        this.find(id).updateName(name);
-//        return this.find(id);
+//        this.findById(id).updateName(name);
+//        return this.findById(id);
 //    }
 //
 //    @Override
 //    public void delete(UUID id) {
-//        this.find(id);
+//        this.findById(id);
 //        this.data.remove(id);
 //    }
 //

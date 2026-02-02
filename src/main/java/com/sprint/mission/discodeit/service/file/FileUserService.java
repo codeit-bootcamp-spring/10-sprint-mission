@@ -51,7 +51,7 @@
 //    }
 //
 //    @Override
-//    public User find(UUID id) {
+//    public User findById(UUID id) {
 //        for (User user : deserialize()) {
 //            if (user.getId().equals(id)) {
 //                return user;

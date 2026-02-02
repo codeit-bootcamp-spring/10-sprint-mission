@@ -11,9 +11,10 @@ public class BinaryContent{
     private String fileType;
     private byte[] bytes;
 
-    public BinaryContent(String fileName, String fileType) {
+    public BinaryContent(String fileName, String fileType, byte[] bytes) {
         this.id = UUID.randomUUID();
         this.fileName = fileName;
         this.fileType = fileType;
+        this.bytes = bytes;
     }
 }

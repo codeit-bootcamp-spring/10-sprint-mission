@@ -1,10 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.user.*;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.dto.user.UserCreateDTO;
-import com.sprint.mission.discodeit.dto.user.UserFindAllDTO;
-import com.sprint.mission.discodeit.dto.user.UserFindDTO;
-import com.sprint.mission.discodeit.dto.user.UserUpdateDTO;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -27,14 +24,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User create(UserCreateDTO userCreateDTO) {
+    public UserDTO create(UserCreateDTO userCreateDTO) {
         if (isExistName(userCreateDTO.name()) || isExistEmail(userCreateDTO.email())) throw new NoSuchElementException();
 
         User user;
         if (userCreateDTO.profileImage() == null) {
             user = new User(userCreateDTO.name(), userCreateDTO.email(), userCreateDTO.password());
         } else {
-            BinaryContent profile = new BinaryContent(userCreateDTO.profileImage().fileName(), userCreateDTO.profileImage().fileType());
+            BinaryContent profile = new BinaryContent(userCreateDTO.profileImage().fileName(), userCreateDTO.profileImage().fileType(), userCreateDTO.profileImage().bytes());
             user = new User(userCreateDTO.name(), userCreateDTO.email(), userCreateDTO.password(), profile.getId());
             this.binaryContentRepository.save(profile);
         }
@@ -42,7 +39,8 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = new UserStatus(user.getId());
         this.userRepository.save(user);
         this.userStatusRepository.save(userStatus);
-        return user;
+        UserDTO userDTO = new UserDTO(user.getId(), user);
+        return userDTO;
     }
 
     @Override
@@ -72,7 +70,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User updateUser(UserUpdateDTO userUpdateDTO) {
+    public UserDTO updateUser(UserUpdateDTO userUpdateDTO) {
         if (isExistId(userUpdateDTO.userId())) throw new NoSuchElementException();
         User user = find(userUpdateDTO.userId()).user();
         if (!userUpdateDTO.name().isEmpty()) {
@@ -82,7 +80,8 @@ public class BasicUserService implements UserService {
             user.updateProfile(userUpdateDTO.profile().getId());
             this.binaryContentRepository.save(userUpdateDTO.profile());
         }
-        return user;
+        UserDTO userDTO = new UserDTO(user.getId(), user);
+        return userDTO;
     }
 
     @Override
