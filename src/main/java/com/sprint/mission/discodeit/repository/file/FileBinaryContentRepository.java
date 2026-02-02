@@ -13,7 +13,7 @@ import java.util.*;
 
 @Repository
 public class FileBinaryContentRepository implements BinaryContentRepository {
-    private static final String BINARY_CONTENT_FILE = "binaryContent.ser";
+    private static final String BINARY_CONTENT_FILE = "data/binaryContent.ser";
 
     @Override
     public Optional<BinaryContent> findById(UUID id) {
@@ -35,9 +35,9 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
-    public List<BinaryContent> findAll() {
+    public List<UUID> findAll() {
         Map<UUID, BinaryContent> data = loadData();
-        return new ArrayList<>(data.values());
+        return new ArrayList<>(data.keySet());
     }
 
     @Override

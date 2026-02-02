@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequsetDto;
+import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
@@ -70,7 +70,7 @@ public class BasicUserService implements UserService {
         if(userStatus != null){
             online = isOnline(userStatus.getLastOnlineAt());
         }
-
+        System.out.println(user);
         return userMapper.toDto(user,online);
     }
 
@@ -82,7 +82,10 @@ public class BasicUserService implements UserService {
         // 가져온 객체들을 dto로 변환
         List<UserResponseDto> dtoList = userList.stream()
                 .map(user -> {
-                    boolean online = isOnline(userStatusMap.get(user.getId()).getLastOnlineAt());
+                    boolean online = userStatusRepository.findByUserId(user.getId())
+                                            .map(UserStatus::getLastOnlineAt)
+                                            .map(this::isOnline)
+                                            .orElseThrow(() -> new NoSuchElementException("해당 유저상태는 없습니다."));
                     return userMapper.toDto(user, online);
                 })
                 .toList();
@@ -120,7 +123,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDto update(UUID userId, UserUpdateRequsetDto dto) {
+    public UserResponseDto update(UUID userId, UserUpdateDto dto) {
         User user = getUser(userId);
         // 이름 수정
         if(dto.getName() != null){

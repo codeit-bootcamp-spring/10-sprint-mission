@@ -13,6 +13,7 @@ public class UserStatus extends BaseEntity{
 
     public UserStatus(UUID userId){
         this.userId = userId;
+        this.lastOnlineAt = Instant.now();
     }
 
     // 최신 접속 시간 갱신

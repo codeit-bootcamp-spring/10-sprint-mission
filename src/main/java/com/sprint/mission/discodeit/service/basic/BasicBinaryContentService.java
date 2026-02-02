@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -21,8 +22,8 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContentResponseDto create(BinaryContentCreateDto dto) {
-        BinaryContent binaryContent = new BinaryContent(dto.getUserId(),
-                dto.getMessageId(),
+        BinaryContent binaryContent = new BinaryContent(null,
+                null,
                 dto.getFileData(),
                 dto.getName(),
                 dto.getFileType());
@@ -42,10 +43,8 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public List<BinaryContentResponseDto> findAllBId(UUID id) {
-        return binaryContentRepository.findAll().stream()
-                .map(binaryContentMapper::toDto)
-                .toList();
+    public List<UUID> findAllIdIn() {
+        return new ArrayList<>(binaryContentRepository.findAll());
     }
 
     @Override

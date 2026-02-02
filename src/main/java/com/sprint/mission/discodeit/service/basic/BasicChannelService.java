@@ -60,7 +60,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = getChannel(channelId);
         // 만약 채널이 프라이빗이라면 예외출력
         if(channel.getChannelType() == PRIVATE){
-            throw new IllegalStateException("이 채널은 Private 채널입니다");
+            throw new IllegalStateException("불가! 이 채널은 Private 채널입니다");
         }
 
         Arrays.stream(userId)
@@ -141,8 +141,9 @@ public class BasicChannelService implements ChannelService {
 
         // 채널이 삭제될때 채널에 속해있던 메시지들 전부 삭제
         List<UUID> messageList = new ArrayList<>(channel.getMessageList());
-        messageList.stream().map(messageId -> messageRepository.findById(messageId)
-                        .orElseThrow(() -> new NoSuchElementException("해당 메시지가 없습니다.")))
+        messageList.stream().map(messageRepository::findById)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .forEach(message ->{
                 messageRepository.delete(message.getId());
                 // 유저가 가지고 있던 메시지도 삭제

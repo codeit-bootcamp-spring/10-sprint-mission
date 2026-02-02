@@ -10,7 +10,7 @@ public interface BinaryContentService {
     BinaryContentResponseDto create(BinaryContentCreateDto dto);
     BinaryContentResponseDto findId(UUID id);
     BinaryContentResponseDto findBinaryContentByUserId(UUID id);
-    List<BinaryContentResponseDto> findAllBId(UUID id);
+    List<UUID> findAllIdIn();
     List<BinaryContentResponseDto> findAllByMessageId(UUID messageId);
     void delete(UUID id);
 }

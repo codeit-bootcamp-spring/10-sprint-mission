@@ -12,4 +12,14 @@ public class MessageResponseDto {
     private UUID userId;
     private UUID channelId;
     private String text;
+
+    @Override
+    public String toString() {
+        return "MessageResponseDto{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", channelId=" + channelId +
+                ", text='" + text + '\'' +
+                '}';
+    }
 }

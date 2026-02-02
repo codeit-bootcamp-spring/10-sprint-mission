@@ -28,7 +28,6 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     public Map<UUID,UserStatus> findAll(){
-
         return loadData();
     }
 

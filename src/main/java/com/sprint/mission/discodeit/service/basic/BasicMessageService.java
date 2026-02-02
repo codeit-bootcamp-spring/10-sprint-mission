@@ -64,6 +64,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageResponseDto findMessage(UUID messageId) {
         Message message = getMessage(messageId);
+
         return messageMapper.toDto(message);
     }
 
@@ -79,7 +80,7 @@ public class BasicMessageService implements MessageService {
                 .toList();
 
         System.out.println(channel+"채널의 " + "[" + keyword + "]를 포함한 메시지 조회");
-        messageList.forEach(System.out::println);
+        messageList.forEach(messageResponseDto -> System.out.println(messageResponseDto.getText()));
 
         return messageList;
     }
@@ -142,7 +143,7 @@ public class BasicMessageService implements MessageService {
     // 유효성 검사
     private Message getMessage(UUID messageId){
         return messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+                .orElseThrow(() -> new NoSuchElementException("해당 메시자가 없습니다."));
     }
 
 }
