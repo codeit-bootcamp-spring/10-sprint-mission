@@ -2,10 +2,13 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,21 +16,23 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileUserStatusRepository implements UserStatusRepository {
     // 필드
-    private static final String BASE_PATH = "data/userStatus";
-    private static final String STORE_FILE = BASE_PATH + "/userStatus.ser";
+    private final Path STORE_FILE;
     private List<UserStatus> userStatusData;
 
-    public FileUserStatusRepository() {
-        init();
+    public FileUserStatusRepository(@Value("${discodeit.repository.path}") String directoryPath) {
+        Path BASE_PATH = Path.of(directoryPath).resolve("userStatus");
+        this.STORE_FILE = BASE_PATH.resolve("userStatus.ser");
+        init(BASE_PATH);
         loadData();
     }
 
-    private void init() {
+    private void init(Path BASE_PATH) {
         try {
-            if (!Files.exists(Paths.get(BASE_PATH))) {
-                Files.createDirectories(Paths.get(BASE_PATH));
+            if (!Files.exists(BASE_PATH)) {
+                Files.createDirectories(BASE_PATH);
             }
         } catch (IOException e) {
             System.out.println("Directory creation failed." + e.getMessage());
@@ -35,12 +40,12 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     private void loadData(){
-        if(!Files.exists(Paths.get(STORE_FILE))){
+        if(!Files.exists(STORE_FILE)){
             userStatusData = new ArrayList<>();
             return;
         }
 
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(STORE_FILE))){
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(STORE_FILE.toFile()))){
             userStatusData = (List<UserStatus>) ois.readObject();
         } catch (Exception e){
             throw new RuntimeException("Data load failed." + e.getMessage());
@@ -48,7 +53,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     private void saveData(){
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(STORE_FILE))){
+        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(STORE_FILE.toFile()))){
             oos.writeObject(userStatusData);
         } catch (IOException e){
             throw new RuntimeException("Data save failed." + e.getMessage());

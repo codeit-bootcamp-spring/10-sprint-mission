@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -14,18 +16,19 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileReadStatusRepository implements ReadStatusRepository {
     private List<ReadStatus> readStatusData;
+    private final Path StoreFile;
 
-    private static final Path BasePath = Paths.get("data/readStatus");
-    private static final Path StoreFile = BasePath.resolve("readStatus.ser");
-
-    public FileReadStatusRepository() {
-        init();
+    public FileReadStatusRepository(@Value("${discodeit.repository.path}") String directoryPath) {
+        Path BasePath = Paths.get(directoryPath).resolve("readStatus");
+        this.StoreFile = BasePath.resolve("readStatus.ser");
+        init(BasePath);
         loadData();
     }
 
-    private void init() {
+    private void init(Path BasePath) {
         try {
             if(!Files.exists(BasePath)) {
                 Files.createDirectories(BasePath);

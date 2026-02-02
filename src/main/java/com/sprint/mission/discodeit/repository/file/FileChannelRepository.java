@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.FileInputStream;
@@ -16,18 +18,21 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file", matchIfMissing = true)
 public class FileChannelRepository implements ChannelRepository {
     // 필드
-    private static final Path BASE_PATH = Path.of("data/channel");
-    private static final Path STORE_FILE = BASE_PATH.resolve("channel.ser");
+    private final Path STORE_FILE;
     private List<Channel> channelData;
 
-    public FileChannelRepository() {
-        init();
+    public FileChannelRepository(@Value("${discodeit.repository.path}") String directoryPath) {
+        Path BASE_PATH = Path.of(directoryPath).resolve("channel");
+
+        this.STORE_FILE = BASE_PATH.resolve("channel.ser");
+        init(BASE_PATH);
         loadData();
     }
 
-    private void init() {
+    private void init(Path BASE_PATH) {
         try{
             if(!Files.exists(BASE_PATH)) {
                 Files.createDirectories(BASE_PATH);
@@ -51,8 +56,6 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     private void saveData() {
-        init();
-
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(STORE_FILE.toFile()))){
             oos.writeObject(channelData);
         } catch (Exception e){

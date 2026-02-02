@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
@@ -10,19 +12,20 @@ import java.nio.file.Path;
 import java.util.*;
 
 @Repository
+@ConditionalOnProperty(name = "repository.type", havingValue = "file", matchIfMissing = true)
 public class FileMessageRepository implements MessageRepository {
     private Map<UUID, Message> messageData;
+    private final Path STORE_FILE;
 
-    private static final Path BASE_PATH = Path.of("data/message");
-    private static final Path STORE_FILE = BASE_PATH.resolve("message.ser");
-
-    public FileMessageRepository() {
-        init();
+    public FileMessageRepository(@Value("${discodeit.repository.path}") String directoryPath) {
+        Path BASE_PATH = Path.of(directoryPath).resolve("message");
+        this.STORE_FILE = BASE_PATH.resolve("message.ser");
+        init(BASE_PATH);
         loadData();
     }
 
     // 디렉 체크
-    private void init() {
+    private void init(Path BASE_PATH) {
         try {
             if (!Files.exists(BASE_PATH)) {
                 Files.createDirectories(BASE_PATH);
