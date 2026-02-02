@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.io.*;
 import java.util.*;
 
-@Repository
 public class FileMessageRepository implements MessageRepository {
     private static final String FILE_PATH = "messages.ser";
     private Map<UUID, Message> data;
