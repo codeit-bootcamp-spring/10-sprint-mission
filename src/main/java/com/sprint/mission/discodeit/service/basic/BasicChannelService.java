@@ -141,6 +141,7 @@ public class BasicChannelService implements ChannelService {
 			);
 
 		channel.addUserId(userId);
+		user.addChannelId(channelId);
 
 		channelRepository.save(channel);
 		userRepository.save(user);

@@ -11,7 +11,7 @@ public record ChannelResponseDTO(
 	String name,
 	String description,
 	Instant lastMessagedTime,
-	List<UUID> userIds // todo private 채널인 경우
+	List<UUID> userIds // private 채널인 경우
 ) {
 }
 

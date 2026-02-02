@@ -33,11 +33,9 @@ public class Channel extends Base {
 		this.description = description;
 		updateUpdatedAt(Instant.now());
 	}
-
-	// TODO 연관관계 편의 메서드
+	
 	public void addUserId(UUID userId) {
 		this.userIds.add(userId);
-		//        user.getChannelList().add(this);
 	}
 
 	public void addMessage(UUID messageId) {

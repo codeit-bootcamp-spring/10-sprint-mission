@@ -12,7 +12,7 @@ public class MessageMapper {
 			messagePostDTO.userId(),
 			messagePostDTO.channelId(),
 			messagePostDTO.text(),
-			messagePostDTO.attachmentIds()
+			messagePostDTO.attachments()
 		);
 	}
 }

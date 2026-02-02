@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 public class AuthService {
 	private final UserRepository userRepository;
 
-	// todo: 얘는 User를 리턴해야할까요 UserResponseDTO를 리턴해야할까요...
 	User login(LoginDTO loginDTO) {
 		User user = userRepository.findByUserName(loginDTO.username())
 			.orElseThrow(

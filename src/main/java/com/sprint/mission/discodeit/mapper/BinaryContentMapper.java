@@ -10,10 +10,10 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 
 @Component
 public class BinaryContentMapper {
-	public BinaryContent fromDto(UUID userId, UUID channelId, BinaryContentDTO binaryContentDTO) {
+	public BinaryContent fromDto(UUID userId, UUID messageId, BinaryContentDTO binaryContentDTO) {
 		return new BinaryContent(
 			userId,
-			channelId,
+			messageId,
 			binaryContentDTO.fileName(),
 			binaryContentDTO.data()
 		);

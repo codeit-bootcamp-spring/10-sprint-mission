@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -44,16 +43,18 @@ public class BasicUserService implements UserService {
 		// 새 user 객체 생성
 		User newUser = userMapper.toUser(userPostDTO);
 
-		// 프로필 정보 생성 및 저장
-		BinaryContent binaryContent = binaryContentRepository.save(
-			binaryContentMapper.fromDto(newUser.getId(), null, userPostDTO.profileImage())
-		);
+		// 프로필 정보를 선택적으로 저장
+		Optional.ofNullable(userPostDTO.profileImage())
+			.ifPresent(profileImage -> {
+					BinaryContent binaryContent = binaryContentRepository.save(
+						binaryContentMapper.fromDto(newUser.getId(), null, profileImage));
+					newUser.updateProfileId(binaryContent.getId()); // user에 프로필 정보 업데이트
+				}
+			);
 
 		// UserStatus를 같이 생성 및 저장
-		userStatusRepository.save(new UserStatus(newUser.getId(), Instant.now()));
+		userStatusRepository.save(new UserStatus(newUser.getId()));
 
-		// user에 프로필 정보를 업데이트하고 저장
-		newUser.updateProfileId(binaryContent.getId());
 		return userRepository.save(newUser);
 	}
 
@@ -114,7 +115,7 @@ public class BasicUserService implements UserService {
 			.ifPresent(
 				binaryContentDTO -> {
 					BinaryContent binaryContent = binaryContentRepository.save(
-						binaryContentMapper.fromDto(updatedUser.getId(), null, userPatchDTO.binaryContentDTO())
+						binaryContentMapper.fromDto(updatedUser.getId(), null, binaryContentDTO)
 					);
 					updatedUser.updateProfileId(binaryContent.getId());
 				}

@@ -22,12 +22,12 @@ public class DiscodeitApplication {
 	static User setupUser(UserService userService) {
 		User user = userService.create(
 			new UserPostDTO(
-				null,
 				"woody",
 				"woody1234",
 				"woody@codeit.com",
 				"000-0000-0000",
-				"qwer1234"
+				"qwer1234",
+				null
 			)
 		);
 
@@ -45,7 +45,7 @@ public class DiscodeitApplication {
 		Message message = messageService.create(
 			new MessagePostDTO(
 				author.getId(),
-				null, // ...
+				channel.getId(),
 				"안녕하세요.",
 				null
 			)

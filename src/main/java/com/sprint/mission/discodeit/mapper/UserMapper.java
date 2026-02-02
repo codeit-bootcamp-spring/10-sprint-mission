@@ -21,7 +21,7 @@ public class UserMapper {
 
 	public UserResponseDTO toUserResponseDTO(User user, UserStatus userStatus) {
 		return new UserResponseDTO(
-			userStatus, // TODO userstatus 이게 맞나?
+			userStatus,
 			user.getProfileId(),
 			user.getNickName(),
 			user.getUserName(),

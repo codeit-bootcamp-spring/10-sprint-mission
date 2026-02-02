@@ -7,6 +7,6 @@ public record MessagePostDTO(
 	UUID userId,
 	UUID channelId,
 	String text,
-	List<UUID> attachmentIds
+	List<BinaryContentDTO> attachments
 ) {
 }

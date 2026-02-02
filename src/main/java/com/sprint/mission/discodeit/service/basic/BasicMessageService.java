@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.dto.MessagePostDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -32,6 +33,7 @@ public class BasicMessageService implements MessageService {
 	private final BinaryContentRepository binaryContentRepository;
 
 	private final MessageMapper messageMapper;
+	private final BinaryContentMapper binaryContentMapper;
 
 	@Override
 	public Message create(MessagePostDTO messagePostDTO) throws RuntimeException {
@@ -60,6 +62,16 @@ public class BasicMessageService implements MessageService {
 
 		user.addMessageId(newMessage.getId());
 		userRepository.save(user);
+
+		// 선택적으로 첨부파일 등록
+		Optional.ofNullable(messagePostDTO.attachments())
+			.ifPresent(attachments -> {
+					attachments.forEach(attachment ->
+						binaryContentRepository.save(
+							binaryContentMapper.fromDto(user.getId(), newMessage.getId(), attachment))
+					);
+				}
+			);
 
 		return newMessage;
 	}
