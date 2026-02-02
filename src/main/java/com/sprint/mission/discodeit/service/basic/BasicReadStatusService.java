@@ -20,7 +20,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ChannelRepository channelRepository;
 
     @Autowired(required = false)
-    private final ReadStatusRepository readStatusRepository;
+    private ReadStatusRepository readStatusRepository;
 
     @Override
     public ReadStatusDto.Response create(ReadStatusDto.CreateRequest request) {
@@ -63,10 +63,10 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public void delete(UUID id) {
         findReadStatusEntityById(id);
-        readStatusRepository.delete(id);
+        readStatusRepository.deleteById(id);
     }
 
-    // [헬퍼 메서드]: 읽음 상태 여부를 검증하고 엔티티를 반환 (중복 코드 제거 및 예외 처리 공통화)
+    // [헬퍼 메서드]: 반복되는 조회 및 예외 처리 공통화
     private ReadStatus findReadStatusEntityById(UUID id) {
         return readStatusRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("읽음 상태를 찾을 수 없습니다."));

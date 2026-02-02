@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -94,7 +93,7 @@ public class BasicChannelService implements ChannelService {
 
         readStatusRepository.findAll().stream()
                 .filter(rs -> rs.getChannelId().equals(channelId))
-                .forEach(rs -> readStatusRepository.delete(rs.getId()));
+                .forEach(rs -> readStatusRepository.deleteById(rs.getId()));
 
         channelRepository.deleteById(channelId);
     }
@@ -123,7 +122,7 @@ public class BasicChannelService implements ChannelService {
             readStatusRepository.findAll().stream()
                     .filter(rs -> rs.getUserId().equals(userId) && rs.getChannelId().equals(channelId))
                     .findFirst()
-                    .ifPresent(rs -> readStatusRepository.delete(rs.getId()));
+                    .ifPresent(rs -> readStatusRepository.deleteById(rs.getId()));
         }
         channel.removeMember(userId);
         channelRepository.save(channel);
@@ -136,7 +135,7 @@ public class BasicChannelService implements ChannelService {
                 .anyMatch(rs -> rs.getUserId().equals(userId) && rs.getChannelId().equals(channelId));
     }
 
-    // [헬퍼 메서드]: 채널 존재 여부를 검증하고 엔티티를 반환 (중복 코드 제거 및 예외 처리 공통화)
+    // [헬퍼 메서드]: 반복되는 조회 및 예외 처리 공통화
     private Channel findChannelEntityById(UUID id) {
         return  channelRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다."));

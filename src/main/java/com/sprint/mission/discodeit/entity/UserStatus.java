@@ -11,10 +11,17 @@ public class UserStatus extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     private final UUID userId;
+    private Instant lastOnlineAt;
 
-    public UserStatus(UUID userId) {
+    public UserStatus(UUID userId, Instant lastOnlineAt) {
         super();
         this.userId = userId;
+        this.lastOnlineAt = lastOnlineAt;
+    }
+
+    public void update(Instant lastOnlineAt) {
+        this.lastOnlineAt = lastOnlineAt;
+        super.update();
     }
 
     public boolean isOnline() {

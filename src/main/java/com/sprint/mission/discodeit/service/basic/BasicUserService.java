@@ -45,7 +45,7 @@ public class BasicUserService implements UserService {
         userRepository.save(newUser);
 
         if (userStatusRepository != null)  {
-            UserStatus status = new UserStatus(newUser.getId());
+            UserStatus status = new UserStatus(newUser.getId(), Instant.now());
             userStatusRepository.save(status);
         }
 
@@ -112,11 +112,11 @@ public class BasicUserService implements UserService {
         });
 
         if (user.getProfileId() != null && binaryContentRepository != null) {
-            binaryContentRepository.delete(user.getProfileId());
+            binaryContentRepository.deleteById(user.getProfileId());
         }
 
         if (userStatusRepository != null) {
-            userStatusRepository.delete(user.getId());
+            userStatusRepository.deleteById(user.getId());
         }
 
         userRepository.deleteById(userId);
@@ -136,7 +136,7 @@ public class BasicUserService implements UserService {
         }
     }
 
-    // [헬퍼 메서드]: 유저 존재 여부를 검증하고 엔티티를 반환 (중복 코드 제거 및 예외 처리 공통화)
+    // [헬퍼 메서드]: 반복되는 조회 및 예외 처리 공통화
     private User findUserEntityById(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 사용자 입니다. ID: " + id));
@@ -165,7 +165,7 @@ public class BasicUserService implements UserService {
 
         // 기존 이미지가 있으면 삭제 (Update)
         if (existingId != null) {
-            binaryContentRepository.delete(existingId);
+            binaryContentRepository.deleteById(existingId);
         }
 
         // 새 이미지 저장

@@ -82,12 +82,12 @@ public class BasicMessageService implements MessageService {
         Message message = findMessageEntityById(messageId);
 
         if (binaryContentRepository != null && message.getAttachmentIds() != null) {
-            message.getAttachmentIds().forEach(binaryContentRepository::delete);
+            message.getAttachmentIds().forEach(binaryContentRepository::deleteById);
         }
         messageRepository.deleteById(messageId);
     }
 
-    // [헬퍼 메서드]: 메세지 존재 여부를 검증하고 엔티티를 반환 (중복 코드 제거 및 예외 처리 공통화)
+    // [헬퍼 메서드]: 반복되는 조회 및 예외 처리 공통화
     private Message findMessageEntityById(UUID id) {
         return messageRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메세지 입니다."));
