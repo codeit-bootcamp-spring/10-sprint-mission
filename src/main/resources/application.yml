@@ -3,4 +3,4 @@ spring:
     name: discodeit
 
   profiles:
-    active: file
+    active: jcf
