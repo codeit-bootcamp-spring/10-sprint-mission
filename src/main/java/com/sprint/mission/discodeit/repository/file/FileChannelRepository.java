@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import static com.sprint.mission.discodeit.util.FilePath.*;
-
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -20,10 +20,10 @@ public class FileChannelRepository implements ChannelRepository {
 	private final FileIo<Channel> channelFileIo;
 	private final FileIo<User> userFileIo;
 
-	private FileChannelRepository() {
-		channelFileIo = new FileIo<>(CHANNEL_DIRECTORY);
+	private FileChannelRepository(@Value("${discodeit.repository.file-directory}") String directory) {
+		channelFileIo = new FileIo<>(Paths.get(directory + Channel.class.getSimpleName().toLowerCase()));
 		this.channelFileIo.init();
-		userFileIo = new FileIo<>(USER_DIRECTORY);
+		userFileIo = new FileIo<>(Paths.get(directory + User.class.getSimpleName().toLowerCase()));
 		this.userFileIo.init();
 	}
 

@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import static com.sprint.mission.discodeit.util.FilePath.*;
-
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -22,12 +22,12 @@ public class FileMessageRepository implements MessageRepository {
 	private final FileIo<User> userFileIo;
 	private final FileIo<Channel> channelFileIo;
 
-	private FileMessageRepository() {
-		this.messageFileIo = new FileIo<>(MESSAGE_DIRECTORY);
+	private FileMessageRepository(@Value("${discodeit.repository.file-directory}") String directory) {
+		this.messageFileIo = new FileIo<>(Paths.get(directory + Message.class.getSimpleName().toLowerCase()));
 		messageFileIo.init();
-		this.userFileIo = new FileIo<>(USER_DIRECTORY);
+		this.userFileIo = new FileIo<>(Paths.get(directory + User.class.getSimpleName().toLowerCase()));
 		userFileIo.init();
-		this.channelFileIo = new FileIo<>(CHANNEL_DIRECTORY);
+		this.channelFileIo = new FileIo<>(Paths.get(directory + Channel.class.getSimpleName().toLowerCase()));
 		channelFileIo.init();
 	}
 

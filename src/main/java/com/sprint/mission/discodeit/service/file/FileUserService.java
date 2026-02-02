@@ -1,15 +1,17 @@
 package com.sprint.mission.discodeit.service.file;
 
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+
+import com.sprint.mission.discodeit.dto.UserPatchDTO;
+import com.sprint.mission.discodeit.dto.UserPostDTO;
+import com.sprint.mission.discodeit.dto.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.FileIo;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
 
 public class FileUserService implements UserService {
     public static final Path USER_DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", "users");
@@ -17,16 +19,16 @@ public class FileUserService implements UserService {
     private static UserService instance;
     private final FileIo<User> fileIo;
 
+	private FileUserService(@Value("${discodeit.repository.file-directory}") String directory) {
+		this.fileIo = new FileIo<>(Paths.get(directory + User.class.getSimpleName().toLowerCase()));
+		this.fileIo.init();
+	}
 
-    private FileUserService() {
-        this.fileIo = new FileIo<>(USER_DIRECTORY);
-        this.fileIo.init();
-    }
-
-    public static UserService getInstance() {
-        if (instance == null) instance = new FileUserService();
-        return instance;
-    }
+	public static UserService getInstance() {
+		if (instance == null)
+			instance = new FileUserService("");
+		return instance;
+	}
 
 
     @Override

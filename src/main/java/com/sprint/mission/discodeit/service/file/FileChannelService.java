@@ -1,30 +1,29 @@
 package com.sprint.mission.discodeit.service.file;
 
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+
+import com.sprint.mission.discodeit.dto.ChannelResponseDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.FileIo;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+public class FileChannelService {
+	private static ChannelService instance;
+	private final FileIo<Channel> channelFileIo;
+	private final FileIo<User> userFileIo;
+	private final UserService userService;
 
-public class FileChannelService implements ChannelService {
-    public static final Path CHANNEL_DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", "channels");
-
-    private static ChannelService instance;
-    private final FileIo<Channel> channelFileIo;
-    private final FileIo<User> userFileIo;
-    private final UserService userService;
-
-    private FileChannelService() {
-        channelFileIo = new FileIo<>(CHANNEL_DIRECTORY);
-        this.channelFileIo.init();
-        userFileIo = new FileIo<>(FileUserService.USER_DIRECTORY);
-        this.userFileIo.init();
+	private FileChannelService(@Value("${discodeit.repository.file-directory}") String directory) {
+		channelFileIo = new FileIo<>(Paths.get(directory + Channel.class.getSimpleName().toLowerCase()));
+		this.channelFileIo.init();
+		userFileIo = new FileIo<>(Paths.get(directory + User.class.getSimpleName().toLowerCase()));
+		this.userFileIo.init();
 
         userService = FileUserService.getInstance();
     }

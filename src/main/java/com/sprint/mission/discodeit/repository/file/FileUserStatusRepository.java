@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import static com.sprint.mission.discodeit.util.FilePath.*;
-
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -18,8 +18,8 @@ import com.sprint.mission.discodeit.util.FileIo;
 public class FileUserStatusRepository implements UserStatusRepository {
 	private final FileIo<UserStatus> fileIo;
 
-	public FileUserStatusRepository() {
-		this.fileIo = new FileIo<>(USER_STATUS_DIRECTORY);
+	public FileUserStatusRepository(@Value("${discodeit.repository.file-directory}") String directory) {
+		this.fileIo = new FileIo<>(Paths.get(directory + UserStatus.class.getSimpleName().toLowerCase()));
 	}
 
 	@Override

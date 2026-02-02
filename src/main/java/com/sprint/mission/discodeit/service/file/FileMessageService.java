@@ -1,5 +1,14 @@
 package com.sprint.mission.discodeit.service.file;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+
+import com.sprint.mission.discodeit.dto.MessagePatchDTO;
+import com.sprint.mission.discodeit.dto.MessagePostDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -15,7 +24,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class FileMessageService implements MessageService {
-    public static final Path MESSAGE_DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", "messages");
+	public static final Path MESSAGE_DIRECTORY = Paths.get(System.getProperty("user.dir"), "data", "messages");
 
     private static MessageService instance;
     private UserService userService;
@@ -25,14 +34,13 @@ public class FileMessageService implements MessageService {
     private FileIo<User> userFileIo;
     private FileIo<Channel> channelFileIo;
 
-
-    private FileMessageService() {
-        this.messageFileIo = new FileIo<>(MESSAGE_DIRECTORY);
-        messageFileIo.init();
-        this.userFileIo = new FileIo<>(FileUserService.USER_DIRECTORY);
-        userFileIo.init();
-        this.channelFileIo = new FileIo<>(FileChannelService.CHANNEL_DIRECTORY);
-        channelFileIo.init();
+	private FileMessageService(@Value("${discodeit.repository.file-directory}") String directory) {
+		this.messageFileIo = new FileIo<>(Paths.get(directory + Message.class.getSimpleName().toLowerCase()));
+		messageFileIo.init();
+		this.userFileIo = new FileIo<>(Paths.get(directory + User.class.getSimpleName().toLowerCase()));
+		userFileIo.init();
+		this.channelFileIo = new FileIo<>(Paths.get(directory + Channel.class.getSimpleName().toLowerCase()));
+		channelFileIo.init();
 
         this.userService = FileUserService.getInstance();
         this.channelService = FileChannelService.getInstance();
