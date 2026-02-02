@@ -6,12 +6,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
 @Profile("jcf")
 public class JCFUserRepository implements UserRepository {
-    private final Map<UUID, User> data = new ConcurrentHashMap<>();
+    private final Map<UUID, User> data = new HashMap<>();
 
     @Override
     public User save(User user){

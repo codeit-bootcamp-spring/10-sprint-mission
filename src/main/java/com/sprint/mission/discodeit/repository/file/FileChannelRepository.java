@@ -2,11 +2,14 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
+@Profile("file")
 public class FileChannelRepository extends BaseFileRepository<Channel> implements ChannelRepository {
     public FileChannelRepository() {
         super("channels.ser");
@@ -31,9 +34,16 @@ public class FileChannelRepository extends BaseFileRepository<Channel> implement
     }
 
     @Override
-    public void delete(Channel channel){
+    public List<Channel> findAllPublic() {
+        return loadData().values().stream()
+                .filter(Channel::isPublic)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    @Override
+    public void deleteById(UUID id){
         Map<UUID, Channel> data = loadData();
-        data.remove(channel.getId());
+        data.remove(id);
         saveData(data);
     }
 }

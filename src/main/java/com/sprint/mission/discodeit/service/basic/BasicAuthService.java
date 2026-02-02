@@ -38,6 +38,7 @@ public class BasicAuthService implements AuthService {
         return convertToResponse(user, status);
     }
 
+    // 엔티티 -> DTO 변환
     private UserResponse convertToResponse(User user, UserStatus status) {
         boolean isOnline = (status != null) && status.isOnline();
         return new UserResponse(

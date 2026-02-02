@@ -13,5 +13,7 @@ public interface ChannelRepository {
 
     List<Channel> findAll();
 
-    void delete(Channel channel);
+    List<Channel> findAllPublic(); // PUBLIC 채널 전부 조회
+
+    void deleteById(UUID id);
 }

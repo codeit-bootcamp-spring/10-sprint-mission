@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +59,7 @@ public class BasicUserService implements UserService {
     // 단건 조회
     @Override
     public UserResponse getAccountById(UUID id) {
-        User user = findUserById(id);
+        User user = validateUserExists(id);
         UserStatus status = getUserStatus(id);
         return convertToResponse(user, status);
     }
@@ -76,7 +75,7 @@ public class BasicUserService implements UserService {
     // 계정 정보 수정
     @Override
     public UserResponse updateAccount(UUID id, UserUpdateRequest request){
-        User user = findUserById(id);
+        User user = validateUserExists(id);
 
         // 이름 수정 + 중복 체크
         Optional.ofNullable(request.name())
@@ -119,7 +118,7 @@ public class BasicUserService implements UserService {
     // 계정 삭제
     @Override
     public void deleteAccount(UUID id) {
-        User user = findUserById(id);
+        User user = validateUserExists(id);
 
         // 유저 상태 삭제
         userStatusRepository.deleteByUserId(id);
@@ -156,7 +155,7 @@ public class BasicUserService implements UserService {
     }
 
     // 유저 검증
-    private User findUserById(UUID id) {
+    private User validateUserExists(UUID id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다."));
     }

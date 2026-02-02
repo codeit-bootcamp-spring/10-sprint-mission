@@ -1,5 +1,9 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -10,21 +14,15 @@ import java.util.List;
 
 
 public interface ChannelService {
-    Channel create(String name, String description, ChannelType type, boolean isPublic);
+    ChannelResponse createPublicChannel(PublicChannelCreateRequest request); // PUBLIC 채널 생성
 
-    Channel findById(UUID id);
+    ChannelResponse createPrivateChannel(PrivateChannelCreateRequest request); // PRIVATE 채널 생성
 
-    List<Channel> findAll();
+    ChannelResponse getChannelById(UUID id); // 단건 조회
 
-    Channel update(UUID id, String name, String description, Boolean isPublic);
+    List<ChannelResponse> getAllByUserId(UUID userId); // 유저별 참여하고 있는 채널 전체 조회
 
-    void delete(UUID id);
+    ChannelResponse updateChannel(UUID id, ChannelUpdateRequest request); // 체널 정보 수정
 
-    void join(UUID channelId, UUID userId); // 채널 참가
-
-    void leave(UUID channelId, UUID userId); // 채널 탈퇴
-
-    List<User> findMembersByChannelId(UUID channelId); // 특정 채널의 유저 목록 조회
-
-    List<Message> findMessagesByChannelId(UUID channelId); // 특정 채널의 메시지 목록 조회
+    void deleteByChannelId(UUID channelId);
 }
