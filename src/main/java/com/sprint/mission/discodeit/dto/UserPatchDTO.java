@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 
 public record UserPatchDTO(
 	UUID id,
-	User updateData
+	User updateData,
+	BinaryContentDTO binaryContentDTO // 프로필 사진을 변경하는 경우
 ) {
 }

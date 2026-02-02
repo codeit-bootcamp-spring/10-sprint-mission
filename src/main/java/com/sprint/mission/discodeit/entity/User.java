@@ -21,8 +21,7 @@ public class User extends Base {
 	private String phoneNumber;
 	private String password;
 
-	public User(UUID profileId, String nickName, String userName, String email, String phoneNumber, String password) {
-		this.profileId = profileId;
+	public User(String nickName, String userName, String email, String phoneNumber, String password) {
 		this.nickName = nickName;
 		this.userName = userName;
 		this.email = email;

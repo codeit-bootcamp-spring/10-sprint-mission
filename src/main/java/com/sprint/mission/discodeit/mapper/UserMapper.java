@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 public class UserMapper {
 	public User toUser(UserPostDTO userPostDTO) {
 		return new User(
-			userPostDTO.profileId(),
 			userPostDTO.nickName(),
 			userPostDTO.userName(),
 			userPostDTO.email(),

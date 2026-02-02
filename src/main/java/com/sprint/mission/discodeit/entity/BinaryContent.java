@@ -8,9 +8,13 @@ import lombok.Getter;
 public class BinaryContent extends Base {
 	private UUID userId; // 해당 프로필을 설정한 유저의 아이디
 	private UUID messageId; // 해당 파일이 첨부된 메시지의 아이디
+	private String fileName;
+	private byte[] data;
 
-	public BinaryContent(UUID userId, UUID messageId) {
+	public BinaryContent(UUID userId, UUID messageId, String fileName, byte[] data) {
 		this.userId = userId;
 		this.messageId = messageId;
+		this.fileName = fileName;
+		this.data = data;
 	}
 }
