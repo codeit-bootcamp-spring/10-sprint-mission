@@ -27,6 +27,7 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
+    private final ReadStatusService readStatusService;
 
 
     @Override
@@ -35,8 +36,8 @@ public class BasicChannelService implements ChannelService {
         //User 정보를 받아서 User별 ReadStatus 정보를 생성
         User user = userRepository.findById(channelCreateDto.userDto().userId()).orElseThrow(() -> new NoSuchElementException("유저가 없음"));
         Channel channel = channelRepository.save(new Channel(PRIVATE, null,null));
-        ReadStatus readStatus = new ReadStatus(user.getId(),channel.getId());
-        readStatusRepository.save(readStatus);
+
+        readStatusService.create(channelCreateDto.readStatusDto());
 
         List<UUID> users = new ArrayList<>(List.of(user.getId()));
 
@@ -48,6 +49,7 @@ public class BasicChannelService implements ChannelService {
         );
 
     }
+
     @Override
     public ChannelResponseDto createPublicChannel(ChannelRequestDto channelCreateDto) { //type PUBLIC 일때
 
