@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @AllArgsConstructor
 public class ReadStatusService {
@@ -35,6 +37,17 @@ public class ReadStatusService {
         readStatusRepository.save(readStatus);
 
         return  new ReadStatusResponseDto(
+                readStatus.getCreatedAt(),
+                readStatus.getUpdatedAt(),
+                readStatus.getUserId(),
+                readStatus.getChannelId()
+        );
+    }
+
+    public ReadStatusResponseDto find(UUID readStatusId) {
+        ReadStatus readStatus = readStatusRepository.findById(readStatusId);
+
+        return new ReadStatusResponseDto(
                 readStatus.getCreatedAt(),
                 readStatus.getUpdatedAt(),
                 readStatus.getUserId(),
