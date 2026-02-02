@@ -15,11 +15,11 @@ public class Message extends CommonEntity{
     private final UUID channelId;
     private final List<UUID> attachmentIds;
 
-    public Message(String content, UUID sender, UUID channel) {
+    public Message(String content, UUID sender, UUID channel, List<UUID> attachmentIds) {
         this.content = content;
         this.senderId = sender;
         this.channelId = channel;
-        this.attachmentIds = new ArrayList<>();
+        this.attachmentIds = attachmentIds;
     }
 
     public void updateContent(String content) {
