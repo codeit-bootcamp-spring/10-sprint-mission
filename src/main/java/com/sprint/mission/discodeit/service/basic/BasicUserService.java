@@ -88,6 +88,7 @@ public class BasicUserService implements UserService {
         userRepository.deleteById(userId);
     }
 
+    // --------- 내부 메서드 구현 ---------
     // 유저 엔티티 조회
     private User getUserEntity(UUID userId) {
         return userRepository.findById(userId)

@@ -10,14 +10,14 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    ChannelDto createPublic(CreatePublicChannelRequestDto dto);
-    ChannelDto createPrivate(CreatePrivateChannelRequestDto dto);
+    ChannelDto createPublic(CreatePublicChannelRequestDto request);
+    ChannelDto createPrivate(CreatePrivateChannelRequestDto request);
 
     ChannelDto find(UUID channelId);
     // 전체 조회
     List<ChannelDto> findAll();
     // 유저 id 기준 조회
     List<ChannelDto> findAllByUserId(UUID userId);
-    ChannelDto update(UUID channelId, UpdateChannelRequestDto dto);
+    ChannelDto update(UUID channelId, UpdateChannelRequestDto request);
     void delete(UUID channelId);
 }
