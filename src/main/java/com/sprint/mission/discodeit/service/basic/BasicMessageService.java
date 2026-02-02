@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
@@ -36,10 +36,10 @@ public class BasicMessageService implements MessageService {
         // 껍데기 생성
         Message message = MessageMapper.toEntity(dto, attachments);
 
-        List<BinaryContentCreateDTO> attachmentDTOs = dto.attachmentDTOs();
+        List<CreateBinaryContentRequestDTO> attachmentDTOs = dto.attachmentDTOs();
 
         if (attachmentDTOs != null && !attachmentDTOs.isEmpty()) {
-            for (BinaryContentCreateDTO bcDTO: attachmentDTOs) {
+            for (CreateBinaryContentRequestDTO bcDTO: attachmentDTOs) {
                 checkDTOHasNull(bcDTO);
 
                 BinaryContent bc
@@ -128,7 +128,7 @@ public class BasicMessageService implements MessageService {
                         new NoSuchElementException("해당 id를 가진 사용자가 존재하지 않습니다."));
     }
 
-    private void checkDTOHasNull(BinaryContentCreateDTO dto) {
+    private void checkDTOHasNull(CreateBinaryContentRequestDTO dto) {
         if(dto == null) {
             throw new IllegalArgumentException("bcDTO는 null일 수 없습니다.");
         }

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
 import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
@@ -40,9 +40,9 @@ public class BasicUserService implements UserService {
         User user = UserMapper.toEntity(dto, null);
 
         if (dto.profileImage() != null) {
-            BinaryContentCreateDTO img = dto.profileImage();
+            CreateBinaryContentRequestDTO img = dto.profileImage();
 
-            BinaryContent binaryContent = BinaryContentMapper.toEntity(user.getId(), img);
+            BinaryContent binaryContent = BinaryContentMapper.toProfileEntity(user.getId(), img);
 
             binaryContentRepository.save(binaryContent);
 
@@ -164,7 +164,7 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("profile 값이 존재하지 않습니다.");
         }
 
-        BinaryContent binaryContent = BinaryContentMapper.toEntity(user.getId(), dto.profileImage());
+        BinaryContent binaryContent = BinaryContentMapper.toProfileEntity(user.getId(), dto.profileImage());
 
         binaryContentRepository.save(binaryContent);
 

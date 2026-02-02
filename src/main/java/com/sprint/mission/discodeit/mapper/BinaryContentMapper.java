@@ -1,12 +1,15 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class BinaryContentMapper {
-    public static BinaryContent toEntity(UUID userId, BinaryContentCreateDTO dto) {
+    public static BinaryContent toProfileEntity(UUID userId, CreateBinaryContentRequestDTO dto) {
         return new BinaryContent(
                 userId,
                 dto.data(),
@@ -15,15 +18,7 @@ public class BinaryContentMapper {
         );
     }
 
-    public static BinaryContent toEntity(UUID userId, UUID messageId, BinaryContentCreateDTO dto) {
-        // dto는 record라 null이면 NPE 날 수 있으니, 서비스에서 null 방지하는 게 일반적이지만
-        // 여기서도 최소한 방어 가능
-        if (dto == null) {
-            throw new IllegalArgumentException("attachment dto는 null일 수 없습니다.");
-        }
-        if (dto.data() == null) {
-            throw new IllegalArgumentException("attachment data는 null일 수 없습니다.");
-        }
+    public static BinaryContent toMessageAttachmentEntity(UUID userId, UUID messageId, CreateBinaryContentRequestDTO dto) {
         return new BinaryContent(
                 userId,
                 messageId,
@@ -31,5 +26,27 @@ public class BinaryContentMapper {
                 dto.contentType(),
                 dto.filename()
         );
+    }
+
+    public static BinaryContentResponseDTO toResponse(BinaryContent binaryContent) {
+        return new BinaryContentResponseDTO(
+                binaryContent.getId(),
+                binaryContent.getUserId(),
+                binaryContent.getMessageId(),
+                binaryContent.getSize(),
+                binaryContent.getContentType(),
+                binaryContent.getFilename(),
+                binaryContent.getCreatedAt()
+        );
+    }
+
+    public static List<BinaryContentResponseDTO> toResponseList(List<BinaryContent> binaryContents) {
+        List<BinaryContentResponseDTO> responseDTOList = new ArrayList<>();
+
+        for (BinaryContent bc: binaryContents) {
+            responseDTOList.add(BinaryContentMapper.toResponse(bc));
+        }
+
+        return responseDTOList;
     }
 }

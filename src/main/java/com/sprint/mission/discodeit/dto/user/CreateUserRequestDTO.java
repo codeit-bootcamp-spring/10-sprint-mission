@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
 import jakarta.annotation.Nullable;
 
 public record CreateUserRequestDTO(
@@ -8,5 +8,5 @@ public record CreateUserRequestDTO(
         String username,
         String password,
         @Nullable
-        BinaryContentCreateDTO profileImage
+        CreateBinaryContentRequestDTO profileImage
 ) {}

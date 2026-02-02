@@ -50,7 +50,7 @@ public class BinaryContent {
                 ", createdAt=" + createdAt +
                 ", userId=" + userId +
                 ", messageId=" + messageId +
-                ", data=" + Arrays.toString(data) +
+                ", data=" + data.length +
                 ", contentType='" + contentType + '\'' +
                 ", filename='" + filename + '\'' +
                 ", size=" + size +

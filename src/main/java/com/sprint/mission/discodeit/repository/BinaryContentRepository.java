@@ -14,6 +14,8 @@ public interface BinaryContentRepository {
 
     Optional<BinaryContent> findById(UUID binaryContentId);
 
+    List<BinaryContent> findAllById(List<UUID> binaryContentIds);
+
     BinaryContent findByMessageId(UUID messageId);
 
     List<BinaryContent> findAll();
