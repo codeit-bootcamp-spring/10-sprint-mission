@@ -30,11 +30,22 @@ public class BasicBinaryContentService implements BinaryContentService {
 
         return binaryContentMapper.toDto(binaryContent);
     }
+    @Override
+    public BinaryContentResponseDto findId(UUID id) {
+        return binaryContentMapper.toDto(getBinaryContentId(id));
+    }
 
     @Override
     public BinaryContentResponseDto findBinaryContentByUserId(UUID userId) {
 
-        return binaryContentMapper.toDto(getBinaryContent(userId));
+        return binaryContentMapper.toDto(getBinaryContentByUserId(userId));
+    }
+
+    @Override
+    public List<BinaryContentResponseDto> findAllBId(UUID id) {
+        return binaryContentRepository.findAll().stream()
+                .map(binaryContentMapper::toDto)
+                .toList();
     }
 
     @Override
@@ -50,8 +61,13 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContentRepository.delete(id);
 
     }
-    private BinaryContent getBinaryContent(UUID userId){
+    private BinaryContent getBinaryContentByUserId(UUID userId){
         return binaryContentRepository.findByUserId(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 파일컨텐츠가 없습니다."));
+    }
+
+    private BinaryContent getBinaryContentId(UUID id){
+        return binaryContentRepository.findByUserId(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 파일컨텐츠가 없습니다."));
     }
 }
