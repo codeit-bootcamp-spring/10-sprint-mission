@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.time.Instant;

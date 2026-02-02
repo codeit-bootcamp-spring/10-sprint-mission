@@ -12,14 +12,17 @@ public interface UserStatusService {
     UserStatusResponseDTO create(UserStatusCreateRequestDTO userStatusCreateRequestDTO);
 
     // 사용자 상태 단일 조회
-    UserStatusResponseDTO findById(UUID id);
+    UserStatusResponseDTO findById(UUID targetUserStatusId);
 
     // 사용자 상태 전체 조회
     List<UserStatusResponseDTO> findAll();
 
     // 사용자 상태 수정
-    UserStatusResponseDTO updateByUserId(UserStatusUpdateRequestDTO userStatusUpdateRequestDTO);
+    UserStatusResponseDTO update(UserStatusUpdateRequestDTO userStatusUpdateRequestDTO);
+
+    // 특정 사용자의 상태 수정
+    UserStatusResponseDTO updateByUserId(UUID targetUserId);
 
     // 사용자 상태 삭제
-    UserStatusResponseDTO delete(UUID id);
+    void delete(UUID id);
 }

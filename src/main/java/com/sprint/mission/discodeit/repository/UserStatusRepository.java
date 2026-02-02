@@ -17,4 +17,7 @@ public interface UserStatusRepository {
 
     // 사용자 상태 삭제
     void delete(UUID userStatusId);
+
+    // 유효성 검사 (중복 확인)
+    boolean existsById(UUID userId);
 }

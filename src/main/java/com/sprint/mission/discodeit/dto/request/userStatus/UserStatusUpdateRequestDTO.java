@@ -5,9 +5,13 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 public class UserStatusUpdateRequestDTO {
+    @NotNull
+    private UUID id;
+
     @NotNull
     private UserStatusType userStatusType;
 
