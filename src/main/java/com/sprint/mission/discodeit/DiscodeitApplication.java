@@ -13,6 +13,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import java.util.UUID;
+
 @SpringBootApplication
 public class DiscodeitApplication {
 
@@ -43,15 +45,16 @@ public class DiscodeitApplication {
 //	}
 
 	static UserResponse setupUser(UserService userService) {
-		// request 변수를 먼저 생성해야 함!
+		String uniqueId = UUID.randomUUID().toString().substring(0, 8);  // 앞 8자리만
+		String username = "user_" + uniqueId;
+
 		CreateUserRequest request = new CreateUserRequest(
-				"woody",
-				"woody@codeit.com",
-				"woody1234",
+				username,
+				username + "@codeit.com",
+				"password123",
 				null
 		);
 
-		// 이제 request를 사용할 수 있음
 		return userService.create(request);
 	}
 

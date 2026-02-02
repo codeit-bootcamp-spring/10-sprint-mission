@@ -14,10 +14,10 @@ public class UserStatus {
     private Instant lastSeenAt;
     private final Instant createdAt;
     private Instant updatedAt;
-    private UserStatusType status;
+    private String status; // "ONLINE","OFFLINE","AWAY"
     private Instant lastActiveAt;
 
-    public UserStatus(UUID userId, UserStatusType status, Instant lastActiveAt) {
+    public UserStatus(UUID userId,String status,Instant lastActiveAt) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.status = status;
@@ -39,7 +39,7 @@ public class UserStatus {
     public void updateStatus(String status) {
         this.status = null;
     }
-    /**
+    /*
      * 마지막 접속 시간이 현재로부터 5분 이내이면 온라인으로 판단
      */
     public boolean isOnline() {
