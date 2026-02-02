@@ -63,7 +63,7 @@ public class BasicUserService implements UserService {
     public UserResponseDto findUser(UUID userId) {
         User user = getUser(userId);
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException());
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자 상태가 없습니다."));
 
         // 추후 유저상태 서비스에서 가져오는 식으로 바꿔야할듯
         boolean online = false;
@@ -140,7 +140,7 @@ public class BasicUserService implements UserService {
 
             UUID oldProfileImageId = user.getProfileImageId();
             if(oldProfileImageId != null){
-                binaryContentRepository.delete(oldProfileImageId);
+                binaryContentRepository.deleteByUserId(userId);
             }
 
             BinaryContent newBinaryContent = new BinaryContent(user.getId(),
@@ -194,7 +194,7 @@ public class BasicUserService implements UserService {
         userStatusRepository.deleteByUserId(user.getId());
 
         //유저의 binarycontent 삭제
-        binaryContentRepository.delete(user.getProfileImageId());
+        binaryContentRepository.deleteByUserId(userId);
 
         // 유저를 데이터에서 삭제
         userRepository.delete(userId);

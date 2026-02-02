@@ -16,13 +16,22 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     private static final String BINARY_CONTENT_FILE = "binaryContent.ser";
 
     @Override
-    public Optional<BinaryContent> findByUserId(UUID userId) {
-        return Optional.ofNullable(loadData().get(userId));
+    public Optional<BinaryContent> findById(UUID id) {
+        return Optional.ofNullable(loadData().get(id));
     }
 
     @Override
-    public Optional<BinaryContent> findByMessageId(UUID messageId) {
-        return Optional.ofNullable(loadData().get(messageId));
+    public Optional<BinaryContent> findByUserId(UUID userId) {
+        return loadData().values().stream()
+                .filter(bc -> bc.getUserId().equals(userId))
+                .findFirst();
+    }
+
+    @Override
+    public List<BinaryContent> findByMessageId(UUID messageId) {
+        return loadData().values().stream()
+                .filter(bc -> bc.getMessageId().equals(messageId))
+                .toList();
     }
 
     @Override
@@ -42,6 +51,20 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     public void delete(UUID id) {
         Map<UUID, BinaryContent> data = loadData();
         data.remove(id);
+        saveData(data);
+    }
+
+    @Override
+    public void deleteByUserId(UUID userId) {
+        Map<UUID, BinaryContent> data = loadData();
+        data.values().removeIf(bc -> bc.getUserId().equals(userId));
+        saveData(data);
+    }
+
+    @Override
+    public void deleteByMessageId(UUID messageId) {
+        Map<UUID, BinaryContent> data = loadData();
+        data.values().removeIf(bc -> bc.getMessageId().equals(messageId));
         saveData(data);
     }
 

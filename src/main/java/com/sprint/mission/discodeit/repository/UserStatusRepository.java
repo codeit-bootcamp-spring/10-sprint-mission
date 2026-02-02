@@ -8,10 +8,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
 public interface UserStatusRepository {
     void save(UserStatus userStatus);
-    Optional<UserStatus> findByUserId(UUID id);
+    Optional<UserStatus> findById(UUID id);
+    Optional<UserStatus> findByUserId(UUID userId);
     Map<UUID, UserStatus> findAll();
+    void delete(UUID Id);
     void deleteByUserId(UUID userId);
 }

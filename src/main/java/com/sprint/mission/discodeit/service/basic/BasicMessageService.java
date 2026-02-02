@@ -116,8 +116,7 @@ public class BasicMessageService implements MessageService {
         channelRepository.save(channel);
 
         // 메시지와 연관된 모든 binaryContent 삭제
-        List<UUID> binaryContentList = message.getBinaryContentList();
-        binaryContentList.forEach(binaryContentRepository::delete);
+        binaryContentRepository.deleteByMessageId(messageId);
 
 
         //데이터에서 메시지 삭제

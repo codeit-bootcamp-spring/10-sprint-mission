@@ -17,6 +17,12 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     private static final String READ_STATUS_FILE = "data/readStatus.ser";
 
     @Override
+    public Optional<ReadStatus> findById(UUID id) {
+
+        return Optional.ofNullable(loadData().get(id));
+    }
+
+    @Override
     public List<ReadStatus> findAll() {
         return new ArrayList<>(loadData().values());
     }

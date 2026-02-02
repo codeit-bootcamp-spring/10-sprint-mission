@@ -25,7 +25,4 @@ public class BinaryContent {
         this.fileName = fileName;
         this.fileType = fileType;
     }
-
-
-
 }

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.stereotype.Repository;
@@ -15,23 +16,42 @@ public class FileUserStatusRepository implements UserStatusRepository {
     private static final String USER_STATUS_FILE = "data/userStatus.ser";
 
     @Override
-    public Optional<UserStatus> findByUserId(UUID id) {
-        return Optional.empty();
+    public Optional<UserStatus> findById(UUID id) {
+        return Optional.ofNullable(loadData().get(id));
+    }
+
+    @Override
+    public Optional<UserStatus> findByUserId(UUID userId) {
+        return loadData().values().stream()
+                .filter(userStatus -> userStatus.getUserId().equals(userId))
+                .findFirst();
     }
 
     public Map<UUID,UserStatus> findAll(){
+
         return loadData();
     }
 
 
     @Override
     public void save(UserStatus userStatus) {
+        Map<UUID, UserStatus> data = loadData();
+        data.put(userStatus.getId(),userStatus);
+        saveData(data);
+    }
 
+    @Override
+    public void delete(UUID id) {
+        Map<UUID, UserStatus> data = loadData();
+        data.remove(id);
+        saveData(data);
     }
 
     @Override
     public void deleteByUserId(UUID userId) {
-
+        Map<UUID, UserStatus> data = loadData();
+        data.values().removeIf(userStatus -> userStatus.getUserId().equals(userId));
+        saveData(data);
     }
 
     private Map<UUID, UserStatus> loadData(){

@@ -2,10 +2,10 @@ package com.sprint.mission.discodeit.dto.readStatus;
 
 import lombok.Getter;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class ReadStatusCreateDto {
-    private UUID userId;
-    private UUID channelId;
+public class ReadStatusUpdateDto {
+    private UUID id;
 }

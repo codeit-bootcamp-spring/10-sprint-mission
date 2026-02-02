@@ -14,7 +14,6 @@ public class UserMapper {
                 ,user.getEmail()
                 ,user.getProfileImageId()
                 ,user.getMessageList()
-                ,user.getChannelList()
                 ,user.getFriendsList()
                 ,online );
     }

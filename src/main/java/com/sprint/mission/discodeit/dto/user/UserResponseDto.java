@@ -16,7 +16,6 @@ public class UserResponseDto {
     private String email;
     private UUID profileImageId;
     private List<UUID> messageList;
-    private List<UUID> channelList;
     private List<UUID> friendsList;
     private boolean online;
 
@@ -28,7 +27,6 @@ public class UserResponseDto {
                 ", email='" + email + '\'' +
                 ", profileImageId=" + profileImageId +
                 ", messageList=" + messageList +
-                ", channelList=" + channelList +
                 ", friendsList=" + friendsList +
                 ", online=" + online +
                 '}';
