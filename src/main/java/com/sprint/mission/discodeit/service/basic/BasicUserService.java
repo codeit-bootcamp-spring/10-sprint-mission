@@ -51,7 +51,7 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
 
         // 유저 상태 생성
-        UserStatus status = new UserStatus(user.getId(), Instant.now());
+        UserStatus status = new UserStatus(user.getId(), true, Instant.now());
         userStatusRepository.save(status);
 
         return convertToResponse(user, status);
