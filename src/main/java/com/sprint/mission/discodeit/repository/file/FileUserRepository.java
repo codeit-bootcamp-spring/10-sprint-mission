@@ -32,6 +32,7 @@ public class FileUserRepository implements UserRepository {
     @Override
     public Optional<User> findById(UUID userId) {
         User targetUser = FileUtil.loadSingle(directory.resolve(userId + ".ser"));
+
         return Optional.ofNullable(targetUser);
     }
 
@@ -43,9 +44,9 @@ public class FileUserRepository implements UserRepository {
 
     // 사용자 삭제
     @Override
-    public void delete(User targetUser) {
+    public void delete(User user) {
         try {
-            Files.deleteIfExists(directory.resolve(targetUser.getId() + ".ser"));
+            Files.deleteIfExists(directory.resolve(user.getId() + ".ser"));
         } catch (IOException e) {
             throw new RuntimeException("[삭제 실패] 시스템 오류가 발생했습니다.", e);
         }
@@ -54,12 +55,14 @@ public class FileUserRepository implements UserRepository {
     // 유효성 검증 (이메일 중복)
     @Override
     public boolean existsByEmail(String email) {
-        return findAll().stream().anyMatch(user -> user.getEmail().equals(email));
+        return findAll().stream()
+                .anyMatch(user -> user.getEmail().equals(email));
     }
 
     // 유효성 검증 (이름 중복)
     @Override
     public boolean existsByNickname(String nickname) {
-        return findAll().stream().anyMatch(user -> user.getNickname().equals(nickname));
+        return findAll().stream()
+                .anyMatch(user -> user.getNickname().equals(nickname));
     }
 }
