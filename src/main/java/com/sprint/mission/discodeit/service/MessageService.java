@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface MessageService {
     // CRUD
-    Message create(CreateRequest Request);
+    MessageResponse create(CreateRequest Request);
     MessageResponse find(UUID messageID);
     List<MessageResponse> findAllByUserID();
     MessageResponse update(MessageUpdateRequest request);

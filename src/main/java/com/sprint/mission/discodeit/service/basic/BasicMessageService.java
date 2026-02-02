@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.CreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
@@ -28,7 +28,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message create(CreateRequest request) {
+    public MessageResponse create(CreateRequest request) {
         User sender = userRepository.find(request.userID())
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userID()));
         Channel channel = channelRepository.find(request.channelId());
@@ -59,7 +59,14 @@ public class BasicMessageService implements MessageService {
         // [저장]
         userRepository.save(sender);
         channelRepository.save(channel);
-        return  messageRepository.save(message);
+        messageRepository.save(message);
+        return new MessageResponse(
+                message.getId(),
+                message.getContents(),
+                message.getSender().getId(),
+                message.getChannel().getId(),
+                message.getAttachmentIDs()
+        );
     }
 
     @Override
