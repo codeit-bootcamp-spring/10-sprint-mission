@@ -11,9 +11,9 @@ public class UserStatus extends Base {
 	private UUID userId;
 	private Instant lastAccessedTime;
 
-	public UserStatus(UUID userId, Instant lastAccessedTime) {
+	public UserStatus(UUID userId) {
 		this.userId = userId;
-		this.lastAccessedTime = lastAccessedTime;
+		this.lastAccessedTime = Instant.now();
 	}
 
 	public void updateLastAccessedTime() {
