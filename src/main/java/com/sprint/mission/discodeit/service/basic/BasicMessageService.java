@@ -1,112 +1,101 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
+import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
+import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
+import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
-
-    public BasicMessageService(
-            UserRepository userRepository,
-            ChannelRepository channelRepository,
-            MessageRepository messageRepository
-    ) {
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.messageRepository = messageRepository;
-    }
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message sendMessage(UUID userId, UUID channelId, String content) {
-        User user = findUserOrThrow(userId);
-        Channel channel = findChannelOrThrow(channelId);
-        Message message = messageRepository.save(new Message(user, channel, content));
+    public MessageResponseDTO createMessage(CreateMessageRequestDTO dto) {
+        findUserOrThrow(dto.sentUserId());
+        findChannelOrThrow(dto.sentChannelId());
+        List<UUID> attachments = new ArrayList<>();
+        // 껍데기 생성
+        Message message = MessageMapper.toEntity(dto, attachments);
+
+        var payloads = dto.attachmentDTOs();
+        if (payloads != null && !payloads.isEmpty()) {
+            for (var payload : payloads) {
+                BinaryContent bc = BinaryContentMapper.toEntity(dto.sentUserId(), message.getId(), payload);
+                binaryContentRepository.save(bc);
+                attachments.add(bc.getId());
+            }
+        }
+        messageRepository.save(message);
         // 영속화
-        userRepository.save(user);
-        channelRepository.save(channel);
+        messageRepository.save(message);
 
-        return message;
+        return MessageMapper.toResponse(message);
     }
 
     @Override
-    public List<Message> getAllMessages() {
-        return messageRepository.findAll();
-    }
-
-    @Override
-    public List<Message> getMessageListByUser(UUID userId) {
+    public List<MessageResponseDTO> findAllByUserId(UUID userId) {
         findUserOrThrow(userId);
-
-        return messageRepository.findAll().stream()
-                .filter(message -> message.getSentUser().getId().equals(userId))
+        List<Message> messages = messageRepository.findAll().stream()
+                .filter(message -> message.getSentUserId().equals(userId))
                 .toList();
+
+        return MessageMapper.toResponseList(messages);
     }
 
     @Override
-    public List<Message> getMessageListByChannel(UUID channelId) {
+    public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
         findChannelOrThrow(channelId);
 
-        return messageRepository.findAll().stream()
-                .filter(message -> message.getSentChannel().getId().equals(channelId))
-                .toList();
+        return MessageMapper.toResponseList(messageRepository.findByChannelId(channelId));
     }
 
     @Override
-    public Message getMessageByMessageId(UUID messageId) {
-        return findMessageOrThrow(messageId);
+    public MessageResponseDTO findByMessageId(UUID messageId) {
+        return MessageMapper.toResponse(findMessageOrThrow(messageId));
     }
 
     @Override
-    public Message updateMessage(UUID messageId, String newContent) {
-        Message message = findMessageOrThrow(messageId);
-        message.updateContent(newContent);
+    public MessageResponseDTO updateMessage(UpdateMessageRequestDTO dto) {
+        Message message = findMessageOrThrow(dto.messageId());
+
+        if (dto.content() == null) {
+            throw new IllegalArgumentException("content는 null값일 수 없습니다.");
+        }
+
+        message.updateContent(dto.content());
         messageRepository.save(message);
-        // 보낸 사용자쪽 파일 갱신
-        User sender = message.getSentUser();
-        userRepository.save(sender);
 
-        return message;
+        return MessageMapper.toResponse(message);
     }
 
     @Override
     public void deleteMessage(UUID messageId) {
-        findMessageOrThrow(messageId);
-        messageRepository.deleteById(messageId);
-    }
+        List<UUID> ids = findMessageOrThrow(messageId).getAttachmentIds();
 
-    @Override
-    public void clearChannelMessage(UUID channelId) {
-        findChannelOrThrow(channelId);
-        List<UUID> messageIds = messageRepository.findAll().stream()
-                .filter(message -> message.getSentChannel().getId().equals(channelId))
-                .map(Message::getId)
-                .toList();
-
-        if (messageIds.isEmpty()) {
-            throw new NoSuchElementException("해당 채널에 보낸 메시지가 없습니다.");
+        for (UUID id: ids) {
+            binaryContentRepository.deleteById(id);
         }
 
-        // 보낸 사용자쪽 파일 갱신
-        userRepository.findAll().forEach(user -> {
-            user.getSentMessages()
-                    .removeIf(message -> message.getSentChannel().getId().equals(channelId));
-            userRepository.save(user);
-        });
-
-        messageRepository.deleteByChannelId(channelId);
-        channelRepository.save(findChannelOrThrow(channelId));
+        messageRepository.deleteById(messageId);
     }
 
     private Message findMessageOrThrow(UUID messageId) {
@@ -131,5 +120,23 @@ public class BasicMessageService implements MessageService {
         return userRepository.findById(userId)
                 .orElseThrow(() ->
                         new NoSuchElementException("해당 id를 가진 사용자가 존재하지 않습니다."));
+    }
+
+    private void checkDTOHasNull(CreateBinaryContentRequestDTO dto) {
+        if(dto == null) {
+            throw new IllegalArgumentException("bcDTO는 null일 수 없습니다.");
+        }
+
+        if (dto.data() == null) {
+            throw new IllegalArgumentException("data의 값은 null일 수 없습니다.");
+        }
+
+        if (dto.contentType() == null) {
+            throw new IllegalArgumentException("contentType은 null일 수 없습니다.");
+        }
+
+        if (dto.filename() == null) {
+            throw new IllegalArgumentException("filename은 null일 수 없습니다.");
+        }
     }
 }

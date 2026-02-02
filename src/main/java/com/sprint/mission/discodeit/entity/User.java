@@ -1,18 +1,23 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class User extends BaseEntity {
     private String username;
     private String email;
-    private transient String password;
+    private final String password;
     // 채널 참여 내역과 메시지 전송 내역을 기록하는 필드
-    private List<Channel> joinedChannels;
-    private List<Message> sentMessages;
+    private List<UUID> joinedChannelIds;
+    private List<UUID> sentMessageIds;
+    // 사용자의 프로필 이미지
+    private UUID profileImageId;
 
-    public User(String username, String email, String password) {
+    public User(String username, String email, String password, UUID profileImageId) {
         // id 자동생성 및 초기화
         super();
         // 필드 초기화
@@ -20,15 +25,11 @@ public class User extends BaseEntity {
         this.email = email;
         this.password = password;
         // 참여한 채널들과 보낸 메세지들
-        this.joinedChannels = new ArrayList<>();
-        this.sentMessages = new ArrayList<>();
+        this.joinedChannelIds = new ArrayList<>();
+        this.sentMessageIds = new ArrayList<>();
+        // 사용자의 프로필 이미지
+        this.profileImageId = profileImageId;
     }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getEmail() { return email; }
 
     // username 수정 메서드
     public void updateUsername(String username) {
@@ -36,28 +37,25 @@ public class User extends BaseEntity {
         super.setUpdatedAt();
     }
 
-    public List<Channel> getJoinedChannels() {
-        return joinedChannels;
+    public void updateJoinedChannels(UUID channelId) {
+        joinedChannelIds.add(channelId);
     }
 
-    public List<Message> getSentMessages() {
-        return sentMessages;
+    public void removeChannel(UUID channelId) {
+        joinedChannelIds.remove(channelId);
     }
 
-    public void updateJoinedChannels(Channel channel) {
-        joinedChannels.add(channel);
+    public void updateSentMessages(UUID messageId) {
+        sentMessageIds.add(messageId);
     }
 
-    public void removeChannel(Channel channel) {
-        joinedChannels.remove(channel);
+    public void removeSentMessage(UUID messageId) {
+        sentMessageIds.remove(messageId);
     }
 
-    public void updateSentMessages(Message message) {
-        sentMessages.add(message);
-    }
-
-    public void removeSentMessage(Message message) {
-        sentMessages.remove(message);
+    public void updateProfileImage(UUID profileImageId) {
+        this.profileImageId = profileImageId;
+        super.setUpdatedAt();
     }
 
     @Override

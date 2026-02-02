@@ -13,5 +13,7 @@ public interface ChannelRepository {
 
     List<Channel> findAll();
 
+    boolean existsByChannelName(String channelName);
+
     void deleteById(UUID channelId);
 }
