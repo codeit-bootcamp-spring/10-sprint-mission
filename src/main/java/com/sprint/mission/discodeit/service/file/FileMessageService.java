@@ -77,7 +77,7 @@
 //    }
 //
 //    @Override
-//    public void deleteById(UUID messageId) {
+//    public void delete(UUID messageId) {
 //        Message message = findById(messageId);
 //        if (message.getUser() != null) message.getUser().removeMessage(message);
 //        if (message.getChannel() != null) message.getChannel().removeMessage(message);
@@ -89,12 +89,12 @@
 //
 //    @Override
 //    public void deleteMessagesByUserId(UUID authorId) {
-//        findMessagesByUserId(authorId).forEach(m-> deleteById(m.getId()));
+//        findMessagesByUserId(authorId).forEach(m-> delete(m.getId()));
 //    }
 //
 //    @Override
 //    public void deleteMessagesByChannelId(UUID channelId) {
-//        findMessagesByChannelId(channelId).forEach(m-> deleteById(m.getId()));
+//        findMessagesByChannelId(channelId).forEach(m-> delete(m.getId()));
 //    }
 //
 //    // 직렬화

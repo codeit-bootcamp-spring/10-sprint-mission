@@ -26,7 +26,7 @@ public class BinaryContent implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BaseEntity)) return false;
+        if (!(o instanceof BinaryContent)) return false;
         BinaryContent that = (BinaryContent) o;
         return Objects.equals(id, that.id);
     }

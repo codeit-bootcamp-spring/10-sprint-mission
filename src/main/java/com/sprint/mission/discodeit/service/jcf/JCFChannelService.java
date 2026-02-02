@@ -73,7 +73,7 @@
 //    }
 //
 //    @Override
-//    public void deleteById(UUID channelId) {
+//    public void delete(UUID channelId) {
 //        Channel channel = findById(channelId);
 //        messageService.deleteMessagesByChannelId(channelId);
 //        new ArrayList<>(channel.getMemberIds()).forEach(user -> {

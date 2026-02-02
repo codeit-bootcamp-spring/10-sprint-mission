@@ -47,7 +47,7 @@
 //    }
 //
 //    @Override
-//    public void deleteById(UUID id) {
+//    public void delete(UUID id) {
 //        messages.removeIf(m -> m.getId().equals(id));
 //    }
 //}

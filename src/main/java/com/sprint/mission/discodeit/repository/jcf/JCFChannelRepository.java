@@ -47,7 +47,7 @@
 //    }
 //
 //    @Override
-//    public void deleteById(UUID id) {
+//    public void delete(UUID id) {
 //        channels.removeIf(c -> c.getId().equals(id));
 //    }
 //}

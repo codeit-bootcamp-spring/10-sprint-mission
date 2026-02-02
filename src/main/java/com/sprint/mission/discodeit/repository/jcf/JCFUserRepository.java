@@ -61,7 +61,7 @@
 //    }
 //
 //    @Override
-//    public void deleteById(UUID id) {
+//    public void delete(UUID id) {
 //        users.removeIf(u -> u.getId().equals(id));
 //    }
 //}

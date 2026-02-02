@@ -59,7 +59,7 @@
 //    }
 //
 //    @Override
-//    public void deleteById(UUID authorId) {
+//    public void delete(UUID authorId) {
 //        User user = findById(authorId);
 //        messageService.deleteMessagesByUserId(authorId);
 //        new ArrayList<>(user.getChannels()).forEach(channel -> {
