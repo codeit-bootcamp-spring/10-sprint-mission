@@ -88,7 +88,7 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(request.password()).ifPresent(user::updatePassword);
 
         if (request.profile() != null) { //요청에 프로필이 있는지 확인
-            if (user.getProfileId() != null) { //기존 유저에게 프로필이 있는지 확인
+            if (user.getProfileId() != null) { //기존 유저에게 프로필이 있는지 확인, 프로필이 있으면 지움
                 binaryContentRepository.findById(user.getProfileId())
                         .ifPresent(binaryContentRepository::delete);
             }
@@ -120,11 +120,11 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
-        //유저 탈퇴시 유저의 메시지 삭제
+        //유저가 작성한 메시지 목록
         List<Message> messages = messageRepository.findAll().stream()
                 .filter(message -> message.getAuthorId().equals(userId))
                 .toList();
-        //메시지 속 첨부파일 삭제
+        //메시지 속 첨부파일 삭제, 메시지 삭제
         for (Message message : messages) {
             for (UUID attachmentId : message.getAttachmentIds()) {
                 binaryContentRepository.findById(attachmentId)

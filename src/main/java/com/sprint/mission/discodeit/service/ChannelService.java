@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface ChannelService {
     ChannelDTO.Response createPrivate(UUID creatorId, ChannelDTO.CreatePrivate createRequest);
-    ChannelDTO.Response createPublic(ChannelDTO.CreatePublic createRequest);
+    ChannelDTO.Response createPublic(UUID creatorId, ChannelDTO.CreatePublic createRequest);
     ChannelDTO.Response findById(UUID channelId);
     List<ChannelDTO.Response> findAllByUserId(UUID userId);
     void joinChannel(UUID userId, UUID channelId);

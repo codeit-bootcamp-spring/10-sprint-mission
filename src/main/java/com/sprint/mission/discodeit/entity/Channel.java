@@ -2,8 +2,6 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
-import java.util.*;
-
 public class Channel extends BaseEntity {
     @Getter
     private final ChannelType type;

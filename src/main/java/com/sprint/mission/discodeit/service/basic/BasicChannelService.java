@@ -31,6 +31,7 @@ public class BasicChannelService implements ChannelService {
         List<UUID> memberIds = new ArrayList<>(createRequest.userIds());
         //채널 생성자를 참여자 목록에 추가
         memberIds.add(creatorId);
+        //User별 ReadStatus정보 생성
         for (UUID memberId : memberIds) {
             ReadStatus status = new ReadStatus(memberId, channel.getId());
             readStatusRepository.save(status);
@@ -39,14 +40,19 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelDTO.Response createPublic(ChannelDTO.CreatePublic createRequest) {
+    public ChannelDTO.Response createPublic(UUID creatorId, ChannelDTO.CreatePublic createRequest) {
         Channel channel = new Channel(
                 ChannelType.PUBLIC,
                 createRequest.name(),
                 createRequest.description()
         );
         channelRepository.save(channel);
-        return ChannelDTO.Response.of(channel, new ArrayList<>(), null);
+
+        //채널 생성자 자동 가입 로직 추가
+        ReadStatus status = new ReadStatus(creatorId, channel.getId());
+        readStatusRepository.save(status);
+
+        return ChannelDTO.Response.of(channel, List.of(creatorId), null);
     }
 
     @Override
@@ -55,11 +61,10 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
         //채널Id로 ReadStatus를 조회해서 userId를 찾아옴
-        List<UUID> allUserIds = new ArrayList<>();
-        for (ReadStatus status : readStatusRepository.findAllByChannelId(channelId)) {
-            allUserIds.add(status.getUserId());
-        }
-        //채널Id로 메시지 찾아서 가장 최근 메시지 찾기
+        List<UUID> allUserIds = readStatusRepository.findAllByChannelId(channelId).stream()
+                .map(ReadStatus::getUserId)
+                .toList();
+        //채널Id로 메시지 찾아서 가장 최근 메시지 시간 찾기
         Instant lastMessageAt = messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
                 .map(BaseEntity::getCreatedAt)
@@ -73,8 +78,7 @@ public class BasicChannelService implements ChannelService {
         //public 채널 리스트
         List<ChannelDTO.Response> publicChannels = channelRepository.findAll().stream()
                 .filter(channel -> channel.getType() == ChannelType.PUBLIC)
-                .map(Channel::getId)
-                .map(this::findById)
+                .map(channel -> ChannelDTO.Response.of(channel, List.of(), null))
                 .toList();
         //private 채널 리스트(내가 참여하고 있어야함)
         List<ChannelDTO.Response> privateChannels = readStatusRepository.findAllByUserId(userId).stream()
@@ -82,8 +86,7 @@ public class BasicChannelService implements ChannelService {
                 .map(channelRepository::findById)
                 .flatMap(Optional::stream)
                 .filter(channel -> channel.getType() == ChannelType.PRIVATE)
-                .map(Channel::getId)
-                .map(this::findById)
+                .map(channel -> ChannelDTO.Response.of(channel, List.of(), null))
                 .toList();
         List<ChannelDTO.Response> allChannels = new ArrayList<>();
         allChannels.addAll(publicChannels);
@@ -136,11 +139,11 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
 
-        //채널 삭제 시 채널에 있는 메시지 지우기
+        //채널에 있는 메시지 목록
         List<Message> messages = messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
                 .toList();
-        //메시지 속 첨부파일 삭제
+        //메시지 속 첨부파일 삭제, 메시지 삭제
         for (Message message : messages) {
             for (UUID attachmentId : message.getAttachmentIds()) {
                 binaryContentRepository.findById(attachmentId)

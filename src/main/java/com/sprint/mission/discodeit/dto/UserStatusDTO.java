@@ -7,8 +7,7 @@ import java.util.UUID;
 public class UserStatusDTO {
     public record Create(
             UUID userId
-    ) {
-    }
+    ) {}
 
     public record Response(
             UUID id,
