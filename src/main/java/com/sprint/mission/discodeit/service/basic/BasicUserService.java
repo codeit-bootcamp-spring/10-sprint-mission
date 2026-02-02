@@ -22,7 +22,7 @@ import java.util.*;
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository; // 아직 인터페이스 구현체가 없어서 bean을 못찾음.
-    private final UserStatusRepository userStatusRepository;
+    private final UserStatusRepository userStatusRepository; // 이하 동문
     private final UserDTOMapper userDTOMapper;
 
     // 유저 생성 요청 DTO를 받아 유저 도메인 객체를 생성하고, 해당 객체 정보를 바탕으로 UserResponseDTO를 만들어 반환한다.
@@ -65,7 +65,8 @@ public class BasicUserService implements UserService {
                 );
 
         // 유저 상태 레포에서 find
-        UserStatus userStatus = userStatusRepository.findByID(userId);
+        UserStatus userStatus = userStatusRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("해당 User Status 객체는 존재하지 않습니다!"));
+
         return userDTOMapper.userToResponse(user, userStatus); // entities -> DTO
     }
 
@@ -78,7 +79,7 @@ public class BasicUserService implements UserService {
                 .stream() // 유저 레포에서 모든 유저를 찾고 리스트를 stream화
                 // map으로 각 원소(user)를 UserResponseDTO로 변환함.
                 .map(u -> {
-                    return userDTOMapper.userToResponse(u, userStatusRepository.findByID(u.getId()));
+                    return userDTOMapper.userToResponse(u, userStatusRepository.findById(u.getId()).orElseThrow(() -> new NoSuchElementException("해당 UserStatus가 존재하지 않습니다!")));
                 }).toList(); // List<> 형식의 반환값이 필요하므로 List화하여 리턴.
     }
 
@@ -123,7 +124,7 @@ public class BasicUserService implements UserService {
                 newProfileId);
 
         User savedUser = userRepository.save(user); // 영속화
-        return userDTOMapper.userToResponse(user, userStatusRepository.findByID(savedUser.getId())); // Entities -> DTO 후 리턴
+        return userDTOMapper.userToResponse(user, userStatusRepository.findById(savedUser.getId()).orElseThrow(() -> new NoSuchElementException("해당 UserStatus가 존재하지 않습니다!"))); // Entities -> DTO 후 리
     }
 
     // 지우고자 하는 유저를 지우면서 관련된 객체(UserStatus)와 정보(채널 가입 여부 및 메시지)도 같이 삭제하는 메소드
@@ -144,7 +145,7 @@ public class BasicUserService implements UserService {
         }
 
         // 해당 유저의 상태 객체도 삭제.
-        userStatusRepository.deleteByUserID(userId);
+        userStatusRepository.deleteByUserId(userId);
 
         // 최종적으로 해당 유저의 객체까지 삭제한다.
         userRepository.deleteById(userId);

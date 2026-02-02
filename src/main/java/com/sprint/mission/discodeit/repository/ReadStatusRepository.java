@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ReadStatusRepository {
-    public void save(ReadStatus readStatus);
+    public ReadStatus save(ReadStatus readStatus);
     public ReadStatus deleteByID(UUID id);
     public ReadStatus findByID(UUID id);
     public List<ReadStatus> findAll();

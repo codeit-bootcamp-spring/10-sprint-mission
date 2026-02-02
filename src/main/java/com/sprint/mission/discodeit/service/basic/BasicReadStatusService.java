@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -49,7 +48,8 @@ public class BasicReadStatusService implements ReadStatusService {
         }
 
         ReadStatus readStatus = readStatusDTOMapper.createReqToReadStatus(req);
-        return readStatusDTOMapper.rsToResponse(readStatus);
+        ReadStatus saved = readStatusRepository.save(readStatus);
+        return readStatusDTOMapper.rsToResponse(saved);
     }
 
     @Override
@@ -80,14 +80,16 @@ public class BasicReadStatusService implements ReadStatusService {
                 .filter(rs -> req.id().equals(rs.getId()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 ReadStatus 입니다!"));
+
         readStatus.update(req.lastReadAt());
+        ReadStatus saved = readStatusRepository.save(readStatus);
 
         return new RSResponseDTO(readStatus.getId(),
                 req.channelId(),
                 req.userId(),
-                readStatus.getLastReadAt(),
-                readStatus.getCreatedAt(),
-                readStatus.getUpdatedAt());
+                saved.getLastReadAt(),
+                saved.getCreatedAt(),
+                saved.getUpdatedAt());
 
     }
 

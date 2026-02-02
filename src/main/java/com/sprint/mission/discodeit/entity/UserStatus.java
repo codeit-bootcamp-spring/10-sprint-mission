@@ -20,6 +20,7 @@ public class UserStatus extends BaseEntity{
         return (Duration.between(lastActiveAt, Instant.now()).getSeconds() < 300);
     }
 
-
-
+    public void update(Instant lastActivateAt){
+        this.lastActiveAt = lastActivateAt;
+    }
 }
