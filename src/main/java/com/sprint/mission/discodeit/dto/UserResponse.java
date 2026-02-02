@@ -8,7 +8,7 @@ public record UserResponse(
         String email,
         UserOnlineStatus userOnlineStatus
 ) {
-    public static UserResponse from(User user, UserOnlineStatus status) {
+    public static UserResponse of(User user, UserOnlineStatus status) {
         return new UserResponse(
                 user.getUsername(),
                 user.getEmail(),

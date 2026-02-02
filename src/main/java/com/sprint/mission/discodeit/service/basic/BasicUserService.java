@@ -28,17 +28,17 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public UUID createUser(CreateUserRequest createUserRequest) {
-        validateDuplicateUser(createUserRequest);
+    public UUID createUser(CreateUserRequest request) {
+        validateDuplicateUser(request);
 
         User user = new User(
-                createUserRequest.userName(),
-                createUserRequest.password(),
-                createUserRequest.email()
+                request.username(),
+                request.password(),
+                request.email()
         );
-        userRepository.save(user);
 
-        saveUserProfileImage(createUserRequest, user);
+        user = saveUserProfileImage(request, user);
+        userRepository.save(user);
 
         UserStatus userStatus = new UserStatus(user.getId(), user.getUpdatedAt());
         userStatusRepository.save(userStatus);
@@ -46,27 +46,29 @@ public class BasicUserService implements UserService {
         return user.getId();
     }
 
-    private void validateDuplicateUser(CreateUserRequest createUserRequest) {
-        if (userRepository.existsByUsername(createUserRequest.userName())) {
-            throw new IllegalArgumentException("이미 존재하는 username 입니다 username: " + createUserRequest.userName());
+    private void validateDuplicateUser(CreateUserRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new IllegalArgumentException("이미 존재하는 username 입니다 username: " + request.username());
         }
 
-        if (userRepository.existsByEmail(createUserRequest.email())) {
-            throw new IllegalArgumentException("이미 존재하는 email 입니다. email: " + createUserRequest.email());
+        if (userRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("이미 존재하는 email 입니다. email: " + request.email());
         }
     }
 
-    private void saveUserProfileImage(CreateUserRequest createUserRequest, User user) {
-        if (createUserRequest.image() == null) return;
+    private User saveUserProfileImage(CreateUserRequest request, User user) {
+        if (request.profileImage() == null) return user;
 
-        BinaryContent binaryContent = BinaryContent.forUser(
+        BinaryContent binaryContent = new BinaryContent(
                 user.getId(),
-                createUserRequest.image()
+                request.profileImage().type(),
+                request.profileImage().image()
         );
 
         user.updateProfileId(binaryContent.getId());
         binaryContentRepository.save(binaryContent);
-        userRepository.save(user);
+
+        return user;
     }
 
     @Override
@@ -74,7 +76,7 @@ public class BasicUserService implements UserService {
         User user = getUserOrThrow(userId);
         UserStatus userStatus = getUserStatusOrThrow(userId);
 
-        return UserResponse.from(user, userStatus.getOnlineStatus());
+        return UserResponse.of(user, userStatus.getOnlineStatus());
     }
 
     private @NonNull User getUserOrThrow(UUID userId) {
@@ -103,7 +105,7 @@ public class BasicUserService implements UserService {
         return users.stream()
                 .map(user -> {
                     UserStatus status = statusMap.get(user.getId());
-                    return UserResponse.from(user, status.getOnlineStatus());
+                    return UserResponse.of(user, status.getOnlineStatus());
                 })
                 .toList();
     }
@@ -111,24 +113,35 @@ public class BasicUserService implements UserService {
     @Override
     public UserResponse updateUser(UUID requestId, UpdateUserRequest request) {
         User user = getUserOrThrow(requestId);
-        UUID profileId = user.getProfileId();
 
-        deleteBinaryContentById(profileId);
-
-        BinaryContent binaryContent = BinaryContent.forUser(user.getId(), request.image());
-        binaryContentRepository.save(binaryContent);
+        UUID profileId = createBinaryContentIfExist(request, user);
 
         user.update(
                 request.username(),
                 request.password(),
                 request.email(),
-                binaryContent.getId()
+                profileId
         );
 
         userRepository.save(user);
 
         UserStatus userStatus = getUserStatusOrThrow(user.getId());
-        return UserResponse.from(user, userStatus.getOnlineStatus());
+        return UserResponse.of(user, userStatus.getOnlineStatus());
+    }
+
+    private UUID createBinaryContentIfExist(UpdateUserRequest request, User user) {
+        if (request.profileImage() == null) {
+            return null;
+        }
+
+        BinaryContent binaryContent = new BinaryContent(
+                user.getId(),
+                request.profileImage().type(),
+                request.profileImage().image()
+        );
+
+        binaryContentRepository.save(binaryContent);
+        return  binaryContent.getId();
     }
 
     @Override

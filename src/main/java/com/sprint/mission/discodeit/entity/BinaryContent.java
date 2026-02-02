@@ -14,16 +14,16 @@ public class BinaryContent {
     private final byte[] image;
     private final Instant createdAt;
 
-    public BinaryContent(UUID ownerId, BinaryContentOwnerType binaryContentOwnerType, byte[] image) {
+    public BinaryContent(
+            UUID ownerId,
+            BinaryContentOwnerType binaryContentOwnerType,
+            byte[] image
+    ) {
         this.id = UUID.randomUUID();
         this.ownerId = ownerId;
         this.binaryContentOwnerType = binaryContentOwnerType;
         this.image = image;
 
         this.createdAt = Instant.now();
-    }
-
-    public static BinaryContent forUser(UUID userId, byte[] data) {
-        return new BinaryContent(userId, BinaryContentOwnerType.USER, data);
     }
 }

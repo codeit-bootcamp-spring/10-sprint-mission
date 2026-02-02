@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Repository
 public class FileUserStatusRepository implements UserStatusRepository {
+
     private static final Path USER_STATUS_DIRECTORY =
             FileIOHelper.resolveDirectory("userStatuses");
 

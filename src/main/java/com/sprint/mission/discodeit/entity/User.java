@@ -10,14 +10,18 @@ public class User extends BaseEntity {
     private String password;
     private String email;
     private UUID profileId;
-    private List<UUID> messages;
+    private List<UUID> messageIds;
 
-    public User(String username, String password, String email) {
+    public User(
+            String username,
+            String password,
+            String email
+    ) {
         this.username = username;
         this.password = password;
         this.email = email;
 
-        this.messages = new ArrayList<>();
+        this.messageIds = new ArrayList<>();
     }
 
     public void updateProfileId(UUID profileId) {
@@ -43,13 +47,13 @@ public class User extends BaseEntity {
     }
 
     public void addMessage(UUID messageId) {
-        messages.add(messageId);
+        messageIds.add(messageId);
         markUpdated();
     }
 
 
     public void removeMessage(Message message) {
-        messages.remove(message);
+        messageIds.remove(message);
         markUpdated();
     }
 }

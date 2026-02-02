@@ -8,12 +8,15 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import org.springframework.stereotype.Repository;
 
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public class FileMessageRepository implements MessageRepository {
+
     private static final Path MESSAGE_DIRECTORY =
             FileIOHelper.resolveDirectory("messages");
 
@@ -48,7 +51,7 @@ public class FileMessageRepository implements MessageRepository {
         List<Message> messages = FileIOHelper.loadAll(MESSAGE_DIRECTORY);
 
         messages.stream()
-                .filter(message -> message.getSender().getId().equals(user.getId()))
+                .filter(message -> message.getSenderId().equals(user.getId()))
                 .forEach(message -> {
                     Path messagePath =
                             MESSAGE_DIRECTORY.resolve(message.getId().toString());
@@ -62,12 +65,34 @@ public class FileMessageRepository implements MessageRepository {
         List<Message> messages = FileIOHelper.loadAll(MESSAGE_DIRECTORY);
 
         messages.stream()
-                .filter(message -> message.getChannel().getId().equals(channel.getId()))
+                .filter(message -> message.getChannelId().equals(channel.getId()))
                 .forEach(message -> {
                     Path messagePath =
                             MESSAGE_DIRECTORY.resolve(message.getId().toString());
 
                     FileIOHelper.delete(messagePath);
                 });
+    }
+
+    @Override
+    public Instant findLastMessageAtByChannelId(UUID channelId) {
+        return FileIOHelper.<Message>loadAll(MESSAGE_DIRECTORY).stream()
+                .filter(message ->
+                        message.getChannelId().equals(channelId)
+                )
+                .map(Message::getCreatedAt)
+                .max(Instant::compareTo)
+                .orElse(null);
+    }
+
+    @Override
+    public Map<UUID, Instant> findLastMessageAtByChannelIds(List<UUID> channelIds) {
+        return Map.of();
+    }
+
+    @Override
+    public void deleteById(UUID messageId) {
+        Path messagePath = MESSAGE_DIRECTORY.resolve(messageId.toString());
+        FileIOHelper.delete(messagePath);
     }
 }

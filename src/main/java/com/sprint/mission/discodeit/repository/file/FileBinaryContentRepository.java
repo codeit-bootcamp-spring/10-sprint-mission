@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Repository
 public class FileBinaryContentRepository implements BinaryContentRepository {
+
     private static final Path BINARY_CONTENT_DIRECTORY =
             FileIOHelper.resolveDirectory("binaryContents");
 

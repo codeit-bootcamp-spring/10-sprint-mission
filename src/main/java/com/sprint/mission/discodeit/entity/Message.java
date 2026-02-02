@@ -10,7 +10,7 @@ public class Message extends BaseEntity {
     private UUID senderId;
     private UUID channelId;
     private String content;
-    private List<UUID> attachments;
+    private List<UUID> attachmentIds;
 
     public Message(User sender, Channel channel, String content) {
         channel.validateChannelMember(sender);
@@ -31,7 +31,7 @@ public class Message extends BaseEntity {
     public void addUser(User user) {
         this.sender = user;
 
-        if (!user.getMessages().contains(this)) {
+        if (!user.getMessageIds().contains(this)) {
             user.addMessage(this);
         }
     }
@@ -39,7 +39,7 @@ public class Message extends BaseEntity {
     public void addChannel(Channel channel) {
         this.channel = channel;
 
-        if (!channel.getMessages().contains(this)) {
+        if (!channel.getMessageIds().contains(this)) {
             channel.addMessage(this);
         }
     }

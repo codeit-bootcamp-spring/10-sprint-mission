@@ -41,6 +41,10 @@ public class FileIOHelper {
         }
     }
 
+    public static boolean exists(Path filePath) {
+        return Files.exists(filePath);
+    }
+
     public static <T> Optional<T> load(Path directory) {
         if (!Files.exists(directory)) {
             return Optional.empty();

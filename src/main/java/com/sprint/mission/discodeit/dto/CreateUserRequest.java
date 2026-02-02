@@ -4,6 +4,6 @@ public record CreateUserRequest(
         String username,
         String password,
         String email,
-        byte[] image
+        BinaryContentRequest profileImage
 ) {
 }

@@ -13,7 +13,10 @@ public class UserStatus {
     private final UUID userId;
     private Instant lastActiveAt;
 
-    public UserStatus(UUID userId, Instant lastActiveAt) {
+    public UserStatus(
+            UUID userId,
+            Instant lastActiveAt
+    ) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.lastActiveAt = lastActiveAt;

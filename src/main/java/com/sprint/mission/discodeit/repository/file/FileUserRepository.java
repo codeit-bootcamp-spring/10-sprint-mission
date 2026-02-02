@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Repository
 public class FileUserRepository implements UserRepository {
+
     private static final Path USER_DIRECTORY =
             FileIOHelper.resolveDirectory("users");
 
@@ -30,6 +31,14 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByUsername(String username) {
+        return FileIOHelper.<Optional<User>>loadAll(USER_DIRECTORY).stream()
+                .flatMap(Optional::stream)
+                .filter(user -> user.getUsername().equals(username))
+                .findFirst();
+    }
+
+    @Override
     public List<User> findAll() {
         return FileIOHelper.loadAll(USER_DIRECTORY);
     }
@@ -39,6 +48,13 @@ public class FileUserRepository implements UserRepository {
         Path userFilePath = USER_DIRECTORY.resolve(user.getId().toString());
 
         FileIOHelper.delete(userFilePath);
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        Path userFilePath = USER_DIRECTORY.resolve(id.toString());
+
+        return FileIOHelper.exists(userFilePath);
     }
 
     @Override

@@ -6,97 +6,88 @@ import java.util.*;
 
 @Getter
 public class Channel extends BaseEntity {
-    private UUID ownerId;
     private String name;
     private String description;
-    private Set<UUID> members;
-    private List<UUID> messages;
+    private ChannelType channelType;
+    private Set<UUID> memberIds;
+    private List<UUID> messageIds;
 
-    public Channel(User user, String name) {
-        this.owner = user;
+    public Channel(
+            String name,
+            String description,
+            ChannelType channelType,
+            Set<UUID> memberIds
+    ) {
         this.name = name;
-        this.members = new HashSet<>();
-        this.members.add(user);
-        this.messages = new ArrayList<>();
-        user.addChannel(this);
+        this.description = description;
+        this.channelType = channelType;
+        this.memberIds = new HashSet<>(memberIds);
+
+        messageIds = new ArrayList<>();
     }
 
-    public void updateName(String name) {
-        this.name = name;
+    public static Channel buildPublic(
+            String name,
+            String description
+    ) {
+        return new Channel(
+                name,
+                description,
+                ChannelType.PUBLIC,
+                new HashSet<>()
+        );
+    }
+
+    public static Channel buildPrivate(
+            Set<UUID> memberIds
+    ) {
+        return new Channel(
+                null,
+                null,
+                ChannelType.PRIVATE,
+                new HashSet<>(memberIds) // 방어적 복사
+        );
+    }
+
+    public boolean isPublic() {
+        return channelType.isPublic();
+    }
+
+    public boolean isPrivate() {
+        return channelType.isPrivate();
+    }
+
+    public boolean hasMember(UUID memberId) {
+        return memberIds.contains(memberId);
+    }
+
+    public void updateInfo(String name, String description) {
+        Optional.ofNullable(name)
+                .ifPresent(value -> this.name = value);
+        Optional.ofNullable(description)
+                .ifPresent(value -> this.description = value);
+
         markUpdated();
     }
 
-    public void addMember(User user) {
-        members.add(user);
-        user.addChannel(this);
+    public void removeMessage(UUID messageId) {
+        messageIds.remove(messageId);
         markUpdated();
     }
 
-    public void addMessage(Message message) {
-        if (!messages.contains(message)) {
-            messages.add(message);
-        }
-
-        if (message.getChannel() != this) {
-            message.addChannel(this);
-        }
+    public void addMember(UUID memberId) {
+        memberIds.add(memberId);
         markUpdated();
     }
 
-    public void clear() {
-        for (User member : new ArrayList<>(members)) {
-            removeMember(member);
-        }
-
-        for (Message message : new ArrayList<>(messages)) {
-            message.detachFromUser();
-        }
-
-        messages.clear();
-    }
-
-    public void removeMember(User member) {
-        members.remove(member);
-
-        if (member.hasChannel(this)) {
-            member.removeChannel(this);
-        }
-
+    public void addMessage(UUID messageId) {
+        messageIds.add(messageId);
         markUpdated();
     }
 
-    public void removeMessage(Message message) {
-        messages.remove(message);
-        markUpdated();
-    }
-
-    public void validateChannelOwner(User user) {
-        if (!this.isOwner(user)) {
-            throw new IllegalArgumentException("채널 소유자가 아닙니다 userId: " + user.getId());
+    public void validateChannelMember(UUID memberId) {
+        if (!this.hasMember(memberId)) {
+            throw new IllegalArgumentException("채널 멤버가 아닙니다. memberId: " + memberId);
         }
-    }
-
-    public void validateChannelMember(User user) {
-        if (!this.hasMember(user)) {
-            throw new IllegalArgumentException("채널 멤버가 아닙니다. userId: " + user.getId());
-        }
-    }
-
-    public boolean isOwner(User user) {
-        return owner.equals(user);
-    }
-
-    public boolean hasMember(User member) {
-        return members.contains(member);
-    }
-
-    @Override
-    public String toString() {
-        return "Channel{" +
-                "ownerName=" + owner.getNickName() +
-                ", name='" + name + '\'' +
-                ", membersSize=" + members.size() +
-                ", messagesSize=" + messages.size() +
-                '}';
     }
 }

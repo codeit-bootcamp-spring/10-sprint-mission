@@ -12,6 +12,7 @@ import java.util.UUID;
 
 @Repository
 public class FileChannelRepository implements ChannelRepository {
+
     private static final Path CHANNEL_DIRECTORY =
             FileIOHelper.resolveDirectory("channels");
 
