@@ -55,8 +55,7 @@ public class BasicChannelService implements ChannelService {
 
         User user = userRepository.findById(channelCreateDto.userDto().userId()).orElseThrow(() -> new NoSuchElementException("유저가 없음"));
         Channel channel = channelRepository.save(new Channel(PUBLIC, channelCreateDto.name(), channelCreateDto.discription()));
-        ReadStatus readStatus = new ReadStatus(user.getId(),channel.getId());
-        readStatusRepository.save(readStatus);
+        readStatusService.create(channelCreateDto.readStatusDto());
 
         List<UUID> users = new ArrayList<>(List.of(user.getId()));
         return new ChannelResponseDto(

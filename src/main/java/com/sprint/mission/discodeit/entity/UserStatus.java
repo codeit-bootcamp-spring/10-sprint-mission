@@ -16,7 +16,6 @@ public class UserStatus {
     private Instant updatedAt;
     //
     private UUID userId;
-//    private boolean online;//시간에따라 계산되는 결과라 필드 x
 
     public UserStatus(UUID userId) {
         this.id = UUID.randomUUID();
