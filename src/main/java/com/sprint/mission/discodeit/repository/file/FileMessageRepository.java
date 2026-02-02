@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.util.FileUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -22,9 +23,10 @@ import java.util.UUID;
         havingValue = "file"
 )
 public class FileMessageRepository implements MessageRepository {
-    private final Path directory = Paths.get(System.getProperty("user.dir"), "data", "messages");              // 경로 설정
+    private final Path directory;
 
-    public FileMessageRepository() {
+    public FileMessageRepository(@Value("${discodeit.repository.file-directory}") String baseDirectory) {
+        this.directory = Paths.get(System.getProperty("user.dir"), baseDirectory, "message");
         FileUtil.init(directory);
     }
 

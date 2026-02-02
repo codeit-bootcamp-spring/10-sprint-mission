@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.util.FileUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -20,9 +21,10 @@ import java.util.UUID;
         havingValue = "file"
 )
 public class FileBinaryContentRepository implements BinaryContentRepository {
-    private final Path directory = Paths.get(System.getProperty("user.dir"), "data", "binaryContent");
+    private final Path directory;
 
-    public FileBinaryContentRepository() {
+    public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory}") String baseDirectory) {
+        this.directory = Paths.get(System.getProperty("user.dir"), baseDirectory, "binaryContent");
         FileUtil.init(directory);
     }
 
