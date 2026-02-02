@@ -14,10 +14,10 @@ public class UserStatus {
     private Instant lastSeenAt;
     private final Instant createdAt;
     private Instant updatedAt;
-    private String status; // "ONLINE","OFFLINE","AWAY"
+    private UserStatusType status;
     private Instant lastActiveAt;
 
-    public UserStatus(UUID userId,String status,Instant lastActiveAt) {
+    public UserStatus(UUID userId, UserStatusType status, Instant lastActiveAt) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.status = status;

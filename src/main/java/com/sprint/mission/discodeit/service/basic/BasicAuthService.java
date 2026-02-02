@@ -39,7 +39,7 @@ public class BasicAuthService implements AuthService {
                 .orElseThrow(() -> new NoSuchElementException("UserStatus not found for user: " + user.getId()));
 
         userStatus.updateStatus("ONLINE");
-        userStatus.updateLastActiveAt(Instant.now());
+        userStatus. updateLastActiveAt(Instant.now());
         userStatusRepository.save(userStatus);
 
         // 4. UserResponse 반환 (패스워드 제외, 온라인 상태 포함)
