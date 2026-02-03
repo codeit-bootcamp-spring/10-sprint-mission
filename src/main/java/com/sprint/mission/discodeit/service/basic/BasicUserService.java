@@ -76,9 +76,10 @@ public class BasicUserService implements UserService {
         if (!userUpdateDTO.name().isEmpty()) {
             user.updateName(userUpdateDTO.name());
         }
-        if (userUpdateDTO.profile() != null) {
-            user.updateProfile(userUpdateDTO.profile().getId());
-            this.binaryContentRepository.save(userUpdateDTO.profile());
+        if (userUpdateDTO.profileImage() != null) {
+            BinaryContent profile = new BinaryContent(userUpdateDTO.profileImage().fileName(), userUpdateDTO.profileImage().fileType(), userUpdateDTO.profileImage().bytes());
+            user.updateProfile(profile.getId());
+            this.binaryContentRepository.save(profile);
         }
 
         return createUserDTO(user, this.userStatusRepository.loadById(user.getId()));

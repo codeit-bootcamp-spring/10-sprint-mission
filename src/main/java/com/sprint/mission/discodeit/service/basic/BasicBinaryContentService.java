@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDTO;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -17,8 +18,8 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public BinaryContentDTO create(BinaryContentDTO binaryContentDTO) {
-        BinaryContent binaryContent = new BinaryContent(binaryContentDTO.fileName(), binaryContentDTO.fileType(), binaryContentDTO.bytes());
+    public BinaryContentDTO create(BinaryContentCreateDTO binaryContentCreateDTO) {
+        BinaryContent binaryContent = new BinaryContent(binaryContentCreateDTO.fileName(), binaryContentCreateDTO.fileType(), binaryContentCreateDTO.bytes());
         this.binaryContentRepository.save(binaryContent);
         return new BinaryContentDTO(binaryContent.getFileName(), binaryContent.getFileType(), binaryContent.getBytes());
     }

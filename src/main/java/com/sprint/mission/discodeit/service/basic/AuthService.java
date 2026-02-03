@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.user.UserLoginDTO;
+import com.sprint.mission.discodeit.dto.auth.UserLoginClearDTO;
+import com.sprint.mission.discodeit.dto.auth.UserLoginDTO;
+import com.sprint.mission.discodeit.dto.user.UserDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
@@ -13,10 +15,14 @@ public class AuthService {
         this.userRepository = userRepository;
     }
 
-    public User login(UserLoginDTO userLoginDTO) {
+    public UserLoginClearDTO login(UserLoginDTO userLoginDTO) {
         for (User user : this.userRepository.loadAll()) {
             if (user.getName().equals(userLoginDTO.username()) && user.getPassword().equals(userLoginDTO.password())) {
-                return user;
+                return new UserLoginClearDTO(
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail()
+                );
             }
         }
         throw new NoSuchElementException();
