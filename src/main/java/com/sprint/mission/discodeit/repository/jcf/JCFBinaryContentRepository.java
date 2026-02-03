@@ -1,14 +1,15 @@
-package com.sprint.mission.discodeit.repository;
+package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class BinaryContentRepositoryTemp implements BinaryContentRepository {
-
+public class JCFBinaryContentRepository implements BinaryContentRepository {
     @Override
     public BinaryContent save(BinaryContent content) {
         return null;
@@ -17,6 +18,11 @@ public class BinaryContentRepositoryTemp implements BinaryContentRepository {
     @Override
     public Optional<BinaryContent> findById(UUID contentId) {
         return Optional.empty();
+    }
+
+    @Override
+    public List<BinaryContent> findAllByIdIn(List<UUID> contentIds) {
+        return List.of();
     }
 
     @Override
