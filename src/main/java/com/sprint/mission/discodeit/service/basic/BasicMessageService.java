@@ -96,11 +96,24 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponseDto update(UUID messageId, MessageRequestDto messageUpdateDto) {//DTO를 활용해 파라미터를 그룹화 합니다.
+    public MessageResponseDto update(UUID messageId, MessageRequestDto messageUpdateDto) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + messageId + " not found"));
 
-        message.update(messageUpdateDto.content());
+        List<UUID> binaryContentIds = messageUpdateDto.binaryContentRequestDto()
+                .stream()
+                .map(dto -> {
+                    BinaryContent binaryContent = new BinaryContent(
+                            dto.userId(),
+                            dto.data(),
+                            dto.contentType(),
+                            dto.fileName()
+                    );
+                    binaryContentRepository.save(binaryContent);
+                    return binaryContent.getId();
+                }).toList();
+
+        message.update(messageUpdateDto.content(),binaryContentIds);
         messageRepository.save(message);
 
         return new MessageResponseDto(

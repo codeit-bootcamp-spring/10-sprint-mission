@@ -13,7 +13,7 @@ public class BinaryContent {
     //
     //User,Message 객체로 안받고 id로 받는 이유는 결합도 낮추기 위해.
     private UUID userId;
-//    private UUID messageId;
+    private UUID messageId;
     private byte[] data;
     private String contentType;
     private String fileName;

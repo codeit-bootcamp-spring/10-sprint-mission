@@ -38,12 +38,17 @@ public class Message implements Serializable {
 
     }
 
-    public void update(String newContent) {
+    public void update(String newContent,List<UUID> newAttachmentIds) {
         boolean anyValueUpdated = false;
         if (newContent != null && !newContent.equals(this.content)) {
             this.content = newContent;
             anyValueUpdated = true;
         }
+        if (newAttachmentIds != null && !newAttachmentIds.equals(this.attachmentIds)) {
+            this.attachmentIds = newAttachmentIds;
+            anyValueUpdated = true;
+        }
+
 
         if (anyValueUpdated) {
             this.updatedAt = Instant.now();

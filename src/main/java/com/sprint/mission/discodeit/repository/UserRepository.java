@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.User;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,6 +16,6 @@ public interface UserRepository {
 
     //검증용
     boolean existsByUsername(String username);
-    boolean existsByPassword(String password);
+    Optional<User> findByUserNameAndPassword(String  userName, String userPassword);
     boolean existsByEmail(String email);
 }

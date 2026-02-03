@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentRequestDto;
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,8 +19,18 @@ import java.util.UUID;
 public class BinaryContentService {
 
     private final BinaryContentRepository binaryContentRepository;
+    private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
 
     public BinaryContentResponseDto create(BinaryContentRequestDto binaryContentCreateDto){
+        if(binaryContentCreateDto.userId() != null && !userRepository.existsById(binaryContentCreateDto.userId())){//userId가 있을경우
+            userRepository.findById(binaryContentCreateDto.userId())
+                    .orElseThrow(() -> new NoSuchElementException("존재하는 유저가 없습니다."));
+        }
+        if(binaryContentCreateDto.messageId() != null && !messageRepository.existsById(binaryContentCreateDto.messageId())){
+            messageRepository.findById(binaryContentCreateDto.messageId())
+                    .orElseThrow(() -> new NoSuchElementException("존재하는 메시지가 없습니다."));
+        }
         BinaryContent binaryContent = new BinaryContent(
                 binaryContentCreateDto.userId(),
                 binaryContentCreateDto.data(),
@@ -63,8 +75,10 @@ public class BinaryContentService {
     }
 
     public void delete(UUID binaryContentId){
+        if(!binaryContentRepository.existsById(binaryContentId)){
+            throw new NoSuchElementException("삭제할 BinaryContent가 없습니다.");
+        }
         binaryContentRepository.deleteById(binaryContentId);
     }
-
 
 }
