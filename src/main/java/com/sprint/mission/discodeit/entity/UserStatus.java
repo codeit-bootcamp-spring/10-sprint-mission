@@ -4,13 +4,14 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.io.Serial;
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Getter
 @ToString
-public class UserStatus extends BaseEntity{
+public class UserStatus extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 

@@ -25,6 +25,18 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     }
 
     @Override
+    public List<BinaryContent> findAllById(Iterable<UUID> ids) {
+        List<BinaryContent> result = new ArrayList<>();
+        for (UUID id : ids) {
+            BinaryContent content = data.get(id);
+            if (content != null) {
+                result.add(content);
+            }
+        }
+        return result;
+    }
+
+    @Override
     public List<BinaryContent> findAll(){
         return data.values().stream().toList();
     }
