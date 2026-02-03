@@ -69,8 +69,8 @@ public class BasicMessageService implements MessageService {
         List<Message> messages = messageRepository.findByChannelId(channelId);
 
         return messages.stream().map(message -> {
-            User user = getUserOrThrow(message.getSenderId());
             List<byte[]> images = getImagesOrThrow(message.getAttachmentIds());
+
             return MessageResponse.of(message, images);
         }).toList();
     }
@@ -92,7 +92,6 @@ public class BasicMessageService implements MessageService {
 
         messageRepository.save(message);
 
-        User user = getUserOrThrow(message.getSenderId());
         List<byte[]> images = getImagesOrThrow(message.getAttachmentIds());
         return MessageResponse.of(message, images);
     }

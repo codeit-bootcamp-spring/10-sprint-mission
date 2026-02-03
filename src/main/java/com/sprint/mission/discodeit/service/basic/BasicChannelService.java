@@ -76,7 +76,7 @@ public class BasicChannelService implements ChannelService {
         return ChannelResponse.of(channel, lastMessageAt);
     }
 
-    public Channel getChannelOrThrow(UUID id) {
+    private Channel getChannelOrThrow(UUID id) {
         return channelRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다 channelId: " + id));
     }
