@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentRequest;
-import com.sprint.mission.discodeit.dto.CreateMessageRequest;
-import com.sprint.mission.discodeit.dto.MessageResponse;
-import com.sprint.mission.discodeit.dto.UpdateMessageRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
+import com.sprint.mission.discodeit.dto.message.CreateMessageRequest;
+import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.UpdateMessageRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -66,7 +66,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public List<MessageResponse> findAllMessagesByChannelId(UUID channelId) {
-        List<Message> messages = messageRepository.findByChannelId(channelId);
+        List<Message> messages = messageRepository.findAllByChannelId(channelId);
 
         return messages.stream().map(message -> {
             List<byte[]> images = getImagesOrThrow(message.getAttachmentIds());
@@ -76,7 +76,7 @@ public class BasicMessageService implements MessageService {
     }
 
     private List<byte[]> getImagesOrThrow(List<UUID> attachmentIds) {
-        return binaryContentRepository.findImagesByIds(attachmentIds);
+        return binaryContentRepository.findAllImagesByIds(attachmentIds);
     }
 
     @Override

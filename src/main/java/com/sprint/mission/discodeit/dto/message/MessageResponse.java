@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto;
+package com.sprint.mission.discodeit.dto.message;
 
 import com.sprint.mission.discodeit.entity.Message;
 

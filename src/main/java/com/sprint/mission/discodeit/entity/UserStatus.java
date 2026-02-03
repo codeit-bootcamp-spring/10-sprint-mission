@@ -8,8 +8,8 @@ import java.util.UUID;
 
 @Getter
 public class UserStatus implements Serializable {
-    private static final int ONLINE_TIMEOUT_SECONDS = 300;
     private static final long serialVersionUID = 1L;
+    private static final int ONLINE_TIMEOUT_SECONDS = 300;
 
     private final UUID id;
     private final UUID userId;
@@ -35,5 +35,9 @@ public class UserStatus implements Serializable {
         return lastActiveAt.isAfter(threshold)
                 ? UserOnlineStatus.ONLINE
                 : UserOnlineStatus.OFFLINE;
+    }
+
+    public void setLastActiveAt(Instant temp) {
+        this.lastActiveAt = temp;
     }
 }

@@ -17,12 +17,21 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
             FileIOHelper.resolveDirectory("binaryContents");
 
     @Override
-    public List<byte[]> findImagesByIds(List<UUID> attachmentIds) {
+    public List<byte[]> findAllImagesByIds(List<UUID> attachmentIds) {
         return attachmentIds.stream()
                 .map(id -> BINARY_CONTENT_DIRECTORY.resolve(id.toString()))
                 .map(path -> FileIOHelper.<BinaryContent>load(path))
                 .flatMap(Optional::stream)
                 .map(BinaryContent::getImage)
+                .toList();
+    }
+
+    @Override
+    public List<BinaryContent> findAllByIds(List<UUID> ids) {
+        return ids.stream()
+                .map(id -> BINARY_CONTENT_DIRECTORY.resolve(id.toString()))
+                .map(path -> FileIOHelper.<BinaryContent>load(path))
+                .flatMap(Optional::stream)
                 .toList();
     }
 

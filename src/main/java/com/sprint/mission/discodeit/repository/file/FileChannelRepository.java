@@ -38,7 +38,7 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public List<Channel> findVisibleChannel(UUID requesterId) {
+    public List<Channel> findVisibleChannels(UUID requesterId) {
         List<Channel> channels = FileIOHelper.loadAll(CHANNEL_DIRECTORY);
 
         return channels.stream()
@@ -47,5 +47,11 @@ public class FileChannelRepository implements ChannelRepository {
                                 || (channel.isPrivate() && channel.hasMember(requesterId))
                 )
                 .toList();
+    }
+
+    @Override
+    public boolean existsById(UUID channelId) {
+        Path channelFilePath = CHANNEL_DIRECTORY.resolve(channelId.toString());
+        return FileIOHelper.exists(channelFilePath);
     }
 }

@@ -1,13 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.LoginRequest;
-import com.sprint.mission.discodeit.dto.UserResponse;
+import com.sprint.mission.discodeit.dto.auth.LoginRequest;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +38,7 @@ public class BasicAuthService implements AuthService {
         }
     }
 
-    private @NonNull User getUserOrThrow(LoginRequest request) {
+    private User getUserOrThrow(LoginRequest request) {
         User user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다 username: " + request.username()));
         return user;
@@ -51,7 +50,7 @@ public class BasicAuthService implements AuthService {
         }
     }
 
-    private @NonNull UserStatus getUserStatusOrThrow(UUID userId) {
+    private UserStatus getUserStatusOrThrow(UUID userId) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus 찾을 수 없습니다 userId: " + userId));
         return userStatus;

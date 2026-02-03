@@ -42,4 +42,22 @@ public class FileUserStatusRepository implements UserStatusRepository {
             FileIOHelper.delete(path);
         });
     }
+
+    @Override
+    public boolean existsByUserId(UUID userId) {
+        return FileIOHelper.<UserStatus>loadAll(USER_STATUS_DIRECTORY).stream()
+                .anyMatch(status -> status.getUserId().equals(userId));
+    }
+
+    @Override
+    public Optional<UserStatus> findById(UUID id) {
+        Path path = USER_STATUS_DIRECTORY.resolve(id.toString());
+        return FileIOHelper.load(path);
+    }
+
+    @Override
+    public void deleteById(UUID userStatusId) {
+        Path path = USER_STATUS_DIRECTORY.resolve(userStatusId.toString());
+        FileIOHelper.delete(path);
+    }
 }

@@ -1,25 +1,26 @@
-package com.sprint.mission.discodeit.dto;
+package com.sprint.mission.discodeit.dto.channel;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 
 import java.time.Instant;
-import java.util.Set;
 import java.util.UUID;
 
-public record PrivateChannelResponse(
+public record PublicChannelResponse(
         UUID id,
-        Set<UUID> memberIds,
+        String name,
+        String description,
         ChannelType channelType,
         Instant lastMessageAt
 ) implements ChannelResponse {
-    public static PrivateChannelResponse of(
+    public static PublicChannelResponse of(
             Channel channel,
             Instant lastMessageAt
     ) {
-        return new PrivateChannelResponse(
+        return new PublicChannelResponse(
                 channel.getId(),
-                channel.getMemberIds(),
+                channel.getName(),
+                channel.getDescription(),
                 channel.getChannelType(),
                 lastMessageAt
         );

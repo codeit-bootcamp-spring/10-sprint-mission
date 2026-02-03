@@ -15,4 +15,12 @@ public class ReadStatus extends BaseEntity {
         this.channelId = channelId;
         this.readStatusType = ReadStatusType.UNREAD;
     }
+
+    public void updateReadStatusType() {
+        if (this.readStatusType == ReadStatusType.UNREAD) {
+            this.readStatusType = ReadStatusType.READ;
+        } else {
+            this.readStatusType = ReadStatusType.UNREAD;
+        }
+    }
 }

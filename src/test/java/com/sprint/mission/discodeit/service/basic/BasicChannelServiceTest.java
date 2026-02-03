@@ -1,10 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.*;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.channel.*;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -133,7 +130,7 @@ public class BasicChannelServiceTest {
                     .containsExactlyInAnyOrder(userId1, userId2);
 
             List<ReadStatus> readStatuses =
-                    readStatusRepository.findByChannelId(channelId);
+                    readStatusRepository.findAllByChannelId(channelId);
 
             assertThat(readStatuses).hasSize(2);
         }
@@ -213,9 +210,38 @@ public class BasicChannelServiceTest {
     }
 
     @Test
+    @DisplayName("채널 마지막 메시지 시간 채널의 최신 메시지 기준으로 반환")
+    void findChannel_lastMessageAt_success() {
+        // given
+        UUID channelId =
+                channelService.createPublicChannel(
+                        new CreatePublicChannelRequest("공지", "공지 채널")
+                );
+
+        Message first = new Message(userId1, channelId, "첫번째");
+        messageRepository.save(first);
+
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        Message second = new Message(userId1, channelId, "두번째");
+        messageRepository.save(second);
+
+        // when
+        ChannelResponse response =
+                channelService.findChannelByChannelId(channelId);
+
+        // then
+        assertThat(response.lastMessageAt())
+                .isEqualTo(second.getCreatedAt());
+    }
+
+    @Test
     @DisplayName("Private 멤버 아닌 경우 조회 불가")
     void privateChannel_notVisible() {
-
         channelService.createPrivateChannel(
                 new CreatePrivateChannelRequest(Set.of(userId1))
         );
@@ -237,6 +263,6 @@ public class BasicChannelServiceTest {
         channelService.deleteChannel(channelId);
 
         assertThat(channelRepository.findById(channelId)).isEmpty();
-        assertThat(readStatusRepository.findByChannelId(channelId)).isEmpty();
+        assertThat(readStatusRepository.findAllByChannelId(channelId)).isEmpty();
     }
 }

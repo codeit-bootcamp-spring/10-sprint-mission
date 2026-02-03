@@ -8,7 +8,9 @@ import java.util.UUID;
 
 public interface BinaryContentRepository {
 
-    List<byte[]> findImagesByIds(List<UUID> attachmentIds);
+    List<byte[]> findAllImagesByIds(List<UUID> attachmentIds);
+
+    List<BinaryContent> findAllByIds(List<UUID> ids);
 
     void save(BinaryContent binaryContent);
 

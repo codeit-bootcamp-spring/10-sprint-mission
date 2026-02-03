@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -25,7 +26,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public List<ReadStatus> findByChannelId(UUID channelId) {
+    public List<ReadStatus> findAllByChannelId(UUID channelId) {
         return FileIOHelper.<ReadStatus>loadAll(READ_STATUS_DIRECTORY).stream()
                 .filter(readStatus ->
                         readStatus.getChannelId().equals(channelId)
@@ -39,6 +40,43 @@ public class FileReadStatusRepository implements ReadStatusRepository {
                 readStatus.getId().toString()
         );
 
+        FileIOHelper.delete(filePath);
+    }
+
+    @Override
+    public boolean existsByChannelId(UUID channelId) {
+        return FileIOHelper.<ReadStatus>loadAll(READ_STATUS_DIRECTORY).stream()
+                .anyMatch(readStatus ->
+                        readStatus.getChannelId().equals(channelId)
+                );
+    }
+
+    @Override
+    public boolean existsByUserId(UUID userId) {
+        return FileIOHelper.<ReadStatus>loadAll(READ_STATUS_DIRECTORY).stream()
+                .anyMatch(readStatus ->
+                        readStatus.getUserId().equals(userId)
+                );
+    }
+
+    @Override
+    public Optional<ReadStatus> findById(UUID readStatusId) {
+        Path filePath = READ_STATUS_DIRECTORY.resolve(readStatusId.toString());
+        return FileIOHelper.load(filePath);
+    }
+
+    @Override
+    public List<ReadStatus> findAllByUserId(UUID userId) {
+        return FileIOHelper.<ReadStatus>loadAll(READ_STATUS_DIRECTORY).stream()
+                .filter(readStatus ->
+                        readStatus.getUserId().equals(userId)
+                )
+                .toList();
+    }
+
+    @Override
+    public void deleteById(UUID readStatusId) {
+        Path filePath = READ_STATUS_DIRECTORY.resolve(readStatusId.toString());
         FileIOHelper.delete(filePath);
     }
 }

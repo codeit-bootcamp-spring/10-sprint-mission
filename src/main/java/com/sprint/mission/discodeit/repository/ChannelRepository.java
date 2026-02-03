@@ -14,5 +14,7 @@ public interface ChannelRepository {
 
     void delete(Channel channel);
 
-    List<Channel> findVisibleChannel(UUID requesterId);
+    List<Channel> findVisibleChannels(UUID requesterId);
+
+    boolean existsById(UUID channelId);
 }

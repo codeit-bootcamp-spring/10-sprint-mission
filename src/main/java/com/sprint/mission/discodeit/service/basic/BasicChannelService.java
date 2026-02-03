@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.ChannelResponse;
-import com.sprint.mission.discodeit.dto.CreatePrivateChannelRequest;
-import com.sprint.mission.discodeit.dto.CreatePublicChannelRequest;
-import com.sprint.mission.discodeit.dto.UpdateChannelRequest;
+import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.CreatePrivateChannelRequest;
+import com.sprint.mission.discodeit.dto.channel.CreatePublicChannelRequest;
+import com.sprint.mission.discodeit.dto.channel.UpdateChannelRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -83,7 +83,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<ChannelResponse> findAllChannelsByUserId(UUID requesterId) {
-        List<Channel> channels = channelRepository.findVisibleChannel(requesterId);
+        List<Channel> channels = channelRepository.findVisibleChannels(requesterId);
 
         List<UUID> channelIds = channels.stream()
                 .map(Channel::getId)
@@ -132,7 +132,7 @@ public class BasicChannelService implements ChannelService {
             messageRepository.deleteById(messageId);
         }
 
-        List<ReadStatus> readStatuses = readStatusRepository.findByChannelId(channel.getId());
+        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channel.getId());
 
         for (ReadStatus readStatus : new ArrayList<>(readStatuses)) {
             readStatusRepository.delete(readStatus);
