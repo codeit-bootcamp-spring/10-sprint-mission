@@ -13,7 +13,6 @@ public interface UserRepository {
     void delete(UUID userId);
     boolean existsByEmail(String email);
     boolean existsByNickname(String nickname);
-    boolean existsByEmailExceptUserId(String email, UUID exceptUserId);
     boolean existsByNicknameExceptUserId(String nickname, UUID exceptUserId);
     Optional<User> findByEmailAndPassword(String email, String password);
 }

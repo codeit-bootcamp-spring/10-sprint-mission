@@ -17,7 +17,7 @@ public class User implements Serializable {
     private final Instant createdAt;
     private Instant updatedAt;
 
-    private String email;
+    private final String email;
     private String password;
     private String nickname;
     private UUID profileId; // BinaryContent
