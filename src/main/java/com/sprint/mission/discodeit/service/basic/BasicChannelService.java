@@ -29,7 +29,7 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public ChannelResponse createPrivateChannel(PrivateChannelCreateRequest request) {
+    public ChannelResponse create(PrivateChannelCreateRequest request) {
         // 비공개 채널 생성을 위한 필수 검증
         validateCreatePrivateRequest(request);
 
@@ -39,7 +39,7 @@ public class BasicChannelService implements ChannelService {
 
         // 비공개 채널 참여자의 읽음 상태를 초기값으로 생성 및 저장
         for (UUID userId : request.userIds()) {
-            ReadStatus readStatus = new ReadStatus(userId, channel.getId(), Instant.EPOCH);
+            ReadStatus readStatus = new ReadStatus(userId, channel.getId());
             readStatusRepository.save(readStatus);
         }
 
@@ -47,7 +47,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelResponse createPublicChannel(PublicChannelCreateRequest request) {
+    public ChannelResponse create(PublicChannelCreateRequest request) {
         // 공개 채널 생성을 위한 필수 검증
         validateCreatePublicRequest(request);
 
@@ -59,7 +59,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelResponse findChannelById(UUID channelId) {
+    public ChannelResponse findById(UUID channelId) {
         if (channelId == null) {
             throw new RuntimeException("채널이 존재하지 않습니다.");
         }
@@ -85,7 +85,6 @@ public class BasicChannelService implements ChannelService {
         Set<UUID> joinedPrivateChannelIds = new HashSet<>();
         readStatusRepository.findAllByUserId(userId)
                 .forEach(rs -> joinedPrivateChannelIds.add(rs.getChannelId()));
-
         
         List<ChannelResponse> responses = new ArrayList<>();
         // 전체 채널 목록을 순회
@@ -106,7 +105,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelResponse updateChannel(PublicChannelUpdateRequest request) {
+    public ChannelResponse update(PublicChannelUpdateRequest request) {
         // DTO 검증
         if (request == null || request.id() == null) {
             throw new RuntimeException("채널이 존재하지 않습니다.");
@@ -148,7 +147,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public void deleteChannel(UUID channelId) {
+    public void delete(UUID channelId) {
         if (channelId == null) {
             throw new RuntimeException("채널이 존재하지 않습니다.");
         }

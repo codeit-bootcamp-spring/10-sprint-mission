@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    UserResponse createUser(UserCreateRequest request);
-    UserResponse findUserById(UUID userId);
+    UserResponse create(UserCreateRequest request);
+    UserResponse findById(UUID userId);
     List<UserResponse> findAll();
-    UserResponse updateUser(UserUpdateRequest request);
-    void deleteUser(UUID userId);
+    UserResponse update(UserUpdateRequest request);
+    void delete(UUID userId);
 }

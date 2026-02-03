@@ -28,7 +28,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageResponse createMessage(MessageCreateRequest request) {
+    public MessageResponse create(MessageCreateRequest request) {
         // 메시지 생성을 위한 필수 검증
         validateCreateRequest(request);
 
@@ -89,7 +89,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponse updateMessage(MessageUpdateRequest request) {
+    public MessageResponse update(MessageUpdateRequest request) {
         // 메시지 수정을 위한 필수 검증
         validateUpdateRequest(request);
 
@@ -105,7 +105,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public void deleteMessage(UUID messageId) {
+    public void delete(UUID messageId) {
         if (messageId == null) {
             throw new RuntimeException("메시지가 존재하지 않습니다.");
         }

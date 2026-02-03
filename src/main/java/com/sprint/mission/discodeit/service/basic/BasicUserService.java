@@ -26,7 +26,7 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    public UserResponse createUser(UserCreateRequest request) {
+    public UserResponse create(UserCreateRequest request) {
         // 유저 생성을 위한 필수 검증
         validateCreateRequest(request);
 
@@ -56,7 +56,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse findUserById(UUID userId) {
+    public UserResponse findById(UUID userId) {
         // 조회 대상 유저가 존재하는지 검증
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
@@ -85,7 +85,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(UserUpdateRequest request) {
+    public UserResponse update(UserUpdateRequest request) {
         // DTO 검증
         if (request == null || request.id() == null) {
             throw new RuntimeException("유저가 존재하지 않습니다.");
@@ -151,7 +151,7 @@ public class BasicUserService implements UserService {
 
 
     @Override
-    public void deleteUser(UUID userId) {
+    public void delete(UUID userId) {
         // 삭제 대상 유저가 존재하는지 검증
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
