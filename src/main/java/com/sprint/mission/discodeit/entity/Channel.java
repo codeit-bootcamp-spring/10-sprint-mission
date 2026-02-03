@@ -13,7 +13,6 @@ import java.util.UUID;
 @Getter
 @ToString
 public class Channel implements Serializable {
-    @ToString.Exclude
     private static final long serialVersionUID = 1L;
 
     private final UUID id = UUID.randomUUID();

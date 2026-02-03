@@ -13,7 +13,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @ToString
 public class UserStatus implements Serializable {
-    @ToString.Exclude
     private static final long serialVersionUID = 1L;
     private final long ACTIVE_THRESHOLD = 300L;
 

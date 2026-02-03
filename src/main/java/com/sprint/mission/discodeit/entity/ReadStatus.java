@@ -12,7 +12,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @ToString
 public class ReadStatus implements Serializable {
-    @ToString.Exclude
     private static final long serialVersionUID = 1L;
     @Getter
     private final UUID id = UUID.randomUUID();
