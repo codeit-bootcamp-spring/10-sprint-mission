@@ -25,10 +25,10 @@ public class BasicReadStatusService {
     private final ChannelRepository channelRepository;
 
     public ReadStatusResponse create(ReadStatusCreateRequest request) {
-        // 읽기 상태 생성을 위한 필수 검증
+        // 읽음 상태 생성을 위한 필수 검증
         validateCreateReadStatus(request);
 
-        // 읽기 상태 생성 및 저장
+        // 읽음 상태 생성 및 저장
         ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
         readStatusRepository.save(readStatus);
 
@@ -37,12 +37,12 @@ public class BasicReadStatusService {
 
     public ReadStatusResponse findById(UUID readStatusId) {
         if (readStatusId == null) {
-            throw new RuntimeException("읽기 상태가 존재하지 않습니다.");
+            throw new RuntimeException("읽음 상태가 존재하지 않습니다.");
         }
 
-        // 읽기 상태가 존재하는지 검색 및 검증
+        // 읽음 상태가 존재하는지 검색 및 검증
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new RuntimeException("읽기 상태가 존재하지 않습니다."));
+                .orElseThrow(() -> new RuntimeException("읽음 상태가 존재하지 않습니다."));
 
         return ReadStatusResponse.from(readStatus);
     }
@@ -53,7 +53,7 @@ public class BasicReadStatusService {
         }
 
         List<ReadStatusResponse> responses = new ArrayList<>();
-        // 유저의 읽기 상태 목록 조회 및 순회
+        // 유저의 읽음 상태 목록 조회 및 순회
         for (ReadStatus readStatus : readStatusRepository.findAllByUserId(userId)) {
             // 응답 DTO 생성 후 반환 리스트에 추가
             responses.add(ReadStatusResponse.from(readStatus));
@@ -67,11 +67,11 @@ public class BasicReadStatusService {
             throw new RuntimeException("요청이 올바르지 않습니다.");
         }
 
-        // 읽기 상태가 존재하는지 검색 및 검증
+        // 읽음 상태가 존재하는지 검색 및 검증
         ReadStatus readStatus = readStatusRepository.findById(request.id())
-                .orElseThrow(() -> new RuntimeException("읽기 상태가 존재하지 않습니다."));
+                .orElseThrow(() -> new RuntimeException("읽음 상태가 존재하지 않습니다."));
 
-        // 읽기 상태 업데이트
+        // 읽음 상태 업데이트
         Instant newLastReadAt = request.lastReadAt();
         if (newLastReadAt == null) {
             newLastReadAt = Instant.now();
@@ -85,12 +85,12 @@ public class BasicReadStatusService {
 
     public void delete(UUID readStatusId) {
         if (readStatusId == null) {
-            throw new RuntimeException("읽기 상태가 존재하지 않습니다.");
+            throw new RuntimeException("읽음 상태가 존재하지 않습니다.");
         }
 
-        // 읽기 상태가 존재하는지 검색 및 검증
+        // 읽음 상태가 존재하는지 검색 및 검증
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new RuntimeException("읽기 상태가 존재하지 않습니다."));
+                .orElseThrow(() -> new RuntimeException("읽음 상태가 존재하지 않습니다."));
 
         readStatusRepository.delete(readStatusId);
     }
@@ -104,7 +104,7 @@ public class BasicReadStatusService {
         channelRepository.findById(channelId)
                 .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
 
-        // 채널의 읽기 상태 모두 삭제
+        // 채널의 읽음 상태 모두 삭제
         readStatusRepository.deleteAllByChannelId(channelId);
     }
 
@@ -121,7 +121,7 @@ public class BasicReadStatusService {
 
         for (ReadStatus readStatus : readStatusRepository.findAllByUserId(user.getId())) {
             if (readStatus.getChannelId().equals(request.channelId())) {
-                throw new RuntimeException("읽기 상태가 이미 존재합니다.");
+                throw new RuntimeException("읽음 상태가 이미 존재합니다.");
             }
         }
     }
