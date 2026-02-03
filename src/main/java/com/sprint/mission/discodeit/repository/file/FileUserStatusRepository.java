@@ -43,6 +43,15 @@ public class FileUserStatusRepository implements UserStatusRepository {
         return Optional.ofNullable(userStatus);
     }
 
+    // 특정 사용자의 상태 단건 조회
+    @Override
+    public UserStatus findByUserId(UUID userId) {
+        return findAll().stream()
+                .filter(s -> s.getUserId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 상태가 존재하지 않습니다."));
+    }
+
     // 사용자 상태 전체 조회
     @Override
     public List<UserStatus> findAll() {

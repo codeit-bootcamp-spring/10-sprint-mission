@@ -13,6 +13,9 @@ public interface UserStatusRepository {
     // 사용자 상태 단건 조회
     Optional<UserStatus> findById(UUID userStatusId);
 
+    // 특정 사용자 상태 조회
+    UserStatus findByUserId(UUID userId);
+
     // 사용자 상태 전체 조회
     List<UserStatus> findAll();
 
