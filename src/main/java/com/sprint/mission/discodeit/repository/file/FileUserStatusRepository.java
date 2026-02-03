@@ -3,17 +3,25 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.*;
 
 @Repository
+@ConditionalOnProperty(
+        name = "discodeit.repository.type",
+        havingValue = "file",
+        matchIfMissing = false
+)
 public class FileUserStatusRepository implements UserStatusRepository {
-    private static final String USER_STATUS_FILE = "data/userStatus.ser";
+    private final String filePath;
+    public FileUserStatusRepository(@Value("${discodeit.repository.file-directory}")String directory){
+        this.filePath = directory + "/userStatus.ser";
+    }
 
     @Override
     public Optional<UserStatus> findById(UUID id) {
@@ -54,7 +62,9 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     private Map<UUID, UserStatus> loadData(){
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(USER_STATUS_FILE))){
+        File file = new File(filePath);
+        if(!file.exists()) return new HashMap<>();
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))){
             return (Map<UUID,UserStatus>) ois.readObject();
         }
         catch(Exception e){
@@ -63,7 +73,11 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     private void saveData(Map<UUID, UserStatus> data){
-        try(ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream(USER_STATUS_FILE)))){
+        File file = new File(filePath);
+        if(file.getParentFile() != null && !file.getParentFile().exists()){
+            file.getParentFile().mkdirs();
+        }
+        try(ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream(file)))){
             oos.writeObject(data);
         }
         catch (Exception e){

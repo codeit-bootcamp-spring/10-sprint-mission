@@ -3,17 +3,27 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.*;
 
 @Repository
+@ConditionalOnProperty(
+        name = "discodeit.repository.type",
+        havingValue = "file",
+        matchIfMissing = false
+)
 public class FileBinaryContentRepository implements BinaryContentRepository {
-    private static final String BINARY_CONTENT_FILE = "data/binaryContent.ser";
+    private final String filePath;
+
+    public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory}")String directory){
+        this.filePath = directory + "/binaryContent.ser";
+    }
+
 
     @Override
     public Optional<BinaryContent> findById(UUID id) {
@@ -69,7 +79,10 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     private Map<UUID, BinaryContent> loadData(){
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(BINARY_CONTENT_FILE))){
+        File file = new File(filePath); // 👈 여기를 filePath로 변경
+        if(!file.exists()) return new HashMap<>();
+
+        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))){
             return (Map<UUID,BinaryContent>) ois.readObject();
         }
         catch(Exception e){
@@ -78,7 +91,11 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     private void saveData(Map<UUID, BinaryContent> data){
-        try(ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream(BINARY_CONTENT_FILE)))){
+        File file = new File(filePath);
+        if(file.getParentFile() != null && file.getParentFile().exists()){
+            file.getParentFile().mkdirs();
+        }
+        try(ObjectOutputStream oos = new ObjectOutputStream((new FileOutputStream(file)))){
             oos.writeObject(data);
         }
         catch (Exception e){
