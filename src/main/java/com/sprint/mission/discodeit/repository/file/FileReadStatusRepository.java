@@ -64,6 +64,13 @@ public class FileReadStatusRepository extends BaseFileRepository<ReadStatus> imp
     }
 
     @Override
+    public void deleteByUserId(UUID userId){
+        Map<UUID, ReadStatus> data = loadData();
+        data.values().removeIf(readStatus -> readStatus.getUserId().equals(userId));
+        saveData(data);
+    }
+
+    @Override
     public void deleteByChannelId(UUID channelId) {
         Map<UUID, ReadStatus> data = loadData();
         data.values().removeIf(readStatus -> readStatus.getChannelId().equals(channelId));

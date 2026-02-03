@@ -53,7 +53,10 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
     public void deleteById(UUID id){data.remove(id);}
 
     @Override
+    public void deleteByUserId(UUID userId){data.values().removeIf(readStatus -> readStatus.getUserId().equals(userId));}
+
+    @Override
     public void deleteByChannelId(UUID channelId) {
-        data.values().removeIf(rs -> rs.getChannelId().equals(channelId));
+        data.values().removeIf(readStatus -> readStatus.getChannelId().equals(channelId));
     }
 }

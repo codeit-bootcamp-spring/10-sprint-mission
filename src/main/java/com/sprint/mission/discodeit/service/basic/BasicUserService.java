@@ -118,7 +118,7 @@ public class BasicUserService implements UserService {
         User user = validateUserExists(id);
 
         // 유저가 참여하고 있는 채널 삭제
-        readStatusRepository.deleteById(id);
+        readStatusRepository.deleteByUserId(id);
 
         // 유저 상태 삭제
         userStatusRepository.deleteByUserId(id);
