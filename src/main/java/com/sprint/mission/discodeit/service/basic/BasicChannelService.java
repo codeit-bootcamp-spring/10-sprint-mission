@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class BasicChannelService implements ChannelService{
                 request.name(),
                 request.description(),
                 request.type(),
-                true
+                ChannelVisibility.PUBLIC
         );
         channelRepository.save(channel);
         return convertToResponse(channel, null, null);
@@ -40,7 +41,7 @@ public class BasicChannelService implements ChannelService{
     // PRIVATE 채널 생성
     @Override
     public ChannelResponse createPrivateChannel(PrivateChannelCreateRequest request) {
-        Channel channel = new Channel(null, null, request.type(), false);
+        Channel channel = new Channel(null, null, request.type(), ChannelVisibility.PRIVATE);
         channelRepository.save(channel);
 
         // 참여 유저별 ReadStatus 정보 생성
@@ -65,25 +66,18 @@ public class BasicChannelService implements ChannelService{
     @Override
     public List<ChannelResponse> getAllByUserId(UUID userId) {
         // PUBLIC 채널 조회
-        List<Channel> publicChannels = channelRepository.findAllPublic();
+        Stream<Channel> publicStream = channelRepository.findAllPublic().stream();
         // PRIVATE 채널 조회
-        List<Channel> privateChannels = readStatusRepository.findAllByUserId(userId).stream()
+        Stream<Channel> privateStream = readStatusRepository.findAllByUserId(userId).stream()
                 .map(readStatus -> channelRepository.findById(readStatus.getChannelId()).orElse(null))
                 .filter(Objects::nonNull)
-                .filter(channel -> !channel.isPublic())
-                .toList();
+                .filter(channel -> channel.getVisibility() == ChannelVisibility.PRIVATE);
 
-        // 두 목록 합치기
-        List<Channel> allChannels = new ArrayList<>();
-        allChannels.addAll(publicChannels);
-        allChannels.addAll(privateChannels);
-
-        return allChannels.stream()
+        return Stream.concat(publicStream, privateStream)
                 .map(channel -> {
                     Instant lastMessageAt = getLastMessageAt(channel.getId());
                     List<UUID> memberIds = getMemberIdsIfPrivate(channel);
-
-                    return convertToResponse(channel, lastMessageAt, memberIds);
+                    return convertToResponse(channel, lastMessageAt,memberIds);
                 })
                 .toList();
     }
@@ -94,7 +88,7 @@ public class BasicChannelService implements ChannelService{
         Channel channel = getOrThrowChannel(id);
 
         // PRIVATE 채널은 수정할 수 없음
-        if (!channel.isPublic()) {
+        if (channel.getVisibility() == ChannelVisibility.PRIVATE) {
             throw new IllegalStateException("PRIVATE 채널은 수정할 수 없습니다.");
         }
 
@@ -125,7 +119,7 @@ public class BasicChannelService implements ChannelService{
 
     // 비공개 채널인 경우 참여자 ID 목록 조회
     private List<UUID> getMemberIdsIfPrivate(Channel channel) {
-        if (channel.isPublic()) {
+        if (channel.getVisibility() == ChannelVisibility.PRIVATE) {
             return null;
         }
         return readStatusRepository.findAllByChannelId(channel.getId()).stream()
@@ -152,7 +146,7 @@ public class BasicChannelService implements ChannelService{
                 channel.getName(),
                 channel.getDescription(),
                 channel.getType(),
-                channel.isPublic(),
+                channel.getVisibility(),
                 lastMessageAt,
                 memberIds,
                 channel.getCreatedAt(),

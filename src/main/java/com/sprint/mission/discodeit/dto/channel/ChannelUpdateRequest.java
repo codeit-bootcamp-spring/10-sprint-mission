@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.dto.channel;
 
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.ChannelVisibility;
 
 import java.util.UUID;
 
@@ -9,6 +10,6 @@ public record ChannelUpdateRequest (
         String name,
         String description,
         ChannelType type,
-        boolean isPublic
+        ChannelVisibility visibility
 ) {
 }

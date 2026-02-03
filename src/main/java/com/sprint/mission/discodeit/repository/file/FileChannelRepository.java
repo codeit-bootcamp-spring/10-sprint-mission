@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelVisibility;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -35,7 +36,7 @@ public class FileChannelRepository extends BaseFileRepository<Channel> implement
     @Override
     public List<Channel> findAllPublic() {
         return loadData().values().stream()
-                .filter(Channel::isPublic)
+                .filter(channel -> channel.getVisibility() == ChannelVisibility.PUBLIC)
                 .toList();
     }
 

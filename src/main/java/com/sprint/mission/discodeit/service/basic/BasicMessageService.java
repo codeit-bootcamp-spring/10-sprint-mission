@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelVisibility;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.*;
@@ -98,7 +99,7 @@ public class BasicMessageService implements MessageService {
     // 접근 권한 확인 (비공개 채널 여부 체크)
     private void validateAccess(UUID userId, UUID channelId) {
         Channel channel = getOrThrowChannel(channelId);
-        if (!channel.isPublic()) {
+        if (channel.getVisibility() == ChannelVisibility.PRIVATE) {
             readStatusRepository.findByUserIdAndChannelId(userId, channelId)
                     .orElseThrow(() -> new IllegalArgumentException("채널 접근 권한이 없습니다."));
         }

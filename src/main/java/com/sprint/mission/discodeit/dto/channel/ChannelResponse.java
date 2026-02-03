@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.dto.channel;
 
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.ChannelVisibility;
 
 import java.time.Instant;
 import java.util.List;
@@ -12,7 +13,7 @@ public record ChannelResponse (
         String name,
         String description,
         ChannelType type,
-        boolean isPublic,
+        ChannelVisibility visibility,
         Instant lastMessageAt, // 가장 최근 메시지의 시간 정보
         List<UUID> memberIds,
         Instant createdAt,

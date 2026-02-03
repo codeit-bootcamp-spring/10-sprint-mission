@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelVisibility;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -32,7 +33,7 @@ public class JCFChannelRepository implements ChannelRepository {
     @Override
     public List<Channel> findAllPublic() {
         return data.values().stream()
-                .filter(Channel::isPublic)
+                .filter(channel -> channel.getVisibility() == ChannelVisibility.PUBLIC)
                 .toList();
     }
 
