@@ -45,7 +45,7 @@ public class Channel extends BaseEntity {
                 null,
                 null,
                 ChannelType.PRIVATE,
-                new HashSet<>(memberIds) // 방어적 복사
+                new HashSet<>(memberIds)
         );
     }
 
@@ -70,24 +70,13 @@ public class Channel extends BaseEntity {
         markUpdated();
     }
 
-    public void removeMessage(UUID messageId) {
-        messageIds.remove(messageId);
-        markUpdated();
-    }
-
-    public void addMember(UUID memberId) {
-        memberIds.add(memberId);
-        markUpdated();
-    }
-
     public void addMessage(UUID messageId) {
         messageIds.add(messageId);
         markUpdated();
     }
 
-    public void validateChannelMember(UUID memberId) {
-        if (!this.hasMember(memberId)) {
-            throw new IllegalArgumentException("채널 멤버가 아닙니다. memberId: " + memberId);
-        }
+    public void removeMessage(UUID messageId) {
+        messageIds.remove(messageId);
+        markUpdated();
     }
 }

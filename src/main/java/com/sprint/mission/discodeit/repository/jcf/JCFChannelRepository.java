@@ -19,12 +19,17 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public List<Channel> findAll() {
-        return List.copyOf(data.values());
+    public void delete(Channel channel) {
+        data.remove(channel.getId());
     }
 
     @Override
-    public void delete(Channel channel) {
-        data.remove(channel.getId());
+    public List<Channel> findVisibleChannel(UUID requesterId) {
+        return data.values().stream()
+                .filter(channel ->
+                        channel.isPublic()
+                                || (channel.isPrivate() && channel.hasMember(requesterId))
+                )
+                .toList();
     }
 }

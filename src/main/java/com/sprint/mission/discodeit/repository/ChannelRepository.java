@@ -12,7 +12,7 @@ public interface ChannelRepository {
 
     Optional<Channel> findById(UUID id);
 
-    List<Channel> findAll();
-
     void delete(Channel channel);
+
+    List<Channel> findVisibleChannel(UUID requesterId);
 }

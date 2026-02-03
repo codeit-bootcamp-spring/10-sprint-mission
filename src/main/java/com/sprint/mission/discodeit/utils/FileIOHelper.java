@@ -97,16 +97,17 @@ public class FileIOHelper {
             if (!Files.exists(BASE_DIRECTORY)) return;
 
             Files.walk(BASE_DIRECTORY)
-                    .sorted(Comparator.reverseOrder()) // 자식 먼저 삭제
+                    .filter(Files::isRegularFile)
                     .forEach(path -> {
                         try {
-                            Files.delete(path);
+                            Files.deleteIfExists(path);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
                     });
+
         } catch (IOException e) {
-            throw new RuntimeException("파일 삭제를 실패하였습니다. filePath: " + BASE_DIRECTORY, e);
+            throw new RuntimeException("파일 초기화 실패: " + BASE_DIRECTORY, e);
         }
     }
 }

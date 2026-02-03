@@ -36,6 +36,11 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
+    public boolean existsById(UUID id) {
+        return false;
+    }
+
+    @Override
     public boolean existsByUsername(String username) {
         return data.values().stream()
                 .anyMatch(user -> user.getUsername().equals(username));

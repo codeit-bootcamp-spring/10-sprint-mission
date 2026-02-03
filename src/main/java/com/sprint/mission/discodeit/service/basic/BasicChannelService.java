@@ -83,16 +83,9 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public List<ChannelResponse> findAllChannelsByUserId(UUID requesterId) {
-        List<Channel> channels = channelRepository.findAll();
+        List<Channel> channels = channelRepository.findVisibleChannel(requesterId);
 
-        List<Channel> visibleChannels = channels.stream()
-                .filter(channel ->
-                        channel.isPublic() ||
-                                (channel.isPrivate() && channel.hasMember(requesterId))
-                )
-                .toList();
-
-        List<UUID> channelIds = visibleChannels.stream()
+        List<UUID> channelIds = channels.stream()
                 .map(Channel::getId)
                 .toList();
 
@@ -111,8 +104,8 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelResponse updateChannelInfo(UpdateChannelRequest request) {
         Channel channel = getChannelOrThrow(request.channelId());
-
         validateChannelType(channel);
+
         channel.updateInfo(
                 request.name(),
                 request.description()
@@ -126,7 +119,7 @@ public class BasicChannelService implements ChannelService {
 
     private static void validateChannelType(Channel channel) {
         if (channel.isPrivate()) {
-            throw new IllegalStateException("PRIVATE 채널은 수정할 수 없습니다. channelId: " + channel.getId());
+            throw new IllegalArgumentException("PRIVATE 채널은 수정할 수 없습니다. channelId: " + channel.getId());
         }
     }
 

@@ -1,95 +1,142 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentRequest;
+import com.sprint.mission.discodeit.dto.CreateMessageRequest;
+import com.sprint.mission.discodeit.dto.MessageResponse;
+import com.sprint.mission.discodeit.dto.UpdateMessageRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.MessageService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class BasicMessageService {
+@Service
+@RequiredArgsConstructor
+public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
-    public BasicMessageService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.messageRepository = messageRepository;
-    }
+    @Override
+    public UUID createMessage(UUID requesterId, CreateMessageRequest request) {
+        User user = getUserOrThrow(requesterId);
+        Channel channel = getChannelOrThrow(request.channelId());
 
-    public Message createMessage(UUID requestId, UUID channelId, String content) {
-        User requester = findUserByUserID(requestId);
-        Channel channel = findChannelByChannelId(channelId);
+        Message message = new Message(requesterId, channel.getId(), request.content());
 
-        Message message = new Message(requester, channel, content);
-
-        requester.addMessage(message);
-        userRepository.save(requester);
-
-        channel.addMessage(message);
-        channelRepository.save(channel);
-
-        messageRepository.save(message);
-        return message;
-    }
-
-    public Message findMessageByMessageId(UUID id) {
-        return messageRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("메세지를 찾을 수 없습니다 messageId: " + id));
-    }
-
-    public List<Message> findAllMessages() {
-        return messageRepository.findAll();
-    }
-
-    public Message updateMessage(UUID requestId, UUID messageId, String content) {
-        User requester = findUserByUserID(requestId);
-        Message message = findMessageByMessageId(messageId);
-
-        message.validateOwner(requester);
-        message.updateContent(content);
-
+        List<UUID> attachmentsIds = saveAttachments(request.attachments(), user.getId());
+        message.updateAttachments(attachmentsIds);
         messageRepository.save(message);
 
-        User sender = findUserByUserID(message.getSender().getId());
-        Channel channel = findChannelByChannelId(message.getChannel().getId());
+        user.addMessage(message.getId());
+        userRepository.save(user);
 
-        sender.getMessages().removeIf(m -> m.getId().equals(messageId));
-        sender.getMessages().add(message);
-
-        channel.getMessages().removeIf(m -> m.getId().equals(messageId));
-        channel.getMessages().add(message);
-
-        userRepository.save(sender);
+        channel.addMessage(message.getId());
         channelRepository.save(channel);
 
-        return message;
+        return message.getId();
     }
 
+    private List<UUID> saveAttachments(List<BinaryContentRequest> binaryContentRequests, UUID userId) {
+        List<UUID> attachmentsIds = new ArrayList<>();
+
+        for (BinaryContentRequest binaryContentRequest : new ArrayList<>(binaryContentRequests)) {
+            BinaryContent binaryContent = new BinaryContent(
+                    userId,
+                    binaryContentRequest.type(),
+                    binaryContentRequest.image()
+            );
+            attachmentsIds.add(binaryContent.getId());
+            binaryContentRepository.save(binaryContent);
+        }
+
+        return attachmentsIds;
+    }
+
+    @Override
+    public List<MessageResponse> findAllMessagesByChannelId(UUID channelId) {
+        List<Message> messages = messageRepository.findByChannelId(channelId);
+
+        return messages.stream().map(message -> {
+            User user = getUserOrThrow(message.getSenderId());
+            List<byte[]> images = getImagesOrThrow(message.getAttachmentIds());
+            return MessageResponse.of(message, images);
+        }).toList();
+    }
+
+    private List<byte[]> getImagesOrThrow(List<UUID> attachmentIds) {
+        return binaryContentRepository.findImagesByIds(attachmentIds);
+    }
+
+    @Override
+    public MessageResponse updateMessage(UUID requesterId, UpdateMessageRequest request) {
+        Message message = getMessageOrThrow(request.messageId());
+
+        message.validateSender(requesterId);
+
+        message.updateContent(request.content());
+
+        List<UUID> attachments = saveAttachments(request.attachments(), requesterId);
+        message.updateAttachments(attachments);
+
+        messageRepository.save(message);
+
+        User user = getUserOrThrow(message.getSenderId());
+        List<byte[]> images = getImagesOrThrow(message.getAttachmentIds());
+        return MessageResponse.of(message, images);
+    }
+
+    @Override
     public void deleteMessage(UUID requestId, UUID messageId) {
-        User requester = findUserByUserID(requestId);
-        Message message = findMessageByMessageId(messageId);
+        Message message = getMessageOrThrow(messageId);
+        message.validateSender(requestId);
 
-        message.validateOwner(requester);
+        removeMessageFromUser(message);
+        removeMessageFromChannel(message);
 
-        message.clear();
+        List<UUID> attachmentIds = message.getAttachmentIds();
 
-        channelRepository.save(message.getChannel());
-        userRepository.save(message.getSender());
+        for (UUID attachmentId : attachmentIds) {
+            binaryContentRepository.deleteById(attachmentId);
+        }
 
         messageRepository.delete(message);
     }
 
-    private User findUserByUserID(UUID userId) {
+    private void removeMessageFromUser(Message message) {
+        User user = getUserOrThrow(message.getSenderId());
+        user.removeMessage(message.getId());
+        userRepository.save(user);
+    }
+
+    private void removeMessageFromChannel(Message message) {
+        Channel channel = getChannelOrThrow(message.getChannelId());
+        channel.removeMessage(message.getId());
+        channelRepository.save(channel);
+    }
+
+    private Message getMessageOrThrow(UUID messageId) {
+        return messageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("메세지를 찾을 수 없습니다 messageId: " + messageId));
+    }
+
+    private User getUserOrThrow(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다 userId: " + userId));
     }
 
-    private Channel findChannelByChannelId(UUID id) {
+    private Channel getChannelOrThrow(UUID id) {
         return channelRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다 channelId: " + id));
     }

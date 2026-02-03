@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 
 import java.time.Instant;
 import java.util.List;
@@ -20,11 +18,9 @@ public interface MessageRepository {
 
     void delete(Message message);
 
-    void deleteByUser(User user);
+    List<Message> findByChannelId(UUID channelId);
 
-    void deleteByChannel(Channel channel);
-
-    Instant findLastMessageAtByChannelId(UUID id);
+    Instant findLastMessageAtByChannelId(UUID channelId);
 
     Map<UUID, Instant> findLastMessageAtByChannelIds(List<UUID> channelIds);
 

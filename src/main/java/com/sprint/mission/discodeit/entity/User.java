@@ -51,9 +51,8 @@ public class User extends BaseEntity {
         markUpdated();
     }
 
-
-    public void removeMessage(Message message) {
-        messageIds.remove(message);
+    public void removeMessage(UUID messageId) {
+        messageIds.remove(messageId);
         markUpdated();
     }
 }

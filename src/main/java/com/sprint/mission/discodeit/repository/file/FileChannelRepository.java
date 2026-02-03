@@ -31,14 +31,21 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public List<Channel> findAll() {
-        return FileIOHelper.loadAll(CHANNEL_DIRECTORY);
-    }
-
-    @Override
     public void delete(Channel channel) {
         Path channelFilePath = CHANNEL_DIRECTORY.resolve(channel.getId().toString());
 
         FileIOHelper.delete(channelFilePath);
+    }
+
+    @Override
+    public List<Channel> findVisibleChannel(UUID requesterId) {
+        List<Channel> channels = FileIOHelper.loadAll(CHANNEL_DIRECTORY);
+
+        return channels.stream()
+                .filter(channel ->
+                        channel.isPublic()
+                                || (channel.isPrivate() && channel.hasMember(requesterId))
+                )
+                .toList();
     }
 }

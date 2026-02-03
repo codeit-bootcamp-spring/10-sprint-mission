@@ -4,8 +4,10 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record PublicChannelResponse(
+        UUID id,
         String name,
         String description,
         ChannelType channelType,
@@ -16,6 +18,7 @@ public record PublicChannelResponse(
             Instant lastMessageAt
     ) {
         return new PublicChannelResponse(
+                channel.getId(),
                 channel.getName(),
                 channel.getDescription(),
                 channel.getChannelType(),

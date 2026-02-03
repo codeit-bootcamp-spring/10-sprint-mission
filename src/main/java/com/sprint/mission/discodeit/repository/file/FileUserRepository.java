@@ -59,15 +59,13 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public boolean existsByUsername(String username) {
-        return FileIOHelper.<Optional<User>>loadAll(USER_DIRECTORY).stream()
-                .flatMap(Optional::stream)
+        return FileIOHelper.<User>loadAll(USER_DIRECTORY).stream()
                 .anyMatch(user -> user.getUsername().equals(username));
     }
 
     @Override
     public boolean existsByEmail(String email) {
-        return FileIOHelper.<Optional<User>>loadAll(USER_DIRECTORY).stream()
-                .flatMap(Optional::stream)
+        return FileIOHelper.<User>loadAll(USER_DIRECTORY).stream()
                 .anyMatch(user -> user.getEmail().equals(email));
     }
 }

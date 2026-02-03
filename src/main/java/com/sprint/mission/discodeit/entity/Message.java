@@ -2,73 +2,39 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Getter
 public class Message extends BaseEntity {
-    private UUID senderId;
-    private UUID channelId;
+    private final UUID senderId;
+    private final UUID channelId;
     private String content;
     private List<UUID> attachmentIds;
 
-    public Message(User sender, Channel channel, String content) {
-        channel.validateChannelMember(sender);
-
-        this.sender = sender;
-        this.channel = channel;
+    public Message(UUID senderId, UUID channelId, String content) {
+        this.senderId = senderId;
+        this.channelId = channelId;
         this.content = content;
-
-        sender.addMessage(this);
-        channel.addMessage(this);
+        this.attachmentIds = new ArrayList<>();
     }
 
-    public void updateContent(String content) {
-        this.content = content;
+    public void updateAttachments(List<UUID> attachmentIds) {
+        this.attachmentIds = new ArrayList<>(attachmentIds);
         markUpdated();
     }
 
-    public void addUser(User user) {
-        this.sender = user;
+    public void updateContent(String content) {
+        Optional.ofNullable(content)
+                .ifPresent(value -> this.content = value);
+        markUpdated();
+    }
 
-        if (!user.getMessageIds().contains(this)) {
-            user.addMessage(this);
+    public void validateSender(UUID userId) {
+        if (!senderId.equals(userId)) {
+            throw new IllegalArgumentException("메세지의 sender가 아닙니다. userId: " + userId);
         }
-    }
-
-    public void addChannel(Channel channel) {
-        this.channel = channel;
-
-        if (!channel.getMessageIds().contains(this)) {
-            channel.addMessage(this);
-        }
-    }
-
-    public void clear() {
-        detachFromUser();
-        detachFromChannel();
-    }
-
-    public void detachFromChannel() {
-        channel.removeMessage(this);
-    }
-
-    public void detachFromUser() {
-        sender.removeMessage(this);
-    }
-
-    public void validateOwner(User user) {
-        if (!sender.equals(user)) {
-            throw new IllegalArgumentException("메세지의 소유자가 아닙니다. userId: " + user.getId());
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "Message{" +
-                "senderName=" + sender.getNickName() +
-                ", channelName=" + channel.getName() +
-                ", content='" + content + '\'' +
-                '}';
     }
 }

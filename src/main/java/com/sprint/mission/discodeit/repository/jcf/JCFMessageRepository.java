@@ -1,14 +1,10 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
 
 public class JCFMessageRepository implements MessageRepository {
     private final HashMap<UUID, Message> data = new HashMap<>();
@@ -33,19 +29,37 @@ public class JCFMessageRepository implements MessageRepository {
         data.remove(message.getId());
     }
 
-    public void deleteByUser(User user) {
-        List<Message> targets = data.values().stream()
-                .filter(m -> m.getSender().equals(user))
+    @Override
+    public List<Message> findByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
                 .toList();
-
-        targets.forEach(target -> delete(target));
     }
 
-    public void deleteByChannel(Channel channel) {
-        List<Message> targets = data.values().stream()
-                .filter(m -> m.getChannel().equals(channel))
-                .toList();
+    @Override
+    public Instant findLastMessageAtByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .map(Message::getCreatedAt)
+                .max(Instant::compareTo)
+                .orElse(null);
+    }
 
-        targets.forEach(target -> delete(target));
+    @Override
+    public Map<UUID, Instant> findLastMessageAtByChannelIds(List<UUID> channelIds) {
+        return data.values().stream()
+                .filter(message -> channelIds.contains(message.getChannelId()))
+                .collect(
+                        java.util.stream.Collectors.toMap(
+                                Message::getChannelId,
+                                Message::getCreatedAt,
+                                (t1, t2) -> t1.isAfter(t2) ? t1 : t2
+                        )
+                );
+    }
+
+    @Override
+    public void deleteById(UUID messageId) {
+        data.remove(messageId);
     }
 }

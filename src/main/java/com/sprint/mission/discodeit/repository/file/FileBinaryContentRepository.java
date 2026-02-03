@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.utils.FileIOHelper;
 import org.springframework.stereotype.Repository;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,6 +15,16 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     private static final Path BINARY_CONTENT_DIRECTORY =
             FileIOHelper.resolveDirectory("binaryContents");
+
+    @Override
+    public List<byte[]> findImagesByIds(List<UUID> attachmentIds) {
+        return attachmentIds.stream()
+                .map(id -> BINARY_CONTENT_DIRECTORY.resolve(id.toString()))
+                .map(path -> FileIOHelper.<BinaryContent>load(path))
+                .flatMap(Optional::stream)
+                .map(BinaryContent::getImage)
+                .toList();
+    }
 
     @Override
     public void save(BinaryContent binaryContent) {

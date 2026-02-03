@@ -25,9 +25,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public Optional<UserStatus> findByUserId(UUID userId) {
-        return FileIOHelper.<Optional<UserStatus>>loadAll(USER_STATUS_DIRECTORY).stream()
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+        return FileIOHelper.<UserStatus>loadAll(USER_STATUS_DIRECTORY).stream()
                 .filter(status -> status.getUserId().equals(userId))
                 .findFirst();
     }

@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public record PrivateChannelResponse(
+        UUID id,
         Set<UUID> memberIds,
         ChannelType channelType,
         Instant lastMessageAt
@@ -17,6 +18,7 @@ public record PrivateChannelResponse(
             Instant lastMessageAt
     ) {
         return new PrivateChannelResponse(
+                channel.getId(),
                 channel.getMemberIds(),
                 channel.getChannelType(),
                 lastMessageAt
