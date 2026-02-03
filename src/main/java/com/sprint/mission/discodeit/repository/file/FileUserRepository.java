@@ -72,6 +72,38 @@ public class FileUserRepository implements UserRepository {
         deleteFileAndRemoveFromData(userId);
     }
 
+    @Override
+    public boolean existsByEmail(String email) {
+        // 유저 목록을 순회하며 이메일이 존재하는지 확인
+        return data.values().stream()
+                .anyMatch(user -> email.equals(user.getEmail()));
+    }
+
+    @Override
+    public boolean existsByNickname(String nickname) {
+        // 유저 목록을 순회하며 닉네임이 존재하는지 확인
+        return data.values().stream()
+                .anyMatch(user -> nickname.equals(user.getNickname()));
+    }
+
+    @Override
+    public boolean existsByNicknameExceptUserId(String nickname, UUID exceptUserId) {
+        // 유저 목록을 순회하며 닉네임은 일치하지만 id는 다른 유저가 있는지 확인
+        return data.values().stream()
+                .anyMatch(user ->
+                        nickname.equals(user.getNickname()) &&
+                                !user.getId().equals(exceptUserId));
+    }
+
+    @Override
+    public Optional<User> findByEmailAndPassword(String email, String password) {
+        return data.values().stream()
+                .filter(user ->
+                        user.getEmail().equals(email) &&
+                                user.getPassword().equals(password))
+                .findFirst();
+    }
+
     public User loadUserFile(UUID userId) {
         // 경로 생성 (user-id.ser)
         Path filePath = userFilePath(userId);

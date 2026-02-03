@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +64,21 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(message -> channelId.equals(message.getChannelId()))
+                .toList();
+    }
+
+    @Override
+    public Optional<Instant> findLatestMessageTimeByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(message -> channelId.equals(message.getChannelId()))
+                .map(Message::getCreatedAt)
+                .max(Instant::compareTo);
+    }
+
+    @Override
     public List<Message> findAll() {
         return new ArrayList<>(data.values());
     }
@@ -70,6 +86,19 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public void delete(UUID messageId) {
         deleteFileAndRemoveFromData(messageId);
+    }
+
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        List<UUID> messageIdsToDelete = new ArrayList<>(
+                data.values().stream()
+                        .filter(message -> channelId.equals(message.getChannelId()))
+                        .map(Message::getId)
+                        .toList());
+
+        for (UUID messageId : messageIdsToDelete) {
+            deleteFileAndRemoveFromData(messageId);
+        }
     }
 
     public Message loadMessageFile(UUID messageId) {

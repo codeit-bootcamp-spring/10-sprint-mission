@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +30,21 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(message -> channelId.equals(message.getChannelId()))
+                .toList();
+    }
+
+    @Override
+    public Optional<Instant> findLatestMessageTimeByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(message -> channelId.equals(message.getChannelId()))
+                .map(Message::getCreatedAt)
+                .max(Instant::compareTo);
+    }
+
+    @Override
     public List<Message> findAll() {
         return new ArrayList<>(data.values());
     }
@@ -36,5 +52,18 @@ public class JCFMessageRepository implements MessageRepository {
     @Override
     public void delete(UUID messageId) {
         data.remove(messageId);
+    }
+
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        List<UUID> messageIdsToDelete = new ArrayList<>(
+                data.values().stream()
+                        .filter(message -> channelId.equals(message.getChannelId()))
+                        .map(Message::getId)
+                        .toList());
+
+        for (UUID messageId : messageIdsToDelete) {
+            data.remove(messageId);
+        }
     }
 }
