@@ -10,7 +10,7 @@ import java.util.*;
 @Repository
 public class FileUserRepository implements UserRepository {
 
-    private final String FILE_PATH = "users.dat";
+    private static final String FILE_PATH = "users.dat";
     private final Map<UUID, User> data;
 
     public FileUserRepository() {
@@ -18,9 +18,10 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public void save(User user) {
+    public User save(User user) {
         data.put(user.getId(), user);
         saveToFile();
+        return user;
     }
 
     @Override
@@ -44,7 +45,7 @@ public class FileUserRepository implements UserRepository {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
             oos.writeObject(data);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IllegalStateException("users.dat 저장에 실패했습니다.", e);
         }
     }
 
@@ -53,7 +54,8 @@ public class FileUserRepository implements UserRepository {
         File file = new File(FILE_PATH);
         if (!file.exists()) return new HashMap<>();
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, User>) ois.readObject();
+            Object obj = ois.readObject();
+            return (obj instanceof Map) ? (Map<UUID, User>) obj : new HashMap<>();
         } catch (IOException | ClassNotFoundException e) {
             return new HashMap<>();
         }

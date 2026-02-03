@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public interface UserStatusRepository {
     UserStatus save(UserStatus userStatus);
-    UserStatus findById(UUID id);
-    UserStatus findByUserId(UUID userId);
+    Optional<UserStatus> findById(UUID id);
+    Optional<UserStatus> findByUserId(UUID userId);
     List<UserStatus> findAll();
     void deleteById(UUID id);
 }

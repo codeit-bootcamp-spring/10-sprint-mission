@@ -3,11 +3,13 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.NotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.*;
+import com.sprint.mission.discodeit.service.helper.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,12 +23,13 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final EntityFinder entityFinder;
 
     @Override
     public MessageDto.MessageResponse create(MessageDto.MessageRequest request, List<BinaryContentDto.BinaryContentRequest> fileInfo) {
         // 입력값 검증
-        User user = userRepository.findById(request.userId());
-        Channel channel = channelRepository.findById(request.channelId());
+        User user = entityFinder.getUser(request.userId());
+        Channel channel = entityFinder.getChannel(request.channelId());
         Objects.requireNonNull(request.content(), "내용은 필수입니다.");
         if (!channel.getUsers().contains(user)) {
             throw new IllegalArgumentException("채널 멤버가 아닙니다.");
@@ -51,21 +54,22 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageDto.MessageResponse findById(UUID messageId) {
         Objects.requireNonNull(messageId, "메세지 Id가 유효하지 않습니다.");
-        Message message = Objects.requireNonNull(messageRepository.findById(messageId), "해당 메세지가 존재하지 않습니다.");
+        Message message = entityFinder.getMessage(messageId);
 
         return MessageDto.MessageResponse.from(message);
     }
 
     @Override
     public List<MessageDto.MessageResponse> findAllByChannelId(UUID channelId) {
-        Channel channel = channelRepository.findById(channelId);
+        Channel channel = entityFinder.getChannel(channelId);
         return channel.getMessages().stream().map(MessageDto.MessageResponse::from).toList();
     }
 
     @Override
-    public MessageDto.MessageResponse update(UUID messageId, String content) {
-        Message message = messageRepository.findById(messageId);
+    public MessageDto.MessageResponse update(UUID messageId, String content, List<UUID> fileInfo) {
+        Message message = entityFinder.getMessage(messageId);
         Optional.ofNullable(content).ifPresent(message::updateContent);
+        Optional.ofNullable(fileInfo).ifPresent(message::updateBinaryContentIds);
         messageRepository.save(message);
         return MessageDto.MessageResponse.from(message);
     }
@@ -73,9 +77,9 @@ public class BasicMessageService implements MessageService {
     @Override
     public void delete(UUID messageId) {
         // 입력값 검증
-        Message message = Objects.requireNonNull(messageRepository.findById(messageId));
+        Message message = entityFinder.getMessage(messageId);
         // 채널의 메세지 리스트에서 메세지 삭제
-        channelRepository.findById(message.getChannelId()).removeMessage(messageId);
+        entityFinder.getChannel(message.getChannelId()).removeMessage(messageId);
         // 연결된 binaryContent 삭제
         message.getBinaryContentIds().forEach(binaryContentRepository::deleteById);
         // 메세지 삭제

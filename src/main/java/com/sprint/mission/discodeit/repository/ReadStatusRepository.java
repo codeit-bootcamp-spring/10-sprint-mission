@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public interface ReadStatusRepository {
     ReadStatus save(ReadStatus readStatus);
-    ReadStatus findById(UUID id);
-    ReadStatus findByUserIdAndChannelId(UUID userId, UUID channelId);
+    Optional<ReadStatus> findById(UUID id);
+    Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId);
     List<ReadStatus> findAll();
     List<ReadStatus> findAllByUserId(UUID userId);
     List<ReadStatus> findAllByChannelId(UUID channelId);

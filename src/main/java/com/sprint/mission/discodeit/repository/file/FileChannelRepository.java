@@ -17,9 +17,10 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public void save(Channel channel) {
+    public Channel save(Channel channel) {
         data.put(channel.getId(), channel);
         saveToFile();
+        return channel;
     }
 
     @Override
@@ -41,7 +42,9 @@ public class FileChannelRepository implements ChannelRepository {
     private void saveToFile() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
             oos.writeObject(data);
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            throw new IllegalStateException("channels.dat 저장에 실패했습니다.", e);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -49,7 +52,10 @@ public class FileChannelRepository implements ChannelRepository {
         File file = new File(FILE_PATH);
         if (!file.exists()) return new HashMap<>();
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, Channel>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) { return new HashMap<>(); }
+            Object obj = ois.readObject();
+            return (obj instanceof Map) ? (Map<UUID, Channel>) obj : new HashMap<>();
+        } catch (IOException | ClassNotFoundException e) {
+            return new HashMap<>();
+        }
     }
 }

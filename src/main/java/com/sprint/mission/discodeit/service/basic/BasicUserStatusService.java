@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.helper.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ public class BasicUserStatusService {
 
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
+    private final EntityFinder entityFinder;
 
     public UserStatusDto.UserStatusResponse create(UserStatusDto.UserStatusRequest request) {
         Objects.requireNonNull(request.userId(), "유저 ID가 유효하지 않습니다.");
@@ -40,7 +42,7 @@ public class BasicUserStatusService {
 
     public UserStatusDto.UserStatusResponse findById(UUID userStatusId){
         Objects.requireNonNull(userStatusId, "상태 ID가 유효하지 않습니다.");
-        return UserStatusDto.UserStatusResponse.from(Objects.requireNonNull(userStatusRepository.findById(userStatusId)));
+        return UserStatusDto.UserStatusResponse.from(entityFinder.getStatusByUser(userStatusId));
     }
 
     public List<UserStatusDto.UserStatusResponse> findAll(){
@@ -48,7 +50,7 @@ public class BasicUserStatusService {
     }
 
     public UserStatusDto.UserStatusResponse update(UUID userStatusId, UserStatus.Status status){
-        UserStatus userStatus = Objects.requireNonNull(userStatusRepository.findById(userStatusId), "유저상태 객체가 존재하지 않습니다.");
+        UserStatus userStatus = entityFinder.getStatusByUser(userStatusId);
         Optional.ofNullable(status).ifPresent(userStatus::updateStatus);
         return UserStatusDto.UserStatusResponse.from(userStatus);
     }

@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.helper.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ public class BasicReadStatusService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
+    private final EntityFinder entityFinder;
 
     public ReadStatusDto.ReadStatusResponse create(UUID userId, UUID channelId){
         // 입력값 유효성 검증
@@ -33,8 +35,8 @@ public class BasicReadStatusService {
                 readStatus.getUserId().equals(userId) && readStatus.getChannelId().equals(channelId)))
             throw new IllegalArgumentException("해당 상태 객체가 이미 존재합니다.");
         // 찾는 유저와 채널이 없을 때
-        User user = Objects.requireNonNull(userRepository.findById(userId), "해당 유저가 존재하지 않습니다.");
-        Channel channel = Objects.requireNonNull(channelRepository.findById(channelId), "해당 채널이 존재하지 않습니다.");
+        User user = entityFinder.getUser(userId);
+        Channel channel = entityFinder.getChannel(channelId);
         // 새 객체 생성
         ReadStatus readStatus = new ReadStatus(userId, channelId);
         readStatusRepository.save(readStatus);
@@ -44,7 +46,7 @@ public class BasicReadStatusService {
 
     public ReadStatusDto.ReadStatusResponse findById(UUID readStatusId){
         Objects.requireNonNull(readStatusId, "읽음상태 객체 Id가 유효하지 않습니다.");
-        ReadStatus readStatus = Objects.requireNonNull(readStatusRepository.findById(readStatusId), "읽음상태 객체가 존재하지 않습니다.");
+        ReadStatus readStatus = entityFinder.getReadStatus(readStatusId);
         return ReadStatusDto.ReadStatusResponse.from(readStatus);
     }
 
@@ -55,13 +57,13 @@ public class BasicReadStatusService {
     }
 
     public ReadStatusDto.ReadStatusResponse update(UUID readStatusId, Instant lastReadTime){
-        ReadStatus readStatus = Objects.requireNonNull(readStatusRepository.findById(readStatusId), "읽음상태 객체가 존재하지 않습니다.");
+        ReadStatus readStatus = entityFinder.getReadStatus(readStatusId);
         Optional.ofNullable(lastReadTime).ifPresent(readStatus::updateLastReadTime);
         return ReadStatusDto.ReadStatusResponse.from(readStatus);
     }
 
     public void delete(UUID readStatusId){
-        Objects.requireNonNull(readStatusRepository.findById(readStatusId), "읽음상태 객체가 존재하지 않습니다.");
+        entityFinder.getReadStatus(readStatusId);
         readStatusRepository.delete(readStatusId);
     }
 

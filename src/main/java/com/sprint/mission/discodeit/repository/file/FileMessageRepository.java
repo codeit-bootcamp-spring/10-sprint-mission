@@ -17,9 +17,10 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void save(Message message) {
+    public Message save(Message message) {
         data.put(message.getId(), message);
         saveToFile();
+        return message;
     }
 
     @Override
@@ -41,7 +42,9 @@ public class FileMessageRepository implements MessageRepository {
     private void saveToFile() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
             oos.writeObject(data);
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            throw new IllegalStateException("messages.dat 저장에 실패했습니다.", e);
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -49,7 +52,10 @@ public class FileMessageRepository implements MessageRepository {
         File file = new File(FILE_PATH);
         if (!file.exists()) return new HashMap<>();
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, Message>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) { return new HashMap<>(); }
+            Object obj = ois.readObject();
+            return (obj instanceof Map) ? (Map<UUID, Message>) obj : new HashMap<>();
+        } catch (IOException | ClassNotFoundException e) {
+            return new HashMap<>();
+        }
     }
 }

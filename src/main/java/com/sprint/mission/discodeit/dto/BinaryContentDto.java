@@ -12,7 +12,7 @@ public class BinaryContentDto {
     ) {}
 
     public record BinaryContentResponse(
-            UUID BinaryContentId,
+            UUID binaryContentId,
             String filePath,
             String contentType
 

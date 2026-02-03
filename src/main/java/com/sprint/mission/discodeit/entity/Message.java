@@ -28,12 +28,17 @@ public class Message extends BaseEntity implements Serializable {
         this.content = request.content();
         this.userId = Objects.requireNonNull(request.userId(), "유효한 사용자 ID를 입력해주세요.");
         this.channelId = Objects.requireNonNull(request.channelId(), "유효한 채널 ID를 입력해주세요.");
-        this.binaryContentIds = binaryContentIds;
+        this.binaryContentIds = Objects.requireNonNull(binaryContentIds, "유효한 자료 ID를 입력해주세요.");
     }
 
     // 메세지 수정
     public void updateContent(String content) {
         this.content = content;
         updateTimestamp();
+    }
+
+    public void updateBinaryContentIds(List<UUID> binaryContentIds) {
+        this.binaryContentIds.clear();
+        this.binaryContentIds.addAll(binaryContentIds);
     }
 }

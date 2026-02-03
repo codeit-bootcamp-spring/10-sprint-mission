@@ -23,7 +23,7 @@ public class BasicAutoService {
                 .filter(user -> user.getName().equals(username) && user.getPassword().equals(password))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("로그인 실패"));
-        UserStatus status = userStatusRepository.findById(member.getId());
+        UserStatus status = userStatusRepository.findByUserId(member.getId());
 
         return UserDto.UserResponse.from(member, status);
     }
