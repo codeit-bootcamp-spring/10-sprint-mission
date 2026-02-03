@@ -37,7 +37,7 @@ public class ChannelResponse {
                 .build();
     }
 
-    //최근 메시지 시간 포함
+    // 최근 메시지 시간 포함
     public static ChannelResponse from(Channel channel, Instant lastMessageTime) {
         return ChannelResponse.builder()
                 .id(channel.getId())
@@ -46,7 +46,7 @@ public class ChannelResponse {
                 .type(channel.getType())
                 .createdAt(channel.getCreatedAt())
                 .updatedAt(channel.getUpdatedAt())
-                .lastMessageTime().participantUserIDs()
+                .lastMessageTime(lastMessageTime)
                 .build();
     }
 

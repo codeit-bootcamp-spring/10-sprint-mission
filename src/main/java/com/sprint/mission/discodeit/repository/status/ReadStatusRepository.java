@@ -18,5 +18,7 @@ public interface ReadStatusRepository {
 
     List<ReadStatus> findByChannelId(UUID channelId);
 
+    List<ReadStatus> findAll();
+
     void deleteById(UUID id);
 }
