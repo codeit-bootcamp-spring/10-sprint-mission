@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentCreation;
 import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentResponse;
-import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentUpdate;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -28,7 +27,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContentResponse create(BinaryContentCreation model) {
-        BinaryContent content = new BinaryContent(model.url());
+        BinaryContent content = new BinaryContent(model.fileName(), model.fileType(), model.data());
         binaryContentRepository.save(content);
         return content.toResponse();
     }
@@ -42,19 +41,6 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public BinaryContentResponse find(UUID id) {
         return findBinaryContent(id).toResponse();
-    }
-
-    @Override
-    public List<BinaryContentResponse> findAll() {
-        return binaryContentRepository.findAll()
-                .stream()
-                .map(BinaryContent::toResponse)
-                .toList();
-    }
-
-    @Override
-    public BinaryContentResponse update(BinaryContentUpdate model) {
-        throw new UnsupportedOperationException("Binary content can't be updated");
     }
 
     @Override
