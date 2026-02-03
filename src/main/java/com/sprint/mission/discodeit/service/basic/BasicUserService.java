@@ -129,7 +129,7 @@ public class BasicUserService implements UserService {
         }
 
         // 유저 삭제
-        userRepository.delete(user);
+        userRepository.deleteById(id);
     }
 
 

@@ -47,9 +47,9 @@ public class FileUserRepository extends BaseFileRepository<User> implements User
     }
 
     @Override
-    public void delete(User user){
+    public void deleteById(UUID id){
         Map<UUID, User> data = loadData();
-        data.remove(user.getId());
+        data.remove(id);
         saveData(data);
     }
 }
