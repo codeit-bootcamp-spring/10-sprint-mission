@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
+import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -11,10 +11,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @ToString
 public class ReadStatus implements Serializable {
+    @ToString.Exclude
     private static final long serialVersionUID = 1L;
-    @Getter
     private final UUID id = UUID.randomUUID();
-    @Getter
     private final UUID userId;
     private final UUID channelId;
     private final long createdAt = Instant.now().getEpochSecond();
@@ -37,5 +36,18 @@ public class ReadStatus implements Serializable {
 
     public boolean matchChannelId(UUID channelId) {
         return this.channelId.equals(channelId);
+    }
+
+    public boolean matchUserId(UUID userId) {
+        return this.userId.equals(userId);
+    }
+
+    public ReadStatusResponse toResponse() {
+        return ReadStatusResponse.builder()
+                .id(id)
+                .userId(userId)
+                .channelId(channelId)
+                .type(type)
+                .build();
     }
 }
