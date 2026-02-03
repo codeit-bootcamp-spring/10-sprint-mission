@@ -57,14 +57,14 @@ public class BasicChannelService implements ChannelService{
 
     // 단건 조회
     @Override
-    public ChannelResponse getChannelById(UUID id) {
+    public ChannelResponse findById(UUID id) {
         Channel channel = getOrThrowChannel(id);
         return convertToResponse(channel, getLastMessageAt(id), getMemberIdsIfPrivate(channel));
     }
 
     // 유저별 참여하고 있는 채널 전체 조회
     @Override
-    public List<ChannelResponse> getAllByUserId(UUID userId) {
+    public List<ChannelResponse> findAllByUserId(UUID userId) {
         // PUBLIC 채널 조회
         Stream<Channel> publicStream = channelRepository.findAllPublic().stream();
         // PRIVATE 채널 조회

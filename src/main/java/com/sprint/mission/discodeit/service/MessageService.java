@@ -10,9 +10,9 @@ import java.util.List;
 public interface MessageService {
     MessageResponse create (MessageCreateRequest request);
 
-    MessageResponse getMessageById (UUID id);
+    MessageResponse findById (UUID id);
 
-    List<MessageResponse> getAllByChannelId (UUID channelId, UUID userId); // 특정 채널의 메시지 목록 조회
+    List<MessageResponse> findAllByChannelId (UUID channelId, UUID userId); // 특정 채널의 메시지 목록 조회
 
     MessageResponse update (UUID id, MessageUpdateRequest request);
 

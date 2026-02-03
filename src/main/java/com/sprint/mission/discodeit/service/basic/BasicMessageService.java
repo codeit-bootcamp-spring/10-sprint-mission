@@ -48,14 +48,14 @@ public class BasicMessageService implements MessageService {
 
 
     @Override
-    public MessageResponse getMessageById(UUID id) {
+    public MessageResponse findById(UUID id) {
         Message message = getOrThrowMessage(id);
         return convertToResponse(message);
     }
 
     // 특정 채널의 메시지 목록 조회
     @Override
-    public List<MessageResponse> getAllByChannelId(UUID channelId, UUID userId) {
+    public List<MessageResponse> findAllByChannelId(UUID channelId, UUID userId) {
         validateAccess(userId, channelId);
 
         return messageRepository.findAllByChannelId(channelId).stream()

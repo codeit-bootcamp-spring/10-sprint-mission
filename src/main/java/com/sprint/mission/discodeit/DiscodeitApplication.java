@@ -73,7 +73,7 @@ public class DiscodeitApplication {
 		System.out.println("[삭제] 메시지 삭제 완료 (연쇄 삭제 로직 실행됨)");
 
 		// 채널 삭제 시 메시지/ReadStatus 삭제 확인
-		channelService.deleteByChannelId(pChannel.id());
+		channelService.deleteById(pChannel.id());
 		System.out.println("[삭제] 채널 삭제 완료 (연쇄 삭제 로직 실행됨)");
 
 		// 유저 삭제 시 UserStatus/BinaryContent 삭제 확인

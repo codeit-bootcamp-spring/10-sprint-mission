@@ -23,7 +23,6 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final ReadStatusRepository readStatusRepository;
 
-    // 계정 생성
     @Override
     public UserResponse create(UserCreateRequest request){
         // username, email 중복 체크
@@ -58,25 +57,22 @@ public class BasicUserService implements UserService {
         return convertToResponse(user, status);
     }
 
-    // 단건 조회
     @Override
-    public UserResponse getUserById(UUID id) {
+    public UserResponse findById(UUID id) {
         User user = validateUserExists(id);
         UserStatus status = getUserStatus(id);
         return convertToResponse(user, status);
     }
 
-    // 전체 조회
     @Override
-    public List<UserResponse> getAllUsers() {
+    public List<UserResponse> findAll() {
         return userRepository.findAll().stream()
                 .map(user -> convertToResponse(user, getUserStatus(user.getId())))
                 .toList();
     }
 
-    // 계정 정보 수정
     @Override
-    public UserResponse updateUser(UUID id, UserUpdateRequest request){
+    public UserResponse update(UUID id, UserUpdateRequest request){
         User user = validateUserExists(id);
 
         // 이름 수정 + 중복 체크
@@ -117,7 +113,6 @@ public class BasicUserService implements UserService {
         return convertToResponse(user, status);
     }
 
-    // 계정 삭제
     @Override
     public void deleteById(UUID id) {
         User user = validateUserExists(id);

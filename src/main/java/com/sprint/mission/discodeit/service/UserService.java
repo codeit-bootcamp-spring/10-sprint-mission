@@ -9,13 +9,13 @@ import java.util.List;
 
 
 public interface UserService {
-    UserResponse create(UserCreateRequest request); // 계정 생성
+    UserResponse create(UserCreateRequest request);
 
-    UserResponse getUserById(UUID id); // 단건 조회
+    UserResponse findById(UUID id);
 
-    List<UserResponse> getAllUsers(); // 전체 조회
+    List<UserResponse> findAll();
 
-    UserResponse updateUser(UUID id, UserUpdateRequest request); // 계정 정보 수정
+    UserResponse update(UUID id, UserUpdateRequest request);
 
-    void deleteById(UUID id); // 계정 삭제
+    void deleteById(UUID id);
 }

@@ -68,28 +68,4 @@ public class User extends BaseEntity implements Serializable {
         this.password = password;
         this.updated();
     }
-
-    // 채널 가입
-    public void addJoinedChannel(Channel channel){
-        this.joinedChannels.add(channel);
-    }
-
-    // 채널 탈퇴
-    public void leaveChannel (Channel channel){
-        this.joinedChannels.remove(channel);
-    }
-
-    // 메시지 작성
-    public void addMessage(Message message){
-        this.myMessages.add(message);
-    }
-
-    // 메시지 삭제
-    public  void removeMessage(Message message){
-        this.myMessages.remove(message);
-    }
-
-    // --- getter ---
-    public List<Channel> getJoinedChannels() { return Collections.unmodifiableList(joinedChannels); }
-    public List<Message> getMyMessages() { return Collections.unmodifiableList(myMessages); }
 }

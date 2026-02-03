@@ -54,33 +54,4 @@ public class Channel extends BaseEntity implements Serializable {
             this.updated();
         }
     }
-
-//    // 채널 멤버인지 확인
-//    public boolean isMember(User user){
-//        return members.contains(user);
-//    }
-//
-//    // 채널 멤버 초대
-//    public void addMember(User user){
-//        this.members.add(user);
-//    }
-//
-//    // 채널 멤버 삭제
-//    public void removeMember(User user){
-//        this.members.remove(user);
-//    }
-//
-//    // 메시지 추가
-//    public  void addMessage(Message message){
-//        this.messages.add(message);
-//    }
-//
-//    // 메시지 삭제
-//    public  void removeMessage(Message message){
-//        this.messages.remove(message);
-//    }
-//
-//    // --- getter ---
-//    public List<User> getMembers() { return Collections.unmodifiableList(members); }
-//    public List<Message> getMessages() { return Collections.unmodifiableList(messages); }
 }
