@@ -13,27 +13,23 @@ public class ReadStatus {
 
     private final UUID userId;
     private final UUID channelId;
-    private Instant time;
+    private Instant lastReadAt;
 
-    public ReadStatus(UUID userId, UUID channelId, Instant time) {
+    public ReadStatus(UUID userId, UUID channelId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
         this.userId = userId;
         this.channelId = channelId;
-        this.time = time;
+        this.lastReadAt = Instant.EPOCH;
     }
 
-    public void markAsRead(Instant readTime) {
-        if (readTime == null) {
-            return;
+    public void markReadAt(Instant lastReadAt) {
+        if (lastReadAt == null) {
+            throw new RuntimeException("요청이 올바르지 않습니다.");
         }
-        this.time = readTime;
+        this.lastReadAt = lastReadAt;
         update();
-    }
-
-    public void markAsReadNow() {
-        markAsRead(Instant.now());
     }
 
     public void update() {

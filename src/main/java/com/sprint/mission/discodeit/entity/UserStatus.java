@@ -13,7 +13,6 @@ public class UserStatus {
     private Instant updatedAt;
 
     private final UUID userId;
-    private Instant accessTime;
     private Status status;
 
     public UserStatus(UUID userId, Status status) {
@@ -22,7 +21,10 @@ public class UserStatus {
         this.updatedAt = createdAt;
         this.userId = userId;
         this.status = status;
-        this.accessTime = Instant.now();
+    }
+
+    public Instant getAccessTime() {
+        return updatedAt;
     }
 
     public void changeStatus(Status status) {
@@ -33,14 +35,9 @@ public class UserStatus {
         update();
     }
 
-    public void touch() {
-        this.accessTime = Instant.now();
-        update();
-    }
-
     public boolean isCurrentlyLoggedIn() {
         Instant now = Instant.now();
-        Duration sinceLastAccess = Duration.between(accessTime, now);
+        Duration sinceLastAccess = Duration.between(updatedAt, now);
         if (sinceLastAccess.isNegative()) {
             return true;
         }
