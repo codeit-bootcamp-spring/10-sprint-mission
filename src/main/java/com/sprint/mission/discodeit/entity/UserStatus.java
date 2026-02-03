@@ -8,17 +8,24 @@ import java.util.UUID;
 @Getter
 public class UserStatus extends BaseDomain{
     private UUID userId;
+    private boolean isOnline;
 
     public UserStatus(UUID userId) {
         super();
         this.userId = userId;
     }
 
-    public boolean isOnline() {
+    public boolean checkOnline() {
         Instant nowTime = Instant.now();
         if (this.updatedAt.isBefore(nowTime.minusSeconds(300))) {
-            return false;
+            isOnline = false;
+            return isOnline;
         }
-        return true;
+        isOnline = true;
+        return isOnline;
+    }
+
+    public void updateOnline(boolean isOnline) {
+        this.isOnline = isOnline;
     }
 }
