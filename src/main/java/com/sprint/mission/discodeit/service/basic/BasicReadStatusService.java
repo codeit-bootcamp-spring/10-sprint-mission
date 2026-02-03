@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -55,8 +56,8 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public ReadStatusResponseDTO find(UUID rsId) {
         Objects.requireNonNull(rsId,"유효하지 않은 ReadStatus ID 입니다.");
-        ReadStatus readStatus = readStatusRepository.findByID(rsId);
-        return readStatusDTOMapper.rsToResponse(readStatus);
+        Optional<ReadStatus> readStatus = readStatusRepository.findByID(rsId);
+        return readStatusDTOMapper.rsToResponse(Objects.requireNonNull(readStatus.orElse(null)));
     }
 
     @Override

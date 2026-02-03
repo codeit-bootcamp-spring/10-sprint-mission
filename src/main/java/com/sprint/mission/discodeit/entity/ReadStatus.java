@@ -3,11 +3,12 @@ package com.sprint.mission.discodeit.entity;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class ReadStatus extends BaseEntity {
+public class ReadStatus extends BaseEntity implements Serializable {
     private final UUID id;
     private final UUID userID;
     private final UUID channelID;

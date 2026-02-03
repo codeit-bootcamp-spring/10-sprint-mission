@@ -15,6 +15,7 @@ import java.time.Instant;
 public class ChannelDTOMapper {
     public ChannelResponseDTO channelToResponseDTO(Channel channel, Message latestMessage){
         return new ChannelResponseDTO(
+                channel.getId(),
                 latestMessage != null ? latestMessage.getCreatedAt() : null,
                 latestMessage != null ? latestMessage.getUpdatedAt() : null,
                 channel.getUserList());

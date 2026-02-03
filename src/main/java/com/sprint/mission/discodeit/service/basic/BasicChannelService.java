@@ -16,7 +16,6 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -103,7 +102,6 @@ public class BasicChannelService implements ChannelService {
         // 메세지 리포지토리에서 channelID를 통해 메세지 리스트를 뽑고 stream ->
         // max를 사용하여 가장 큰(최근) createdAt을 가진 메시지를 뽑고
         // 메시지가 존재하지 않으면 null 리턴? <- 추후 바꿔야할듯
-        Message latestMessage = getLatestMessage(channelId);
 
         // 만약 채널 타입이 PRIVATE이면...
         if(channel.getType() == ChannelType.PRIVATE){
@@ -132,9 +130,6 @@ public class BasicChannelService implements ChannelService {
 
                .map(
                        c -> {
-                           // 메세지 레포지토리에서 가장 최근에 업데이트된 메세지를 뽑아서 lastMessage에 대입
-                           Message lastMessage = getLatestMessage(c.getId());
-
                            // 메시지가 없으면 시간 정보들은 다 null 처리,
                            // 채널 타입이 Private이면 유저 정보를 DTO에 주입, Public이면 빈 리스트를 DTO에 주입
                            return channelDTOMapper.channelToResponseDTO(c,getLatestMessage(c.getId()));

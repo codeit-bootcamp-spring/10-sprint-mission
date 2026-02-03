@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record ChannelResponseDTO(
+        UUID id,
         Instant latestMessageCreatedAt,
         Instant latestMessageUpdatedAt,
         List<UUID> userID
