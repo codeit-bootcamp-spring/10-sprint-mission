@@ -18,6 +18,9 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
         return readStatus;
     }
 
+    @Override
+    public Optional<ReadStatus> findById(UUID id){return Optional.ofNullable(data.get(id));}
+
     // 특정 유저의 특정 채널 읽음 상태 조회
     @Override
     public Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId) {
@@ -41,6 +44,9 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
                 .filter(readStatus -> readStatus.getChannelId().equals(channelId))
                 .toList();
     }
+
+    @Override
+    public void deleteById(UUID id){data.remove(id);}
 
     @Override
     public void deleteByChannelId(UUID channelId) {

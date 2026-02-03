@@ -20,6 +20,9 @@ public class FileReadStatusRepository extends BaseFileRepository<ReadStatus> imp
         return readStatus;
     }
 
+    @Override
+    public Optional<ReadStatus> findById(UUID id){return Optional.ofNullable(loadData().get(id));}
+
     // 특정 유저의 특정 채널 읽음 상태 조회
     @Override
     public Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId) {
@@ -45,6 +48,13 @@ public class FileReadStatusRepository extends BaseFileRepository<ReadStatus> imp
         return data.values().stream()
                 .filter(readStatus -> readStatus.getChannelId().equals(channelId))
                 .toList();
+    }
+
+    @Override
+    public void deleteById(UUID id){
+        Map<UUID, ReadStatus> data = loadData();
+        data.remove(id);
+        saveData(data);
     }
 
     @Override

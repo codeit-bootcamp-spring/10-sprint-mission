@@ -25,8 +25,8 @@ public class ReadStatus extends BaseEntity{
     }
 
     // 마지막으로 메시지 읽은 시간 저장
-    public void updateLastReadAt(){
-        this.lastReadAt = Instant.now();
+    public void updateLastReadAt(Instant lastReadAt){
+        this.lastReadAt = lastReadAt;
         this.updated();
     }
 }
