@@ -26,10 +26,13 @@ public class BasicUserStatusService {
         if (userRepository.findById(request.getUserId()).isEmpty()) {
             throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
         }
-        if (userStatusRepository.findByUserId(request.getUserId()).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 유저 상태입니다.");
-        }
-        UserStatus userStatus = new UserStatus(request.getUserId(), LocalDateTime.now());
+        UserStatus userStatus = userStatusRepository.findByUserId(request.getUserId())
+                .map(existing -> {
+                    existing.updateLastSeen(LocalDateTime.now());
+                    return existing;
+                })
+                .orElseGet(() -> new UserStatus(request.getUserId(), LocalDateTime.now()));
+
         userStatusRepository.save(userStatus);
         return userStatusMapper.toResponse(userStatus);
     }

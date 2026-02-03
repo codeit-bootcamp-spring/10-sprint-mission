@@ -31,13 +31,13 @@ public class BasicReadStatusService {
             throw new IllegalArgumentException("존재하지 않는 채널입니다.");
         }
 
-        if (readStatusRepository.findByUserIdAndChannelId(request.getUserId(), request.getChannelId()).isPresent()) {
-            throw new IllegalArgumentException("해당 채널에 대한 읽기 상태가 이미 존재합니다.");
-        }
-
-        ReadStatus readStatus = new ReadStatus(request.getUserId(), request.getChannelId());
-        readStatusRepository.save(readStatus);
-        return readStatusMapper.toResponse(readStatus);
+        return readStatusRepository.findByUserIdAndChannelId(request.getUserId(), request.getChannelId())
+                .map(readStatusMapper::toResponse)
+                .orElseGet(() -> {
+                    ReadStatus readStatus = new ReadStatus(request.getUserId(), request.getChannelId());
+                    readStatusRepository.save(readStatus);
+                    return readStatusMapper.toResponse(readStatus);
+                });
     }
 
     public ReadStatusResponse findStatus(UUID id) {

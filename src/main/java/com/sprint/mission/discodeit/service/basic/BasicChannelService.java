@@ -37,7 +37,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     private Channel createPrivateChannel(ChannelCreateRequest request) {
-        Channel channel = new Channel(null, "PRIVATE", null);
+        Channel channel = new Channel(request.getName(), "PRIVATE", request.getDescription());
         channelRepository.save(channel);
 
         if (request.getParticipantIds() != null) {

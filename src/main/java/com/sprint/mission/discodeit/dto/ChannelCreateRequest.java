@@ -22,13 +22,17 @@ public class ChannelCreateRequest {
         this.participantIds = Collections.emptyList();
     }
 
-    public ChannelCreateRequest(List<UUID> participantIds) {
+    public ChannelCreateRequest(String name, String description, List<UUID> participantIds) {
         if (participantIds == null || participantIds.isEmpty()) {
             throw new IllegalArgumentException("PRIVATE 채널은 최소 1명 이상의 참여자가 필요합니다.");
         }
-        this.name = null;
+        this.name = name;
         this.type = "PRIVATE";
-        this.description = null;
+        this.description = description;
         this.participantIds = participantIds;
+    }
+
+    public ChannelCreateRequest(List<UUID> participantIds) {
+        this(null, null, participantIds);
     }
 }
