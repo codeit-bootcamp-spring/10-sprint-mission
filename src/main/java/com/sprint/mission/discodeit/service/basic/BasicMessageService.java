@@ -94,7 +94,7 @@ public class BasicMessageService implements MessageService {
         channel.updateUpdatedAt();
         channelRepository.save(channel);
 
-        msg.getAttachmentIds().forEach(binaryContentRepository::deleteById);
+        binaryContentRepository.
 
         messageRepository.deleteById(uuid);
     }

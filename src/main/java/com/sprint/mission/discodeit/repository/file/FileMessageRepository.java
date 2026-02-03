@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.extend.FileSerDe;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,17 +24,25 @@ public class FileMessageRepository extends FileSerDe<Message> implements Message
     }
 
     @Override
-    public Optional<Message> findById(UUID messageId) {
-        return super.load(MESSAGE_DATA_DIRECTORY, messageId);
+    public Optional<Message> findById(UUID uuid) {
+        return super.load(MESSAGE_DATA_DIRECTORY, uuid);
     }
 
     @Override
-    public List<Message> findAll() {
-        return super.loadAll(MESSAGE_DATA_DIRECTORY);
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return super.loadAll(MESSAGE_DATA_DIRECTORY).stream()
+                .filter(m -> Objects.equals(m.getChannelId(), channelId))
+                .toList();
     }
 
     @Override
-    public void deleteById(UUID messageId) {
-        super.delete(MESSAGE_DATA_DIRECTORY, messageId);
+    public void deleteById(UUID uuid) {
+        super.delete(MESSAGE_DATA_DIRECTORY, uuid);
+    }
+
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        findAllByChannelId(channelId)
+                .forEach(m -> deleteById(m.getId()));
     }
 }
