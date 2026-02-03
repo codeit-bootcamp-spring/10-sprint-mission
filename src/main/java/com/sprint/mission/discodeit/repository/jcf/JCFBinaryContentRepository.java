@@ -2,31 +2,42 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
 public class JCFBinaryContentRepository implements BinaryContentRepository {
-    @Override
-    public BinaryContent save(BinaryContent content) {
-        return null;
+    private final Map<UUID, BinaryContent> data;
+
+    public JCFBinaryContentRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
-    public Optional<BinaryContent> findById(UUID contentId) {
-        return Optional.empty();
+    public BinaryContent save(BinaryContent binaryContent) {
+        data.put(binaryContent.getId(), binaryContent);
+        return binaryContent;
     }
 
     @Override
-    public List<BinaryContent> findAllByIdIn(List<UUID> contentIds) {
-        return List.of();
+    public Optional<BinaryContent> findById(UUID binaryContentId) {
+        return Optional.ofNullable(data.get(binaryContentId));
     }
 
     @Override
-    public void delete(UUID contentId) {
+    public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
+        return binaryContentIds.stream()
+                .map(data::get)
+                .filter(Objects::nonNull)
+                .toList();
+    }
 
+    @Override
+    public void delete(UUID binaryContentId) {
+        data.remove(binaryContentId);
     }
 }

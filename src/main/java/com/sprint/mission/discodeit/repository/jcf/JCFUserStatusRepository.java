@@ -2,36 +2,46 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
 public class JCFUserStatusRepository implements UserStatusRepository {
+    private final Map<UUID, UserStatus> data;
+
+    public JCFUserStatusRepository() {
+        this.data = new HashMap<>();
+    }
+
     @Override
     public UserStatus save(UserStatus userStatus) {
-        return null;
+        data.put(userStatus.getId(), userStatus);
+        return userStatus;
     }
 
     @Override
     public Optional<UserStatus> findById(UUID userStatusId) {
-        return Optional.empty();
+        return Optional.ofNullable(data.get(userStatusId));
     }
 
     @Override
     public Optional<UserStatus> findByUserId(UUID userId) {
-        return Optional.empty();
+        return data.values().stream()
+                .filter(readStatus -> readStatus.getUserId().equals(userId))
+                .findFirst();
     }
 
     @Override
     public List<UserStatus> findAll() {
-        return List.of();
+        return new ArrayList<>(data.values());
     }
 
     @Override
     public void delete(UUID userStatusId) {
-
+        data.remove(userStatusId);
     }
 }

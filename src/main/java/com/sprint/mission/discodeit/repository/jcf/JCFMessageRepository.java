@@ -56,11 +56,10 @@ public class JCFMessageRepository implements MessageRepository {
 
     @Override
     public void deleteAllByChannelId(UUID channelId) {
-        List<UUID> messageIdsToDelete = new ArrayList<>(
-                data.values().stream()
+        List<UUID> messageIdsToDelete = data.values().stream()
                         .filter(message -> channelId.equals(message.getChannelId()))
                         .map(Message::getId)
-                        .toList());
+                        .toList();
 
         for (UUID messageId : messageIdsToDelete) {
             data.remove(messageId);
