@@ -35,14 +35,12 @@ public class Channel extends BaseEntity implements Serializable {
     }
 
     public Channel(PrivateChannelCreateRequestDTO privateChannelCreateRequestDTO) {
-        this.members = new ArrayList<>();
-
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.userId = privateChannelCreateRequestDTO.getUserId();
         this.type = ChannelType.PRIVATE;
-        this.members =  privateChannelCreateRequestDTO.getMemberIds();
+        this.members = new ArrayList<>(privateChannelCreateRequestDTO.getMemberIds());
     }
 
     public void updateChannelName(String channelName) {
