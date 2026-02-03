@@ -118,6 +118,10 @@ public class BasicChannelService implements ChannelService {
     public ChannelResponse update(ChannelInfoUpdate model) {
         Channel channel = channelRepository.findById(model.channelId())
                 .orElseThrow(() -> new NoSuchElementException(ID_NOT_FOUND.formatted(model.channelId())));
+        if (channel.getType() == ChannelType.PRIVATE) {
+            // private channel can't be modified
+            return toResponse(channel);
+        }
         channel.update(model.newName(), model.newDescription());
         channelRepository.save(channel);
         return toResponse(channel);
@@ -128,6 +132,12 @@ public class BasicChannelService implements ChannelService {
         if (!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException(ID_NOT_FOUND.formatted(channelId));
         }
+        messageRepository.findAll()
+                .stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .forEach(message -> messageRepository.deleteById(message.getId()));
+        readStatusRepository.findByChannelId(channelId)
+                .forEach(status -> readStatusRepository.deleteById(status.getId()));
         channelRepository.deleteById(channelId);
     }
 }
