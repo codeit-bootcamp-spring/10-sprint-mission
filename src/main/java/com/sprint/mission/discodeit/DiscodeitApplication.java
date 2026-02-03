@@ -1,62 +1,130 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.util.FileUtil;
+import com.sprint.mission.discodeit.dto.request.auth.AuthLoginRequestDTO;
+import com.sprint.mission.discodeit.dto.request.binaryContent.BinaryContentCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.channel.ChannelMemberRequestDTO;
+import com.sprint.mission.discodeit.dto.request.channel.PrivateChannelCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.channel.PublicChannelCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.readStatus.ReadStatusUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.user.MemberFindRequestDTO;
+import com.sprint.mission.discodeit.dto.request.user.UserCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.response.*;
+import com.sprint.mission.discodeit.entity.BinaryContentType;
+import com.sprint.mission.discodeit.entity.ReadStatusType;
+import com.sprint.mission.discodeit.service.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import java.nio.file.Paths;
+import java.util.List;
+import java.util.UUID;
 
 @SpringBootApplication
 public class DiscodeitApplication {
 
-	static User setupUser(UserService userService) {
-		return userService.createUser("woody@codeit.com", "woody1234", "woody");
-	}
-
-	static Channel setupChannel(ChannelService channelService, User owner) {
-		return channelService.createChannel("공지", owner.getId(), ChannelType.CHAT);
-	}
-
-	static void messageCreateTest(MessageService messageService, Channel channel, User author) {
-		Message message = messageService.createMessage("안녕하세요.", author.getId(), channel.getId(), MessageType.CHAT);
-		System.out.println("메시지 생성 성공! ID: " + message.getId());
-	}
-
 	public static void main(String[] args) {
-		ConfigurableApplicationContext context =
-				SpringApplication.run(DiscodeitApplication.class, args);
+		ConfigurableApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
 
-		// 서비스 초기화
 		UserService userService = context.getBean(UserService.class);
+		AuthService authService = context.getBean(AuthService.class);
 		ChannelService channelService = context.getBean(ChannelService.class);
 		MessageService messageService = context.getBean(MessageService.class);
+		ReadStatusService readStatusService = context.getBean(ReadStatusService.class);
+		UserStatusService userStatusService = context.getBean(UserStatusService.class);
+		BinaryContentService binaryContentService = context.getBean(BinaryContentService.class);
 
-		// 파일 초기화
-		FileUtil.clearDirectory(Paths.get(System.getProperty("user.dir"), "data", "users"));
-        FileUtil.clearDirectory(Paths.get(System.getProperty("user.dir"), "data", "channels"));
-        FileUtil.clearDirectory(Paths.get(System.getProperty("user.dir"), "data", "messages"));
-
-		// 셋업 및 테스트 실행
 		try {
-			User user = setupUser(userService);
-			System.out.println("사용자 셋업 완료: " + user.getNickname());
+			System.out.println("\n" + "=".repeat(60));
+			System.out.println("🚀 [공정 1] USER / AUTH / STATUS 검수");
+			System.out.println("=".repeat(60));
 
-			Channel channel = setupChannel(channelService, user);
-			System.out.println("채널 셋업 완료: " + channel.getChannelName());
+			// 1-1. [성공] 유저 생성 (프로필 이미지 포함)
+			UserResponseDTO u1 = userService.create(UserCreateRequestDTO.builder()
+					.nickname("공장장").email("boss@test.com").password("pw123")
+					.binaryContentCreateRequestDTO(new BinaryContentCreateRequestDTO("boss.png", new byte[]{1,2}, BinaryContentType.IMAGE))
+					.build());
+			System.out.println("✅ [성공] 유저 및 프로필 이미지 생성 완료");
 
-			messageCreateTest(messageService, channel, user);
+			// 1-3. [성공] 로그인 및 인증
+			authService.login(new AuthLoginRequestDTO(u1.getId(), u1.getNickname(), "pw123"));
+			System.out.println("✅ [성공] 인증 서비스 로그인 통과");
 
-			System.out.println("\n=== 전체 데이터 확인 ===");
-			System.out.println("전체 유저 수: " + userService.searchUserAll().size());
-			System.out.println("전체 채널 수: " + channelService.searchChannelAll().size());
+			// 1-4. [성공] 유저 상태 수동 업데이트
+			userStatusService.updateByUserId(u1.getId());
+			System.out.println("✅ [성공] 온라인 상태 강제 업데이트 완료");
+
+
+			System.out.println("\n" + "=".repeat(60));
+			System.out.println("🚀 [공정 2] CHANNEL & MEMBERS 권한 검수");
+			System.out.println("=".repeat(60));
+
+			// 2-1. [성공] 채널들 생성
+			UserResponseDTO u2 = userService.create(UserCreateRequestDTO.builder().nickname("조수").email("as@test.com").password("p").build());
+			ChannelResponseDTO pub = channelService.createPublicChannel(new PublicChannelCreateRequestDTO(u1.getId(), "자유게시판", "누구나"));
+			ChannelResponseDTO pri = channelService.createPrivateChannel(new PrivateChannelCreateRequestDTO(u1.getId(), List.of(u1.getId())));
+
+			// 2-2. [실패] 권한 검증: 멤버가 아닌 유저가 비공개 채널 참가자 조회 시도
+			try {
+				userService.findMembersByChannelId(new MemberFindRequestDTO(u2.getId(), pri.getId()));
+			} catch (Exception e) {
+				System.out.println("⚠️ [실패 확인] 비공개 채널 무단 접근 차단: " + e.getMessage());
+			}
+
+			// 2-3. [성공] 멤버 초대 및 퇴장 전수 검사
+			channelService.inviteMember(new ChannelMemberRequestDTO(u2.getId(), pub.getId()));
+			System.out.println("✅ [성공] 공개 채널 멤버 초대 성공");
+
+			try { channelService.inviteMember(new ChannelMemberRequestDTO(u2.getId(), pub.getId())); }
+			catch (Exception e) { System.out.println("⚠️ [실패 확인] 동일 채널 중복 초대 차단: " + e.getMessage()); }
+
+
+			System.out.println("\n" + "=".repeat(60));
+			System.out.println("🚀 [공정 3] MESSAGE & READ_STATUS 데이터 연동");
+			System.out.println("=".repeat(60));
+
+			// 3-1. [성공] 메시지 작성 (첨부파일 포함)
+			MessageResponseDTO msg = messageService.create(MessageCreateRequestDTO.builder()
+					.channelId(pub.getId()).authorId(u1.getId()).message("도면 확인 바람")
+					.binaryContentCreateRequestDTOList(List.of(new BinaryContentCreateRequestDTO("blue.pdf", new byte[]{0}, BinaryContentType.FILE)))
+					.build());
+			System.out.println("✅ [성공] 메시지 발송 및 첨부파일 연동 완료");
+
+			// 3-2. [성공] 조회 기능들
+			System.out.println("✅ [성공] 채널별 메시지 조회 건수: " + messageService.findAllByChannelId(pub.getId()).size());
+			System.out.println("✅ [성공] 유저별 메시지 조회 건수: " + messageService.findAllByUserId(u1.getId()).size());
+
+			// 3-3. [성공] 읽음 상태 업데이트
+			ReadStatusResponseDTO rs = readStatusService.findAllByReadStatusId(u1.getId());
+			readStatusService.update(new ReadStatusUpdateRequestDTO(rs.getId(), ReadStatusType.MENTIONED));
+			System.out.println("✅ [성공] ReadStatus 갱신 완료");
+
+
+			System.out.println("\n" + "=".repeat(60));
+			System.out.println("🚀 [공정 4] CASCADE & CLEANUP (최종 파괴 테스트)");
+			System.out.println("=".repeat(60));
+
+			// 4-1. [성공] 메시지 삭제 시 바이너리 콘텐츠 연쇄 삭제 확인
+			UUID fileId = msg.getAttachmentIds().get(0);
+			messageService.delete(msg.getId());
+			try { binaryContentService.findById(fileId); }
+			catch (Exception e) { System.out.println("✅ [연쇄삭제 검증] 메시지 삭제 후 파일 소멸 확인"); }
+
+			// 4-2. [성공] 유저 삭제 시 모든 관련 데이터(상태, 채널멤버) 정리 확인
+			userService.delete(u1.getId());
+			System.out.println("✅ [성공] 유저 삭제 공정 완료");
+
+			try { userStatusService.findById(u1.getId()); }
+			catch (Exception e) { System.out.println("✅ [연쇄삭제 검증] 유저 삭제 후 상태 정보 소멸 확인"); }
+
+			System.out.println("\n" + "=".repeat(60));
+			System.out.println("✨ [COMPLETED] 모든 서비스 함수 정밀 검증 종료! 뇽뇽!");
+			System.out.println("=".repeat(60));
+
 		} catch (Exception e) {
-			System.err.println("테스트 중 오류 발생: " + e.getMessage());
+			System.err.println("\n🚨 [치명적 결함] 테스트 중 예상치 못한 에러: " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
-
 }

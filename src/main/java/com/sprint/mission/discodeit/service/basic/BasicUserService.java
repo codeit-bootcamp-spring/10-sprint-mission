@@ -37,17 +37,17 @@ public class BasicUserService implements UserService {
         User newUser = new User(userCreateRequestDTO);
         userRepository.save(newUser);
 
-        UserStatus newUserStatus = new UserStatus(userCreateRequestDTO.getUserId());
+        UserStatus newUserStatus = new UserStatus(newUser.getId());
         userStatusRepository.save(newUserStatus);
 
-        Optional.ofNullable(userCreateRequestDTO.getBinaryContentCreateRequestDTO().getBinaryContent())
+        Optional.ofNullable(userCreateRequestDTO.getBinaryContentCreateRequestDTO())
+                .map(BinaryContentCreateRequestDTO::getBinaryContent)
                 // 선택적 프로필 이미지 생성
-                .map(content -> {
+                .ifPresent(content -> {
                     BinaryContent newBinaryContent = new BinaryContent(userCreateRequestDTO.getBinaryContentCreateRequestDTO());
                     binaryContentRepository.save(newBinaryContent);
-                    return newBinaryContent.getId();
-                })
-                .ifPresent(newUser::updateProfileId);
+                    newUser.updateProfileId(newBinaryContent.getId());
+                });
 
         return toResponseDTO(newUser, newUserStatus);
     }
@@ -57,8 +57,7 @@ public class BasicUserService implements UserService {
     public UserResponseDTO findById(UUID userId) {
         User targetUser = findEntityById(userId);
 
-        UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 상태가 존재하지 않습니다."));
+        UserStatus targetUserStatus = userStatusRepository.findByUserId(targetUser.getId());
 
         return toResponseDTO(targetUser, targetUserStatus);
     }
@@ -69,8 +68,7 @@ public class BasicUserService implements UserService {
         return userRepository.findAll().stream()
                 .map(user -> {
                     // 사용자별 상태 조회
-                    UserStatus userStatus = userStatusRepository.findById(user.getId())
-                            .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 상태가 존재하지 않습니다."));
+                    UserStatus userStatus = userStatusRepository.findByUserId(user.getId());
                     return toResponseDTO(user, userStatus);
                 })
                 .toList();
@@ -91,8 +89,7 @@ public class BasicUserService implements UserService {
         return targetChannel.getMembers().stream()
                 .map(memberId -> {
                     User user = findEntityById(memberId);
-                    UserStatus userStatus = userStatusRepository.findById(user.getId())
-                            .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 상태가 존재하지 않습니다."));
+                    UserStatus userStatus = userStatusRepository.findByUserId(user.getId());
                     return toResponseDTO(user,userStatus);
                 })
                 .toList();
@@ -103,8 +100,7 @@ public class BasicUserService implements UserService {
     public UserResponseDTO update(UserUpdateRequestDTO userUpdateRequestDTO) {
         User targetUser = findEntityById(userUpdateRequestDTO.getId());
 
-        UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 상태가 존재하지 않습니다."));
+        UserStatus targetUserStatus = userStatusRepository.findByUserId(targetUser.getId());
 
         // 비밀번호 필드 변경
         Optional.ofNullable(userUpdateRequestDTO.getPassword())
@@ -121,6 +117,7 @@ public class BasicUserService implements UserService {
                     validateDuplicateValue(targetUser.getNickname(), nickname, "[닉네임 변경 실패] 현재 닉네임과 일치합니다.");
                     targetUser.updateNickname(nickname);
                 });
+
         // 상태 필드 변경
         Optional.ofNullable(userUpdateRequestDTO.getUserStatusCreateRequestDTO())
                 .map(UserStatusUpdateRequestDTO::getUserStatusType)
@@ -152,6 +149,7 @@ public class BasicUserService implements UserService {
         // 삭제된 사용자가 참여한 모든 채널 내 멤버에서 사용자 연쇄 삭제
         channelRepository.findAll().stream()
                 .filter(channel -> channel.getUserId().equals(userId))
+                .toList()
                 .forEach(channel -> {
                     channel.getMembers().removeIf(memberID -> memberID.equals(userId));
                     channelRepository.save(channel);
@@ -160,16 +158,19 @@ public class BasicUserService implements UserService {
         // 삭제된 사용자가 발행한 메시지 연쇄 삭제
         messageRepository.findAll().stream()
                 .filter(message ->  message.getAuthorId().equals(userId))
+                .toList()
                 .forEach(messageRepository::delete);
 
         // 사용자 상태 연쇄 삭제
         userStatusRepository.findAll().stream()
                 .filter(userStatus -> userStatus.getUserId().equals(targetUser.getId()))
+                .toList()
                 .forEach(userStatusRepository::delete);
 
         // 사용자 프로필 이미지 연쇄 삭제
         binaryContentRepository.findAll().stream()
                 .filter(binaryContent -> binaryContent.getId().equals(targetUser.getProfileId()))
+                .toList()
                 .forEach(binaryContentRepository::delete);
 
         userRepository.delete(targetUser);

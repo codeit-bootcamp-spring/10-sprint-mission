@@ -77,7 +77,8 @@ public class BasicUserStatusService implements UserStatusService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
         UserStatus targetUserStatus = userStatusRepository.findAll().stream()
-                .filter(userStatus -> userStatus.getUserId().equals(targetUser.getId())).findFirst()
+                .filter(userStatus -> userStatus.getUserId().equals(targetUser.getId()))
+                .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 상태가 존재하지 않습니다."));
 
         targetUserStatus.updateLastOnlineTime();

@@ -131,11 +131,13 @@ public class BasicChannelService implements ChannelService {
         // 해당 채널에서 발행된 메시지 연쇄 삭제
         messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(targetChannelId))
+                .toList()
                 .forEach(messageRepository::delete);
 
         // 채널 멤버의 ReadStatus 연쇄 삭제
         readStatusRepository.findAll().stream()
                 .filter(readStatus -> readStatus.getChannelId().equals(targetChannelId))
+                .toList()
                 .forEach(readStatusRepository::delete);
 
         channelRepository.delete(targetChannel);

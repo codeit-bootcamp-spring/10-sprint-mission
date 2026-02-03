@@ -76,7 +76,6 @@ public class BasicReadStatusService implements ReadStatusService {
         }
         else {
             targetReadStatus.updateReadStatusType(ReadStatusType.READ);
-
         }
 
         targetReadStatus.updateLastReadTime();
