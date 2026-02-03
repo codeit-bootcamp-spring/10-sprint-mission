@@ -1,0 +1,13 @@
+package com.sprint.mission.discodeit.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class CreatePublicChannelRequestDto {
+    @NotBlank(message = "채널 이름은 필수입니다.")
+    private String name;
+    private String description;
+}
