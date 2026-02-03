@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> data;
 
@@ -21,6 +23,14 @@ public class JCFMessageRepository implements MessageRepository {
     @Override
     public Optional<Message> findById(UUID id) {
         return Optional.ofNullable(this.data.get(id));
+    }
+
+    @Override
+    public List<Message> findByChannelId(UUID channelId) {
+        return this.data.values()
+                .stream()
+                .filter(m -> m.getChannelId().equals(channelId))
+                .toList();
     }
 
     @Override
