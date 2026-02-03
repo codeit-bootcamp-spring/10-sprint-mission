@@ -36,7 +36,7 @@ public class DiscodeitApplication {
 		System.out.println("========= [1. User 고도화 테스트] =========");
 		// 등록
 		UserCreateRequest userReq = new UserCreateRequest("김철수", "철수", "kcs@example.com", "1234", null);
-		UserResponse user1 = userService.createAccount(userReq);
+		UserResponse user1 = userService.createUser(userReq);
 		System.out.println("[등록] user1 계정 및 UserStatus 생성 완료");
 
 		// 시간 타입(Instant) 확인
@@ -77,7 +77,7 @@ public class DiscodeitApplication {
 		System.out.println("[삭제] 채널 삭제 완료 (연쇄 삭제 로직 실행됨)");
 
 		// 유저 삭제 시 UserStatus/BinaryContent 삭제 확인
-		userService.deleteAccount(user1.id());
+		userService.deleteUser(user1.id());
 		System.out.println("[삭제] 유저 삭제 완료 (연쇄 삭제 로직 실행됨)");
 
 		System.out.println("\n===== 모든 고도화 서비스 테스트 완료 =====");

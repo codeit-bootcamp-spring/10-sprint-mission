@@ -23,7 +23,7 @@ public class BasicUserService implements UserService {
 
     // 계정 생성
     @Override
-    public UserResponse createAccount(UserCreateRequest request){
+    public UserResponse createUser(UserCreateRequest request){
         // username, email 중복 체크
         validateDuplicateName(request.name());
         validateDuplicateEmail(request.email());
@@ -58,7 +58,7 @@ public class BasicUserService implements UserService {
 
     // 단건 조회
     @Override
-    public UserResponse getAccountById(UUID id) {
+    public UserResponse getUserById(UUID id) {
         User user = validateUserExists(id);
         UserStatus status = getUserStatus(id);
         return convertToResponse(user, status);
@@ -66,7 +66,7 @@ public class BasicUserService implements UserService {
 
     // 전체 조회
     @Override
-    public List<UserResponse> getAllAccounts() {
+    public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(user -> convertToResponse(user, getUserStatus(user.getId())))
                 .toList();
@@ -74,7 +74,7 @@ public class BasicUserService implements UserService {
 
     // 계정 정보 수정
     @Override
-    public UserResponse updateAccount(UUID id, UserUpdateRequest request){
+    public UserResponse updateUser(UUID id, UserUpdateRequest request){
         User user = validateUserExists(id);
 
         // 이름 수정 + 중복 체크
@@ -117,7 +117,7 @@ public class BasicUserService implements UserService {
 
     // 계정 삭제
     @Override
-    public void deleteAccount(UUID id) {
+    public void deleteUser(UUID id) {
         User user = validateUserExists(id);
 
         // 유저 상태 삭제
