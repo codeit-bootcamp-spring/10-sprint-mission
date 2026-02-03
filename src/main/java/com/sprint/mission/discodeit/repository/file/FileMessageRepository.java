@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
 public class FileMessageRepository implements MessageRepository {
 
     private static final Path MESSAGE_DIRECTORY =

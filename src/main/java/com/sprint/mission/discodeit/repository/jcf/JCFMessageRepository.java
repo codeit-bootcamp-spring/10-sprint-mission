@@ -7,7 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.time.Instant;
 import java.util.*;
 
-@Repository
 public class JCFMessageRepository implements MessageRepository {
 
     private final HashMap<UUID, Message> data = new HashMap<>();

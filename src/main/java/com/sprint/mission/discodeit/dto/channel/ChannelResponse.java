@@ -9,7 +9,9 @@ import java.util.UUID;
 public sealed interface ChannelResponse
         permits PublicChannelResponse, PrivateChannelResponse {
     UUID id();
+
     ChannelType channelType();
+
     Instant lastMessageAt();
 
     static ChannelResponse of(Channel channel, Instant lastMessageAt) {

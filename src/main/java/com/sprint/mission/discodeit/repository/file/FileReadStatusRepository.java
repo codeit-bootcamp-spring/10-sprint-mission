@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
 public class FileReadStatusRepository implements ReadStatusRepository {
 
     private static final Path READ_STATUS_DIRECTORY =

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
 public class FileBinaryContentRepository implements BinaryContentRepository {
 
     private static final Path BINARY_CONTENT_DIRECTORY =

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
 public class FileUserRepository implements UserRepository {
 
     private static final Path USER_DIRECTORY =
