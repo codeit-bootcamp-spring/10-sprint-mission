@@ -16,4 +16,6 @@ public interface ReadStatusRepository {
     List<ReadStatus> loadAll();
 
     ReadStatus loadById(UUID readStatusId);
+
+    List<ReadStatus> loadAllByChannelId(UUID channelId);
 }

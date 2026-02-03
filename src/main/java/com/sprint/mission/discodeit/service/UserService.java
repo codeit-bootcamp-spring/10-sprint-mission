@@ -8,11 +8,11 @@ public interface UserService {
 
     UserDTO create(UserCreateDTO userCreateDTO);
 
-    UserFindDTO find(UUID id);
+    UserDTO findById(UUID id);
 
-    UserFindAllDTO findAll();
+    List<UserDTO> findAll();
 
     UserDTO updateUser(UserUpdateDTO userUpdateDTO);
 
-    void delete(UUID id);
+    void delete(UUID userId);
 }

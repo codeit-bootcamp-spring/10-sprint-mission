@@ -46,27 +46,24 @@ public class Channel extends BaseDomain implements Serializable {
         this.messagesList = new ArrayList<>();
         isPrivate = false;
     }
-
-    // 메소드
-//    public UUID getId() {
-//        return id;
-//    }
-//
-//    public long getCreatedAt() {
-//        return createdAt;
-//    }
-//
-//    public long getUpdatedAt() {
-//        return updatedAt;
-//    }
-//
-//    public List<User> getUserList() {
-//        return this.userList;
-//    }
-//
-//    public List<Message> getMessagesList() {
-//        return this.messagesList;
-//    }
+    // public
+    public Channel(String channelName, String description, List<UUID> userList, List<UUID> messagesList) {
+        super();
+        this.channelName = channelName;
+        this.description = description;
+        this.userList = userList;
+        this.messagesList = messagesList;
+        isPrivate = false;
+    }
+    // private
+    public Channel(List<UUID> userList, List<UUID> messagesList) {
+        super();
+        this.channelName = "private";
+        this.description = "";
+        this.userList = userList;
+        this.messagesList = messagesList;
+        isPrivate = true;
+    }
 
     public void updateChannelName(String name) {
         this.channelName = name;

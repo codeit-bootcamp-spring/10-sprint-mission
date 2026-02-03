@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.*;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusDTO;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -39,17 +40,14 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = new UserStatus(user.getId());
         this.userRepository.save(user);
         this.userStatusRepository.save(userStatus);
-        UserDTO userDTO = new UserDTO(user.getId(), user);
-        return userDTO;
+        return createUserDTO(user, userStatus);
     }
 
     @Override
-    public UserFindDTO find(UUID id) {
-        UserFindDTO userFindDTO;
+    public UserDTO findById(UUID id) {
         User user = this.userRepository.loadById(id);
         UserStatus userStatus = this.userStatusRepository.loadById(id);
-        userFindDTO = new UserFindDTO(user, userStatus);
-        return userFindDTO;
+        return createUserDTO(user, userStatus);
 
 //        for (User userCheck : this.userRepository.loadAll()) {
 //            if (userCheck.getId().equals(id)) {
@@ -63,16 +61,18 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserFindAllDTO findAll() {
-        UserFindAllDTO userFindAllDTO =
-                new UserFindAllDTO(this.userRepository.loadAll(), this.userStatusRepository.loadAll());
-        return userFindAllDTO;
+    public List<UserDTO> findAll() {
+        List<UserDTO> userDTOList = new ArrayList<>();
+        for (User user : this.userRepository.loadAll()) {
+            userDTOList.add(createUserDTO(user, this.userStatusRepository.loadById(user.getId())));
+        }
+        return userDTOList;
     }
 
     @Override
     public UserDTO updateUser(UserUpdateDTO userUpdateDTO) {
         if (isExistId(userUpdateDTO.userId())) throw new NoSuchElementException();
-        User user = find(userUpdateDTO.userId()).user();
+        User user = this.userRepository.loadById(userUpdateDTO.userId());
         if (!userUpdateDTO.name().isEmpty()) {
             user.updateName(userUpdateDTO.name());
         }
@@ -80,18 +80,18 @@ public class BasicUserService implements UserService {
             user.updateProfile(userUpdateDTO.profile().getId());
             this.binaryContentRepository.save(userUpdateDTO.profile());
         }
-        UserDTO userDTO = new UserDTO(user.getId(), user);
-        return userDTO;
+
+        return createUserDTO(user, this.userStatusRepository.loadById(user.getId()));
     }
 
     @Override
-    public void delete(UUID id) {
-        UserFindDTO userFindDTO = this.find(id);
-        if (userFindDTO.user().getProfileId() != null) {
-            this.binaryContentRepository.delete(userFindDTO.user().getProfileId());
+    public void delete(UUID userId) {
+        User user = this.userRepository.loadById(userId);
+        if (user.getProfileId() != null) {
+            this.binaryContentRepository.delete(user.getProfileId());
         }
-        this.userStatusRepository.delete(id);
-        this.userRepository.delete(id);
+        this.userStatusRepository.delete(userId);
+        this.userRepository.delete(userId);
     }
 
     // 중복 검사
@@ -117,6 +117,18 @@ public class BasicUserService implements UserService {
                 return true;
         }
         return false;
+    }
+
+    // DTO생성
+    public UserDTO createUserDTO(User user, UserStatus userStatus) {
+        return new UserDTO(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getProfileId(),
+                user.getChannelList(),
+                user.getMessageList(),
+                new UserStatusDTO(userStatus.getId(), userStatus.checkOnline()));
     }
 
 //    // 특정 채널의 참가한 유저 목록 조회

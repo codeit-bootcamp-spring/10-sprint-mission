@@ -31,15 +31,16 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDTO createPrivateChannel(ChannelCreatePrivateDTO channelCreateDTO) {
         Channel channel;
-        channel = new Channel();
+        channel = new Channel(channelCreateDTO.userList(), channelCreateDTO.messageList());
 
-        ReadStatus readStatus = new ReadStatus(channel.getId(), channelCreateDTO.user().getId());
+        for (UUID userId : channelCreateDTO.userList()) {
+            ReadStatus readStatus = new ReadStatus(channel.getId(), userId);
+            this.readStatusRepository.save(readStatus);
+        }
 
         this.channelRepository.save(channel);
-        this.readStatusRepository.save(readStatus);
 
-        ChannelDTO channelDTO = new ChannelDTO(channel.getId(), channel);
-        return channelDTO;
+        return (channel.isPrivate()) ? createPrivateChannelDTO(channel) : createPublicChannelDTO(channel);
     }
 
     @Override
@@ -48,90 +49,63 @@ public class BasicChannelService implements ChannelService {
         channel = new Channel(channelCreateDTO.channelName(), channelCreateDTO.description());
         this.channelRepository.save(channel);
 
-        ChannelDTO channelDTO = new ChannelDTO(channel.getId(), channel);
-        return channelDTO;
+        return createPublicChannelDTO(channel);
     }
 
     @Override
-    public ChannelFindDTO findById(UUID id) {
-        ChannelFindDTO channelFindDTO;
-        Channel channel = this.channelRepository.loadById(id);
-        Instant lastMessageTime = this.readStatusRepository.loadById(id).getUpdatedAt();
-        List<UUID> userList = new ArrayList<>();
+    public ChannelDTO findById(UUID channelId) {
+        Channel channel = this.channelRepository.loadById(channelId);
+
         if (channel.isPrivate()) {
-            userList = channel.getUserList();
+            return createPrivateChannelDTO(channel);
+        } else {
+            return createPublicChannelDTO(channel);
         }
-        channelFindDTO = new ChannelFindDTO(channel, lastMessageTime, userList);
-
-        return channelFindDTO;
-//        for (Channel channelCheck : this.channelRepository.loadAll()) {
-//            if (channelCheck.getId().equals(id)) {
-//                return channelFindDTO;
-//            }
-//        }
-//        throw new NoSuchElementException();
     }
 
     @Override
-    public ChannelFindAllDTO findAll() {
-        ChannelFindAllDTO channelFindAllDTO;
-        List<ChannelFindDTO> publicChannelList = new ArrayList<>();
-        List<ChannelFindDTO> privateChannelList = new ArrayList<>();
-        List<Channel> channelList = channelRepository.loadAll();
+    public List<ChannelDTO> findAll() {
+        List<ChannelDTO> channelDTOList = new ArrayList<>();
 
-        for (Channel channel : channelList) {
+        for (Channel channel : this.channelRepository.loadAll()) {
             if (channel.isPrivate()) {
-                ChannelFindDTO channelFindDTO = new ChannelFindDTO(channel,
-                        this.readStatusRepository.loadById(channel.getId()).getUpdatedAt(),
-                        channel.getUserList());
-                privateChannelList.add(channelFindDTO);
+                channelDTOList.add(createPrivateChannelDTO(channel));
             } else {
-                ChannelFindDTO channelFindDTO = new ChannelFindDTO(channel,
-                        this.readStatusRepository.loadById(channel.getId()).getUpdatedAt(),
-                        new ArrayList<>());
-                publicChannelList.add(channelFindDTO);
+                channelDTOList.add(createPublicChannelDTO(channel));
             }
         }
 
-        channelFindAllDTO = new ChannelFindAllDTO(publicChannelList, privateChannelList);
-        return channelFindAllDTO;
+        return channelDTOList;
     }
 
-    public ChannelFindAllDTO findAllByUserId(UUID userId) {
-        ChannelFindAllDTO channelFindAllDTO;
-        List<ChannelFindDTO> publicChannelList = new ArrayList<>();
-        List<ChannelFindDTO> privateChannelList = new ArrayList<>();
+    @Override
+    public List<ChannelDTO> findAllByUserId(UUID userId) {
+        List<ChannelDTO> channelDTOList = new ArrayList<>();
         List<Channel> channelList = channelRepository.loadAll();
 
         for (Channel channel : channelList) {
             if (channel.isPrivate() && channel.getId().equals(userId)) {
-                ChannelFindDTO channelFindDTO = new ChannelFindDTO(channel,
-                        this.readStatusRepository.loadById(channel.getId()).getUpdatedAt(),
-                        channel.getUserList());
-                privateChannelList.add(channelFindDTO);
-            } else if (!channel.isPrivate()){
-                ChannelFindDTO channelFindDTO = new ChannelFindDTO(channel,
-                        this.readStatusRepository.loadById(channel.getId()).getUpdatedAt(),
-                        new ArrayList<>());
-                publicChannelList.add(channelFindDTO);
+                channelDTOList.add(createPrivateChannelDTO(channel));
+            } else if (!channel.isPrivate() && channel.getId().equals(userId)){
+                channelDTOList.add(createPublicChannelDTO(channel));
             }
         }
 
-        channelFindAllDTO = new ChannelFindAllDTO(publicChannelList, privateChannelList);
-        return channelFindAllDTO;
+        return channelDTOList;
     }
 
     @Override
     public ChannelDTO updateChannelname(ChannelUpdateDTO channelUpdateDTO) {
+        Channel channel = this.channelRepository.loadById(channelUpdateDTO.channelId());
+
         if (!channelUpdateDTO.name().isEmpty()) {
-            this.findById(channelUpdateDTO.channelId()).channel().updateChannelName(channelUpdateDTO.name());
+            channel.updateChannelName(channelUpdateDTO.name());
         }
         if (!channelUpdateDTO.description().isEmpty()) {
-            this.findById(channelUpdateDTO.channelId()).channel().updateChannelDescription(channelUpdateDTO.description());
+            channel.updateChannelDescription(channelUpdateDTO.description());
         }
 
-        ChannelDTO channelDTO = new ChannelDTO(this.findById(channelUpdateDTO.channelId()).channel().getId(), this.findById(channelUpdateDTO.channelId()).channel());
-        return channelDTO;
+        return (channel.isPrivate()) ? createPrivateChannelDTO(channel) : createPublicChannelDTO(channel);
     }
 
     @Override
@@ -139,6 +113,54 @@ public class BasicChannelService implements ChannelService {
         this.readStatusRepository.deleteByChannelId(channelId);
         this.messageRepository.deleteByChannelId(channelId);
         this.channelRepository.delete(channelId);
+    }
+
+//    public ChannelDTO createChannelDTO(Channel channel) {
+//        return new ChannelDTO(
+//                channel.getId(),
+//                channel.getChannelName(),
+//                channel.getDescription(),
+//                channel.isPrivate(),
+//                channel.getUserList(),
+//                channel.getMessagesList(),
+//                this.getLastMessageTime(channel.getId())
+//        );
+//    }
+
+    public ChannelDTO createPrivateChannelDTO(Channel channel) {
+        return new ChannelDTO(
+                channel.getId(),
+                channel.getChannelName(),
+                channel.getDescription(),
+                channel.isPrivate(),
+                channel.getUserList(),
+                channel.getMessagesList(),
+                this.getLastMessageTime(channel.getId())
+        );
+    }
+
+    public ChannelDTO createPublicChannelDTO(Channel channel) {
+        return new ChannelDTO(
+                channel.getId(),
+                channel.getChannelName(),
+                channel.getDescription(),
+                channel.isPrivate(),
+                new ArrayList<>(),
+                channel.getMessagesList(),
+                this.getLastMessageTime(channel.getId())
+        );
+    }
+
+    public Instant getLastMessageTime(UUID channelId) {
+        Instant lastMessageTime = Instant.MIN;
+
+        for (ReadStatus readStatus : this.readStatusRepository.loadAllByChannelId(channelId)) {
+            if (readStatus.getUpdatedAt().isAfter(lastMessageTime)) {
+                lastMessageTime = readStatus.getUpdatedAt();
+            }
+        }
+
+        return lastMessageTime;
     }
 
     // 유저 참가
@@ -150,7 +172,7 @@ public class BasicChannelService implements ChannelService {
     // 유저 탈퇴
     public void quitUser(ChannelUserQuitDTO channelUserQuitDTO) {
         User user = channelUserQuitDTO.user();
-        Channel channel = this.findById(channelUserQuitDTO.channelId()).channel();
+        Channel channel = this.channelRepository.loadById(channelUserQuitDTO.channelId());
         user.getChannelList().remove(channel);
         channel.getUserList().remove(user);
     }

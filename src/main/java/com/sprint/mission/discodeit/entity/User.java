@@ -47,27 +47,6 @@ public class User extends BaseDomain implements Serializable {
         this.channelList = new ArrayList<>();
     }
 
-    // 메소드
-//    public UUID getId() {
-//        return this.id;
-//    }
-//
-//    public long getCreatedAt() {
-//        return this.createdAt;
-//    }
-//
-//    public long getUpdatedAt() {
-//        return this.updatedAt;
-//    }
-//
-//    public List<Message> getMessageList() {
-//        return this.messageList;
-//    }
-//
-//    public List<Channel> getChannelList() {
-//        return this.channelList;
-//    }
-
     public void updateName(String name) {
         this.name = name;
         this.updatedAt = Instant.now();

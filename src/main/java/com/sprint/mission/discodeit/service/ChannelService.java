@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.channel.*;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
@@ -9,9 +10,11 @@ public interface ChannelService {
 
     ChannelDTO createPublicChannel(ChannelCreatePublicDTO channelCreateDTO);
 
-    ChannelFindDTO findById(UUID id);
+    ChannelDTO findById(UUID channelId);
 
-    ChannelFindAllDTO findAll();
+    List<ChannelDTO> findAll();
+
+    List<ChannelDTO> findAllByUserId(UUID userId);
 
     ChannelDTO updateChannelname(ChannelUpdateDTO channelUpdateDTO);
 

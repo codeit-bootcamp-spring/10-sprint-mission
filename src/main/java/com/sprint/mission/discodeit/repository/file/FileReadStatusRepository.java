@@ -82,4 +82,16 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         }
         throw new NoSuchElementException();
     }
+
+    @Override
+    public List<ReadStatus> loadAllByChannelId(UUID channelId) {
+        this.data = deserialize();
+        List<ReadStatus> readStatusList = new ArrayList<>();
+        for(ReadStatus readStatus : this.data) {
+            if (readStatus.getChannelId().equals(channelId)) {
+                readStatusList.add(readStatus);
+            }
+        }
+        return readStatusList;
+    }
 }

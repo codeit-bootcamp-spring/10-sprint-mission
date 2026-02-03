@@ -57,14 +57,13 @@ public class BasicMessageService implements MessageService {
         }
         this.messageRepository.save(message);
 
-        MessageDTO messageDTO = new MessageDTO(message.getId(), message);
-        return messageDTO;
+        return createMessageDTO(message);
     }
 
     @Override
     public MessageDTO findById(UUID messageId) {
         Message message = this.messageRepository.loadById(messageId);
-        return new MessageDTO(message.getId(), message);
+        return createMessageDTO(message);
     }
 
     @Override
@@ -72,7 +71,7 @@ public class BasicMessageService implements MessageService {
         List<MessageDTO> messageDTOList = new ArrayList<>();
 
         for (Message message : this.messageRepository.loadAll()) {
-            MessageDTO messageDTO = new MessageDTO(message.getId(), message);
+            MessageDTO messageDTO = createMessageDTO(message);
             messageDTOList.add(messageDTO);
         }
 
@@ -93,14 +92,14 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public MessageDTO updateMessageData(MessageUpdateDTO messageUpdateDTO) {
-        this.findById(messageUpdateDTO.messageId()).message().updateText(messageUpdateDTO.msg());
+        this.messageRepository.loadById(messageUpdateDTO.messageId()).updateText(messageUpdateDTO.msg());
 
         return this.findById(messageUpdateDTO.messageId());
     }
 
     @Override
     public void delete(UUID messageId) {
-        for (UUID attachMent : this.findById(messageId).message().getAttachmentIds()) {
+        for (UUID attachMent : this.messageRepository.loadById(messageId).getAttachmentIds()) {
             this.binaryContentRepository.delete(attachMent);
         }
         this.messageRepository.delete(messageId);
@@ -118,5 +117,15 @@ public class BasicMessageService implements MessageService {
     public List<UUID> readChannelMessageList(UUID channelId) {
         Channel channel = channelRepository.loadById(channelId);
         return channel.getMessagesList();
+    }
+
+    public MessageDTO createMessageDTO(Message message) {
+        return new MessageDTO(
+                message.getId(),
+                message.getMsg(),
+                message.getUserId(),
+                message.getChannelId(),
+                message.getAttachmentIds()
+        );
     }
 }

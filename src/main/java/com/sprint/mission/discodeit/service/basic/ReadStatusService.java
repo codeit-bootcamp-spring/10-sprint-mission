@@ -42,13 +42,13 @@ public class ReadStatusService {
         }
 
         ReadStatus readStatus = new ReadStatus(channel.getId(), user.getId());
-        return new ReadStatusDTO(readStatus.getId(), readStatus);
+        return createReadStatusDTO(readStatus);
     }
 
     public ReadStatusDTO findById(UUID readStatusId) {
         ReadStatus readStatus = this.readStatusRepository.loadById(readStatusId);
 
-        return new ReadStatusDTO(readStatus.getId(), readStatus);
+        return createReadStatusDTO(readStatus);
     }
 
     public List<ReadStatusDTO> findAllByUserId(UUID userId) {
@@ -56,7 +56,7 @@ public class ReadStatusService {
 
         for (ReadStatus readStatus : this.readStatusRepository.loadAll()) {
             if (readStatus.getUserId().equals(userId)) {
-                readStatusDTOList.add(new ReadStatusDTO(readStatus.getId(), readStatus));
+                readStatusDTOList.add(createReadStatusDTO(readStatus));
             }
         }
 
@@ -64,13 +64,20 @@ public class ReadStatusService {
     }
 
     public ReadStatusDTO update(ReadStatusUpdateDTO readStatusUpdateDTO) {
-        ReadStatus readStatus = this.findById(readStatusUpdateDTO.readStatusId()).readStatus();
+        ReadStatus readStatus = this.readStatusRepository.loadById(readStatusUpdateDTO.readStatusId());
         readStatus.updateTime();
 
-        return new ReadStatusDTO(readStatus.getId(), readStatus);
+        return createReadStatusDTO(readStatus);
     }
 
     public void delete(UUID readStatusId) {
         this.readStatusRepository.delete(readStatusId);
+    }
+
+    public ReadStatusDTO createReadStatusDTO(ReadStatus readStatus) {
+        return new ReadStatusDTO(
+                readStatus.getId(),
+                readStatus.getUpdatedAt()
+        );
     }
 }
