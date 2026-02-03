@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class JCFChannelRepository implements ChannelRepository {
     private final Map<UUID, Channel> data;
 
@@ -36,5 +39,19 @@ public class JCFChannelRepository implements ChannelRepository {
     @Override
     public void deleteById(UUID id) {
         this.data.remove(id);
+    }
+
+    @Override
+    public List<Channel> findByChannelType(ChannelType channelType) {
+        return this.data.values().stream()
+                .filter(channel -> channel.getType().equals(channelType))
+                .toList();
+    }
+
+    @Override
+    public List<Channel> findByIds(List<UUID> channelIds) {
+        return this.data.values().stream()
+                .filter(channel -> channelIds.contains(channel.getId()))
+                .toList();
     }
 }

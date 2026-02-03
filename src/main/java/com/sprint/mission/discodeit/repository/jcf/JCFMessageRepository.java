@@ -2,9 +2,12 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.*;
 
+@Repository
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> data;
 
@@ -36,5 +39,28 @@ public class JCFMessageRepository implements MessageRepository {
     @Override
     public void deleteById(UUID id) {
         this.data.remove(id);
+    }
+
+    @Override
+    public Instant findLstMessageTimeByChannelId(UUID channelId) {
+        return this.data.values().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .map(Message :: getCreatedAt)
+                .max(Instant::compareTo)
+                .orElse(null);
+    }
+
+    @Override
+    public void deleteAllMessagesByChannelId(UUID channelId) {
+        this.data.values().removeIf(message -> message.getChannelId().equals(channelId));
+
+    }
+
+    @Override
+    public List<Message> findByChannelId(UUID channelId) {
+        return this.data.values().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .toList();
+
     }
 }
