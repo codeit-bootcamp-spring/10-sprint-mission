@@ -1,50 +1,56 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serial;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
+import java.util.UUID;
 
-public class User extends BaseEntity implements Serializable {
-    @Serial
+@Getter
+public class User implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
     private String username;
-    private final List<Message> messages = new ArrayList<>();
-    private final List<Channel> channels = new ArrayList<>();
+    private String email;
+    private String password;
+    private UUID profileId;
 
-
-    public User(String username) {
-        super();
+    public User(String username, String email, String password) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
         this.username = username;
+        this.email = email;
+        this.password = password;
     }
 
-    public void updateUsername(String username) {
-        this.username = username;
-        this.updateUpdatedAt();
+    public void updateProfileId(UUID profileId) {
+        this.profileId = profileId;
+        this.updatedAt = Instant.now();
     }
 
-    public void addMessage(Message message) {
-        this.messages.add(message);
-    }
+    public void update(String newUsername, String newEmail, String newPassword) {
+        boolean updated = false;
 
-    public void addChannel(Channel channel) {
-        this.channels.add(channel);
-    }
+        if (newUsername != null && !newUsername.isBlank()) {
+            this.username = newUsername;
+            updated = true;
+        }
+        if (newEmail != null && !newEmail.isBlank()) {
+            this.email = newEmail;
+            updated = true;
+        }
+        if (newPassword != null && !newPassword.isBlank()) {
+            this.password = newPassword;
+            updated = true;
+        }
 
-    public void removeChannel(Channel channel) {
-        this.channels.remove(channel);
-    }
-
-    public String getUsername() { return username; }
-    public List<Message> getMessages() { return messages; }
-    public List<Channel> getChannels() { return channels; }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + getId() +
-                ", username='" + username + '\'' +
-                ", createdAt=" + getCreatedAt() +
-                '}';
+        if (updated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }

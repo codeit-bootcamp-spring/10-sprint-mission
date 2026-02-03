@@ -2,41 +2,63 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
+
 import java.util.*;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 public class JCFMessageRepository implements MessageRepository {
-    private final List<Message> messages = new ArrayList<>();
+    private final Map<UUID, Message> data;
 
-    @Override
-    public void save(Message message) {
-        messages.add(message);
+    public JCFMessageRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
-    public Message findById(UUID id) {
-        return messages.stream()
-                .filter(m -> m.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+    public Message save(Message message) {
+        this.data.put(message.getId(), message);
+        return message;
+    }
+
+    @Override
+    public Optional<Message> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
     public List<Message> findAll() {
-        return new ArrayList<>(messages);
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public void update(Message message) {
-        for (int i = 0; i < messages.size(); i++) {
-            if (messages.get(i).getId().equals(message.getId())) {
-                messages.set(i, message);
-                return;
-            }
-        }
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
     }
 
     @Override
-    public void delete(UUID id) {
-        messages.removeIf(m -> m.getId().equals(id));
+    public void deleteById(UUID id) {
+        this.data.remove(id);
+    }
+
+    @Override
+    public Optional<Message> findTopByChannelIdOrderByCreatedAtDesc(UUID channelId) {
+        return data.values().stream()
+                .filter(m -> m.getChannelId().equals(channelId))
+                .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
+                .findFirst();
+    }
+
+    @Override
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(m -> m.getChannelId().equals(channelId))
+                .toList();
+    }
+
+    @Override
+    public void deleteByChannelId(UUID channelId) {
+        data.values().removeIf(m -> m.getChannelId().equals(channelId));
     }
 }

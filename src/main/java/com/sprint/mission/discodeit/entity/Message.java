@@ -1,49 +1,59 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serial;
+import lombok.Getter;
+
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-public class Message extends BaseEntity implements Serializable {
-    @Serial
+@Getter
+public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final User user;
-    private final Channel channel;
+
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
     private String content;
+    private UUID channelId;
+    private UUID authorId;
+    private List<UUID> attachmentIds = new ArrayList<>();
 
-    public Message(User user, Channel channel, String content) {
-        if (user == null) {
-            throw new IllegalArgumentException("user는 null일 수 없습니다.");
-        }
-        if (channel == null) {
-            throw new IllegalArgumentException("channel은 null일 수 없습니다.");
-        }
-        if (content == null || content.isBlank()) {
-            throw new IllegalArgumentException("content는 비어 있을 수 없습니다.");
-        }
-        this.user = user;
-        this.channel = channel;
+    public Message(UUID authorId, UUID channelId, String content) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        //
         this.content = content;
+        this.channelId = channelId;
+        this.authorId = authorId;
     }
 
-    @Override
-    public String toString() {
-        return "Message{" + "id=" + getId() + ", user=" + user + ", channel=" + channel + ", content='" + content + '\'' + '}';
-    }
-    public User getUser() {
-        return user;
+    public void changeContent(String content) {
+        this.content = content;
+        this.updatedAt = Instant.now();
     }
 
-    public Channel getChannel() {
-        return channel;
+    public void update(String newContent) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
-    public String getContent() {
-        return content;
-    }
+    public UUID getSenderId() { return this.authorId; }
 
     public void updateContent(String content) {
         this.content = content;
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.now();
+    }
+
+    public void assignAttachments(List<UUID> attachmentIds) {
+        this.attachmentIds = attachmentIds;
     }
 }

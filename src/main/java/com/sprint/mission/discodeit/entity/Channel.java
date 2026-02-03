@@ -1,51 +1,32 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serial;
+import lombok.Getter;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
 
-public class Channel extends BaseEntity implements Serializable {
-    @Serial
+@Getter
+public class Channel implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private ChannelType type;
     private String name;
-    private final List<User> users = new ArrayList<>();
-    private final List<Message> messages = new ArrayList<>();
+    private String description;
 
-    public Channel(String name) {
+    public Channel(ChannelType type, String name, String description) {
+        this.type = type;
         this.name = name;
+        this.description = description;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public List<User> getUsers() { return users; }
-    public List<Message> getMessages() { return messages; }
-
-    public void addUser(User user) {
-        if (!this.users.contains(user)) { // 중복 방지
-            this.users.add(user);
-        }
-    }
-
-    public void addMessage(Message message) {
-        this.messages.add(message);
-    }
-
-    @Override
-    public String toString() {
-        return "Channel{" + "id=" + getId() + ", name='" + name + '\'' + '}';
-    }
-
-    public void updateName(String name) {
-        this.name = name;
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public void removeUser(User user) {
-        this.users.remove(user);
+    public void update(String name, String description) {
+        if (name != null) this.name = name;
+        if (description != null) this.description = description;
+        this.updatedAt = Instant.now();
     }
 
 }
