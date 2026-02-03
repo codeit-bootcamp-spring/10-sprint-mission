@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.status.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -24,10 +26,16 @@ public class FileChannelService implements ChannelService, ChannelRepository {
     private final List<Channel> data = new ArrayList<>();
     private final Path filePath;
 
-    public FileChannelService() {
-        this.filePath = Path.of("data", "channels.ser");
+    private final MessageRepository messageRepository;
+    private final ReadStatusRepository readStatusRepository;
+
+    public FileChannelService(MessageRepository messageRepository,ReadStatusRepository readStatusRepository){
+        this.messageRepository = messageRepository;
+        this.readStatusRepository = readStatusRepository;
+        this.filePath = Path.of("data","channels.ser");
         load();
     }
+
 
     private void load() {
         if (Files.notExists(filePath)) return;
@@ -126,5 +134,13 @@ public class FileChannelService implements ChannelService, ChannelRepository {
     public void deleteById(UUID id) {
         data.removeIf(channel -> channel.getId().equals(id));
         save();
+    }
+
+    public MessageRepository getMessageRepository() {
+        return messageRepository;
+    }
+
+    public ReadStatusRepository getReadStatusRepository() {
+        return readStatusRepository;
     }
 }
