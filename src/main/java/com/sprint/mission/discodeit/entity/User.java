@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,21 +18,22 @@ public class User implements Serializable {
     private String username;
     private String email;
     private String password;
-    private UUID profileId;
     private @Setter UserStatus userStatus;
+    private BinaryContentDto profileImage;
+    private UUID profileId;
 
 
-    public User(String username, String email, String password, UUID profileId) {
+    public User(String username, String email, String password, BinaryContentDto profileImage) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         //
         this.username = username;
         this.email = email;
         this.password = password;
-        this.profileId = profileId;
+        this.profileImage = profileImage;
     }
 
-    public void update(String newUsername, String newEmail, String newPassword, UUID profiledId) {
+    public void update(String newUsername, String newEmail, String newPassword, BinaryContentDto profileImage) {
         boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
@@ -46,8 +48,8 @@ public class User implements Serializable {
             anyValueUpdated = true;
         }
 
-        if(profiledId != null && !profiledId.equals(this.profileId)){
-            this.profileId = profiledId;
+        if(profileImage != null && !profileImage.equals(this.profileImage)){
+            this.profileImage = profileImage;
             anyValueUpdated = true;
         }
 
@@ -60,28 +62,4 @@ public class User implements Serializable {
         if (this.userStatus == null) return false;
         return this.userStatus.isConnected();
     }
-
-//    public UUID getId() {
-//         return id;             롬복 게터 적용
-//    }
-
-//    public Long getCreatedAt() {
-//        return createdAt;
-//    }
-
-//    public Long getUpdatedAt() {
-//        return updatedAt;
-//    }
-
-//    public String getUsername() {
-//        return username;
-//    }
-
-//    public String getEmail() {
-//        return email;
-//    }
-
-//    public String getPassword() {
-//        return password;
-//    }
 }

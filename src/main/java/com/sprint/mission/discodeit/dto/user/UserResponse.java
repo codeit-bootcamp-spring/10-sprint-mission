@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.dto.user;
 
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
+
 import java.util.UUID;
 
 public record UserResponse(
@@ -7,6 +9,6 @@ public record UserResponse(
         String userName,
         String email,
         boolean isConnected,
-        UUID profileId
+        BinaryContentDto profileImage
 ) {
 }

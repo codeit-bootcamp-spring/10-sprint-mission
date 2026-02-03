@@ -11,13 +11,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-@Repository
+
 public class FileUserRepository implements UserRepository {
     private final Path DIRECTORY;
     private final String EXTENSION = ".ser";
 
-    public FileUserRepository() {
-        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", User.class.getSimpleName());
+    public FileUserRepository(String baseDir) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), baseDir, User.class.getSimpleName());
         if (Files.notExists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);
@@ -62,6 +62,25 @@ public class FileUserRepository implements UserRepository {
         return Optional.ofNullable(userNullable);
     }
 
+    @Override
+    public Optional<User> findByUsername(String username) {
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (FileInputStream fis = new FileInputStream(path.toFile());
+                             ObjectInputStream ois = new ObjectInputStream(fis)) {
+                            return (User) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .filter(user -> user.getUsername().equals(username))
+                    .findFirst();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
     @Override

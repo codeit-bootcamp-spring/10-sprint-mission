@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -19,7 +21,7 @@ public class Message implements Serializable {
     //
     private UUID channelId;
     private UUID authorId;
-    List<UUID> attachmentIds;
+    private @Setter List<BinaryContentDto> attachments;
 
     public Message(String content, UUID channelId, UUID authorId) {
         this.id = UUID.randomUUID();
@@ -42,27 +44,4 @@ public class Message implements Serializable {
         }
     }
 
-//    public UUID getId() {
-//        return id;
-//    }
-//
-//    public Long getCreatedAt() {
-//        return createdAt;
-//    }
-//
-//    public Long getUpdatedAt() {
-//        return updatedAt;
-//    }
-//
-//    public String getContent() {
-//        return content;
-//    }
-//
-//    public UUID getChannelId() {
-//        return channelId;
-//    }
-//
-//    public UUID getAuthorId() {
-//        return authorId;
-//    }
 }

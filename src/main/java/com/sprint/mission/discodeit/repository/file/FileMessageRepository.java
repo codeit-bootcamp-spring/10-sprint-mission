@@ -8,17 +8,18 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
+
 public class FileMessageRepository implements MessageRepository {
     private final Path DIRECTORY;
     private final String EXTENSION = ".ser";
 
-    public FileMessageRepository() {
-        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", Message.class.getSimpleName());
+    public FileMessageRepository(String baseDir) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), baseDir, Message.class.getSimpleName());
         if (Files.notExists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);
@@ -61,6 +62,17 @@ public class FileMessageRepository implements MessageRepository {
             }
         }
         return Optional.ofNullable(messageNullable);
+    }
+
+    @Override
+    public List<Message> findByChannelId(UUID channelId) {
+        List<Message> messageList = new ArrayList<>();
+        for (Message message : findAll()) {
+            if (message.getChannelId().equals(channelId)) {
+                messageList.add(message);
+            }
+        }
+        return messageList;
     }
 
     @Override

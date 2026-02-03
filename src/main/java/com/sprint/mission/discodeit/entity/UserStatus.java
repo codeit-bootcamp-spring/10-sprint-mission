@@ -16,12 +16,17 @@ public class UserStatus implements Serializable {
     private Instant updatedAt;
 
     private UUID userId;
-    private @Setter Instant lastConnectedAt;
+    private Instant lastConnectedAt;
 
     public UserStatus(UUID userId) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateConnection() {
+        this.lastConnectedAt = Instant.now();
         this.updatedAt = Instant.now();
     }
 

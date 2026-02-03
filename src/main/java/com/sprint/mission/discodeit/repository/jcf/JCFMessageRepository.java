@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> data;
 
@@ -27,6 +28,14 @@ public class JCFMessageRepository implements MessageRepository {
     @Override
     public List<Message> findAll() {
         return this.data.values().stream().toList();
+    }
+
+    @Override
+    public List<Message> findByChannelId(UUID channelId) {
+        return this.data.values()
+                .stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .toList();
     }
 
     @Override
