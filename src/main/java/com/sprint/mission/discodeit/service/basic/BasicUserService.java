@@ -23,7 +23,7 @@ public class BasicUserService implements UserService {
 
     // 계정 생성
     @Override
-    public UserResponse createUser(UserCreateRequest request){
+    public UserResponse create(UserCreateRequest request){
         // username, email 중복 체크
         validateDuplicateName(request.name());
         validateDuplicateEmail(request.email());
@@ -117,7 +117,7 @@ public class BasicUserService implements UserService {
 
     // 계정 삭제
     @Override
-    public void deleteUser(UUID id) {
+    public void deleteById(UUID id) {
         User user = validateUserExists(id);
 
         // 유저 상태 삭제
