@@ -12,16 +12,28 @@ public class JCFChannelRepository implements ChannelRepository {
 
     @Override
     public void save(Channel channel) {
+        if (channel == null) {
+            throw new IllegalArgumentException("channel은 null일 수 없습니다.");
+        }
+        if (channel.getId() == null) {
+            throw new IllegalArgumentException("channel.id는 null일 수 없습니다.");
+        }
         data.put(channel.getId(), channel);
     }
 
     @Override
     public void delete(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("id는 null일 수 없습니다.");
+        }
         data.remove(id);
     }
 
     @Override
     public Optional<Channel> findById(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("id는 null일 수 없습니다.");
+        }
         return Optional.ofNullable(data.get(id));
     }
 

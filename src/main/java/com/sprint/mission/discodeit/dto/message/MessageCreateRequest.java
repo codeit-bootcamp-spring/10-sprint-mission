@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.message;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.utils.Validation;
 
 import java.util.List;

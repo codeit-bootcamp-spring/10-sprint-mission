@@ -12,5 +12,12 @@ public interface ReadStatusRepository {
     List<ReadStatus> findAll();
     void delete(UUID id);
 
-    List<ReadStatus> findStatusByChannelId(UUID channelId);
+
+    // 채널 삭제 시 관련 readstatus 정리용
+    List<ReadStatus> findAllByChannelId(UUID channelId);
+    // readstatusService 체크리스트
+    List<ReadStatus> findAllByUserId(UUID userId);
+    //  (userId, channelId) 중복 방지용
+    Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId);
+
 }

@@ -10,48 +10,82 @@ import java.util.*;
 
 @Repository
 public class JCFReadStatusRepository implements ReadStatusRepository {
-   private final Map<UUID, ReadStatus> readStatusData = new HashMap<>();
+    private final Map<UUID, ReadStatus> readStatusData = new HashMap<>();
 
-   @Override
+    @Override
     public void save(ReadStatus readStatus) {
-       if(readStatus == null || readStatus.getId() == null) {
-           throw new IllegalArgumentException("readStatus/id는 null일 수 없습니다.");
-       }
-       readStatusData.put(readStatus.getId(), readStatus);
-   }
-
-
-   @Override
-    public void delete(UUID id) {
-       if(id == null) throw new IllegalArgumentException("id는 null 일수 없습니다.");
-       readStatusData.remove(id);
+        if (readStatus == null || readStatus.getId() == null) {
+            throw new IllegalArgumentException("readStatus/id는 null일 수 없습니다.");
+        }
+        readStatusData.put(readStatus.getId(), readStatus);
     }
+
+
+    @Override
+    public void delete(UUID id) {
+        if (id == null) throw new IllegalArgumentException("id는 null 일수 없습니다.");
+        readStatusData.remove(id);
+    }
+
     @Override
     public List<ReadStatus> findAll() {
-       return new ArrayList<>(readStatusData.values());
+        return new ArrayList<>(readStatusData.values());
     }
 
     @Override
-    public Optional<ReadStatus> findById(UUID id){
-       if(id == null) return Optional.empty();
-       return Optional.ofNullable(readStatusData.get(id));
+    public Optional<ReadStatus> findById(UUID id) {
+        if (id == null) throw new IllegalArgumentException("id는 null일 수 없습니다.");
+        return Optional.ofNullable(readStatusData.get(id));
     }
 
 
     @Override
-    public List<ReadStatus> findStatusByChannelId(UUID channelId) {
-       if(channelId == null) throw new IllegalArgumentException("channelId는 null일 수 없습니다.");
+    public List<ReadStatus> findAllByChannelId(UUID channelId) {
+        if (channelId == null) {
+            throw new IllegalArgumentException("channelId는 null일 수 없습니다.");
+        }
 
-       List<ReadStatus> result = new ArrayList<>();
-       for(ReadStatus readStatus : readStatusData.values()) {
-           if(readStatus.getId().equals(channelId)) {
-               result.add(readStatus);
-           }
-       }
-       return result;
-   }
+        List<ReadStatus> result = new ArrayList<>();
+        for (ReadStatus rs : readStatusData.values()) {
+            if (channelId.equals(rs.getChannelId())) {
+                result.add(rs);
+            }
+        }
+        return result;
+    }
 
+    @Override
+    public List<ReadStatus> findAllByUserId(UUID userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("userId는 null일 수 없습니다.");
+        }
 
+        List<ReadStatus> result = new ArrayList<>();
+        for (ReadStatus rs : readStatusData.values()) {
+            if (userId.equals(rs.getUserId())) {
+                result.add(rs);
+            }
+        }
+        return result;
+    }
 
+    @Override
+    public Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("userId는 null일 수 없습니다.");
+        }
+        if (channelId == null) {
+            throw new IllegalArgumentException("channelId는 null일 수 없습니다.");
+        }
+
+        for (ReadStatus rs : readStatusData.values()) {
+            if (userId.equals(rs.getUserId()) && channelId.equals(rs.getChannelId())) {
+                return Optional.of(rs);
+            }
+        }
+        return Optional.empty();
+    }
 }
+
+
 

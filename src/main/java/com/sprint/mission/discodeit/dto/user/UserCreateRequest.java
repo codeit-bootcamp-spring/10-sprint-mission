@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.utils.Validation;
 
 //유저 생성 용 DTO
