@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDTO;
 import com.sprint.mission.discodeit.dto.BinaryContentPostDTO;
+import com.sprint.mission.discodeit.dto.BinaryContentResponseDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 
 @Component
@@ -27,4 +28,13 @@ public class BinaryContentMapper {
 			binaryContentPostDTO.data()
 		);
 	}
+
+	public BinaryContentResponseDTO toResponseDto(BinaryContent binaryContent) {
+		return new BinaryContentResponseDTO(
+			binaryContent.getUserId(),
+			binaryContent.getMessageId(),
+			binaryContent.getData()
+		);
+	}
+
 }
