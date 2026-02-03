@@ -54,6 +54,10 @@ public class User implements Serializable {
 
     }
 
+    public void touchLastSeen() {
+        this.updatedAt = Instant.now();
+    }
+
     @Override
     public String toString() {
         return "User{" +
