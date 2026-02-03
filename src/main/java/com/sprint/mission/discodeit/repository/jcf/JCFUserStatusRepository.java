@@ -15,14 +15,19 @@ public class JCFUserStatusRepository implements UserStatusRepository {
 
     @Override
     public UserStatus save(UserStatus status){
-        data.put(status.getUserId(), status);
+        data.put(status.getId(), status);
         return status;
     }
+
+    @Override
+    public Optional<UserStatus> findById(UUID id) { return Optional.ofNullable(data.get(id)); }
 
     // 특정 유저의 접속 상태 조회
     @Override
     public Optional<UserStatus> findByUserId(UUID userId){
-        return Optional.ofNullable(data.get(userId));
+        return data.values().stream()
+                .filter(us -> us.getUserId().equals(userId))
+                .findFirst();
     }
 
     @Override
@@ -30,9 +35,12 @@ public class JCFUserStatusRepository implements UserStatusRepository {
         return data.values().stream().toList();
     }
 
+    @Override
+    public void deleteById(UUID id) { data.remove(id); }
+
     // 유저 삭제 시 해당 유저의 접속 상태 데이터 삭제
     @Override
     public void deleteByUserId(UUID userId){
-        data.remove(userId);
+        data.values().removeIf(us -> us.getUserId().equals(userId));
     }
 }

@@ -1,4 +1,9 @@
 package com.sprint.mission.discodeit.dto.userstatus;
 
-public interface UserStatusCreateRequest {
+import java.util.UUID;
+
+public record UserStatusCreateRequest (
+        UUID userId,
+        boolean isActive
+) {
 }
