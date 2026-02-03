@@ -2,16 +2,20 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
-@Profile("file")
+@ConditionalOnProperty(
+        name = "discodeit.repository.type",
+        havingValue = "file"
+)
 public class FileBinaryContentRepository extends BaseFileRepository<BinaryContent> implements BinaryContentRepository {
-    public FileBinaryContentRepository() {
-        super("contents.ser");
+    public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory}") String directory) {
+        super(directory + "/binary_contents.ser");
     }
 
     @Override

@@ -2,15 +2,21 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
-@Profile("file")
+@ConditionalOnProperty(
+        name = "discodeit.repository.type",
+        havingValue = "file"
+)
 public class FileReadStatusRepository extends BaseFileRepository<ReadStatus> implements ReadStatusRepository {
-    public FileReadStatusRepository() {super("read_statuses.ser");}
+    public FileReadStatusRepository(@Value("${discodeit.repository.file-directory}") String directory) {
+        super(directory + "/read_statuses.ser");
+    }
 
     @Override
     public ReadStatus save(ReadStatus readStatus) {

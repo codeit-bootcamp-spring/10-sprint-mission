@@ -2,5 +2,8 @@ spring:
   application:
     name: discodeit
 
-  profiles:
-    active: jcf
+
+discodeit:
+  repository:
+    type: file   # jcf | file
+    file-directory: .discodeit

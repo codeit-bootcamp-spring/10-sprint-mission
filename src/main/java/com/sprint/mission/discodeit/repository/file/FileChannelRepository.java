@@ -3,16 +3,20 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelVisibility;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
-@Profile("file")
+@ConditionalOnProperty(
+        name = "discodeit.repository.type",
+        havingValue = "file"
+)
 public class FileChannelRepository extends BaseFileRepository<Channel> implements ChannelRepository {
-    public FileChannelRepository() {
-        super("channels.ser");
+    public FileChannelRepository(@Value("${discodeit.repository.file-directory}") String directory) {
+        super(directory + "/channels.ser");
     }
 
     @Override

@@ -38,3 +38,6 @@ out/
 
 ### Java Serialization files ###
 *.ser
+
+### Local data directory ###
+.discodeit/
