@@ -132,14 +132,15 @@ public class BasicMessageService implements MessageService {
     // 메시지 삭제
     @Override
     public void delete(UUID targetMessageId) {
-        // 1. 메시지 존재 여부 확인
         Message targetMessage = findMessageEntityById(targetMessageId);
 
-        // 2, 첨부파일 연쇄 삭제
         targetMessage.getAttachmentIds()
-                .forEach(binaryContentId -> binaryContentRepository.delete(binaryContentId));
+                .forEach(binaryContentId -> {
+                    BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+                            .orElseThrow(() -> new IllegalArgumentException("해당 첨부 파일이 존재하지 않습니다."));
+                    binaryContentRepository.delete(binaryContent);
+                });
 
-        // 3. 메시지 삭제
         messageRepository.delete(targetMessage);
     }
 

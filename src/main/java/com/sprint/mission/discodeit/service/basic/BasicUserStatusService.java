@@ -90,13 +90,13 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public void delete(UUID id) {
         UserStatus targetUserStatus = findEntityById(id);
-        userStatusRepository.delete(targetUserStatus.getId());
+        userStatusRepository.delete(targetUserStatus);
     }
 
     // 단일 엔티티 반환
     public UserStatus findEntityById(UUID userStatusId) {
-        return userStatusRepository.findById(userStatusId);
-                //.orElseThrow(() -> new IllegalArgumentException("해당 사용자의 상태가 존재하지 않습니다."));
+        return userStatusRepository.findById(userStatusId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자의 상태가 존재하지 않습니다."));
     }
 
     // 응답 DTO 생성 및 반환

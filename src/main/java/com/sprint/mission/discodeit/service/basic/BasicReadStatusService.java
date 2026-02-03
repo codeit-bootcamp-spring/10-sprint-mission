@@ -101,8 +101,8 @@ public class BasicReadStatusService implements ReadStatusService {
 
     // 단일 엔티티 조회 및 반환
     public ReadStatus findEntityById(UUID readStatusId) {
-        return readStatusRepository.findById(readStatusId);
-                //.orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+        return readStatusRepository.findById(readStatusId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
     }
 
     // 응답 DTO 생성 및 반환
