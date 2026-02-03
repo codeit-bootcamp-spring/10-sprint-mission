@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.extend.FileSerDe;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,8 +12,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileMessageRepository extends FileSerDe<Message> implements MessageRepository {
-    private final String MESSAGE_DATA_DIRECTORY = "data/message";
+    private final String MESSAGE_DATA_DIRECTORY = "message";
 
     public FileMessageRepository() {
         super(Message.class);

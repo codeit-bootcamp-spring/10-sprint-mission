@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.extend;
 
 import com.sprint.mission.discodeit.entity.BaseEntity;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -15,13 +16,15 @@ import java.util.stream.Stream;
 
 public abstract class FileSerDe<T extends BaseEntity> {
     private final Class<T> type;
+    @Value("${discodeit.repository.file-directory}")
+    private String DATA_ROOT_PATH;
 
     protected FileSerDe(Class<T> type) {
         this.type = type;
     }
 
     protected T save(String filePath, T data) {
-        Path file = checkDirectory(filePath).resolve(String.format("%s.ser", data.getId()));
+        Path file = checkDirectory(DATA_ROOT_PATH + filePath).resolve(String.format("%s.ser", data.getId()));
 
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file.toFile()))) {
             oos.writeObject(data);
@@ -32,7 +35,7 @@ public abstract class FileSerDe<T extends BaseEntity> {
     }
 
     protected Optional<T> load(String filePath, UUID uuid) {
-        Path path = Paths.get(filePath).resolve(String.format("%s.ser", uuid.toString()));
+        Path path = Paths.get(DATA_ROOT_PATH + filePath).resolve(String.format("%s.ser", uuid.toString()));
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
             Object obj = ois.readObject();
@@ -43,7 +46,7 @@ public abstract class FileSerDe<T extends BaseEntity> {
     }
 
     protected List<T> loadAll(String filePath) {
-        Path directory = Paths.get(filePath);
+        Path directory = Paths.get(DATA_ROOT_PATH + filePath);
         if (Files.notExists(directory)) {
             return new ArrayList<>();
         }
@@ -63,7 +66,7 @@ public abstract class FileSerDe<T extends BaseEntity> {
     }
 
     protected void delete(String filePath, UUID uuid) {
-        Path path = Paths.get(filePath).resolve(String.format("%s.ser", uuid.toString()));
+        Path path = Paths.get(DATA_ROOT_PATH + filePath).resolve(String.format("%s.ser", uuid.toString()));
 
         try {
             Files.delete(path);
@@ -75,7 +78,7 @@ public abstract class FileSerDe<T extends BaseEntity> {
     }
 
     private Path checkDirectory(String filePath) {
-        Path directory = Paths.get(System.getProperty("user.dir"), filePath);
+        Path directory = Paths.get(System.getProperty("user.dir"), DATA_ROOT_PATH + filePath);
 
         if (Files.notExists(directory)) {
             try {

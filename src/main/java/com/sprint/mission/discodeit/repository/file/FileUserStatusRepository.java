@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.extend.FileSerDe;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,8 +12,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileUserStatusRepository extends FileSerDe<UserStatus> implements UserStatusRepository {
-    private final String USER_STATUS_DATA_DIRECTORY = "data/userstatus";
+    private final String USER_STATUS_DATA_DIRECTORY = "userstatus";
 
     public FileUserStatusRepository() {
         super(UserStatus.class);

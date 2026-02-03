@@ -19,8 +19,6 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final ChannelRepository channelRepository;
-    private final MessageRepository messageRepository;
 
     @Override
     public UserDto.response createUser(UserDto.createRequest userReq, BinaryContentDto.createRequest profileReq) {
