@@ -25,9 +25,4 @@ public class Channel extends BaseEntity {
         this.description = description;
         setUpdateAt();
     }
-
-    @Override
-    public String toString() {
-        return channelName;
-    }
 }

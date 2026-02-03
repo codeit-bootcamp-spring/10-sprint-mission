@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserStatusDTO;
+import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -19,7 +19,7 @@ public class BasicUserStatusService implements UserStatusService {
     private final UserRepository userRepository;
 
     @Override
-    public UserStatusDTO.Response create(UserStatusDTO.Create request) {
+    public UserStatusDto.Response create(UserStatusDto.Create request) {
 
         //유저가 존재하지 않으면 예외
         userRepository.findById(request.userId())
@@ -28,51 +28,51 @@ public class BasicUserStatusService implements UserStatusService {
         //유저 상태가 이미 존재하면 에외
         userStatusRepository.findByUserId(request.userId())
                 .ifPresent(status -> {
-                    throw new IllegalArgumentException("이미 UserStatus가 존재합니다.");
+                    throw new IllegalArgumentException("이미 유저 상태가 존재합니다.");
                 });
 
         UserStatus status = new UserStatus(request.userId());
         userStatusRepository.save(status);
 
-        return UserStatusDTO.Response.of(status);
+        return UserStatusDto.Response.of(status);
     }
 
     @Override
-    public UserStatusDTO.Response findById(UUID userStatusId) {
+    public UserStatusDto.Response findById(UUID userStatusId) {
         UserStatus status = userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 UserStatus입니다."));
-        return UserStatusDTO.Response.of(status);
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
+        return UserStatusDto.Response.of(status);
     }
 
     @Override
-    public List<UserStatusDTO.Response> findAll() {
+    public List<UserStatusDto.Response> findAll() {
         return userStatusRepository.findAll().stream()
-                .map(UserStatusDTO.Response::of)
+                .map(UserStatusDto.Response::of)
                 .toList();
     }
 
     @Override
-    public UserStatusDTO.Response update(UserStatusDTO.Update request) {
+    public UserStatusDto.Response update(UserStatusDto.Update request) {
         UserStatus status = userStatusRepository.findByUserId(request.id())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 UserStatus입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
         status.updateOnline();
         userStatusRepository.save(status);
-        return UserStatusDTO.Response.of(status);
+        return UserStatusDto.Response.of(status);
     }
 
     @Override
-    public UserStatusDTO.Response updateByUserId(UserStatusDTO.Update request) {
+    public UserStatusDto.Response updateByUserId(UserStatusDto.Update request) {
         UserStatus status = userStatusRepository.findByUserId(request.userId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
         status.updateOnline();
         userStatusRepository.save(status);
-        return UserStatusDTO.Response.of(status);
+        return UserStatusDto.Response.of(status);
     }
 
     @Override
     public void delete(UUID userStatusId) {
         UserStatus status = userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 UserStatus입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
         userStatusRepository.delete(status);
     }
 }

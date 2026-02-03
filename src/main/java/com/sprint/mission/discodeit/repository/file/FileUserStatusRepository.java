@@ -51,7 +51,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
         try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))){
             return Optional.ofNullable((UserStatus) ois.readObject());
         } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("UserStatus 데이터 조회 실패", e);
         }
     }
 

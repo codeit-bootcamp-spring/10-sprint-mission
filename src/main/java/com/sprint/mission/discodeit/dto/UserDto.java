@@ -6,13 +6,13 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import java.time.Instant;
 import java.util.UUID;
 
-public class UserDTO {
+public class UserDto {
 
     public record Create(
             String username,
             String email,
             String password,
-            BinaryContentDTO.Create profile
+            BinaryContentDto.Create profile
     ) {}
 
     public record Response(
@@ -40,7 +40,7 @@ public class UserDTO {
             String username,
             String email,
             String password,
-            BinaryContentDTO.Create profile
+            BinaryContentDto.Create profile
     ) {}
 
     public record Login(

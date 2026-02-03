@@ -26,9 +26,4 @@ public class Message extends BaseEntity {
         this.content = content;
         setUpdateAt();
     }
-
-    @Override
-    public String toString() {
-        return content;
-    }
 }

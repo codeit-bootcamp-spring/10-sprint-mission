@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDTO;
-import com.sprint.mission.discodeit.dto.MessageDTO;
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.*;
@@ -24,7 +24,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageDTO.Response create(MessageDTO.Create request) {
+    public MessageDto.Response create(MessageDto.Create request) {
 
         userRepository.findById(request.authorId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
@@ -39,7 +39,7 @@ public class BasicMessageService implements MessageService {
         List<UUID> attachmentIds = new ArrayList<>();
         //요청에 첨부파일이 있다면 for-loop를 통해 객체 생성 후 저장
         if (!request.attachments().isEmpty()) {
-            for (BinaryContentDTO.Create attachmentDto : request.attachments()) {
+            for (BinaryContentDto.Create attachmentDto : request.attachments()) {
                 BinaryContent attachment = new BinaryContent(
                         attachmentDto.fileName(),
                         attachmentDto.bytes()
@@ -56,26 +56,26 @@ public class BasicMessageService implements MessageService {
         );
         messageRepository.save(message);
 
-        return MessageDTO.Response.of(message);
+        return MessageDto.Response.of(message);
     }
 
     @Override
-    public MessageDTO.Response findById(UUID messageId) {
+    public MessageDto.Response findById(UUID messageId) {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
-        return MessageDTO.Response.of(message);
+        return MessageDto.Response.of(message);
     }
 
     @Override
-    public List<MessageDTO.Response> findAllByChannelId(UUID channelId) {
+    public List<MessageDto.Response> findAllByChannelId(UUID channelId) {
         return messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
-                .map(MessageDTO.Response::of)
+                .map(MessageDto.Response::of)
                 .toList();
     }
 
     @Override
-    public MessageDTO.Response update(UUID authorId, MessageDTO.Update request) {
+    public MessageDto.Response update(UUID authorId, MessageDto.Update request) {
         Message message = messageRepository.findById(request.id())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
 
@@ -85,7 +85,7 @@ public class BasicMessageService implements MessageService {
 
         message.update(request.content());
         messageRepository.save(message);
-        return MessageDTO.Response.of(message);
+        return MessageDto.Response.of(message);
     }
 
     @Override

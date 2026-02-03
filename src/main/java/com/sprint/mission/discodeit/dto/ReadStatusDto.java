@@ -5,7 +5,7 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import java.time.Instant;
 import java.util.UUID;
 
-public class ReadStatusDTO {
+public class ReadStatusDto {
     public record Create(
             UUID userId,
             UUID channelId

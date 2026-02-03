@@ -40,9 +40,4 @@ public class User extends BaseEntity {
         this.profileId = profileId;
         setUpdateAt();
     }
-
-    @Override
-    public String toString() {
-        return username + "/" + email;
-    }
 }

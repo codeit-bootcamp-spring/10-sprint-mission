@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 
 import java.util.UUID;
 
-public class UserStatusDTO {
+public class UserStatusDto {
     public record Create(
             UUID userId
     ) {}

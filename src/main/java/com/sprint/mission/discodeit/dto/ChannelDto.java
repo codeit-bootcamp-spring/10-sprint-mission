@@ -2,13 +2,12 @@ package com.sprint.mission.discodeit.dto;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public class ChannelDTO {
+public class ChannelDto {
     public record CreatePublic(
             String name,
             String description

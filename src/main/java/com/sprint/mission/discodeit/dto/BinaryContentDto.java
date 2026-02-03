@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 
 import java.util.UUID;
 
-public class BinaryContentDTO {
+public class BinaryContentDto {
 
     public record Create(
             String fileName,

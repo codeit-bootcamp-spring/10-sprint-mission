@@ -6,12 +6,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public class MessageDTO {
+public class MessageDto {
     public record Create(
             String content,
             UUID authorId,
             UUID channelId,
-            List<BinaryContentDTO.Create> attachments
+            List<BinaryContentDto.Create> attachments
     ) {}
 
     public record Response(

@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDTO;
-import com.sprint.mission.discodeit.dto.UserDTO;
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
@@ -20,9 +20,10 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
     private final MessageRepository messageRepository;
+    private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public UserDTO.Response create(UserDTO.Create request) {
+    public UserDto.Response create(UserDto.Create request) {
         existsByUsername(request.username());
         existsByEmail(request.email());
 
@@ -31,7 +32,7 @@ public class BasicUserService implements UserService {
 
         //요청에 프로필이 있다면 binaryContent 객체 생성 후 저장
         if (request.profile() != null) {
-            BinaryContentDTO.Create profileDto = request.profile();
+            BinaryContentDto.Create profileDto = request.profile();
             BinaryContent profile = new BinaryContent(
                     profileDto.fileName(),
                     profileDto.bytes()
@@ -54,32 +55,31 @@ public class BasicUserService implements UserService {
         status.updateOnline();
         userStatusRepository.save(status);
 
-
-        return UserDTO.Response.of(user, status);
+        return UserDto.Response.of(user, status);
     }
 
     @Override
-    public UserDTO.Response findById(UUID userId) {
+    public UserDto.Response findById(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
         UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 UserStatus입니다."));
-        return UserDTO.Response.of(user, status);
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
+        return UserDto.Response.of(user, status);
     }
 
     @Override
-    public List<UserDTO.Response> findAll() {
+    public List<UserDto.Response> findAll() {
         return userRepository.findAll().stream()
                 .map(user -> {
                     UserStatus status = userStatusRepository.findByUserId(user.getId())
-                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 UserStatus입니다."));
-                    return UserDTO.Response.of(user, status);
+                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
+                    return UserDto.Response.of(user, status);
                 })
                 .toList();
     }
 
     @Override
-    public UserDTO.Response update(UserDTO.Update request) {
+    public UserDto.Response update(UserDto.Update request) {
         User user = userRepository.findById(request.id())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
@@ -87,13 +87,13 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
         Optional.ofNullable(request.password()).ifPresent(user::updatePassword);
 
-        if (request.profile() != null) { //요청에 프로필이 있는지 확인
+        if (request.profile() != null) { //요청에 프로필 파일이 있는지 확인
             if (user.getProfileId() != null) { //기존 유저에게 프로필이 있는지 확인, 프로필이 있으면 지움
                 binaryContentRepository.findById(user.getProfileId())
                         .ifPresent(binaryContentRepository::delete);
             }
 
-            BinaryContentDTO.Create profileDto = request.profile();
+            BinaryContentDto.Create profileDto = request.profile();
 
             BinaryContent newProfile = new BinaryContent(
                     profileDto.fileName(),
@@ -108,11 +108,11 @@ public class BasicUserService implements UserService {
 
         //유저 상태 객체 획인 후 온라인으로 갱신
         UserStatus status = userStatusRepository.findByUserId(request.id())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 UserStatus입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
         status.updateOnline();
 
         userStatusRepository.save(status);
-        return UserDTO.Response.of(user, status);
+        return UserDto.Response.of(user, status);
     }
 
     @Override
@@ -133,9 +133,13 @@ public class BasicUserService implements UserService {
             messageRepository.delete(message);
         }
 
+        //읽음 상태 삭제
+        readStatusRepository.findAllByUserId(userId)
+                .forEach(readStatusRepository::delete);
+
         //유저 상태 삭제
         UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 UserStatus입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
         userStatusRepository.delete(status);
 
         //유저 프로필 삭제

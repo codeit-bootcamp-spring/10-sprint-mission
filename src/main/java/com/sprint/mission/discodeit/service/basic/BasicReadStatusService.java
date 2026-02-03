@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.ReadStatusDTO;
+import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -21,7 +21,7 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ChannelRepository channelRepository;
 
     @Override
-    public ReadStatusDTO.Response create(ReadStatusDTO.Create request) {
+    public ReadStatusDto.Response create(ReadStatusDto.Create request) {
 
         userRepository.findById(request.userId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
@@ -31,41 +31,41 @@ public class BasicReadStatusService implements ReadStatusService {
 
         readStatusRepository.findByUserIdAndChannelId(request.userId(), request.channelId())
                 .ifPresent(status -> {
-                    throw new IllegalArgumentException("이미 ReadStatus가 존재합니다.");
+                    throw new IllegalArgumentException("이미 읽음 상태가 존재합니다.");
                 });
 
         ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
         readStatusRepository.save(readStatus);
-        return ReadStatusDTO.Response.of(readStatus);
+        return ReadStatusDto.Response.of(readStatus);
     }
 
     @Override
-    public ReadStatusDTO.Response findById(UUID statusId) {
+    public ReadStatusDto.Response findById(UUID statusId) {
         ReadStatus status = readStatusRepository.findById(statusId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 ReadStatus입니다."));
-        return ReadStatusDTO.Response.of(status);
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 읽음 상태입니다."));
+        return ReadStatusDto.Response.of(status);
     }
 
     @Override
-    public List<ReadStatusDTO.Response> findAllByUserId(UUID userId) {
+    public List<ReadStatusDto.Response> findAllByUserId(UUID userId) {
         return readStatusRepository.findAllByUserId(userId).stream()
-                .map(ReadStatusDTO.Response::of)
+                .map(ReadStatusDto.Response::of)
                 .toList();
     }
 
     @Override
-    public ReadStatusDTO.Response update(ReadStatusDTO.Update request) {
+    public ReadStatusDto.Response update(ReadStatusDto.Update request) {
         ReadStatus status = readStatusRepository.findByUserIdAndChannelId(request.userId(), request.channelId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 ReadStatus입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 읽음 상태입니다."));
         status.updateLastReadAt();
         readStatusRepository.save(status);
-        return ReadStatusDTO.Response.of(status);
+        return ReadStatusDto.Response.of(status);
     }
 
     @Override
     public void delete(UUID statusId) {
         ReadStatus status = readStatusRepository.findById(statusId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 ReadStatus입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 읽음 상태입니다."));
         readStatusRepository.delete(status);
     }
 }
