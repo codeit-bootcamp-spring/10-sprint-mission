@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,18 +24,52 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
     private final ChannelMapper channelMapper;
 
+//    @Override
+//    private Channel create(ChannelDto.CreatePublicRequest request) {
+//        String channelName = request.name();
+//        String channelDescription = request.description();
+//        Channel channel = new Channel(ChannelType.PUBLIC, channelName, channelDescription);
+//        return channelRepository.save(channel);
+//    }
+//
+//    @Override
+//    private Channel create(ChannelDto.CreatePrivateRequest request) {
+//        Set<UUID> memberIds = new HashSet<>(request.memberIds()); // 유저 중복 검출
+//
+//        memberIds.forEach(userId -> // 멤버가 실제로 존재하는 유저인지 확인
+//                userRepository.findById(userId)
+//                            .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다." + userId)));
+//
+//        Channel channel = new Channel(ChannelType.PRIVATE, null, null);
+//        Channel createChannel = channelRepository.save(channel);
+//
+//        request.memberIds().stream()
+//                .map(userId -> new ReadStatus(userId, createChannel.getId(), createChannel.getCreatedAt()))
+//                .forEach(readStatusRepository::save);
+//
+//        return createChannel;
+//    }
+
+    @Transactional
     @Override
-    public Channel create(ChannelDto.CreatePublicRequest request) {
-        String channelName = request.name();
-        String channelDescription = request.description();
-        Channel channel = new Channel(ChannelType.PUBLIC, channelName, channelDescription);
+    public Channel create(ChannelDto.CreateRequest request) {
+        if (request.type() == ChannelType.PUBLIC) {
+            return createPublic(request.name(), request.description());
+        }
+        else if (request.type() == ChannelType.PRIVATE) {
+            return createPrivate(request.memberIds());
+        }
+        else  {
+            throw new IllegalArgumentException("잘못된 채널 타입: " + request.type());
+        }
+    }
+
+    private Channel createPublic(String name, String description) {
+        Channel channel = new Channel(ChannelType.PUBLIC, name, description);
         return channelRepository.save(channel);
     }
 
-    @Override
-    public Channel create(ChannelDto.CreatePrivateRequest request) {
-        Set<UUID> memberIds = new HashSet<>(request.memberIds()); // 유저 중복 검출
-
+    private Channel createPrivate(Set<UUID> memberIds) {
         memberIds.forEach(userId -> // 멤버가 실제로 존재하는 유저인지 확인
                 userRepository.findById(userId)
                             .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다." + userId)));
@@ -42,7 +77,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         Channel createChannel = channelRepository.save(channel);
 
-        request.memberIds().stream()
+        memberIds.stream()
                 .map(userId -> new ReadStatus(userId, createChannel.getId(), createChannel.getCreatedAt()))
                 .forEach(readStatusRepository::save);
 
@@ -91,6 +126,8 @@ public class BasicChannelService implements ChannelService {
 
         return channelRepository.save(channel);
     }
+
+    @Transactional
     @Override
     public void delete(UUID channelId) {
         if (!channelRepository.existsById(channelId)) {
@@ -99,7 +136,6 @@ public class BasicChannelService implements ChannelService {
 
         messageRepository.deleteByChannelId(channelId);
         readStatusRepository.deleteByChannelId(channelId);
-
         channelRepository.deleteById(channelId);
     }
 

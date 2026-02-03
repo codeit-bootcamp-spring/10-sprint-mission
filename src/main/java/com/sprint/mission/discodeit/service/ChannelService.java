@@ -8,8 +8,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    Channel create(ChannelDto.CreatePublicRequest request);
-    Channel create(ChannelDto.CreatePrivateRequest request);
+//    Channel create(ChannelDto.CreatePublicRequest request);
+//    Channel create(ChannelDto.CreatePrivateRequest request);
+    Channel create(ChannelDto.CreateRequest request);
     ChannelDto.Response find(UUID channelId);
     List<ChannelDto.Response> findAllByUserId(UUID userId);
     Channel update(UUID channelId, ChannelDto.UpdatePublicRequest request);
