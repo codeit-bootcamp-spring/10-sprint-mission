@@ -61,9 +61,10 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
-        // 유저 상태 조회 (null 값 처리 필요)
-        UserStatus userStatus = userStatusRepository.findById(userId)
-                .orElse(null);
+        // 유저 상태 조회
+        UserStatus userStatus = userStatusRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("유저 상태가 존재하지 않습니다."));
+
 
         return UserResponse.from(user, userStatus);
     }
@@ -75,9 +76,9 @@ public class BasicUserService implements UserService {
         List<UserResponse> responses = new ArrayList<>();
 
         for (User user : users) {
-            // 유저 상태 조회 (null 값 처리 필요)
-            UserStatus userStatus = userStatusRepository.findById(user.getId())
-                    .orElse(null);
+            // 유저 상태 조회
+            UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
+                    .orElseThrow(() -> new RuntimeException("유저 상태가 존재하지 않습니다."));
             responses.add(UserResponse.from(user, userStatus));
         }
 
@@ -115,9 +116,6 @@ public class BasicUserService implements UserService {
                 // 새로운 닉네임이라면 중복 체크
                 validateUpdateUniqueness(user.getId(), newNickname);
             }
-
-
-            validateUpdateUniqueness(user.getId(), newNickname);
         }
 
         // null이 아니면 새로운 데이터 주입, null이면 기존 데이터 유지
@@ -143,12 +141,11 @@ public class BasicUserService implements UserService {
         }
 
         // 유저 상태 조회
-        UserStatus userStatus = userStatusRepository.findById(user.getId())
-                .orElse(null);
+        UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("유저 상태가 존재하지 않습니다."));
 
         return UserResponse.from(user, userStatus);
     }
-
 
     @Override
     public void delete(UUID userId) {
@@ -160,8 +157,13 @@ public class BasicUserService implements UserService {
         if (user.getProfileId() != null) {
             binaryContentRepository.delete(user.getProfileId());
         }
+
+        // 유저 상태 조회
+        UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("유저 상태가 존재하지 않습니다."));
+
         // 유저 상태 삭제
-        userStatusRepository.delete(userId);
+        userStatusRepository.delete(userStatus.getId());
 
         // 유저 삭제
         userRepository.delete(user.getId());

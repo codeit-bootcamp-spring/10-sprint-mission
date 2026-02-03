@@ -20,8 +20,8 @@ public class AuthService {
         User user = validateLoginRequest(request);
 
         // 유저 상태 조회
-        UserStatus userStatus = userStatusRepository.findById(user.getId())
-                .orElse(null);
+        UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new RuntimeException("유저 상태가 존재하지 않습니다."));
 
         return UserResponse.from(user, userStatus);
     }
