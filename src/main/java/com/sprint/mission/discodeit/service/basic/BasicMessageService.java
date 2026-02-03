@@ -25,8 +25,10 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageDto.MessageResponse create(MessageDto.MessageRequest request, List<BinaryContentDto.BinaryContentRequest> fileInfo) {
         // 입력값 검증
+        User user = userRepository.findById(request.userId());
+        Channel channel = channelRepository.findById(request.channelId());
         Objects.requireNonNull(request.content(), "내용은 필수입니다.");
-        if (!request.channel().getUsers().contains(request.user())) {
+        if (!channel.getUsers().contains(user)) {
             throw new IllegalArgumentException("채널 멤버가 아닙니다.");
         }
         // 여러 개의 첨부파일 구현
@@ -41,16 +43,17 @@ public class BasicMessageService implements MessageService {
         // 메세지 객체 생성
         Message message = new Message(request, binaryContentIds);
         messageRepository.save(message);
-        request.channel().addMessage(message);
-        // 채널 객체에 메세지 추가
-        channelRepository.findById(request.channel().getId()).addMessage(message);
+        channel.addMessage(message);
 
         return MessageDto.MessageResponse.from(message);
     }
 
     @Override
     public MessageDto.MessageResponse findById(UUID messageId) {
-        return MessageDto.MessageResponse.from(messageRepository.findById(Objects.requireNonNull(messageId, "메세지 Id가 유효하지 않습니다.")));
+        Objects.requireNonNull(messageId, "메세지 Id가 유효하지 않습니다.");
+        Message message = Objects.requireNonNull(messageRepository.findById(messageId), "해당 메세지가 존재하지 않습니다.");
+
+        return MessageDto.MessageResponse.from(message);
     }
 
     @Override

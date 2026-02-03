@@ -14,8 +14,11 @@ public abstract class BaseEntity implements Serializable {
 
     // Getter
     // 식별자/생성 시각/수정 시각 공통 필드
+    @Getter
     protected final UUID id;
+    @Getter
     protected final Instant createdAt;
+    @Getter
     protected Instant updatedAt;
 
     // constructor

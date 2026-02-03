@@ -38,14 +38,16 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDto.ChannelResponsePrivate createPrivate(List<UUID> userIds) {
         // 익명톡방
+        Objects.requireNonNull(userIds, "유효한 유저 목록을 입력해주세요.");
         List<User> users = userIds.stream().map(userId ->
-                Objects.requireNonNull(userRepository.findById(userId))).toList();
+                Objects.requireNonNull(userRepository.findById(userId), "유저 Id가 유효하지 않습니다.")).toList();
 
         Channel channel = new Channel(users);
 
         users.forEach(user -> {
-            ReadStatus readStatus = new ReadStatus(user, channel);
+            ReadStatus readStatus = new ReadStatus(user.getId(), channel.getId());
             readStatusRepository.save(readStatus);
+            user.joinChannel(channel);
         });
         channelRepository.save(channel);
         return ChannelDto.ChannelResponsePrivate.from(channel);
@@ -54,7 +56,8 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDto.ChannelResponse findById(UUID channelId) {
         // 채널 유형에 따른 반환타입 분리 -- PRIVATE 이면 name, description 대신에 userId리스트
-        Channel channel = Objects.requireNonNull(channelRepository.findById(channelId));
+        Objects.requireNonNull(channelId, "유저 Id가 유효하지 않습니다.");
+        Channel channel = Objects.requireNonNull(channelRepository.findById(channelId), "해당 채널이 존재하지 않습니다.");
         if (channel.getType().equals(Channel.channelType.PUBLIC))
             return ChannelDto.ChannelResponsePublic.from(channel);
         return ChannelDto.ChannelResponsePrivate.from(channel);
@@ -63,12 +66,14 @@ public class BasicChannelService implements ChannelService {
     @Override
     public List<ChannelDto.ChannelResponse> findAllByUserId(UUID userId) {
         // 유저 ID를 받아서 해당 유저가 볼 수 있는 채널 목록만 표시
-        return channelRepository.findAll().stream()
+        User user = userRepository.findById(userId);
+        return channelRepository.findAll().stream().filter(channel ->
+                        !(channel.getType().equals(Channel.channelType.PRIVATE) &&
+                                channel.getUsers().stream().noneMatch(user1 -> user1.getId().equals(userId))))
                 .<ChannelDto.ChannelResponse>map(channel -> {
-                    if (channel.getType().equals(Channel.channelType.PRIVATE) &&
-                            (channel.getUsers().get(0).getId().equals(userId) || channel.getUsers().get(1).getId().equals(userId)))
-                        return ChannelDto.ChannelResponsePrivate.from(channel);
-                    else return ChannelDto.ChannelResponsePublic.from(channel);
+                    if (channel.getType().equals(Channel.channelType.PUBLIC))
+                        return ChannelDto.ChannelResponsePublic.from(channel);
+                    else return ChannelDto.ChannelResponsePrivate.from(channel);
                 }).toList();
     }
 

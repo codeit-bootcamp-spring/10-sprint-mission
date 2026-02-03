@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -42,7 +43,7 @@ public class BasicUserService implements UserService {
         BinaryContent binaryContent = new BinaryContent(new BinaryContentDto.BinaryContentRequest(filePath, "image"));
 
         User user = new User(request, binaryContent.getId());
-        UserStatus userStatus = new UserStatus(user);
+        UserStatus userStatus = new UserStatus(user.getId());
 
         // 레포 저장
         userRepository.save(user);
@@ -54,7 +55,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserDto.UserResponse findById(UUID userId) {
-        Objects.requireNonNull(userId, "채널 Id가 유효하지 않습니다.");
+        Objects.requireNonNull(userId, "유저 Id가 유효하지 않습니다.");
         User user = Objects.requireNonNull(userRepository.findById(userId), "해당 유저가 존재하지 않습니다.");
         UserStatus status = Objects.requireNonNull(userStatusRepository.findByUserId(userId), "유저 상태 정보가 없습니다.");
 
@@ -79,9 +80,11 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
         Optional.ofNullable(request.password()).ifPresent(user::updatePassword);
         // 새로운 content 객체를 생성하여 대체
-        Optional.ofNullable(filePath).ifPresent(path ->
-                user.updateBinaryContentId(new BinaryContent(new BinaryContentDto.BinaryContentRequest(path, "image")).getId()));
-
+        Optional.ofNullable(filePath).ifPresent(path -> {
+                    BinaryContent binaryContent = new BinaryContent(new BinaryContentDto.BinaryContentRequest(path, "image"));
+                    user.updateBinaryContentId(binaryContent.getId());
+                    binaryContentRepository.save(binaryContent);
+                });
         userRepository.save(user);
         return UserDto.UserResponse.from(user, status);
     }
@@ -98,5 +101,23 @@ public class BasicUserService implements UserService {
         binaryContentRepository.deleteById(user.getBinaryContentId());
 
         userRepository.delete(userId);
+    }
+
+    public void joinChannel(UUID userId, UUID channelId) {
+        User user = userRepository.findById(userId);
+        Channel channel = channelRepository.findById(channelId);
+        // 유저에 채널 추가
+        user.joinChannel(channel);
+        // 채널에 유저 추가
+        channel.addUser(user);
+    }
+
+    public void leaveChannel(UUID userId, UUID channelId) {
+        User user = userRepository.findById(userId);
+        Channel channel = channelRepository.findById(channelId);
+        // 유저에서 채널 삭제
+        user.leaveChannel(channel);
+        // 채널에서 유저 삭제
+        channel.removeUser(user);
     }
 }

@@ -5,6 +5,7 @@ import lombok.Getter;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Message extends BaseEntity implements Serializable {
@@ -16,26 +17,18 @@ public class Message extends BaseEntity implements Serializable {
     @Getter
     private String content;
     @Getter
-    private final User user;
+    private final UUID userId;
     @Getter
-    private final Channel channel;
+    private final UUID channelId;
     @Getter
-    private List<UUID> binaryContentIds;
+    private final List<UUID> binaryContentIds;
 
     // constructor
     public Message(MessageDto.MessageRequest request, List<UUID> binaryContentIds) {
         this.content = request.content();
-        this.user = request.user();
-        this.channel = request.channel();
+        this.userId = Objects.requireNonNull(request.userId(), "유효한 사용자 ID를 입력해주세요.");
+        this.channelId = Objects.requireNonNull(request.channelId(), "유효한 채널 ID를 입력해주세요.");
         this.binaryContentIds = binaryContentIds;
-    }
-
-    public UUID getUserId() {
-        return user.getId();
-    }
-
-    public UUID getChannelId() {
-        return channel.getId();
     }
 
     // 메세지 수정

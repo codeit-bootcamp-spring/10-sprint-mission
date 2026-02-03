@@ -15,7 +15,8 @@ public class UserStatus extends BaseEntity{
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private final User user;
+    @Getter
+    private final UUID userId;
 
     public enum Status {
         ONLINE, OFFLINE, AWAY
@@ -38,6 +39,9 @@ public class UserStatus extends BaseEntity{
         return lastActiveTime.isAfter(Instant.now().minusSeconds(300));
     }
 
+    public void updateStatus(Status status) {
+        this.status = status;
+    }
     // 로그인
     public void userLogin() {
         status = Status.ONLINE;

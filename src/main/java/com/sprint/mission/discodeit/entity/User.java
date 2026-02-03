@@ -39,7 +39,7 @@ public class User extends BaseEntity implements Serializable {
     // Getter, update
     public List<Channel> getChannels() {
         return List.copyOf(this.channels);
-    }     // 채널 객체를 직접 전달
+    }     // 복사된 채널 리스트를 전달 -- 방어적 구현
 
     public void updateName(String name) {
         this.name = name;
@@ -58,6 +58,7 @@ public class User extends BaseEntity implements Serializable {
 
     public void updateBinaryContentId(UUID binaryContentId) {
         this.binaryContentId = binaryContentId;
+        updateTimestamp();
     }
 
 

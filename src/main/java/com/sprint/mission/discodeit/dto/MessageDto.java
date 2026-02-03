@@ -11,8 +11,8 @@ public class MessageDto {
     // 요청 DTO
     public record MessageRequest(
             String content,
-            User user,
-            Channel channel
+            UUID userId,
+            UUID channelId
     ) {
     }
 

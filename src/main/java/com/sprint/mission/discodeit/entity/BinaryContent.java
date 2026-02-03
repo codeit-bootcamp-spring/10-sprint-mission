@@ -25,7 +25,7 @@ public class BinaryContent implements Serializable {
     public BinaryContent(BinaryContentDto.BinaryContentRequest request) {
 
         this.id = UUID.randomUUID();
-        this.createdAt = Instant.ofEpochSecond(System.currentTimeMillis());
+        this.createdAt = Instant.now();
         this.filePath = request.filePath();
         this.contentType = request.contentType();
 

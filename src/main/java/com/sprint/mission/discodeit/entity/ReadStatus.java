@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.Serial;
 import java.time.Instant;
+import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
@@ -14,10 +15,10 @@ public class ReadStatus extends BaseEntity{
     @Serial
     private static final long serialVersionUID = 1L;
 
-    // 사용자ID, 채널ID,
+    // 사용자ID, 채널ID
     private Instant lastReadTime = Instant.EPOCH;
-    private final User user;
-    private final Channel channel;
+    private final UUID userId;
+    private final UUID channelId;
 
     // 사용자가 채널 확인한 시간 갱신
     public void updateLastReadTime(Instant lastReadTime) {
@@ -27,9 +28,9 @@ public class ReadStatus extends BaseEntity{
 
     // 사용자가 메시지를 읽었는지 확인
     public boolean isReadMessage(Message message) {
-        if (!this.channel.equals(message.getChannel()))
+        if (!(this.channelId.equals(message.getChannelId())))
             throw new IllegalArgumentException("해당 채널의 메시지가 아닙니다. (Status Channel: "
-                    + this.channel.getId() + ", Message Channel: " + message.getChannel().getId() + ")");
-        return !message.createdAt.isAfter(lastReadTime);
+                    + this.channelId + ", Message Channel: " + message.getChannelId() + ")");
+        return !message.getCreatedAt().isAfter(lastReadTime);
     }
 }

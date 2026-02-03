@@ -16,7 +16,6 @@ public class Channel extends BaseEntity implements Serializable {
     // 채널에 속한 메세지 목록
     private final List<Message> messages = new ArrayList<>();
     // 채널에 참여한 유저 목록
-    @Getter
     private final List<User> users = new ArrayList<>();
 
     @Getter
@@ -30,18 +29,28 @@ public class Channel extends BaseEntity implements Serializable {
 
     // Public 생성자
     public Channel(ChannelDto.ChannelRequest request) {
-        this.name = request.name();
-        this.description = request.description();
+        this.name = Objects.requireNonNull(request.name(), "채널명은 필수입니다.");
+        this.description = Objects.requireNonNull(request.description(), "채널 설명은 필수입니다.");
         this.type = channelType.PUBLIC;
         this.lastMessageAt = Instant.now();
     }
 
     // Private 생성자
     public Channel(List<User> users){
-        this.users.addAll(users);
+        this.users.addAll(Objects.requireNonNull(users, "유효한 유저를 입력해주세요."));
         this.type = channelType.PRIVATE;
         this.lastMessageAt = Instant.now();
     }
+
+    public List<User> getUsers() {
+        return List.copyOf(this.users);
+    }     // 복사된 유저 리스트를 전달
+
+    // 채널 메세지 리스트 반환
+    public List<Message> getMessages() {
+        return List.copyOf(this.messages);
+    }     // 복사된 메세지 리스트를 전달
+
 
     public void updateName(String name) {
         this.name = name;
@@ -79,8 +88,4 @@ public class Channel extends BaseEntity implements Serializable {
         this.updateTimestamp();
     }
 
-    // 채널 메세지 리스트 반환
-    public List<Message> getMessages() {
-        return Collections.unmodifiableList(messages);
-    }
 }
