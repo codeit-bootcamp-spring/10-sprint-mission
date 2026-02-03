@@ -38,7 +38,7 @@ public class BasicChannelService implements ChannelService {
                 .channelName(channel.getName())
                 .description(channel.getDescription())
                 .type(ChannelType.PUBLIC)
-                .joinedUserIds(null)
+                .userIdsInChannel(null)
                 .build();
     }
 
@@ -46,7 +46,7 @@ public class BasicChannelService implements ChannelService {
         List<UUID> userIdsInChannel = getUserIdsInChannel(channel.getId());
         return ChannelResponse.builder()
                 .channelId(channel.getId())
-                .joinedUserIds(userIdsInChannel)
+                .userIdsInChannel(userIdsInChannel)
                 .type(ChannelType.PRIVATE).build();
     }
 
@@ -96,9 +96,22 @@ public class BasicChannelService implements ChannelService {
                 .toList();
     }
 
+    private boolean hasPrivateChannelMember(UUID channelId, UUID userId) {
+        ChannelResponse response = find(channelId);
+        if (response.type() == ChannelType.PUBLIC) {
+            return false;
+        }
+        return response.userIdsInChannel().contains(userId);
+    }
+
     @Override
     public List<ChannelResponse> findAllByUserId(UUID userId) {
-        return List.of();
+        return channelRepository.findAll()
+                .stream()
+                .filter(channel -> (channel.getType() == ChannelType.PUBLIC)
+                        || hasPrivateChannelMember(channel.getId(), userId))
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
