@@ -101,7 +101,9 @@ public class BasicChannelService implements ChannelService{
 
     // 채널 삭제
     @Override
-    public void deleteByChannelId(UUID id) {
+    public void deleteById(UUID id) {
+        getOrThrowChannel(id);
+
         messageRepository.deleteByChannelId(id);
         readStatusRepository.deleteByChannelId(id);
         channelRepository.deleteById(id);

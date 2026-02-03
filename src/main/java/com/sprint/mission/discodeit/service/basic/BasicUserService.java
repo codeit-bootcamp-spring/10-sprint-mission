@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
@@ -20,6 +21,7 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
+    private final ReadStatusRepository readStatusRepository;
 
     // 계정 생성
     @Override
@@ -119,6 +121,9 @@ public class BasicUserService implements UserService {
     @Override
     public void deleteById(UUID id) {
         User user = validateUserExists(id);
+
+        // 유저가 참여하고 있는 채널 삭제
+        readStatusRepository.deleteById(id);
 
         // 유저 상태 삭제
         userStatusRepository.deleteByUserId(id);

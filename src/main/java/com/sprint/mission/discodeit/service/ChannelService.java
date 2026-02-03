@@ -20,5 +20,5 @@ public interface ChannelService {
 
     ChannelResponse update(UUID id, ChannelUpdateRequest request); // 체널 정보 수정
 
-    void deleteByChannelId(UUID channelId);
+    void deleteById(UUID id);
 }
