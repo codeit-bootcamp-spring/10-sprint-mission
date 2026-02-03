@@ -101,4 +101,30 @@ public class BasicChannelService implements ChannelService {
                 channel.getType(), lastMessageAt, memberIds
         );
     }
+
+    @Override
+    public ChannelResponseDto create(ChannelCreateDto dto) {
+        Channel channel = new Channel(
+                ChannelType.valueOf(dto.getType()),
+                dto.getName(),
+                null
+        );
+        channelRepository.save(channel);
+        return convertToResponseDto(channel);
+    }
+
+    @Override
+    public List<ChannelResponseDto> findAll() {
+        return channelRepository.findAll().stream()
+                .map(channel -> new ChannelResponseDto(
+                        channel.getId(),
+                        channel.getName(),
+                        channel.getDescription(),
+                        channel.getType(),
+                        null,
+                        java.util.Collections.emptyList()
+                ))
+                .toList();
+    }
+
 }

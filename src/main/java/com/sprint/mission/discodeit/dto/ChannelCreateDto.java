@@ -8,4 +8,5 @@ import lombok.Getter;
 public class ChannelCreateDto {
     private final String name;
     private final String description;
+    private String type;
 }

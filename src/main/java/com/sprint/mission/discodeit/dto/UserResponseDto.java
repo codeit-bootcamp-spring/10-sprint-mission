@@ -10,7 +10,7 @@ public class UserResponseDto {
     private UUID id;
     private String username;
     private String email;
-    private String profileId;
+    private UUID profileId;
     private boolean isOnline;
 
     public UserResponseDto(User user, boolean isOnline) {
