@@ -2,28 +2,27 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
 import java.util.*;
+import lombok.Getter;
 
+@Getter
 public class Channel extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     private String name;
     private String type;
+    private String description;
     private final Set<User> users = new HashSet<>();
     private final List<Message> messages = new ArrayList<>();
 
-    public Channel(String name, String type) {
+    public Channel(String name, String type, String description) {
         super();
         this.name = name;
         this.type = type;
+        this.description = description;
     }
-    public String getName() {
-        return name;
-    }
-    public String getType() {
-        return type;
-    }
-    public List<Message> getMessages() { return messages; }
-    public Set<User> getUsers() { return users; }
 
+    public Channel(String name, String type) {
+        this(name, type, null);
+    }
     public void addMessage(Message message) { messages.add(message); }
     public void addUser(User user) { users.add(user); }
 
@@ -33,6 +32,10 @@ public class Channel extends BaseEntity implements Serializable {
     }
     public void updateType(String type) {
         this.type = type;
+        updateTimestamps();
+    }
+    public void updateDescription(String description) {
+        this.description = description;
         updateTimestamps();
     }
 

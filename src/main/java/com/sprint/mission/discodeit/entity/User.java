@@ -2,37 +2,33 @@ package com.sprint.mission.discodeit.entity;
 
 import java.io.Serializable;
 import java.util.*;
+import lombok.Getter;
 
+@Getter
 public class User extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     private String name;
     private String email;
+    private String password;
     private final List<Message> messages = new ArrayList<>();
     private final Set<Channel> channels = new HashSet<>();
+    private UUID profileId;
 
-    public User(String name, String email) {
+    public User(String name, String email, String password, UUID profileId) {
         super();
         this.name = name;
         this.email = email;
-    }
-    public String getName() {
-        return name;
-    }
-    public String getEmail() {
-        return email;
+        this.password = password;
+        this.profileId = profileId;
     }
 
-    public void updateName(String name) {
-                this.name = name;
-                updateTimestamps();
-    }
-    public void updateEmail(String email) {
-            this.email = email;
-            updateTimestamps();
+    public User(String name, String email, UUID profileId) {
+        this(name, email, null, profileId);
     }
 
-    public List<Message> getMessages() { return messages; }
-    public Set<Channel> getChannels() { return channels; }
+    public User(String name, String email) {
+        this(name, email, null, null);
+    }
 
 
     public void addMessage(Message message) { messages.add(message);
@@ -41,6 +37,18 @@ public class User extends BaseEntity implements Serializable {
         this.channels.add(channel);
     }
 
+    public void updateName(String name) {
+        this.name = name;
+        updateTimestamps();
+    }
+    public void updateEmail(String email) {
+        this.email = email;
+        updateTimestamps();
+    }
+    public void updateProfileId(UUID profileId) {
+        this.profileId = profileId;
+        updateTimestamps();
+    }
     public void removeMessage(Message message) { this.messages.remove(message); }
     public void removeChannel(Channel channel) { this.channels.remove(channel); }
 
