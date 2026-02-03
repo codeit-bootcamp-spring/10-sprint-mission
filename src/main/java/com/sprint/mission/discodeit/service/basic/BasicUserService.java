@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.util.Validators;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +25,7 @@ import java.util.UUID;
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
-    prviate final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
     public UserResponseDto create(UserRequestCreateDto request) {
@@ -44,9 +45,8 @@ public class BasicUserService implements UserService {
         }
 
         User savedUser = userRepository.save(user);
-        UserStatus userStatus = new UserStatus(savedUser.getId(), null);
-        boolean online = userStatus.isOnline();
-        return toDto(savedUser, online);
+        UserStatus userStatus = new UserStatus(savedUser.getId(), Instant.now());
+        return toDto(savedUser, userStatus.isOnline());
     }
 
     @Override
@@ -97,7 +97,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public void deleteUser(UUID userId) {
+    public void delete(UUID userId) {
         User user = validateExistenceUser(userId);
         UUID profileId = user.getProfileId();
         if(profileId != null) {
@@ -159,7 +159,11 @@ public class BasicUserService implements UserService {
     }
 
     private boolean resolveOnline(UUID userId) {
-        return false;
+        return userStatusRepository.findAll().stream()
+                .filter(us -> userId.equals(us.getUserId()))
+                .findFirst()
+                .map(UserStatus::isOnline)
+                .orElse(false);
     }
 
     private void validateProfileImageParam(BinaryContentParam profile) {

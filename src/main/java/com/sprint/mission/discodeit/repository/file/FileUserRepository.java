@@ -2,24 +2,36 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.IntStream;
 
 @Repository
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "file"
+)
 public class FileUserRepository implements UserRepository {
-    private static final String FILE_PATH = "data/users.ser";
+    private static final String FILE_NAME = "users.ser";
+    private final Path filePath;
     private final List<User> data;
 
-    public FileUserRepository() {
+    public FileUserRepository(
+            @Value("${discodeit.repository.file-directory:.discodeit}")  String dir
+    ) {
+        this.filePath = Paths.get(dir, FILE_NAME);
         this.data = loadUsers();
     }
 
     private void saveUsers() {
-        File file = new File(FILE_PATH);
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
             oos.writeObject(this.data);
             System.out.println("직렬화 완료: users.ser에 저장되었습니다.");
         } catch (IOException e) {
@@ -29,11 +41,10 @@ public class FileUserRepository implements UserRepository {
 
     @SuppressWarnings("unchecked")
     private List<User> loadUsers() {
-        File file = new File(FILE_PATH);
-        if (!file.exists() || file.length() == 0) {
+        if (!filePath.toFile().exists() || filePath.toFile().length() == 0) {
             return new ArrayList<>();
         }
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath.toFile()))) {
             Object data = ois.readObject();
             System.out.println("역직렬화 완료: " + data);
             return (List<User>) data;

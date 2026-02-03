@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface ReadStatusRepository {
     ReadStatus save(ReadStatus readStatus);
 
-    Optional<ReadStatus> saveAll(List<ReadStatus> readStatus);
+    List<ReadStatus> saveAll(List<ReadStatus> readStatus);
 
     Optional<ReadStatus> findById(UUID id);
 

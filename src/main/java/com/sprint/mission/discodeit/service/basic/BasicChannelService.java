@@ -115,7 +115,7 @@ public class BasicChannelService implements ChannelService {
 
 
     @Override
-    public void deleteChannel(UUID id) {
+    public void delete(UUID id) {
         validateExistenceChannel(id);
         messageRepository.deleteAllByChannelId(id);
         readStatusRepository.deleteAllByChannelId(id);

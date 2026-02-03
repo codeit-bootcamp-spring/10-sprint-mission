@@ -16,7 +16,7 @@ public interface UserService {
 
     UserResponseDto update(UserRequestUpdateDto request);
 
-    void deleteUser(UUID id);
+    void delete(UUID id);
 
     List<UserResponseDto> findUsersByChannel(UUID channelId);
 

@@ -54,13 +54,13 @@ public class BasicMessageService implements MessageService {
         Message message = new Message(request.content(), request.authorId(), request.channelId(), attachmentIds);
         channel.getMessageIds().add(message.getId());
         user.getMessageIds().add(message.getId());
-        Message savedMessage = messageRepository.save(message);
-        return toDto(savedMessage);
+        return toDto(messageRepository.save(message));
     }
 
     @Override
-    public Message find(UUID id) {
-        return validateExistenceMessage(id);
+    public MessageResponseDto find(UUID id) {
+        Message message = validateExistenceMessage(id);
+        return toDto(message);
     }
 
     @Override
@@ -79,11 +79,10 @@ public class BasicMessageService implements MessageService {
                     message.updateContent(cont);
                 });
 
-        messageRepository.save(message);
-        return toDto(message);
+        return toDto(messageRepository.save(message));
     }
 
-    public void deleteMessage(UUID messageId) {
+    public void delete(UUID messageId) {
         Message message = validateExistenceMessage(messageId);
         UUID channelId = message.getChannelId();
         UUID authorId = message.getAuthorId();
@@ -96,7 +95,6 @@ public class BasicMessageService implements MessageService {
         for (UUID attachmentId : message.getAttachmentIds()) {
             binaryContentRepository.deleteById(attachmentId);
         }
-
 
         channel.getMessageIds().remove(messageId);
         user.getMessageIds().remove(messageId);

@@ -3,10 +3,19 @@ package com.sprint.mission.discodeit.repository.jcf;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.IntStream;
 
+@Repository
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "jcf"
+)
 public class JCFMessageRepository implements MessageRepository {
     final ArrayList<Message> data;
 
@@ -46,4 +55,19 @@ public class JCFMessageRepository implements MessageRepository {
     public void deleteById(UUID id) {
         data.removeIf(message -> message.getId().equals(id));
     }
+
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        data.removeIf(message -> message.getChannelId().equals(channelId));
+    }
+
+    @Override
+    public Optional<Instant> findLatestCreatedAtByChannelId(UUID channelId) {
+        return data.stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .map(Message::getCreatedAt)
+                .max(Comparator.naturalOrder());
+    }
+
 }
+

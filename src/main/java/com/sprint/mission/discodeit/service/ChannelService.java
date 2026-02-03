@@ -19,7 +19,7 @@ public interface ChannelService {
 
     ChannelResponseDto updateChannel(ChannelRequestUpdateDto channelRequestUpdateDto);
 
-    void deleteChannel(UUID id);
+    void delete(UUID id);
 
     void joinChannel(UUID channelId, UUID userId);
 

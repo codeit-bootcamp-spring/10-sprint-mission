@@ -63,7 +63,7 @@ public class DiscodeitApplication {
 		System.out.println();
 
 		// 1-4. user 정보 삭제 및 확인
-		userService.deleteUser(user3.getId());
+		userService.delete(user3.getId());
 		System.out.println("1-4. 유저 정보 삭제 완료");
 
 		// 1-5. user 다건 재조회로 정보 삭제 확인
@@ -107,7 +107,7 @@ public class DiscodeitApplication {
 		System.out.println();
 
 		// 2-4. channel 정보 삭제 및 확인
-		channelService.deleteChannel(channel3.getId());
+		channelService.delete(channel3.getId());
 		System.out.println("2-4. 채널 삭제 완료");
 		System.out.println();
 
@@ -137,7 +137,7 @@ public class DiscodeitApplication {
 		System.out.println("수정 시각: " + updatedMessage2.getUpdatedAt());
 		System.out.println();
 		// 3-4. message 삭제 및 확인
-		messageService.deleteMessage(message3.getId());
+		messageService.delete(message3.getId());
 		System.out.println("3-4. 메시지 삭제 완료");
 		System.out.println();
 

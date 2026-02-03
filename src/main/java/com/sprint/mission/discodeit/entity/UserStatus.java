@@ -12,7 +12,7 @@ public class UserStatus extends CommonEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private final UUID userId;
-    private final Instant lastSeenAt;
+    private Instant lastSeenAt;
 
     public UserStatus(UUID userId, Instant lastSeenAt) {
         this.userId = userId;
@@ -22,5 +22,10 @@ public class UserStatus extends CommonEntity implements Serializable {
     public boolean isOnline() {
         return lastSeenAt != null &&
                 lastSeenAt.isAfter(Instant.now().minusSeconds(5 * 60));
+    }
+
+    public void updateLastSeenAt() {
+        this.lastSeenAt = Instant.now();
+        update();
     }
 }

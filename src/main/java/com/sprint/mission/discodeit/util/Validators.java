@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.util;
 
+import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusRequestCreateDto;
+import com.sprint.mission.discodeit.dto.common.BinaryContentParam;
 import com.sprint.mission.discodeit.dto.message.MessageRequestCreateDto;
 
 import java.util.List;
@@ -29,6 +31,12 @@ public class Validators {
         requireNonNull(request.authorId(), "authorId");
     }
 
+    public static void validateCreateReadStatusRequest(ReadStatusRequestCreateDto request) {
+        requireNonNull(request, "request");
+        requireNonNull(request.channelId(), "channelId");
+        requireNonNull(request.userId(), "userId");
+    }
+
     public static void validationUser(String userName, String userEmail, String userPassword) {
         requireNotBlank(userName, "userName");
         requireNotBlank(userEmail, "userEmail");
@@ -45,9 +53,6 @@ public class Validators {
             throw new IllegalArgumentException("joinedUserIds는 필수입니다.");
         }
     }
-
-
-
 
 
 }
