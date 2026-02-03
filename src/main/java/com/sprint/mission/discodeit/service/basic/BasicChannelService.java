@@ -116,6 +116,10 @@ public class BasicChannelService implements ChannelService {
         user.updateUpdatedAt();
         userRepository.save(user);
 
+        readStatusRepository.findAllByUserId(userId).stream()
+                .filter(r -> Objects.equals(r.getChannelId(), channelId))
+                .findFirst()
+                .ifPresent(r -> { throw new IllegalStateException("이미 존재하는 readStatus입니다"); });
         ReadStatus readStatus = new ReadStatus(userId, channelId);
         readStatusRepository.save(readStatus);
     }
@@ -143,8 +147,8 @@ public class BasicChannelService implements ChannelService {
         user.updateUpdatedAt();
         userRepository.save(user);
 
-        ReadStatus readStatus = readStatusRepository.findAllByChannelId(channelId).stream()
-                .filter(r -> Objects.equals(r.getUserId(), userId))
+        ReadStatus readStatus = readStatusRepository.findAllByUserId(userId).stream()
+                .filter(r -> Objects.equals(r.getChannelId(), channelId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("readStatus가 존재하지 않습니다"));
         readStatusRepository.deleteById(readStatus.getId());

@@ -18,8 +18,8 @@ public class UserStatus extends MutableEntity {
         this.lastActiveAt = Instant.now();
     }
 
-    public void updateLastActiveAt() {
-        this.lastActiveAt = Instant.now();
+    public void updateLastActiveAt(Instant lastActiveAt) {
+        this.lastActiveAt = lastActiveAt;
     }
 
     public boolean isOnline() {

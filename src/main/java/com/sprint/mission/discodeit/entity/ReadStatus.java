@@ -18,7 +18,7 @@ public class ReadStatus extends MutableEntity {
         this.lastReadAt = Instant.now();
     }
 
-    public void updateLastReadAt() {
-        this.lastReadAt = Instant.now();
+    public void updateLastReadAt(Instant lastReadAt) {
+        this.lastReadAt = lastReadAt;
     }
 }

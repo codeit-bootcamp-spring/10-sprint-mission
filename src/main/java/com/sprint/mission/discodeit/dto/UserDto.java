@@ -7,7 +7,7 @@ import java.util.UUID;
 public final class UserDto {
     private UserDto() {}
 
-    public record LoginRequest(String username, String password) {}
+    public record LoginRequest(String accountId, String password) {}
     public record createRequest(String accountId, String password, String name, String mail) {}
     public record updateRequest(String accountId, String password, String name, String mail) {}
     public record response(UUID uuid, Instant createdAt, Instant updatedAt,

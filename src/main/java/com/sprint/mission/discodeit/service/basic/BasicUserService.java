@@ -35,8 +35,8 @@ public class BasicUserService implements UserService {
 
         // profile 이미지를 같이 추가하면
         processUpdateProfile(user, profileReq);
-
         userRepository.save(user);
+
         return toResponse(user);
     }
 
@@ -97,7 +97,11 @@ public class BasicUserService implements UserService {
     public void deleteUser(UUID uuid) {
         User user = userRepository.findById(uuid)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
-        deleteProcess(user);
+
+        Optional.ofNullable(user.getProfileId())
+                        .ifPresent(binaryContentRepository::deleteById);
+        userStatusRepository.deleteByUserId(user.getId());
+        userRepository.deleteById(user.getId());
     }
 
     private void validateDuplicateAccount(String accountId) {
@@ -106,14 +110,6 @@ public class BasicUserService implements UserService {
 
     private void validateDuplicateMail(String mail) {
         findUserEntityByMail(mail).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 mail입니다"); });
-    }
-
-    private void deleteProcess(User user) {
-//        List.copyOf(user.getJoinedChannels()).forEach(ch -> channelService.leaveChannel(ch.getId(), user.getId()));
-//        List.copyOf(user.getMessageHistory()).forEach(m -> messageService.deleteMessage(m.getId()));
-        binaryContentRepository.deleteById(user.getProfileId());
-        userStatusRepository.deleteByUserId(user.getId());
-        userRepository.deleteById(user.getId());
     }
 
     private UserDto.response toResponse(User user) {

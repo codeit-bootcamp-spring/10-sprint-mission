@@ -10,7 +10,7 @@ public class Channel extends MutableEntity {
     private final List<UUID> messages;
     private String title;
     private String description;
-    private ChannelType channelType;
+    private final ChannelType channelType;
 
     public Channel(ChannelType channelType, String title, String description) {
         super();
@@ -34,12 +34,6 @@ public class Channel extends MutableEntity {
         participants.remove(userId);
     }
 
-    public void updateParticipant(UUID userId) {
-        if (this.participants.removeIf(u -> Objects.equals(u, userId))) {
-            addParticipant(userId);
-        }
-    }
-
     // messages
     public List<UUID> getMessages() {
         return Collections.unmodifiableList(this.messages);
@@ -52,16 +46,6 @@ public class Channel extends MutableEntity {
     public void removeMessage(UUID messageId) {
         this.messages.remove(messageId);
     }
-
-    public void updateMessage(UUID messageId) {
-        for (int i = 0; i < this.messages.size(); i++) {
-            if (this.messages.get(i).equals(messageId)) {
-                this.messages.set(i, messageId);
-                break;
-            }
-        }
-    }
-
 
     public void updateTitle(String title) {
         this.title = title;
