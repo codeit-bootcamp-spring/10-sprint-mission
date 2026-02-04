@@ -1,45 +1,24 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import lombok.Getter;
 
-public class User extends BaseEntity{
+import java.util.*;
+
+public class User extends BaseEntity {
+    @Getter
     private String username;
+    @Getter
     private String email;
+    @Getter
     private String password;
-    private final Set<Channel> channels;
+    @Getter
+    private UUID profileId;
 
-    public User(String username, String email, String password) {
+    public User(String username, String email, String password, UUID profileId) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.channels = new HashSet<>();
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public List<Channel> getChannels() {
-        return new ArrayList<>(channels);
-    }
-
-    public void join(Channel channel) {
-        this.channels.add(channel);
-    }
-
-    public void leave(Channel channel) {
-        this.channels.remove(channel);
+        this.profileId = profileId;
     }
 
     public void updateUsername(String username) {
@@ -57,8 +36,8 @@ public class User extends BaseEntity{
         setUpdateAt();
     }
 
-    @Override
-    public String toString() {
-        return username + "/" + email;
+    public void updateProfileId(UUID profileId) {
+        this.profileId = profileId;
+        setUpdateAt();
     }
 }

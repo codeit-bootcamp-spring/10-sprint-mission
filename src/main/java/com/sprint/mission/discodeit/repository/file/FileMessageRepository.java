@@ -2,21 +2,29 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileMessageRepository implements MessageRepository {
 
-    private static final Path dirPath = Paths.get(System.getProperty("user.dir") + "/data/messages");
+    private final Path dirPath;
 
-    public FileMessageRepository() {
+    public FileMessageRepository(@Value("${discodeit.repository.file-directory}") String dir) {
+        this.dirPath = Paths.get(dir + "/messages");
         init();
     }
 
@@ -25,7 +33,7 @@ public class FileMessageRepository implements MessageRepository {
             try {
                 Files.createDirectories(dirPath);
             } catch (IOException e) {
-                throw new RuntimeException("메시지 데이터 폴더 생성 실패", e);
+                throw new RuntimeException("Message 데이터 폴더 생성 실패", e);
             }
         }
     }
@@ -37,55 +45,54 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
-    public Message findMessageById(UUID messageId) {
-        return findAllMessages().stream()
-                .filter(message -> message.getId().equals(messageId))
-                .findAny()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 아이디입니다."));
+    public Optional<Message> findById(UUID messageId) {
+        Path path = dirPath.resolve(messageId + ".ser");
+        if (!Files.exists(path)) {
+            return Optional.empty();
+        }
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))){
+            return Optional.ofNullable((Message) ois.readObject());
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Message 데이터 조회 실패", e);
+        }
     }
 
     @Override
-    public List<Message> findAllMessages() {
+    public List<Message> findAll() {
         if(!Files.exists(dirPath)) {
-            return new ArrayList<>();
+            return List.of();
         }
-        try {
-            List<Message> list = Files.list(dirPath)
+        try (Stream<Path> stream = Files.list(dirPath)){
+            return stream
                     .map(path -> {
-                        try (
-                                FileInputStream fis = new FileInputStream(path.toFile());
-                                ObjectInputStream ois = new ObjectInputStream(fis)
-                        ) {
-                            Object data = ois.readObject();
-                            return (Message) data;
+                        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
+                            return (Message) ois.readObject();
                         } catch (IOException | ClassNotFoundException e) {
-                            throw new RuntimeException(e);
+                            throw new RuntimeException("Message 데이터 조회 실패", e);
                         }
                     })
-                    .collect(Collectors.toList());
-            return list;
+                    .toList();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Message 데이터 목록 조회 실패", e);
         }
     }
 
     @Override
     public void delete(Message message) {
-        File file = new File(dirPath.toFile(), message.getId().toString() + ".ser");
-        if (file.exists()) {
-            file.delete();
+        Path path = dirPath.resolve(message.getId() + ".ser");
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new RuntimeException("Message 데이터 삭제 실패", e);
         }
     }
 
     private void writeToFile(Message message) {
-        File file = new File(dirPath.toFile(), message.getId().toString() + ".ser");
-        try (
-                FileOutputStream fos = new FileOutputStream(file);
-                ObjectOutputStream oos = new ObjectOutputStream(fos)
-        ) {
+        Path path = dirPath.resolve(message.getId() + ".ser");
+        try (ObjectOutputStream oos = new ObjectOutputStream(Files.newOutputStream(path))) {
             oos.writeObject(message);
         } catch (IOException e) {
-            throw new RuntimeException("메시지 데이터 저장 실패", e);
+            throw new RuntimeException("Message 데이터 저장 실패", e);
         }
     }
 }
