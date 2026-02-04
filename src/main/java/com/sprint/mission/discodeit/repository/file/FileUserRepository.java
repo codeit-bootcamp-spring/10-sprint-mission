@@ -2,16 +2,30 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
+@ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "jcf", matchIfMissing = true)
 public class FileUserRepository implements UserRepository {
+    private final Path userPath;
+
+    public FileUserRepository(
+            @Value("${discodeit.repository.file-directory:data}") String rootPath
+    ) {
+        this.userPath = Paths.get(rootPath, "users");
+    }
+
     @Override
     public Optional<User> findById(UUID userId) {
         Path userPath = getUserPath(userId);
@@ -103,6 +117,12 @@ public class FileUserRepository implements UserRepository {
     }
 
     private Path getUserPath(UUID userId) {
-        return Paths.get("users", userId.toString() + ".ser");
+        try {
+            Files.createDirectories(userPath);
+        } catch (IOException e) {
+            throw new IllegalStateException("binary-contents 경로를 만드는데 실패했습니다.");
+        }
+
+        return userPath.resolve(userId.toString() + ".ser");
     }
 }
