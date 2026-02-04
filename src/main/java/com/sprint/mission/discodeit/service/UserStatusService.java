@@ -10,6 +10,6 @@ public interface UserStatusService {
     UserStatusDto.Response findById(UUID userStatusId);
     List<UserStatusDto.Response> findAll();
     UserStatusDto.Response update(UserStatusDto.Update updateRequest);
-    UserStatusDto.Response updateByUserId(UserStatusDto.Update updateRequest);
+    UserStatusDto.Response updateByUserId(UUID userId);
     void delete(UUID userStatusId);
 }

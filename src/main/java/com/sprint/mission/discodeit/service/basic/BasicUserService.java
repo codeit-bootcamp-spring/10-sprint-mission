@@ -143,10 +143,9 @@ public class BasicUserService implements UserService {
         userStatusRepository.delete(status);
 
         //유저 프로필 삭제
-        if (user.getProfileId() != null) {
-            binaryContentRepository.findById(user.getProfileId())
-                    .ifPresent(binaryContentRepository::delete);
-        }
+        Optional.ofNullable(user.getProfileId())
+                .flatMap(binaryContentRepository::findById)
+                .ifPresent(binaryContentRepository::delete);
 
         userRepository.delete(user);
     }
