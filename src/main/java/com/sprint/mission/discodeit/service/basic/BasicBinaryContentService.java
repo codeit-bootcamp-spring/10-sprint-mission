@@ -1,10 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentRequestCreateDto;
-import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentRequestUpdateDto;
 import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.util.Validators;

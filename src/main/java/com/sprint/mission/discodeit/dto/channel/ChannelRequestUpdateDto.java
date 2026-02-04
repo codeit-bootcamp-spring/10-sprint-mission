@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import java.util.UUID;
 
 public record ChannelRequestUpdateDto(UUID id,
-                                      ChannelType type,
                                       String channelName,
                                       String channelDescription) {
 }

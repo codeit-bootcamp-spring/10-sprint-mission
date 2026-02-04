@@ -22,12 +22,10 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
-    private static final String FILE_PATH = "data/messages.ser";
     private final MessageRepository messageRepository;
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-    private final MessageService messageService;
 
     @Override
     public MessageResponseDto create(MessageRequestCreateDto request) {

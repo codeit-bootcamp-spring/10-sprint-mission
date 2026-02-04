@@ -154,7 +154,8 @@ public class BasicUserService implements UserService {
                 user.getUserName(),
                 user.getUserEmail(),
                 user.getProfileId(),
-                online
+                online,
+                user.getCreatedAt()
         );
     }
 

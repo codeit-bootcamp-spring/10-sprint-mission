@@ -122,38 +122,6 @@ public class BasicChannelService implements ChannelService {
         channelRepository.deleteById(id);
     }
 
-    @Override
-    public void joinChannel(UUID channelId, UUID userId) {
-        Channel channel = validateExistenceChannel(channelId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저 id가 존재하지 않습니다."));
-
-        if (channel.getJoinedUserIds().contains(userId)) {
-            throw new IllegalArgumentException("이미 참가한 유저입니다.");
-        }
-
-        channel.getJoinedUserIds().add(userId);
-        user.getJoinedChannelIds().add(channelId);
-
-        userRepository.save(user);
-        channelRepository.save(channel);
-    }
-
-    @Override
-    public void leaveChannel(UUID channelId, UUID userId) {
-        Channel channel = validateExistenceChannel(channelId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("유저 id가 존재하지 않습니다."));
-
-        if (!channel.getJoinedUserIds().contains(userId)) {
-            throw new IllegalArgumentException("채널에 속해 있지 않은 유저입니다.");
-        }
-
-        channel.getJoinedUserIds().remove(userId);
-        user.getJoinedChannelIds().remove(channelId);
-        channelRepository.save(channel);
-        userRepository.save(user);
-    }
 
 
     private Channel validateExistenceChannel(UUID id) {
