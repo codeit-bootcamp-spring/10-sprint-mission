@@ -2,22 +2,27 @@ package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.dto.auth.LoginRequest;
 import com.sprint.mission.discodeit.dto.auth.LoginResponse;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.CanNotLoginException;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.DuplicationEmailException;
 import com.sprint.mission.discodeit.exception.DuplicationReadStatusException;
-import com.sprint.mission.discodeit.repository.file.*;
+import com.sprint.mission.discodeit.repository.file.FileBinaryContentRepository;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileReadStatusRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -30,8 +35,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @SpringBootApplication
@@ -39,8 +44,8 @@ public class DiscodeitApplication {
 	public static void main(String[] args) {
 		ConfigurableApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
 
-		//파일 초기화
-		resetAllFiles(context);
+		// file 모드일 때만 존재하는 빈들이라, 있을 때만 reset
+//		resetAllFilesIfPresent(context);
 
 		UserService userService = context.getBean(UserService.class);
 		ChannelService channelService = context.getBean(ChannelService.class);
@@ -50,20 +55,13 @@ public class DiscodeitApplication {
 		BinaryContentService binaryContentService = context.getBean(BinaryContentService.class);
 
 		// 유저 7명 생성 + 다건 조회 출력 + 중복 email 실패 확인
-		UserResponse kim = userService.create(
-				new UserCreateRequest("김코딩", "Kim@discodeit.com", "1234", null));
-		UserResponse lee = userService.create(
-				new UserCreateRequest("이코딩", "Lee@discodeit.com", "1234", null));
-		UserResponse park = userService.create(
-				new UserCreateRequest("박코딩", "Park@discodeit.com", "1234", null));
-		UserResponse choi = userService.create(
-				new UserCreateRequest("최코딩", "Choi@discodeit.com", "1234", null));
-		UserResponse jung = userService.create(
-				new UserCreateRequest("정코딩", "Jung@discodeit.com", "1234", null));
-		UserResponse oh = userService.create(
-				new UserCreateRequest("오코딩", "Oh@discodeit.com", "1234", null));
-		UserResponse han = userService.create(
-				new UserCreateRequest("한코딩", "Han@discodeit.com", "1234", null));
+		UserResponse kim = userService.create(new UserCreateRequest("김코딩", "Kim@discodeit.com", "1234", null));
+		UserResponse lee = userService.create(new UserCreateRequest("이코딩", "Lee@discodeit.com", "1234", null));
+		UserResponse park = userService.create(new UserCreateRequest("박코딩", "Park@discodeit.com", "1234", null));
+		UserResponse choi = userService.create(new UserCreateRequest("최코딩", "Choi@discodeit.com", "1234", null));
+		UserResponse jung = userService.create(new UserCreateRequest("정코딩", "Jung@discodeit.com", "1234", null));
+		UserResponse oh = userService.create(new UserCreateRequest("오코딩", "Oh@discodeit.com", "1234", null));
+		UserResponse han = userService.create(new UserCreateRequest("한코딩", "Han@discodeit.com", "1234", null));
 
 		UUID kimId = kim.id();
 		UUID leeId = lee.id();
@@ -84,24 +82,21 @@ public class DiscodeitApplication {
 
 		System.out.println("\n[검증] 중복 email 생성 실패 확인");
 		try {
-			userService.create(new UserCreateRequest(
-					"김코딩2", "Kim@discodeit.com", "9999", null));
-
+			userService.create(new UserCreateRequest("김코딩2", "Kim@discodeit.com", "9999", null));
 			throw new RuntimeException("중복 email 생성이 허용되면 안 됩니다.");
 		} catch (DuplicationEmailException expected) {
 			System.out.println("중복 email 생성 실패 확인: " + expected.getClass().getSimpleName());
 		}
 
-		//  로그인 검증
+		// 로그인 검증
 		System.out.println("\n로그인(Auth) 검증");
-		// 성공 케이스
 		try {
 			LoginResponse okLogin = authService.login(new LoginRequest("김코딩", "1234"));
 			System.out.println("로그인 성공: id=" + okLogin.id() + ", name=" + okLogin.userName() + ", email=" + okLogin.email());
 		} catch (CanNotLoginException e) {
 			System.out.println("로그인 성공 케이스에서 실패: " + e.getClass().getSimpleName());
 		}
-		// 실패 케이스(비밀번호 불일치)
+
 		try {
 			authService.login(new LoginRequest("김코딩", "틀린비번"));
 			System.out.println("로그인 실패 케이스가 성공하면 안 됩니다.");
@@ -146,8 +141,7 @@ public class DiscodeitApplication {
 						.toList()
 		);
 
-		// 1-3) PRIVATE 채널 3개 이상 생성
-		// + 생성 직후 ReadStatus 자동 생성 검증
+		// PRIVATE 채널 3개 이상 생성 + ReadStatus 자동 생성 검증
 		System.out.println("\nPRIVATE 채널 생성");
 
 		UUID private1Id = channelService.createPrivate(new PrivateChannelCreateRequest(List.of(kimId, leeId, parkId)));
@@ -174,12 +168,12 @@ public class DiscodeitApplication {
 		assertReadStatusExists(readStatusService, kimId, private3Id, "private-3 / 김");
 		assertReadStatusExists(readStatusService, hanId, private3Id, "private-3 / 한");
 
+		// park가 참가한 채널 ID 출력 (PUBLIC/PRIVATE 모두 검사)
 		System.out.println("\n특정 유저(박코딩)가 참가한 채널 ID 목록 (PUBLIC/PRIVATE 모두 검사)");
 		List<UUID> parkJoinedChannelIds =
 				channelService.findAllByUserId(parkId).stream()
 						.map(ChannelResponse::channelId)
 						.filter(chId -> {
-							// 참가자 목록을 서비스에서 직접 조회해서 parkId 포함 여부로 판정
 							List<UUID> participants = channelService.findAllUserInChannel(chId);
 							return participants != null && participants.contains(parkId);
 						})
@@ -234,20 +228,15 @@ public class DiscodeitApplication {
 			System.out.println("삭제된 메시지가 조회에서 사라졌습니다.");
 		}
 
-		// 첨부파일 2개 포함 메시지 생성/삭제 연쇄 검증
+		// 첨부파일 2개 포함 메시지 생성/삭제 연쇄 검증 (BinaryContentService: DTO + UUID 반환)
 		System.out.println("\n(추가 검증) 첨부파일 2개 포함 메시지 생성/삭제 연쇄 검증");
 
-		BinaryContent a1 = binaryContentService.create(
-				new BinaryContent("a1.txt", "text/plain",
-											"file-a1".getBytes(), null, null)
+		UUID a1Id = binaryContentService.create(
+				new BinaryContentCreateRequest("a1.txt", "text/plain", "file-a1".getBytes(), null, null)
 		);
-		BinaryContent a2 = binaryContentService.create(
-				new BinaryContent("a2.txt", "text/plain",
-											"file-a2".getBytes(), null, null)
+		UUID a2Id = binaryContentService.create(
+				new BinaryContentCreateRequest("a2.txt", "text/plain", "file-a2".getBytes(), null, null)
 		);
-
-		UUID a1Id = a1.getId();
-		UUID a2Id = a2.getId();
 
 		System.out.println("첨부 생성: a1Id=" + a1Id + ", a2Id=" + a2Id);
 
@@ -270,21 +259,21 @@ public class DiscodeitApplication {
 			System.out.println("첨부 BinaryContent가 남아있습니다: a1=" + a1Still + ", a2=" + a2Still);
 		}
 
-		// ReadStatus 갱신 검증 + 중복 생성 실패 확인
-		System.out.println("\n ReadStatus 갱신/중복 검증 ");
+		// ReadStatus 갱신 검증 + 중복 생성 실패 확인 (ReadStatusService: DTO)
+		System.out.println("\nReadStatus 갱신/중복 검증");
 
-		ReadStatus kimPrivate3 = findReadStatus(readStatusService, kimId, private3Id);
+		ReadStatusResponse kimPrivate3 = findReadStatus(readStatusService, kimId, private3Id);
 		if (kimPrivate3 == null) {
 			System.out.println("ReadStatus를 찾지 못했습니다 (private-3 / 김)");
 		} else {
-			Instant before = kimPrivate3.getReadAt();
-			ReadStatus updated = readStatusService.update(new ReadStatusUpdateRequest(kimPrivate3.getId()));
-			Instant after = updated.getReadAt();
+			Instant before = kimPrivate3.readAt();
+			ReadStatusResponse updated = readStatusService.update(new ReadStatusUpdateRequest(kimPrivate3.id()));
+			Instant after = updated.readAt();
 
 			System.out.println("before readAt=" + before);
 			System.out.println("after  readAt=" + after);
 
-			if (after.isAfter(before)) {
+			if (after != null && before != null && after.isAfter(before)) {
 				System.out.println("ReadStatus 갱신 확인");
 			} else {
 				System.out.println("ReadStatus 갱신이 반영되지 않은 것 같습니다.");
@@ -336,7 +325,7 @@ public class DiscodeitApplication {
 			System.out.println("채널 삭제 후 메시지 조회가 불가(채널 없음): " + e.getClass().getSimpleName());
 		}
 
-		// ReadStatus 연쇄 삭제 확인
+		// ReadStatus 연쇄 삭제 확인 (DTO)
 		boolean rsKimStill = findReadStatus(readStatusService, kimId, private1Id) != null;
 		boolean rsLeeStill = findReadStatus(readStatusService, leeId, private1Id) != null;
 		boolean rsParkStill = findReadStatus(readStatusService, parkId, private1Id) != null;
@@ -347,18 +336,16 @@ public class DiscodeitApplication {
 			System.out.println("채널 삭제 후 ReadStatus가 남아있습니다(private-1): "
 					+ "kim=" + rsKimStill + ", lee=" + rsLeeStill + ", park=" + rsParkStill);
 		}
-
-
 	}
 
-	// 파일 리셋
-	private static void resetAllFiles(ConfigurableApplicationContext context) {
-		context.getBean(FileUserRepository.class).resetFile();
-		context.getBean(FileChannelRepository.class).resetFile();
-		context.getBean(FileMessageRepository.class).resetFile();
-		context.getBean(FileBinaryContentRepository.class).resetFile();
-		context.getBean(FileReadStatusRepository.class).resetFile();
-		context.getBean(FileUserStatusRepository.class).resetFile();
+	// file 리포지토리 빈이 존재할 때만 reset (jcf 모드에서도 메인이 실행되게)
+	private static void resetAllFilesIfPresent(ConfigurableApplicationContext context) {
+		context.getBeansOfType(FileUserRepository.class).values().forEach(FileUserRepository::resetFile);
+		context.getBeansOfType(FileChannelRepository.class).values().forEach(FileChannelRepository::resetFile);
+		context.getBeansOfType(FileMessageRepository.class).values().forEach(FileMessageRepository::resetFile);
+		context.getBeansOfType(FileBinaryContentRepository.class).values().forEach(FileBinaryContentRepository::resetFile);
+		context.getBeansOfType(FileReadStatusRepository.class).values().forEach(FileReadStatusRepository::resetFile);
+		context.getBeansOfType(FileUserStatusRepository.class).values().forEach(FileUserStatusRepository::resetFile);
 	}
 
 	// 출력 헬퍼
@@ -408,20 +395,20 @@ public class DiscodeitApplication {
 		}
 	}
 
-	// ReadStatus 검증/조회 헬퍼
+	// ReadStatus 검증/조회 헬퍼 (DTO)
 	private static void assertReadStatusExists(ReadStatusService readStatusService, UUID userId, UUID channelId, String label) {
-		ReadStatus rs = findReadStatus(readStatusService, userId, channelId);
+		ReadStatusResponse rs = findReadStatus(readStatusService, userId, channelId);
 		if (rs == null) {
-			System.out.println("❌ ReadStatus 없음: " + label);
+			System.out.println("ReadStatus 없음: " + label);
 		} else {
-			System.out.println("✅ ReadStatus 존재: " + label + " / readStatusId=" + rs.getId());
+			System.out.println("ReadStatus 존재: " + label + " / readStatusId=" + rs.id());
 		}
 	}
 
-	private static ReadStatus findReadStatus(ReadStatusService readStatusService, UUID userId, UUID channelId) {
-		List<ReadStatus> list = readStatusService.findAllByUserId(userId);
-		for (ReadStatus rs : list) {
-			if (channelId.equals(rs.getChannelId())) return rs;
+	private static ReadStatusResponse findReadStatus(ReadStatusService readStatusService, UUID userId, UUID channelId) {
+		List<ReadStatusResponse> list = readStatusService.findAllByUserId(userId);
+		for (ReadStatusResponse rs : list) {
+			if (channelId.equals(rs.channelId())) return rs;
 		}
 		return null;
 	}

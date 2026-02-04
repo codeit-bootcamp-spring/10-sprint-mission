@@ -58,7 +58,6 @@ public class FileMessageRepository implements MessageRepository {
         }
     }
 
-    // 초기화(원하면 유지)
     public void resetFile() {
         saveMessageFile(new LinkedHashMap<>());
     }

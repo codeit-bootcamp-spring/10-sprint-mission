@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.user.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.StatusNotFoundException;
+import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -22,10 +25,11 @@ public class BasicUserStatusService implements UserStatusService {
     public UUID create(UUID userId) {
         requireNonNull(userId, "userId");
 
-        userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+        if (userRepository.findById(userId) == null) {
+            throw new UserNotFoundException();
+        }
 
-        // 중복이면 예외
+        // 중복이면 예외 (요구 예외 목록에 전용 예외가 없어서 IllegalStateException 유지)
         if (userStatusRepository.findByUserId(userId) != null) {
             throw new IllegalStateException("UserStatus already exists for userId=" + userId);
         }
@@ -35,54 +39,90 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatus find(UUID id) {
-        requireNonNull(id, "id");
-        return userStatusRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + id));
-    }
-
-    @Override
-    public List<UserStatus> findAll() {
-        return userStatusRepository.findAll();
-    }
-
-    @Override
-    public UserStatus update(UUID id) {
+    public UserStatusResponse find(UUID id) {
         requireNonNull(id, "id");
 
-        UserStatus status = userStatusRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + id));
-
-        status.updateLastSeenAt(Instant.now());
-        return userStatusRepository.save(status);
-    }
-
-    @Override
-    public UserStatus updateByUserId(UUID userId) {
-        requireNonNull(userId, "userId");
-
-        userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-
-        UserStatus status = userStatusRepository.findByUserId(userId);
+        UserStatus status = userStatusRepository.findById(id);
         if (status == null) {
-            throw new IllegalArgumentException("UserStatus not found for userId: " + userId);
+            throw new StatusNotFoundException();
+        }
+
+        return toDto(status);
+    }
+
+    @Override
+    public List<UserStatusResponse> findAll() {
+        return userStatusRepository.findAll().stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    @Override
+    public UserStatusResponse update(UUID id) {
+        requireNonNull(id, "id");
+
+        UserStatus status = userStatusRepository.findById(id);
+        if (status == null) {
+            throw new StatusNotFoundException();
         }
 
         status.updateLastSeenAt(Instant.now());
-        return userStatusRepository.save(status);
+        userStatusRepository.save(status);
+
+        return toDto(status);
+    }
+
+    @Override
+    public UserStatusResponse updateByUserId(UUID userId) {
+        requireNonNull(userId, "userId");
+
+        if (userRepository.findById(userId) == null) {
+            throw new UserNotFoundException();
+        }
+
+        UserStatus status = userStatusRepository.findByUserId(userId);
+        if (status == null) {
+            throw new StatusNotFoundException();
+        }
+
+        status.updateLastSeenAt(Instant.now());
+        userStatusRepository.save(status);
+
+        return toDto(status);
     }
 
     @Override
     public void delete(UUID id) {
         requireNonNull(id, "id");
+
+        if (userStatusRepository.findById(id) == null) {
+            throw new StatusNotFoundException();
+        }
         userStatusRepository.delete(id);
     }
 
     @Override
     public void deleteByUserId(UUID userId) {
         requireNonNull(userId, "userId");
+
+        if (userRepository.findById(userId) == null) {
+            throw new UserNotFoundException();
+        }
+        if (userStatusRepository.findByUserId(userId) == null) {
+            throw new StatusNotFoundException();
+        }
+
         userStatusRepository.deleteByUserId(userId);
+    }
+
+    private UserStatusResponse toDto(UserStatus status) {
+        return new UserStatusResponse(
+                status.getId(),
+                status.getUserId(),
+                status.getLastSeenAt(),
+                status.isOnline()
+
+        );
     }
 
     private static <T> void requireNonNull(T value, String name) {

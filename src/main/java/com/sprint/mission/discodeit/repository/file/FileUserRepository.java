@@ -37,10 +37,14 @@ public class FileUserRepository implements UserRepository {
     @SuppressWarnings("unchecked")
     private Map<UUID, User> loadUserFile() {
         File file = filePath.toFile();
-        if (!file.exists()) return new HashMap<>();
+        if (!file.exists()) return new LinkedHashMap<>();
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, User>) ois.readObject();
+            Object obj = ois.readObject();
+            if (obj instanceof Map<?, ?>) return (Map<UUID, User>) obj;
+            return new LinkedHashMap<>();
+        } catch (EOFException e) {
+            return new LinkedHashMap<>();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -59,7 +63,7 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public User save(User user) {
+    public synchronized User save(User user) {
         Map<UUID, User> users = loadUserFile();
         users.put(user.getId(), user);
         saveUserFile(users);
@@ -67,17 +71,17 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(UUID id) {
-        return Optional.ofNullable(loadUserFile().get(id));
+    public synchronized User findById(UUID id) {
+        return loadUserFile().get(id);
     }
 
     @Override
-    public List<User> findAll() {
+    public synchronized List<User> findAll() {
         return new ArrayList<>(loadUserFile().values());
     }
 
     @Override
-    public void delete(UUID id) {
+    public synchronized void delete(UUID id) {
         Map<UUID, User> users = loadUserFile();
         User removed = users.remove(id);
         if (removed == null) throw new UserNotFoundException();
@@ -85,13 +89,13 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
-    public boolean existsByEmail(String email) {
+    public synchronized boolean existsByEmail(String email) {
         return loadUserFile().values().stream()
                 .anyMatch(user -> user.getEmail().equals(email));
     }
 
     @Override
-    public boolean existsByName(String name) {
+    public synchronized boolean existsByName(String name) {
         return loadUserFile().values().stream()
                 .anyMatch(user -> user.getName().equals(name));
     }

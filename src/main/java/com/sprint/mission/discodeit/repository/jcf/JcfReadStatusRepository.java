@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.DuplicationReadStatusException;
+import com.sprint.mission.discodeit.exception.StatusNotFoundException;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -25,7 +26,6 @@ public class JcfReadStatusRepository implements ReadStatusRepository {
 
     @Override
     public synchronized ReadStatus save(ReadStatus readStatus) {
-        // File 구현체와 동일하게 Repository에서도 중복 방어(서비스가 먼저 막아도 안전)
         boolean duplicate = readStatuses.values().stream().anyMatch(existing ->
                 existing.getUserId().equals(readStatus.getUserId())
                         && existing.getChannelId().equals(readStatus.getChannelId())
@@ -63,7 +63,9 @@ public class JcfReadStatusRepository implements ReadStatusRepository {
 
     @Override
     public synchronized void delete(UUID id) {
-        readStatuses.remove(id);
+        if (readStatuses.remove(id) == null) {
+            throw new StatusNotFoundException();
+        }
     }
 
     @Override

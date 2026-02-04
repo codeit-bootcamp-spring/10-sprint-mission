@@ -22,7 +22,7 @@ public interface ChannelService {
     // 채널에 사용자 추가
     Channel addUserInChannel(UUID channelId, UUID userId);
     // 채널이름 변경
-    Channel update(ChannelUpdateRequest channelUpdateRequest);
+    ChannelResponse update(ChannelUpdateRequest channelUpdateRequest);
     // 채널 삭제
     void delete(UUID channelId);
     // 채널에 사용자 삭제

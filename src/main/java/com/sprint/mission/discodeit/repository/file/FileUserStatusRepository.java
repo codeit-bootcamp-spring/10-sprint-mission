@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.StatusNotFoundException;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -36,10 +37,14 @@ public class FileUserStatusRepository implements UserStatusRepository {
     @SuppressWarnings("unchecked")
     private Map<UUID, UserStatus> loadUserStatusFile() {
         File file = filePath.toFile();
-        if (!file.exists()) return new HashMap<>();
+        if (!file.exists()) return new LinkedHashMap<>();
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, UserStatus>) ois.readObject();
+            Object obj = ois.readObject();
+            if (obj instanceof Map<?, ?>) return (Map<UUID, UserStatus>) obj;
+            return new LinkedHashMap<>();
+        } catch (EOFException e) {
+            return new LinkedHashMap<>();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -53,13 +58,12 @@ public class FileUserStatusRepository implements UserStatusRepository {
         }
     }
 
-    // 초기화(원하면 유지)
     public void resetFile() {
         saveUserStatusFile(new LinkedHashMap<>());
     }
 
     @Override
-    public UserStatus save(UserStatus status) {
+    public synchronized UserStatus save(UserStatus status) {
         Map<UUID, UserStatus> map = loadUserStatusFile();
         map.put(status.getId(), status);
         saveUserStatusFile(map);
@@ -67,17 +71,17 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     @Override
-    public Optional<UserStatus> findById(UUID id) {
-        return Optional.ofNullable(loadUserStatusFile().get(id));
+    public synchronized UserStatus findById(UUID id) {
+        return loadUserStatusFile().get(id); // 없으면 null
     }
 
     @Override
-    public List<UserStatus> findAll() {
+    public synchronized List<UserStatus> findAll() {
         return new ArrayList<>(loadUserStatusFile().values());
     }
 
     @Override
-    public UserStatus findByUserId(UUID userId) {
+    public synchronized UserStatus findByUserId(UUID userId) {
         return loadUserStatusFile().values().stream()
                 .filter(status -> status.getUserId().equals(userId))
                 .findFirst()
@@ -85,14 +89,15 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     @Override
-    public void delete(UUID id) {
+    public synchronized void delete(UUID id) {
         Map<UUID, UserStatus> map = loadUserStatusFile();
-        map.remove(id);
+        UserStatus removed = map.remove(id);
+        if (removed == null) throw new StatusNotFoundException();
         saveUserStatusFile(map);
     }
 
     @Override
-    public void deleteByUserId(UUID userId) {
+    public synchronized void deleteByUserId(UUID userId) {
         Map<UUID, UserStatus> map = loadUserStatusFile();
         map.values().removeIf(status -> status.getUserId().equals(userId));
         saveUserStatusFile(map);

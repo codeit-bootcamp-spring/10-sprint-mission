@@ -76,6 +76,8 @@ public class FileChannelRepository implements ChannelRepository {
 
     @Override
     public Channel findChannel(UUID channelId) {
+        if (channelId == null) throw new IllegalArgumentException("channelId null이 될 수 없습니다.");
+
         Channel channel = loadChannelFile().get(channelId);
         if (channel == null) throw new ChannelNotFoundException();
         return channel;

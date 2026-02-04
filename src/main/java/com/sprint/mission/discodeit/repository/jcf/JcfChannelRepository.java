@@ -19,20 +19,19 @@ public class JcfChannelRepository implements ChannelRepository {
 
     private final Map<UUID, Channel> channels = new LinkedHashMap<>();
 
-    public void reset() {
-        channels.clear();
+    @Override
+    public synchronized UUID createChannel(Channel channel) {
+        if (channel == null) throw new IllegalArgumentException("channel is null");
+        // 신규 생성용이지만, 실제 저장은 saveChannel에 위임
+        saveChannel(channel);
+        return channel.getId();
     }
 
     @Override
     public synchronized Channel saveChannel(Channel channel) {
+        if (channel == null) throw new IllegalArgumentException("channel is null");
         channels.put(channel.getId(), channel);
         return channel;
-    }
-
-    @Override
-    public synchronized UUID createChannel(Channel channel) {
-        channels.put(channel.getId(), channel);
-        return channel.getId();
     }
 
     @Override
@@ -48,7 +47,7 @@ public class JcfChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public synchronized void deleteChannel(UUID id) {
-        if (channels.remove(id) == null) throw new ChannelNotFoundException();
+    public synchronized void deleteChannel(UUID channelId) {
+        if (channels.remove(channelId) == null) throw new ChannelNotFoundException();
     }
 }

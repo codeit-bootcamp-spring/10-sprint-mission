@@ -16,43 +16,40 @@ import java.util.*;
 )
 public class JcfUserStatusRepository implements UserStatusRepository {
 
-    private final Map<UUID, UserStatus> userStatuses = new LinkedHashMap<>();
-
-    public void reset() {
-        userStatuses.clear();
-    }
+    private final Map<UUID, UserStatus> store = new LinkedHashMap<>();
 
     @Override
     public synchronized UserStatus save(UserStatus status) {
-        userStatuses.put(status.getId(), status);
+        store.put(status.getId(), status);
         return status;
     }
 
     @Override
-    public synchronized Optional<UserStatus> findById(UUID id) {
-        return Optional.ofNullable(userStatuses.get(id));
-    }
-
-    @Override
-    public synchronized List<UserStatus> findAll() {
-        return new ArrayList<>(userStatuses.values());
+    public synchronized UserStatus findById(UUID id) {
+        return store.get(id);
     }
 
     @Override
     public synchronized UserStatus findByUserId(UUID userId) {
-        for (UserStatus status : userStatuses.values()) {
-            if (status.getUserId().equals(userId)) return status;
-        }
-        return null;
+        return store.values().stream()
+                .filter(s -> s.getUserId().equals(userId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    @Override
+    public synchronized List<UserStatus> findAll() {
+        return new ArrayList<>(store.values());
     }
 
     @Override
     public synchronized void delete(UUID id) {
-        userStatuses.remove(id);
+        store.remove(id);
     }
 
     @Override
     public synchronized void deleteByUserId(UUID userId) {
-        userStatuses.entrySet().removeIf(e -> e.getValue().getUserId().equals(userId));
+        store.values().removeIf(s -> s.getUserId().equals(userId));
     }
 }
+

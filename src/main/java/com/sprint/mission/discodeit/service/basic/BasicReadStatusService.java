@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
@@ -33,15 +33,17 @@ public class BasicReadStatusService implements ReadStatusService {
         requireNonNull(request.userId(), "userId");
         requireNonNull(request.channelId(), "channelId");
 
-        // 존재 확인
-        userRepository.findById(request.userId())
-                .orElseThrow(UserNotFoundException::new);
+        // 사용자 존재 확인 (Optional 미사용 규칙 반영)
+        if (userRepository.findById(request.userId()) == null) {
+            throw new UserNotFoundException();
+        }
 
-        // 채널 확인
+        // 채널 존재 확인 (findChannel이 예외를 던질 수 있어도, 요구사항대로 유지)
         if (channelRepository.findChannel(request.channelId()) == null) {
             throw new ChannelNotFoundException();
         }
 
+        // (userId, channelId) 중복 확인
         ReadStatus duplicated =
                 readStatusRepository.findByUserIdAndChannelId(
                         request.userId(), request.channelId());
@@ -57,44 +59,66 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatus find(UUID id) {
+    public ReadStatusResponse find(UUID id) {
         requireNonNull(id, "id");
 
         ReadStatus readStatus = readStatusRepository.findById(id);
-
         if (readStatus == null) {
             throw new StatusNotFoundException();
         }
-        return readStatus;
+
+        return toDto(readStatus);
     }
 
     @Override
-    public List<ReadStatus> findAllByUserId(UUID userId) {
+    public List<ReadStatusResponse> findAllByUserId(UUID userId) {
         requireNonNull(userId, "userId");
 
-        userRepository.findById(userId)
-                .orElseThrow(UserNotFoundException::new);
+        // 사용자 존재 확인 (Optional 미사용 규칙 반영)
+        if (userRepository.findById(userId) == null) {
+            throw new UserNotFoundException();
+        }
 
-        return readStatusRepository.findAllByUserId(userId);
+        return readStatusRepository.findAllByUserId(userId).stream()
+                .map(this::toDto)
+                .toList();
     }
 
     @Override
-    public ReadStatus update(ReadStatusUpdateRequest request) {
-        requireNonNull(request, "request");
-        requireNonNull(request.readStatus(), "readStatus");
+    public ReadStatusResponse update(ReadStatusUpdateRequest req) {
+        requireNonNull(req, "req");
+        requireNonNull(req.readStatus(), "readStatus");
 
-        ReadStatus readStatus = readStatusRepository.findById(request.readStatus());
-        if (readStatus == null) {
+        ReadStatus rs = readStatusRepository.findById(req.readStatus());
+        if (rs == null) {
             throw new StatusNotFoundException();
         }
-        readStatus.updateLastReadAt(Instant.now());
-        return readStatusRepository.save(readStatus);
+
+        rs.updateLastReadAt(Instant.now());
+        readStatusRepository.save(rs);
+
+        return toDto(rs);
     }
 
     @Override
     public void delete(UUID id) {
         requireNonNull(id, "id");
+
+        ReadStatus existing = readStatusRepository.findById(id);
+        if (existing == null) {
+            throw new StatusNotFoundException();
+        }
+
         readStatusRepository.delete(id);
+    }
+
+    private ReadStatusResponse toDto(ReadStatus rs) {
+        return new ReadStatusResponse(
+                rs.getId(),
+                rs.getUserId(),
+                rs.getChannelId(),
+                rs.getReadAt()
+        );
     }
 
     private static <T> void requireNonNull(T value, String name) {

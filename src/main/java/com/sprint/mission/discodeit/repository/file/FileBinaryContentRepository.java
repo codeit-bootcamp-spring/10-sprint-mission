@@ -53,7 +53,6 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         }
     }
 
-    // 초기화(원하면 유지)
     public void resetFile() {
         saveBinaryFile(new LinkedHashMap<>());
     }
@@ -73,6 +72,8 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     @Override
     public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
+
         Map<UUID, BinaryContent> map = loadBinaryFile();
         return ids.stream()
                 .map(map::get)
@@ -82,6 +83,8 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     @Override
     public void delete(UUID id) {
+        if (id == null) return;
+
         Map<UUID, BinaryContent> map = loadBinaryFile();
         map.remove(id);
         saveBinaryFile(map);

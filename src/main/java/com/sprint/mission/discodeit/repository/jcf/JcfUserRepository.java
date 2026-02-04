@@ -19,10 +19,6 @@ public class JcfUserRepository implements UserRepository {
 
     private final Map<UUID, User> users = new LinkedHashMap<>();
 
-    public void reset() {
-        users.clear();
-    }
-
     @Override
     public synchronized User save(User user) {
         users.put(user.getId(), user);
@@ -30,8 +26,8 @@ public class JcfUserRepository implements UserRepository {
     }
 
     @Override
-    public synchronized Optional<User> findById(UUID id) {
-        return Optional.ofNullable(users.get(id));
+    public synchronized User findById(UUID id) {
+        return users.get(id);
     }
 
     @Override

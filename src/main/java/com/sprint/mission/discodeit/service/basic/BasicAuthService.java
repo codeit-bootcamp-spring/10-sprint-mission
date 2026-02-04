@@ -14,17 +14,23 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
+
     private final UserRepository userRepository;
 
     @Override
-    public LoginResponse login(LoginRequest loginRequest) {
-        if (loginRequest == null) {
-            throw new IllegalArgumentException("loginRequest null이 될 수 없습니다.");
+    public LoginResponse login(LoginRequest request) {
+        if (request == null ||
+                request.userName() == null ||
+                request.password() == null ||
+                request.password().isEmpty()) {
+            throw new CanNotLoginException();
         }
 
         User user = userRepository.findAll().stream()
-                .filter(u -> u.getName().equals(loginRequest.userName()) &&
-                        u.getPassword().equals(loginRequest.password()))
+                .filter(u ->
+                        u.getName().equals(request.userName()) &&
+                                u.getPassword().equals(request.password())
+                )
                 .findFirst()
                 .orElseThrow(CanNotLoginException::new);
 
