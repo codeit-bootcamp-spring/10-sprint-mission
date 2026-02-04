@@ -1,98 +1,176 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 
+@Service
+@RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
-    private final MessageRepository messageRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final UserStatusRepository userStatusRepository;
+    private final ReadStatusRepository readStatusRepository;
 
-    public BasicUserService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.messageRepository = messageRepository;
-    }
-
-    // 유저 생성
     @Override
-    public User create(String name, String nickname, String email, String password){
-        User newUser = new User(name, nickname, email, password);
-        return userRepository.save(newUser);
-    }
+    public UserResponse create(UserCreateRequest request){
+        // username, email 중복 체크
+        validateDuplicateName(request.name());
+        validateDuplicateEmail(request.email());
 
-    // 유저 ID로 조회
-    @Override
-    public User findById(UUID id){
-        return userRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 ID입니다."));
-    }
+        // 프로필 사진 설정
+        UUID profileId = null;
+        if (request.profileImage() != null) {
+            BinaryContent profileImage = new BinaryContent(
+                    request.profileImage().fileName(),
+                    request.profileImage().data()
+            );
+            binaryContentRepository.save(profileImage);
+            profileId = profileImage.getId();
+        }
 
-    // 유저 전부 조회
-    @Override
-    public List<User> findAll(){
-        return userRepository.findAll();
-    }
-
-    // 유저 정보 수정
-    @Override
-    public User update(UUID id, String name, String nickname, String email, String status, String password) {
-        User user = findById(id);
-
-        Optional.ofNullable(name).ifPresent(user::updateName);
-        Optional.ofNullable(nickname).ifPresent(user::updateNickname);
-        Optional.ofNullable(email).ifPresent(user::updateEmail);
-        Optional.ofNullable(status).ifPresent(user::updateStatus);
-        Optional.ofNullable(password).ifPresent(user::updatePassword);
-
+        // 유저 생성
+        User user = new User(
+                request.name(),
+                request.nickname(),
+                request.email(),
+                request.password(),
+                profileId
+        );
         userRepository.save(user);
 
-        for (Channel channel : user.getJoinedChannels()) {
-            channelRepository.save(channel);
-        }
+        // 유저 상태 생성
+        UserStatus status = new UserStatus(user.getId(), true, Instant.now());
+        userStatusRepository.save(status);
 
-        for (Message message : user.getMyMessages()) {
-            messageRepository.save(message);
-        }
-
-        return user;
+        return convertToResponse(user, status);
     }
 
-    // 유저 삭제
     @Override
-    public void delete(UUID id){
-        User user = findById(id);
-
-        for (Channel channel : user.getJoinedChannels()) {
-            channel.removeMember(user);
-            channelRepository.save(channel);
-        }
-
-        for (Message message : user.getMyMessages()) {
-            messageRepository.delete(message);
-        }
-
-        userRepository.delete(user);
+    public UserResponse findById(UUID id) {
+        User user = validateUserExists(id);
+        UserStatus status = getUserStatus(id);
+        return convertToResponse(user, status);
     }
 
-    // 특정 유저가 참가한 채널 목록 조회
     @Override
-    public List<Channel> findJoinedChannelsByUserId(UUID userId){
-        User user = findById(userId);
-        return user.getJoinedChannels();
+    public List<UserResponse> findAll() {
+        return userRepository.findAll().stream()
+                .map(user -> convertToResponse(user, getUserStatus(user.getId())))
+                .toList();
     }
 
-    // 특정 유저가 발행한 메시지 목록 조회
     @Override
-    public List<Message> findMessagesByUserId(UUID userId){
-        User user = findById(userId);
-        return user.getMyMessages();
+    public UserResponse update(UUID id, UserUpdateRequest request){
+        User user = validateUserExists(id);
+
+        // 이름 수정 + 중복 체크
+        Optional.ofNullable(request.name())
+                .filter(name -> !name.equals(user.getName()))
+                .ifPresent(name -> {
+                    validateDuplicateName(name);
+                    user.updateName(name);
+                });
+
+        // 닉네임 수정
+        Optional.ofNullable(request.nickname()).ifPresent(user::updateNickname);
+
+        // 이메일 수정 + 중복 체크
+        Optional.ofNullable(request.email())
+                .filter(email -> !email.equals(user.getEmail()))
+                .ifPresent(email -> {
+                    validateDuplicateEmail(email);
+                    user.updateEmail(email);
+                });
+
+        // 프로필 사진 수정
+        if (request.profileImage() != null) {
+            if (user.getProfileId() != null){
+                binaryContentRepository.deleteById(user.getProfileId());
+            }
+            BinaryContent newImage = new BinaryContent(
+                    request.profileImage().fileName(),
+                    request.profileImage().data()
+            );
+            binaryContentRepository.save(newImage);
+            user.updateProfileImage(newImage.getId());
+        }
+
+        userRepository.save(user);
+        UserStatus status = getUserStatus(id);
+
+        return convertToResponse(user, status);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        User user = validateUserExists(id);
+
+        // 유저가 참여하고 있는 채널 삭제
+        readStatusRepository.deleteByUserId(id);
+
+        // 유저 상태 삭제
+        userStatusRepository.deleteByUserId(id);
+
+        // 프로필 사진 삭제
+        if (user.getProfileId() != null) {
+            binaryContentRepository.deleteById(user.getProfileId());
+        }
+
+        // 유저 삭제
+        userRepository.deleteById(id);
+    }
+
+
+    // 유저 상태 조회
+    private UserStatus getUserStatus(UUID userId) {
+        return userStatusRepository.findByUserId(userId).orElse(null);
+    }
+
+    // 유저 검증
+    private User validateUserExists(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다."));
+    }
+
+    // 사용자명 중복 체크
+    private void validateDuplicateName(String name) {
+        if (userRepository.findByName(name).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
+        }
+    }
+
+    // 이메일 중복 체크
+    private void validateDuplicateEmail(String email) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+        }
+    }
+
+    // 엔티티 -> DTO 변환
+    private UserResponse convertToResponse(User user, UserStatus status) {
+        boolean isOnline = (status != null) && status.isOnline();
+
+        return new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getNickname(),
+                user.getEmail(),
+                user.getProfileId(),
+                isOnline,
+                user.getCreatedAt(),
+                user.getUpdatedAt()
+        );
     }
 }

@@ -20,14 +20,14 @@ public abstract class BaseFileRepository<T extends Serializable> {
     }
 
     // 파일 읽기 (역직렬화)
-    protected Map<UUID, T> loadData(){
+    protected Map<UUID, T> loadData() {
         File file = new File(filePath);
         if (!file.exists()) return new HashMap<>();
 
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))){
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             return (Map<UUID, T>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e){
-            return new HashMap<>();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("[파일 로드 실패] 파일이 손상되었거나 형식이 맞지 않습니다: " + filePath, e);
         }
     }
 }
