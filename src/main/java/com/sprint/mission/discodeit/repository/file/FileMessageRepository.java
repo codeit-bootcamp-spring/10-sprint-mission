@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-@ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "jcf", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "file")
 public class FileMessageRepository implements MessageRepository {
     private final Path messagePath;
 

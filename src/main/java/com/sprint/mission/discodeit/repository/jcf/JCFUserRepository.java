@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-@ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "file")
+@ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "jcf", matchIfMissing = true)
 public class JCFUserRepository implements UserRepository {
     private final List<User> data = new ArrayList<>();
 
