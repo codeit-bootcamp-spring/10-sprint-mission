@@ -72,12 +72,12 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelInfo updateChannel(UpdateChannelInfo channelInfo) {
-        validateChannelExist(channelInfo.channelName());
-        Channel findChannel = channelRepository.findByName(channelInfo.channelName())
+        Channel findChannel = channelRepository.findById(channelInfo.channelId())
                 .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다."));
-
         if(findChannel.getChannelType() == ChannelType.PRIVATE)
             throw new IllegalStateException("해당 채널은 수정할 수 없습니다.");
+        validateChannelExist(channelInfo.channelName());
+
         Optional.ofNullable(channelInfo.channelName())
                 .ifPresent(findChannel::updateChannelName);
         Optional.ofNullable(channelInfo.description())
@@ -144,7 +144,10 @@ public class BasicChannelService implements ChannelService {
     }
 
     private Instant getLastMessageTime(UUID channelId) {
-        return messageRepository.findAllByChannelId(channelId)
+        List<Message> messages = messageRepository.findAllByChannelId(channelId);
+        if(messages.isEmpty()) return null;
+        else
+            return messages
                 .stream()
                 .max(Comparator.comparing(Message::getUpdateAt))
                 .orElseThrow(() -> new IllegalStateException("메세지가 존재하지 않습니다."))

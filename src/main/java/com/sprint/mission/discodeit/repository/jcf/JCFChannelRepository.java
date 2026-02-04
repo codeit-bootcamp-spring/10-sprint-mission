@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -25,7 +26,8 @@ public class JCFChannelRepository implements ChannelRepository {
     @Override
     public Optional<Channel> findByName(String channelName) {
         return data.stream()
-                .filter(c -> c.getChannelName().equals(channelName))
+                .filter(c -> c.getChannelType() == ChannelType.PUBLIC
+                        && c.getChannelName().equals(channelName))
                 .findFirst();
     }
 
