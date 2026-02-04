@@ -156,7 +156,7 @@ public class DiscodeitApplication {
 		// 메시지 수정
 		UpdateMessageRequest updateRequest = new UpdateMessageRequest(
 				created.getId(),
-				"수정 후 메시지입니다!"
+				"다음으로 넘어가기!"
 		);
 		MessageResponse updated = messageService.update(updateRequest);
 
