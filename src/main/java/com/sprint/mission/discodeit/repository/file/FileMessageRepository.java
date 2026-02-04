@@ -20,26 +20,6 @@ public class FileMessageRepository extends AbstractFileRepository<Message> imple
     }
 
     @Override
-    public Message save(Message message) {
-        Map<UUID, Message> data = load();
-        data.put(message.getId(), message);
-        writeToFile(data);
-        return message;
-    }
-
-    public void saveAll(List<Message> messages) {
-        Map<UUID, Message> data = messages.stream().collect(Collectors.toMap(msg -> msg.getId(), Function.identity()));
-
-        writeToFile(data);
-    }
-
-    @Override
-    public Optional<Message> findById(UUID id) {
-        Map<UUID, Message> data = load();
-        return Optional.ofNullable(data.get(id));
-    }
-
-    @Override
     public List<Message> findAllByUserId(UUID userId) {
         Map<UUID, Message> data = load();
         return data.values().stream()
@@ -69,17 +49,5 @@ public class FileMessageRepository extends AbstractFileRepository<Message> imple
         if(data.values().removeIf(m -> m.getSenderId().equals(userId))) {
             writeToFile(data);
         }
-    }
-
-    @Override
-    public void delete(UUID id) {
-        Map<UUID, Message> data = load();
-        data.remove(id);
-        writeToFile(data);
-    }
-
-    @Override
-    public void clear() {
-        writeToFile(new HashMap<UUID, Message>());
     }
 }

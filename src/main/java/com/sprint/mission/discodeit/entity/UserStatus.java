@@ -19,6 +19,7 @@ public class UserStatus extends BaseEntity {
 
     public void updateStatusType(StatusType statusType) {
         this.statusType = statusType;
+        this.onUpdate();
     }
 
     public boolean isOnline() {
@@ -38,7 +39,7 @@ public class UserStatus extends BaseEntity {
 
     // 마지막 접속 시간 갱신
     public void updateLastActiveTime(){
-        updateUpdatedAt();
+        this.onUpdate();
         getStatusType();
     }
 }

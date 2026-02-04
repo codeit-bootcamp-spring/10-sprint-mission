@@ -40,7 +40,7 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public List<User> readAll() {
+    public List<User> findAll() {
         return new ArrayList<>(data.values());
     }
 

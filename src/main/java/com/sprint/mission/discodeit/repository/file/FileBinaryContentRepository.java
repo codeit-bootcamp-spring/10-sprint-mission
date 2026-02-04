@@ -22,29 +22,6 @@ public class FileBinaryContentRepository extends AbstractFileRepository<BinaryCo
     }
 
     @Override
-    public BinaryContent save(BinaryContent binaryContent) {
-        Map<UUID, BinaryContent> data = load();
-        data.put(binaryContent.getId(), binaryContent);
-        writeToFile(data);
-        return binaryContent;
-    }
-
-    @Override
-    public void delete(UUID id) {
-        Map<UUID, BinaryContent> data = load();
-        data.remove(id);
-        writeToFile(data);
-    }
-
-    @Override
-    public Optional<BinaryContent> findById(UUID id) {
-        Map<UUID, BinaryContent> data = load();
-        return data.values().stream()
-                .filter(bc -> bc.getId().equals(id))
-                .findFirst();
-    }
-
-    @Override
     public List<BinaryContent> findAllByIdIn(List<UUID> idList) {
         Map<UUID, BinaryContent> data = load();
         return data.values().stream()

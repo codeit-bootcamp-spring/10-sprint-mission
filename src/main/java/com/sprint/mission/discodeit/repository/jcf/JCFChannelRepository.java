@@ -74,7 +74,6 @@ public class JCFChannelRepository implements ChannelRepository {
             // 참여한 채널 - 멤버 명단에서 나만 삭제
             else {
                 ch.getUserIds().removeIf(uId -> uId.equals(userId));
-                save(ch);
             }
         }
     }

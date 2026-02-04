@@ -58,14 +58,17 @@ public class Channel extends BaseEntity implements Serializable {
 
     public void updateOwnerId(UUID ownerId) {
         this.ownerId = ownerId;
+        this.onUpdate();
     }
 
     public void updateName(String name) {
         this.name = name;
+        this.onUpdate();
     }
 
     public void updatePrivate(IsPrivate isPrivate) {
         this.isPrivate = isPrivate;
+        this.onUpdate();
     }
 
     @Override

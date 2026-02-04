@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 @Getter
-abstract class BaseEntity implements Serializable {
+public class BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     protected final UUID id;
@@ -19,19 +19,7 @@ abstract class BaseEntity implements Serializable {
         this.updatedAt = createdAt;
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void updateUpdatedAt() {
+    protected void onUpdate() {
         this.updatedAt = Instant.now();
     }
 

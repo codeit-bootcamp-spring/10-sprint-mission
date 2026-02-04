@@ -16,24 +16,6 @@ public class FileUserRepository extends AbstractFileRepository<User> implements 
     public FileUserRepository(@Value("${discodeit.repository.file-directory:.discodeit}")String directoryPath) {
         super(directoryPath + File.separator + "User.ser");
     }
-    @Override
-    public User save(User user) {
-        Map<UUID, User> data = load();
-        data.put(user.getId(), user);
-        writeToFile(data);
-        return user;
-    }
-    @Override
-    public void delete(UUID id) {
-        Map<UUID, User> data = load();
-        data.remove(id);
-        writeToFile(data);
-    }
-    @Override
-    public Optional<User> findById(UUID id) {
-        Map<UUID, User> data = load();
-        return Optional.ofNullable(data.get(id));
-    }
 
     @Override
     public Optional<User> findByName(String name) {
@@ -52,15 +34,4 @@ public class FileUserRepository extends AbstractFileRepository<User> implements 
                 .findFirst();
         return user;
     }
-
-    @Override
-    public List<User> readAll() {
-        Map<UUID, User> data = load();
-        return List.copyOf(data.values());
-    }
-    @Override
-    public void clear() {
-        writeToFile(new HashMap<UUID, User>());
-    }
-
 }

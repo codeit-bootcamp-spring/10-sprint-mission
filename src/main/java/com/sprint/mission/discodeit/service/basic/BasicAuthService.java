@@ -27,6 +27,6 @@ public class BasicAuthService implements AuthService {
                 .orElseGet(() -> new UserStatus(user.getId()));
         userStatus.updateLastActiveTime();
         userStatusRepository.save(userStatus);
-        return userMapper.toUserInfoDto(user, userStatus);
+        return userMapper.toUserInfoDto(user, userStatus.getStatusType());
     }
 }

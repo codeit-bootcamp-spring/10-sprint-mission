@@ -22,20 +22,6 @@ public class FileUserStatusRepository extends AbstractFileRepository<UserStatus>
     }
 
     @Override
-    public UserStatus save(UserStatus userStatus) {
-        Map<UUID, UserStatus> data = load();
-        data.put(userStatus.getId(), userStatus);
-        writeToFile(data);
-        return userStatus;
-    }
-
-    @Override
-    public Optional<UserStatus> findById(UUID id) {
-        Map<UUID, UserStatus> data = load();
-        return Optional.ofNullable(data.get(id));
-    }
-
-    @Override
     public Optional<UserStatus> findByUserId(UUID userId) {
         Map<UUID, UserStatus> data = load();
         Optional<UserStatus> userStatus = data.values().stream()
@@ -44,23 +30,11 @@ public class FileUserStatusRepository extends AbstractFileRepository<UserStatus>
         return userStatus;
     }
 
-    public List<UserStatus> findAll(){
-        Map<UUID, UserStatus> data = load();
-        return data.values().stream().toList();
-    }
-
     @Override
     public Map<UUID, UserStatus> getUserStatusMap() {
         Map<UUID, UserStatus> data = load();
         return data.values().stream()
                 .collect(Collectors.toMap(UserStatus::getUserId, us -> us));
-    }
-
-    @Override
-    public void delete(UUID id) {
-        Map<UUID, UserStatus> data = load();
-        data.remove(id);
-        writeToFile(data);
     }
 
     @Override

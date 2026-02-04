@@ -32,9 +32,11 @@ public class Message extends BaseEntity implements  Serializable {
 
     public void updateContent(String newContent) {
         this.content = newContent;
+        this.onUpdate();
     }
 
     public void updateAttachmentIds(List<UUID> newAttachmentIds) {
         this.attachmentIds = newAttachmentIds;
+        this.onUpdate();
     }
 }

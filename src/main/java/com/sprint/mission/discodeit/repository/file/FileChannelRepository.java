@@ -18,39 +18,12 @@ public class FileChannelRepository extends AbstractFileRepository<Channel> imple
     }
 
     @Override
-    public Channel save(Channel channel) {
-        Map<UUID, Channel> data = load();
-        data.put(channel.getId(), channel);
-        writeToFile(data);
-        return channel;
-    }
-
-    @Override
-    public Optional<Channel> findById(UUID id) {
-        Map<UUID, Channel> data = load();
-        return Optional.ofNullable(data.get(id));
-    }
-
-    @Override
     public List<Channel> findAllByUserId(UUID userId) {
         Map<UUID, Channel> data = load();
         return data.values().stream()
                 .filter(ch -> ch.getUserIds().stream()
                         .anyMatch(uId -> uId.equals(userId)))
                 .toList();
-    }
-
-    @Override
-    public List<Channel> findAll() {
-        Map<UUID, Channel> data = load();
-        return List.copyOf(data.values());
-    }
-
-    @Override
-    public void delete(UUID id) {
-        Map<UUID, Channel> data = load();
-        data.remove(id);
-        writeToFile(data);
     }
 
     @Override
@@ -65,7 +38,23 @@ public class FileChannelRepository extends AbstractFileRepository<Channel> imple
     }
 
     @Override
-    public void clear() {
-        writeToFile(new HashMap<UUID, Channel>());
+    public void deleteByUserId(UUID userId) {
+        Map<UUID, Channel> data = load();
+        List<Channel> joinedChannels = data.values().stream()
+                .filter(ch -> ch.getUserIds().stream()
+                        .anyMatch(uId -> uId.equals(userId)))
+                .toList();
+
+        for (Channel ch : joinedChannels) {
+            // 내가 방장인 채널 - 채널 자체 삭제
+            if (ch.getOwnerId().equals(userId)) {
+                delete(ch.getId());
+            }
+            // 참여한 채널 - 멤버 명단에서 나만 삭제
+            else {
+                ch.getUserIds().removeIf(uId -> uId.equals(userId));
+                save(ch);
+            }
+        }
     }
 }

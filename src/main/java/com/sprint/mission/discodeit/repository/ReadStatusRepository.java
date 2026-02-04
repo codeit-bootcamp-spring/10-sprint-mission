@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface ReadStatusRepository {
-    void save(ReadStatus readStatus);
+    ReadStatus save(ReadStatus readStatus);
     void deleteByChannelId(UUID channelId);
     void deleteByUserId(UUID userId);
     boolean existsByUserIdAndChannelId(UUID userId, UUID channelId);

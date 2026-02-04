@@ -41,9 +41,11 @@ public class User extends BaseEntity implements Serializable {
 
     public void updateProfileId(UUID id) {
         this.profileId = id;
+        this.onUpdate();
     }
     public void updateName(String name) {
         this.name = name;
+        this.onUpdate();
     }
 
     @Override

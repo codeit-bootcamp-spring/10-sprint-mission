@@ -24,14 +24,6 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void saveAll(List<Message> messages) {
-        this.data.clear();
-        Map<UUID, Message> map = messages.stream()
-                .collect(Collectors.toMap(msg -> msg.getId(), Function.identity()));
-        this.data.putAll(map);
-    }
-
-    @Override
     public Optional<Message> findById(UUID id) {
         return Optional.ofNullable(data.get(id));
     }

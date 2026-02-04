@@ -20,6 +20,7 @@ public class ReadStatus extends BaseEntity{
 
     public void updateLastReadAt(Instant lastReadAt){
         this.lastReadAt = lastReadAt;
+        this.onUpdate();
     }
 
     public boolean isUnread(Instant messageCreatedAt){

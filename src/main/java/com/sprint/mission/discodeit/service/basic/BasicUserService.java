@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -53,7 +52,7 @@ public class BasicUserService implements UserService, ClearMemory {
 
     @Override
     public List<UserInfoDto> findAll() {
-        List<User> users = userRepository.readAll();
+        List<User> users = userRepository.findAll();
         Map<UUID, UserStatus> userStatusMap = userStatusRepository.getUserStatusMap();
 
         List<UserInfoDto> infoList
