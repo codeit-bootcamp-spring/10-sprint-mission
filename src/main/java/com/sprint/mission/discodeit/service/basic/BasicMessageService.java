@@ -69,14 +69,10 @@ public class BasicMessageService implements MessageService {
         List<Message> messages = messageRepository.findAllByChannelId(channelId);
 
         return messages.stream().map(message -> {
-            List<byte[]> images = getImagesOrThrow(message.getAttachmentIds());
+            List<byte[]> images = getImages(message.getAttachmentIds());
 
             return MessageResponse.of(message, images);
         }).toList();
-    }
-
-    private List<byte[]> getImagesOrThrow(List<UUID> attachmentIds) {
-        return binaryContentRepository.findAllImagesByIds(attachmentIds);
     }
 
     @Override
@@ -92,8 +88,12 @@ public class BasicMessageService implements MessageService {
 
         messageRepository.save(message);
 
-        List<byte[]> images = getImagesOrThrow(message.getAttachmentIds());
+        List<byte[]> images = getImages(message.getAttachmentIds());
         return MessageResponse.of(message, images);
+    }
+
+    private List<byte[]> getImages(List<UUID> attachmentIds) {
+        return binaryContentRepository.findAllImagesByIds(attachmentIds);
     }
 
     @Override

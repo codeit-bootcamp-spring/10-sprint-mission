@@ -186,21 +186,17 @@ public class BasicUserStatusServiceTest {
     @DisplayName("lastActiveAt 시간이 지나면 UserStatus 상태 OFFLINE 으로 변경")
     void userStatus_becomesOffline_afterTimeout() {
         // given
-        UUID userStatusId =
-                userStatusService.createUserStatus(
-                        new CreateUserStatusRequest(userId)
-                );
+        UUID userId = UUID.randomUUID();
 
-        UserStatus userStatus =
-                userStatusRepository.findById(userStatusId).orElseThrow();
+        UserStatus tmp = new UserStatus(
+                userId,
+                Instant.now().minusSeconds(3600));
 
-        Instant past = Instant.now().minusSeconds(3600);
-        userStatus.setLastActiveAt(past);
-        userStatusRepository.save(userStatus);
+        userStatusRepository.save(tmp);
 
         // when
         UserStatusResponse response =
-                userStatusService.findUserStatusByUserStatusId(userStatusId);
+                userStatusService.findUserStatusByUserStatusId(tmp.getId());
 
         // then
         assertThat(response.userOnlineStatus())

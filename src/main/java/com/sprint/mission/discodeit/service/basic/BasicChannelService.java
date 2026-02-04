@@ -66,10 +66,9 @@ public class BasicChannelService implements ChannelService {
         }
     }
 
-    //TODO: ReadStatus update???
     @Override
-    public ChannelResponse findChannelByChannelId(UUID id) {
-        Channel channel = getChannelOrThrow(id);
+    public ChannelResponse findChannelByChannelId(UUID channelId) {
+        Channel channel = getChannelOrThrow(channelId);
 
         Instant lastMessageAt = messageRepository.findLastMessageAtByChannelId(channel.getId());
 
@@ -117,7 +116,7 @@ public class BasicChannelService implements ChannelService {
         return ChannelResponse.of(channel, lastMessageAt);
     }
 
-    private static void validateChannelType(Channel channel) {
+    private void validateChannelType(Channel channel) {
         if (channel.isPrivate()) {
             throw new IllegalArgumentException("PRIVATE 채널은 수정할 수 없습니다. channelId: " + channel.getId());
         }

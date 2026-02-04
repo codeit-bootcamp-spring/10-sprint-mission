@@ -36,8 +36,4 @@ public class UserStatus implements Serializable {
                 ? UserOnlineStatus.ONLINE
                 : UserOnlineStatus.OFFLINE;
     }
-
-    public void setLastActiveAt(Instant temp) {
-        this.lastActiveAt = temp;
-    }
 }

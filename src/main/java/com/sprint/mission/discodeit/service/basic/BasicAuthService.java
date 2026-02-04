@@ -44,7 +44,7 @@ public class BasicAuthService implements AuthService {
         return user;
     }
 
-    private static void validatePassword(LoginRequest request, User user) {
+    private void validatePassword(LoginRequest request, User user) {
         if (!user.getPassword().equals(request.password())) {
             throw new IllegalArgumentException("일치하지않은 비밀번호 입니다. username: " + request.username());
         }
