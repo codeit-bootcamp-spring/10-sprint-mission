@@ -22,7 +22,7 @@ public class Message extends BaseEntity implements Serializable {
     private String content;
     private UUID channelId;
     private UUID authorId;
-    private List<UUID> attatchementIds = new ArrayList<>();  // 첨부파일 ID 목록
+    private List<UUID> attachmentIds = new ArrayList<>();  // 첨부파일 ID 목록
     private Instant createdAt;
     private Instant updatedAt;
 
@@ -34,9 +34,18 @@ public class Message extends BaseEntity implements Serializable {
         this.content = content;
         this.channelId = channelId;
         this.authorId = authorId;
-        this.attatchementIds = new ArrayList<>();
+        this.attachmentIds = new ArrayList<>();
     }
-    
+
+    public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.content = content;
+        this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = attachmentIds != null ? new ArrayList<>(attachmentIds) : new ArrayList<>();
+    }
+
     public void update(String newContent) {
         boolean anyValueUpdated = false;
         if (newContent != null && !newContent.equals(this.content)) {

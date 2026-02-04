@@ -39,4 +39,8 @@ public class UserResponse {
                 .updatedAt(user.getUpdatedAt())
                 .build();
     }
+
+    public static UserResponse from(User user) {
+        return from(user, null);  // UserStatus null로 전달
+    }
 }

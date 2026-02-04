@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity.status;
 import lombok.Getter;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -16,15 +17,18 @@ public class BinaryContent {
     private String fileName;
     private final Instant createdAt;
     private Instant updatedAt;
+    private List<UUID> attachmentId;
 
-    public BinaryContent(UUID id, String contentType, int size, byte[] data, String fileName, Instant createdAt, Instant now) {
+
+    public BinaryContent(UUID id, String contentType, int size, byte[] data, String fileName, Instant createdAt, Instant updatedAt,List<UUID> attachmentId) {
         this.id = id;
         this.contentType = contentType;
         this.size = size;
         this.data = data;
-        this.fileName = this.fileName;
+        this.fileName = fileName;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.attachmentId = attachmentId;
     }
 
     public BinaryContent create(String contentType, byte[] data) {
@@ -35,7 +39,8 @@ public class BinaryContent {
                 data,
                 fileName,
                 Instant.now(),
-                Instant.now()
+                Instant.now(),
+                attachmentId
         );
     }
 
