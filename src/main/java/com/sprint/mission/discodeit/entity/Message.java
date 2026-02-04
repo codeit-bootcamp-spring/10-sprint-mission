@@ -7,6 +7,8 @@ import lombok.Setter;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Setter
@@ -20,19 +22,21 @@ public class Message extends BaseEntity implements Serializable {
     private String content;
     private UUID channelId;
     private UUID authorId;
+    private List<UUID> attatchementIds = new ArrayList<>();  // 첨부파일 ID 목록
     private Instant createdAt;
     private Instant updatedAt;
 
 
+    // 첨부파일 포함 생성자
     public Message(String content, UUID channelId, UUID authorId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        //
         this.content = content;
         this.channelId = channelId;
         this.authorId = authorId;
+        this.attatchementIds = new ArrayList<>();
     }
-
+    
     public void update(String newContent) {
         boolean anyValueUpdated = false;
         if (newContent != null && !newContent.equals(this.content)) {

@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 public class ReadStatus implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     // Getters
     private final UUID id;
     private final UUID userId;
