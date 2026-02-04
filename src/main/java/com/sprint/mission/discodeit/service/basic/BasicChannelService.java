@@ -22,15 +22,16 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
     private final ReadStatusRepository readStatusRepository;
 
-    public PublicChannelInfo createPublicChannel(PublicChannelInfo channelInfo) {
+    public PublicChannelInfo createPublicChannel(PublicChannelCreateInfo channelInfo) {
         validateChannelExist(channelInfo.channelName());
-        Channel channel = ChannelMapper.toChannel(channelInfo);
+        Channel channel = new Channel(channelInfo.channelName(), ChannelType.PUBLIC, channelInfo.description());
         channelRepository.save(channel);
         return ChannelMapper.toPublicChannelInfo(channel);
     }
 
     public PrivateChannelInfo createPrivateChannel(PrivateChannelCreateInfo channelInfo) {
-        Channel channel = ChannelMapper.toChannel(channelInfo);
+        Channel channel = new Channel(null, ChannelType.PRIVATE, null);
+        channelRepository.save(channel);
         channelInfo.userIds().forEach(userId -> {
             joinChannel(channel.getId(), userId);
             ReadStatus readStatus = new ReadStatus(channel.getId(), userId);
