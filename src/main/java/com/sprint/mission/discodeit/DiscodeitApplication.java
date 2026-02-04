@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentProfileRequest;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -70,8 +71,34 @@ public class DiscodeitApplication {
 		// 첨부파일 메시지 생성
 		BinaryContent file1 = contentRepo.save(new BinaryContent("test1.png", new byte[]{1,2,3}));
 		MessageResponse msg1 = messageService.create(new MessageCreateRequest("첨부파일1", user1.id(), pChannel1.id(), List.of(file1.getId())));
-
 		System.out.println("[등록] 메시지 생성 완료. 첨부파일 수: " + msg1.attachmentIds().size());
+
+		// 메시지 수정
+		BinaryContent fileNew = contentRepo.save(new BinaryContent("new_file.png", new byte[]{9,9,9}));
+		UUID oldFileId = file1.getId();
+		UUID newFileId = fileNew.getId();
+
+		MessageResponse updatedMsg = messageService.update(msg1.id(), new MessageUpdateRequest("수정 후 내용", List.of(newFileId)));
+
+		// 텍스트 내용 확인
+		if ("수정 후 내용".equals(updatedMsg.content())) {
+			System.out.println("[수정] 메시지 텍스트 수정 완료");
+		}
+
+		// 첨부파일 수정 확인
+		if (updatedMsg.attachmentIds().contains(newFileId) && updatedMsg.attachmentIds().size() == 1) {
+			System.out.println("[수정] 메시지 첨부파일 수정 완료");
+		}
+
+		// 기존 첨부파일도 지워졌는지 확인
+		shouldFail(() -> contentRepo.findById(oldFileId).orElseThrow(), "메시지 수정 시 기존 첨부파일 자동 삭제");
+
+		// 부분 수정 테스트 (텍스트만 수정 시 파일 유지 여부)
+		MessageResponse partialUpdatedMsg = messageService.update(msg1.id(), new MessageUpdateRequest("내용만 또 수정", null));
+
+		if (partialUpdatedMsg.attachmentIds().contains(newFileId)) {
+			System.out.println("[부분 수정] 텍스트만 수정 시 기존 첨부파일 유지됨");
+		}
 
 
 		System.out.println("\n========= [4. 삭제 및 무결성 테스트] =========");

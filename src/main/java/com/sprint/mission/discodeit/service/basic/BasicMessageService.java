@@ -3,10 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelVisibility;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -30,17 +27,12 @@ public class BasicMessageService implements MessageService {
         User author = getOrThrowUser(request.authorId());
         Channel channel = getOrThrowChannel(request.channelId());
 
-        Message newMessage = new Message(request.content(), author, channel);
-
-        // 첨부파일 등록
-        if (request.attachmentIds() != null) {
-            request.attachmentIds().forEach(attachmentId -> {
-                if (!binaryContentRepository.findById(attachmentId).isPresent()) {
-                    throw new NoSuchElementException("존재하지 않는 첨부파일입니다.");
-                }
-                newMessage.addAttachment(attachmentId);
-            });
+        List<UUID> attachmentIds = request.attachmentIds();
+        if (attachmentIds != null){
+            attachmentIds.forEach(this::validateBinaryContentExists);
         }
+
+        Message newMessage = new Message(request.content(), author,channel,attachmentIds);
 
         messageRepository.save(newMessage);
         return convertToResponse(newMessage);
@@ -66,7 +58,17 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageResponse update(UUID id, MessageUpdateRequest request) {
         Message message = getOrThrowMessage(id);
-        message.update(request.content());
+
+        // 텍스트 내용 수정
+        Optional.ofNullable(request.content()).ifPresent(message::updateContent);
+
+        // 첨부파일 수정
+        if (request.attachmentIds() != null){
+            request.attachmentIds().forEach(this::validateBinaryContentExists);
+            message.getAttachmentIds().forEach(binaryContentRepository::deleteById);
+            message.updateAttachmentIds(request.attachmentIds());
+        }
+
         messageRepository.save(message);
         return convertToResponse(message);
     }
@@ -121,6 +123,13 @@ public class BasicMessageService implements MessageService {
     private Message getOrThrowMessage(UUID id) {
         return messageRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다."));
+    }
+
+    // 첨부파일 검증
+    private void validateBinaryContentExists(UUID id) {
+        if (!binaryContentRepository.findById(id).isPresent()) {
+            throw new NoSuchElementException("해당 첨부파일을 찾을 수 없습니다.");
+        }
     }
 
     // 엔티티 -> DTO 변환

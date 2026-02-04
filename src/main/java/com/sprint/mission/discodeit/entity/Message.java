@@ -24,20 +24,28 @@ public class Message extends BaseEntity implements Serializable {
     private boolean isPinned; // 고정 여부
 
     @Getter(AccessLevel.NONE)
-    private final List<UUID> attachmentIds = new ArrayList<>(); // 첨부파일 목록 (BinaryContent 참조 ID)
+    private List<UUID> attachmentIds = new ArrayList<>(); // 첨부파일 목록 (BinaryContent 참조 ID)
 
-    public Message(String content, User user, Channel channel) {
+    public Message(String content, User user, Channel channel, List<UUID> attachmentIds) {
         super();
         this.content = content;
         this.user = user;
         this.channel = channel;
+        this.attachmentIds = (attachmentIds != null) ? new ArrayList<>(attachmentIds) : new ArrayList<>();
         this.isEdited = false;
         this.isPinned = false;
     }
 
-    // 메시지 수정
-    public void update(String content) {
+    // 메시지 글 수정
+    public void updateContent(String content) {
         this.content = content;
+        this.isEdited = true;
+        this.updated();
+    }
+
+    // 메시지 첨부파일 수정
+    public void updateAttachmentIds(List<UUID> attachmentIds){
+        this.attachmentIds = (attachmentIds != null) ? new ArrayList<>(attachmentIds) : new ArrayList<>();
         this.isEdited = true;
         this.updated();
     }
@@ -47,11 +55,6 @@ public class Message extends BaseEntity implements Serializable {
         this.isPinned = !this.isPinned;
     }
 
-    // 메시지 첨부파일 추가
-    public void addAttachment(UUID attachmentId) {
-        this.attachmentIds.add(attachmentId);
-        this.updated();
-    }
 
     // --- getter ---
     public List<UUID> getAttachmentIds() {
