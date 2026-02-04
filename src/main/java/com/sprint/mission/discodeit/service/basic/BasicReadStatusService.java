@@ -59,6 +59,7 @@ public class BasicReadStatusService {
     public ReadStatusDto.ReadStatusResponse update(UUID readStatusId, Instant lastReadTime){
         ReadStatus readStatus = entityFinder.getReadStatus(readStatusId);
         Optional.ofNullable(lastReadTime).ifPresent(readStatus::updateLastReadTime);
+        readStatusRepository.save(readStatus);
         return ReadStatusDto.ReadStatusResponse.from(readStatus);
     }
 

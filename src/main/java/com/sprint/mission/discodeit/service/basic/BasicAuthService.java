@@ -5,14 +5,19 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.helper.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
+
 @Service
 @RequiredArgsConstructor
-public class BasicAutoService {
+public class BasicAuthService {
+
+    private final EntityFinder entityFinder;
+
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
 
@@ -23,7 +28,7 @@ public class BasicAutoService {
                 .filter(user -> user.getName().equals(username) && user.getPassword().equals(password))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("로그인 실패"));
-        UserStatus status = userStatusRepository.findByUserId(member.getId());
+        UserStatus status = entityFinder.getStatusByUser(member.getId());
 
         return UserDto.UserResponse.from(member, status);
     }

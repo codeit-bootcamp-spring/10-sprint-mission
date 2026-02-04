@@ -1,4 +1,4 @@
 package com.sprint.mission.discodeit.service.file;
 
-public class FileAutoService {
+public class FileAuthService {
 }

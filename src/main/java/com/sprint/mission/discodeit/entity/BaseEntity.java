@@ -32,4 +32,20 @@ public abstract class BaseEntity implements Serializable {
     protected void updateTimestamp() {
         this.updatedAt = Instant.now();
     }
+
+    @Override
+    public final boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+
+        BaseEntity other = (BaseEntity) obj;
+        return this.getId().equals(other.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this.getId().hashCode();
+    }
+
 }

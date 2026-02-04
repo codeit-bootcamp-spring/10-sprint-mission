@@ -58,6 +58,7 @@ public class BasicChannelService implements ChannelService {
             ReadStatus readStatus = new ReadStatus(user.getId(), channel.getId());
             readStatusRepository.save(readStatus);
             user.joinChannel(channel);
+            userRepository.save(user);
         });
         channelRepository.save(channel);
         return ChannelDto.ChannelResponsePrivate.from(channel);
@@ -112,7 +113,10 @@ public class BasicChannelService implements ChannelService {
         // 입력값 검증
         Channel channel = entityFinder.getChannel(channelId);
         // 채널에 참가한 유저 리스트에서 채널 삭제
-        channel.getUsers().forEach(user -> user.leaveChannel(channel));
+        channel.getUsers().forEach(user -> {
+            user.leaveChannel(channel);
+            userRepository.save(user);
+        });
         // 채널에 작성되었던 메세지 객체 전체 삭제
         channel.getMessages().forEach(message -> messageRepository.delete(message.getId()));
         // 연결된 ReadStatus 삭제

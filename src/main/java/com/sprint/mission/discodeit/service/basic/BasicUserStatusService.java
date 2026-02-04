@@ -42,7 +42,7 @@ public class BasicUserStatusService {
 
     public UserStatusDto.UserStatusResponse findById(UUID userStatusId){
         Objects.requireNonNull(userStatusId, "상태 ID가 유효하지 않습니다.");
-        return UserStatusDto.UserStatusResponse.from(entityFinder.getStatusByUser(userStatusId));
+        return UserStatusDto.UserStatusResponse.from(entityFinder.getUserStatus(userStatusId));
     }
 
     public List<UserStatusDto.UserStatusResponse> findAll(){
@@ -50,13 +50,15 @@ public class BasicUserStatusService {
     }
 
     public UserStatusDto.UserStatusResponse update(UUID userStatusId, UserStatus.Status status){
-        UserStatus userStatus = entityFinder.getStatusByUser(userStatusId);
+        UserStatus userStatus = entityFinder.getUserStatus(userStatusId);
         Optional.ofNullable(status).ifPresent(userStatus::updateStatus);
+        userStatusRepository.save(userStatus);
         return UserStatusDto.UserStatusResponse.from(userStatus);
     }
 
     public void delete(UUID userStatusId){
-        Objects.requireNonNull(userStatusRepository.findById(userStatusId), "유저상태 객체가 존재하지 않습니다.");
+        entityFinder.getUserStatus(userStatusId);
+        userStatusRepository.delete(userStatusId);
 
     }
 

@@ -114,7 +114,7 @@ public class BasicUserService implements UserService {
         });
 
         // userStatus, binaryContent 객체 삭제
-        userStatusRepository.deleteById(entityFinder.getStatusByUser(userId).getId());
+        userStatusRepository.delete(entityFinder.getStatusByUser(userId).getId());
         binaryContentRepository.deleteById(user.getBinaryContentId());
 
         userRepository.delete(userId);

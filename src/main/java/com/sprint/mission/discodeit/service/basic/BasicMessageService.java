@@ -47,6 +47,7 @@ public class BasicMessageService implements MessageService {
         Message message = new Message(request, binaryContentIds);
         messageRepository.save(message);
         channel.addMessage(message);
+        channelRepository.save(channel);
 
         return MessageDto.MessageResponse.from(message);
     }
@@ -79,7 +80,9 @@ public class BasicMessageService implements MessageService {
         // 입력값 검증
         Message message = entityFinder.getMessage(messageId);
         // 채널의 메세지 리스트에서 메세지 삭제
-        entityFinder.getChannel(message.getChannelId()).removeMessage(messageId);
+        Channel channel = entityFinder.getChannel(message.getChannelId());
+        channel.removeMessage(messageId);
+        channelRepository.save(channel);
         // 연결된 binaryContent 삭제
         message.getBinaryContentIds().forEach(binaryContentRepository::deleteById);
         // 메세지 삭제

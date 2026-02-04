@@ -62,4 +62,9 @@ public class EntityFinder {
         Objects.requireNonNull(readStatusId,"읽음 상태 Id가 유효하지 않습니다.");
         return readStatusRepository.findById(readStatusId).orElseThrow(() -> new NotFoundException("해당 읽음 상태 객체가 존재하지 않습니다."));
     }
+
+    public UserStatus getUserStatus(UUID userStatusId) {
+        Objects.requireNonNull(userStatusId, "유저 상태 Id가 유효하지 않습니다.");
+        return userStatusRepository.findById(userStatusId).orElseThrow(() -> new NotFoundException("해당 유저 상태 객체가 존재하지 않습니다."));
+    }
 }

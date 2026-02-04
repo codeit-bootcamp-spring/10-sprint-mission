@@ -1,4 +1,4 @@
 package com.sprint.mission.discodeit.service.jcf;
 
-public class JCFAutoService {
+public class JCFAuthService {
 }

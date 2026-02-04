@@ -44,7 +44,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     @Override
-    public void deleteById(UUID id) {
+    public void delete(UUID id) {
         data.remove(id);
         saveToFile();
     }
