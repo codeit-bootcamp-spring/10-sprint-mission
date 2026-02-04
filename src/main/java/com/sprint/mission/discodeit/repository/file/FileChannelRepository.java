@@ -29,8 +29,14 @@ public class FileChannelRepository implements ChannelRepository {
 
     // 역직렬화
     public List<Channel> deserialize() {
-        List<Channel> newChannels = List.of();
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("channelList.ser"))) {
+        File file = new File("channelList.ser");
+        List<Channel> newChannels = new ArrayList<>();
+
+        if (!file.exists()) {
+            return newChannels;
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             newChannels = (List<Channel>) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("역직렬화가 안됨");

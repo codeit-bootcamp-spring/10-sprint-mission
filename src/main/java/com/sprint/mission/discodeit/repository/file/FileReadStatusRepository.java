@@ -29,8 +29,14 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
     // 역직렬화
     public List<ReadStatus> deserialize() {
-        List<ReadStatus> newReadStatuses = List.of();
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("readStatusList.ser"))) {
+        File file = new File("readStatusList.ser");
+        List<ReadStatus> newReadStatuses = new ArrayList<>();
+
+        if (!file.exists()) {
+            return newReadStatuses;
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             newReadStatuses = (List<ReadStatus>) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("역직렬화가 안됨");

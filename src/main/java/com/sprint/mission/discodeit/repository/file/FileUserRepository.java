@@ -29,8 +29,14 @@ public class FileUserRepository implements UserRepository {
 
     // 역직렬화
     public List<User> deserialize() {
-        List<User> newUsers = List.of();
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("userList.ser"))) {
+        File file = new File("userList.ser");
+
+        if (!file.exists()) {
+            return new ArrayList<>();
+        }
+
+        List<User> newUsers = new ArrayList<>();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             newUsers = (List<User>) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("역직렬화가 안됨");
@@ -54,18 +60,6 @@ public class FileUserRepository implements UserRepository {
                 break;
             }
         }
-    }
-
-    public User updateUserName(UUID userId, String name) {
-        this.data = deserialize();
-        for (User user : this.data) {
-            if (user.getId().equals(userId)) {
-                user.updateName(name);
-                serialize(this.data);
-                return user;
-            }
-        }
-        throw new NoSuchElementException();
     }
 
     @Override

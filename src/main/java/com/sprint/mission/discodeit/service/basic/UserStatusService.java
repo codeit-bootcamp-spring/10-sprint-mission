@@ -36,21 +36,26 @@ public class UserStatusService {
         }
 
         UserStatus userStatus = new UserStatus(userStatusCreateDTO.userId());
-        UserStatusDTO userStatusDTO = new UserStatusDTO(userStatus.getId(), userStatus);
+        UserStatusDTO userStatusDTO = new UserStatusDTO(userStatus.getId(), userStatus.checkOnline());
 
         return userStatusDTO;
     }
 
     public UserStatusDTO findById(UUID userStatusId) {
         UserStatus userStatus = this.userStatusRepository.loadById(userStatusId);
-        return new UserStatusDTO(userStatus.getId(), userStatus);
+        return new UserStatusDTO(userStatus.getId(), userStatus.checkOnline());
+    }
+
+    public UserStatusDTO findByUserId(UUID userId) {
+        UserStatus userStatus = this.userStatusRepository.loadByUserId(userId);
+        return new UserStatusDTO(userStatus.getId(), userStatus.checkOnline());
     }
 
     public List<UserStatusDTO> findAll() {
         List<UserStatusDTO> userStatusDTOList = new ArrayList<>();
 
         for (UserStatus userStatus : this.userStatusRepository.loadAll()) {
-            UserStatusDTO userStatusDTO = new UserStatusDTO(userStatus.getId(), userStatus);
+            UserStatusDTO userStatusDTO = new UserStatusDTO(userStatus.getId(), userStatus.checkOnline());
             userStatusDTOList.add(userStatusDTO);
         }
 
@@ -58,16 +63,16 @@ public class UserStatusService {
     }
 
     public UserStatusDTO update(UserStatusUpdateDTO userStatusUpdateDTO) {
-        UserStatus userStatus = this.findById(userStatusUpdateDTO.userStatusId()).userStatus();
+        UserStatus userStatus = this.userStatusRepository.loadById(userStatusUpdateDTO.userStatusId());
         userStatus.updateOnline(userStatusUpdateDTO.isOnline());
-        return new UserStatusDTO(userStatus.getId(), userStatus);
+        return new UserStatusDTO(userStatus.getId(), userStatus.checkOnline());
     }
 
     public UserStatusDTO updateByUserId(UserStatusUpdateByUserId userStatusUpdateByUserId) {
         for (UserStatus userStatus : this.userStatusRepository.loadAll()) {
             if (userStatus.getUserId().equals(userStatusUpdateByUserId.userId())) {
                 userStatus.updateOnline(userStatusUpdateByUserId.isOnline());
-                return new UserStatusDTO(userStatus.getId(), userStatus);
+                return new UserStatusDTO(userStatus.getId(), userStatus.checkOnline());
             }
         }
         throw new NoSuchElementException();

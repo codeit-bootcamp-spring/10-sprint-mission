@@ -29,8 +29,14 @@ public class FileMessageRepository implements MessageRepository {
 
     // 역직렬화 - 저장 로직
     public List<Message> deserialize() {
-        List<Message> newMessage = List.of();
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("messageList.ser"))) {
+        File file = new File("messageList.ser");
+        List<Message> newMessage = new ArrayList<>();
+
+        if (!file.exists()) {
+            return newMessage;
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             newMessage = (List<Message>) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("역직렬화가 안됨");

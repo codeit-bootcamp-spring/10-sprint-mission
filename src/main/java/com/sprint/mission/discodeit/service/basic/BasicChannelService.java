@@ -22,7 +22,7 @@ public class BasicChannelService implements ChannelService {
     private ReadStatusRepository readStatusRepository;
     private MessageRepository messageRepository;
 
-    public BasicChannelService(ChannelRepository channelRepository, MessageRepository messageRepository, ReadStatusRepository readStatusRepository, HandlerMapping defaultServletHandlerMapping) {
+    public BasicChannelService(ChannelRepository channelRepository, MessageRepository messageRepository, ReadStatusRepository readStatusRepository) {
         this.channelRepository = channelRepository;
         this.messageRepository = messageRepository;
         this.readStatusRepository = readStatusRepository;

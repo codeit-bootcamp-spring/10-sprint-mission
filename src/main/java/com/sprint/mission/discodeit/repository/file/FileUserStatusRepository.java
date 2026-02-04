@@ -29,8 +29,14 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     // 역직렬화
     public List<UserStatus> deserialize() {
-        List<UserStatus> userStatuses = List.of();
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("userStatusList.ser"))) {
+        File file = new File("userStatusList.ser");
+
+        if (!file.exists()) {
+            return new ArrayList<>();
+        }
+
+        List<UserStatus> userStatuses = new ArrayList<>();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             userStatuses = (List<UserStatus>) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("역직렬화가 안됨");
@@ -62,7 +68,18 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     @Override
-    public UserStatus loadById(UUID userId) {
+    public UserStatus loadById(UUID userStatusId) {
+        this.data = deserialize();
+        for (UserStatus userStatus : this.data) {
+            if (userStatus.getId().equals(userStatusId)) {
+                return userStatus;
+            }
+        }
+        throw new NoSuchElementException();
+    }
+
+    @Override
+    public UserStatus loadByUserId(UUID userId) {
         this.data = deserialize();
         for(UserStatus userStatus : this.data) {
             if (userStatus.getUserId().equals(userId)) {

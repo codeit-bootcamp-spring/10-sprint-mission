@@ -13,5 +13,7 @@ public interface UserStatusRepository {
 
     List<UserStatus> loadAll();
 
-    UserStatus loadById(UUID userId);
+    UserStatus loadById(UUID userStatusId);
+
+    UserStatus loadByUserId(UUID userId);
 }

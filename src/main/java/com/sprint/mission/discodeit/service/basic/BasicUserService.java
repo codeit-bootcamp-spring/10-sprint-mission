@@ -26,7 +26,9 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserDTO create(UserCreateDTO userCreateDTO) {
-        if (isExistName(userCreateDTO.name()) || isExistEmail(userCreateDTO.email())) throw new NoSuchElementException();
+        System.out.println("user create시작");
+        if (isExistName(userCreateDTO.name())) throw new NoSuchElementException();
+        if (isExistEmail(userCreateDTO.email())) throw new NoSuchElementException();
 
         User user;
         if (userCreateDTO.profileImage() == null) {
@@ -46,13 +48,13 @@ public class BasicUserService implements UserService {
     @Override
     public UserDTO findById(UUID id) {
         User user = this.userRepository.loadById(id);
-        UserStatus userStatus = this.userStatusRepository.loadById(id);
+        UserStatus userStatus = this.userStatusRepository.loadByUserId(id);
         return createUserDTO(user, userStatus);
 
 //        for (User userCheck : this.userRepository.loadAll()) {
 //            if (userCheck.getId().equals(id)) {
 //                user = userCheck;
-//                userStatus = this.userStatusRepository.loadById(id);
+//                userStatus = this.userStatusRepository.loadByUserId(id);
 //                userFindDTO = new UserFindDTO(user, userStatus);
 //                return userFindDTO;
 //            }
@@ -64,14 +66,14 @@ public class BasicUserService implements UserService {
     public List<UserDTO> findAll() {
         List<UserDTO> userDTOList = new ArrayList<>();
         for (User user : this.userRepository.loadAll()) {
-            userDTOList.add(createUserDTO(user, this.userStatusRepository.loadById(user.getId())));
+            userDTOList.add(createUserDTO(user, this.userStatusRepository.loadByUserId(user.getId())));
         }
         return userDTOList;
     }
 
     @Override
     public UserDTO updateUser(UserUpdateDTO userUpdateDTO) {
-        if (isExistId(userUpdateDTO.userId())) throw new NoSuchElementException();
+        if (!isExistId(userUpdateDTO.userId())) throw new NoSuchElementException();
         User user = this.userRepository.loadById(userUpdateDTO.userId());
         if (!userUpdateDTO.name().isEmpty()) {
             user.updateName(userUpdateDTO.name());
@@ -82,7 +84,7 @@ public class BasicUserService implements UserService {
             this.binaryContentRepository.save(profile);
         }
 
-        return createUserDTO(user, this.userStatusRepository.loadById(user.getId()));
+        return createUserDTO(user, this.userStatusRepository.loadByUserId(user.getId()));
     }
 
     @Override

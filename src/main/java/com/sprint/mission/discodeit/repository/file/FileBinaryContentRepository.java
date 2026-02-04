@@ -29,8 +29,14 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     // 역직렬화
     public List<BinaryContent> deserialize() {
-        List<BinaryContent> binaryContents = List.of();
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("binaryContentsList.ser"))) {
+        File file = new File("binaryContentsList.ser");
+        List<BinaryContent> binaryContents = new ArrayList<>();
+
+        if (!file.exists()) {
+            return binaryContents;
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             binaryContents = (List<BinaryContent>) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
             System.out.println("역직렬화가 안됨");
