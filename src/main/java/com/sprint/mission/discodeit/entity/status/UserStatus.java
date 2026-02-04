@@ -27,7 +27,7 @@ public class UserStatus {
         this.updatedAt = Instant.now();
     }
 
-//    public static UserStatus create(UUID userId) {
+//    public UserStatus create(UUID userId) {
 //        Instant now = Instant.now();
 //        return new UserStatus(id, userId, now, now, now);
 //    }
