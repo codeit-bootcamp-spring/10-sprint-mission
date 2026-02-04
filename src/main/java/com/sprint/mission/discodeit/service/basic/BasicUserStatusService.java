@@ -95,7 +95,7 @@ public class BasicUserStatusService implements UserStatusService{
 
         userStatusRepository.findById(id)
                 .orElseThrow(()->new NoSuchElementException("삭제할 User가 없습니다."));
-        userStatusRepository.deleteById(id);
+        userStatusRepository.delete(id);
     }
 
 

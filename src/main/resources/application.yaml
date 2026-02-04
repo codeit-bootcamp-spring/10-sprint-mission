@@ -3,3 +3,7 @@ spring:
     name: discodeit
 server:
   port: 8081
+
+discodeit:
+  repository:
+    type: file  #jcf | File

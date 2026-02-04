@@ -157,7 +157,7 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
 
         //ReadStatus 삭제
-        List<ReadStatus> readStatuses = readStatusRepository.findStatusByChannelId(channelId);
+        List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channelId);
         for(ReadStatus rs : readStatuses){
             readStatusRepository.delete(rs.getId());
         }

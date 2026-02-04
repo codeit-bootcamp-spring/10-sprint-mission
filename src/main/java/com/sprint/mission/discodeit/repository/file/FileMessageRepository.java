@@ -1,14 +1,16 @@
-/*
+
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
 @Repository
+@Primary
 public class FileMessageRepository implements MessageRepository {
     private static final String FILE_PATH = "messages.dat";
     private Map<UUID, Message> data;
@@ -19,19 +21,21 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public void save(Message message) {
+        if(message==null) throw new IllegalArgumentException("message가 null일 수 없습니다.");
         data.put(message.getId(), message);
         saveToFile();
     }
 
     @Override
     public void delete(UUID id) {
+        if(id==null) throw new IllegalArgumentException("messageId가 null일 수 없습니다.");
         data.remove(id);
         saveToFile();
     }
 
     @Override
     public Optional<Message> findById(UUID id) {
-
+        if(id==null) throw new IllegalArgumentException("messageId가 null일 수 없습니다.");
         return Optional.ofNullable(data.get(id));
     }
 
@@ -39,6 +43,9 @@ public class FileMessageRepository implements MessageRepository {
     public List<Message> findAll() {
         return new ArrayList<>(data.values());
     }
+
+
+
 
     private void saveToFile() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
@@ -59,4 +66,3 @@ public class FileMessageRepository implements MessageRepository {
         }
     }
 }
-*/

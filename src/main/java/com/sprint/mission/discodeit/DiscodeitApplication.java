@@ -20,6 +20,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +28,7 @@ import java.util.UUID;
 
 @SpringBootApplication
 public class DiscodeitApplication {
+
     public static void main(String[] args) {
         SpringApplication.run(DiscodeitApplication.class, args);
     }
@@ -35,9 +37,10 @@ public class DiscodeitApplication {
     CommandLineRunner smokeTest(
             UserService userService,
             ChannelService channelService,
-            MessageService messageService
-    ) {
+            MessageService messageService,
+            ReadStatusService readStatusService) {
         return args -> {
+
 
             // 1) USER
 
@@ -170,9 +173,9 @@ public class DiscodeitApplication {
             System.out.println("deleted m1. remaining messages:");
             messageService.findAllByChannelId(publicCh.id()).forEach(System.out::println);
 
-            // ---------------------------
-            // 4) DELETE CASCADE TEST
-            // ---------------------------
+
+            // 4) DELETE TEST
+
             System.out.println("\n===== 4) CHANNEL delete (Message + ReadStatus 같이 삭제) =====");
             channelService.deleteChannel(privateCh.id());
             System.out.println("deleted private channel. u1 visible channels:");

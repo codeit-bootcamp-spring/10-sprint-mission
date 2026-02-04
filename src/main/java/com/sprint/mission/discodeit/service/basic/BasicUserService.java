@@ -227,7 +227,7 @@ public class BasicUserService implements UserService {
         // userStatus도 같이 삭제.
         userStatusRepository.findByUserId(userId)
                 .ifPresent(status ->
-                        userStatusRepository.deleteById(status.getId()));
+                        userStatusRepository.delete(status.getId()));
 
         // 최종 User 삭제
         userRepository.delete(userId);
