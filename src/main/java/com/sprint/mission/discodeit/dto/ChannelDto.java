@@ -36,13 +36,15 @@ public class ChannelDto {
     public record ChannelResponsePrivate(
             UUID channelId,
             Instant lastMessageAt,
-            List<UUID> userIds
+            List<UUID> userIds,
+            Channel.channelType type
     ) implements ChannelResponse {
         public static ChannelResponsePrivate from(Channel channel) {
             return new ChannelResponsePrivate(
                     channel.getId(),
                     channel.getLastMessageAt(),
-                    channel.getUsers().stream().map(BaseEntity::getId).toList()
+                    channel.getUserIds(),
+                    channel.getType()
             );
         }
     }

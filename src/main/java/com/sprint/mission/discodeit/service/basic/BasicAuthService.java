@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.UUID;
 
 
 @Service
@@ -29,8 +30,18 @@ public class BasicAuthService {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("로그인 실패"));
         UserStatus status = entityFinder.getStatusByUser(member.getId());
-
+        if (status.isOnline()) throw new IllegalStateException("이미 접속중인 계정입니다.");
+        status.userLogin();
+        userStatusRepository.save(status);
         return UserDto.UserResponse.from(member, status);
     }
 
+    public UserDto.UserResponse logout(UUID userId) {
+        Objects.requireNonNull(userId, "유저 ID를 입력해주세요.");
+        User user = entityFinder.getUser(userId);
+        UserStatus status = entityFinder.getStatusByUser(userId);
+        status.userLogout();
+        userStatusRepository.save(status);
+        return UserDto.UserResponse.from(user, status);
+    }
 }

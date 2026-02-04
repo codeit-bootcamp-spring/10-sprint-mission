@@ -40,5 +40,6 @@ public class Message extends BaseEntity implements Serializable {
     public void updateBinaryContentIds(List<UUID> binaryContentIds) {
         this.binaryContentIds.clear();
         this.binaryContentIds.addAll(binaryContentIds);
+        updateTimestamp();
     }
 }

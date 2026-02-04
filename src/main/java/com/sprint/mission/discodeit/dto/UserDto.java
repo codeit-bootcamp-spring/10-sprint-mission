@@ -19,16 +19,14 @@ public class UserDto {
             UUID userId,
             String name,
             String email,
-            boolean isOnline, // UserStatus 기반 온라인 여부
-            Instant createdAt
+            boolean isOnline // UserStatus 기반 온라인 여부
     ) {
         public static UserResponse from(User user, UserStatus status) {
             return new UserResponse(
                     user.getId(),
                     user.getName(),
                     user.getEmail(),
-                    status.isOnline(),
-                    user.getCreatedAt()
+                    status.isOnline()
             );
         }
     }

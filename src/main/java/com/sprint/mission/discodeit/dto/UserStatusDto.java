@@ -7,8 +7,7 @@ import java.util.UUID;
 public class UserStatusDto {
 
     public record UserStatusRequest(
-            UUID userId,
-            String status
+            UUID userId
     ) {}
 
     public record UserStatusResponse(

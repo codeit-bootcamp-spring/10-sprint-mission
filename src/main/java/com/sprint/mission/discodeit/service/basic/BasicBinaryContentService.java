@@ -20,9 +20,6 @@ public class BasicBinaryContentService {
     private final EntityFinder entityFinder;
 
     public BinaryContentDto.BinaryContentResponse create(BinaryContentDto.BinaryContentRequest request){
-        Objects.requireNonNull(request.filePath(), "파일 경로를 입력해주세요.");
-        Objects.requireNonNull(request.contentType(), "자료 유형을 입력해주세요.");
-
         BinaryContent binaryContent = new BinaryContent(request);
         return BinaryContentDto.BinaryContentResponse.from(binaryContentRepository.save(binaryContent));
     }

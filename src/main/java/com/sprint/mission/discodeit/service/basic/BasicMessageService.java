@@ -28,10 +28,10 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageDto.MessageResponse create(MessageDto.MessageRequest request, List<BinaryContentDto.BinaryContentRequest> fileInfo) {
         // 입력값 검증
-        User user = entityFinder.getUser(request.userId());
+        entityFinder.getUser(request.userId());
         Channel channel = entityFinder.getChannel(request.channelId());
         Objects.requireNonNull(request.content(), "내용은 필수입니다.");
-        if (!channel.getUsers().contains(user)) {
+        if (!channel.getUserIds().contains(request.userId())) {
             throw new IllegalArgumentException("채널 멤버가 아닙니다.");
         }
         // 여러 개의 첨부파일 구현
@@ -63,7 +63,8 @@ public class BasicMessageService implements MessageService {
     @Override
     public List<MessageDto.MessageResponse> findAllByChannelId(UUID channelId) {
         Channel channel = entityFinder.getChannel(channelId);
-        return channel.getMessages().stream().map(MessageDto.MessageResponse::from).toList();
+        return channel.getMessageIds().stream().map(messageId ->
+                MessageDto.MessageResponse.from(entityFinder.getMessage(messageId))).toList();
     }
 
     @Override

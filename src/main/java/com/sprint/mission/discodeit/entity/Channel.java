@@ -14,9 +14,11 @@ public class Channel extends BaseEntity implements Serializable {
 
     public enum channelType {PRIVATE, PUBLIC}
     // 채널에 속한 메세지 목록
-    private final List<Message> messages = new ArrayList<>();
+    @Getter
+    private final List<UUID> messageIds = new ArrayList<>();
     // 채널에 참여한 유저 목록
-    private final List<User> users = new ArrayList<>();
+    @Getter
+    private final List<UUID> userIds = new ArrayList<>();
 
     @Getter
     private String name;
@@ -36,21 +38,11 @@ public class Channel extends BaseEntity implements Serializable {
     }
 
     // Private 생성자
-    public Channel(List<User> users){
-        this.users.addAll(Objects.requireNonNull(users, "유효한 유저를 입력해주세요."));
+    public Channel(List<UUID> userIds){
+        this.userIds.addAll(Objects.requireNonNull(userIds, "유효한 유저를 입력해주세요."));
         this.type = channelType.PRIVATE;
         this.lastMessageAt = Instant.now();
     }
-
-    public List<User> getUsers() {
-        return List.copyOf(this.users);
-    }     // 복사된 유저 리스트를 전달
-
-    // 채널 메세지 리스트 반환
-    public List<Message> getMessages() {
-        return List.copyOf(this.messages);
-    }     // 복사된 메세지 리스트를 전달
-
 
     public void updateName(String name) {
         this.name = name;
@@ -66,25 +58,25 @@ public class Channel extends BaseEntity implements Serializable {
     public void addUser(User user) {
         if (user == null)
             return;
-        if (!this.users.contains(user))
-            this.users.add(user);
+        if (!this.userIds.contains(user.getId()))
+            this.userIds.add(user.getId());
     }
 
     // 유저 목록에서 유저 삭제
     public void removeUser(User user) {
-        users.remove(user);
+        userIds.remove(user.getId());
     }
 
     // 메세지 목록에 메세지 추가 + 채널 수정 시간 갱신
     public void addMessage(Message message) {
-        this.messages.add(message);
+        this.messageIds.add(message.getId());
         this.lastMessageAt = Instant.now();
         this.updateTimestamp();
     }
 
     // 메세지 목록에서 메세지 삭제 + 채널 수정 시간 갱신
     public void removeMessage(UUID messageId) {
-        this.messages.removeIf(m -> m.getId().equals(messageId));
+        this.messageIds.removeIf(m -> m.equals(messageId));
         this.updateTimestamp();
     }
 

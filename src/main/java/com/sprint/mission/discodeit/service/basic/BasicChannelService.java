@@ -52,7 +52,7 @@ public class BasicChannelService implements ChannelService {
         Objects.requireNonNull(userIds, "유효한 유저 목록을 입력해주세요.");
         List<User> users = userIds.stream().map(entityFinder::getUser).toList();
 
-        Channel channel = new Channel(users);
+        Channel channel = new Channel(userIds);
 
         users.forEach(user -> {
             ReadStatus readStatus = new ReadStatus(user.getId(), channel.getId());
@@ -80,7 +80,7 @@ public class BasicChannelService implements ChannelService {
         User user = entityFinder.getUser(userId);
         return channelRepository.findAll().stream().filter(channel ->
                         !(channel.getType().equals(Channel.channelType.PRIVATE) &&
-                                channel.getUsers().stream().noneMatch(user1 -> user1.getId().equals(userId))))
+                                channel.getUserIds().stream().noneMatch(userId1 -> userId1.equals(userId))))
                 .<ChannelDto.ChannelResponse>map(channel -> {
                     if (channel.getType().equals(Channel.channelType.PUBLIC))
                         return ChannelDto.ChannelResponsePublic.from(channel);
@@ -97,6 +97,7 @@ public class BasicChannelService implements ChannelService {
 
         // 자기 자신을 제외한 중복 검사
         channelRepository.findAll().stream()
+                .filter(channel1 -> channel1.getType().equals(Channel.channelType.PUBLIC))
                 .filter(channel1 -> !channel1.getId().equals(channelId))
                 .filter(channel1 -> channel1.getName().equals(request.name()))
                 .findFirst().ifPresent(channel1 -> {
@@ -113,16 +114,23 @@ public class BasicChannelService implements ChannelService {
         // 입력값 검증
         Channel channel = entityFinder.getChannel(channelId);
         // 채널에 참가한 유저 리스트에서 채널 삭제
-        channel.getUsers().forEach(user -> {
-            user.leaveChannel(channel);
-            userRepository.save(user);
+        channel.getUserIds().forEach(userId -> {
+            entityFinder.getUser(userId).leaveChannel(channel);
+            userRepository.save(entityFinder.getUser(userId));
         });
         // 채널에 작성되었던 메세지 객체 전체 삭제
-        channel.getMessages().forEach(message -> messageRepository.delete(message.getId()));
+        channel.getMessageIds().forEach(messageRepository::delete);
         // 연결된 ReadStatus 삭제
         readStatusRepository.findAllByChannelId(channelId).forEach(readStatus ->
                 readStatusRepository.delete(readStatus.getId()));
         // 채널 삭제
         channelRepository.delete(channelId);
+    }
+
+    // 채널 체크 헬퍼 메서드
+    public Channel CheckChannel(String name) {
+        return channelRepository.findAll().stream()
+                .filter(channel -> channel.getName().equals(name))
+                .findFirst().orElseThrow(() -> new RuntimeException("해당하는 채널이 없습니다."));
     }
 }

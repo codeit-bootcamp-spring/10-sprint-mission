@@ -13,4 +13,7 @@ public interface UserService {
     List<UserDto.UserResponse> findAll();
     UserDto.UserResponse update(UUID userId, UserDto.UserRequest request, String filePath);
     void delete(UUID userId);
+    void joinChannel(UUID userId, UUID channelId);
+    void leaveChannel(UUID userId, UUID channelId);
+    User CheckUser(String name, String password);
 }

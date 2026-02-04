@@ -31,8 +31,7 @@ public class BasicReadStatusService {
         Objects.requireNonNull(userId, "유저 Id가 유효하지 않습니다.");
         Objects.requireNonNull(channelId, "채널 Id가 유효하지 않습니다.");
         // 생성하려는 ReadStatus 가 이미 존재할 때
-        if(readStatusRepository.findAll().stream().anyMatch(readStatus ->
-                readStatus.getUserId().equals(userId) && readStatus.getChannelId().equals(channelId)))
+        if(readStatusRepository.findByUserIdAndChannelId(userId, channelId).isPresent())
             throw new IllegalArgumentException("해당 상태 객체가 이미 존재합니다.");
         // 찾는 유저와 채널이 없을 때
         User user = entityFinder.getUser(userId);

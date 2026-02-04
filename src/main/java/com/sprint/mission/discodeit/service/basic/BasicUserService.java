@@ -6,10 +6,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.helper.EntityFinder;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +23,7 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final EntityFinder entityFinder;
+    private final ReadStatusRepository readStatusRepository;
     // 검증 헬퍼 메서드
 
     @Override
@@ -96,6 +94,7 @@ public class BasicUserService implements UserService {
         // 새로운 content 객체를 생성하여 대체
         Optional.ofNullable(filePath).ifPresent(path -> {
             BinaryContent binaryContent = new BinaryContent(new BinaryContentDto.BinaryContentRequest(path, "image"));
+            binaryContentRepository.deleteById(user.getBinaryContentId());
             user.updateBinaryContentId(binaryContent.getId());
             binaryContentRepository.save(binaryContent);
         });
@@ -109,17 +108,18 @@ public class BasicUserService implements UserService {
         User user = entityFinder.getUser(userId);
         // 유저가 참가했던 채널들에서 해당 유저 삭제
         new ArrayList<>(user.getChannels()).forEach(channel -> {
-            channel.removeUser(user);
-            channelRepository.save(channel);
+            entityFinder.getChannel(channel).removeUser(user);
+            channelRepository.save(entityFinder.getChannel(channel));
         });
 
         // userStatus, binaryContent 객체 삭제
         userStatusRepository.delete(entityFinder.getStatusByUser(userId).getId());
         binaryContentRepository.deleteById(user.getBinaryContentId());
-
+        readStatusRepository.findAllByUserId(userId).forEach(readStatus -> readStatusRepository.delete(readStatus.getId()));
         userRepository.delete(userId);
     }
 
+    @Override
     public void joinChannel(UUID userId, UUID channelId) {
         User user = entityFinder.getUser(userId);
         Channel channel = entityFinder.getChannel(channelId);
@@ -132,6 +132,7 @@ public class BasicUserService implements UserService {
         channelRepository.save(channel);
     }
 
+    @Override
     public void leaveChannel(UUID userId, UUID channelId) {
         User user = entityFinder.getUser(userId);
         Channel channel = entityFinder.getChannel(channelId);
@@ -142,5 +143,13 @@ public class BasicUserService implements UserService {
         // 레포에 반영
         userRepository.save(user);
         channelRepository.save(channel);
+    }
+
+    @Override
+    // 유저 체크 헬퍼 메서드
+    public User CheckUser(String name, String password) {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getName().equals(name) && user.getPassword().equals(password))
+                .findFirst().orElseThrow(() -> new RuntimeException("해당하는 유저가 없습니다."));
     }
 }

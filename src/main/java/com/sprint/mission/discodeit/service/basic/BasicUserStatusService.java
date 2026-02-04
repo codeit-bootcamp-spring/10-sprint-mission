@@ -25,7 +25,6 @@ public class BasicUserStatusService {
 
     public UserStatusDto.UserStatusResponse create(UserStatusDto.UserStatusRequest request) {
         Objects.requireNonNull(request.userId(), "유저 ID가 유효하지 않습니다.");
-        Objects.requireNonNull(request.status(), "유저 상태를 입력해주세요.");
 
         // 유저 존재 검사
         if (userRepository.findAll().stream().noneMatch(user -> user.getId().equals(request.userId())))
@@ -44,6 +43,8 @@ public class BasicUserStatusService {
         Objects.requireNonNull(userStatusId, "상태 ID가 유효하지 않습니다.");
         return UserStatusDto.UserStatusResponse.from(entityFinder.getUserStatus(userStatusId));
     }
+
+
 
     public List<UserStatusDto.UserStatusResponse> findAll(){
         return userStatusRepository.findAll().stream().map(UserStatusDto.UserStatusResponse::from).toList();
