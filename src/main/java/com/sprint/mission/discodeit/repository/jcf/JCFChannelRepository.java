@@ -48,7 +48,10 @@ public class JCFChannelRepository implements ChannelRepository {
 
     @Override
     public void save(Channel channel) {
-        data.add(channel);
+        if(data.contains(channel))
+            data.set(data.indexOf(channel), channel);
+        else
+            data.add(channel);
     }
 
     @Override
