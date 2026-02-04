@@ -19,9 +19,9 @@ public interface BinaryContentRepository {
     boolean existsById(UUID contentId);
     void deleteById(UUID contentId);
 
-    //프로필 존재여부
-    boolean existProfile(UUID userId);
-    //프로필 가져오기
-    Optional<BinaryContent> findByUserId(UUID userId);
-    Optional<BinaryContent> findByAuthorId(UUID authorId);
+//    //프로필 존재여부
+//    boolean existProfile(UUID userId);
+//    //프로필 가져오기
+//    Optional<BinaryContent> findByUserId(UUID userId);
+//    Optional<BinaryContent> findByAuthorId(UUID authorId);
 }
