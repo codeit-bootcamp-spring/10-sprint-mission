@@ -1,118 +1,97 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.AlreadyJoinedChannelException;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.UserNotInChannelException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.service.UserService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
+@Repository
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "file"
+)
 public class FileChannelRepository implements ChannelRepository {
 
-    private static final String FILE_PATH = "channels.dat";
-    private final UserService userService;
+    private final Path filePath;
 
-    public FileChannelRepository(UserService userService) {
-        this.userService = userService;
+    public FileChannelRepository(
+            @Value("${discodeit.repository.file-directory:.discodeit}") String fileDirectory
+    ) {
+        try {
+            Files.createDirectories(Paths.get(fileDirectory));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        this.filePath = Paths.get(fileDirectory, "channels.dat");
     }
 
-    // 파일에서 Map 로드
-    private Map<UUID, Channel> load() {
-        File file = new File(FILE_PATH);
+    @SuppressWarnings("unchecked")
+    private Map<UUID, Channel> loadChannelFile() {
+        File file = filePath.toFile();
         if (!file.exists()) return new LinkedHashMap<>();
+
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             return (Map<UUID, Channel>) ois.readObject();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
-    @Override
-    public void userAddChannel(UUID channelId, UUID userId) {
-        Map<UUID, Channel> channels = load();
-        Channel channel = channels.get(channelId);
-        if (channel == null) throw new ChannelNotFoundException();
 
-        User user = userService.findUser(userId);
-        if (channel.getChannelUser().contains(user)) throw new AlreadyJoinedChannelException();
-
-        channel.getChannelUser().add(user);
-        save(channels);
-    }
-
-    // 파일에 Map 저장
-    private void save(Map<UUID, Channel> channels) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+    private void saveChannelFile(Map<UUID, Channel> channels) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
             oos.writeObject(channels);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    // 초기화
-    public void resetChannelFile() {
-        save(new LinkedHashMap<>());
+    public void resetFile() {
+        saveChannelFile(new LinkedHashMap<>());
     }
 
-    @Override public Channel createChannel(Channel channel) {
-        Map<UUID, Channel> channels = load();
-
-        // 맵에 저장 후 파일에 저장
+    @Override
+    public UUID createChannel(Channel channel) {
+        Map<UUID, Channel> channels = loadChannelFile();
         channels.put(channel.getId(), channel);
-        save(channels);
+        saveChannelFile(channels);
+        return channel.getId();
+    }
 
+    @Override
+    public Channel saveChannel(Channel channel) {
+        Map<UUID, Channel> channels = loadChannelFile();
+        channels.put(channel.getId(), channel);
+        saveChannelFile(channels);
         return channel;
     }
 
     @Override
     public Channel findChannel(UUID channelId) {
-        Channel channel = load().get(channelId);
+        if (channelId == null) throw new IllegalArgumentException("channelId null이 될 수 없습니다.");
+
+        Channel channel = loadChannelFile().get(channelId);
         if (channel == null) throw new ChannelNotFoundException();
         return channel;
     }
 
     @Override
     public List<Channel> findAllChannel() {
-        return new ArrayList<>(load().values());
+        return new ArrayList<>(loadChannelFile().values());
     }
 
     @Override
     public void deleteChannel(UUID channelId) {
-        Map<UUID, Channel> channels = load();
+        Map<UUID, Channel> channels = loadChannelFile();
         if (channels.remove(channelId) == null) throw new ChannelNotFoundException();
-        save(channels);
-    }
-
-
-    @Override
-    public boolean existsByNameChannel(String channelName) {
-        return load().values().stream()
-                .anyMatch(c -> c.getChannelName().equals(channelName));
-    }
-
-
-    @Override
-    public Channel findByUserId(UUID userId) {
-        userService.findUser(userId);
-        return load().values().stream()
-                .filter(channel -> channel.getChannelUser().stream()
-                        .anyMatch(user -> user.getId().equals(userId)))
-                .findFirst()
-                .orElseThrow(ChannelNotFoundException::new);
-    }
-
-    @Override
-    public String findAllUserInChannel(UUID channelId) {
-        Channel channel = findChannel(channelId);
-        List<User> users = channel.getChannelUser();
-        if (users.isEmpty()) throw new UserNotInChannelException();
-        StringBuilder sb = new StringBuilder();
-        for (User user : users) {
-            sb.append(user.getUserName()).append(", ");
-        }
-        return sb.substring(0, sb.length() - 2); // 마지막 ", " 제거
+        saveChannelFile(channels);
     }
 }
