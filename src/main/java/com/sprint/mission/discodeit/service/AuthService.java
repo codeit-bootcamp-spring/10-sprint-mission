@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.user.UserLoginInfo;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.dto.user.UserInfo;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,6 @@ public class AuthService {
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자를 찾을 수 없습니다."));
         if (!findUser.getPassword().equals(userLoginInfo.password()))
             throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
-        return new UserInfo(findUser.getUserName(), findUser.getEmail());
+        return UserMapper.toUserInfo(findUser);
     }
 }

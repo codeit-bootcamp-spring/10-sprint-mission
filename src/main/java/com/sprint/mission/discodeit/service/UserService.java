@@ -9,7 +9,7 @@ public interface UserService {
     UserInfoWithProfile createUser(UserCreateInfo userInfo);
     UserInfoWithStatus findUser(UUID userId);
     List<UserInfoWithStatus> findAll();
-    List<UserInfo> findAllByChannelId(UUID channelId);
+    List<UserInfoWithStatus> findAllByChannelId(UUID channelId);
     UserInfo updateUser(UserUpdateInfo updateInfo);
     void deleteUser(UUID userId);
 }

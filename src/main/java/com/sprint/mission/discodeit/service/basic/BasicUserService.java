@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.user.*;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -45,37 +46,43 @@ public class BasicUserService implements UserService {
             contentRepository.save(profileImage);
         }
 
-        // 반환 Dto 만들기
-        UserInfoWithProfile response = new UserInfoWithProfile(user.getUserName(), user.getEmail(),
-                profileImage == null ? null : profileImage.getId());
-
         // Repo 저장
         userStatusRepository.save(status);
         userRepository.save(user);
-        return response;
+        return UserMapper.toUserInfoWithProfile(user);
     }
 
     @Override
     public UserInfoWithStatus findUser(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
-        return toUserInfoWithStatus(user);
+        UserStatus status = userStatusRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자의 상태 정보가 존재하지 않습니다."));
+        return UserMapper.toUserInfoWithStatus(user, status);
     }
 
     @Override
     public List<UserInfoWithStatus> findAll() {
         return userRepository.findAll()
                 .stream()
-                .map(this::toUserInfoWithStatus)
+                .map(user -> {
+                    UserStatus status = userStatusRepository.findByUserId(user.getId())
+                            .orElseThrow(() -> new NoSuchElementException("해당 사용자의 상태 정보가 존재하지 않습니다."));
+                    return UserMapper.toUserInfoWithStatus(user, status);
+                })
                 .toList();
     }
 
     @Override
-    public List<UserInfo> findAllByChannelId(UUID channelId) {
+    public List<UserInfoWithStatus> findAllByChannelId(UUID channelId) {
         return userRepository.findAll()
                 .stream()
                 .filter(user -> user.getChannelIds().contains(channelId))
-                .map(user -> new UserInfo(user.getUserName(), user.getEmail()))
+                .map(user -> {
+                    UserStatus status = userStatusRepository.findByUserId(user.getId())
+                            .orElseThrow(() -> new NoSuchElementException("해당 사용자의 상태 정보가 존재하지 않습니다."));
+                    return UserMapper.toUserInfoWithStatus(user, status);
+                })
                 .toList();
     }
 
@@ -83,7 +90,7 @@ public class BasicUserService implements UserService {
     public UserInfo updateUser(UserUpdateInfo updateInfo) {
         validateUserExist(updateInfo.userName());
         validateEmailExist(updateInfo.email());
-        User findUser = userRepository.findByName(updateInfo.userName())
+        User findUser = userRepository.findById(updateInfo.userId())
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
         Optional.ofNullable(updateInfo.userName())
                 .ifPresent(findUser::updateUserName);
@@ -112,7 +119,7 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(status);
 
         userRepository.save(findUser);
-        return new UserInfo(findUser.getUserName(), findUser.getEmail());
+        return UserMapper.toUserInfo(findUser);
     }
 
     @Override
@@ -127,12 +134,6 @@ public class BasicUserService implements UserService {
             contentRepository.deleteById(user.getProfileId());
         userStatusRepository.deleteByUserId(userId);
         userRepository.deleteById(userId);
-    }
-
-    private UserInfoWithStatus toUserInfoWithStatus(User user) {
-        UserStatus status = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자의 상태 정보를 찾을 수 없습니다."));
-        return new UserInfoWithStatus(user.getUserName(), user.getEmail(), status.isOnline());
     }
 
     private void validateUserExist(String userName) {
