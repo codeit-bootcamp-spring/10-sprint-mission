@@ -92,6 +92,6 @@ public abstract class FileSerializerDeserializer<T extends BaseEntity> {
     }
 
     private Path resolveDirectory(String filePath) {
-        return Paths.get(System.getProperty("user.dir"), DATA_ROOT_PATH + filePath);
+        return Paths.get(System.getProperty("user.dir"), DATA_ROOT_PATH, filePath);
     }
 }
