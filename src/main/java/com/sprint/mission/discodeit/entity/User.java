@@ -9,7 +9,7 @@ public class User extends MutableEntity {
     private final Set<UUID> joinedChannels;
     private final List<UUID> messageHistory;
     private String accountId;           // 계정ID, 상속받은id(UUID)와 다름, 헷갈림 주의
-    private transient String password;
+    private String password;
     private String name;
     private String mail;
     private UUID profileId;
@@ -38,12 +38,6 @@ public class User extends MutableEntity {
         this.joinedChannels.remove(channelId);
     }
 
-    public void updateJoinedChannel(UUID channelId) {
-        if (this.joinedChannels.removeIf(c -> Objects.equals(c, channelId))) {
-            addJoinedChannels(channelId);
-        }
-    }
-
     // messageHistory
     public List<UUID> getMessageHistory() {
         return Collections.unmodifiableList(this.messageHistory);
@@ -57,14 +51,6 @@ public class User extends MutableEntity {
         this.messageHistory.remove(messageId);
     }
 
-    public void updateMessageHistory(UUID messageId) {
-        for (int i = 0; i < this.messageHistory.size(); i++) {
-            if (this.messageHistory.get(i).equals(messageId)) {
-                this.messageHistory.set(i, messageId);
-                break;
-            }
-        }
-    }
 
     public void updateAccountId(String accountId) {
         this.accountId = accountId;
@@ -88,7 +74,7 @@ public class User extends MutableEntity {
 
     @Override
     public String toString() {
-        return String.format("'계정ID: %s / PW: %s / 이름: %s / 메일: %s'",
-                getAccountId(), getPassword(), getName(), getMail());
+        return String.format("'계정ID: %s / 이름: %s / 메일: %s'",
+                getAccountId(), getName(), getMail());
     }
 }
