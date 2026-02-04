@@ -1,10 +1,16 @@
 package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
 
+
+@Repository
+@Primary
 public class FileChannelRepository implements ChannelRepository {
     private static final String FILE_PATH = "channels.dat";
     private Map<UUID, Channel> data;
@@ -14,16 +20,18 @@ public class FileChannelRepository implements ChannelRepository {
     }
     @Override
     public void save(Channel channel) {
+        if(channel == null) throw new IllegalArgumentException("채널이 null일 수 없습니다.");
         data.put(channel.getId(), channel);
         saveToFile();
     }
     @Override
     public void delete(UUID id) {
+        if(id == null) throw new IllegalArgumentException("채널 ID가 null일 수 없습니다.");
         data.remove(id);
     }
     @Override
     public Optional<Channel> findById(UUID id){
-
+        if(id==null) throw new IllegalArgumentException("채널 ID가 null 일 수 없습니다.");
         return Optional.ofNullable(data.get(id));
     }
     @Override

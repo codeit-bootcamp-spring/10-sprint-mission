@@ -1,45 +1,53 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
 import java.lang.annotation.Inherited;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-
+@Getter
 public class Channel extends Basic implements Serializable {
     private static final long serialVersionUID = 1L;
+
+
+    private final ChannelType channelType;
     private String channelName;
-    // 채널에서 리스트로 user 넣어주면.... 채널 누르면...
-    // 또 추가할 것..? -> 현재 채널에 있는 메세지 리스트 정의.
-    private List<Message> messages = new ArrayList<>();
-    // 채널 만들고........뭐하ㅣ.. 채널 이름 변경까지만 구현
+    // 채널에 존재하는 메세지들과 유저들 리스트 생성
+    private List<UUID> messageIds = new ArrayList<>();
     private List<User> participants = new ArrayList<>();
+
 
     public Channel(String channelName){
         super(); // 채널에도 ID 와 create 일자 생성..?
+        this.channelType = ChannelType.PUBLIC;
         this.channelName = channelName;
     }
 
-    //getter setter
-    public String getChannelName() {
-        return channelName;
+    public Channel(ChannelType channelType) {
+        super();
+        if (channelType == null) throw new IllegalArgumentException("type은 null일 수 없습니다.");
+        this.channelType = channelType;
     }
-    public List<Message> getMessages() { return messages; }
+
+
+//    getter setter
+//    public String getChannelName() { return channelName; }
+//    public List<Message> getMessages() { return messages; }
 
     public void update(String channelName) {
         this.channelName = channelName;
         update();
     }
 
-    public void addMessages(Message message) {
-        if (!messages.contains(message)) {
-            messages.add(message);
-            message.setChannel(this);
+    public void addMessages(UUID messageId) {
+        if (messageId == null) throw new IllegalArgumentException("messageId null 불가");
+        if (!messageIds.contains(messageId)) {
+            messageIds.add(messageId);
+            super.update();
         }
-    }
-
-    public List<User> getParticipants() {
-        return participants;
     }
 
     // 유저-채널 관련
