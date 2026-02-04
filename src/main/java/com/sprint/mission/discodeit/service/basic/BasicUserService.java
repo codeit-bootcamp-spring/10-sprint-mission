@@ -1,13 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.UserServiceDTO.UserCreation;
 import com.sprint.mission.discodeit.dto.UserServiceDTO.UserInfoUpdate;
 import com.sprint.mission.discodeit.dto.UserServiceDTO.UserResponse;
+import com.sprint.mission.discodeit.dto.UserServiceDTO.UsernamePassword;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.DomainRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
@@ -26,95 +27,98 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final String ID_NOT_FOUND = "%s with id %s not found";
 
-    private UserStatus getUserStatus(UUID userStatusId) {
-        return userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        ID_NOT_FOUND.formatted("UserStatus", userStatusId)));
-    }
-
-    private User getUser(UUID userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        ID_NOT_FOUND.formatted("User", userId)));
-    }
-
-    private UserResponse toResponse(User user, UserStatus userStatus) {
-        return UserResponse.builder()
-                .userId(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .isActive(userStatus.isActive())
-                .build();
+    private <T> T findEntityById(UUID id, String type, DomainRepository<T> repository) {
+        return repository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException(ID_NOT_FOUND.formatted(type, id)));
     }
 
     @Override
-    public UserResponse find(String username, String password) {
-        User user = userRepository.findAll().stream().filter(user1 -> user1.getUsername().equals(username))
-                .filter(user1 -> user1.isCorrectPassword(password))
-                .findFirst().orElseThrow(() -> new NoSuchElementException("incorrect username or password"));
-        UserStatus userStatus = getUserStatus(user.getUserStatusId());
-        return toResponse(user, userStatus);
+    public UserResponse find(UsernamePassword model) {
+        User user = userRepository.findAll()
+                .stream()
+                .filter(user1 -> user1.matchUsername(model.username()))
+                .filter(user1 -> user1.matchPassword(model.password()))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("incorrect username or password"));
+        UserStatus userStatus = findEntityById(user.getUserStatusId(), "UserStatus", userStatusRepository);
+        return user.toResponse(userStatus.isActive());
     }
 
     @Override
     public UserResponse find(UUID userId) {
-        User user = getUser(userId);
-        UserStatus userStatus = getUserStatus(user.getUserStatusId());
-        return toResponse(user, userStatus);
+        User user = findEntityById(userId, "User", userRepository);
+        UserStatus userStatus = findEntityById(user.getUserStatusId(), "UserStatus", userStatusRepository);
+        return user.toResponse(userStatus.isActive());
     }
 
     @Override
     public List<UserResponse> findAll() {
         return userRepository.findAll()
                 .stream()
-                .map(user -> find(user.getId()))
+                .map(user -> {
+                    UserStatus status = findEntityById(user.getUserStatusId(), "UserStatus", userStatusRepository);
+                    return user.toResponse(status.isActive());
+                })
                 .toList();
+    }
+
+    private void validateUserUniqueness(UserCreation model) {
+        if (userRepository.existsByUsername(model.username())) {
+            throw new IllegalArgumentException("username, %s, exist already.".formatted(model.username()));
+        }
+        if (userRepository.existsByEmail(model.email())) {
+            throw new IllegalArgumentException("email, %s, exist already.".formatted(model.email()));
+        }
+    }
+
+    private BinaryContent registerProfileImage(UserCreation model) {
+        if (model.profileImage() == null) {
+            return null;
+        }
+        BinaryContent profileImage = new BinaryContent(model.profileImage());
+        return profileRepository.save(profileImage);
     }
 
     @Override
     public UserResponse create(UserCreation model) {
-        BinaryContent profile = new BinaryContent(model.profileImageUrl());
-        profileRepository.save(profile);
+        validateUserUniqueness(model);
+
+        BinaryContent profileImage = registerProfileImage(model);
+        UUID profileImageId = profileImage == null ? null : profileImage.toResponse().id();
         UserStatus userStatus = new UserStatus(model.lastActiveAt());
         userStatusRepository.save(userStatus);
-        BinaryContentResponse profileDTO = profile.toResponse();
-        User user = new User(model.username(), model.email(),
-                model.password(), profileDTO.id(), userStatus.getId());
+        User user = User.builder()
+                .username(model.username())
+                .email(model.email())
+                .password(model.password())
+                .profileId(profileImageId)
+                .userStatusId(userStatus.toResponse().id())
+                .build();
         userRepository.save(user);
-        return toResponse(user, userStatus);
+        return user.toResponse(userStatus.isActive());
     }
 
     @Override
     public UserResponse update(UserInfoUpdate model) {
-        User user = userRepository.findById(model.userId())
-                .orElseThrow(() -> new NoSuchElementException(
-                        ID_NOT_FOUND.formatted("User", model.userId())));
-        user.update(model.newUsername(), model.newEmail(), model.newPassword());
-        BinaryContent profile = profileRepository.findById(model.userId())
-                .orElseThrow(() -> new NoSuchElementException(
-                        ID_NOT_FOUND.formatted("Profile", model.userId())));
-        profile.setUrl(model.newUrl());
-        profileRepository.save(profile);
+        User user = findEntityById(model.userId(), "User", userRepository);
+        user.update(model);
         userRepository.save(user);
-        UserStatus userStatus = getUserStatus(user.getUserStatusId());
-        return toResponse(user, userStatus);
+        UserStatus userStatus = findEntityById(user.getUserStatusId(), "UserStatus", userStatusRepository);
+        return user.toResponse(userStatus.isActive());
     }
 
     @Override
     public void delete(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        ID_NOT_FOUND.formatted("User", userId)));
-        if (!profileRepository.existsById(user.getProfileId())) {
-            throw new NoSuchElementException(
-                    ID_NOT_FOUND.formatted("Profile", user.getProfileId()));
-        }
-        profileRepository.deleteById(user.getProfileId());
-        if (!userStatusRepository.existsById(user.getUserStatusId())) {
-            throw new NoSuchElementException(
-                    ID_NOT_FOUND.formatted("UserStatus", user.getUserStatusId()));
-        }
-        userStatusRepository.deleteById(user.getUserStatusId());
+        User user = findEntityById(userId, "User", userRepository);
+        deleteIfExist(user.getProfileId(), "Profile", profileRepository);
+        deleteIfExist(user.getUserStatusId(), "UserStatus", userStatusRepository);
         userRepository.deleteById(userId);
+    }
+
+    private <T extends DomainRepository<?>> void deleteIfExist(UUID id, String type, T repository) {
+        if (!repository.existsById(id)) {
+            throw new NoSuchElementException(ID_NOT_FOUND.formatted(type, id));
+        }
+        repository.deleteById(id);
     }
 }

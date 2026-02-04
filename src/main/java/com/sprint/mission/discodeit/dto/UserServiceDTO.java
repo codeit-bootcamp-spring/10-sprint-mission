@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
+import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentCreation;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -7,20 +8,18 @@ import java.util.UUID;
 
 public interface UserServiceDTO {
     record UserCreation(@NonNull String username, @NonNull String email, @NonNull String password,
-                        String profileImageUrl, long lastActiveAt) {
-        public UserCreation {
-            if (username.equals(email)) {
-                throw new IllegalArgumentException(
-                        "username(%s) must be different from email(%s)".formatted(username, email));
-            }
-        }
+                        BinaryContentCreation profileImage, long lastActiveAt) {
+    }
+
+    record UsernamePassword(@NonNull String username, @NonNull String password) {
     }
 
     record UserInfoUpdate(@NonNull UUID userId, String newUsername, String newEmail, String newPassword,
-                          String newUrl) {
+                          UUID newProfileId) {
     }
 
     @Builder
-    record UserResponse(UUID userId, String username, String email, boolean isActive) {
+    record UserResponse(UUID userId, String username, String email, boolean isActive, UUID profileId,
+                        UUID userStatusId) {
     }
 }
