@@ -38,7 +38,7 @@ public class BasicMessageService implements MessageService {
         //메시지 객체 내부의 첨부파일Id 리스트 저장용
         List<UUID> attachmentIds = new ArrayList<>();
         //요청에 첨부파일이 있다면 for-loop를 통해 객체 생성 후 저장
-        if (!request.attachments().isEmpty()) {
+        if (request.attachments() != null && !request.attachments().isEmpty()) {
             for (BinaryContentDto.Create attachmentDto : request.attachments()) {
                 BinaryContent attachment = new BinaryContent(
                         attachmentDto.fileName(),
