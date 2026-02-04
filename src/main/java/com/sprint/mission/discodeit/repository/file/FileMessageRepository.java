@@ -3,22 +3,40 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
-import java.util.UUID;
 
 @Repository
-@RequiredArgsConstructor
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "file"
+)
 public class FileMessageRepository implements MessageRepository {
 
-    private static final String FILE_PATH = "messages.dat";
+    private final Path filePath;
+
+    public FileMessageRepository(
+            @Value("${discodeit.repository.file-directory:.discodeit}") String fileDirectory
+    ) {
+        try {
+            Files.createDirectories(Paths.get(fileDirectory));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        this.filePath = Paths.get(fileDirectory, "messages.dat");
+    }
 
     @SuppressWarnings("unchecked")
     private Map<UUID, Message> loadMessageFile() {
-        File file = new File(FILE_PATH);
+        File file = filePath.toFile();
         if (!file.exists()) return new LinkedHashMap<>();
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
@@ -33,7 +51,7 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     private void saveMessageFile(Map<UUID, Message> messages) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
             oos.writeObject(messages);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -41,7 +59,7 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     // 초기화(원하면 유지)
-    public void resetMessageFile() {
+    public void resetFile() {
         saveMessageFile(new LinkedHashMap<>());
     }
 
@@ -57,7 +75,7 @@ public class FileMessageRepository implements MessageRepository {
 
         List<Message> result = new ArrayList<>();
         for (Message m : loadMessageFile().values()) {
-            if (channelId.equals(m.getId())) result.add(m);
+            if (channelId.equals(m.getChannelId())) result.add(m);
         }
         return result;
     }

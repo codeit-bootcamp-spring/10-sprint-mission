@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -31,25 +30,28 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageResponse create(MessageCreateRequest req) {
         if (req == null) throw new IllegalArgumentException("request is null");
+        if (req.channelId() == null) throw new IllegalArgumentException("channelId is null");
+        if (req.userId() == null) throw new IllegalArgumentException("userId is null");
         if (req.content() == null || req.content().isBlank()) {
             throw new IllegalArgumentException("content is blank");
         }
 
-        // 존재 검증
+        // 존재 검증 (Repository가 없으면 예외 던진다는 전제)
         channelRepository.findChannel(req.channelId());
         if (userRepository.findById(req.userId()).isEmpty()) throw new UserNotFoundException();
 
-        // 첨부파일(선택) 검증
-        List<UUID> attachmentIds = req.attachmentIds() == null ? List.of() : req.attachmentIds();
+        // 첨부파일(선택) 정리 + 방어적 복사
+        List<UUID> attachmentIds = (req.attachmentIds() == null) ? List.of() : List.copyOf(req.attachmentIds());
+
+        // 첨부파일 검증 (중복 제거 후 비교)
         if (!attachmentIds.isEmpty()) {
-            // findAllByIdIn 이나 existsAllByIdIn 같은 메소드로 바꿔도 됨
-            var found = binaryContentRepository.findAllByIdIn(attachmentIds);
-            if (found.size() != attachmentIds.size()) {
+            List<UUID> distinctIds = attachmentIds.stream().distinct().toList();
+            var found = binaryContentRepository.findAllByIdIn(distinctIds);
+            if (found.size() != distinctIds.size()) {
                 throw new IllegalArgumentException("attachmentIds contains non-existing id");
             }
         }
 
-        // 메시지 생성/저장 (Repository/Entity는 너가 리팩토링할 시그니처 기준)
         Message saved = messageRepository.save(
                 new Message(
                         req.channelId(),
@@ -64,6 +66,8 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public List<MessageResponse> findAllByChannelId(UUID channelId) {
+        if (channelId == null) throw new IllegalArgumentException("channelId is null");
+
         channelRepository.findChannel(channelId);
 
         return messageRepository.findAllByChannelId(channelId).stream()
@@ -74,6 +78,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageResponse update(MessageUpdateRequest req) {
         if (req == null) throw new IllegalArgumentException("request is null");
+        if (req.messageId() == null) throw new IllegalArgumentException("messageId is null");
         if (req.content() == null || req.content().isBlank()) {
             throw new IllegalArgumentException("content is blank");
         }
@@ -89,14 +94,15 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public void delete(UUID messageId) {
+        if (messageId == null) throw new IllegalArgumentException("messageId is null");
+
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(MessageNotFoundException::new);
 
-        List<UUID> attachmentIds = message.getAttachmentIds() == null
+        List<UUID> attachmentIds = (message.getAttachmentIds() == null)
                 ? Collections.emptyList()
                 : message.getAttachmentIds();
 
-        // 첨부파일 같이 삭제
         for (UUID attachmentId : attachmentIds) {
             binaryContentRepository.delete(attachmentId);
         }
@@ -116,4 +122,3 @@ public class BasicMessageService implements MessageService {
         );
     }
 }
-

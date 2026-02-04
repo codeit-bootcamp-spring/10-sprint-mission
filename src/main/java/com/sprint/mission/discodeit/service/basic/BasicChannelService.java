@@ -32,7 +32,7 @@ public class BasicChannelService implements ChannelService {
 
     // PRIVATE 채널 생성
     @Override
-    public Channel createPrivate(PrivateChannelCreateRequest privateChReq) {
+    public UUID createPrivate(PrivateChannelCreateRequest privateChReq) {
         if (privateChReq == null || privateChReq.participantIds() == null || privateChReq.participantIds().isEmpty()) {
             throw new IllegalArgumentException("PRIVATE 채널은 최소 1명 이상의 참여자가 필요합니다.");
         }
@@ -42,32 +42,52 @@ public class BasicChannelService implements ChannelService {
                 .toList();
 
         Channel channel = new Channel(participants);
-        Channel savedChannel = channelRepository.createChannel(channel);
+        UUID channelId = channelRepository.createChannel(channel);
 
         // 참여자별 ReadStatus 생성
-        participants.forEach(user ->
-                readStatusRepository.save(new ReadStatus(user.getId(), savedChannel.getId()))
-        );
+        participants.forEach(user -> {
+            ReadStatus rs = new ReadStatus(user.getId(), channelId);
+            rs.updateLastReadAt(Instant.now());
+            readStatusRepository.save(rs);
+        });
 
-        return savedChannel;
+        return channelId;
     }
 
     // PUBLIC 채널 생성
     @Override
-    public Channel createPublic(PublicChannelCreateRequest publicChReq) {
+    public UUID createPublic(PublicChannelCreateRequest publicChReq) {
         if (publicChReq == null || publicChReq.name() == null || publicChReq.name().isBlank()) {
             throw new IllegalArgumentException("PUBLIC 채널은 이름이 필요합니다.");
         }
 
-        // PUBLIC 채널 기존 로직 유지
         Channel channel = new Channel(publicChReq.name(), publicChReq.description());
         return channelRepository.createChannel(channel);
     }
 
     // 특정 채널 조회
     @Override
-    public Channel find(UUID channelId) {
-        return channelRepository.findChannel(channelId);
+    public ChannelResponse find(UUID channelId) {
+        Channel channel = channelRepository.findChannel(channelId);
+        if(channel == null) throw new ChannelNotFoundException();
+
+        Instant lastMessageTime = messageRepository.findAllByChannelId(channelId).stream()
+                .map(Message::getCreatedAt)
+                .max(Instant::compareTo)
+                .orElse(null);
+
+        List<UUID> participantIds = channel.isPrivate()
+                ? channel.getParticipants().stream().map(User::getId).toList()
+                : List.of();
+
+        return new ChannelResponse(
+                channel.getId(),
+                channel.getChannelName(),
+                channel.getDescription(),
+                channel.isPrivate(),
+                lastMessageTime,
+                participantIds
+        );
     }
 
     // 특정 User가 볼 수 있는 채널 목록 조회
@@ -107,6 +127,8 @@ public class BasicChannelService implements ChannelService {
     @Override
     public Channel addUserInChannel(UUID channelId, UUID userId) {
         Channel channel = channelRepository.findChannel(channelId);
+        if(channel == null) throw new ChannelNotFoundException();
+
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         if (channel.getParticipants().stream().anyMatch(u -> u.getId().equals(userId))) {
@@ -117,7 +139,10 @@ public class BasicChannelService implements ChannelService {
 
         // PRIVATE 채널이면 ReadStatus도 생성
         if (channel.isPrivate()) {
-            readStatusRepository.save(new ReadStatus(user.getId(), channel.getId()));
+            ReadStatus rs = new ReadStatus(user.getId(), channelId);
+            rs.updateLastReadAt(Instant.now());
+            readStatusRepository.save(rs);
+
         }
 
         return channelRepository.saveChannel(channel);
@@ -127,6 +152,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public Channel update(ChannelUpdateRequest req) {
         Channel channel = channelRepository.findChannel(req.channelId());
+        if(channel == null) throw new ChannelNotFoundException();
 
         if (channel.isPrivate()) {
             throw new IllegalStateException("PRIVATE 채널은 수정할 수 없습니다.");
@@ -139,7 +165,8 @@ public class BasicChannelService implements ChannelService {
     // 채널 삭제 (Message, ReadStatus 같이 삭제)
     @Override
     public void delete(UUID channelId) {
-        channelRepository.findChannel(channelId); // 없으면 예외
+        Channel channel = channelRepository.findChannel(channelId);
+        if (channel == null) throw new ChannelNotFoundException();
 
         messageRepository.findAllByChannelId(channelId)
                 .forEach(m -> messageRepository.delete(m.getId()));
@@ -152,6 +179,8 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void removeUserFromChannel(UUID channelId, UUID userId) {
         Channel channel = channelRepository.findChannel(channelId);
+        if (channel == null) throw new ChannelNotFoundException();
+
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
         boolean removed = channel.getParticipants().removeIf(u -> u.getId().equals(userId));
@@ -176,16 +205,13 @@ public class BasicChannelService implements ChannelService {
     @Override
     public List<UUID> findAllUserInChannel(UUID channelId) {
         Channel channel = channelRepository.findChannel(channelId);
+        if (channel == null) throw new ChannelNotFoundException();
+
         return channel.getParticipants().stream().map(User::getId).toList();
     }
 
     @Override
     public boolean existsById(UUID channelId) {
-        try {
-            channelRepository.findChannel(channelId);
-            return true;
-        } catch (ChannelNotFoundException e) {
-            return false;
-        }
+        return channelRepository.findChannel(channelId) != null;
     }
 }

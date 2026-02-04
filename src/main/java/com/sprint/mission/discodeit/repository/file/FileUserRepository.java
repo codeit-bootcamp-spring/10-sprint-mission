@@ -3,38 +3,58 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Repository
-@RequiredArgsConstructor
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "file"
+)
 public class FileUserRepository implements UserRepository {
 
-    private static final String FILE_PATH = "users.dat";
+    private final Path filePath;
 
-    private Map<UUID, User> loadUserFile(){
-        File file = new File(FILE_PATH);
-        if (!file.exists()){
-            return new HashMap<>();
-        } try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))){
+    public FileUserRepository(
+            @Value("${discodeit.repository.file-directory:.discodeit}") String fileDirectory
+    ) {
+        try {
+            Files.createDirectories(Paths.get(fileDirectory));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        this.filePath = Paths.get(fileDirectory, "users.dat");
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<UUID, User> loadUserFile() {
+        File file = filePath.toFile();
+        if (!file.exists()) return new HashMap<>();
+
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             return (Map<UUID, User>) ois.readObject();
-        }  catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private void saveUserFile(Map<UUID, User> users){
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+    private void saveUserFile(Map<UUID, User> users) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
             oos.writeObject(users);
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void resetUserFile(){
+    public void resetFile() {
         saveUserFile(new LinkedHashMap<>());
     }
 

@@ -37,7 +37,6 @@ public class Channel extends BaseEntity {
         }
         if (name != null) this.channelName = name;
         if (description != null) this.description = description;
-        // 요구사항에 채널 수정 시간 필요 없다면 touch() 없어도 됨.
         // touch();
     }
 

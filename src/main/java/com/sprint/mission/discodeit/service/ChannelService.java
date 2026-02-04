@@ -11,12 +11,12 @@ import java.util.UUID;
 
 public interface ChannelService {
     // 채널 생성 (pri / pub)
-    Channel createPrivate(
-            PrivateChannelCreateRequest privateChannelCreateRequest);
-    Channel createPublic(
+    UUID createPublic(
             PublicChannelCreateRequest publicChannelCreateRequest);
+    UUID createPrivate(
+            PrivateChannelCreateRequest privateChannelCreateRequest);
     // 특정 채널 조회
-    Channel find(UUID channelId);
+    ChannelResponse find(UUID channelId);
     // 전체 채널 목록 조회
     List<ChannelResponse> findAllByUserId(UUID userId);
     // 채널에 사용자 추가

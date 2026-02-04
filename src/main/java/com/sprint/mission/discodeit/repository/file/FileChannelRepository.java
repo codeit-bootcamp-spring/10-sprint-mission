@@ -3,21 +3,42 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Repository
-@RequiredArgsConstructor
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "file"
+)
 public class FileChannelRepository implements ChannelRepository {
 
-    private static final String FILE_PATH = "channels.dat";
+    private final Path filePath;
 
+    public FileChannelRepository(
+            @Value("${discodeit.repository.file-directory:.discodeit}") String fileDirectory
+    ) {
+        try {
+            Files.createDirectories(Paths.get(fileDirectory));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        this.filePath = Paths.get(fileDirectory, "channels.dat");
+    }
+
+    @SuppressWarnings("unchecked")
     private Map<UUID, Channel> loadChannelFile() {
-        File file = new File(FILE_PATH);
+        File file = filePath.toFile();
         if (!file.exists()) return new LinkedHashMap<>();
+
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             return (Map<UUID, Channel>) ois.readObject();
         } catch (Exception e) {
@@ -26,23 +47,23 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     private void saveChannelFile(Map<UUID, Channel> channels) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
             oos.writeObject(channels);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void resetChannelFile() {
+    public void resetFile() {
         saveChannelFile(new LinkedHashMap<>());
     }
 
     @Override
-    public Channel createChannel(Channel channel) {
+    public UUID createChannel(Channel channel) {
         Map<UUID, Channel> channels = loadChannelFile();
         channels.put(channel.getId(), channel);
         saveChannelFile(channels);
-        return channel;
+        return channel.getId();
     }
 
     @Override

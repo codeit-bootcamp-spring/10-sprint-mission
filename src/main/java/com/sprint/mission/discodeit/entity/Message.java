@@ -3,10 +3,6 @@ package com.sprint.mission.discodeit.entity;
 import lombok.Getter;
 
 import java.io.Serializable;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,7 +20,7 @@ public class Message extends BaseEntity implements Serializable {
             this.channelId = channelId;
             this.userId = userId;
             this.content = content;
-            this.attachmentIds = attachmentIds != null ? attachmentIds : List.of();
+            this.attachmentIds = (attachmentIds == null) ? List.of() : List.copyOf(attachmentIds);
         }
 
         public void updateContent(String content) {

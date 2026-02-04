@@ -1,20 +1,41 @@
 package com.sprint.mission.discodeit.repository.file;
 
-
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Repository
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "file"
+)
 public class FileBinaryContentRepository implements BinaryContentRepository {
 
-    private static final String FILE_PATH = "binaryContent.dat";
+    private final Path filePath;
 
+    public FileBinaryContentRepository(
+            @Value("${discodeit.repository.file-directory:.discodeit}") String fileDirectory
+    ) {
+        try {
+            Files.createDirectories(Paths.get(fileDirectory));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        this.filePath = Paths.get(fileDirectory, "binaryContent.dat");
+    }
+
+    @SuppressWarnings("unchecked")
     private Map<UUID, BinaryContent> loadBinaryFile() {
-        File file = new File(FILE_PATH);
+        File file = filePath.toFile();
         if (!file.exists()) return new HashMap<>();
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
@@ -25,11 +46,16 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     private void saveBinaryFile(Map<UUID, BinaryContent> map) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
             oos.writeObject(map);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    // 초기화(원하면 유지)
+    public void resetFile() {
+        saveBinaryFile(new LinkedHashMap<>());
     }
 
     @Override
@@ -61,4 +87,3 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
         saveBinaryFile(map);
     }
 }
-

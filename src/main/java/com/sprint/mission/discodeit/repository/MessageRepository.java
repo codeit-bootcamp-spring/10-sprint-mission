@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-
 public interface MessageRepository {
     Optional<Message> findById(UUID id);
    List<Message> findAllByChannelId(UUID channelId);

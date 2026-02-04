@@ -1,20 +1,41 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Repository
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "file"
+)
 public class FileUserStatusRepository implements UserStatusRepository {
 
-    private static final String FILE_PATH = "userStatus.dat";
+    private final Path filePath;
 
+    public FileUserStatusRepository(
+            @Value("${discodeit.repository.file-directory:.discodeit}") String fileDirectory
+    ) {
+        try {
+            Files.createDirectories(Paths.get(fileDirectory));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        this.filePath = Paths.get(fileDirectory, "userStatus.dat");
+    }
+
+    @SuppressWarnings("unchecked")
     private Map<UUID, UserStatus> loadUserStatusFile() {
-        File file = new File(FILE_PATH);
+        File file = filePath.toFile();
         if (!file.exists()) return new HashMap<>();
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
@@ -25,11 +46,16 @@ public class FileUserStatusRepository implements UserStatusRepository {
     }
 
     private void saveUserStatusFile(Map<UUID, UserStatus> map) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
             oos.writeObject(map);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    // 초기화(원하면 유지)
+    public void resetFile() {
+        saveUserStatusFile(new LinkedHashMap<>());
     }
 
     @Override
@@ -45,7 +71,6 @@ public class FileUserStatusRepository implements UserStatusRepository {
         return Optional.ofNullable(loadUserStatusFile().get(id));
     }
 
-
     @Override
     public List<UserStatus> findAll() {
         return new ArrayList<>(loadUserStatusFile().values());
@@ -56,7 +81,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
         return loadUserStatusFile().values().stream()
                 .filter(status -> status.getUserId().equals(userId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("UserStatus not found"));
+                .orElse(null);
     }
 
     @Override

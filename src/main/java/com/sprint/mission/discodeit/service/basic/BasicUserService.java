@@ -69,8 +69,8 @@ public class BasicUserService implements UserService {
             user.updateProfileImage(image.getId());
         }
 
-        userStatusRepository.save(status);
         userRepository.save(user);
+        userStatusRepository.save(status);
 
         return new UserResponse(
                 user.getId(),
@@ -90,8 +90,9 @@ public class BasicUserService implements UserService {
                 .orElseThrow(UserNotFoundException::new);
 
         //유저 상태 조회
-        UserStatus status = userStatusRepository.findById(userId)
-                .orElseThrow(StatusNotFoundException::new);
+        UserStatus status = userStatusRepository.findByUserId(userId);
+        if (status == null) throw new StatusNotFoundException();
+
 
         return new  UserResponse(
                 user.getId(),
@@ -114,8 +115,9 @@ public class BasicUserService implements UserService {
                 .map(user -> {
 
                     // 각 유저의 상태 조회
-                    UserStatus status = userStatusRepository.findById(user.getId())
-                            .orElseThrow(StatusNotFoundException::new);
+                    UserStatus status = userStatusRepository.findByUserId(user.getId());
+                    if (status == null) throw new StatusNotFoundException();
+
 
                     // DTO 변환 (비밀번호 제외)
                     return new UserResponse(
@@ -167,7 +169,6 @@ public class BasicUserService implements UserService {
 
         //프로필 이미지 교체
         request.profileImage().ifPresent(imgReq -> {
-
             // 기존 이미지 삭제
             if (user.getProfileImageId() != null) {
                 binaryContentRepository.delete(user.getProfileImageId());
@@ -183,17 +184,16 @@ public class BasicUserService implements UserService {
             );
 
             binaryContentRepository.save(newImage);
-
-            // 유저에 새 이미지 연결
             user.updateProfileImage(newImage.getId());
+
         });
 
-        //변경된 유저 저장
         userRepository.save(user);
 
         //상태 조회
-        UserStatus status = userStatusRepository.findById(user.getId())
-                .orElseThrow(StatusNotFoundException::new);
+        UserStatus status = userStatusRepository.findByUserId(user.getId());
+        if (status == null) throw new StatusNotFoundException();
+
 
         //DTO 반환
         return new UserResponse(
@@ -217,7 +217,6 @@ public class BasicUserService implements UserService {
         if (user.getProfileImageId() != null) {
             binaryContentRepository.delete(user.getProfileImageId());
         }
-
         userStatusRepository.deleteByUserId(userId);
         readStatusRepository.deleteByUserId(userId);
         userRepository.delete(userId);
