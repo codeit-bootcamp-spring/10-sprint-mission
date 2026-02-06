@@ -9,6 +9,7 @@ import java.util.UUID;
 public record ChannelWithLastMessageDTO(
         UUID channelId,
         String channelName,
+        String description,
         ChannelType channelType,
         List<UUID> joinedUserIds,
         Instant lastMessageAt

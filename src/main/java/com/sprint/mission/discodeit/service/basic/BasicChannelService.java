@@ -77,24 +77,22 @@ public class BasicChannelService implements ChannelService {
         Channel channel = findChannelOrThrow(channelId);
         Instant lastMessageAt = findLatestMessageAt(channelId);
 
-        List<UUID> joinUserIds = channel.getChannelType() == ChannelType.PRIVATE
-                ? channel.getJoinedUserIds()
-                : List.of();
-
         return new ChannelWithLastMessageDTO(
                 channel.getId(),
                 channel.getChannelName(),
+                channel.getDescription(),
                 channel.getChannelType(),
-                joinUserIds,
+                channel.getJoinedUserIds(),
                 lastMessageAt
         );
     }
 
     @Override
     public ChannelWithLastMessageDTO updateChannel(
+            UUID channelId,
             UpdateChannelRequestDTO dto
     ) {
-        Channel channel = findChannelOrThrow(dto.channelId());
+        Channel channel = findChannelOrThrow(channelId);
 
         if (channel.getChannelType() == ChannelType.PRIVATE) {
             throw new IllegalArgumentException("비공개 채널은 수정할 수 없습니다.");
@@ -108,7 +106,7 @@ public class BasicChannelService implements ChannelService {
         }
 
         channelRepository.save(channel);
-        return ChannelMapper.toWithLastMessage(channel, findLatestMessageAt(dto.channelId()));
+        return ChannelMapper.toWithLastMessage(channel, findLatestMessageAt(channelId));
     }
 
     @Override
@@ -204,6 +202,7 @@ public class BasicChannelService implements ChannelService {
                     return new ChannelWithLastMessageDTO(
                             channel.getId(),
                             channel.getChannelName(),
+                            channel.getDescription(),
                             channel.getChannelType(),
                             joinedUserIdsToReturn,
                             lastMessageAt
@@ -222,6 +221,7 @@ public class BasicChannelService implements ChannelService {
         }
 
         channel.updateChannelName(dto.newChannelName());
+        channelRepository.save(channel);
     }
 
     private void updateChannelDescription(UpdateChannelRequestDTO dto, Channel channel) {
@@ -230,5 +230,6 @@ public class BasicChannelService implements ChannelService {
         }
 
         channel.updateDescription(dto.newChannelDescription());
+        channelRepository.save(channel);
     }
 }
