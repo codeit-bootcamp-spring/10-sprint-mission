@@ -27,7 +27,7 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    public UserInfoWithProfile createUser(UserCreateInfo userInfo) {
+    public UserInfo createUser(UserCreateInfo userInfo) {
         // 유저 이름 & 이메일 검증
         validateUserExist(userInfo.userName());
         validateEmailExist(userInfo.email());
@@ -49,7 +49,7 @@ public class BasicUserService implements UserService {
         // Repo 저장
         userStatusRepository.save(status);
         userRepository.save(user);
-        return UserMapper.toUserInfoWithProfile(user);
+        return UserMapper.toUserInfo(user, status);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class BasicUserService implements UserService {
         userStatusRepository.save(status);
 
         userRepository.save(findUser);
-        return UserMapper.toUserInfo(findUser);
+        return UserMapper.toUserInfo(findUser, status);
     }
 
     @Override

@@ -6,5 +6,7 @@ public record UserInfoWithStatus(
         UUID userId,
         String userName,
         String email,
+        UUID profileId,
+        UUID statusId,
         boolean isOnline
 ) {}

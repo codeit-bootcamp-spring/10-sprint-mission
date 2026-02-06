@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.user.UserCreateInfo;
-import com.sprint.mission.discodeit.dto.user.UserInfo;
-import com.sprint.mission.discodeit.dto.user.UserInfoWithProfile;
-import com.sprint.mission.discodeit.dto.user.UserInfoWithStatus;
+import com.sprint.mission.discodeit.dto.user.*;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 
@@ -11,20 +8,13 @@ public class UserMapper {
     private UserMapper() {
     }
 
-    public static UserInfo toUserInfo(User user) {
+    public static UserInfo toUserInfo(User user, UserStatus userStatus) {
         return new UserInfo(
                 user.getId(),
                 user.getUserName(),
-                user.getEmail()
-        );
-    }
-
-    public static UserInfoWithProfile toUserInfoWithProfile(User user) {
-        return new UserInfoWithProfile(
-                user.getId(),
-                user.getUserName(),
                 user.getEmail(),
-                user.getProfileId()
+                user.getProfileId(),
+                userStatus.getId()
         );
     }
 
@@ -33,6 +23,8 @@ public class UserMapper {
                 user.getId(),
                 user.getUserName(),
                 user.getEmail(),
+                user.getProfileId(),
+                userStatus.getId(),
                 userStatus.isOnline()
         );
     }

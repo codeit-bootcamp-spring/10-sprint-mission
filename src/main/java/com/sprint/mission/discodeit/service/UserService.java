@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    UserInfoWithProfile createUser(UserCreateInfo userInfo);
+    UserInfo createUser(UserCreateInfo userInfo);
     UserInfoWithStatus findUser(UUID userId);
     List<UserInfoWithStatus> findAll();
     List<UserInfoWithStatus> findAllByChannelId(UUID channelId);
