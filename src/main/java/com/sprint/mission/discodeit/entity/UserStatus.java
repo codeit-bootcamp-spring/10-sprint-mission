@@ -28,7 +28,7 @@ public class UserStatus extends BaseEntity {
         return updatedAt.isAfter(beforeFiveMinute);    // 마지막 접속 시간이 5분 전이면
     }
 
-    public StatusType getStatusType(){
+    public StatusType updateStatusType(){
         if (isOnline()) {
             this.statusType = StatusType.ONLINE;
         }else{
@@ -40,6 +40,6 @@ public class UserStatus extends BaseEntity {
     // 마지막 접속 시간 갱신
     public void updateLastActiveTime(){
         this.onUpdate();
-        getStatusType();
     }
+
 }

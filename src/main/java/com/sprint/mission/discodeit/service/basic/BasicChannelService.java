@@ -34,7 +34,11 @@ public class BasicChannelService implements ChannelService, ClearMemory {
         readStatusRepository.save(readStatus);
         channelRepository.save(channel);
         userStatusRepository.findByUserId(publicChannelCreateDto.ownerId())
-                .ifPresent(UserStatus::updateLastActiveTime);
+                .ifPresent(us -> {
+                    us.updateLastActiveTime();
+                    us.updateStatusType();
+                    userStatusRepository.save(us);
+                });
         return channelMapper.toChannelInfoDto(channel, messageRepository);
     }
 
@@ -55,7 +59,11 @@ public class BasicChannelService implements ChannelService, ClearMemory {
 
         channelRepository.save(channel);
         userStatusRepository.findByUserId(privateChannelCreateDto.ownerId())
-                .ifPresent(UserStatus::updateLastActiveTime);
+                .ifPresent(us -> {
+                    us.updateLastActiveTime();
+                    us.updateStatusType();
+                    userStatusRepository.save(us);
+                });
         return channelMapper.toChannelInfoDto(channel, messageRepository);
     }
 
@@ -104,7 +112,10 @@ public class BasicChannelService implements ChannelService, ClearMemory {
         readStatusRepository.save(readStatus);
         channelRepository.save(channel);
         userRepository.save(user);
-        Objects.requireNonNull(userStatusRepository.findByUserId(userId).orElse(null)).updateLastActiveTime();
+        UserStatus userStatus = userStatusRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("해당 사용자 상태가 없습니다."));
+        userStatus.updateLastActiveTime();
+        userStatus.updateStatusType();
+        userStatusRepository.save(userStatus);
 
     }
 

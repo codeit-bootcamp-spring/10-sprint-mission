@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserInfoDto;
+import com.sprint.mission.discodeit.dto.UserResponseDto;
 import com.sprint.mission.discodeit.dto.UserCreateDto;
 import com.sprint.mission.discodeit.dto.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.*;
@@ -25,7 +25,7 @@ public class BasicUserService implements UserService, ClearMemory {
     private final UserMapper userMapper;
 
     @Override
-    public UserInfoDto create(UserCreateDto request) {
+    public UserResponseDto create(UserCreateDto request) {
         userRepository.findByName(request.userName())
                 .ifPresent(u -> {
                     throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
@@ -39,27 +39,27 @@ public class BasicUserService implements UserService, ClearMemory {
         UserStatus userStatus = new UserStatus(user.getId());
         userStatusRepository.save(userStatus);
         userRepository.save(user);
-        return userMapper.toUserInfoDto(user, userStatus.getStatusType());
+        return userMapper.toUserInfoDto(user, userStatus.updateStatusType());
     }
 
     @Override
-    public UserInfoDto findById(UUID id) {
+    public UserResponseDto findById(UUID id) {
         User user = userRepository.findById(id).orElseThrow(()
                 -> new IllegalArgumentException("실패 : 존재하지 않는 사용자 ID입니다."));
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId()).orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
-        return userMapper.toUserInfoDto(user, userStatus.getStatusType());
+        return userMapper.toUserInfoDto(user, userStatus.updateStatusType());
     }
 
     @Override
-    public List<UserInfoDto> findAll() {
+    public List<UserResponseDto> findAll() {
         List<User> users = userRepository.findAll();
         Map<UUID, UserStatus> userStatusMap = userStatusRepository.getUserStatusMap();
 
-        List<UserInfoDto> infoList
+        List<UserResponseDto> infoList
                 = users.stream()
                 .map(u -> {
                     UserStatus userStatus = userStatusMap.get(u.getId());
-                    StatusType status = (userStatus == null) ? StatusType.OFFLINE : userStatus.getStatusType();
+                    StatusType status = (userStatus == null) ? StatusType.OFFLINE : userStatus.updateStatusType();
                     return userMapper.toUserInfoDto(u, status);
                 })
                 .toList();
@@ -67,8 +67,8 @@ public class BasicUserService implements UserService, ClearMemory {
     }
 
     @Override
-    public UserInfoDto update(UserUpdateDto request) {
-        User user = userRepository.findById(request.userId())
+    public UserResponseDto update(UUID id, UserUpdateDto request) {
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
                 .orElseGet(() -> new UserStatus(user.getId()));
@@ -82,23 +82,23 @@ public class BasicUserService implements UserService, ClearMemory {
         }
         updateLastActiveTime(request.userId());   // 마지막 접속 시간 갱신
         userRepository.save(user);
-        return userMapper.toUserInfoDto(user, userStatus.getStatusType());
+        return userMapper.toUserInfoDto(user, userStatus.updateStatusType());
     }
 
     @Override
     public void delete(UUID id) {
-        UserInfoDto userInfoDto = findById(id);
+        UserResponseDto userResponseDto = findById(id);
 
         // 프로필 삭제
-        if(userInfoDto.profileId() != null) {
-            binaryContentRepository.delete(userInfoDto.profileId());
+        if(userResponseDto.profileId() != null) {
+            binaryContentRepository.delete(userResponseDto.profileId());
         }
 
         // UserStatus 삭제
-        userStatusRepository.deleteByUserId(userInfoDto.userId());
+        userStatusRepository.deleteByUserId(userResponseDto.userId());
 
         // 사용자가 포함된 채널 정리
-        channelRepository.deleteByUserId(userInfoDto.userId());
+        channelRepository.deleteByUserId(userResponseDto.userId());
 
         // 사용자가 작성한 메시지 삭제
         messageRepository.deleteByUserId(id);
@@ -119,6 +119,7 @@ public class BasicUserService implements UserService, ClearMemory {
         Optional<UserStatus> userStatus = userStatusRepository.findByUserId(id);
         userStatus.ifPresent(us -> {
             us.updateLastActiveTime();
+            us.updateStatusType();
             userStatusRepository.save(us);
         });
     }

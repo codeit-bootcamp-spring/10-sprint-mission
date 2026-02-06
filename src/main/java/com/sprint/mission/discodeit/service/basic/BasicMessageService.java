@@ -42,7 +42,11 @@ public class BasicMessageService implements MessageService, ClearMemory {
 
         // 사용자 활동 시간 갱신
         userStatusRepository.findByUserId(messageCreateDto.senderId())
-                .ifPresent(UserStatus::updateLastActiveTime);
+                .ifPresent(us -> {
+                    us.updateLastActiveTime();
+                    us.updateStatusType();
+                    userStatusRepository.save(us);
+                });
 
         messageRepository.save(message);
         return messageMapper.toMessageInfoDto(message);
