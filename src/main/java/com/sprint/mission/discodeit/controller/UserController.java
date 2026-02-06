@@ -33,8 +33,8 @@ public class UserController {
     //사용자 등록
     @RequestMapping(method = RequestMethod.POST)
     public UserResponseDto postUser(
-        @RequestBody UserCreateRequestDto dto,
-        @RequestParam MultipartFile profileImage
+            @RequestPart("dto") UserCreateRequestDto dto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) throws IOException {
         return userService.create(dto, profileImage);
     }
