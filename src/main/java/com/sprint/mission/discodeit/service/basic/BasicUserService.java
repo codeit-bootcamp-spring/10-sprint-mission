@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserWithOnlineResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -50,7 +50,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse findUserById(UUID userId) {
+    public UserWithOnlineResponse findUserById(UUID userId) {
         // User ID null 검증
         ValidationMethods.validateId(userId);
         User user = userRepository.findById(userId)
@@ -62,10 +62,10 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserResponse> findAllUsers() {
+    public List<UserWithOnlineResponse> findAllUsers() {
         List<UserStatus> userStatuses = userStatusRepository.findAll();
 
-        List<UserResponse> userInfos = new ArrayList<>();
+        List<UserWithOnlineResponse> userInfos = new ArrayList<>();
         userStatuses.forEach(status -> {
             User user = userRepository.findById(status.getUserId())
                     .orElseThrow(() -> new NoSuchElementException("status의 userId를 가진 유저가 존재하지 않음"));
@@ -143,8 +143,8 @@ public class BasicUserService implements UserService {
         userRepository.delete(userId);
     }
 
-    private UserResponse createUserResponse(User user, UserStatus userStatus) {
-        return new UserResponse(user.getId(), user.getEmail(), user.getUserName(), user.getNickName(),
+    private UserWithOnlineResponse createUserResponse(User user, UserStatus userStatus) {
+        return new UserWithOnlineResponse(user.getId(), user.getEmail(), user.getUserName(), user.getNickName(),
                 user.getBirthday(), user.getProfileId(), userStatus.isOnlineStatus());
     }
 

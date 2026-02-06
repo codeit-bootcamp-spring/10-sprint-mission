@@ -1,13 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserWithOnlineResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
-import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +20,7 @@ public class BasicAuthService implements AuthService {
     private final UserStatusRepository userStatusRepository;
 
     @Override
-    public UserResponse login(LoginRequest loginRequest) {
+    public UserWithOnlineResponse login(LoginRequest loginRequest) {
         // 유저 검증, 없으면 예외 발생
         User user = userRepository.findByUserNameAndPassword(loginRequest.userName(), loginRequest.password())
                 .orElseThrow(() -> new IllegalArgumentException("정확하지 않은 userName과 password입니다."));
@@ -37,8 +36,8 @@ public class BasicAuthService implements AuthService {
         return createUserInfo(user, userStatus);
     }
 
-    private UserResponse createUserInfo(User user, UserStatus userStatus) {
-        return new UserResponse(user.getId(), user.getEmail(), user.getUserName(), user.getNickName(),
+    private UserWithOnlineResponse createUserInfo(User user, UserStatus userStatus) {
+        return new UserWithOnlineResponse(user.getId(), user.getEmail(), user.getUserName(), user.getNickName(),
                 user.getBirthday(), user.getProfileId(), userStatus.isOnlineStatus());
     }
 }

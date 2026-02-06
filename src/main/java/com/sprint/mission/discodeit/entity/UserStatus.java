@@ -27,7 +27,7 @@ public class UserStatus extends BaseEntity implements Serializable {
     // 유저 생성 시 함께 생성?
     public UserStatus(UUID userId) {
         this.userId = userId;
-        this.lastOnlineTime = getCreatedAt(); // 일단 계정 생성 시 온라인 상태로 설정
+        this.lastOnlineTime = Instant.EPOCH; // 생성 시, Online 상태로 보지 않음
     }
 
     // update

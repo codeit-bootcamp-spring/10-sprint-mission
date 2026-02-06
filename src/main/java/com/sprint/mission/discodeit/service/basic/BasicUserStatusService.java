@@ -61,11 +61,11 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatus updateUserStatusByUserId(UUID userId, UserStatusUpdateRequest request) {
+    public UserStatus updateUserStatusByUserId(UUID userId, Instant lastOnlineTime) {
         validateUserByUserId(userId);
         UserStatus userStatus = validateAndGetUserStatusByUserId(userId);
 
-        userStatus.updateLastOnlineTime(request.lastOnlineTime());
+        userStatus.updateLastOnlineTime(lastOnlineTime);
         userStatusRepository.save(userStatus);
 
         return userStatus;

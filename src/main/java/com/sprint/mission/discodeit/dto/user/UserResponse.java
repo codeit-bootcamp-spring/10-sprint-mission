@@ -8,7 +8,6 @@ public record UserResponse(
         String userName,
         String nickName,
         String birthday,
-        UUID profileId,
-        boolean isOnline
+        UUID profileId
 ) {
 }

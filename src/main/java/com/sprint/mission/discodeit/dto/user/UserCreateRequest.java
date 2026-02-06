@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.dto.user;
 
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -26,6 +27,8 @@ public record UserCreateRequest(
         @NotBlank(message = "birthday가 입력되지 않았습니다.")
         @Pattern(regexp = "^\\d{8}$", message = "birthday는 YYYYMMDD 형식이어야 합니다.")
         String birthday,
+
+        @Valid
         BinaryContentCreateRequest profileImage
 ) {
 }
