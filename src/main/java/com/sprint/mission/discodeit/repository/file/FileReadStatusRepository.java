@@ -40,8 +40,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
     @Override
     public List<ReadStatus> findAll() {
-        Path readStatusPath = Paths.get("read-statuses");
-        if(!Files.exists(readStatusPath)) {
+        if(Files.exists(readStatusPath)) {
             try {
                 return Files.list(readStatusPath)
                         .map(this::read)
@@ -86,7 +85,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
 
     private ReadStatus read(Path path) {
         if (!Files.exists(path))
-            throw new IllegalStateException("ReadStatus 파일이나 경로가 이미 존재합니다.");
+            throw new IllegalStateException("해당 파일이 존재하지 않습니다.");
 
         try (FileInputStream fis = new FileInputStream(path.toFile());
              ObjectInputStream ois = new ObjectInputStream(fis)) {

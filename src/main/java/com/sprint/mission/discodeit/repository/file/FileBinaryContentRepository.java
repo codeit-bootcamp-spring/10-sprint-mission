@@ -33,8 +33,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     @Override
     public List<BinaryContent> findAll() {
-        Path binaryContentPath = Paths.get("binary-contents");
-        if(!Files.exists(binaryContentPath)) {
+        if(Files.exists(binaryContentPath)) {
             try {
                 return Files.list(binaryContentPath)
                         .map(this::read)
@@ -65,7 +64,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     private BinaryContent read(Path path) {
         if (!Files.exists(path))
-            throw new IllegalStateException("BinaryContent 파일이나 경로가 이미 존재합니다.");
+            throw new IllegalStateException("해당 파일이 존재하지 않습니다.");
 
         try (FileInputStream fis = new FileInputStream(path.toFile());
              ObjectInputStream ois = new ObjectInputStream(fis)) {

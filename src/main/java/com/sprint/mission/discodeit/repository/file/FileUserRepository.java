@@ -59,7 +59,6 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public List<User> findAll() {
-        Path userPath = Path.of("./users");
         if(Files.exists(userPath)) {
             try {
                 List<User> users = Files.list(userPath)
@@ -120,7 +119,7 @@ public class FileUserRepository implements UserRepository {
         try {
             Files.createDirectories(userPath);
         } catch (IOException e) {
-            throw new IllegalStateException("binary-contents 경로를 만드는데 실패했습니다.");
+            throw new IllegalStateException("users 경로를 만드는데 실패했습니다.");
         }
 
         return userPath.resolve(userId.toString() + ".ser");

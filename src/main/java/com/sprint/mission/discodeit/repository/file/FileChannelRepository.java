@@ -51,7 +51,6 @@ public class FileChannelRepository implements ChannelRepository {
 
     @Override
     public List<Channel> findAll() {
-        Path channelPath = Path.of("channels");
         if(Files.exists(channelPath)) {
             try {
                 List<Channel> channels = Files.list(channelPath)

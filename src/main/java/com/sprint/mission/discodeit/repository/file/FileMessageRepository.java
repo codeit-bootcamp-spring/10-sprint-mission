@@ -44,7 +44,6 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public List<Message> findAll() {
-        Path messagePath = Paths.get("messages");
         if(Files.exists(messagePath)) {
             try {
                 List<Message> messages = Files.list(messagePath)

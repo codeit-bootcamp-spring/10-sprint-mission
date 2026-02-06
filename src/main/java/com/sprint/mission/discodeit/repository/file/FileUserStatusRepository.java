@@ -23,7 +23,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     public FileUserStatusRepository(
             @Value("${discodeit.repository.file-directory:data}") String rootPath
     ) {
-        userStatusPath = Paths.get(rootPath);
+        userStatusPath = Paths.get(rootPath, "user-statuses");
     }
 
     @Override
@@ -41,8 +41,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public List<UserStatus> findAll() {
-        Path userStatusPath = Paths.get("user-statuses");
-        if(!Files.exists(userStatusPath)) {
+        if(Files.exists(userStatusPath)) {
             try {
                 return Files.list(userStatusPath)
                         .map(this::read)
@@ -80,7 +79,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     private UserStatus read(Path path) {
         if (!Files.exists(path))
-            throw new IllegalStateException("UserStatus 파일이나 경로가 이미 존재합니다.");
+            throw new IllegalStateException("해당 파일이 존재하지 않습니다.");
 
         try (FileInputStream fis = new FileInputStream(path.toFile());
              ObjectInputStream ois = new ObjectInputStream(fis)) {
