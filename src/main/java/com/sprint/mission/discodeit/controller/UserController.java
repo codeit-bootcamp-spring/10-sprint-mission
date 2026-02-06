@@ -84,7 +84,13 @@ public class UserController {
         }
     }
 
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public void deleteUser(@PathVariable UUID id) {
+        userService.delete(id);
+    }
 
-
-
+    @RequestMapping(method = RequestMethod.GET)
+    public List<UserResponseDto> getAllUser(){
+        return userService.findAll();
+    }
 }
