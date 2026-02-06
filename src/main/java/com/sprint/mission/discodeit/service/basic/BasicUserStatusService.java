@@ -23,14 +23,14 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusResponse create(UserStatusCreateRequest request) {
         UserStatus userStatus = new UserStatus(request.userID());
         UserStatus newUserStatus = userStatusRepository.save(userStatus);
-        return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
+        return new UserStatusResponse(newUserStatus.getId(), newUserStatus.isOnline());
     }
 
     @Override
     public UserStatusResponse find(UUID userID){
         UserStatus userStatus = userStatusRepository.findByUserID(userID)
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userID));
-        return new UserStatusResponse(userStatus.getUserID(), userStatus.isOnline());
+        return new UserStatusResponse(userStatus.getId(), userStatus.isOnline());
     }
 
     @Override
@@ -45,7 +45,7 @@ public class BasicUserStatusService implements UserStatusService {
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + request.userStatusID()));
         userStatus.updateLastLogin();
         UserStatus newUserStatus = userStatusRepository.save(userStatus);
-        return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
+        return new UserStatusResponse(newUserStatus.getId(), newUserStatus.isOnline());
     }
 
     @Override
@@ -54,7 +54,7 @@ public class BasicUserStatusService implements UserStatusService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
         userStatus.updateLastLogin();
         UserStatus newUserStatus = userStatusRepository.save(userStatus);
-        return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
+        return new UserStatusResponse(newUserStatus.getId(), newUserStatus.isOnline());
     }
 
     @Override
