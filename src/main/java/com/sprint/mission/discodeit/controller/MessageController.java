@@ -14,7 +14,7 @@ import java.util.UUID;
 //메시지는 채널이 있어야 함.
 @AllArgsConstructor
 @RestController
-@RequestMapping("/channel/{channelId}/messages")
+@RequestMapping("/channels/{channelId}/messages")
 public class MessageController {
     private final MessageService messageService;
 

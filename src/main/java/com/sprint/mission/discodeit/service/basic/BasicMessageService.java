@@ -45,14 +45,16 @@ public class BasicMessageService implements MessageService {
             throw new NoSuchElementException("Author not found with id " + messageCreateRequestDto.authorId());
         }
 
-        List<UUID> attachmentListToId = files
-                .stream()
-                .filter(file->file != null && !file.isEmpty())
-                .map(MultipartFile::getBytes)
-                .map(bytes->{
-                    BinaryContent b = new BinaryContent(bytes);
-                    binaryContentRepository.save(b);
-                    return b.getId();
+        List<UUID> attachmentListToId = files.stream()
+                .filter(file -> file != null && !file.isEmpty())
+                .map(file -> {
+                    try {
+                        BinaryContent b = new BinaryContent(file.getBytes());
+                        binaryContentRepository.save(b);
+                        return b.getId();
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to read multipart file", e);
+                    }
                 })
                 .toList();
 
