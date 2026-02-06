@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.sprint.mission.discodeit.entity.UserStatusTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-02-04T05:43:06.265Z" hostname="raonPsmui-MacBookAir.local" time="0.023">
+  <properties/>
+  <testcase name="마지막 활동 5분이 지나면 오프라인 상태" classname="com.sprint.mission.discodeit.entity.UserStatusTest" time="0.022"/>
+  <testcase name="마지막 활동 5분 경과까지는 온라인 상태" classname="com.sprint.mission.discodeit.entity.UserStatusTest" time="0.001"/>
+  <testcase name="마지막 활동 직후에는 온라인 상태" classname="com.sprint.mission.discodeit.entity.UserStatusTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
