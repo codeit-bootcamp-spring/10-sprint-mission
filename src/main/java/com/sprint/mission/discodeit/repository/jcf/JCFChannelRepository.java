@@ -1,13 +1,18 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
+@ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "jcf", matchIfMissing = true)
 public class JCFChannelRepository implements ChannelRepository {
     private final List<Channel> data = new ArrayList<>();
 
@@ -21,7 +26,8 @@ public class JCFChannelRepository implements ChannelRepository {
     @Override
     public Optional<Channel> findByName(String channelName) {
         return data.stream()
-                .filter(c -> c.getChannelName().equals(channelName))
+                .filter(c -> c.getChannelType() == ChannelType.PUBLIC
+                        && c.getChannelName().equals(channelName))
                 .findFirst();
     }
 
@@ -33,14 +39,19 @@ public class JCFChannelRepository implements ChannelRepository {
     @Override
     public List<Channel> findAllByUserId(UUID userId) {
         return data.stream()
-                .filter(c -> c.getUsers().stream().anyMatch(u -> u.getId().equals(userId)))
+                .filter(c -> c.getUserIds()
+                        .stream()
+                        .anyMatch(findUserId -> findUserId.equals(userId)))
                 .toList();
 
     }
 
     @Override
     public void save(Channel channel) {
-        data.add(channel);
+        if(data.contains(channel))
+            data.set(data.indexOf(channel), channel);
+        else
+            data.add(channel);
     }
 
     @Override

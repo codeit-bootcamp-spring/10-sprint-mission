@@ -2,14 +2,30 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+@Repository
+@ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "file")
 public class FileUserRepository implements UserRepository {
+    private final Path userPath;
+
+    public FileUserRepository(
+            @Value("${discodeit.repository.file-directory:data}") String rootPath
+    ) {
+        this.userPath = Paths.get(rootPath, "users");
+    }
+
     @Override
     public Optional<User> findById(UUID userId) {
         Path userPath = getUserPath(userId);
@@ -35,8 +51,14 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByEmail(String email) {
+        return findAll().stream()
+                .filter(u -> u.getEmail().equals(email))
+                .findFirst();
+    }
+
+    @Override
     public List<User> findAll() {
-        Path userPath = Path.of("./users");
         if(Files.exists(userPath)) {
             try {
                 List<User> users = Files.list(userPath)
@@ -64,7 +86,9 @@ public class FileUserRepository implements UserRepository {
     @Override
     public List<User> findAllByChannelId(UUID channelId) {
         return findAll().stream()
-                .filter(u -> u.getChannels().stream().anyMatch(c -> c.getId().equals(channelId)))
+                .filter(u -> u.getChannelIds()
+                        .stream()
+                        .anyMatch(findChannelId -> findChannelId.equals(channelId)))
                 .toList();
     }
 
@@ -92,6 +116,12 @@ public class FileUserRepository implements UserRepository {
     }
 
     private Path getUserPath(UUID userId) {
-        return Paths.get("users", userId.toString() + ".ser");
+        try {
+            Files.createDirectories(userPath);
+        } catch (IOException e) {
+            throw new IllegalStateException("users 경로를 만드는데 실패했습니다.");
+        }
+
+        return userPath.resolve(userId.toString() + ".ser");
     }
 }
