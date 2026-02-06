@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.LoginDto;
+import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
+import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,8 +19,11 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // UserService에 있는 toDto로 userDto를 만들기 위해서 사용
+    private final UserService userService;
+
     @Override
-    public User login(LoginDto.LoginRequest request) {
+    public UserDto.Response login(LoginDto.LoginRequest request) {
         String username = request.username();
         String password = request.password();
 
@@ -29,6 +34,6 @@ public class BasicAuthService implements AuthService {
             throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
         }
 
-        return user;
+        return userService.toDto(user);
     }
 }

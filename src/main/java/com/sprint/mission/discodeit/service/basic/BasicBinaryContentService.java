@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
@@ -15,26 +16,31 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
+    //
+    private final BinaryContentMapper binaryContentMapper;
 
     @Override
-    public BinaryContent create(BinaryContentDto.CreateRequest request) {
+    public BinaryContentDto.Response create(BinaryContentDto.CreateRequest request) {
         String fileName = request.fileName();
         String contentType = request.contentType();
         byte[] content = request.content();
 
         BinaryContent binaryContent = new BinaryContent(fileName, contentType, content);
-        return binaryContentRepository.save(binaryContent);
+        return binaryContentMapper.toResponse(binaryContentRepository.save(binaryContent));
     }
 
     @Override
-    public BinaryContent find(UUID binaryContentId) {
+    public BinaryContentDto.Response find(UUID binaryContentId) {
         return binaryContentRepository.findById(binaryContentId)
+                .map(binaryContentMapper::toResponse)
                 .orElseThrow(() -> new NoSuchElementException("해당 파일을 찾을 수 없습니다: " + binaryContentId));
     }
 
     @Override
-    public List<BinaryContent> findAllByIn(List<UUID> binaryContentIds) {
-        return binaryContentRepository.findAllByIn(binaryContentIds);
+    public List<BinaryContentDto.Response> findAllByIn(List<UUID> binaryContentIds) {
+        return binaryContentRepository.findAllByIn(binaryContentIds).stream()
+                .map(binaryContentMapper::toResponse)
+                .toList();
     }
 
     @Override

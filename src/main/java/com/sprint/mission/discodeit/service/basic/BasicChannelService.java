@@ -19,9 +19,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
+    //
     private final UserRepository userRepository;
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
+    //
     private final ChannelMapper channelMapper;
 
 //    @Override
@@ -52,7 +54,7 @@ public class BasicChannelService implements ChannelService {
 
     @Transactional
     @Override
-    public Channel create(ChannelDto.CreateRequest request) {
+    public ChannelDto.Response create(ChannelDto.CreateRequest request) {
         if (request.type() == ChannelType.PUBLIC) {
             return createPublic(request.name(), request.description());
         }
@@ -64,12 +66,12 @@ public class BasicChannelService implements ChannelService {
         }
     }
 
-    private Channel createPublic(String name, String description) {
+    private ChannelDto.Response createPublic(String name, String description) {
         Channel channel = new Channel(ChannelType.PUBLIC, name, description);
-        return channelRepository.save(channel);
+        return toDto(channelRepository.save(channel));
     }
 
-    private Channel createPrivate(Set<UUID> memberIds) {
+    private ChannelDto.Response createPrivate(Set<UUID> memberIds) {
         memberIds.forEach(userId -> // 멤버가 실제로 존재하는 유저인지 확인
                 userRepository.findById(userId)
                             .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다." + userId)));
@@ -81,7 +83,7 @@ public class BasicChannelService implements ChannelService {
                 .map(userId -> new ReadStatus(userId, createChannel.getId(), createChannel.getCreatedAt()))
                 .forEach(readStatusRepository::save);
 
-        return createChannel;
+        return toDto(createChannel);
     }
 
     @Override
@@ -114,7 +116,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(UUID channelId, ChannelDto.UpdatePublicRequest request) {
+    public ChannelDto.Response update(UUID channelId, ChannelDto.UpdatePublicRequest request) {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널은 찾을 수 없습니다: " + channelId));
 
@@ -124,7 +126,7 @@ public class BasicChannelService implements ChannelService {
 
         channel.update(request.newName(), request.newDescription());
 
-        return channelRepository.save(channel);
+        return toDto(channelRepository.save(channel));
     }
 
     @Transactional

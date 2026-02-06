@@ -13,7 +13,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -30,7 +29,7 @@ public class BasicUserService implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public User create(UserDto.CreateRequest request) {
+    public UserDto.Response create(UserDto.CreateRequest request) {
         String username = request.username();
         String email = request.email();
         validateUser(null, username, email);
@@ -43,7 +42,7 @@ public class BasicUserService implements UserService {
 
         UserStatus userStatus = new UserStatus(createdUser.getId(), Instant.now());
         userStatusRepository.save(userStatus);
-        return createdUser;
+        return toDto(createdUser);
     }
 
     @Override
@@ -61,7 +60,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, UserDto.UpdateRequest request) {
+    public UserDto.Response update(UUID userId, UserDto.UpdateRequest request) {
         User user=  userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId));
 
@@ -83,7 +82,9 @@ public class BasicUserService implements UserService {
             binaryContentRepository.deleteById(oldProfileId);
         }
 
-        return userRepository.save(user);
+        User updatedUser = userRepository.save(user);
+
+        return toDto(updatedUser);
     }
 
     // 트랜잭션은 aggregate 단위로만 묶는다.
@@ -119,8 +120,7 @@ public class BasicUserService implements UserService {
     }
 
     // Helper
-    private UserDto.Response toDto(User user) {
-
+    public UserDto.Response toDto(User user) {
         // 현재는 요구사항에서 find, findAll이 유저 상태 정보를 같이 포함하라고 해서 강하게 결합했음
         // 유저 상태 정보가 손실되어도 유저는 정상적으로 작동해야 하므로 실제로는 예외 처리를 하면 안됨
         // 트랜잭션으로 정합성을 보장하거나, 손실되면 offline으로 유연하게 처리하도록 바꿔야 할 필요성 존재

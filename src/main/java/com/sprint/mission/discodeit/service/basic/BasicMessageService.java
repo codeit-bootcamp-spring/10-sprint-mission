@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +20,12 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final ReadStatusRepository readStatusRepository;
+    //
+    private final MessageMapper messageMapper;
 
 
     @Override
-    public Message create(MessageDto.CreateRequest request) {
+    public MessageDto.Response create(MessageDto.CreateRequest request) {
         Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + request.channelId()));
 
@@ -48,25 +51,28 @@ public class BasicMessageService implements MessageService {
         channel.updateLastMessageAt(savedMessage.getCreatedAt());
         channelRepository.save(channel);
 
-        return savedMessage;
+        return messageMapper.toResponse(savedMessage);
     }
 
     @Override
-    public Message find(UUID messageId) {
+    public MessageDto.Response find(UUID messageId) {
         return messageRepository.findById(messageId)
+                .map(messageMapper::toResponse)
                 .orElseThrow(() -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다: " + messageId));
     }
 
     @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
+    public List<MessageDto.Response> findAllByChannelId(UUID channelId) {
         if(!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("해당 채널을 찾을 수 없습니다: "  + channelId);
         }
-        return messageRepository.findAllByChannelId(channelId);
+        return messageRepository.findAllByChannelId(channelId).stream()
+                .map(messageMapper::toResponse)
+                .toList();
     }
 
     @Override
-    public Message update(UUID messageId, MessageDto.UpdateRequest request) {
+    public MessageDto.Response update(UUID messageId, MessageDto.UpdateRequest request) {
         String newContent = request.content();
 
         // 메시지를 수정할 때 빈 메시지로 바꿀 때 삭제되는 로직을 구현하려고 하였음
@@ -80,7 +86,8 @@ public class BasicMessageService implements MessageService {
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다: " + messageId));
         message.update(newContent);
-        return messageRepository.save(message);
+
+        return messageMapper.toResponse(messageRepository.save(message));
     }
 
     @Override
