@@ -18,10 +18,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Service
 public class UserStatusService {
-    UserStatusRepository userStatusRepository;
-    UserRepository userRepository;
+    private final UserStatusRepository userStatusRepository;
+    private final UserRepository userRepository;
 
-    UserStatusInfo createUserStatus(UserStatusCreateInfo statusInfo) {
+    public UserStatusInfo createUserStatus(UserStatusCreateInfo statusInfo) {
         userRepository.findById(statusInfo.userId())
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
         if (userStatusRepository.findByUserId(statusInfo.userId())
@@ -31,20 +31,20 @@ public class UserStatusService {
         return UserStatusMapper.toUserStatusInfo(userStatus);
     }
 
-    UserStatusInfo findUserStatus(UUID statusId) {
+    public UserStatusInfo findUserStatus(UUID statusId) {
         UserStatus userStatus = userStatusRepository.findById(statusId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자 상태가 존재하지 않습니다."));
         return UserStatusMapper.toUserStatusInfo(userStatus);
     }
 
-    List<UserStatusInfo> findAll() {
+    public List<UserStatusInfo> findAll() {
         return userStatusRepository.findAll()
                 .stream()
                 .map(UserStatusMapper::toUserStatusInfo)
                 .toList();
     }
 
-    UserStatusInfo updateUserStatus(UserStatusUpdateInfo statusInfo) {
+    public UserStatusInfo updateUserStatus(UserStatusUpdateInfo statusInfo) {
         UserStatus userStatus = userStatusRepository.findById(statusInfo.statusId())
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자 상태가 존재하지 않습니다."));
         userStatus.updateLastOnlineAt();
@@ -52,7 +52,7 @@ public class UserStatusService {
         return UserStatusMapper.toUserStatusInfo(userStatus);
     }
 
-    UserStatusInfo updateUserStatusByUserId(UUID userId) {
+    public UserStatusInfo updateUserStatusByUserId(UUID userId) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자 상태가 존재하지 않습니다."));
         userStatus.updateLastOnlineAt();

@@ -15,7 +15,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Service
 public class BinaryContentService {
-    private BinaryContentRepository contentRepository;
+    private final BinaryContentRepository contentRepository;
 
     public BinaryContentInfo createBinaryContent(BinaryContentCreateInfo contentInfo) {
         BinaryContent content = new BinaryContent(contentInfo.content());
