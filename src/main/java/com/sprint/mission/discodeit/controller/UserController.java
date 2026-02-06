@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
-@Controller
+@RestController
 @RequestMapping("/user")
 public class UserController {
     private final UserService userService;
