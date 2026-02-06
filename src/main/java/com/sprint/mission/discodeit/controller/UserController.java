@@ -10,13 +10,14 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +37,13 @@ public class UserController {
             @RequestPart("dto") UserCreateRequestDto dto,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) throws IOException {
+        //영속화
+        if(profileImage != null && !profileImage.isEmpty()){
+            String fileName = profileImage.getOriginalFilename();
+            Path savePath = Paths.get("./upload/" + fileName);
+            Files.createDirectories(savePath.getParent());
+            profileImage.transferTo(savePath);
+        }
         return userService.create(dto, profileImage);
     }
 
@@ -46,6 +54,13 @@ public class UserController {
             @RequestPart("dto") UserCreateRequestDto dto,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) throws IOException {
+        if(profileImage != null && !profileImage.isEmpty()){
+            String fileName = profileImage.getOriginalFilename();
+            Path savePath = Paths.get("./upload/" + fileName);
+            Files.createDirectories(savePath.getParent());
+            profileImage.transferTo(savePath);
+        }
+
         return userService.update(new UserUpdateRequestDto(id, dto.username(), dto.email(), dto.password()), profileImage);
     }
 
