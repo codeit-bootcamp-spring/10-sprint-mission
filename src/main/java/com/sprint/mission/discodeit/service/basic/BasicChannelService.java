@@ -32,11 +32,7 @@ public class BasicChannelService implements ChannelService {
     public PrivateChannelInfo createPrivateChannel(PrivateChannelCreateInfo channelInfo) {
         Channel channel = new Channel(null, ChannelType.PRIVATE, null);
         channelRepository.save(channel);
-        channelInfo.userIds().forEach(userId -> {
-            joinChannel(channel.getId(), userId);
-            ReadStatus readStatus = new ReadStatus(channel.getId(), userId);
-            readStatusRepository.save(readStatus);
-        });
+        channelInfo.userIds().forEach(userId -> joinChannel(channel.getId(), userId));
         return ChannelMapper.toPrivateChannelInfo(channel);
     }
 
@@ -118,7 +114,7 @@ public class BasicChannelService implements ChannelService {
 
         channelRepository.save(channel);
         userRepository.save(user);
-        readStatusRepository.save(new ReadStatus(channelId, userId));
+        readStatusRepository.save(new ReadStatus(userId, channelId));
     }
 
     @Override
