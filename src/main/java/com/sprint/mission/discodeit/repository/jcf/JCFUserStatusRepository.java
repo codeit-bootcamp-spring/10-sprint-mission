@@ -36,7 +36,10 @@ public class JCFUserStatusRepository implements UserStatusRepository {
 
     @Override
     public void save(UserStatus userStatus) {
-        data.add(userStatus);
+        if(data.contains(userStatus))
+            data.set(data.indexOf(userStatus), userStatus);
+        else
+            data.add(userStatus);
     }
 
     @Override

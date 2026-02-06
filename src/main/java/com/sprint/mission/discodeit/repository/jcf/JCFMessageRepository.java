@@ -43,7 +43,10 @@ public class JCFMessageRepository implements MessageRepository {
 
     @Override
     public void save(Message message) {
-        data.add(message);
+        if(data.contains(message))
+            data.set(data.indexOf(message), message);
+        else
+            data.add(message);
     }
 
     @Override

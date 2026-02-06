@@ -50,7 +50,10 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
 
     @Override
     public void save(ReadStatus readStatus) {
-        data.add(readStatus);
+        if(data.contains(readStatus))
+            data.set(data.indexOf(readStatus), readStatus);
+        else
+            data.add(readStatus);
     }
 
     @Override

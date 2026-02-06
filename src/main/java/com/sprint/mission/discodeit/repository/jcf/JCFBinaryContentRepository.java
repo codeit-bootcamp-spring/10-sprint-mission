@@ -29,7 +29,10 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
 
     @Override
     public void save(BinaryContent binaryContent) {
-        data.add(binaryContent);
+        if(data.contains(binaryContent))
+            data.set(data.indexOf(binaryContent), binaryContent);
+        else
+            data.add(binaryContent);
     }
 
     @Override

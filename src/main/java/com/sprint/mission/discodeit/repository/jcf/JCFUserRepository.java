@@ -52,7 +52,10 @@ public class JCFUserRepository implements UserRepository {
 
     @Override
     public void save(User user) {
-        data.add(user);
+        if(data.contains(user))
+            data.set(data.indexOf(user), user);
+        else
+            data.add(user);
     }
 
     @Override
