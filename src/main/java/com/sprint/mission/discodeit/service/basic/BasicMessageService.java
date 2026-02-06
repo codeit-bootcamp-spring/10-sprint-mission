@@ -45,7 +45,9 @@ public class BasicMessageService implements MessageService {
             throw new NoSuchElementException("Author not found with id " + messageCreateRequestDto.authorId());
         }
 
-        List<UUID> attachmentListToId = files.stream()
+        List<MultipartFile> safeFiles = Optional.ofNullable(files).orElse(List.of());
+
+        List<UUID> attachmentListToId = safeFiles.stream()
                 .filter(file -> file != null && !file.isEmpty())
                 .map(file -> {
                     try {
