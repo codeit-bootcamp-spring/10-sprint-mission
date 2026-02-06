@@ -2,10 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.BinaryContentType;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +16,7 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final ChannelRepository channelRepository;
 
     @Override
     public UserDto.response createUser(UserDto.createRequest userReq, BinaryContentDto.createRequest profileReq) {
@@ -95,6 +93,15 @@ public class BasicUserService implements UserService {
     public void deleteUser(UUID uuid) {
         User user = userRepository.findById(uuid)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+
+        // 유저의 참여채널 제거
+        user.getJoinedChannels().forEach(chId -> {
+            Channel channel = channelRepository.findById(chId)
+                    .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+            channel.removeParticipant(user.getId());
+            channel.updateUpdatedAt();
+            channelRepository.save(channel);
+        });
 
         Optional.ofNullable(user.getProfileId())
                         .ifPresent(binaryContentRepository::deleteById);

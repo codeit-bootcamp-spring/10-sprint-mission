@@ -2,10 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +17,7 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
 
     @Override
@@ -87,8 +85,25 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID uuid) {
         Channel channel = getChannelOrThrow(uuid);
+        channel.getParticipants()
+                .forEach(userId -> {
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+                    user.removeJoinedChannels(channel.getId());
+                    user.updateUpdatedAt();
+                    userRepository.save(user);
+                });
 
         readStatusRepository.deleteAllByChannelId(channel.getId());
+
+        // 메시지 내부의 첨부파일 삭제
+        messageRepository.findAllByChannelId(channel.getId())
+            .forEach(m -> m.getAttachmentIds()
+                    .forEach(bcId -> {
+                        m.removeAttachmentId(bcId);
+                        binaryContentRepository.deleteById(bcId);
+            }));
+
         messageRepository.deleteAllByChannelId(channel.getId());
         channelRepository.deleteById(uuid);
     }
@@ -179,10 +194,14 @@ public class BasicChannelService implements ChannelService {
                 .map(BaseEntity::getCreatedAt)
                 .orElse(null);
 
+        List<UUID> participantIds = new ArrayList<>();
+        if (channel.getChannelType() == ChannelType.PRIVATE) {
+            participantIds = channel.getParticipants().stream().toList();
+        }
+
         return new ChannelDto.response(channel.getId(), channel.getCreatedAt(), channel.getUpdatedAt(),
                 channel.getChannelType(), channel.getTitle(), channel.getDescription(),
                 lastMessageAt,
-                channel.getParticipants().stream().toList());
-
+                participantIds);
     }
 }

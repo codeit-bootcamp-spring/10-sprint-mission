@@ -2,16 +2,13 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Getter
 public class Message extends MutableEntity {
     private final UUID channelId;
     private final UUID authorId;
-    private List<UUID> attachmentIds;
+    private final List<UUID> attachmentIds = new ArrayList<>();
     private String message;
 
     public Message(UUID channelId, UUID userId, String message) {

@@ -33,11 +33,13 @@ public class BasicMessageService implements MessageService {
         }
 
         Message msg = new Message(messageReq.channelId(), messageReq.authorId(), messageReq.message());
-        contentReqs.forEach(req -> {
-            BinaryContent content = new BinaryContent(req.contentType(), req.filename(), req.contentBytes());
-            binaryContentRepository.save(content);
-            binaryContentRepository.findById(content.getId()).ifPresent(c -> {
-                msg.addAttachmentId(c.getId());
+        Optional.ofNullable(contentReqs).ifPresent(reqs -> {
+            reqs.forEach(req -> {
+                BinaryContent content = new BinaryContent(req.contentType(), req.filename(), req.contentBytes());
+                binaryContentRepository.save(content);
+                binaryContentRepository.findById(content.getId()).ifPresent(c -> {
+                    msg.addAttachmentId(c.getId());
+                });
             });
         });
         messageRepository.save(msg);
