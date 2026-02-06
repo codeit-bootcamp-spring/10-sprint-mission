@@ -43,8 +43,8 @@ public class UserController {
     @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
     public UserResponseDto patchUser(
             @PathVariable UUID id,
-            @RequestBody UserCreateRequestDto dto,
-            @RequestParam MultipartFile profileImage
+            @RequestPart("dto") UserCreateRequestDto dto,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
     ) throws IOException {
         return userService.update(new UserUpdateRequestDto(id, dto.username(), dto.email(), dto.password()), profileImage);
     }

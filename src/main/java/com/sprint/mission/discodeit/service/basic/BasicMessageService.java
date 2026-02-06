@@ -12,8 +12,11 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.swing.plaf.multi.MultiPanelUI;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -30,8 +33,9 @@ public class BasicMessageService implements MessageService {
     //
     private final MessageResponseMapper messageResponseMapper;
 
+    @SneakyThrows
     @Override
-    public MessageResponseDto create(MessageCreateRequestDto messageCreateRequestDto) {
+    public MessageResponseDto create(MessageCreateRequestDto messageCreateRequestDto, List<MultipartFile> files) {
         if (!channelRepository.existsById(messageCreateRequestDto.channelId())) {
             throw new NoSuchElementException("Channel not found with id " + messageCreateRequestDto.channelId());
         }
@@ -39,22 +43,16 @@ public class BasicMessageService implements MessageService {
             throw new NoSuchElementException("Author not found with id " + messageCreateRequestDto.authorId());
         }
 
-        List<UUID> attachmentListToId;
-        if(messageCreateRequestDto.attachment() != null){
-            attachmentListToId = messageCreateRequestDto.attachment()
-                    .content()
-                    .stream()
-                    .map(binaryContent ->{
-                        BinaryContent b = new BinaryContent(binaryContent);
-                        binaryContentRepository.save(b);
-                        return b.getId();
-                    })
-                    .toList();
-        }
-        else{
-            attachmentListToId = null;
-        }
-
+        List<UUID> attachmentListToId = files
+                .stream()
+                .filter(file->file != null && !file.isEmpty())
+                .map(MultipartFile::getBytes)
+                .map(bytes->{
+                    BinaryContent b = new BinaryContent(bytes);
+                    binaryContentRepository.save(b);
+                    return b.getId();
+                })
+                .toList();
 
         Message message = new Message(
                 messageCreateRequestDto.content(),

@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.user.LoginRequestDto;
+import com.sprint.mission.discodeit.dto.user.LoginResponseDto;
+import com.sprint.mission.discodeit.mapper.user.LoginResponseMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -16,11 +19,10 @@ public class AuthController {
     private final AuthService authService;
 
     @RequestMapping(method = RequestMethod.POST)
-    public LoginRequestDto login(
+    public LoginResponseDto login(
             @RequestBody LoginRequestDto dto
     ){
-        authService.login(dto);
-        return dto;
+        return authService.login(dto);
     }
 
 }

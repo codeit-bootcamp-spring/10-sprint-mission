@@ -94,18 +94,6 @@ public class BasicUserService implements UserService {
 
         BinaryContent newProfileImage;
 
-        if(profileImageFile != null){
-            newProfileImage = new BinaryContent(profileImageFile.getBytes());
-
-            if(user.getProfileId() != null) binaryContentRepository.deleteById(user.getProfileId());
-            binaryContentRepository.save(newProfileImage);
-
-        }
-        else{
-            newProfileImage = null;
-
-        }
-
         boolean anyValueUpdated = false;
         if (userUpdateRequestDto.newUsername() != null && !userUpdateRequestDto.newUsername().equals(user.getUsername())) {
             user.setUsername(userUpdateRequestDto.newUsername());
@@ -119,14 +107,14 @@ public class BasicUserService implements UserService {
             user.setPassword(userUpdateRequestDto.newPassword());
             anyValueUpdated = true;
         }
-        if (newProfileImage != null && !Arrays.equals(binaryContentRepository
-                .findById(user.getProfileId())
-                .orElseThrow()
-                .getContent(), profileImageFile.getBytes()))
-        {
-            binaryContentRepository.deleteById(user.getProfileId());
+        if(profileImageFile != null){
+            if(user.getProfileId() != null){
+                binaryContentRepository.deleteById(user.getProfileId());
+            }
+            newProfileImage = new BinaryContent(profileImageFile.getBytes());
+            binaryContentRepository.save(newProfileImage);
             user.setProfileId(newProfileImage.getId());
-            anyValueUpdated = true;
+
         }
         if (anyValueUpdated) {
             user.isUpdated();
