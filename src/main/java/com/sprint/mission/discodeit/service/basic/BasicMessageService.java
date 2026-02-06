@@ -90,7 +90,7 @@ public class BasicMessageService implements MessageService {
     private void checkValidate(MessageCreateDto dto) {
         if((dto.content()==null || dto.content().isEmpty()) //컨텐츠와 첨부파일 두개다 없는 경우
                 && (dto.attachments()==null || dto.attachments().isEmpty()) ){
-            throw new IllegalArgumentException("Content or attachment not found");
+            throw new IllegalArgumentException("Content and attachment not found");
         }
     }
     private void checkMember(UUID channelId, UUID userId){
