@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: discodeit
+discodeit:
+  repository:
+#    type: jfc
+    file-directory: ./data
