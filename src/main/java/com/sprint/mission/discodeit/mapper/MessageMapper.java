@@ -19,7 +19,7 @@ public class MessageMapper {
                 message.getUpdatedAt()
         );
     }
-    public Message toEntity(MessageCreateDto dto, List<UUID> attachmentIds) {
-        return new Message(dto.content(),dto.channelId(),dto.authorId(),attachmentIds);
+    public Message toEntity(MessageCreateDto dto, List<UUID> attachmentIds, UUID userId, UUID channelId) {
+        return new Message(dto.content(),channelId,userId,attachmentIds);
     }
 }

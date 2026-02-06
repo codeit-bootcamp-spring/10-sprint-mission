@@ -41,7 +41,7 @@ public class BasicMessageService implements MessageService {
                         attachmentIds.add(content.getId());
                     });
         }
-        Message message = messageMapper.toEntity(dto, attachmentIds);
+        Message message = messageMapper.toEntity(dto, attachmentIds, authorId, channelId);
         return messageMapper.toDto(messageRepository.save(message));
     }
 
