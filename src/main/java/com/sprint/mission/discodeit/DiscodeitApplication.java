@@ -77,11 +77,6 @@ public class DiscodeitApplication {
 			System.err.println("\n❌ 테스트 중 에러 발생!");
 			e.printStackTrace();
 		}
-
-
-
-		System.out.println("충돌확인용 코드");
-
 	}
 
 }
