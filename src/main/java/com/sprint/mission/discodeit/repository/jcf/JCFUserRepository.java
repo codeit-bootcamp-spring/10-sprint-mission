@@ -2,9 +2,12 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
-
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> data;
 
@@ -30,7 +33,14 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public List<User> readAll() {
+    public Optional<User> findByEmail(String email) {
+        return data.values().stream()
+                .filter(u -> u.getEmail().equals(email))
+                .findFirst();
+    }
+
+    @Override
+    public List<User> findAll() {
         return new ArrayList<>(data.values());
     }
 

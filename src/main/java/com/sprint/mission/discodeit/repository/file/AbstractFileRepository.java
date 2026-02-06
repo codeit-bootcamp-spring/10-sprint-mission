@@ -1,15 +1,49 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import com.sprint.mission.discodeit.entity.BaseEntity;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
 
-public class AbstractFileRepository <T> {
+import java.io.*;
+import java.util.*;
+
+public class AbstractFileRepository <T extends BaseEntity> {
     protected final File file;    // 클래스가 사용할 파일 저장소 객체 - 경로를 생성자에서 주입해 저장/불러오기 사용
 
     protected AbstractFileRepository(String path) {
         this.file = new File(path);
+
+        File parentDir = file.getParentFile();  // 부모 디렉토리
+        if (parentDir != null && !parentDir.exists()) { // 부모 디렉토리가 없다면
+            parentDir.mkdirs(); // 디렉토리 생성
+        }
+    }
+
+    public T save(T entity){
+        Map<UUID, T> data = load();
+        data.put(entity.getId(), entity);
+        writeToFile(data);
+        return entity;
+    }
+
+    public Optional<T> findById(UUID id) {
+        Map<UUID, T> data = load();
+        return Optional.ofNullable(data.get(id));
+    }
+
+    public void delete(UUID id) {
+        Map<UUID, T> data = load();
+        data.remove(id);
+        writeToFile(data);
+    }
+
+    public List<T> findAll() {
+        Map<UUID, T> data = load();
+        return List.copyOf(data.values());
+    }
+
+    public void clear() {
+        writeToFile(new HashMap<UUID, User>());
     }
 
     protected String getPath(){
