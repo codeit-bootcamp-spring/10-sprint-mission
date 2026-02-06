@@ -13,7 +13,9 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,7 +30,7 @@ public class BasicUserService implements UserService {
     private final UserResponseMapper userResponseMapper;
 
     @Override
-    public UserResponseDto create(UserCreateRequestDto userCreateRequestDto) {
+    public UserResponseDto create(UserCreateRequestDto userCreateRequestDto, MultipartFile profileImageFile) throws IOException {
         //중복여부 검사 로직
         if (userRepository.findAll().stream()
                 .anyMatch(user ->
@@ -38,8 +40,8 @@ public class BasicUserService implements UserService {
 
         User user;
         //이미지 존재여부 분기
-        if(userCreateRequestDto.profileImage() != null){
-            BinaryContent profileImage = new BinaryContent(userCreateRequestDto.profileImage().content().get(0));
+        if(profileImageFile != null){
+            BinaryContent profileImage = new BinaryContent(profileImageFile.getBytes());
             binaryContentRepository.save(profileImage);
 
             user = new User(userCreateRequestDto.username(),

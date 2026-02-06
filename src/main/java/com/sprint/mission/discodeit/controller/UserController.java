@@ -15,10 +15,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -40,24 +37,10 @@ public class UserController {
     //사용자 등록
     @RequestMapping(method = RequestMethod.POST)
     public UserResponseDto postUser(
-        @RequestParam String username,
-        @RequestParam String email,
-        @RequestParam String password,
+        @RequestBody UserCreateRequestDto dto,
         @RequestParam MultipartFile profileImage
     ) throws IOException {
-        if(profileImage == null){
-            return userService.create(new UserCreateRequestDto(username, email, password, null));
-        }
-        else{
-            binaryContentService.create(new BinaryContentCreateRequestDto(profileImage.getBytes()));
-            List<byte[]> file = new ArrayList<>();
-            file.add(profileImage.getBytes());
-
-            return userService.create(new UserCreateRequestDto(username,
-                    email,
-                    password,
-                    new BinaryContentRequestDto(file)));
-        }
+        return userService.create(dto, profileImage);
     }
 
     //사용자 정보 수정
