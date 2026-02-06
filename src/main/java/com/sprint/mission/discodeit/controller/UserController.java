@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.binarycontent.BinaryContentResponseMapper;
 import com.sprint.mission.discodeit.mapper.user.UserResponseMapper;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -92,5 +94,10 @@ public class UserController {
     @RequestMapping(method = RequestMethod.GET)
     public List<UserResponseDto> getAllUser(){
         return userService.findAll();
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public void updateUserStatus(@PathVariable UUID id){
+        userStatusService.updateByUserId(new UserStatusUpdateRequestDto(true, id, Instant.now()));
     }
 }
