@@ -13,7 +13,10 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -29,13 +32,13 @@ public class BasicUserService implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDto.Response create(UserDto.CreateRequest request) {
+    public UserDto.Response create(UserDto.CreateRequest request, MultipartFile profileImage) {
         String username = request.username();
         String email = request.email();
         validateUser(null, username, email);
 
         String password = passwordEncoder.encode(request.password());
-        UUID profileId = saveProfileImage(request.profileImage());
+        UUID profileId = saveProfileImage(profileImage);
 
         User user = new User(username, email, password, profileId);
         User createdUser = userRepository.save(user);
@@ -60,7 +63,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserDto.Response update(UUID userId, UserDto.UpdateRequest request) {
+    public UserDto.Response update(UUID userId, UserDto.UpdateRequest request, MultipartFile newProfileImage) {
         User user=  userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId));
 
@@ -71,7 +74,7 @@ public class BasicUserService implements UserService {
         String newPassword = request.newPassword();
         if(newPassword != null) newPassword = passwordEncoder.encode(newPassword);
 
-        UUID newProfileId = saveProfileImage(request.newProfileImage());
+        UUID newProfileId = saveProfileImage(newProfileImage);
         UUID oldProfileId = user.getProfileId();
 
         // password 업데이트는 엔티티 내 메서드를 따로 만들어서 책임 분리로 개선할 여지가 있음
@@ -130,17 +133,20 @@ public class BasicUserService implements UserService {
         return userMapper.toResponse(user, userStatus.isOnline());
     }
 
-    private UUID saveProfileImage(BinaryContentDto.CreateRequest imageRequest) {
-        if (imageRequest == null) {
+    private UUID saveProfileImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
             return null;
         }
 
-        BinaryContent content = new BinaryContent(
-                imageRequest.fileName(),
-                imageRequest.contentType(),
-                imageRequest.content()
-        );
-
-        return binaryContentRepository.save(content).getId();
+        try {
+            BinaryContent content = new BinaryContent(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes() // IOException 발생 가능
+            );
+            return binaryContentRepository.save(content).getId();
+        } catch (IOException e) {
+            throw new UncheckedIOException("프로필 이미지 파일 처리 중 오류가 발생했습니다.", e);
+        }
     }
 }

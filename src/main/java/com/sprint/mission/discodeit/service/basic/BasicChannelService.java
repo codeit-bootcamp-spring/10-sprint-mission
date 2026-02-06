@@ -146,7 +146,7 @@ public class BasicChannelService implements ChannelService {
         List<UUID> memberIds = new ArrayList<>();
 
         if (channel.getType() == ChannelType.PRIVATE) { // private 채널일 경우
-            memberIds = readStatusRepository.findAllByChannelId(channel.getId()) // 채널 id에 맞는 readstatus 전부 가져옴
+            memberIds = readStatusRepository.findAllByChannelId(channel.getId()) // 채널 id에 맞는 readStatus 전부 가져옴
                     .stream()
                     .map(ReadStatus::getUserId) // 채널 id를 가지고 있는 readStatus의 유저 id를 전부 가져옴, 즉 비공개 채널의 멤버 가져옴
                     .toList();

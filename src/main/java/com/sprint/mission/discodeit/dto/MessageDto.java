@@ -9,11 +9,11 @@ import java.util.UUID;
 
 public class MessageDto {
     public record CreateRequest(
-            @NotBlank
+            @NotBlank(message = "내용은 필수입니다.")
             String content,
-            @NotNull
+            @NotNull(message = "유저 ID는 필수입니다.")
             UUID authorId,
-            @NotNull
+            @NotNull(message = "채널 ID는 필수입니다.")
             UUID channelId,
             List<BinaryContentDto.CreateRequest> attachments
 

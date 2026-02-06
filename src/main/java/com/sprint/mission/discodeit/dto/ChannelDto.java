@@ -24,7 +24,7 @@ public class ChannelDto {
 //    ) {}
 
     public record CreateRequest(
-            @NotNull
+            @NotNull(message = "채널 타입은 필수입니다.")
             ChannelType type,
             String name,
             String description,

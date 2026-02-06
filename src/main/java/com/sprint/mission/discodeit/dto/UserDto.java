@@ -8,17 +8,14 @@ import java.util.UUID;
 
 public class UserDto {
     public record CreateRequest(
-            @NotBlank
+            @NotBlank(message = "사용자명은 필수입니다.")
             String username,
 
-            @Email @NotBlank
+            @Email @NotBlank(message = "이메일은 필수입니다.")
             String email,
 
-            @NotBlank
-            String password,
-
-            // 선택적 프로필 이미지
-            BinaryContentDto.CreateRequest profileImage
+            @NotBlank(message = "비밀번호는 필수입니다.")
+            String password
     ) {}
 
     public record Response(
@@ -35,8 +32,6 @@ public class UserDto {
             String newUsername,
             @Email
             String newEmail,
-            String newPassword,
-            // 선택적 프로필 이미지
-            BinaryContentDto.CreateRequest newProfileImage
+            String newPassword
     ) {}
 }

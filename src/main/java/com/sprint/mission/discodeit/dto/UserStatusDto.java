@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class UserStatusDto {
     public record CreateRequest(
-            @NotNull
+            @NotNull(message = "유저 ID는 필수입니다.")
             UUID userid,
             Instant lastActiveAt
     ) {}

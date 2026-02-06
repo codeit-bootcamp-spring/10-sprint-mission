@@ -11,7 +11,7 @@ public class BinaryContent implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private UUID id;
-    private Instant createAt;
+    private Instant createdAt;
     //
     private String fileName;
     private String contentType;
@@ -20,7 +20,7 @@ public class BinaryContent implements Serializable {
 
     public BinaryContent(String fileName, String contentType, byte[] content) {
         this.id = UUID.randomUUID();
-        this.createAt = Instant.now();
+        this.createdAt = Instant.now();
         this.fileName = fileName;
         this.contentType = contentType;
         this.content = content;
