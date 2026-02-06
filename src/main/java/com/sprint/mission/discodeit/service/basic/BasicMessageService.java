@@ -116,7 +116,11 @@ public class BasicMessageService implements MessageService {
                     )
                     .orElse(null);
 
-            message.getAttachments().forEach(binaryContentRepository::deleteById);
+            messageRepository.save(message);
+
+            if(newAttachmentIds != null){
+                message.getAttachments().forEach(binaryContentRepository::deleteById);
+            }
 
             message.update(messageUpdateRequestDto.newContent(), newAttachmentIds);
             return messageResponseMapper.toDto(message);
