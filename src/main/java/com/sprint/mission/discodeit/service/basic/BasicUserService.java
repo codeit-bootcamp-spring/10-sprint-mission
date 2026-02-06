@@ -41,6 +41,7 @@ public class BasicUserService implements UserService {
             user = new User(request.userName(), request.userEmail(), request.userPassword() ,null);
         } else {
             BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
+            binaryContentRepository.save(binaryContent);
             user = new User(request.userName(), request.userEmail(), request.userPassword(), binaryContent.getId());
         }
 
