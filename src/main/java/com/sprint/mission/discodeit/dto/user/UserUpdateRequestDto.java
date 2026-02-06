@@ -8,7 +8,6 @@ public record UserUpdateRequestDto(
         UUID targetUserId,
         String newUsername,
         String newEmail,
-        String newPassword,
-        BinaryContentRequestDto profileImage
+        String newPassword
 ) {
 }

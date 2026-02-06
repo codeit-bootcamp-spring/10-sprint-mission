@@ -86,7 +86,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDto update(UserUpdateRequestDto userUpdateRequestDto) {
+    public UserResponseDto update(UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImageFile) throws IOException {
         User user = userRepository.findById(userUpdateRequestDto.targetUserId())
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userUpdateRequestDto.targetUserId() + " not found"));
 
@@ -94,8 +94,8 @@ public class BasicUserService implements UserService {
 
         BinaryContent newProfileImage;
 
-        if(userUpdateRequestDto.profileImage() != null){
-            newProfileImage = new BinaryContent(userUpdateRequestDto.profileImage().content().get(0));
+        if(profileImageFile != null){
+            newProfileImage = new BinaryContent(profileImageFile.getBytes());
 
             if(user.getProfileId() != null) binaryContentRepository.deleteById(user.getProfileId());
             binaryContentRepository.save(newProfileImage);
@@ -122,7 +122,7 @@ public class BasicUserService implements UserService {
         if (newProfileImage != null && !Arrays.equals(binaryContentRepository
                 .findById(user.getProfileId())
                 .orElseThrow()
-                .getContent(), userUpdateRequestDto.profileImage().content().get(0)))
+                .getContent(), profileImageFile.getBytes()))
         {
             binaryContentRepository.deleteById(user.getProfileId());
             user.setProfileId(newProfileImage.getId());

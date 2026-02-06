@@ -1,13 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequestDto;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequestDto;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequestDto;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.binarycontent.BinaryContentResponseMapper;
 import com.sprint.mission.discodeit.mapper.user.UserResponseMapper;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -47,26 +44,10 @@ public class UserController {
     @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
     public UserResponseDto patchUser(
             @PathVariable UUID id,
-            @RequestParam String username,
-            @RequestParam String email,
-            @RequestParam String password,
+            @RequestBody UserCreateRequestDto dto,
             @RequestParam MultipartFile profileImage
     ) throws IOException {
-        if(profileImage == null){
-            return userService.update(new UserUpdateRequestDto(id, username, email, password, null));
-        }
-        else{
-            binaryContentService.create(new BinaryContentCreateRequestDto(profileImage.getBytes()));
-            List<byte[]> file = new ArrayList<>();
-            file.add(profileImage.getBytes());
-
-            return userService.update(new UserUpdateRequestDto(
-                    id,
-                    username,
-                    email,
-                    password,
-                    new BinaryContentRequestDto(file)));
-        }
+        return userService.update(new UserUpdateRequestDto(id, dto.username(), dto.email(), dto.password()), profileImage);
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)

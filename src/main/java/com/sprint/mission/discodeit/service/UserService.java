@@ -13,6 +13,6 @@ public interface UserService {
     UserResponseDto create(UserCreateRequestDto userCreateRequestDto, MultipartFile profileImageFile) throws IOException;
     UserResponseDto find(UUID userId);
     List<UserResponseDto> findAll();
-    UserResponseDto update(UserUpdateRequestDto userUpdateRequestDto);
+    UserResponseDto update(UserUpdateRequestDto userUpdateRequestDto, MultipartFile profileImageFile) throws IOException;
     void delete(UUID userId);
 }
