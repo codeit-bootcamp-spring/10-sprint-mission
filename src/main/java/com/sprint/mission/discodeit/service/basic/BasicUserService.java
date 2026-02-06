@@ -27,11 +27,6 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final String ID_NOT_FOUND = "%s with id %s not found";
 
-    private <T> T findEntityById(UUID id, String type, DomainRepository<T> repository) {
-        return repository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException(ID_NOT_FOUND.formatted(type, id)));
-    }
-
     @Override
     public UserResponse find(UsernamePassword model) {
         User user = userRepository.findAll()
@@ -40,14 +35,14 @@ public class BasicUserService implements UserService {
                 .filter(user1 -> user1.matchPassword(model.password()))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("incorrect username or password"));
-        UserStatus userStatus = findEntityById(user.getUserStatusId(), "UserStatus", userStatusRepository);
+        UserStatus userStatus = findUserStatusByUserId(user.getId());
         return user.toResponse(userStatus.isActive());
     }
 
     @Override
     public UserResponse find(UUID userId) {
         User user = findEntityById(userId, "User", userRepository);
-        UserStatus userStatus = findEntityById(user.getUserStatusId(), "UserStatus", userStatusRepository);
+        UserStatus userStatus = findUserStatusByUserId(user.getId());
         return user.toResponse(userStatus.isActive());
     }
 
@@ -56,10 +51,49 @@ public class BasicUserService implements UserService {
         return userRepository.findAll()
                 .stream()
                 .map(user -> {
-                    UserStatus status = findEntityById(user.getUserStatusId(), "UserStatus", userStatusRepository);
+                    UserStatus status = findUserStatusByUserId(user.getId());
                     return user.toResponse(status.isActive());
                 })
                 .toList();
+    }
+
+    @Override
+    public UserResponse create(UserCreation model) {
+        validateUserUniqueness(model);
+
+        BinaryContent profileImage = registerProfileImage(model);
+        UUID profileImageId = profileImage == null ? null : profileImage.getId();
+        User user = new User(model.username(), model.email(), model.password(), profileImageId);
+        UserStatus userStatus = new UserStatus(user.getId(), model.lastActiveAt());
+        userStatusRepository.save(userStatus);
+        userRepository.save(user);
+        return user.toResponse(userStatus.isActive());
+    }
+
+    @Override
+    public UserResponse update(UserInfoUpdate model) {
+        User user = findEntityById(model.userId(), "User", userRepository);
+        user.update(model);
+        userRepository.save(user);
+        UserStatus userStatus = findUserStatusByUserId(model.userId());
+        return user.toResponse(userStatus.isActive());
+    }
+
+    @Override
+    public void delete(UUID userId) {
+        UserResponse userResponse = findEntityById(userId, "User", userRepository).toResponse(true);
+        deleteIfExist(userResponse.profileId(), "Profile", profileRepository);
+        UserStatus status = userStatusRepository.findByUserId(userId)
+                        .orElseThrow();
+        userStatusRepository.deleteById(status.getId());
+        userRepository.deleteById(userId);
+    }
+
+    private <T extends DomainRepository<?>> void deleteIfExist(UUID id, String type, T repository) {
+        if (!repository.existsById(id)) {
+            throw new NoSuchElementException(ID_NOT_FOUND.formatted(type, id));
+        }
+        repository.deleteById(id);
     }
 
     private void validateUserUniqueness(UserCreation model) {
@@ -79,46 +113,14 @@ public class BasicUserService implements UserService {
         return profileRepository.save(profileImage);
     }
 
-    @Override
-    public UserResponse create(UserCreation model) {
-        validateUserUniqueness(model);
-
-        BinaryContent profileImage = registerProfileImage(model);
-        UUID profileImageId = profileImage == null ? null : profileImage.toResponse().id();
-        UserStatus userStatus = new UserStatus(model.lastActiveAt());
-        userStatusRepository.save(userStatus);
-        User user = User.builder()
-                .username(model.username())
-                .email(model.email())
-                .password(model.password())
-                .profileId(profileImageId)
-                .userStatusId(userStatus.toResponse().id())
-                .build();
-        userRepository.save(user);
-        return user.toResponse(userStatus.isActive());
+    private <T> T findEntityById(UUID id, String type, DomainRepository<T> repository) {
+        return repository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException(ID_NOT_FOUND.formatted(type, id)));
     }
 
-    @Override
-    public UserResponse update(UserInfoUpdate model) {
-        User user = findEntityById(model.userId(), "User", userRepository);
-        user.update(model);
-        userRepository.save(user);
-        UserStatus userStatus = findEntityById(user.getUserStatusId(), "UserStatus", userStatusRepository);
-        return user.toResponse(userStatus.isActive());
+    private UserStatus findUserStatusByUserId(UUID userId) {
+        return userStatusRepository.findByUserId(userId)
+                .orElseThrow(() -> new NoSuchElementException(ID_NOT_FOUND.formatted("User", userId)));
     }
 
-    @Override
-    public void delete(UUID userId) {
-        User user = findEntityById(userId, "User", userRepository);
-        deleteIfExist(user.getProfileId(), "Profile", profileRepository);
-        deleteIfExist(user.getUserStatusId(), "UserStatus", userStatusRepository);
-        userRepository.deleteById(userId);
-    }
-
-    private <T extends DomainRepository<?>> void deleteIfExist(UUID id, String type, T repository) {
-        if (!repository.existsById(id)) {
-            throw new NoSuchElementException(ID_NOT_FOUND.formatted(type, id));
-        }
-        repository.deleteById(id);
-    }
 }

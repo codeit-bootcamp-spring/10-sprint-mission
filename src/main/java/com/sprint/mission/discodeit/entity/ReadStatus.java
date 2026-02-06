@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusResponse;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -14,6 +15,7 @@ import java.util.UUID;
 public class ReadStatus implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
+    @Getter
     private final UUID id = UUID.randomUUID();
     private final UUID userId;
     private final UUID channelId;

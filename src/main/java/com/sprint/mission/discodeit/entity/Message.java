@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import com.sprint.mission.discodeit.dto.MessageServiceDTO.MessageResponse;
 import jakarta.annotation.Nonnull;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.ToString;
 
 import java.io.Serial;
@@ -18,6 +19,7 @@ public class Message implements Serializable, Comparable<Message> {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    @Getter
     private final UUID id = UUID.randomUUID();
     private final long createdAt = Instant.now().getEpochSecond();
     private long updatedAt = createdAt;

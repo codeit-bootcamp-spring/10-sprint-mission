@@ -19,7 +19,7 @@ public interface UserServiceDTO {
     }
 
     @Builder
-    record UserResponse(UUID userId, String username, String email, boolean isActive, UUID profileId,
-                        UUID userStatusId) {
+    record UserResponse(@NonNull UUID userId, @NonNull String username, @NonNull String email,
+                        boolean isActive, UUID profileId) {
     }
 }

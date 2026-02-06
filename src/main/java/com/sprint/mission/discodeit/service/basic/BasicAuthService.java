@@ -15,6 +15,7 @@ public class BasicAuthService implements AuthService {
     public boolean login(UserLogin model) {
         return userRepository.findAll()
                 .stream()
-                .anyMatch(user -> user.matchUsername(model.username()) && user.matchPassword(model.password()));
+                .filter(user -> user.matchUsername(model.username()))
+                .anyMatch(user -> user.matchPassword(model.password()));
     }
 }

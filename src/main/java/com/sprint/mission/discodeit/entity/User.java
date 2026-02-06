@@ -2,8 +2,11 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.dto.UserServiceDTO.UserInfoUpdate;
 import com.sprint.mission.discodeit.dto.UserServiceDTO.UserResponse;
-import lombok.*;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
@@ -11,33 +14,25 @@ import java.util.function.Consumer;
 
 @ToString
 public class User implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
     @Getter
-    private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
-    @NonNull
+    private final UUID id = UUID.randomUUID();
+    private final Long createdAt = Instant.now().getEpochSecond();
+    private Long updatedAt = createdAt;
     private String username;
-    @NonNull
     private String email;
-    @NonNull
     private String password;
-    @Getter
     private UUID profileId;
-    @Getter
-    private final UUID userStatusId;
+    // todo: add message, channel id list
+    // todo: add parameters of update, which is messageId, channelId
 
-    @Builder
-    public User(@NonNull String username, @NonNull String email, @NonNull String password,
-                UUID profileId, UUID userStatusId) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now().getEpochSecond();
-        this.updatedAt = createdAt;
+    public User(@NonNull String username, @NonNull String email,
+                @NonNull String password, UUID profileId) {
         this.username = username;
         this.email = email;
         this.password = password;
         this.profileId = profileId;
-        this.userStatusId = userStatusId;
     }
 
     public boolean matchPassword(String password) {
@@ -74,7 +69,6 @@ public class User implements Serializable {
                 .email(email)
                 .isActive(isActive)
                 .profileId(profileId)
-                .userStatusId(userStatusId)
                 .build();
     }
 }
