@@ -43,7 +43,7 @@ public class BasicMessageService implements MessageService {
 
         User sender = userRepository.findById(message.getSenderId())
                         .orElseThrow(() -> new NoSuchElementException("발신자를 찾을 수 없습니다."));
-        Channel findChannel = channelRepository.findById(message.getSenderId())
+        Channel findChannel = channelRepository.findById(message.getChannelId())
                         .orElseThrow(() -> new NoSuchElementException("채널을 찾을 수 없습니다."));
 
         sender.addMessageId(message.getId());
@@ -94,9 +94,9 @@ public class BasicMessageService implements MessageService {
     public void deleteMessage(UUID messageId) {
         Message findMessage = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("해당 메세지가 존재하지 않습니다."));
-        User findUser = userRepository.findById(messageId)
+        User findUser = userRepository.findById(findMessage.getSenderId())
                 .orElseThrow(() -> new NoSuchElementException("메세지의 발신자가 존재하지 않습니다."));
-        Channel findChannel = channelRepository.findById(messageId)
+        Channel findChannel = channelRepository.findById(findMessage.getChannelId())
                 .orElseThrow(() -> new NoSuchElementException("메세지의 채널이 존재하지 않습니다."));
 
         findMessage.getAttachmentIds()
