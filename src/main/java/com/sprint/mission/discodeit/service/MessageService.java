@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MessageService {
-    MessageResponseDto create(MessageCreateRequestDto messageCreateRequestDto, List<MultipartFile> files);
+    MessageResponseDto create(UUID channelId, MessageCreateRequestDto messageCreateRequestDto, List<MultipartFile> files);
     MessageResponseDto find(UUID messageId);
     List<MessageResponseDto> findAllByChannelId(UUID channelId);
     MessageResponseDto update(UUID id, MessageUpdateRequestDto messageUpdateRequestDto, List<MultipartFile> files);
