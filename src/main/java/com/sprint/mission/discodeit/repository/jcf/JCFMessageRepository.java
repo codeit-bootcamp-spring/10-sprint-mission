@@ -1,69 +1,63 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf")
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> data;
-//    private final UserRepository userRepository;
-//    private final ChannelRepository channelRepository;
-    // 다른 레포지토리를 의존하면 안됨
 
-    // 다른 레포지토리 생성자로 주입 X(다른 레포지토리를 의존하지 않도록)
     public JCFMessageRepository() {
-        data = new HashMap<UUID, Message>();
+        this.data = new HashMap<>();
     }
 
     @Override
     public Message save(Message message) {
-        data.put(message.getId(), message);
+        this.data.put(message.getId(), message);
         return message;
     }
 
     @Override
     public Optional<Message> findById(UUID id) {
-        return Optional.ofNullable(data.get(id));
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
     public List<Message> findAll() {
-        return new ArrayList<>(data.values());
+        return this.data.values().stream().toList();
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
     }
 
     @Override
     public void deleteById(UUID id) {
-        data.remove(id);
+        this.data.remove(id);
     }
 
-//    @Override
-//    public List<Message> getMessagesByUserId(UUID userId) {
-//        return data.values().stream()
-//                .filter(message -> message.getUser()!=null && message.getUser().getId().equals(userId))
-//                .toList();
-//    }
-    // 서비스 영역으로
+    @Override
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(m -> m.getChannelId().equals(channelId))
+                .toList();
+    }
 
-//    @Override
-//    public List<Message> getMessagesByChannelId(UUID channelId) {
-//        return data.values().stream()
-//                .filter(message -> message.getChannel()!=null && message.getChannel().getId().equals(channelId))
-//                .toList();
-//    }
-    // 서비스 영역으로
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+//        data.values().stream()
+//                .filter(m -> m.getChannelId().equals(channelId))
+//                .forEach(m -> data.remove(m.getId()));
 
-    // JCF 레포지토리에는 필요하지 않은 기능
-//    @Override
-//    public void loadData() {
-//
-//    }
-//
-//    @Override
-//    public void saveData() {
-//
-//    }
+        // channelId에 해당하는 메시지를 찾는 로직이 findAllByChannelId와 동일 하므로 재사용?
+        // 삭제 시에 deleteById를 재사용?
+        findAllByChannelId(channelId)
+                .forEach(m -> deleteById(m.getId()));
+    }
 }
