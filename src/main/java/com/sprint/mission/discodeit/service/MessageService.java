@@ -12,6 +12,6 @@ public interface MessageService {
     MessageResponseDto create(MessageCreateRequestDto messageCreateRequestDto, List<MultipartFile> files);
     MessageResponseDto find(UUID messageId);
     List<MessageResponseDto> findAllByChannelId(UUID channelId);
-    MessageResponseDto update(MessageUpdateRequestDto messageUpdateRequestDto, List<MultipartFile> files);
+    MessageResponseDto update(UUID id, MessageUpdateRequestDto messageUpdateRequestDto, List<MultipartFile> files);
     void delete(UUID messageId);
 }

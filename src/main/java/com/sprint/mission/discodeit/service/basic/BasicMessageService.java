@@ -88,10 +88,10 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponseDto update(MessageUpdateRequestDto messageUpdateRequestDto, List<MultipartFile> files) {
-        Message message = messageRepository.findById(messageUpdateRequestDto.messageId())
+    public MessageResponseDto update(UUID id, MessageUpdateRequestDto messageUpdateRequestDto, List<MultipartFile> files) {
+        Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException(
-                            "Message with id " + messageUpdateRequestDto.messageId() + " not found"
+                            "Message with id " + id + " not found"
                     ));
 
 

@@ -30,7 +30,7 @@ public class MessageController {
             @RequestPart("dto") MessageUpdateRequestDto requestDto,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments,
             @PathVariable UUID id){
-        return messageService.update(requestDto, attachments);
+        return messageService.update(id, requestDto, attachments);
     }
 
 }
