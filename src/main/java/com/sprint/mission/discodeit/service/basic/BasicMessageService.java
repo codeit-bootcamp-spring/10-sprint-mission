@@ -7,10 +7,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,15 +27,12 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentMapper binaryContentMapper;
     private final MessageMapper messageMapper;
+    private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public MessageResponseDto create(MessageCreateDto dto) {
-        if (!channelRepository.existsById(dto.channelId())) {
-            throw new NoSuchElementException("Channel not found with id " + dto.channelId());
-        }
-        if (!userRepository.existsById(dto.authorId())) {
-            throw new NoSuchElementException("Author not found with id " + dto.authorId());
-        }
+    public MessageResponseDto create(UUID channelId, UUID authorId, MessageCreateDto dto) {
+        checkMember(channelId, authorId);
+        checkValidate(dto);
         List<UUID> attachmentIds = new ArrayList<>();
         if(dto.attachments()!=null && !dto.attachments().isEmpty()){
             dto.attachments()
@@ -59,7 +53,8 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<MessageResponseDto> findAllByChannelId(UUID channelId) {
+    public List<MessageResponseDto> findAllByChannelId(UUID userId, UUID channelId) {
+        checkMember(channelId, userId);
         List<MessageResponseDto> response = new ArrayList<>();
         messageRepository.findAllByChannelId(channelId)
                 .forEach(message -> response.add(messageMapper.toDto(message)));
@@ -67,21 +62,46 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponseDto update(UUID id,MessageUpdateDto dto) {
+    public MessageResponseDto update(UUID id,UUID userId, MessageUpdateDto dto) {
         Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Message with id " + id + " not found"));
+        checkMember(message.getChannelId(), userId);
+        if(!message.getAuthorId().equals(userId)) {
+            throw new IllegalArgumentException("작성자가 아님");
+        }
         message.update(dto.content(),null);//첨부파일 변경을 하려면 별도로 메서드 필요
         return messageMapper.toDto(messageRepository.save(message));
     }
 
     @Override
-    public void delete(UUID messageId) {
+    public void delete(UUID messageId, UUID userId) {
         Message message = messageRepository.findById(messageId)
                         .orElseThrow(()-> new NoSuchElementException("Message with id " + messageId + " not found"));
+        checkMember(message.getChannelId(), userId);
+        if(!message.getAuthorId().equals(userId)) {
+            throw new IllegalArgumentException("작성자가 아님");
+        }
         if(message.getAttachmentIds()!=null && !message.getAttachmentIds().isEmpty()){
             message.getAttachmentIds().forEach(binaryContentRepository::delete);//첨부파일 있는경우만 지우기
         }
         messageRepository.deleteById(messageId);
 
+    }
+    private void checkValidate(MessageCreateDto dto) {
+        if((dto.content()==null || dto.content().isEmpty()) //컨텐츠와 첨부파일 두개다 없는 경우
+                && (dto.attachments()==null || dto.attachments().isEmpty()) ){
+            throw new IllegalArgumentException("Content or attachment not found");
+        }
+    }
+    private void checkMember(UUID channelId, UUID userId){
+        if (!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("Channel not found with id " + channelId);
+        }
+        if (!userRepository.existsById(userId)) {//나중에 인증 하면 필요 없음
+            throw new NoSuchElementException("Author not found with id " + userId);
+        }
+        if (readStatusRepository.findByUserIdAndChannelId(userId,channelId).isEmpty()) {
+            throw new NoSuchElementException("Not Member of this Channel");
+        }
     }
 }
