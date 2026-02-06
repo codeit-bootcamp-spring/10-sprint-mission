@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentCreateDto;
-import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
+import com.sprint.mission.discodeit.dto.user.UserCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.*;
@@ -27,7 +27,7 @@ public class BasicUserService implements UserService {
     private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public UserResponseDto create(UserCreateRequestDto dto) {
+    public UserResponseDto create(UserCreateDto dto) {
         // 유저 객체 생성
         User user = new User(dto.getName(),
                 dto.getEmail(),
