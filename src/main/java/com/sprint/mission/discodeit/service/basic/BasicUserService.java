@@ -79,7 +79,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserResponseDTO findByUserId(UUID userId) {
         return UserMapper.toResponse(
-                findUserInfoById(userId),
+                findUserOrThrow(userId),
                 userStatusRepository.findByUserId(userId)
                         .orElseThrow(() -> new NoSuchElementException(
                                 "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
@@ -89,7 +89,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponseDTO updateUser(UUID userId, UpdateUserRequestDTO dto) {
-        User user = findUserInfoById(userId);
+        User user = findUserOrThrow(userId);
 
         if (dto.username() != null) {
             updateUserName(dto, user);
@@ -112,7 +112,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public void deleteUser(UUID userId) {
-        User user = findUserInfoById(userId);
+        User user = findUserOrThrow(userId);
         UUID binaryContentId = user.getProfileImageId();
 
         userStatusRepository.deleteById(userStatusRepository.findByUserId(userId)
@@ -127,7 +127,7 @@ public class BasicUserService implements UserService {
 
     // === 여기부터 내부 메서드 ===
 
-    private User findUserInfoById(UUID userId) {
+    private User findUserOrThrow(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null 값일 수 없습니다.");
 
         return userRepository.findById(userId)
