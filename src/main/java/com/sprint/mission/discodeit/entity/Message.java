@@ -1,47 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.Objects;
+import lombok.Getter;
 
-public class Message extends Common {
-    private static final long serialVersionUID = 1L;
-    private Channel channel;
-    private User user;
+import java.util.*;
+
+@Getter
+public class Message extends MutableEntity {
+    private final UUID channelId;
+    private final UUID authorId;
+    private final List<UUID> attachmentIds = new ArrayList<>();
     private String message;
 
-    public Message(Channel channel, User user, String message) {
+    public Message(UUID channelId, UUID userId, String message) {
         super();
-        this.channel = channel;
-        this.user = user;
+        this.channelId = channelId;
+        this.authorId = userId;
         this.message = message;
     }
 
-    public Channel getChannel() {
-        return this.channel;
+    public List<UUID> getAttachmentIds() {
+        return Collections.unmodifiableList(this.attachmentIds);
     }
-    public void updateChannelIfSameId(Channel channel) {
-        if (Objects.equals(getChannel().getId(), channel.getId())) {
-            this.channel = channel;
-        }
+    public void addAttachmentId(UUID attachmentId) {
+        this.attachmentIds.add(attachmentId);
     }
-
-    public User getUser() {
-        return this.user;
-    }
-    public void updateUserIfSameId(User user) {
-        if (Objects.equals(getUser().getId(), user.getId())) {
-            this.user = user;
-        }
+    public void removeAttachmentId(UUID attachmentId) {
+        this.attachmentIds.remove(attachmentId);
     }
 
-    public String getMessage() {
-        return this.message;
-    }
     public void updateMessage(String message) {
         this.message = message;
     }
 
     @Override
     public String toString() {
-        return String.format("'채널명: %s / 유저: %s / 채팅메세지: %s'", getChannel().getTitle(), getUser().getName(), getMessage());
+        return String.format("'채널ID: %s / 유저ID: %s / 채팅메세지: %s'", getChannelId(), getAuthorId(), getMessage());
     }
 }

@@ -1,22 +1,19 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.ChannelDto;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface ChannelService {
-    Channel createChannel(String title, String description);
-    // get: uuid로 검색하는건 확실하게 Channel반환 or Throw
-    Channel getChannel(UUID uuid);
-    // find: 그 외의 필드로 검색하는건 Optional<Channel>로 호출한 쪽에서 분기처리
-    Optional<Channel> findChannelByTitle(String title);
-    List<Channel> findAllChannels();
-    Channel updateChannel(UUID uuid, String title, String description);
-    Channel updateChannel(Channel newChannel);      // File쪽 특화용(다른 JCF관련 필드)
+    ChannelDto.response createChannel(ChannelDto.createPrivateRequest channelPrivateReq);
+    ChannelDto.response createChannel(ChannelDto.createPublicRequest channelPublicReq);
+    ChannelDto.response findChannel(UUID uuid);
+    ChannelDto.response findChannelByTitle(String title);
+    List<ChannelDto.response> findAllByUserId(UUID userId);
+    ChannelDto.response updateChannel(UUID uuid, ChannelDto.updatePublicRequest channelReq);
     void deleteChannel(UUID uuid);
-    void deleteChannelByTitle(String title);
+
     void joinChannel(UUID channelId, UUID userId);
     void leaveChannel(UUID channelId, UUID userId);
 }
