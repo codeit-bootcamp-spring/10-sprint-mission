@@ -11,6 +11,6 @@ public interface UserService {
     UserResponse create(UserCreateRequest request);
     UserResponse findById(UUID userId);
     List<UserResponse> findAll();
-    UserResponse update(UserUpdateRequest request);
+    UserResponse update(UUID userId, UserUpdateRequest request);
     void delete(UUID userId);
 }

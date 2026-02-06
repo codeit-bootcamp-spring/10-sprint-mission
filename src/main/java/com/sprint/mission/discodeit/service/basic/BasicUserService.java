@@ -57,6 +57,11 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserResponse findById(UUID userId) {
+        // 요청 검증
+        if (userId == null) {
+            throw new RuntimeException("요청이 올바르지 않습니다.");
+        }
+
         // 조회 대상 유저가 존재하는지 검증
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
@@ -86,14 +91,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse update(UserUpdateRequest request) {
-        // DTO 검증
-        if (request == null || request.id() == null) {
-            throw new RuntimeException("유저가 존재하지 않습니다.");
+    public UserResponse update(UUID userId, UserUpdateRequest request) {
+        // 요청 검증
+        if (userId == null || request == null) {
+            throw new RuntimeException("요청이 올바르지 않습니다.");
         }
 
         // 수정 대상 유저가 존재하는지 검증
-        User user = userRepository.findById(request.id())
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // 수정 DTO 데이터 확인
@@ -117,7 +122,6 @@ public class BasicUserService implements UserService {
                 validateUpdateUniqueness(user.getId(), newNickname);
             }
         }
-
         // null이 아니면 새로운 데이터 주입, null이면 기존 데이터 유지
         String resolvedPassword = (newPassword != null) ? newPassword : user.getPassword();
         String resolvedNickname = (newNickname != null) ? newNickname : user.getNickname();
@@ -149,6 +153,11 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
+        // 요청 검증
+        if (userId == null) {
+            throw new RuntimeException("요청이 올바르지 않습니다.");
+        }
+
         // 삭제 대상 유저가 존재하는지 검증
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
@@ -171,7 +180,7 @@ public class BasicUserService implements UserService {
 
     private void validateCreateRequest(UserCreateRequest request) {
         if (request == null) {
-            throw new RuntimeException("요청이 필요합니다.");
+            throw new RuntimeException("요청이 올바르지 않습니다.");
         }
         if (request.email() == null || request.email().isBlank()) {
             throw new RuntimeException("이메일이 필요합니다.");
