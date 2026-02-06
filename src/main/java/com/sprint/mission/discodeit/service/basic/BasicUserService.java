@@ -45,7 +45,7 @@ public class BasicUserService implements UserService {
         }
         User savedUser = userRepository.save(user);
 
-        UserStatus userStatus = new UserStatus(savedUser.getId(), "OFFLINE", Instant.now());
+        UserStatus userStatus = new UserStatus(savedUser.getId(), "OFFLINE", Instant.now(),Instant.now());
         userStatusRepository.save(userStatus);
 
         return UserResponse.from(savedUser, userStatus);

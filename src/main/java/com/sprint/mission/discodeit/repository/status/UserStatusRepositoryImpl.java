@@ -29,7 +29,12 @@ public class UserStatusRepositoryImpl implements UserStatusRepository {
 
     @Override
     public List<UserStatus> findAll() {
-        return List.of();
+        lock.lock();
+        try {
+            return new ArrayList<>(data); // List.of() -> new ArrayList<>(data)
+        }finally{
+            lock.unlock();
+        }
     }
 
     @Override
