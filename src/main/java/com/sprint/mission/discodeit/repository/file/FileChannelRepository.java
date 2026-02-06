@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -45,7 +46,7 @@ public class FileChannelRepository implements ChannelRepository {
     @Override
     public Optional<Channel> findByName(String channelName) {
         return findAll().stream()
-                .filter(c -> c.getChannelName().equals(channelName))
+                .filter(c -> c.getChannelType() == ChannelType.PUBLIC && c.getChannelName().equals(channelName))
                 .findFirst();
     }
 
