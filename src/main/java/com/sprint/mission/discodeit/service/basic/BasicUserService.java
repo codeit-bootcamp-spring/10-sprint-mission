@@ -87,14 +87,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUser(UpdateUserRequestDTO dto) {
-        User user = findUserInfoById(dto.userId());
+    public UserResponseDTO updateUser(UUID userId, UpdateUserRequestDTO dto) {
+        User user = findUserInfoById(userId);
 
         if (dto.username() != null) {
             updateUserName(dto, user);
         }
         if (dto.statusType() != null) {
-            updateUserStatus(dto);
+            updateUserStatus(userId, dto);
         }
         if (dto.profileImage() != null) {
             updateUserProfileImage(dto, user);
@@ -102,9 +102,9 @@ public class BasicUserService implements UserService {
 
         return UserMapper.toResponse(
                 user,
-                userStatusRepository.findByUserId(dto.userId())
+                userStatusRepository.findByUserId(userId)
                         .orElseThrow(() -> new NoSuchElementException(
-                                "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + dto.userId()
+                                "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
                         ))
         );
     }
@@ -144,10 +144,10 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
     }
 
-    private void updateUserStatus(UpdateUserRequestDTO dto) {
-        UserStatus status = userStatusRepository.findByUserId(dto.userId())
+    private void updateUserStatus(UUID userId, UpdateUserRequestDTO dto) {
+        UserStatus status = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException(
-                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + dto.userId()
+                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
                 ));
         status.updateStatusType(dto.statusType());
         userStatusRepository.save(status);
