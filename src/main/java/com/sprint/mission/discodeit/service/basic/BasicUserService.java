@@ -84,9 +84,11 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User update(UserUpdateRequestDto userUpdateRequestDto) {
+    public UserResponseDto update(UserUpdateRequestDto userUpdateRequestDto) {
         User user = userRepository.findById(userUpdateRequestDto.targetUserId())
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userUpdateRequestDto.targetUserId() + " not found"));
+
+        UserStatus userStatus = userStatusRepository.findByUserId(user.getId()).orElseThrow();
 
         BinaryContent newProfileImage;
 
@@ -128,7 +130,9 @@ public class BasicUserService implements UserService {
             user.isUpdated();
         }
 
-        return userRepository.save(user);
+        userRepository.save(user);
+
+        return userResponseMapper.toDto(user, userStatus);
     }
 
     @Override

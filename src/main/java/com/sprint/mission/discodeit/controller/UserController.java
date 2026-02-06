@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequestDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequestDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequestDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.binarycontent.BinaryContentResponseMapper;
 import com.sprint.mission.discodeit.mapper.user.UserResponseMapper;
@@ -13,6 +14,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 @Controller
@@ -32,6 +35,7 @@ public class UserController {
     private final BinaryContentResponseMapper binaryContentResponseMapper;
     private final BinaryContentService binaryContentService;
 
+    //사용자 등록
     @RequestMapping(method = RequestMethod.POST)
     public UserResponseDto postUser(
         @RequestParam String username,
@@ -53,6 +57,33 @@ public class UserController {
                     new BinaryContentRequestDto(file)));
         }
     }
+
+    //사용자 정보 수정
+    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    public UserResponseDto patchUser(
+            @PathVariable UUID id,
+            @RequestParam String username,
+            @RequestParam String email,
+            @RequestParam String password,
+            @RequestParam MultipartFile profileImage
+    ) throws IOException {
+        if(profileImage == null){
+            return userService.update(new UserUpdateRequestDto(id, username, email, password, null));
+        }
+        else{
+            binaryContentService.create(new BinaryContentCreateRequestDto(profileImage.getBytes()));
+            List<byte[]> file = new ArrayList<>();
+            file.add(profileImage.getBytes());
+
+            return userService.update(new UserUpdateRequestDto(
+                    id,
+                    username,
+                    email,
+                    password,
+                    new BinaryContentRequestDto(file)));
+        }
+    }
+
 
 
 
