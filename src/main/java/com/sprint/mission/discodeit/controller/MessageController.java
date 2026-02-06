@@ -33,4 +33,9 @@ public class MessageController {
         return messageService.update(id, requestDto, attachments);
     }
 
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public void deleteMessage(@PathVariable UUID id){
+        messageService.delete(id);
+    }
+
 }
