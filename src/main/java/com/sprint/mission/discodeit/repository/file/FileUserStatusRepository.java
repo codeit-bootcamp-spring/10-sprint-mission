@@ -42,7 +42,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public UserStatus save(UserStatus userStatus) {
-        Path path = resolve(userStatus.getId());
+        Path path = resolve(userStatus.getUserId());
         try (ObjectOutputStream oos = new ObjectOutputStream(
                 new FileOutputStream(path.toFile()))) {
             oos.writeObject(userStatus);

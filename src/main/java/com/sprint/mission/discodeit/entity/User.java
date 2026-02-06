@@ -62,9 +62,9 @@ public class User extends BaseEntity {
 
     private void validateUsername(String username) {
         if (username == null || username.isBlank() || username.contains(" "))
-            throw new IllegalArgumentException("닉네임은 공백 없이 필수 입력 사항입니다.");
+            throw new IllegalArgumentException("이름은 공백 없이 필수 입력 사항입니다.");
         if (username.length() < 2 || username.length() > 10)
-            throw new IllegalArgumentException("닉네임은 2자 이상, 10자 이하로 설정하세요.");
+            throw new IllegalArgumentException("이름은 2자 이상, 10자 이하로 설정하세요.");
     }
 
     private void validateEmail(String email) {

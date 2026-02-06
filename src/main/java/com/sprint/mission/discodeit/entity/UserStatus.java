@@ -10,6 +10,12 @@ import java.util.UUID;
 public class UserStatus extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * "userId"
+     * 연결된 유저의 식별자.
+     * User 객체가 BaseEntity로부터 상속받아 가지게 된 'id' 값을 그대로 복사해서 저장함.
+     * 이 값을 통해 "누구의 온라인 상태인지"를 식별함.
+     */
     private final UUID userId;
     private Instant lastOnlineAt;
 
@@ -25,8 +31,8 @@ public class UserStatus extends BaseEntity {
     }
 
     public boolean isOnline() {
-        if (getUpdatedAt() == null) return false;
+        if (getLastOnlineAt() == null) return false;
         Instant fiveMinutesAgo = Instant.now().minus(5, ChronoUnit.MINUTES);
-        return getUpdatedAt().isAfter(fiveMinutesAgo);
+        return getLastOnlineAt().isAfter(fiveMinutesAgo);
     }
 }
