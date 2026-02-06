@@ -13,10 +13,12 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.swing.plaf.multi.MultiPanelUI;
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -74,7 +76,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<MessageResponseDto> findallByChannelId(UUID channelId) {
+    public List<MessageResponseDto> findAllByChannelId(UUID channelId) {
         List<Message> messages = messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
                 .sorted((m1, m2) -> m2.getCreatedAt().compareTo(m1.getCreatedAt()))
@@ -86,20 +88,25 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponseDto update(MessageUpdateRequestDto messageUpdateRequestDto) {
+    public MessageResponseDto update(MessageUpdateRequestDto messageUpdateRequestDto, List<MultipartFile> files) {
         Message message = messageRepository.findById(messageUpdateRequestDto.messageId())
                 .orElseThrow(() -> new NoSuchElementException(
                             "Message with id " + messageUpdateRequestDto.messageId() + " not found"
                     ));
 
 
-            List<UUID> newAttachmentIds = Optional.ofNullable(messageUpdateRequestDto.newAttachment())
-                    .map(attachmentDto -> attachmentDto.content())
+            List<UUID> newAttachmentIds = Optional.ofNullable(files)
+                    .filter(contents-> !contents.isEmpty())
                     .map(contents -> contents.stream()
-                            .map(bytes -> {
-                                BinaryContent b = new BinaryContent(bytes);
-                                binaryContentRepository.save(b);
-                                return b.getId();
+                            .filter(file -> file != null && !file.isEmpty())
+                            .map(file -> {
+                                try {
+                                    BinaryContent b = new BinaryContent(file.getBytes());
+                                    binaryContentRepository.save(b);
+                                    return b.getId();
+                                } catch (IOException e) {
+                                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read attachment", e);
+                                }
                             })
                             .toList()
                     )

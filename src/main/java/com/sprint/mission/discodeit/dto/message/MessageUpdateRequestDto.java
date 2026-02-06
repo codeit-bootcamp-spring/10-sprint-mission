@@ -6,7 +6,6 @@ import java.util.UUID;
 
 public record MessageUpdateRequestDto(
         UUID messageId,
-        String newContent,
-        BinaryContentRequestDto newAttachment
+        String newContent
         ) {
 }

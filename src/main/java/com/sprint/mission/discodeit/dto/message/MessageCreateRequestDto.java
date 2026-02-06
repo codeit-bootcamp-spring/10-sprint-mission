@@ -7,7 +7,6 @@ import java.util.UUID;
 public record MessageCreateRequestDto(
         String content,
         UUID channelId,
-        UUID authorId,
-        BinaryContentRequestDto attachment
+        UUID authorId
 ) {
 }
