@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.channel.ChannelWithLastMessageDTO;
 import com.sprint.mission.discodeit.dto.user.*;
+import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final ChannelService channelService;
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity createUser(
@@ -86,5 +89,14 @@ public class UserController {
         UserResponseDTO response = userService.findByUserId(userId);
 
         return ResponseEntity.ok(response);
+    }
+
+    @RequestMapping(value = "/{userId}/channels", method = RequestMethod.GET)
+    public ResponseEntity findAllChannelsByUserId(
+            @PathVariable UUID userId
+    ) {
+        List<ChannelWithLastMessageDTO> channels = channelService.findAllByUserId(userId);
+
+        return ResponseEntity.ok(channels);
     }
 }
