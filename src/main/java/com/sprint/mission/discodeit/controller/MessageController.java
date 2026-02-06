@@ -8,6 +8,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,7 +27,19 @@ public class MessageController {
             @PathVariable UUID channelId,
             @RequestPart("dto") MessageCreateRequestDto requestDto,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
-            ){
+            )throws IOException {
+
+        if (attachments != null && !attachments.isEmpty()) {
+            for (MultipartFile file : attachments) {
+                if (file == null || file.isEmpty()) continue;
+
+                String fileName = file.getOriginalFilename();
+                Path savePath = Paths.get("./upload/" + fileName);
+                Files.createDirectories(savePath.getParent());
+                file.transferTo(savePath);
+            }
+        }
+
         return messageService.create(channelId, requestDto, attachments);
     }
 
