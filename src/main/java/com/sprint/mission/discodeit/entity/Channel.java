@@ -32,7 +32,7 @@ public class Channel implements Serializable {
             this.name = newName;
             anyValueUpdated = true;
         }
-        if (newDescription != null && !newDescription.isEmpty() && !newDescription.equals(this.description)) {
+        if (newDescription != null && !newDescription.equals(this.description)) {
             this.description = newDescription;
             anyValueUpdated = true;
         }
