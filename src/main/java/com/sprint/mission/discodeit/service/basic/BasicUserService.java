@@ -1,92 +1,101 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
+@Service
+@RequiredArgsConstructor
 public class BasicUserService implements UserService {
-    private final UserRepository userRepo;
-    public BasicUserService(UserRepository userRepo) {
-        this.userRepo = userRepo;
-    }
+    private final UserRepository userRepository;
+    private final UserStatusRepository userStatusRepository;
+    private final BinaryContentRepository binaryContentRepository;
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public User registerUser(String name, String email, java.time.LocalDate birthDate, String phoneNumber, String password){
-        List<User> user = userRepo.findAll();
-        if(user.stream()
-                .anyMatch(u -> u.getEmail().equals(email))) {
-            throw new IllegalArgumentException("다른 유저가 사용 중인 이메일입니다");
+    @Override
+    public UserResponse create(UserCreateRequest request) {
+        java.util.List<User> allUsers = userRepository.findAll();
+        for (User user : allUsers) {
+            if (user.getUsername().equals(request.username())) {
+                throw new IllegalArgumentException("이미 존재하는 유저네임입니다.");
+            }
+            if (user.getEmail().equals(request.email())) {
+                throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+            }
         }
 
-        User newUser = new User(name, email, birthDate, phoneNumber, password);
-        userRepo.save(newUser);
-        return newUser;
+        String encodedPassword = passwordEncoder.encode(request.password());
+
+        User user = new User(
+                request.username(),
+                request.email(),
+                encodedPassword,
+                request.profileImage()
+        );
+        user.setUserStatus(new UserStatus(user.getId()));
+        return userMapper.convertToResponse(userRepository.save(user));
     }
 
-    public User findUserById(UUID userId) {
-        User user = userRepo.findById(userId);
-        if(user == null){
-            throw new IllegalArgumentException("해당 유저를 찾을 수 없습니다");
+    @Override
+    public UserResponse find(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        return userMapper.convertToResponse(user);
+    }
+
+    @Override
+    public List<UserResponse> findAll() {
+        return userRepository.findAll().stream()
+                .map(userMapper::convertToResponse)
+                .toList();
+    }
+
+    @Override
+    public UserResponse update(UUID userId, UserUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+
+        String name = Optional.ofNullable(request.username()).orElse(user.getUsername());
+        String email = Optional.ofNullable(request.email()).orElse(user.getEmail());
+        String password = Optional.ofNullable(request.password()).orElse(user.getPassword());
+        BinaryContentDto profileImage = Optional.ofNullable(request.profileImage()).orElse(user.getProfileImage());
+
+        user.update(name,email,password,profileImage);
+        return userMapper.convertToResponse(userRepository.save(user));
+    }
+
+    @Override
+    public void delete(UUID userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User with id " + userId + " not found");
         }
-        return user;
-    }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-    public List<User> findAllUser() {
-        return userRepo.findAll();
-    }
+        userStatusRepository.findByUserId(userId)
+                .ifPresent(status -> userStatusRepository.deleteById(status.getId()));
 
-    public void deleteUser(UUID userId){
-        User user = findUserById(userId);
-        userRepo.delete(userId);
-    }
 
-    public int userCount () {
-        return userRepo.findAll().size();
-    }
+        if (user.getProfileImage() != null) {
+            binaryContentRepository.deleteById(user.getProfileId());
+        }
+        userRepository.deleteById(user.getId());
 
-    public User updateUser(UUID userId, String name, String email, String phoneNumber, String password ){
-        User user = userRepo.findById(userId);
-
-        Optional.ofNullable(name)
-                .ifPresent(n-> {
-                    if(user.getName().equals(n)){
-                        throw new IllegalArgumentException("현재 사용 중인 이름입니다");
-                    }
-                    user.setName(name);
-                });
-
-        Optional.ofNullable(email)
-                .ifPresent(e -> {
-                    if(user.getEmail().equals(e)){
-                        throw new IllegalArgumentException("현재 사용 중인 이메일입니다");
-                    }
-
-                    if (userRepo.findAll().stream()
-                            .anyMatch(u -> !u.getId().equals(userId) && u.getEmail().equals(e))) {
-                        throw new IllegalArgumentException("다른 유저가 사용 중인 이메일입니다");
-                    }
-                    user.setEmail(email);
-                });
-
-        Optional.ofNullable(phoneNumber)
-                .ifPresent(p -> {
-                    if(user.getPhoneNumber().equals(p)){
-                        throw new IllegalArgumentException("현재 사용 중인 전화번호입니다");
-                    }
-                    user.setPhoneNumber(phoneNumber);
-                });
-
-        Optional.ofNullable(password)
-                .ifPresent(p-> {
-                    if(user.getPassword().equals(p)) {
-                        throw new IllegalArgumentException("현재 사용 중인 비밀번호입니다");
-                    }
-                    user.setPassword(password);
-                });
-        userRepo.save(user);
-        return user;
     }
 }
+
+

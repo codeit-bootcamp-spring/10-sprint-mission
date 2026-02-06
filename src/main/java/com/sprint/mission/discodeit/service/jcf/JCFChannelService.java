@@ -1,119 +1,96 @@
 package com.sprint.mission.discodeit.service.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 
 import java.util.*;
 
-public class JCFChannelService implements ChannelService {
-    private final Map<UUID, Channel> channelList;
-    private final UserService userService;
-
-    public JCFChannelService(UserService userService)
-    {   this.userService = userService;
-        this.channelList = new HashMap<>();
-    }
-
-    @Override
-    public Channel createChannel(String name, String intro) {
-        if(channelList.values().stream()
-                .anyMatch(c -> c.getName().equals(name))){
-            throw new IllegalArgumentException("이미 존재하는 채널명 입니다");
-        }
-
-
-        Channel newChannel = new Channel(name,intro);
-        channelList.put(newChannel.getId(), newChannel);
-        return newChannel;
-    }
-
-
-    @Override
-    public Channel findChannelById(UUID channelId) {
-        Channel channel = channelList.get(channelId);
-        if(channel == null){
-            throw new IllegalArgumentException("해당 채널을 찾을 수 없습니다.");
-        }
-
-        return channel;
-    }
-
-    public List<Channel> findAllChannels () {return new ArrayList<>(channelList.values());}
-
-    public void deleteChannel(UUID channelId){
-        Channel channel = findChannelById(channelId);
-        channelList.remove(channelId);
-    }
-
-    public Channel updateChannel(UUID channelId, String name, String intro) {
-        Channel channel = findChannelById(channelId);
-
-        Optional.ofNullable(name)
-                .ifPresent(n-> {
-                    if (channel.getName().equals(n)) {
-                        throw new IllegalArgumentException("현재 사용 중인 채널 이름입니다");
-                    }
-                    channel.setName(n);
-                });
-
-        Optional.ofNullable(intro)
-                .ifPresent(i -> {
-                    if(channel.getIntro().equals(i)){
-                        throw new IllegalArgumentException("현재 사용 중인 채널 설명입니다");
-                    }
-                    channel.setIntro(i);
-                });
-
-        channel.setUpdatedAt(System.currentTimeMillis());
-        return channel;
-    }
-
-    @Override
-    public void enter(UUID userId, UUID channelId) {
-        Channel channel = findChannelById(channelId);
-        User user = userService.findUserById(userId);
-
-
-        channel.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    @Override
-    public void exit(UUID userId , UUID channelId) {
-        Channel channel = findChannelById(channelId);
-        User user = userService.findUserById(userId);
-
-
-        channel.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    @Override
-    public void addMessage(UUID channelId, UUID messageId) {
-        Channel channel = findChannelById(channelId);
-
-        channel.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    @Override
-    public void removeMessage(UUID channelId, UUID messageId) {
-        Channel channel = findChannelById(channelId);
-
-        channel.setUpdatedAt(System.currentTimeMillis());
-    }
-
-   @Override
-    public int getCurrentUserCount(UUID channelId) {
-        Channel channel = findChannelById(channelId);
-        return channel.getUserList().size();
-    }
-
-    @Override
-    public int getMessageCount(UUID channelId) {
-        Channel channel = findChannelById(channelId);
-        return channel.getMessageList().size();
-
-    }
-}
-
+//public class JCFChannelService implements ChannelService {
+//    private final Map<UUID, Channel> channelMap;
+//    private final UserService userService;
+//
+//    public JCFChannelService(UserService userService){
+//        this.channelMap = new HashMap<>();
+//        this.userService = userService;
+//    }
+//
+//    @Override
+//    public Channel createChannel(String channelName) {
+//        Channel channel = new Channel(channelName);
+//        channelMap.put(channel.getId(), channel);
+//        System.out.println(channel.getChannelName() + "채널 생성이 완료되었습니다.");
+//        return channel;
+//    }
+//
+//    @Override
+//    public Channel findChannelByChannelId(UUID id){
+//        Channel channel = channelMap.get(id);
+//        if (channel == null) {
+//            throw new IllegalArgumentException("해당 채널이 없습니다.");
+//        }
+//        return channel;
+//    }
+//
+//    @Override
+//    public List<Channel> findChannelByUserId(UUID userID){
+//        User user = userService.findUserById(userID);
+//        return new ArrayList<>(user.getMyChannels());
+//    }
+//
+//    @Override
+//    public List<Channel> findAllChannels(){
+//        return new ArrayList<>(channelMap.values());
+//    }
+//
+//    @Override
+//    public void deleteChannel(UUID id){
+//        Channel targetChannel = findChannelByChannelId(id);
+//
+//        targetChannel.getParticipants()
+//                        .forEach(user -> user.getMyChannels().remove(targetChannel));
+//        channelMap.remove(id);
+//    }
+//
+//    public Channel updateChannel(UUID id, String channelName){
+//        Channel targetChannel = findChannelByChannelId(id);
+//        targetChannel.updateChannelInfo(channelName);
+//        return targetChannel;
+//    }
+//
+//    @Override
+//    public void joinChannel(UUID userID, UUID channelID) {
+//        Channel targetChannel = findChannelByChannelId(channelID);
+//        User targetUser = userService.findUserById(userID);
+//
+//        targetChannel.getParticipants().stream()
+//                .filter(participant -> participant.getId().equals(targetUser.getId()))
+//                .findAny()
+//                .ifPresent(participant -> {
+//                    throw new IllegalArgumentException("이미 채널에 참여중인 사용자입니다.");
+//                });
+//
+//        targetChannel.getParticipants().add(targetUser);
+//        targetUser.getMyChannels().add(targetChannel);
+//
+//        targetChannel.getParticipants().add(targetUser);
+//        targetUser.getMyChannels().add(targetChannel);
+//
+//        System.out.println(targetUser.getUsername() + "님이 "
+//                                + targetChannel.getChannelName() + " 채널에 입장했습니다.");
+//    }
+//
+//    @Override
+//    public void leaveChannel(UUID userID, UUID channelID) {
+//        Channel targetChannel = findChannelByChannelId(channelID);
+//        User targetUser = userService.findUserById(userID);
+//
+//        if (!targetChannel.getParticipants().contains(targetUser)) {
+//            throw new IllegalArgumentException("채널에 참여중이지 않습니다.");
+//        }
+//
+//        targetChannel.getParticipants().remove(targetUser);
+//        targetUser.getMyChannels().remove(targetChannel);
+//    }
+//}

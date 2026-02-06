@@ -1,63 +1,65 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.binaryContent.BinaryContentDto;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.UUID;
 
-public class User extends BaseEntity implements Serializable {
+@Getter
+public class User implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String name;
+
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private String username;
     private String email;
-    private final LocalDate birthDate; // 수정불가능
-    private String phoneNumber;
-    private transient String password;
+    private String password;
+    private @Setter UserStatus userStatus;
+    private BinaryContentDto profileImage;
+    private UUID profileId;
 
 
-    public User(String name, String email, LocalDate birthDate , String phoneNumber, String password){
-        super();
-        this.name = name;
+    public User(String username, String email, String password, BinaryContentDto profileImage) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        //
+        this.username = username;
         this.email = email;
-        this.birthDate = birthDate;
-        this.phoneNumber = phoneNumber;
         this.password = password;
+        this.profileImage = profileImage;
     }
 
-    public String getName() {
-        return name;
+    public void update(String newUsername, String newEmail, String newPassword, BinaryContentDto profileImage) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+
+        if(profileImage != null && !profileImage.equals(this.profileImage)){
+            this.profileImage = profileImage;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
-    public void setName(String name){
-        this.name = name;
-        setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public String getEmail(){
-        return email;
-    }
-
-    public void setEmail(String userEmail){
-        this.email = userEmail;
-        setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public LocalDate getBirthDate() {
-        return birthDate;
-    }
-
-    public String getPhoneNumber(){
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber){
-        this.phoneNumber = phoneNumber;
-        setUpdatedAt(System.currentTimeMillis());
-    }
-    public String getPassword(){
-        return password;
-    }
-
-    public void setPassword (String userPassword) {
-        this.password = userPassword;
-        setUpdatedAt(System.currentTimeMillis());
+    public boolean isOnline() {
+        if (this.userStatus == null) return false;
+        return this.userStatus.isConnected();
     }
 }

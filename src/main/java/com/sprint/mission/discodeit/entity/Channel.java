@@ -1,58 +1,53 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
 import java.io.Serializable;
-import java.util.*;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
-public class Channel extends BaseEntity implements Serializable {
+@Getter
+public class Channel implements Serializable {
     private static final long serialVersionUID = 1L;
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
+    private ChannelType type;
     private String name;
-    private String intro;
-
-    private Set<UUID> userId = new HashSet<>();
-    private Set<UUID> messageId = new HashSet<>();
+    private String description;
 
 
-    public Channel(String name, String intro) {
-        super();
+    public Channel(ChannelType type, String name, String description) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        //
+        this.type = type;
         this.name = name;
-        this.intro = intro;
+        this.description = description;
     }
 
-    public String getName(){
-        return name;
+    public Channel(ChannelType type, List<UUID> userList) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        //
+        this.type = type;
     }
 
-    public void setName(String name) {
-        this.name = name;
-        setUpdatedAt(System.currentTimeMillis());
-    }
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
 
-    public String getIntro() {
-        return intro;
-    }
-
-    public void setIntro(String intro){
-        this.intro = intro;
-        setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public Set<UUID> getUserList() {
-        return userId;
-    }
-    public Set<UUID> getMessageList() { return messageId; }
-
-    public void addUser(UUID userId) {
-        this.userId.add(userId);
-    }
-
-    public void removeUser(UUID userId) {
-        this.userId.remove(userId);
-    }
-
-    public void addMessage(UUID messageId) {
-        this.messageId.add(messageId);
-    }
-    public void remove(UUID messageId) {
-        this.messageId.remove(messageId);
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }
