@@ -23,14 +23,14 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusResponse create(UserStatusCreateRequest request) {
         UserStatus userStatus = new UserStatus(request.userID());
         UserStatus newUserStatus = userStatusRepository.save(userStatus);
-        return new UserStatusResponse(newUserStatus.getId(), newUserStatus.isOnline());
+        return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
     }
 
     @Override
     public UserStatusResponse find(UUID userID){
         UserStatus userStatus = userStatusRepository.findByUserID(userID)
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + userID));
-        return new UserStatusResponse(userStatus.getId(), userStatus.isOnline());
+        return new UserStatusResponse(userStatus.getUserID(), userStatus.isOnline());
     }
 
     @Override
@@ -41,11 +41,11 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatusResponse update(UserStatusUpdateRequest request) {
-        UserStatus userStatus = userStatusRepository.find(request.userStatusID())
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + request.userStatusID()));
+        UserStatus userStatus = userStatusRepository.find(request.userID())
+                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + request.userID()));
         userStatus.updateLastLogin();
         UserStatus newUserStatus = userStatusRepository.save(userStatus);
-        return new UserStatusResponse(newUserStatus.getId(), newUserStatus.isOnline());
+        return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
     }
 
     @Override
@@ -54,7 +54,7 @@ public class BasicUserStatusService implements UserStatusService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
         userStatus.updateLastLogin();
         UserStatus newUserStatus = userStatusRepository.save(userStatus);
-        return new UserStatusResponse(newUserStatus.getId(), newUserStatus.isOnline());
+        return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());
     }
 
     @Override

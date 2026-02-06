@@ -23,37 +23,37 @@ public class UserController {
     }
 
     // user 등록
-    @PostMapping
+    @RequestMapping(method = RequestMethod.POST)
     public UserResponse postUser(@RequestBody UserCreateRequest request){
         return userService.create(request);
     }
 
     // user 정보 수정
-    @PostMapping("/update")
-    public UserResponse putUser(@RequestBody UserUpdateRequest request){
+    @RequestMapping(method = RequestMethod.PATCH)
+    public UserResponse updateUser(@RequestBody UserUpdateRequest request){
         return userService.update(request);
     }
 
     // user 삭제
-    @DeleteMapping("/{user-id}")
+    @RequestMapping(method = RequestMethod.DELETE, value = "/{user-id}")
     public void deleteUser(@PathVariable("user-id") UUID userID){
         userService.deleteUser(userID);
     }
 
     // user 단건 조회
-    @GetMapping("/{user-id}")
+    @RequestMapping(method = RequestMethod.GET, value = "/{user-id}")
     public UserResponse getUser(@PathVariable("user-id") UUID userID){
         return userService.find(userID);
     }
 
     // user 다건 조회
-    @GetMapping
+    @RequestMapping(method = RequestMethod.GET)
     public List<UserResponse> getAllUsers(){
         return userService.findAll();
     }
 
     // user status 업데이트
-    @PatchMapping("/{user-id}/status")
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{user-id}/status")
     public UserStatusResponse updateStatus(@PathVariable("user-id") UUID userID){
         return userStatusService.updateByUserID(userID);
     }

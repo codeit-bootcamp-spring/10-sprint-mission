@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.dto.userStatus;
 import java.util.UUID;
 
 public record UserStatusUpdateRequest(
-        UUID userStatusID,
+        UUID userID,
         boolean status
 ) {
 }
