@@ -4,44 +4,44 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class JCFReadStatusRepository implements ReadStatusRepository {
+public class JCFReadStatusRepository extends JCFDomainRepository<ReadStatus> implements ReadStatusRepository {
+
+    public JCFReadStatusRepository() {
+        super(new HashMap<>());
+    }
+
     @Override
     public ReadStatus save(ReadStatus entity) {
-        return null;
+        getData().put(entity.getId(), entity);
+        return entity;
     }
 
     @Override
-    public Optional<ReadStatus> findById(UUID readStatusId) {
-        return Optional.empty();
+    public List<ReadStatus> findAllByChannelId(UUID channelId) {
+        return getData().values()
+                .stream()
+                .filter(status -> status.matchChannelId(channelId))
+                .toList();
     }
 
     @Override
-    public List<ReadStatus> findByChannelId(UUID channelId) {
-        return List.of();
+    public List<ReadStatus> findAllByUserId(UUID userId) {
+        return getData().values()
+                .stream()
+                .filter(status -> status.matchUserId(userId))
+                .toList();
     }
 
     @Override
-    public List<ReadStatus> findByUserId(UUID userId) {
-        return List.of();
-    }
-
-    @Override
-    public List<ReadStatus> findAll() {
-        return List.of();
-    }
-
-    @Override
-    public boolean existsById(UUID readStatusId) {
-        return false;
-    }
-
-    @Override
-    public void deleteById(UUID readStatusId) {
-
+    public boolean existsByUserAndChannelId(UUID userId, UUID channelId) {
+        return getData().values()
+                .stream()
+                .filter(status -> status.matchUserId(userId))
+                .anyMatch(status -> status.matchChannelId(channelId));
     }
 }

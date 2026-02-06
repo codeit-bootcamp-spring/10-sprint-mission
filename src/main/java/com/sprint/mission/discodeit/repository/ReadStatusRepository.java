@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ReadStatusRepository extends DomainRepository<ReadStatus> {
-    List<ReadStatus> findByChannelId(UUID channelId);
-    List<ReadStatus> findByUserId(UUID userId);
+    List<ReadStatus> findAllByChannelId(UUID channelId);
+    List<ReadStatus> findAllByUserId(UUID userId);
     boolean existsByUserAndChannelId(UUID userId, UUID channelId);
 }

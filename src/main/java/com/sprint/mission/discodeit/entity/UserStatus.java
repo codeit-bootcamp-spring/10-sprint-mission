@@ -17,7 +17,6 @@ public class UserStatus implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private final long ACTIVE_THRESHOLD = 300L;
-
     @Getter
     private final UUID id = UUID.randomUUID();
     private final UUID userId;
@@ -26,6 +25,10 @@ public class UserStatus implements Serializable {
     @Getter
     @NonNull
     private long lastActiveAt;
+
+    public boolean matchUserId(UUID userId) {
+        return this.userId.equals(userId);
+    }
 
     public void update(long lastActiveAt) {
         this.lastActiveAt = lastActiveAt;

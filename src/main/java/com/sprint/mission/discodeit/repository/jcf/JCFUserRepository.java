@@ -4,39 +4,32 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.HashMap;
 
 @Repository
-public class JCFUserRepository implements UserRepository {
-    private final Map<UUID, User> data;
+public class JCFUserRepository extends JCFDomainRepository<User> implements UserRepository {
 
     public JCFUserRepository() {
-        this.data = new HashMap<>();
+        super(new HashMap<>());
     }
 
     @Override
     public User save(User user) {
-        this.data.put(user.getId(), user);
+        getData().put(user.getId(), user);
         return user;
     }
 
     @Override
-    public Optional<User> findById(UUID id) {
-        return Optional.ofNullable(this.data.get(id));
+    public boolean existsByUsername(String username) {
+        return getData().values()
+                .stream()
+                .anyMatch(user -> user.matchUsername(username));
     }
 
     @Override
-    public List<User> findAll() {
-        return this.data.values().stream().toList();
-    }
-
-    @Override
-    public boolean existsById(UUID id) {
-        return this.data.containsKey(id);
-    }
-
-    @Override
-    public void deleteById(UUID id) {
-        this.data.remove(id);
+    public boolean existsByEmail(String email) {
+        return getData().values()
+                .stream()
+                .anyMatch(user -> user.matchUsername(email));
     }
 }

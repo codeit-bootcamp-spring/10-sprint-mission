@@ -4,34 +4,35 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class JCFUserStatusRepository implements UserStatusRepository {
+public class JCFUserStatusRepository extends JCFDomainRepository<UserStatus> implements UserStatusRepository {
+
+    public JCFUserStatusRepository() {
+        super(new HashMap<>());
+    }
+
     @Override
     public UserStatus save(UserStatus entity) {
-        return null;
+        getData().put(entity.getId(), entity);
+        return entity;
     }
 
     @Override
-    public Optional<UserStatus> findById(UUID id) {
-        return Optional.empty();
+    public Optional<UserStatus> findByUserId(UUID userId) {
+        return getData().values()
+                .stream()
+                .filter(status -> status.matchUserId(userId))
+                .findFirst();
     }
 
     @Override
-    public List<UserStatus> findAll() {
-        return List.of();
-    }
-
-    @Override
-    public boolean existsById(UUID id) {
-        return false;
-    }
-
-    @Override
-    public void deleteById(UUID id) {
-
+    public boolean existsByUserId(UUID userId) {
+        return getData().values()
+                .stream()
+                .anyMatch(status -> status.matchUserId(userId));
     }
 }
