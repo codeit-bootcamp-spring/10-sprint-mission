@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.dto;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -12,7 +13,7 @@ public class UserDto {
             String username,
             String email,
             String password,
-            BinaryContentDto.Create profile
+            MultipartFile profile
     ) {}
 
     public record Response(
@@ -36,11 +37,10 @@ public class UserDto {
     }
 
     public record Update(
-            UUID id,
             String username,
             String email,
             String password,
-            BinaryContentDto.Create profile
+            MultipartFile profile
     ) {}
 
     public record Login(

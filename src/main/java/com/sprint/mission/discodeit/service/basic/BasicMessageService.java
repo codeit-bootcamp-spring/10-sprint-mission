@@ -8,7 +8,9 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -39,13 +41,22 @@ public class BasicMessageService implements MessageService {
         List<UUID> attachmentIds = new ArrayList<>();
         //요청에 첨부파일이 있다면 for-loop를 통해 객체 생성 후 저장
         if (request.attachments() != null && !request.attachments().isEmpty()) {
-            for (BinaryContentDto.Create attachmentDto : request.attachments()) {
-                BinaryContent attachment = new BinaryContent(
-                        attachmentDto.fileName(),
-                        attachmentDto.bytes()
-                );
-                binaryContentRepository.save(attachment);
-                attachmentIds.add(attachment.getId());
+            for (MultipartFile file : request.attachments()) {
+                if (file.isEmpty()) { //리스트 안에 특정 파일이 비었는지 확인
+                    continue;
+                }
+                try {
+                    BinaryContent attachment = new BinaryContent(
+                            file.getOriginalFilename(),
+                            file.getContentType(),
+                            file.getSize(),
+                            file.getBytes()
+                    );
+                    binaryContentRepository.save(attachment);
+                    attachmentIds.add(attachment.getId());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         Message message = new Message(

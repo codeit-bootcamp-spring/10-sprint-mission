@@ -9,6 +9,6 @@ public interface UserService {
     UserDto.Response create(UserDto.Create createRequest);
     UserDto.Response findById(UUID userId);
     List<UserDto.Response> findAll();
-    UserDto.Response update(UserDto.Update updateRequest);
+    UserDto.Response update(UUID userId, UserDto.Update updateRequest);
     void delete(UUID userId);
 }

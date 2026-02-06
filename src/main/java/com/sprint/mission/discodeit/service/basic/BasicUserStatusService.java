@@ -63,7 +63,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatusDto.Response updateByUserId(UUID userId) {
         UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
         status.updateOnline();
         userStatusRepository.save(status);
         return UserStatusDto.Response.of(status);

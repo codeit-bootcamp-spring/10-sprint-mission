@@ -8,18 +8,24 @@ public class BinaryContentDto {
 
     public record Create(
             String fileName,
+            long size,
+            String contentType,
             byte[] bytes
     ) {}
 
     public record Response(
             UUID id,
             String fileName,
+            long size,
+            String contentType,
             byte[] bytes
     ) {
         public static Response of (BinaryContent content) {
             return new Response(
                     content.getId(),
                     content.getFileName(),
+                    content.getSize(),
+                    content.getContentType(),
                     content.getBytes()
             );
         }

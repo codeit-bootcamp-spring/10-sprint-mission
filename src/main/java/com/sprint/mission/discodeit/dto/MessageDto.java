@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.dto;
 
 import com.sprint.mission.discodeit.entity.Message;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.List;
@@ -11,7 +12,7 @@ public class MessageDto {
             String content,
             UUID authorId,
             UUID channelId,
-            List<BinaryContentDto.Create> attachments
+            List<MultipartFile> attachments
     ) {}
 
     public record Response(
