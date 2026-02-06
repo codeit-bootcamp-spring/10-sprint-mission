@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.dto.MessageServiceDTO.MessageResponse;
 import jakarta.annotation.Nonnull;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -31,7 +30,6 @@ public class Message implements Serializable, Comparable<Message> {
     @ToString.Exclude
     private final Set<UUID> attachmentIds = new HashSet<>();
 
-    @Builder
     public Message(@Nonnull String content, @Nonnull UUID channelId, @Nonnull UUID authorId,
                    @Nonnull List<UUID> attachmentIds) {
         this.content = content;

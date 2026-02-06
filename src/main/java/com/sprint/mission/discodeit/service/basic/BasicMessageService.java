@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.MessageServiceDTO.MessageContentUpdate;
 import com.sprint.mission.discodeit.dto.MessageServiceDTO.MessageCreation;
 import com.sprint.mission.discodeit.dto.MessageServiceDTO.MessageResponse;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -23,7 +24,7 @@ public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
-    private final BinaryContentRepository profileRepository;
+    private final BinaryContentRepository attachmentRepository;
 
     @Override
     public MessageResponse create(MessageCreation model) {
@@ -34,13 +35,13 @@ public class BasicMessageService implements MessageService {
         if (!userRepository.existsById(model.authorId())) {
             throw new NoSuchElementException("Author not found with id " + model.authorId());
         }
-
-        Message message = Message.builder()
-                .content(model.content())
-                .channelId(model.channelId())
-                .authorId(model.authorId())
-                .attachmentIds(model.attachmentIds())
-                .build();
+        List<UUID> attachmentIds = model.attachments()
+                .stream()
+                .map(attachment
+                        -> attachmentRepository.save(new BinaryContent(attachment)))
+                .map(BinaryContent::getId)
+                .toList();
+        Message message = new Message(model.content(), model.channelId(), model.authorId(), attachmentIds);
         messageRepository.save(message);
         return message.toResponse();
     }
@@ -74,7 +75,7 @@ public class BasicMessageService implements MessageService {
                         ID_NOT_FOUND.formatted(messageId)))
                 .toResponse()
                 .attachmentIds()
-                .forEach(profileRepository::deleteById);
+                .forEach(attachmentRepository::deleteById);
         messageRepository.deleteById(messageId);
     }
 }
