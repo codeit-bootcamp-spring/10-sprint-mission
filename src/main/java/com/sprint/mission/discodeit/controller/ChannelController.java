@@ -71,7 +71,7 @@ public class ChannelController {
         channelService.deleteChannel(channelId);
 
         return ResponseEntity.ok(
-                new DeleteChannelResponseDTO(
+                new DeleteOrLeaveChannelResponseDTO(
                         Instant.now(),
                         200,
                         "채널이 삭제되었습니다."
@@ -79,10 +79,6 @@ public class ChannelController {
         );
     }
 
-    // TODO..
-    // 유저쪽에서 갱신을 해야하는데 유저서비스에서 channelRepository를 건드릴 수 없음(요구사항)
-    // 마찬가지로 채널서비스에서도 userRepository를 건드릴 수 없음(요구사항)
-    // 그래서 저장을 못해서 계속 빈 리스트가 옴
     @RequestMapping(value = "/{channelId}/users", method = RequestMethod.GET)
     public ResponseEntity findAllUsersByChannelId(
             @PathVariable UUID channelId
@@ -103,6 +99,19 @@ public class ChannelController {
         return ResponseEntity.ok(response);
     }
 
-    // TODO..
-    // 채널 탈퇴 구현 필요
+    @RequestMapping(value = "/{channelId}/leave/{userId}", method = RequestMethod.POST)
+    public ResponseEntity leaveChannel(
+            @PathVariable UUID channelId,
+            @PathVariable UUID userId
+    ) {
+        channelService.leaveChannel(channelId, userId);
+
+        return ResponseEntity.ok(
+                new DeleteOrLeaveChannelResponseDTO(
+                        Instant.now(),
+                        200,
+                        "채널을 떠났습니다."
+                )
+        );
+    }
 }
