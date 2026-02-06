@@ -12,7 +12,7 @@ import java.util.UUID;
 public class User extends CommonEntity{
     private static final long serialVersionUID = 1L;
     private String userName;
-    private transient String password;
+    private String password;
     private String email;
     @Setter
     private UUID profileId;
