@@ -39,7 +39,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public UserStatus save(UserStatus userStatus) {
-        Path path = resolvePath(userStatus.getId());
+        Path path = resolvePath(userStatus.getUserID());
         try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path.toFile()))){
             oos.writeObject(userStatus);
         } catch (IOException e) {
@@ -93,6 +93,8 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     @Override
     public Optional<UserStatus> findByUserId(UUID id) {
+        Path path = resolvePath(id);
+        UserStatus nullable = null;
         return findAll().stream().filter(us -> id.equals(us.getUserID())).findFirst();
     }
 

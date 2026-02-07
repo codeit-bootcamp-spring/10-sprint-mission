@@ -80,7 +80,7 @@ public class BasicUserService implements UserService {
                 .stream() // 유저 레포에서 모든 유저를 찾고 리스트를 stream화
                 // map으로 각 원소(user)를 UserResponseDTO로 변환함.
                 .map(u -> {
-                    return userDTOMapper.userToResponse(u, userStatusRepository.findById(u.getId()).orElseThrow(() -> new NoSuchElementException("해당 UserStatus가 존재하지 않습니다!")));
+                    return userDTOMapper.userToResponse(u, userStatusRepository.findByUserId(u.getId()).orElseThrow(() -> new NoSuchElementException("해당 UserStatus가 존재하지 않습니다!")));
                 }).toList(); // List<> 형식의 반환값이 필요하므로 List화하여 리턴.
     }
 
