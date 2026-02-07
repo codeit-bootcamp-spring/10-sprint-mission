@@ -92,39 +92,58 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponseDto update(UUID id, MessageUpdateRequestDto messageUpdateRequestDto, List<MultipartFile> files) {
+    public MessageResponseDto update(
+            UUID id,
+            MessageUpdateRequestDto dto,
+            List<MultipartFile> files
+    ) {
         Message message = messageRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException(
-                            "Message with id " + id + " not found"
-                    ));
+                .orElseThrow(() ->
+                        new NoSuchElementException("Message with id " + id + " not found")
+                );
 
+        boolean hasNewFiles =
+                files != null &&
+                        files.stream().anyMatch(f -> f != null && !f.isEmpty());
 
-            List<UUID> newAttachmentIds = Optional.ofNullable(files)
-                    .filter(contents-> !contents.isEmpty())
-                    .map(contents -> contents.stream()
-                            .filter(file -> file != null && !file.isEmpty())
-                            .map(file -> {
-                                try {
-                                    BinaryContent b = new BinaryContent(file.getBytes());
-                                    binaryContentRepository.save(b);
-                                    return b.getId();
-                                } catch (IOException e) {
-                                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read attachment", e);
-                                }
-                            })
-                            .toList()
-                    )
-                    .orElse(null);
+        List<UUID> newAttachmentIds = null;
 
-            messageRepository.save(message);
-
-            if(newAttachmentIds != null){
-                message.getAttachments().forEach(binaryContentRepository::deleteById);
+        if (hasNewFiles) {
+            // 1️⃣ 기존 첨부 삭제
+            for (UUID oldId : message.getAttachments()) {
+                binaryContentRepository.deleteById(oldId);
             }
 
-            message.update(messageUpdateRequestDto.newContent(), newAttachmentIds);
-            return messageResponseMapper.toDto(message);
+            // 2️⃣ 새 첨부 저장
+            newAttachmentIds = files.stream()
+                    .filter(f -> f != null && !f.isEmpty())
+                    .map(f -> {
+                        try {
+                            BinaryContent saved =
+                                    binaryContentRepository.save(new BinaryContent(f.getBytes()));
+                            return saved.getId();
+                        } catch (IOException e) {
+                            throw new ResponseStatusException(
+                                    HttpStatus.INTERNAL_SERVER_ERROR,
+                                    "Failed to read attachment",
+                                    e
+                            );
+                        }
+                    })
+                    .toList();
         }
+
+        // 3️⃣ 업데이트
+        // 👉 새 파일이 없으면 attachments는 건드리지 않음
+        message.update(
+                dto.newContent(),
+                hasNewFiles ? newAttachmentIds : message.getAttachments()
+        );
+
+        messageRepository.save(message);
+
+        return messageResponseMapper.toDto(message);
+    }
 
     @Override
     public void delete(UUID messageId) {
