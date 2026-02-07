@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class UserStatus extends BaseEntity implements Serializable {
+public class UserStatus extends BaseEntity  {
     private UUID userID;
     private Instant lastActiveAt;
 

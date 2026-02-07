@@ -4,12 +4,13 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.UUID;
 
 @Getter
-public class BaseEntity {
+public class BaseEntity implements Serializable {
     private final UUID id;
     private final Instant createdAt;
 

@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -21,14 +22,14 @@ public class UserController {
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
-    public UserResponseDTO postUser(UserCreateRequestDTO req){
+    public UserResponseDTO postUser(@RequestBody UserCreateRequestDTO req){
         return userService.create(req);
     }
 
 
     @RequestMapping(method = RequestMethod.PATCH)
     @ResponseBody
-    public UserResponseDTO patchUser(UserUpdateDTO req){
+    public UserResponseDTO patchUser(@RequestBody UserUpdateDTO req){
         return userService.update(req);
     }
 
