@@ -1,96 +1,88 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.time.Instant;
 import java.util.UUID;
 
-public class User extends BaseEntity implements Serializable {
+@Getter
+public class User implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String userName;
-    // 참여 중인 채널
-    private List<Channel> channels;
-    // 작성한 메시지
-    private List<Message> messages;
 
-    public User(String userName) {
-        super();
-        this.userName = userName;
-        this.channels = new ArrayList<Channel>();
-        this.messages = new ArrayList<Message>();
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
+    private String username;
+    private String email;
+    private String password;
+    private UUID profileId; // BinaryContent의 id를 참조(프로필 이미지)
+    // UserService에서 프로필 이미지를 선택적으로 같이 등록할 수 있음
+    // -> User생성자에서 profileId를 null로 받는 것을 허용?
+
+    public User(String username, String email, String password, UUID profileId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        //
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.profileId = profileId;
     }
 
-    public void joinChannel(Channel channel) {
-        if (!this.channels.contains(channel)) {
-            this.channels.add(channel);
+    // @Getter로 대체
+//    public UUID getId() {
+//        return id;
+//    }
+//
+//    public Long getCreatedAt() {
+//        return createdAt;
+//    }
+//
+//    public Long getUpdatedAt() {
+//        return updatedAt;
+//    }
+//
+//    public String getUsername() {
+//        return username;
+//    }
+//
+//    public String getEmail() {
+//        return email;
+//    }
+//
+//    public String getPassword() {
+//        return password;
+//    }
+
+    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
         }
-        if (!channel.getJoinedUsers().contains(this)) {
-            channel.addJoinedUser(this);
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
         }
-    }
-    public void leaveChannel(Channel channel) {
-        this.channels.remove(channel);
-        if (channel.getJoinedUsers().contains(this)) {
-            channel.removeJoinedUser(this);
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
         }
-    }
-
-    public void addMessage(Message message, Channel channel) {
-        this.messages.add(message);
-        if (!channel.getMessageList().contains(message)) {
-            channel.addMessage(message);
+        // 기존 프로필 이미지를 수정하거나 없었는데 추가 하려는 경우
+        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+            this.profileId = newProfileId;
+            anyValueUpdated = true;
         }
-        if (message.getUser() != this) {
-            message.addUser(this);
-            message.setChannel(channel);
+        // 기존에 프로필 이미지가 있을 때 프로필 이미지를 없애려는 경우
+        if (newProfileId == null && this.profileId != null) {
+            this.profileId = null;
+            anyValueUpdated = true;
         }
-    }
 
-    public void removeMessage(Message message, Channel channel) {
-        this.messages.remove(message);
-        if (channel.getMessageList().contains(message)) {
-            channel.removeMessage(message);
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
         }
-    }
-
-    public boolean isInChannel(Channel channel) {
-        return this.channels.contains(channel);
-    }
-
-
-    // 각 필드 반환하는 getter 함수 정의
-    public String getUserName() {
-        return userName;
-    }
-
-    public List<Channel> getChannels() {
-        return channels;
-    }
-
-    public List<Message> getMessages() {
-        return messages;
-    }
-
-    // 필드 수정하는 update 함수 정의
-    public void setUserName(String userName) {
-        this.userName = userName;
-        setUpdatedAt();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof User user)) return false;
-        return Objects.equals(this.getId(), user.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(this.getId());
-    }
-
-    @Override
-    public String toString() {
-        return  "{userName=" + userName + "}";
     }
 }

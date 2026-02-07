@@ -1,38 +1,20 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.response.UserDetailResponseDTO;
+import com.sprint.mission.discodeit.dto.response.UserSummaryResponseDTO;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    // 생성
-    User createUser(String userName);
-
-    // 읽기
-    User findById(UUID id);
-
-    // 모두 읽기
-    List<User> findAll();
-
-    // 수정
-    User updateById(UUID id, String newUserName);
-
-    // 삭제
-    void deleteById(UUID id);
-
-    // 해당 channel Id를 가진 유저 목록을 반환
-    List<User> getUsersByChannelId(UUID channelId);
-
-    void setChannelService(ChannelService channelService);
-
-    void setMessageService(MessageService messageService);
-
-    void joinChannel(UUID userId, UUID channelId);
-
-    void loadData();
-
-    void saveData();
+//    User create(String username, String email, String password);
+    UserSummaryResponseDTO create(UserCreateRequestDTO userCreateRequestDTO);
+//    User find(UUID userId);
+    UserDetailResponseDTO find(UUID userId);
+//    List<User> findAll();
+    List<UserDetailResponseDTO> findAll();
+    UserSummaryResponseDTO update(UUID userId, UserUpdateRequestDTO userUpdateRequestDTO);
+    void delete(UUID userId);
 }
