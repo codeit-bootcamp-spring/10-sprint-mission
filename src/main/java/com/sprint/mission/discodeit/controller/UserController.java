@@ -27,9 +27,6 @@ import java.util.UUID;
 public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
-    private final UserResponseMapper userResponseMapper;
-    private final BinaryContentResponseMapper binaryContentResponseMapper;
-    private final BinaryContentService binaryContentService;
 
     //사용자 등록
     @RequestMapping(method = RequestMethod.POST)
