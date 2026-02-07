@@ -115,6 +115,17 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
+    public List<UUID> findJoinChannelsByUserId(UUID userId) {
+        // User ID null 검증
+        validateUserByUserId(userId);
+
+        // 유저가 참여한 모든 채널
+        return readStatusRepository.findAllByUserId(userId).stream()
+                .map(readStatus -> readStatus.getChannelId())
+                .toList();
+    }
+
+    @Override
     public Channel updateChannelInfo(ChannelUpdateRequest request) {
         // user 객체 존재 확인
         userRepository.findById(request.ownerId())

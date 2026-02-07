@@ -25,8 +25,8 @@ public interface ChannelService {
     List<ChannelResponse> findAllByUserId(UUID userId);
 //    // 비공개 여부에 따른 채널 목록
 //    List<Channel> findPublicOrPrivateChannel(ChannelType channelType);
-//    // 특정 사용자가 참여한 모든 channel
-//    List<Channel> findJoinChannelsByUserId(UUID userId);
+    // 특정 사용자가 참여한 모든 channel
+    List<UUID> findJoinChannelsByUserId(UUID userId);
 //    // 특정 사용자가 owner인 모든 채널
 //    List<Channel> findOwnerChannelsByUserId(UUID userId);
 

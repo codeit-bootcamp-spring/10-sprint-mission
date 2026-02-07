@@ -58,7 +58,7 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 userId에 맞는 UserStatus가 없습니다."));
 
-        return createUserResponse(user, userStatus);
+        return createUserWithOnlineResponse(user, userStatus);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class BasicUserService implements UserService {
         userStatuses.forEach(status -> {
             User user = userRepository.findById(status.getUserId())
                     .orElseThrow(() -> new NoSuchElementException("status의 userId를 가진 유저가 존재하지 않음"));
-            userInfos.add(createUserResponse(user, status));
+            userInfos.add(createUserWithOnlineResponse(user, status));
         });
 
         return userInfos;
@@ -143,7 +143,7 @@ public class BasicUserService implements UserService {
         userRepository.delete(userId);
     }
 
-    private UserWithOnlineResponse createUserResponse(User user, UserStatus userStatus) {
+    private UserWithOnlineResponse createUserWithOnlineResponse(User user, UserStatus userStatus) {
         return new UserWithOnlineResponse(user.getId(), user.getEmail(), user.getUserName(), user.getNickName(),
                 user.getBirthday(), user.getProfileId(), userStatus.isOnlineStatus());
     }
