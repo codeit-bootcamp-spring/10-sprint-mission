@@ -11,10 +11,10 @@ import java.util.UUID;
 public class BinaryContent {
     // Getters
     private final UUID id;
+    private String fileName;
     private final String contentType;
     private final int size;
     private final byte[] data;
-    private String fileName;
     private final Instant createdAt;
     private Instant updatedAt;
     private List<UUID> attachmentId;

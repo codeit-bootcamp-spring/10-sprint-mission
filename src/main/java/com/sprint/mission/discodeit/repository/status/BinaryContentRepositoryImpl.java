@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 @Repository
 public class BinaryContentRepositoryImpl implements BinaryContentRepository {
@@ -39,6 +40,20 @@ public class BinaryContentRepositoryImpl implements BinaryContentRepository {
             lock.unlock();
         }
     }
+
+    @Override
+    public List<BinaryContent> findAllByIdln(List<UUID> ids) {
+        lock.lock();
+        try {
+            return data.stream()
+                    .filter(bc -> ids.contains(bc.getId()))
+                    .collect(Collectors.toList());
+        }finally{
+            lock.unlock();
+
+        }
+    }
+
 
     @Override
     public boolean existsById(UUID id) {
