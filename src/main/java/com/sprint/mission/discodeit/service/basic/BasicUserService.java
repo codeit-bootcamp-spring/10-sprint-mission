@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateDto;
-import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -31,7 +31,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentMapper binaryContentMapper;
 
     @Override
-    public UserResponseDto create(UserCreateDto dto) {
+    public UserDto create(UserCreateDto dto) {
         validateEmail(dto.email());
         validateUsername(dto.username());
         //프로필 사진 없을때
@@ -50,22 +50,22 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDto find(UUID userId) {
+    public UserDto find(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
         return userMapper.toDto(user,findUserStatusByUserId(userId));
     }
 
     @Override
-    public List<UserResponseDto> findAll() {
+    public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
-        List<UserResponseDto> response = new ArrayList<>();
+        List<UserDto> response = new ArrayList<>();
         users.forEach(u-> response.add(userMapper.toDto(u,findUserStatusByUserId(u.getId()))));
         return response;
     }
 
     @Override
-    public UserResponseDto update(UUID userId,UserUpdateDto dto) {
+    public UserDto update(UUID userId, UserUpdateDto dto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
         BinaryContent profile = null;

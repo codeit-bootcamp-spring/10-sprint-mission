@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.UserLoginDto;
-import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -21,7 +21,7 @@ public class BasicAuthService implements AuthService {
     private final UserMapper userMapper;
 
     @Override
-    public UserResponseDto login(UserLoginDto dto){
+    public UserDto login(UserLoginDto dto){
         User user = userRepository.findByUsernameAndPassword(dto.username(), dto.password())
                 .orElseThrow(()-> new IllegalArgumentException("잘못된 이름 또는 비밀번호"));
         UserStatus status = userStatusRepository.findByUserId(user.getId())
