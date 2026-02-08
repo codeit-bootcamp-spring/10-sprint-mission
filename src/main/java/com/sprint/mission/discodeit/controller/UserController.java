@@ -71,7 +71,7 @@ public class UserController {
         return userService.findAll();
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{id}/status", method = RequestMethod.PATCH)
     public void updateUserStatus(@PathVariable UUID id){
         userStatusService.updateByUserId(new UserStatusUpdateRequestDto(true, id, Instant.now()));
     }
