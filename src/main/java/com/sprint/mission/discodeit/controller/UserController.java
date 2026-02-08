@@ -87,29 +87,4 @@ public class UserController {
         UserStatusResponse result = new UserStatusResponse(userId, userStatus.getLastOnlineTime(), userStatus.isOnlineStatus());
         return ResponseEntity.status(200).body(result);
     }
-
-    // exception
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity handleException(IllegalArgumentException e) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity handleException(NoSuchElementException e) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.getReasonPhrase(), e.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity handleException(MethodArgumentNotValidException e) {
-        String ErrorMessage = e.getBindingResult().getFieldErrors().stream()
-                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
-                .collect(Collectors.joining(", "));
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.getReasonPhrase(), ErrorMessage);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity handleException(Exception e) {
-//        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage());
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-//    }
 }
