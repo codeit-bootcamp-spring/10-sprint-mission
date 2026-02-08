@@ -27,7 +27,7 @@ public class BasicAuthService implements AuthService {
     public UserResponseDTO login(AuthDTO req) {
         User user = userRepository.findAll()
                 .stream()
-                .filter(u -> req.username().equals(u.getUsername()) && req.password().equals(u.getPassword()))
+                .filter(u -> req.email().equals(u.getEmail()) && req.password().equals(u.getPassword()))
                 .findFirst().orElseThrow(() -> new NoSuchElementException("그런 유저는 없습니다."));
 
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId()).orElseThrow(() -> new NoSuchElementException("해당 User Status가 없습니다."));
