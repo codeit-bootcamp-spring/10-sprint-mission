@@ -8,21 +8,17 @@ import com.sprint.mission.discodeit.dto.user.response.UserWithOnlineResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import com.sprint.mission.discodeit.service.deletion.UserDeleteService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * 사용자 관리 Controller
@@ -33,6 +29,7 @@ import java.util.stream.Collectors;
 public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
+    private final UserDeleteService userDeleteService;
 
     /**
      * 사용자 등록
@@ -45,9 +42,6 @@ public class UserController {
 
         return ResponseEntity.status(201).body(result);
     }
-
-    // 사용자 삭제
-    // 채널 완료한 후
 
     /**
      * 사용자 정보 수정
@@ -85,6 +79,13 @@ public class UserController {
 
         UserStatusResponse result = new UserStatusResponse(userId, userStatus.getLastOnlineTime(), userStatus.isOnlineStatus());
         return ResponseEntity.status(200).body(result);
+    }
+
+    // 사용자 삭제
+    @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
+    public ResponseEntity deleteUser(@PathVariable UUID userId) {
+        userDeleteService.deleteUser(userId);
+        return ResponseEntity.status(204).build();
     }
 
     private UserResponse createUserResponse(User user) {

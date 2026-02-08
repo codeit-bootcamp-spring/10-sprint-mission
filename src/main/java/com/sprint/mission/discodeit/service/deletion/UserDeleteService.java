@@ -32,15 +32,15 @@ public class UserDeleteService {
         for (Message message : messageService.findUserMessagesByUserId(userId)) {
             messageService.deleteMessage(userId, message.getId());
         }
-        System.out.println("해당 user 메세지 삭제 완료");
+//        System.out.println("해당 user 메세지 삭제 완료");
 
         for (UUID channelId : channelService.findJoinChannelsByUserId(userId)) {
             channelService.leaveChannel(userId, channelId);
         }
-        System.out.println("성공: 해당 user가 참여한 채널 나가기");
+//        System.out.println("성공: 해당 user가 참여한 채널 나가기");
 
         // user 삭제
         userService.deleteUser(userId);
-        System.out.println("해당 user 삭제 완료");
+//        System.out.println("해당 user 삭제 완료");
     }
 }
