@@ -1,39 +1,43 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
 
-public class Channel extends BaseEntity{
-    private String channelName;
-    private List<User> participants = new ArrayList<>();
-    private List<Message> channelMessages = new ArrayList<>();
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.UUID;
 
-    public String getChannelName() {
-        return channelName;
+@Getter
+public class Channel extends Common implements Serializable {
+    private static final long serialVersionUID = 1L;
+    //
+    private ChannelType type;
+    private String name;
+    private String description;
+
+    public Channel(ChannelType type, String name, String description) {
+        super();
+        //
+        this.type = type;
+        this.name = name;
+        this.description = description;
     }
 
-    public void updateChannelInfo(String newChannelName){
-        this.channelName = newChannelName;
-        super.setUpdatedAt(System.currentTimeMillis());
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
-    public List<User> getParticipants() {
-        return participants;
-    }
 
-    public void addParticipant(User user){
-       this.participants.add(user);
-    }
 
-    public List<Message> getChannelMessages() {
-        return channelMessages;
-    }
-
-    public void addMessage(Message message){
-        this.channelMessages.add(message);
-    }
-
-    public Channel(String channelName) {
-        this.channelName = channelName;
-    }
 }
