@@ -1,57 +1,56 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
-public class User extends BaseEntity implements Serializable {
+@Setter
+@Getter
+public class User extends BaseEntity implements Serializable  {
     private static final long serialVersionUID = 1L;
 
-
-    private String email;
+    private UUID id;
+    private UUID profileImageId;
+    private Instant createdAt;
+    private Instant updatedAt;
     private String username;
+    private String email;
+    private String password;
 
-    public User(String username, String email) {
-//        this.id = UUID.randomUUID();
-//        this.createdAt = System.currentTimeMillis();
-//        this.updatedAt = this.createdAt;
+    public User(String username, String email, String password) {
+        this.id = UUID.randomUUID();  // 명시적으로 ID 생성
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
 
         this.username = username;
         this.email = email;
+        this.password = password;
+        this.profileImageId = null;
     }
 
-//    public void update(UUID id,String username, String email) {
-//        this.username = username;
-//        this.id = UUID.randomUUID();
-//        this.email = email;
-//        this.updatedAt = System.currentTimeMillis();
-//    }
+    public void update(String newUsername, String newEmail, String newPassword) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
 
-    public UUID getId() {
-        return id;
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
 }
+
+

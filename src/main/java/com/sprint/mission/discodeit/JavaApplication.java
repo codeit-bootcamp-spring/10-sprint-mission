@@ -1,121 +1,53 @@
-package com.sprint.mission.discodeit;
-
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.file.FileChannelService;
-import com.sprint.mission.discodeit.service.file.FileMessageService;
-import com.sprint.mission.discodeit.service.file.FileUserService;
-
-import java.util.List;
-
-public class JavaApplication {
-
-    public static void main(String[] args) {
-
-        // 1. 서비스 구현체 생성 (List 기반)
-        UserService userService = new FileUserService();
-        ChannelService channelService = new FileChannelService();
-        MessageService messageService = new FileMessageService(userService, channelService);
-
-        // 2. User 등록
-        System.out.println("=== User 등록 ===");
-        User user1 = userService.createUser("김오렌지","orange@gmail.com");
-        User user2 = userService.createUser("김사과","apple@naver.com");
-
-        // 단건 조회
-        User foundUser = userService.findById(user1.getId());
-        System.out.println("단건 조회 (user1): " + foundUser);
-
-        // 전체 조회
-        System.out.println("전체 User 조회:");
-        List<User> users = userService.findAll();
-        for (User u : users) {
-            System.out.println(" - " + u.getId() + ", " + u.getUsername() + ", " + u.getEmail());
-        }
-
-        //3. Channel 등록
-        System.out.println("\n=== Channel 등록 ===");
-        Channel channel1 = channelService.createChannel("channel1","일반 채팅 채널입니다");
-        Channel channel2 = channelService.createChannel("channel2","일반 음성 채널입니다.");
-
-
-        // 전체 Channel 조회
-        System.out.println("전체 Channel 조회:");
-        for (Channel c : channelService.findAll()) {
-            System.out.println(" - " + c.getId() + ", " + c.getName() + ", " + c.getDescription());
-        }
-
-        //4. Message 등록
-        System.out.println("\n=== Message 등록 ===");
-        Message message1 = messageService.createMessage(user1.getId(),channel1.getId(),"안녕하세요? 첫번째 메시지입니다");
-        Message message2 = messageService.createMessage(user2.getId(),channel2.getId(),"또 보네요? 두번째 메시지입니다");
-
-
-        // 전체 Message 조회
-        System.out.println("전체 Message 조회:");
-        for (Message m : messageService.findAll()) {
-            System.out.println(" - " + m.getId()
-                    + ", user=" + m.getUser().getUsername()
-                    + ", channel=" + m.getChannel().getName()
-                    + ", content=" + m.getContent());
-        }
-
-        // 5. 수정 테스트 (User / Channel / Message)
-        System.out.println("\n=== 수정 테스트 ===");
-
-        // User 수정
-        userService.update(user1.getId(), "user1-renamed", "user1-new@example.com");
-
-        User updatedUser = userService.findById(user1.getId());
-        System.out.println("수정된 User 조회: " + updatedUser.getUsername());
-
-
-        // Channel 수정
-        channelService.updateChannel(channel1.getId(), "수정된 채널명","수정된 채널 설명");
-
-        Channel updatedChannel = channelService.findById(channel1.getId());
-        System.out.println("수정된 Channel 조회: " + updatedChannel.getName() + ", " + updatedChannel.getDescription());
-
-
-        // Message 수정
-        messageService.updateMessage(
-                message1.getId(),
-                "수정된 두번째 메시지",
-                user1.getId(),
-                channel1.getId());
-
-        Message updatedMessage = messageService.findById(message1.getId());
-
-        System.out.println("수정된 Message 조회: " + updatedMessage.getContent());
-
-        //6. 삭제 테스트
-        System.out.println("\n=== 삭제 테스트 ===");
-
-        // User 삭제
-        userService.delete(user2.getId());
-        System.out.println("User 전체 조회 (user2 삭제 후):");
-        for (User u : userService.findAll()) {
-            System.out.println(" - " + u.getId() + ", " + u.getUsername());
-        }
-
-        // Channel 삭제
-        channelService.delete(channel2.getId());
-        System.out.println("Channel 전체 조회 (channel2 삭제 후):");
-        for (Channel c : channelService.findAll()) {
-            System.out.println(" - " + c.getId() + ", " + c.getName());
-        }
-
-        // Message 삭제
-        messageService.delete(message2.getId());
-        System.out.println("Message 전체 조회 (message2 삭제 후):");
-        for (Message m : messageService.findAll()) {
-            System.out.println(" - " + m.getId() + ", content=" + m.getContent());
-        }
-
-        System.out.println("=== 메인 테스트 종료 ===");
-    }
-}
+//package com.sprint.mission.discodeit;
+//
+//import com.sprint.mission.discodeit.entity.Channel;
+//import com.sprint.mission.discodeit.entity.ChannelType;
+//import com.sprint.mission.discodeit.entity.Message;
+//import com.sprint.mission.discodeit.entity.User;
+//import com.sprint.mission.discodeit.repository.ChannelRepository;
+//import com.sprint.mission.discodeit.repository.MessageRepository;
+//import com.sprint.mission.discodeit.repository.UserRepository;
+//import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+//import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+//import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+//import com.sprint.mission.discodeit.service.ChannelService;
+//import com.sprint.mission.discodeit.service.MessageService;
+//import com.sprint.mission.discodeit.service.UserService;
+//import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+//import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+//import com.sprint.mission.discodeit.service.basic.BasicUserService;
+//
+//public class JavaApplication {
+//    static User setupUser(UserService userService) {
+//        User user = userService.create("woody", "woody@codeit.com", "woody1234");
+//        return user;
+//    }
+//
+//    static Channel setupChannel(ChannelService channelService) {
+//        Channel channel = channelService.create(ChannelType.PUBLIC, "공지", "공지 채널입니다.");
+//        return channel;
+//    }
+//
+//    static void messageCreateTest(MessageService messageService, Channel channel, User author) {
+//        Message message = messageService.create("안녕하세요.", channel.getId(), author.getId());
+//        System.out.println("메시지 생성: " + message.getId());
+//    }
+//
+//    public static void main(String[] args) {
+//        // 레포지토리 초기화
+//        UserRepository userRepository = new FileUserRepository();
+//        ChannelRepository channelRepository = new FileChannelRepository();
+//        MessageRepository messageRepository = new FileMessageRepository();
+//
+//        // 서비스 초기화
+//        UserService userService = new BasicUserService(userRepository);
+//        ChannelService channelService = new BasicChannelService(channelRepository);
+//        MessageService messageService = new BasicMessageService(messageRepository, channelRepository, userRepository);
+//
+//        // 셋업
+//        User user = setupUser(userService);
+//        Channel channel = setupChannel(channelService);
+//        // 테스트
+//        messageCreateTest(messageService, channel, user);
+//    }
+//}
