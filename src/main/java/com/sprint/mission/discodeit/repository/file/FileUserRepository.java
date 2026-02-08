@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class FileUserRepository extends FileDomainRepository<User> implements UserRepository {
 
@@ -21,16 +22,16 @@ public class FileUserRepository extends FileDomainRepository<User> implements Us
 
     @Override
     public List<User> findAll() throws IOException {
-        return streamAll().toList();
+        return streamAll(Stream::toList);
     }
 
     @Override
     public boolean existsByUsername(String username) throws IOException {
-        return streamAll().anyMatch(user -> user.matchUsername(username));
+        return anyMatch(user -> user.matchUsername(username));
     }
 
     @Override
     public boolean existsByEmail(String email) throws IOException {
-        return streamAll().anyMatch(user -> user.matchEmail(email));
+        return anyMatch(user -> user.matchEmail(email));
     }
 }

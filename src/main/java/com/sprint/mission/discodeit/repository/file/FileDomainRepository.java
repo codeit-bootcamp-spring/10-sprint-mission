@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public abstract class FileDomainRepository<T> implements DomainRepository<T> {
@@ -75,12 +76,20 @@ public abstract class FileDomainRepository<T> implements DomainRepository<T> {
         }
     }
 
-    // todo: fix anti pattern
-    protected Stream<T> streamAll() throws IOException {
+    protected  <R> R streamAll(Function<Stream<T>, R> action) throws IOException {
         try (Stream<Path> paths = Files.list(DIRECTORY)) {
-            return paths.map(ThrowingFunction.unchecked(this::findByPath))
+            Stream<T> stream = paths.map(ThrowingFunction.unchecked(this::findByPath))
                     .flatMap(Optional::stream);
+            return action.apply(stream);
         }
+    }
+
+    protected boolean anyMatch(Predicate<T> predicate) throws IOException {
+        return streamAll(stream -> stream.anyMatch(predicate));
+    }
+
+    protected Stream<T> filter(Predicate<T> predicate) throws IOException {
+        return streamAll(stream -> stream.filter(predicate));
     }
 
     private Path resolvePath(UUID id) {

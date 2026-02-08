@@ -3,33 +3,18 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-public class FileBinaryContentRepository implements BinaryContentRepository {
-    @Override
-    public BinaryContent save(BinaryContent entity) {
-        return null;
+public class FileBinaryContentRepository extends FileDomainRepository<BinaryContent> implements BinaryContentRepository {
+    public FileBinaryContentRepository(Path DIRECTORY, String EXTENSION) throws IOException {
+        super(Paths.get(System.getProperty("user.dir"), "file-data-map", "BinaryContent"),
+                ".bc");
     }
 
     @Override
-    public Optional<BinaryContent> findById(UUID id) {
-        return Optional.empty();
-    }
-
-    @Override
-    public List<BinaryContent> findAll() {
-        return List.of();
-    }
-
-    @Override
-    public boolean existsById(UUID id) {
-        return false;
-    }
-
-    @Override
-    public void deleteById(UUID id) {
-
+    public BinaryContent save(BinaryContent entity) throws IOException {
+        return save(entity, BinaryContent::getId);
     }
 }

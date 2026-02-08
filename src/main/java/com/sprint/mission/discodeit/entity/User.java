@@ -43,6 +43,10 @@ public class User implements Serializable {
         return this.username.equals(username);
     }
 
+    public boolean matchEmail(String email) {
+        return this.email.equals(email);
+    }
+
     private <T> boolean updateIfChanged(T current, T next, Consumer<T> action) {
         if (current == null || current.equals(next)) {
             return false;
