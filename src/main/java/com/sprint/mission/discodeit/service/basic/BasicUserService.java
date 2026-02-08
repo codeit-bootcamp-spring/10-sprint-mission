@@ -147,7 +147,7 @@ public class BasicUserService implements UserService {
     }
 
     private UserWithOnlineResponse createUserWithOnlineResponse(User user, UserStatus userStatus) {
-        return new UserWithOnlineResponse(user.getId(), user.getEmail(), user.getUserName(), user.getNickName(),
+        return new UserWithOnlineResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(), user.getEmail(), user.getUserName(), user.getNickName(),
                 user.getBirthday(), user.getProfileId(), userStatus.isOnlineStatus());
     }
 

@@ -37,7 +37,7 @@ public class BasicAuthService implements AuthService {
     }
 
     private UserWithOnlineResponse createUserInfo(User user, UserStatus userStatus) {
-        return new UserWithOnlineResponse(user.getId(), user.getEmail(), user.getUserName(), user.getNickName(),
+        return new UserWithOnlineResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(), user.getEmail(), user.getUserName(), user.getNickName(),
                 user.getBirthday(), user.getProfileId(), userStatus.isOnlineStatus());
     }
 }
