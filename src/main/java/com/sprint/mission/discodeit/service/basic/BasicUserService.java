@@ -132,8 +132,8 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(profileReq).ifPresent(p -> {
             BinaryContentType contentType = p.contentType();
             String fileName = p.filename();
-            Byte[] contentBytes = p.contentBytes();
-            BinaryContent content = new BinaryContent(contentType, fileName, contentBytes);
+            String url = p.url();
+            BinaryContent content = new BinaryContent(contentType, fileName, url);
             binaryContentRepository.save(content);
             binaryContentRepository.findById(content.getId()).ifPresent(c -> {
                 user.updateProfileId(c.getId());

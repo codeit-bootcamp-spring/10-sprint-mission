@@ -35,7 +35,7 @@ public class BasicMessageService implements MessageService {
         Message msg = new Message(messageReq.channelId(), messageReq.authorId(), messageReq.message());
         Optional.ofNullable(contentReqs).ifPresent(reqs -> {
             reqs.forEach(req -> {
-                BinaryContent content = new BinaryContent(req.contentType(), req.filename(), req.contentBytes());
+                BinaryContent content = new BinaryContent(req.contentType(), req.filename(), req.url());
                 binaryContentRepository.save(content);
                 binaryContentRepository.findById(content.getId()).ifPresent(c -> {
                     msg.addAttachmentId(c.getId());

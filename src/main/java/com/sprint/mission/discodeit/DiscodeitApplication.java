@@ -92,19 +92,19 @@ public class DiscodeitApplication {
 
 	public static void main(String[] args) {
 		ConfigurableApplicationContext context = SpringApplication.run(DiscodeitApplication.class);
-		SetUp setUp = context.getBean(SetUp.class);
-
-		// --- User ---
-		userServiceCRUDTest(setUp);
-
-		// --- Channel ---
-		channelServiceCRUDTest(setUp);
-
-		// --- Message ---
-		messageServiceCRUDTest(setUp);
-
-		// 유저의 채널참여,채널탈퇴,계정삭제 테스트
-		joinAndLeaveChannelTestAndUserDeleteTest(setUp);
+//		SetUp setUp = context.getBean(SetUp.class);
+//
+//		// --- User ---
+//		userServiceCRUDTest(setUp);
+//
+//		// --- Channel ---
+//		channelServiceCRUDTest(setUp);
+//
+//		// --- Message ---
+//		messageServiceCRUDTest(setUp);
+//
+//		// 유저의 채널참여,채널탈퇴,계정삭제 테스트
+//		joinAndLeaveChannelTestAndUserDeleteTest(setUp);
 	}
 
 	private static void userServiceCRUDTest(SetUp setUp) {
