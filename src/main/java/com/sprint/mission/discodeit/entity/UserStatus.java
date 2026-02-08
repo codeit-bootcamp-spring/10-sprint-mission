@@ -24,4 +24,8 @@ public class UserStatus extends BaseEntity  {
     public void update(Instant lastActivateAt){
         this.lastActiveAt = lastActivateAt;
     }
+
+    public void setLastActiveAt(){
+        this.lastActiveAt = Instant.now();
+    }
 }

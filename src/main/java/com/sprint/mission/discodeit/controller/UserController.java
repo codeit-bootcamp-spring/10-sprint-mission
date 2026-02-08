@@ -3,15 +3,16 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.userdto.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserResponseDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
+import com.sprint.mission.discodeit.dto.userstatusdto.UserStateRequestDTO;
+import com.sprint.mission.discodeit.dto.userstatusdto.UserStateResponseDTO;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserStatusService userStatusService;
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
@@ -26,16 +28,28 @@ public class UserController {
         return userService.create(req);
     }
 
-
-    @RequestMapping(method = RequestMethod.PATCH)
-    @ResponseBody
-    public UserResponseDTO patchUser(@RequestBody UserUpdateDTO req){
-        return userService.update(req);
-    }
-
     @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     public List<UserResponseDTO> getUsers(){
         return userService.findAll();
     }
+
+    @RequestMapping(method = RequestMethod.DELETE)
+    public void deleteUser(UUID userId){
+        userService.delete(userId);
+    }
+
+    @RequestMapping(method = RequestMethod.PATCH)
+    @ResponseBody
+    public UserResponseDTO updateUser(@RequestBody UserUpdateDTO req){
+        return userService.update(req);
+    }
+
+    @RequestMapping(value = "/{userId}/status", method = RequestMethod.PATCH)
+    @ResponseBody
+    public UserStateResponseDTO updateUserOnline(@PathVariable UUID userId){
+        return userStatusService.activateUserOnline(userId);
+    }
+
+
 }

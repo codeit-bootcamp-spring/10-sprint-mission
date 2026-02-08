@@ -19,6 +19,8 @@ public interface UserStatusService {
 
     public UserStateResponseDTO updateByUserId(UUID userId);
 
+    public UserStateResponseDTO activateUserOnline(UUID userId);
+
     public void delete(UUID id);
 
 

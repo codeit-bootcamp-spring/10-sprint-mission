@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -11,6 +12,8 @@ import java.util.UUID;
 
 @Getter
 public class BaseEntity implements Serializable {
+    @Serial
+    private static final long serialVersionUID = -3046035314935706447L;
     private final UUID id;
     private final Instant createdAt;
 

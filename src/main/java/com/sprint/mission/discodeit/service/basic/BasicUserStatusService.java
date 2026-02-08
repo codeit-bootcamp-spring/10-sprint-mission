@@ -89,6 +89,17 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
+    public UserStateResponseDTO activateUserOnline(UUID userId) {
+        Objects.requireNonNull(userId, "유효하지 않은 User ID 입니다!");
+
+        UserStatus userStatus = find(userId);
+        userStatus.setLastActiveAt();
+        UserStatus saved = userStatusRepository.save(userStatus);
+
+        return userStatusDTOMapper.userStatusToResponse(saved);
+    }
+
+    @Override
     public void delete(UUID id) {
         Objects.requireNonNull(id, "유효하지 않은 ID 입니다!");
         userStatusRepository.deleteById(id);
