@@ -42,7 +42,7 @@ public class BinaryContentRepositoryImpl implements BinaryContentRepository {
     }
 
     @Override
-    public List<BinaryContent> findAllByIdln(List<UUID> ids) {
+    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
         lock.lock();
         try {
             return data.stream()

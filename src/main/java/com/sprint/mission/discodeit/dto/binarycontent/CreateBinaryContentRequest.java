@@ -1,9 +1,16 @@
 package com.sprint.mission.discodeit.dto.binarycontent;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.util.List;
 import java.util.UUID;
 
-public class CreateBinaryContentRequst {
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateBinaryContentRequest {
     private String fileName;
     private String contentType;
     private byte[] data;

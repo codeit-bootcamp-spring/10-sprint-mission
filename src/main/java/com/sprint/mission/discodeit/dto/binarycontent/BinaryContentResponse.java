@@ -23,7 +23,7 @@ public class BinaryContentResponse {
 
     //data는 보안/크기 이유로 응답에서 제외
     // 다운로드 API 구현할 예정
-    
+
     public static BinaryContentResponse from(BinaryContent content) {
         return BinaryContentResponse.builder()
                 .id(content.getId())
