@@ -1,7 +1,6 @@
-package com.sprint.mission.discodeit.dto.message;
+package com.sprint.mission.discodeit.dto.message.input;
 
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
