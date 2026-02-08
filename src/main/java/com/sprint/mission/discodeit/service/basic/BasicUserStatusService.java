@@ -76,6 +76,7 @@ public class BasicUserStatusService implements UserStatusService {
     public static UserStatusResponseDto toDto(UserStatus userStatus, boolean online) {
         return new UserStatusResponseDto(
                 userStatus.getId(),
+                userStatus.getUserId(),
                 userStatus.getLastSeenAt(),
                 online
         );

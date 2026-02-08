@@ -1,5 +1,11 @@
 package com.sprint.mission.discodeit;
 
+import com.sprint.mission.discodeit.dto.BinaryContent.BinaryContentResponseDto;
+import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusRequestUpdateDto;
+import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusResponseDto;
+import com.sprint.mission.discodeit.dto.UserStatus.UserStatusRequestCreateDto;
+import com.sprint.mission.discodeit.dto.UserStatus.UserStatusRequestUpdateDto;
+import com.sprint.mission.discodeit.dto.UserStatus.UserStatusResponseDto;
 import com.sprint.mission.discodeit.dto.auth.AuthLoginRequestDto;
 import com.sprint.mission.discodeit.dto.channel.ChannelRequestUpdateDto;
 import com.sprint.mission.discodeit.dto.channel.ChannelResponseDto;
@@ -20,7 +26,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.Time;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 
 @SpringBootApplication
@@ -35,6 +44,8 @@ public class DiscodeitApplication {
 		MessageService messageService = context.getBean(MessageService.class);
 		AuthService authService = context.getBean(AuthService.class);
 		BinaryContentService binaryContentService = context.getBean(BinaryContentService.class);
+		ReadStatusService readStatusService = context.getBean(ReadStatusService.class);
+		UserStatusService userStatusService = context.getBean(UserStatusService.class);
 
 		System.out.println("=== [시작] 서비스 테스트 ===");
 //        //================================ 기본 기능 ================================
@@ -67,30 +78,44 @@ public class DiscodeitApplication {
 		System.out.println("온라인 여부: " + user3.online());
 		System.out.println();
 
-
-		// 1-2. user 다건 조회
-		System.out.println("1-2. 유저 다건 조회: " + "총" + userService.findAll().size() + "명");
+		// 1-2. user 프로필 조회
+		System.out.println("1-2."+ user1.username() + " 프로필 조회: " + binaryContentService.find(user1.profileId()));
 		System.out.println();
 
-		// 1-3. user 정보 수정 및 조회
+		System.out.println("1-2."+ user2.username() + " 프로필 조회: " + binaryContentService.find(user2.profileId()));
+		System.out.println();
+
+		System.out.println("1-2. 프로필 다건 조회: " + "총" +
+				binaryContentService.findAllByIdIn(List.of(user1.profileId(), user2.profileId())).size() + "개");
+		System.out.println();
+
+
+
+
+
+		// 1-3. user 다건 조회
+		System.out.println("1-3. 유저 다건 조회: " + "총" + userService.findAll().size() + "명");
+		System.out.println();
+
+		// 1-4. user 정보 수정 및 조회
 		UserRequestUpdateDto userRequestUpdate1 = new UserRequestUpdateDto
 				(user1.id(),"김수한", "suhan78@gmail.com", "man5", null);
 		UserResponseDto userUpdate1 = userService.update(userRequestUpdate1);
-		System.out.println("1-3-1. 유저 정보 수정 완료: " + "\n이름: " + userUpdate1.username()
+		System.out.println("1-4-1. 유저 정보 수정 완료: " + "\n이름: " + userUpdate1.username()
 				+ "\n이메일: " + userUpdate1.email() + "\n프로필 이미지 id: " + userUpdate1.profileId());
 		System.out.println();
 
 		UserRequestUpdateDto userRequestUpdate2 = new UserRequestUpdateDto
 				(user2.id(),"정몽주", null, null, null);
 		UserResponseDto userUpdate2 = userService.update(userRequestUpdate2);
-		System.out.println("1-3-2. 유저 이름 수정 완료: " + "\n이름: " + userUpdate2.username()
+		System.out.println("1-4-2. 유저 이름 수정 완료: " + "\n이름: " + userUpdate2.username()
 				+ "\n이메일: " + userUpdate2.email() + "\n프로필 이미지 id: " + userUpdate2.profileId());
 		System.out.println();
 
 		UserRequestUpdateDto userRequestUpdate3 = new UserRequestUpdateDto
 				(user3.id(),null, "ahdwn45@naver.com", null, null);
 		UserResponseDto userUpdate3 = userService.update(userRequestUpdate3);
-		System.out.println("1-3-3. 유저 이메일 수정 완료: " + "\n이름: " + userUpdate3.username()
+		System.out.println("1-4-3. 유저 이메일 수정 완료: " + "\n이름: " + userUpdate3.username()
 				+ "\n이메일: " + userUpdate3.email() + "\n프로필 이미지 id: " + userUpdate3.profileId());
 		System.out.println();
 
@@ -99,22 +124,22 @@ public class DiscodeitApplication {
 		UserRequestUpdateDto userRequestUpdate4 = new UserRequestUpdateDto
 				(user3.id(),null, null, null, bcp3);
 		UserResponseDto userUpdate4 = userService.update(userRequestUpdate4);
-		System.out.println("1-3-3. 유저 프로필 이미지 수정 완료: " + "\n이름: " + userUpdate4.username()
+		System.out.println("1-4-3. 유저 프로필 이미지 수정 완료: " + "\n이름: " + userUpdate4.username()
 				+ "\n이메일: " + userUpdate3.email() + "\n프로필 이미지 id: " + userUpdate4.profileId());
 		System.out.println();
 
-		// 1-4. user 정보 삭제 및 확인
+		// 1-5. user 정보 삭제 및 확인
 		userService.delete(user3.id());
-		System.out.println("1-4. 유저 정보 삭제 완료");
+		System.out.println("1-5. 유저 정보 삭제 완료");
 
-		// 1-5. user 다건 재조회로 정보 삭제 확인
-		System.out.println("1-5. 유저 다건 재조회: " + "총" + userService.findAll().size() + "명");
+		// 1-6. user 다건 재조회로 정보 삭제 확인
+		System.out.println("1-6. 유저 다건 재조회: " + "총" + userService.findAll().size() + "명");
 		System.out.println();
 
-		// 1-6. user 로그인
+		// 1-7. user 로그인
 		AuthLoginRequestDto alRequest = new AuthLoginRequestDto("김수한", "man5");
 		User loginUser = authService.login(alRequest);
-		System.out.println("로그인 성공: " + loginUser.getUserName());
+		System.out.println("1-7. 로그인 성공: " + loginUser.getUserName());
 		System.out.println();
 
 		//---------------------------------2. channel---------------------------------
@@ -172,15 +197,20 @@ public class DiscodeitApplication {
 				("안녕하세요", channel1.id(), user1.id(), List.of(bcpFile1, bcpFile2));
 		MessageResponseDto message1 = messageService.create(messageRequest1);
 		System.out.println("3-1. 메시지 등록 완료: [" + channel1.channelName() +
-				"] [" + user1.username() + "] " + message1.content() + " " +
-				"(첨부파일 " + message1.attachmentIds().size() + "개)");
+				"] [" + user1.username() + "] " + message1.content());
+
+		System.out.println("3-1. 메시지에 등록된 첨부파일 개수: " + "총" +
+				binaryContentService.findAllByIdIn(message1.attachmentIds()).size() + "개");
+		System.out.println();
 
 		MessageRequestCreateDto messageRequest2 = new MessageRequestCreateDto
 				("식사 맛있게 하세요", channel2.id(), user2.id(), null);
 		MessageResponseDto message2 = messageService.create(messageRequest2);
 		System.out.println("3-1. 메시지 등록 완료: [private채널]" +
-				" [" + user2.username() + "] " + message2.content() + " " +
-				"(첨부파일 " + message2.attachmentIds().size() + "개)");
+				" [" + user2.username() + "] " + message2.content());
+		System.out.println("3-1. 메시지에 등록된 첨부파일 개수: " + "총" +
+				binaryContentService.findAllByIdIn(message2.attachmentIds()).size() + "개");
+		System.out.println();
 
 		byte[] file3 = "test-file3".getBytes(StandardCharsets.UTF_8);
 		BinaryContentParam bcpFile3 = new BinaryContentParam(file3, "image/jpg");
@@ -188,8 +218,9 @@ public class DiscodeitApplication {
 				("수고하셨습니다", channel2.id(), user1.id(), List.of(bcpFile3));
 		MessageResponseDto message3 = messageService.create(messageRequest3);
 		System.out.println("3-1. 메시지 등록 완료: [private채널]"  +
-				" [" + user1.username() + "] " + message3.content() + " " +
-				"(첨부파일 " + message3.attachmentIds().size() + "개)");
+				" [" + user1.username() + "] " + message3.content());
+		System.out.println("3-1. 메시지에 등록된 첨부파일 개수: " + "총" +
+				binaryContentService.findAllByIdIn(message3.attachmentIds()).size() + "개");
 		System.out.println();
 
 		// 3-2. 채널에 속한 message 조회
@@ -224,6 +255,63 @@ public class DiscodeitApplication {
 		);
 		System.out.println();
 
+//		---------------------------------4. ReadStatus 확인---------------------------------
+		System.out.println("== 4. ReadStatus 시간 확인 ==");
+
+		// 4-1. 특정 유저의 읽은상태 조회
+		List<ReadStatusResponseDto> readStatusList = readStatusService.findAllByUserId(userUpdate1.id());
+		ReadStatusResponseDto beforeStatus = readStatusList.get(0);
+		Instant beforeTime = beforeStatus.lastReadAt();
+
+		System.out.println("4-1. " + userUpdate1.username() + "의 업데이트 전 읽은 시간: " + beforeTime);
+		System.out.println();
+
+		// 4-2. 특정 유저의 읽은상태 업데이트
+		System.out.println("3초 대기 중...");
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println();
+		ReadStatusRequestUpdateDto rsUpdate1 = new ReadStatusRequestUpdateDto(beforeStatus.id());
+		readStatusService.update(rsUpdate1);
+
+		ReadStatusResponseDto afterStatus = readStatusService.find(beforeStatus.id());
+
+		System.out.println("4-2. " + userUpdate1.username() + "의 업데이트 후 읽은 시간: " + afterStatus.lastReadAt());
+		System.out.println();
+
+
+//		---------------------------------5. UserStatus 확인---------------------------------
+		System.out.println("== 5. UserStatus 및 온라인 상태 확인 ==");
+
+		// 5-1. 특정 유저의 마지막 접속 시간 확인
+		UserStatusResponseDto currentStatusDto = userStatusService.findAll().stream()
+				.filter(s -> s.userId().equals(userUpdate1.id())) // 유저 ID로 필터링
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("해당 유저의 상태 정보가 없습니다."));
+
+		System.out.println( "5-1. " + userUpdate1.username() + "의 현재 접속 시간: " + currentStatusDto.lastSeenAt());
+		System.out.println("현재 온라인 여부: " + currentStatusDto.online());
+		System.out.println();
+
+		// 5-2. 특정 유저의 마지막 접속 시간 업데이트
+		try {
+			System.out.println("3초 대기 중...");
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println();
+		UserStatusRequestUpdateDto usUpdate = new UserStatusRequestUpdateDto(currentStatusDto.id());
+		userStatusService.update(usUpdate);
+
+		UserStatusResponseDto statusAfter = userStatusService.find(currentStatusDto.id());
+
+		System.out.println("5-2. 업데이트 후 접속 시간: " + statusAfter.lastSeenAt());
+		System.out.println("     업데이트 후 온라인 여부: " + statusAfter.online());
+		System.out.println();
 
 		System.out.println("=== [종료] 서비스 테스트 ===");
 	}
