@@ -1,4 +1,67 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-public class JCFReadStatusRepository {
+import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+
+import java.util.*;
+
+public class JCFReadStatusRepository implements ReadStatusRepository {
+
+    private final Map<UUID, ReadStatus> data;
+
+    public JCFReadStatusRepository() {
+        this.data = new HashMap<>();
+    }
+
+    @Override
+    public ReadStatus save(ReadStatus readStatus) {
+        data.put(readStatus.getId(), readStatus);
+        return readStatus;
+    }
+
+    @Override
+    public Optional<ReadStatus> findById(UUID id) {
+        return Optional.ofNullable(data.get(id));
+    }
+
+    @Override
+    public Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId) {
+        if (userId == null || channelId == null) return Optional.empty();
+        for (ReadStatus rs : data.values()) {
+            if (userId.equals(rs.getUserId()) && channelId.equals(rs.getChannelId())) {
+                return Optional.of(rs);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public List<ReadStatus> findAll() {
+        return new ArrayList<>(data.values());
+    }
+
+    @Override
+    public List<ReadStatus> findAllByUserId(UUID userId) {
+        if (userId == null) return List.of();
+        List<ReadStatus> result = new ArrayList<>();
+        for (ReadStatus rs : data.values()) {
+            if (userId.equals(rs.getUserId())) result.add(rs);
+        }
+        return result;
+    }
+
+    @Override
+    public List<ReadStatus> findAllByChannelId(UUID channelId) {
+        if (channelId == null) return List.of();
+        List<ReadStatus> result = new ArrayList<>();
+        for (ReadStatus rs : data.values()) {
+            if (channelId.equals(rs.getChannelId())) result.add(rs);
+        }
+        return result;
+    }
+
+    @Override
+    public void delete(UUID id) {
+        data.remove(id);
+    }
 }

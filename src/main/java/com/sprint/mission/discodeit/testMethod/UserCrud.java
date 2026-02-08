@@ -19,55 +19,56 @@ public class UserCrud {
     private final ChannelService channerService;
 
     // 유저 회원가입
-    public void SignUp(String name, String email, String password, String profileImagePath) {
+    public void signUp(String name, String email, String password, String profileImagePath) {
         userService.create(new UserDto.UserRequest(name, email, password), profileImagePath);
         System.out.println("회원가입에 성공하였습니다. \n이름: " + name + "\n이메일: " + email);
     }
 
     // 유저 회원탈퇴
-    public void SingOut(String name, String password) {
-        User member = userService.CheckUser(name, password);
+    public void singOut(String name, String password) {
+        User member = userService.checkUser(name, password);
+        userService.delete(member.getId());
         System.out.println("회원탈퇴에 성공하였습니다. \n이름: " + name + "\n이메일: " + member.getEmail());
     }
 
     // 유저 정보 출력
-    public void UserInfo(String name, String password) {
-        User member = userService.CheckUser(name, password);
+    public void userInfo(String name, String password) {
+        User member = userService.checkUser(name, password);
         System.out.println(member);
     }
 
     // 유저 정보 수정
-    public void UpdateUser(String originName, String originPassword, String newName, String newEmail, String newPassword, String newFilePath) {
-        User member = userService.CheckUser(originName, originPassword);
+    public void updateUser(String originName, String originPassword, String newName, String newEmail, String newPassword, String newFilePath) {
+        User member = userService.checkUser(originName, originPassword);
         userService.update(member.getId(), new UserDto.UserRequest(newName, newEmail, newPassword), newFilePath);
         System.out.println(member);
     }
 
     // 회원 목록 출력
-    public void ListUsers() {
+    public void listUsers() {
         System.out.println("현재 유저 목록: ");
         userService.findAll().forEach(user -> System.out.println(user.name()));
     }
 
     // 유저 상태 출력
-    public void CheckUserStatus(String userName, String password) {
-        User member = userService.CheckUser(userName, password);
+    public void checkUserStatus(String userName, String password) {
+        User member = userService.checkUser(userName, password);
         boolean status = userService.findById(member.getId()).isOnline();
         System.out.println("현재 " + userName + " 유저는 " + ((status) ? "온라인" : "오프라인") + " 상태입니다.");
     }
 
     // 유저 채널 가입
-    public void JoinChannel(String userName, String password, String channelName) {
-        User member = userService.CheckUser(userName, password);
-        Channel channel = channerService.CheckChannel(channelName);
+    public void joinChannel(String userName, String password, String channelName) {
+        User member = userService.checkUser(userName, password);
+        Channel channel = channerService.checkChannel(channelName);
         userService.joinChannel(member.getId(), channel.getId());
         System.out.println(userName + "유저가 " + channelName +" 채널에 가입하였습니다.");
     }
 
     // 유저 채널 탈퇴
-    public void LeaveChannel(String userName, String password, String channelName) {
-        User member = userService.CheckUser(userName, password);
-        Channel channel = channerService.CheckChannel(channelName);
+    public void leaveChannel(String userName, String password, String channelName) {
+        User member = userService.checkUser(userName, password);
+        Channel channel = channerService.checkChannel(channelName);
         userService.leaveChannel(member.getId(), channel.getId());
         System.out.println(userName + "유저가 " + channelName +" 채널에서 탈퇴하였습니다.");
     }

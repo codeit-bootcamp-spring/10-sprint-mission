@@ -68,10 +68,18 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageDto.MessageResponse update(UUID messageId, String content, List<UUID> fileInfo) {
+    public MessageDto.MessageResponse update(UUID messageId, String content, List<BinaryContentDto.BinaryContentRequest> fileInfo) {
         Message message = entityFinder.getMessage(messageId);
         Optional.ofNullable(content).ifPresent(message::updateContent);
-        Optional.ofNullable(fileInfo).ifPresent(message::updateBinaryContentIds);
+        // 여러 개의 첨부파일 구현
+        List<UUID> binaryContentIds = new ArrayList<>();
+        // binaryContent에 정보 입력 후 레포에 저장
+        fileInfo.forEach(fileInform -> {
+            BinaryContent binaryContent = new BinaryContent(fileInform);
+            binaryContentRepository.save(binaryContent);
+            binaryContentIds.add(binaryContent.getId());
+        });
+        message.updateBinaryContentIds(binaryContentIds);
         messageRepository.save(message);
         return MessageDto.MessageResponse.from(message);
     }

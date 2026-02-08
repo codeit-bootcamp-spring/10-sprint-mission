@@ -7,11 +7,16 @@ import java.util.*;
 
 public class JCFMessageRepository implements MessageRepository {
 
-    private final Map<UUID, Message> data = new HashMap<>();
+    private final Map<UUID, Message> data;
+
+    public JCFMessageRepository() {
+        this.data = new HashMap<>();
+    }
 
     @Override
-    public void save(Message message) {
+    public Message save(Message message) {
         data.put(message.getId(), message);
+        return message;
     }
 
     @Override

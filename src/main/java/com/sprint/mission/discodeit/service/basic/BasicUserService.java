@@ -147,14 +147,14 @@ public class BasicUserService implements UserService {
 
     @Override
     // 유저 체크 헬퍼 메서드
-    public User CheckUser(String name, String password) {
+    public User checkUser(String name, String password) {
         return userRepository.findAll().stream()
                 .filter(user -> user.getName().equals(name) && user.getPassword().equals(password))
                 .findFirst().orElseThrow(() -> new RuntimeException("해당하는 유저가 없습니다."));
     }
 
     @Override
-    public User CheckUserByName(String name){
+    public User checkUserByName(String name){
         return userRepository.findAll().stream()
                 .filter(user -> user.getName().equals(name))
                 .findFirst().orElseThrow(() -> new RuntimeException("해당하는 유저가 없습니다."));

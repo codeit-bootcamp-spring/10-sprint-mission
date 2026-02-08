@@ -16,5 +16,5 @@ public interface ChannelService {
     List<ChannelDto.ChannelResponsePublic> findAllPublicChannels();
     List<ChannelDto.ChannelResponse> findAllByUserId(UUID userId);
     ChannelDto.ChannelResponsePublic update(UUID id, ChannelDto.ChannelRequest request);
-    Channel CheckChannel(String name);
+    Channel checkChannel(String nameOrId);
 }

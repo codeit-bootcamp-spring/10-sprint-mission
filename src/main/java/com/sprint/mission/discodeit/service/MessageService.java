@@ -11,6 +11,6 @@ public interface MessageService {
     MessageDto.MessageResponse create(MessageDto.MessageRequest request, List<BinaryContentDto.BinaryContentRequest> fileInfo);
     MessageDto.MessageResponse findById(UUID messageId);
     List<MessageDto.MessageResponse> findAllByChannelId(UUID channelId);
-    MessageDto.MessageResponse update(UUID id, String content, List<UUID> fileInfo);
+    MessageDto.MessageResponse update(UUID id, String content, List<BinaryContentDto.BinaryContentRequest> fileInfo);
     void delete(UUID id);
 }

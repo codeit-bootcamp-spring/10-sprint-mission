@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.dto;
 
 import com.sprint.mission.discodeit.entity.Message;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,7 +20,8 @@ public class MessageDto {
             String content,
             UUID userId,
             UUID channelId,
-            List<UUID> binaryContentIds
+            List<UUID> binaryContentIds,
+            Instant createdAt
     ) {
         public static MessageResponse from(Message message) {
             return new MessageResponse(
@@ -27,7 +29,8 @@ public class MessageDto {
                     message.getContent(),
                     message.getUserId(),
                     message.getChannelId(),
-                    message.getBinaryContentIds()
+                    message.getBinaryContentIds(),
+                    message.getCreatedAt()
             ) ;
         }
     }

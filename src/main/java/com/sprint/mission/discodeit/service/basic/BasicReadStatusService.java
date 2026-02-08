@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.ReadStatusService;
 import com.sprint.mission.discodeit.service.helper.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,13 +20,14 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class BasicReadStatusService {
+public class BasicReadStatusService implements ReadStatusService {
 
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
     private final EntityFinder entityFinder;
 
+    @Override
     public ReadStatusDto.ReadStatusResponse create(UUID userId, UUID channelId){
         // 입력값 유효성 검증
         Objects.requireNonNull(userId, "유저 Id가 유효하지 않습니다.");
@@ -43,18 +45,21 @@ public class BasicReadStatusService {
         return ReadStatusDto.ReadStatusResponse.from(readStatus);
     }
 
+    @Override
     public ReadStatusDto.ReadStatusResponse findById(UUID readStatusId){
         Objects.requireNonNull(readStatusId, "읽음상태 객체 Id가 유효하지 않습니다.");
         ReadStatus readStatus = entityFinder.getReadStatus(readStatusId);
         return ReadStatusDto.ReadStatusResponse.from(readStatus);
     }
 
+    @Override
     public List<ReadStatusDto.ReadStatusResponse> findAllByUserId(UUID userId){
         Objects.requireNonNull(userId, "유저 Id가 유효하지 않습니다.");
         return readStatusRepository.findAllByUserId(userId).stream()
                 .map(ReadStatusDto.ReadStatusResponse::from).toList();
     }
 
+    @Override
     public ReadStatusDto.ReadStatusResponse update(UUID readStatusId, Instant lastReadTime){
         ReadStatus readStatus = entityFinder.getReadStatus(readStatusId);
         Optional.ofNullable(lastReadTime).ifPresent(readStatus::updateLastReadTime);
@@ -62,10 +67,10 @@ public class BasicReadStatusService {
         return ReadStatusDto.ReadStatusResponse.from(readStatus);
     }
 
+    @Override
     public void delete(UUID readStatusId){
         entityFinder.getReadStatus(readStatusId);
         readStatusRepository.delete(readStatusId);
     }
 
 }
-

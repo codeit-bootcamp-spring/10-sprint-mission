@@ -6,10 +6,8 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.NotFoundException;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.helper.EntityFinder;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +24,7 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
     private final EntityFinder entityFinder;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
     public ChannelDto.ChannelResponsePublic createPublic(ChannelDto.ChannelRequest request) {
@@ -35,7 +34,7 @@ public class BasicChannelService implements ChannelService {
 
         // 중복 검사
         channelRepository.findAll().stream()
-                .filter(channel -> channel.getName().equals(request.name()))
+                .filter(channel -> request.name().equals(channel.getName()))
                 .findFirst().ifPresent(channel -> {
                     if (channel.getName().equals(request.name())) throw new IllegalArgumentException("이미 존재하는 이름입니다.");
                 });
@@ -135,7 +134,13 @@ public class BasicChannelService implements ChannelService {
             userRepository.save(entityFinder.getUser(userId));
         });
         // 채널에 작성되었던 메세지 객체 전체 삭제
-        channel.getMessageIds().forEach(messageRepository::delete);
+        channel.getMessageIds().forEach(messageId -> {
+            messageRepository.findById(messageId).
+                    orElseThrow(() -> new IllegalArgumentException("메세지가 존재하지 않습니다."))
+                            .getBinaryContentIds().forEach(binaryContentRepository::deleteById);
+            messageRepository.delete(messageId);
+
+        });
         // 연결된 ReadStatus 삭제
         readStatusRepository.findAllByChannelId(channelId).forEach(readStatus ->
                 readStatusRepository.delete(readStatus.getId()));
@@ -144,9 +149,14 @@ public class BasicChannelService implements ChannelService {
     }
 
     // 채널 체크 헬퍼 메서드
-    public Channel CheckChannel(String name) {
+    @Override
+    public Channel checkChannel(String nameOrId) {
         return channelRepository.findAll().stream()
-                .filter(channel -> channel.getName().equals(name))
+                .filter(channel -> {
+                    if (channel.getType().equals(Channel.channelType.PUBLIC))
+                        return channel.getName().equals(nameOrId);
+                    return channel.getPrivateServerId().equals(nameOrId);
+                })
                 .findFirst().orElseThrow(() -> new RuntimeException("해당하는 채널이 없습니다."));
     }
 }

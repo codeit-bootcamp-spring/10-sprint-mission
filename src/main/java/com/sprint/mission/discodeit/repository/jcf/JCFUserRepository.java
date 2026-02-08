@@ -7,11 +7,16 @@ import java.util.*;
 
 public class JCFUserRepository implements UserRepository {
 
-    private final Map<UUID, User> data = new HashMap<>();
+    private final Map<UUID, User> data;
+
+    public JCFUserRepository() {
+        this.data = new HashMap<>();
+    }
 
     @Override
-    public void save(User user) {
+    public User save(User user) {
         data.put(user.getId(), user);
+        return user;
     }
 
     @Override

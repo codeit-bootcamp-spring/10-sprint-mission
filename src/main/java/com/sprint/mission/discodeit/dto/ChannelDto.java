@@ -37,14 +37,16 @@ public class ChannelDto {
             UUID channelId,
             Instant lastMessageAt,
             List<UUID> userIds,
-            Channel.channelType type
+            Channel.channelType type,
+            String serverId
     ) implements ChannelResponse {
         public static ChannelResponsePrivate from(Channel channel) {
             return new ChannelResponsePrivate(
                     channel.getId(),
                     channel.getLastMessageAt(),
                     channel.getUserIds(),
-                    channel.getType()
+                    channel.getType(),
+                    channel.getPrivateServerId()
             );
         }
     }

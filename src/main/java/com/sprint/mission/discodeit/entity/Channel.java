@@ -28,6 +28,9 @@ public class Channel extends BaseEntity implements Serializable {
     private final channelType type;
     @Getter
     private Instant lastMessageAt;
+    // private 채널을 식별하기 위한 UUID 앞 8자리 식별자
+    @Getter
+    private String privateServerId;
 
     // Public 생성자
     public Channel(ChannelDto.ChannelRequest request) {
@@ -42,6 +45,7 @@ public class Channel extends BaseEntity implements Serializable {
         this.userIds.addAll(Objects.requireNonNull(userIds, "유효한 유저를 입력해주세요."));
         this.type = channelType.PRIVATE;
         this.lastMessageAt = Instant.now();
+        this.privateServerId = this.getId().toString().substring(0, 8);
     }
 
     public void updateName(String name) {

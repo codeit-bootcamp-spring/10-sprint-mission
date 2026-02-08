@@ -25,7 +25,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     @Override
     public BinaryContent save(BinaryContent binaryContent) {
         data.put(binaryContent.getId(), binaryContent);
-        saveToFile(FILE_PATH, data);
+        saveToFile(data);
         return binaryContent;
     }
 
@@ -76,14 +76,14 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     @Override
     public void deleteById(UUID id) {
         data.remove(id);
-        saveToFile(FILE_PATH, data);
+        saveToFile(data);
     }
 
-    private static void saveToFile(String path, Object obj) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path))) {
+    private static void saveToFile(Object obj) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FileBinaryContentRepository.FILE_PATH))) {
             oos.writeObject(obj);
         } catch (IOException e) {
-            throw new IllegalStateException(path + " 저장 실패", e);
+            throw new IllegalStateException(FileBinaryContentRepository.FILE_PATH + " 저장 실패", e);
         }
     }
 
