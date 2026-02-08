@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * 추후, 쿠키/세션 배우고 userId를 빼서 전달하게 수정?
  */
 @RestController
-@RequestMapping("/channels")
+//@RequestMapping("/channels")
 @AllArgsConstructor
 public class ChannelController {
     private final ChannelService channelService;
@@ -35,7 +35,7 @@ public class ChannelController {
     /**
      * 공개 채널 생성
      */
-    @RequestMapping(value = "/public", method = RequestMethod.POST)
+    @RequestMapping(value = "/channels/public", method = RequestMethod.POST)
     public ResponseEntity createPublicChannel(@RequestBody @Valid PublicChannelCreateRequest request) {
         Channel channel = channelService.createPublicChannel(request);
 
@@ -47,7 +47,7 @@ public class ChannelController {
     /**
      * 비공개 채널 생성
      */
-    @RequestMapping(value = "/private", method = RequestMethod.POST)
+    @RequestMapping(value = "/channels/private", method = RequestMethod.POST)
     public ResponseEntity createPrivateChannel(@RequestBody @Valid PrivateChannelCreateRequest request) {
         Channel channel = channelService.createPrivateChannel(request);
 
@@ -59,7 +59,7 @@ public class ChannelController {
     /**
      * 특정 사용자가 볼 수 있는 모든 채널 목록
      */
-    @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/users/{userId}/channels", method = RequestMethod.GET)
     public ResponseEntity findAllChannelsByUserId(@PathVariable UUID userId) {
         List<ChannelResponseWithLastMessageTime> result = channelService.findAllByUserId(userId);
 
@@ -69,7 +69,7 @@ public class ChannelController {
     /**
      * 공개 채널의 정보 수정
      */
-    @RequestMapping(value = "/public/{channelId}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/channels/public/{channelId}", method = RequestMethod.PATCH)
     public ResponseEntity updatePublicChannelInfo(@PathVariable UUID channelId,
                                                   @RequestBody @Valid ChannelUpdateRequest request) {
         ChannelUpdateInput input = new ChannelUpdateInput(channelId, request.ownerId(),
@@ -83,7 +83,7 @@ public class ChannelController {
     /**
      * 채널 참여
      */
-    @RequestMapping(value = "/{channelId}/join", method = RequestMethod.POST)
+    @RequestMapping(value = "/channels/{channelId}/join", method = RequestMethod.POST)
     public ResponseEntity joinChannel(@PathVariable UUID channelId, @RequestBody UUID userId) {
         Channel channel = channelService.joinChannel(userId, channelId);
         ChannelResponse result = createChannelResponse(channel);
@@ -94,7 +94,7 @@ public class ChannelController {
     /**
      * 채널 탈퇴
      */
-    @RequestMapping(value = "/{channelId}/leave", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/channels/{channelId}/leave", method = RequestMethod.DELETE)
     public ResponseEntity leaveChannel(@PathVariable UUID channelId, @RequestBody UUID userId) {
         Channel channel = channelService.leaveChannel(userId, channelId);
         ChannelResponse result = createChannelResponse(channel);
@@ -105,7 +105,7 @@ public class ChannelController {
     /**
      * 채널 owner 변경
      */
-    @RequestMapping(value = "/{channelId}/change-owner", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/channels/{channelId}/change-owner", method = RequestMethod.PATCH)
     public ResponseEntity changeChannelOwner(@PathVariable UUID channelId,
                                              @RequestBody ChannelOwnerChangeRequest request) {
         Channel channel = channelService.changeChannelOwner(request.currentUserId(), channelId, request.newOwnerId());
@@ -117,7 +117,7 @@ public class ChannelController {
     /**
      * 채널 삭제
      */
-    @RequestMapping(value = "/{channelId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/channels/{channelId}", method = RequestMethod.DELETE)
     public ResponseEntity deleteChannel(@PathVariable UUID channelId,
                                         @RequestBody UUID userId) {
         channelService.deleteChannel(userId, channelId);
