@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.channel.response.ChannelResponseWithLastMessageTime;
-import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateInput;
+import com.sprint.mission.discodeit.dto.channel.ChannelUpdateInput;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.*;

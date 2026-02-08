@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.request.ChannelOwnerChangeRequest;
-import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateInput;
+import com.sprint.mission.discodeit.dto.channel.ChannelUpdateInput;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelResponse;
 import com.sprint.mission.discodeit.dto.channel.response.ChannelResponseWithLastMessageTime;
 import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
