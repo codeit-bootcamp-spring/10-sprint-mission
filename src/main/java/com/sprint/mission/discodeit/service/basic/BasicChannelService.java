@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.channeldto.ChannelResponseDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PrivateChannelCreateDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PublicChannelCreateDTO;
-import com.sprint.mission.discodeit.dto.channeldto.UpdateUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.channeldto.ChannelUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -39,7 +39,6 @@ public class BasicChannelService implements ChannelService {
     // Public도 Private 처럼 유저 목록을 받아야하는지??
     @Override
     public ChannelResponseDTO createPublicChannel(PublicChannelCreateDTO req) {
-        Objects.requireNonNull(req.channelType(), "유효하지 않은 채널 타입입니다.");
         Objects.requireNonNull(req.name(), "유효하지 않은 채널 이름입니다.");
         Objects.requireNonNull(req.description(), "유효하지 않은 채널 설명입니다.");
 
@@ -165,7 +164,7 @@ public class BasicChannelService implements ChannelService {
 
     // 업데이트 요청 DTO를 매개변수로 받아 채널을 업데이트하는 서비스 메소드
     @Override
-    public ChannelResponseDTO update(UpdateUpdateRequestDTO req) {
+    public ChannelResponseDTO update(ChannelUpdateRequestDTO req) {
         Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
         Objects.requireNonNull(req.channelID(), "유효하지 않은 채널입니다.");
         Objects.requireNonNull(req.channelID(), "유효하지 않은 이름입니다.");
