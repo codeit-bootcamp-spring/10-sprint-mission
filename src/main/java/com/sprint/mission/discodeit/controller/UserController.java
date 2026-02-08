@@ -41,8 +41,7 @@ public class UserController {
     public ResponseEntity createUser(@RequestBody @Valid UserCreateRequest request) {
         User user = userService.createUser(request);
 
-        UserResponse result = new UserResponse(user.getId(), user.getEmail()
-                , user.getUserName(), user.getNickName(), user.getBirthday(), user.getProfileId());
+        UserResponse result = createUserResponse(user);
 
         return ResponseEntity.status(201).body(result);
     }
@@ -61,8 +60,8 @@ public class UserController {
                 request.userName(), request.nickName(), request.birthday(), request.profileImage());
         User user = userService.updateUserInfo(input);
 
-        UserResponse result = new UserResponse(user.getId(), user.getEmail()
-                , user.getUserName(), user.getNickName(), user.getBirthday(), user.getProfileId());
+        UserResponse result = createUserResponse(user);
+
         return ResponseEntity.status(200).body(result);
     }
 
@@ -86,5 +85,10 @@ public class UserController {
 
         UserStatusResponse result = new UserStatusResponse(userId, userStatus.getLastOnlineTime(), userStatus.isOnlineStatus());
         return ResponseEntity.status(200).body(result);
+    }
+
+    private UserResponse createUserResponse(User user) {
+        return new UserResponse(user.getId(), user.getEmail()
+                , user.getUserName(), user.getNickName(), user.getBirthday(), user.getProfileId());
     }
 }
