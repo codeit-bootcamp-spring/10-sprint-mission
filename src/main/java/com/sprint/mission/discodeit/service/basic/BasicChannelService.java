@@ -88,6 +88,22 @@ public class BasicChannelService implements ChannelService {
                 }).toList();
     }
 
+    // PUBLIC 채널 전체 조회
+    public List<ChannelDto.ChannelResponsePublic> findAllPublicChannels() {
+        return channelRepository.findAll().stream()
+                .filter(channel -> channel.getType().equals(Channel.channelType.PUBLIC))
+                .map(ChannelDto.ChannelResponsePublic::from)
+                .toList();
+    }
+
+    // PRIVATE 채널 전체 조회
+    public List<ChannelDto.ChannelResponsePrivate> findAllPrivateChannels() {
+        return channelRepository.findAll().stream()
+                .filter(channel -> channel.getType().equals(Channel.channelType.PRIVATE))
+                .map(ChannelDto.ChannelResponsePrivate::from)
+                .toList();
+    }
+
     @Override
     public ChannelDto.ChannelResponsePublic update(UUID channelId, ChannelDto.ChannelRequest request) {
         // PUBLIC 채널만 수정 가능

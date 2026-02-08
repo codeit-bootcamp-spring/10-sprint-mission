@@ -152,4 +152,11 @@ public class BasicUserService implements UserService {
                 .filter(user -> user.getName().equals(name) && user.getPassword().equals(password))
                 .findFirst().orElseThrow(() -> new RuntimeException("해당하는 유저가 없습니다."));
     }
+
+    @Override
+    public User CheckUserByName(String name){
+        return userRepository.findAll().stream()
+                .filter(user -> user.getName().equals(name))
+                .findFirst().orElseThrow(() -> new RuntimeException("해당하는 유저가 없습니다."));
+    }
 }

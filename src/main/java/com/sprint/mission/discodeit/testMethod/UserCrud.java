@@ -67,7 +67,7 @@ public class UserCrud {
     // 유저 채널 탈퇴
     public void LeaveChannel(String userName, String password, String channelName) {
         User member = userService.CheckUser(userName, password);
-        Channel channel = CheckChannel(channelName);
+        Channel channel = channerService.CheckChannel(channelName);
         userService.leaveChannel(member.getId(), channel.getId());
         System.out.println(userName + "유저가 " + channelName +" 채널에서 탈퇴하였습니다.");
     }

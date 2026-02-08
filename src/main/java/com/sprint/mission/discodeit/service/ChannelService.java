@@ -12,6 +12,8 @@ public interface ChannelService {
     ChannelDto.ChannelResponsePrivate createPrivate(List<UUID> users);
     void delete(UUID channelId);
     ChannelDto.ChannelResponse findById(UUID channelId);
+    List<ChannelDto.ChannelResponsePrivate> findAllPrivateChannels();
+    List<ChannelDto.ChannelResponsePublic> findAllPublicChannels();
     List<ChannelDto.ChannelResponse> findAllByUserId(UUID userId);
     ChannelDto.ChannelResponsePublic update(UUID id, ChannelDto.ChannelRequest request);
     Channel CheckChannel(String name);

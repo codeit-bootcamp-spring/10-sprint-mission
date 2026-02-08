@@ -16,4 +16,5 @@ public interface UserService {
     void joinChannel(UUID userId, UUID channelId);
     void leaveChannel(UUID userId, UUID channelId);
     User CheckUser(String name, String password);
+    User CheckUserByName(String name);
 }

@@ -5,8 +5,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 
 import java.util.*;
 
-public class JCFChannelRepository implements ChannelRepository {
-
+c
     private final Map<UUID, Channel> data = new HashMap<>();
 
     @Override
