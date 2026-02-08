@@ -1,0 +1,51 @@
+package com.sprint.mission.discodeit.entity;
+
+import lombok.Getter;
+
+import java.io.Serial;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.UUID;
+
+@Getter
+public abstract class BaseEntity implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
+
+    // Getter
+    // 식별자/생성 시각/수정 시각 공통 필드
+    @Getter
+    protected final UUID id;
+    @Getter
+    protected final Instant createdAt;
+    @Getter
+    protected Instant updatedAt;
+
+    // constructor
+    protected BaseEntity() {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = this.createdAt;
+    }
+
+    // update
+    protected void updateTimestamp() {
+        this.updatedAt = Instant.now();
+    }
+
+    @Override
+    public final boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+
+        BaseEntity other = (BaseEntity) obj;
+        return this.getId().equals(other.getId());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this.getId().hashCode();
+    }
+
+}
