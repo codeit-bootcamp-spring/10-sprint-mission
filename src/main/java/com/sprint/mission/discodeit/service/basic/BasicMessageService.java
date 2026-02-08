@@ -42,7 +42,7 @@ public class BasicMessageService implements MessageService {
         List<UUID> attachments = new ArrayList<>();
         if(request.attachments() != null){
             for(BinaryContentCreateRequest req : request.attachments()){
-                BinaryContent attachment = new BinaryContent(req.bytes(), req.contentType());
+                BinaryContent attachment = new BinaryContent(req.fileName(), req.bytes(), req.contentType());
                 BinaryContent newAttachment = binaryContentRepository.save(attachment);
 
                 attachments.add(newAttachment.getId());
@@ -119,10 +119,10 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponse update(MessageUpdateRequest request) {
+    public MessageResponse update(UUID messageID, MessageUpdateRequest request) {
         // [저장]
-        Message msg = messageRepository.find(request.messageID())
-                .orElseThrow(() -> new IllegalArgumentException("Message not found: " + request.messageID()));
+        Message msg = messageRepository.find(messageID)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageID));
 
         // content update
         if (request.content() != null) {
@@ -133,9 +133,9 @@ public class BasicMessageService implements MessageService {
         // attachment 업데이트
         if (request.attachments() != null) {
             for (BinaryContentCreateRequest req : request.attachments()) {
-                BinaryContent attachment = new BinaryContent(req.bytes(), req.contentType());
-                binaryContentRepository.save(attachment);
-                msg.addAttachment(attachment.getId());
+                BinaryContent attachment = new BinaryContent(req.fileName(), req.bytes(), req.contentType());
+                BinaryContent savedAttach = binaryContentRepository.save(attachment);
+                msg.addAttachment(savedAttach.getId());
             }
         }
 
@@ -156,7 +156,7 @@ public class BasicMessageService implements MessageService {
         // channel에서 반영
         Channel channel = channelRepository.find(channelID);
         for(Message m : channel.getMessageList()){
-            if(m.getId().equals(request.messageID())){
+            if(m.getId().equals(messageID)){
                 m.updateContents(request.content());
             }
         }

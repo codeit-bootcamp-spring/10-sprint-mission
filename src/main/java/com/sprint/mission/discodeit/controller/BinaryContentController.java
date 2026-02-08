@@ -22,7 +22,7 @@ public class BinaryContentController {
         return binaryContentService.find(contentID);
     }
 
-    // binary-conent 다건 조회
+    // binary-content 다건 조회
     @RequestMapping(method=RequestMethod.GET)
     public List<BinaryContentResponse> getBinaryContents(@RequestParam("ids") List<UUID> contentIDs){
         return binaryContentService.findAllByIdIn(contentIDs);

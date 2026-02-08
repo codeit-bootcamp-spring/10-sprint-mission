@@ -15,7 +15,7 @@ public interface ChannelService {
     ChannelResponse createPrivate(ChannelCreateRequestPrivate channelCreateRequestPrivate);
     ChannelFindResponse find(UUID channelID);
     List<ChannelFindResponse> findAllByUserID(UUID userID);
-    ChannelResponse updateName(ChannelUpdateRequest request);
+    ChannelResponse updateName(UUID channelID, ChannelUpdateRequest request);
     default void update() {}
     // channel 자체 삭제
     void deleteChannel(UUID channelID);

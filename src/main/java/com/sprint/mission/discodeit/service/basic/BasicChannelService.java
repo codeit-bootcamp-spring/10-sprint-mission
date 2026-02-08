@@ -138,12 +138,12 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelResponse updateName(ChannelUpdateRequest request) {
+    public ChannelResponse updateName(UUID channelID, ChannelUpdateRequest request) {
         // Private Channel일 경우 update 불가능
         if(request.descriptions().equals("Private")) throw new IllegalArgumentException("Private Channel cannot be updated");
 
         // [저장] , 조회
-        Channel channel = channelRepository.find(request.channelID());
+        Channel channel = channelRepository.find(channelID);
 
         // 비즈니스
         channel.updateName(request.name());
@@ -153,7 +153,7 @@ public class BasicChannelService implements ChannelService {
         // user에서도 변경된 이름으로 save되어야 함.
         for (User user : channel.getMembersList()) {
             for (Channel c : user.getChannelsList()) {
-                if (c.getId().equals(request.channelID())) {
+                if (c.getId().equals(channelID)) {
                     c.updateName(request.name());
                     userIds.add(user.getId());
                     break;

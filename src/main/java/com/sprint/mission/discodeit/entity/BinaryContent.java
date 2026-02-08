@@ -8,11 +8,13 @@ import lombok.Getter;
 * */
 @Getter
 public class BinaryContent extends Base {
+    private final String fileName;
     private final byte[] data;
     private final String contentType;
 
-    public BinaryContent(byte[] data, String contentType){
+    public BinaryContent(String fileName, byte[] data, String contentType){
         super();
+        this.fileName = fileName;
         this.data = data;
         this.contentType = contentType;
     }

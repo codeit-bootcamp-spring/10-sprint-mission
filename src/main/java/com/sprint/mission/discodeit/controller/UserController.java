@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserResponse;
@@ -9,6 +10,7 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -25,13 +27,14 @@ public class UserController {
     // user 등록
     @RequestMapping(method = RequestMethod.POST)
     public UserResponse postUser(@RequestBody UserCreateRequest request){
-        return userService.create(request);
+        return userService.create(request, Optional.ofNullable(request.profileImage()));
     }
 
     // user 정보 수정
-    @RequestMapping(method = RequestMethod.PATCH)
-    public UserResponse updateUser(@RequestBody UserUpdateRequest request){
-        return userService.update(request);
+    @RequestMapping(value="/{user-id}",method = RequestMethod.PATCH)
+    public UserResponse updateUser(@PathVariable("user-id") UUID userID,
+                                   @RequestBody UserUpdateRequest request){
+        return userService.update(userID, request, Optional.ofNullable(request.profileImage()));
     }
 
     // user 삭제
@@ -53,7 +56,7 @@ public class UserController {
     }
 
     // user status 업데이트
-    @RequestMapping(method = RequestMethod.PATCH, value = "/{user-id}/status")
+    @RequestMapping(method = RequestMethod.PATCH, value = "/status/{user-id}")
     public UserStatusResponse updateStatus(@PathVariable("user-id") UUID userID){
         return userStatusService.updateByUserID(userID);
     }

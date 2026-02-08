@@ -45,9 +45,10 @@ public class ChannelController {
     }
 
     // public Channel 수정
-    @RequestMapping(method=RequestMethod.PATCH)
-    public ChannelResponse updateChannel(@RequestBody ChannelUpdateRequest request){
-        return channelService.updateName(request);
+    @RequestMapping(value="/{channel-id}",method=RequestMethod.PATCH)
+    public ChannelResponse updateChannel(@PathVariable("channel-id") UUID channelID,
+                                         @RequestBody ChannelUpdateRequest request){
+        return channelService.updateName(channelID, request);
     }
 
     // Channel 삭제

@@ -25,9 +25,10 @@ public class MessageController {
     }
 
     // 메시지 수정
-    @RequestMapping(method=RequestMethod.PATCH)
-    public MessageResponse updateMessage(@RequestBody MessageUpdateRequest request){
-        return messageService.update(request);
+    @RequestMapping(value="/{message-id}", method=RequestMethod.PATCH)
+    public MessageResponse updateMessage(@PathVariable("message-id") UUID messageID,
+                                         @RequestBody MessageUpdateRequest request){
+        return messageService.update(messageID, request);
     }
 
     // 메시지 삭제

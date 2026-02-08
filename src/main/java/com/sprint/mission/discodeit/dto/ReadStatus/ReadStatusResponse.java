@@ -6,4 +6,4 @@ import java.util.UUID;
 public record ReadStatusResponse(
         UUID readStatusID,
         Instant lastReadTime
-        ) {}
+) {}
