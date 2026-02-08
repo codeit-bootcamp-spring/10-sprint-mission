@@ -1,14 +1,13 @@
-package com.sprint.mission.discodeit.dto.user;
+package com.sprint.mission.discodeit.dto.user.response;
 
 import java.util.UUID;
 
-public record UserWithOnlineResponse(
+public record UserResponse(
         UUID userId,
         String email,
         String userName,
         String nickName,
         String birthday,
-        UUID profileId,
-        boolean isOnline
+        UUID profileId
 ) {
 }
