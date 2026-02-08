@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.UserWithOnlineResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserWithOnlineResponse;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.service.AuthService;
 import jakarta.validation.Valid;
