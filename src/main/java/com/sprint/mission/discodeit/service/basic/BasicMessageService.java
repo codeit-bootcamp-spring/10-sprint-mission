@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageCreateInput;
+import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -29,7 +29,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message createMessage(MessageCreateRequest request) {
+    public Message createMessage(MessageCreateInput request) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
         User author = userRepository.findById(request.authorId())
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
