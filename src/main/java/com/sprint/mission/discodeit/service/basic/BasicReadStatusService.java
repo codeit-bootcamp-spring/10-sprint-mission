@@ -56,7 +56,7 @@ class BasicReadStatusService implements ReadStatusService {
         return readStatusResponseMapper.toDto(readStatus);
     }
 
-    public IsMessageReadResponseDto findByUserIdAndChannelId(UUID userId, UUID messageId){
+    public IsMessageReadResponseDto findByUserIdAndMessageId(UUID userId, UUID messageId){
 
         Message message = messageRepository.findById(messageId)
                 .orElseThrow();

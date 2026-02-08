@@ -38,7 +38,7 @@ public class ReadStatusController {
             @PathVariable UUID messageId,
             @RequestParam UUID userId
     ){
-    return readStatusService.findByUserIdAndChannelId(userId, messageId);
+    return readStatusService.findByUserIdAndMessageId(userId, messageId);
     }
 
 }
