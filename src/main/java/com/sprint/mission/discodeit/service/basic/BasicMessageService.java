@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageCreateInput;
 import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -16,6 +17,7 @@ import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -80,11 +82,19 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
+    public List<MessageResponse> findAllByChannelId(UUID channelId) {
         // Channel ID null & channel 객체 존재 확인
         validateChannelByChannelId(channelId);
-
-        return messageRepository.findByChannelId(channelId);
+        List<Message> messages = messageRepository.findByChannelId(channelId);
+        List<MessageResponse> messageInfos = new ArrayList<>();
+        for (Message message : messages) {
+            messageInfos.add(new MessageResponse(
+                    message.getId(), message.getChannel().getId(),
+                    message.getAuthor().getId(), message.getCreatedAt(),
+                    message.getUpdatedAt(), message.getContent(), message.getAttachmentIds()
+            ));
+        }
+        return messageInfos;
     }
 
     @Override
