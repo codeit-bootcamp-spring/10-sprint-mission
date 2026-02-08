@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.message.MessageCreateInput;
-import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.message.input.MessageCreateInput;
+import com.sprint.mission.discodeit.dto.message.input.MessageUpdateInput;
 import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 
@@ -27,7 +27,7 @@ public interface MessageService {
 
     // U. 수정
     // 메시지 수정
-    Message updateMessageContent(MessageUpdateRequest request);
+    Message updateMessageContent(MessageUpdateInput request);
 
     // D. 삭제
     void deleteMessage(UUID userId, UUID messageId);

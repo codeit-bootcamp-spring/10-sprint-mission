@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageCreateInput;
-import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.message.input.MessageCreateInput;
+import com.sprint.mission.discodeit.dto.message.input.MessageUpdateInput;
 import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -106,15 +106,15 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message updateMessageContent(MessageUpdateRequest request) {
+    public Message updateMessageContent(MessageUpdateInput input) {
         // Message ID null & Message 객체 존재 확인
-        Message message = messageRepository.findById(request.messageId())
+        Message message = messageRepository.findById(input.messageId())
                 .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
 
         // requestUser가 해당 message를 작성한 게 맞는지 확인
-        verifyMessageAuthor(message, request.requestUserId());
+        verifyMessageAuthor(message, input.requestUserId());
 
-        message.updateContent(request.content());
+        message.updateContent(input.content());
         messageRepository.save(message);
         return message;
     }
