@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.dto.user.UserWithOnlineResponse;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.user.*;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -50,15 +47,18 @@ public class UserController {
     // 채널 완료한 후
 
     /**
-     * 사용자(나) 정보 수정
+     * 사용자 정보 수정
      */
-    @RequestMapping(value = "/me", method = RequestMethod.PATCH)
-    public ResponseEntity updateUserInfo(@RequestBody @Valid UserUpdateRequest request) {
-        User user = userService.updateUserInfo(request);
+//    @RequestMapping(value = "/me", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{userId}", method = RequestMethod.PATCH)
+    public ResponseEntity updateUserInfo(@PathVariable UUID userId,
+                                         @RequestBody @Valid UserUpdateRequest request) {
+        UserUpdateInput input = new UserUpdateInput(userId, request.email(), request.password(),
+                request.userName(), request.nickName(), request.birthday(), request.profileImage());
+        User user = userService.updateUserInfo(input);
 
         UserResponse result = new UserResponse(user.getId(), user.getEmail()
                 , user.getUserName(), user.getNickName(), user.getBirthday(), user.getProfileId());
-
         return ResponseEntity.status(200).body(result);
     }
 
@@ -92,8 +92,8 @@ public class UserController {
     }
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity handleException(NoSuchElementException e) {
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.getReasonPhrase(), e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.getReasonPhrase(), e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity handleException(MethodArgumentNotValidException e) {

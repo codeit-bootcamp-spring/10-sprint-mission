@@ -2,8 +2,9 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserWithOnlineResponse;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.user.UserUpdateInput;
 import com.sprint.mission.discodeit.entity.User;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.UUID;
@@ -21,7 +22,7 @@ public interface UserService {
     List<UserWithOnlineResponse> findAllUsers();
 
     // U. 수정
-    User updateUserInfo(UserUpdateRequest userUpdateRequest);
+    User updateUserInfo(@Valid UserUpdateInput userUpdateInput);
 
     // D. 삭제
     void deleteUser(UUID userId);

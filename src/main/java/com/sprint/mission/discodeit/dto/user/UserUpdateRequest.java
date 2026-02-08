@@ -3,15 +3,9 @@ package com.sprint.mission.discodeit.dto.user;
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-import java.util.UUID;
-
 public record UserUpdateRequest(
-        @NotNull(message = "ID가 null입니다.")
-        UUID userId,
-
         @Pattern(regexp = "^\\S+$", message = "email은 공백이 허용되지 않습니다.")
         @Email(message = "email 형식에 맞지 않습니다.")
         String email,

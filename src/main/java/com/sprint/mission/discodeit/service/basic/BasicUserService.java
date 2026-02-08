@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserWithOnlineResponse;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.user.UserUpdateInput;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -12,13 +12,16 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
@@ -76,42 +79,42 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User updateUserInfo(UserUpdateRequest request) {
+    public User updateUserInfo(@Valid UserUpdateInput input) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User user = userRepository.findById(request.userId())
+        User user = userRepository.findById(input.userId())
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
 
         // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
-        boolean binaryContentChanged = isBinaryContentChanged(request.profileImage(), user.getProfileId());
+        boolean binaryContentChanged = isBinaryContentChanged(input.profileImage(), user.getProfileId());
 
         // email or password or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
-        validateAllInputDuplicateOrEmpty(request, user, binaryContentChanged);
+        validateAllInputDuplicateOrEmpty(input, user, binaryContentChanged);
 
         // 다른 사용자들의 email과 중복되는지 확인 후 email 업데이트
-        if (request.email() != null && !user.getEmail().equals(request.email())) {
-            validateDuplicateEmailForUpdate(request.userId(), request.email());
-            user.updateEmail(request.email());
+        if (input.email() != null && !user.getEmail().equals(input.email())) {
+            validateDuplicateEmailForUpdate(input.userId(), input.email());
+            user.updateEmail(input.email());
         }
         // 다른 사용자들의 userName과 중복되는지 확인 후 userName 업데이트
-        if (request.userName() != null && !user.getUserName().equals(request.userName())) {
-            validateDuplicateUserNameForUpdate(request.userId(), request.userName());
-            user.updateUserName(request.userName());
+        if (input.userName() != null && !user.getUserName().equals(input.userName())) {
+            validateDuplicateUserNameForUpdate(input.userId(), input.userName());
+            user.updateUserName(input.userName());
         }
 
         // filter로 중복 확인 후 업데이트(중복 확인 안하면 동일한 값을 또 업데이트함)
-        Optional.ofNullable(request.password())
+        Optional.ofNullable(input.password())
                 .filter(p -> !user.getPassword().equals(p)) // !false(중복 아닌 값) -> true
                 .ifPresent(p -> user.updatePassword(p));
-        Optional.ofNullable(request.nickName())
+        Optional.ofNullable(input.nickName())
                 .filter(n -> !user.getNickName().equals(n))
                 .ifPresent(n -> user.updateNickName(n));
-        Optional.ofNullable(request.birthday())
+        Optional.ofNullable(input.birthday())
                 .filter(b -> !user.getBirthday().equals(b))
                 .ifPresent(b -> user.updateBirthday(b));
 
         UUID oldProfileId = user.getProfileId();
         if (binaryContentChanged) {
-            BinaryContent newBinaryContent = new BinaryContent(request.profileImage().binaryContent());
+            BinaryContent newBinaryContent = new BinaryContent(input.profileImage().binaryContent());
             binaryContentRepository.save(newBinaryContent);
 
             user.updateProfileId(newBinaryContent.getId());
@@ -168,12 +171,12 @@ public class BasicUserService implements UserService {
         }
     }
     // email or password or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
-    private void validateAllInputDuplicateOrEmpty(UserUpdateRequest request, User user, boolean binaryContentChanged) {
-        if ((request.email() == null || user.getEmail().equals(request.email()))
-                && (request.password() == null || user.getPassword().equals(request.password()))
-                && (request.nickName() == null || user.getNickName().equals(request.nickName()))
-                && (request.userName() == null || user.getUserName().equals(request.userName()))
-                && (request.birthday() == null || user.getBirthday().equals(request.birthday()))
+    private void validateAllInputDuplicateOrEmpty(UserUpdateInput input, User user, boolean binaryContentChanged) {
+        if ((input.email() == null || user.getEmail().equals(input.email()))
+                && (input.password() == null || user.getPassword().equals(input.password()))
+                && (input.nickName() == null || user.getNickName().equals(input.nickName()))
+                && (input.userName() == null || user.getUserName().equals(input.userName()))
+                && (input.birthday() == null || user.getBirthday().equals(input.birthday()))
                 && !binaryContentChanged
         ) {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
