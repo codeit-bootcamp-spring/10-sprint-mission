@@ -39,7 +39,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatus update(UUID id,ReadStatusUpdateDto dto) {
-        checkValidation(dto.userId(),dto.channelId());
+        //checkValidation(dto.userId(),dto.channelId());
         ReadStatus status = readStatusRepository.find(id)
                 .orElseThrow(() -> new NoSuchElementException("No read status with id: " +id));
         status.update();//마지막 시간 현재로 업데이트

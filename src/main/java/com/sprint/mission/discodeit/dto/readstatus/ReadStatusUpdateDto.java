@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record ReadStatusUpdateDto(
-        UUID userId,
-        UUID channelId
+//        UUID userId,
+//        UUID channelId
 ) {
 }
