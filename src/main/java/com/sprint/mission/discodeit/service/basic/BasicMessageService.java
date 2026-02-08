@@ -29,25 +29,25 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message createMessage(MessageCreateInput request) {
+    public Message createMessage(MessageCreateInput input) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User author = userRepository.findById(request.authorId())
+        User author = userRepository.findById(input.authorId())
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
 
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = channelRepository.findById(request.channelId())
+        Channel channel = channelRepository.findById(input.channelId())
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
 
         // author의 channel 참여 여부 확인
         if (!channel.getChannelMembersList().stream()
-                .anyMatch(user -> user.getId().equals(request.authorId()))) {
+                .anyMatch(user -> user.getId().equals(input.authorId()))) {
             throw new IllegalArgumentException("현재 author은 해당 channel에 참가하지 않았습니다.");
         }
 
-        Message message = new Message(channel, author, request.content());
+        Message message = new Message(channel, author, input.content());
 
-        if (request.attachments() != null) {
-            for (BinaryContentCreateRequest attachment : request.attachments()) {
+        if (input.attachments() != null) {
+            for (BinaryContentCreateRequest attachment : input.attachments()) {
                 if (attachment == null) continue;
 
                 byte[] attachmentContent = attachment.binaryContent();
