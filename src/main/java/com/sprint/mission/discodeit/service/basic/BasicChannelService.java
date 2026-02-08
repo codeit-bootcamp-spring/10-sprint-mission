@@ -1,21 +1,24 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
-import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
-import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.response.ChannelResponseWithLastMessageTime;
+import com.sprint.mission.discodeit.dto.channel.request.ChannelUpdateInput;
+import com.sprint.mission.discodeit.dto.channel.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.time.Instant;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
@@ -75,7 +78,7 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelResponse findChannelById(UUID channelId) {
+    public ChannelResponseWithLastMessageTime findChannelById(UUID channelId) {
         // Channel ID null 검증
         ValidationMethods.validateId(channelId);
         Channel channel = channelRepository.findById(channelId)
@@ -88,17 +91,17 @@ public class BasicChannelService implements ChannelService {
                 .orElse(null);
 
         List<UUID> channelMembersIds = new ArrayList<>();
-        if (channel.getChannelType() == ChannelType.PRIVATE) {
+//        if (channel.getChannelType() == ChannelType.PRIVATE) {
             channelMembersIds = channel.getChannelMembersList().stream()
                     .map(user -> user.getId())
                     .toList();
-        }
+//        }
 
         return createChannelPublicResponse(channel, lastMessageTime, channelMembersIds);
     }
 
     @Override
-    public List<ChannelResponse> findAllByUserId(UUID userId) {
+    public List<ChannelResponseWithLastMessageTime> findAllByUserId(UUID userId) {
         // User ID null 검증
         validateUserByUserId(userId);
 
@@ -126,13 +129,13 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel updateChannelInfo(ChannelUpdateRequest request) {
+    public Channel updateChannelInfo(@Valid ChannelUpdateInput input) {
         // user 객체 존재 확인
-        userRepository.findById(request.ownerId())
+        userRepository.findById(input.ownerId())
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
 
         // channel 객체 존재 확인
-        Channel channel = channelRepository.findById(request.channelId())
+        Channel channel = channelRepository.findById(input.channelId())
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
 
         // PRIVATE Channel일 경우 수정 불가
@@ -141,15 +144,15 @@ public class BasicChannelService implements ChannelService {
         }
 
         // channel owner의 user ID와 owner의 user ID가 동일한지 확인
-        verifyChannelOwner(channel, request.ownerId());
+        verifyChannelOwner(channel, input.ownerId());
 
         // channelType, channelName, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
-        validateAllInputDuplicateOrEmpty(request, channel);
+        validateAllInputDuplicateOrEmpty(input, channel);
 
-        Optional.ofNullable(request.channelName())
+        Optional.ofNullable(input.channelName())
                 .filter(n -> !channel.getChannelName().equals(n))
                 .ifPresent(n -> channel.updateChannelName(n));
-        Optional.ofNullable(request.channelDescription())
+        Optional.ofNullable(input.channelDescription())
                 .filter(d -> !channel.getChannelDescription().equals(d))
                 .ifPresent(d -> channel.updateChannelDescription(d));
 
@@ -292,8 +295,8 @@ public class BasicChannelService implements ChannelService {
         // channel의 channelMessagesList에 저장된 message 객체 삭제
         channel.removeMessageInChannel(message.getId());
     }
-    private ChannelResponse createChannelPublicResponse(Channel channel, Instant lastMessageTime, List<UUID> channelMembersIds) {
-        return new ChannelResponse(channel.getId(), channel.getOwner().getId(), channel.getChannelType(),
+    private ChannelResponseWithLastMessageTime createChannelPublicResponse(Channel channel, Instant lastMessageTime, List<UUID> channelMembersIds) {
+        return new ChannelResponseWithLastMessageTime(channel.getId(), channel.getOwner().getId(), channel.getChannelType(),
                 channel.getChannelName(), channel.getChannelDescription(), channelMembersIds, lastMessageTime);
     }
 
@@ -314,9 +317,9 @@ public class BasicChannelService implements ChannelService {
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
     }
     // channelType, channelName, channelDescription이 전부 입력되지 않았거나, 전부 이전과 동일하다면 exception
-    private void validateAllInputDuplicateOrEmpty(ChannelUpdateRequest request, Channel channel) {
-        if ((request.channelName() == null || channel.getChannelName().equals(request.channelName()))
-                && (request.channelDescription() == null || channel.getChannelDescription().equals(request.channelDescription()))) {
+    private void validateAllInputDuplicateOrEmpty(ChannelUpdateInput input, Channel channel) {
+        if ((input.channelName() == null || channel.getChannelName().equals(input.channelName()))
+                && (input.channelDescription() == null || channel.getChannelDescription().equals(input.channelDescription()))) {
             throw new IllegalArgumentException("변경사항이 없습니다. 입력 값을 다시 확인하세요.");
         }
     }
