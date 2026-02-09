@@ -21,7 +21,7 @@ public interface MessageService {
     // 메시지 전체
     List<Message> findAllMessages();
     // 특정 채널의 모든 메시지 읽어오기
-    List<MessageResponse> findAllByChannelId(UUID channelId);
+    List<Message> findAllByChannelId(UUID channelId);
     // 특정 사용자가 작성한 모든 메시지
     List<Message> findUserMessagesByUserId(UUID userId);
 
