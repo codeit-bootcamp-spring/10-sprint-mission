@@ -102,13 +102,6 @@ async function fetchAndRenderChannels() {
 }
 
 
-// 기존 fetchUserById 그대로 사용
-async function fetchUserById(userId) {
-    const users = await fetchUsersApi();
-    return users.find(u => u.id === userId) || {username: 'Unknown', profileId: null};
-}
-
-
 // 채널 클릭 → 메시지 화면
 async function openChannel(channelId) {
     currentChannelId = channelId;
