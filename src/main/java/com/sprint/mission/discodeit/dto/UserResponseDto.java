@@ -12,6 +12,7 @@ public record UserResponseDto(
         String userName,
         StatusType status,
         String email,
-        UUID profileId
+        UUID profileId,
+        Boolean online
 ) {
 }

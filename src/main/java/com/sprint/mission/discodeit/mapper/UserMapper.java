@@ -12,13 +12,15 @@ public class UserMapper {
 
     //  User -> UserInfoDto
     public UserResponseDto toUserInfoDto(User user, StatusType status){
+        Boolean isOnline = status == StatusType.ONLINE;
         return new UserResponseDto(user.getId(),
                 user.getCreatedAt(),
                 user.getUpdatedAt(),
                 user.getName(),
                 status,
                 user.getEmail(),
-                user.getProfileId());
+                user.getProfileId(),
+                isOnline);
     }
 
     // UserInfoDto -> User

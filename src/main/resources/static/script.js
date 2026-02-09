@@ -52,9 +52,9 @@ async function renderUserList(users) {
             '/default-avatar.png';
 
         userElement.innerHTML = `
-            <img src="${profileUrl}" alt="${user.username}" class="user-avatar">
+            <img src="${profileUrl}" alt="${user.userName}" class="user-avatar">
             <div class="user-info">
-                <div class="user-name">${user.username}</div>
+                <div class="user-name">${user.userName}</div>
                 <div class="user-email">${user.email}</div>
             </div>
             <div class="status-badge ${user.online ? 'online' : 'offline'}">

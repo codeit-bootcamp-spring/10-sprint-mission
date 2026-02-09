@@ -24,7 +24,7 @@ public class ChannelController {
     }
 
     // 비공개 채널 생성
-    @RequestMapping(value = "private", method = RequestMethod.POST)
+    @RequestMapping(value = "/private", method = RequestMethod.POST)
     public ChannelResponseDto createPrivateChannel(@RequestBody PrivateChannelCreateDto dto) {
         return channelService.createPrivate(dto);
     }

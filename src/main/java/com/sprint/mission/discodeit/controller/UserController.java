@@ -17,7 +17,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/user")
 public class UserController {
 
     private final UserService userService;
@@ -43,7 +43,7 @@ public class UserController {
     }
 
     // 모든 사용자 조회
-    @RequestMapping(value = "/api/user/findAll", method = RequestMethod.GET)
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
     public ResponseEntity<List<UserResponseDto>> findAll(){
         return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }
