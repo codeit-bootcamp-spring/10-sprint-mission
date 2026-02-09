@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
  * 권한 관리 Controller
  */
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @AllArgsConstructor
 public class AuthController {
     private final AuthService authService;

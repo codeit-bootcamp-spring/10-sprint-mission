@@ -20,7 +20,7 @@ import java.util.UUID;
  * 메시지 관리 Controller
  */
 @RestController
-//@RequestMapping("/messages")
+@RequestMapping("/api")
 @AllArgsConstructor
 public class MessageController {
     private final MessageService messageService;

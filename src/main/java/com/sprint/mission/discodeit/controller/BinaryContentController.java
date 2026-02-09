@@ -14,7 +14,7 @@ import java.util.UUID;
  * 바이너리 파일 다운로드 Controller
  */
 @RestController
-@RequestMapping("/binary-contents")
+@RequestMapping("/api/binaryContent")
 @AllArgsConstructor
 public class BinaryContentController {
     BinaryContentService binaryContentService;
@@ -22,8 +22,8 @@ public class BinaryContentController {
     /**
      * 바이너리 파일 1개 조회
      */
-    @RequestMapping(value = "/{binaryContentId}", method = RequestMethod.GET)
-    public ResponseEntity downloadFile(@PathVariable UUID binaryContentId) {
+    @RequestMapping(value = "/find", method = RequestMethod.GET)
+    public ResponseEntity downloadFile(@RequestParam UUID binaryContentId) {
         BinaryContent binaryContent = binaryContentService.findBinaryContentById(binaryContentId);
         BinaryContentResponse result = createBinaryContentResponse(binaryContent);
 
@@ -45,6 +45,6 @@ public class BinaryContentController {
         return new BinaryContentResponse(
                 binaryContent.getId(),
                 binaryContent.getCreatedAt(),
-                binaryContent.getContent());
+                binaryContent.getBytes());
     }
 }

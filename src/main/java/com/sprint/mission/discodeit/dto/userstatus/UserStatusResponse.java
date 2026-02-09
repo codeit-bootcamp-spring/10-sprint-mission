@@ -6,6 +6,6 @@ import java.util.UUID;
 public record UserStatusResponse(
         UUID userId,
         Instant lastOnlineTime,
-        boolean isOnline
+        boolean online
 ) {
 }

@@ -24,7 +24,7 @@ import java.util.UUID;
  * 사용자 관리 Controller
  */
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/user")
 @AllArgsConstructor
 public class UserController {
     private final UserService userService;
@@ -51,7 +51,7 @@ public class UserController {
     public ResponseEntity updateUserInfo(@PathVariable UUID userId,
                                          @RequestBody @Valid UserUpdateRequest request) {
         UserUpdateInput input = new UserUpdateInput(userId, request.email(), request.password(),
-                request.userName(), request.nickName(), request.birthday(), request.profileImage());
+                request.username(), request.nickName(), request.birthday(), request.profileImage());
         User user = userService.updateUserInfo(input);
 
         UserResponse result = createUserResponse(user);
@@ -62,7 +62,7 @@ public class UserController {
     /**
      * 모든 사용자 조회
      */
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
     public ResponseEntity findAllUsers() {
         List<UserWithOnlineResponse> result = userService.findAllUsers();
 
@@ -90,6 +90,6 @@ public class UserController {
 
     private UserResponse createUserResponse(User user) {
         return new UserResponse(user.getId(), user.getEmail()
-                , user.getUserName(), user.getNickName(), user.getBirthday(), user.getProfileId());
+                , user.getUsername(), user.getNickName(), user.getBirthday(), user.getProfileId());
     }
 }

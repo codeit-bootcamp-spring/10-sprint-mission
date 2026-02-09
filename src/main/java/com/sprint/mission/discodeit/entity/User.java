@@ -11,7 +11,7 @@ public class User extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     private String email;
-    private String userName;
+    private String username;
     private String nickName;
     private String password;
     private String birthday;
@@ -25,9 +25,9 @@ public class User extends BaseEntity implements Serializable {
     private final List<Message> writeMessageList;
 
     // 생성자
-    public User(String email, String userName, String nickName, String password, String birthday) {
+    public User(String email, String username, String nickName, String password, String birthday) {
         this.email = email;
-        this.userName = userName;
+        this.username = username;
         this.nickName = nickName;
         this.password = password; // 해싱?
         this.birthday = birthday;
@@ -45,7 +45,7 @@ public class User extends BaseEntity implements Serializable {
 //                "updatedAt = " + getUpdatedAt() + ", " +
                 "email = " + email + ", " +
                 "nickName = " + nickName + ", " +
-                "userName = " + userName + ", " +
+                "username = " + username + ", " +
 //                "password = " + password + ", " +
                 "birthday = " + birthday + ", " +
 //                "joinChannelList = " + joinChannelList + ", " +
@@ -73,8 +73,8 @@ public class User extends BaseEntity implements Serializable {
         updateTime();
     }
 
-    public void updateUserName(String userName) {
-        this.userName = userName;
+    public void updateUserName(String username) {
+        this.username = username;
         updateTime();
     }
 

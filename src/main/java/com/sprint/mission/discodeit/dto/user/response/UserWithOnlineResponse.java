@@ -8,10 +8,10 @@ public record UserWithOnlineResponse(
         Instant createdAt,
         Instant updatedAt,
         String email,
-        String userName,
+        String username,
         String nickName,
         String birthday,
         UUID profileId,
-        boolean isOnline
+        boolean online
 ) {
 }

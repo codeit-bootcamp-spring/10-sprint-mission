@@ -29,17 +29,18 @@ public class BasicUserService implements UserService {
 
     @Override
     public User createUser(UserCreateRequest request) {
-        // email, userName 중복 확인
+        // email, username 중복 확인
         validateDuplicateEmail(request.email());
-        validateDuplicateUserName(request.userName());
+        validateDuplicateUserName(request.username());
 
-        User user = new User(request.email(), request.userName(), request.nickName(), request.password(), request.birthday());
+        User user = new User(request.email(), request.username(), request.nickName(), request.password(), request.birthday());
 
         if (request.profileImage() != null ) {
-            byte[] inputBinaryContent = request.profileImage().binaryContent();
+            byte[] inputBinaryContent = request.profileImage().bytes();
+            String contentType = request.profileImage().contentType();
 
             if (inputBinaryContent != null && inputBinaryContent.length != 0) {
-                BinaryContent binaryContent = new BinaryContent(inputBinaryContent);
+                BinaryContent binaryContent = new BinaryContent(contentType, inputBinaryContent);
                 binaryContentRepository.save(binaryContent);
 
                 user.updateProfileId(binaryContent.getId());
@@ -87,7 +88,7 @@ public class BasicUserService implements UserService {
         // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
         boolean binaryContentChanged = isBinaryContentChanged(input.profileImage(), user.getProfileId());
 
-        // email or password or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
+        // email or password or username 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
         validateAllInputDuplicateOrEmpty(input, user, binaryContentChanged);
 
         // 다른 사용자들의 email과 중복되는지 확인 후 email 업데이트
@@ -95,10 +96,10 @@ public class BasicUserService implements UserService {
             validateDuplicateEmailForUpdate(input.userId(), input.email());
             user.updateEmail(input.email());
         }
-        // 다른 사용자들의 userName과 중복되는지 확인 후 userName 업데이트
-        if (input.userName() != null && !user.getUserName().equals(input.userName())) {
-            validateDuplicateUserNameForUpdate(input.userId(), input.userName());
-            user.updateUserName(input.userName());
+        // 다른 사용자들의 userName과 중복되는지 확인 후 username 업데이트
+        if (input.username() != null && !user.getUsername().equals(input.username())) {
+            validateDuplicateUserNameForUpdate(input.userId(), input.username());
+            user.updateUserName(input.username());
         }
 
         // filter로 중복 확인 후 업데이트(중복 확인 안하면 동일한 값을 또 업데이트함)
@@ -114,7 +115,9 @@ public class BasicUserService implements UserService {
 
         UUID oldProfileId = user.getProfileId();
         if (binaryContentChanged) {
-            BinaryContent newBinaryContent = new BinaryContent(input.profileImage().binaryContent());
+            byte[] inputBinaryContent = input.profileImage().bytes();
+            String contentType = input.profileImage().contentType();
+            BinaryContent newBinaryContent = new BinaryContent(contentType, inputBinaryContent);
             binaryContentRepository.save(newBinaryContent);
 
             user.updateProfileId(newBinaryContent.getId());
@@ -147,7 +150,7 @@ public class BasicUserService implements UserService {
     }
 
     private UserWithOnlineResponse createUserWithOnlineResponse(User user, UserStatus userStatus) {
-        return new UserWithOnlineResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(), user.getEmail(), user.getUserName(), user.getNickName(),
+        return new UserWithOnlineResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(), user.getEmail(), user.getUsername(), user.getNickName(),
                 user.getBirthday(), user.getProfileId(), userStatus.isOnlineStatus());
     }
 
@@ -170,12 +173,12 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("동일한 userName이 존재합니다");
         }
     }
-    // email or password or userName 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
+    // email or password or username 등이 "전부" 입력되지 않았거나 "전부" 이전과 동일하다면 exception 발생시킴
     private void validateAllInputDuplicateOrEmpty(UserUpdateInput input, User user, boolean binaryContentChanged) {
         if ((input.email() == null || user.getEmail().equals(input.email()))
                 && (input.password() == null || user.getPassword().equals(input.password()))
                 && (input.nickName() == null || user.getNickName().equals(input.nickName()))
-                && (input.userName() == null || user.getUserName().equals(input.userName()))
+                && (input.username() == null || user.getUsername().equals(input.username()))
                 && (input.birthday() == null || user.getBirthday().equals(input.birthday()))
                 && !binaryContentChanged
         ) {
@@ -192,7 +195,7 @@ public class BasicUserService implements UserService {
                         .orElseThrow(() -> new NoSuchElementException("해당 profileId에 해당하는 BinaryContent가 없습니다."));
                 // 새로 들어온 BinaryContent와 비교
                 // 같으면 -> false -> change 되지 않음
-                return !Arrays.equals(oldBinaryContent.getContent(), binaryContentCreateInput.binaryContent());
+                return !Arrays.equals(oldBinaryContent.getBytes(), binaryContentCreateInput.bytes());
             }
         }
         return false; // 새 BinaryContent 안들어옴
@@ -209,7 +212,7 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("동일한 email이 존재합니다");
         }
     }
-    // 나를 제외한 userName 중에 중복된 값이 있는지 확인
+    // 나를 제외한 username 중에 중복된 값이 있는지 확인
     private void validateDuplicateUserNameForUpdate(UUID userId, String newUserName) {
         if (userRepository.isUserNameUsedByOther(userId, newUserName)) {
             throw new IllegalArgumentException("동일한 userName이 존재합니다");

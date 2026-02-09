@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * 추후, 쿠키/세션 배우고 userId를 빼서 전달하게 수정?
  */
 @RestController
-//@RequestMapping("/channels")
+@RequestMapping("/api")
 @AllArgsConstructor
 public class ChannelController {
     private final ChannelService channelService;
@@ -59,7 +59,7 @@ public class ChannelController {
     /**
      * 특정 사용자가 볼 수 있는 모든 채널 목록
      */
-    @RequestMapping(value = "/users/{userId}/channels", method = RequestMethod.GET)
+    @RequestMapping(value = "/user/{userId}/channels", method = RequestMethod.GET)
     public ResponseEntity findAllChannelsByUserId(@PathVariable UUID userId) {
         List<ChannelResponseWithLastMessageTime> result = channelService.findAllByUserId(userId);
 

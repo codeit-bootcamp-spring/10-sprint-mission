@@ -29,7 +29,7 @@ public class JCFUserRepository implements UserRepository {
     @Override
     public Optional<User> findByUserNameAndPassword(String userName, String password) {
         return this.data.values().stream()
-                .filter(u -> u.getUserName().equals(userName) && u.getPassword().equals(password))
+                .filter(u -> u.getUsername().equals(userName) && u.getPassword().equals(password))
                 .findFirst();
     }
 
@@ -46,7 +46,7 @@ public class JCFUserRepository implements UserRepository {
     @Override
     public boolean existUserName(String newUserName) {
         return this.data.values().stream()
-                .anyMatch(user -> user.getUserName().equals(newUserName));
+                .anyMatch(user -> user.getUsername().equals(newUserName));
     }
 
     @Override
@@ -64,6 +64,6 @@ public class JCFUserRepository implements UserRepository {
     @Override
     public boolean isUserNameUsedByOther(UUID userId, String newUserName) {
         return this.data.values().stream()
-                .anyMatch(user -> !user.getId().equals(userId) && user.getUserName().equals(newUserName));
+                .anyMatch(user -> !user.getId().equals(userId) && user.getUsername().equals(newUserName));
     }
 }

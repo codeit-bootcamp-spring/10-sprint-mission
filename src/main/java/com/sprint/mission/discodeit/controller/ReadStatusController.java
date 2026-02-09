@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-//@RequestMapping("/read-status")
+@RequestMapping("/api")
 @AllArgsConstructor
 public class ReadStatusController {
     private final ReadStatusService readStatusService;
@@ -50,7 +50,7 @@ public class ReadStatusController {
     /**
      * 특정 사용자의 메시지 수신 정보 조회
      */
-    @RequestMapping(value = "/users/{userId}/read-status", method = RequestMethod.GET)
+    @RequestMapping(value = "/user/{userId}/read-status", method = RequestMethod.GET)
     public ResponseEntity findAllReadStatusByUserId(@PathVariable UUID userId) {
         List<ReadStatusResponse> result = readStatusService.findAllByUserId(userId);
 

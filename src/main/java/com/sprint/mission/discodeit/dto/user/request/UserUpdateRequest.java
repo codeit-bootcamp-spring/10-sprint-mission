@@ -13,8 +13,8 @@ public record UserUpdateRequest(
         @Pattern(regexp = "^\\S+$", message = "password는 공백이 허용되지 않습니다.")
         String password,
 
-        @Pattern(regexp = "^\\S+$", message = "userName은 공백이 허용되지 않습니다.")
-        String userName,
+        @Pattern(regexp = "^\\S+$", message = "username 공백이 허용되지 않습니다.")
+        String username,
 
         @Pattern(regexp = "^\\S+$", message = "nickName은 공백이 허용되지 않습니다.")
         String nickName,

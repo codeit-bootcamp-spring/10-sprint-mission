@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
 import com.sprint.mission.discodeit.dto.message.input.MessageCreateInput;
 import com.sprint.mission.discodeit.dto.message.input.MessageUpdateInput;
-import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -17,7 +16,6 @@ import com.sprint.mission.discodeit.validation.ValidationMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -52,10 +50,11 @@ public class BasicMessageService implements MessageService {
             for (BinaryContentCreateInput attachment : input.attachments()) {
                 if (attachment == null) continue;
 
-                byte[] attachmentContent = attachment.binaryContent();
+                byte[] attachmentContent = attachment.bytes();
+                String contentType = attachment.contentType();
 
                 if (attachmentContent == null || attachmentContent.length == 0) continue;
-                BinaryContent binaryContent = new BinaryContent(attachmentContent);
+                BinaryContent binaryContent = new BinaryContent(contentType, attachmentContent);
                 message.addAttachmentId(binaryContent.getId());
                 binaryContentRepository.save(binaryContent);
             }

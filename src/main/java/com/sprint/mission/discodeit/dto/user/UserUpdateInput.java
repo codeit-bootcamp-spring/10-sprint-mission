@@ -10,7 +10,7 @@ public record UserUpdateInput(
         UUID userId,
         String email,
         String password,
-        String userName,
+        String username,
         String nickName,
         String birthday,
         BinaryContentCreateInput profileImage

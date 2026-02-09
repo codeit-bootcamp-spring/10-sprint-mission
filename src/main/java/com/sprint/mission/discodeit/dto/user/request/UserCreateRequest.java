@@ -12,9 +12,9 @@ public record UserCreateRequest(
         @Email(message = "email 형식에 맞지 않습니다.")
         String email,
 
-        @NotBlank(message = "userName이 입력되지 않았습니다.")
-        @Pattern(regexp = "^\\S+$", message = "userName는 공백이 허용되지 않습니다.")
-        String userName,
+        @NotBlank(message = "username 입력되지 않았습니다.")
+        @Pattern(regexp = "^\\S+$", message = "username 공백이 허용되지 않습니다.")
+        String username,
 
         @NotBlank(message = "nickName이 입력되지 않았습니다.")
         @Pattern(regexp = "^\\S+$", message = "nickName은 공백이 허용되지 않습니다.")

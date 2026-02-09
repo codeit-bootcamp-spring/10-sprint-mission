@@ -22,8 +22,8 @@ public class BasicAuthService implements AuthService {
     @Override
     public UserWithOnlineResponse login(LoginRequest loginRequest) {
         // 유저 검증, 없으면 예외 발생
-        User user = userRepository.findByUserNameAndPassword(loginRequest.userName(), loginRequest.password())
-                .orElseThrow(() -> new IllegalArgumentException("정확하지 않은 userName과 password입니다."));
+        User user = userRepository.findByUserNameAndPassword(loginRequest.username(), loginRequest.password())
+                .orElseThrow(() -> new IllegalArgumentException("정확하지 않은 username과 password입니다."));
 
         // 유저 존재하면
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
@@ -37,7 +37,7 @@ public class BasicAuthService implements AuthService {
     }
 
     private UserWithOnlineResponse createUserInfo(User user, UserStatus userStatus) {
-        return new UserWithOnlineResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(), user.getEmail(), user.getUserName(), user.getNickName(),
+        return new UserWithOnlineResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(), user.getEmail(), user.getUsername(), user.getNickName(),
                 user.getBirthday(), user.getProfileId(), userStatus.isOnlineStatus());
     }
 }
