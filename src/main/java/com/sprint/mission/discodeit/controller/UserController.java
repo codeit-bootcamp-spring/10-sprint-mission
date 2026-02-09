@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -52,6 +53,13 @@ public class UserController {
     public ResponseEntity<UserDto> getUser(@PathVariable UUID userId) {
         UserDto userDto = userService.find(userId);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
+    }
+
+    // 모든 사용자 조회
+    @RequestMapping(value = "/user", method = RequestMethod.GET)
+    public ResponseEntity<List<UserDto>> getUsers() {
+        List<UserDto> userDtos = userService.findAll();
+        return new ResponseEntity<>(userDtos, HttpStatus.OK);
     }
 
     // 사용자 삭제
