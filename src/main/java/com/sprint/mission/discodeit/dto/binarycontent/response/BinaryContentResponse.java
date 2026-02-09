@@ -6,6 +6,7 @@ import java.util.UUID;
 public record BinaryContentResponse(
         UUID binaryContentId,
         Instant createAt,
+        String contentType,
         byte[] bytes
 ) {
 }

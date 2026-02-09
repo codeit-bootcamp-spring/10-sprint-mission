@@ -45,6 +45,7 @@ public class BinaryContentController {
         return new BinaryContentResponse(
                 binaryContent.getId(),
                 binaryContent.getCreatedAt(),
+                binaryContent.getContentType(),
                 binaryContent.getBytes());
     }
 }
