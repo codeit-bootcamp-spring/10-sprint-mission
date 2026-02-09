@@ -56,7 +56,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public void update(UserStatusRequestUpdateDto request) {
         Validators.requireNonNull(request, "request");
-        UserStatus userStatus = validateExistenceUserStatus(request.userId());
+        UserStatus userStatus = validateExistenceUserStatus(request.id());
         userStatus.updateLastSeenAt();
         userStatusRepository.save(userStatus);
     }
