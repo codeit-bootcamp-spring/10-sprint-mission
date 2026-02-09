@@ -51,8 +51,8 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatusResponseDto findReadStatus(UUID id) {
-        ReadStatus readStatus = getReadStatus(id);
+    public ReadStatusResponseDto findReadStatus(UUID channelId, UUID userId) {
+        ReadStatus readStatus = getReadStatus(channelId, userId);
 
         return readStatusMapper.toDto(readStatus);
     }
@@ -67,8 +67,8 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatusResponseDto update(ReadStatusUpdateDto dto) {
-        ReadStatus readStatus = getReadStatus(dto.getId());
+    public ReadStatusResponseDto update(UUID channelId, UUID userId) {
+        ReadStatus readStatus = getReadStatus(channelId, userId);
         readStatus.updateReadTime();
         readStatusRepository.save(readStatus);
 
@@ -81,8 +81,8 @@ public class BasicReadStatusService implements ReadStatusService {
 
     }
 
-    private ReadStatus getReadStatus(UUID id){
-        return readStatusRepository.findById(id)
+    private ReadStatus getReadStatus(UUID channelId, UUID userId){
+        return readStatusRepository.findByChannelUserId(channelId, userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 읽기 상태는 없습니다."));
     }
 }

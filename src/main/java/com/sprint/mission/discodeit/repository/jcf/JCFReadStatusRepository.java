@@ -21,8 +21,12 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public Optional<ReadStatus> findById(UUID id) {
-        return Optional.ofNullable(data.get(id));
+    public Optional<ReadStatus> findByChannelUserId(UUID channelId, UUID userId) {
+
+        return data.values().stream()
+                .filter(rs -> rs.getChannelId().equals(channelId))
+                .filter(rs-> rs.getUserId().equals(userId))
+                .findFirst();
     }
 
     @Override
