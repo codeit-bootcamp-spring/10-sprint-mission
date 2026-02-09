@@ -2,12 +2,11 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+@Getter
 public class Channel extends BaseEntity {
-    @Getter
+
     private final ChannelType type;
-    @Getter
     private String channelName;
-    @Getter
     private String description;
 
     public Channel(ChannelType type, String channelName, String description) {

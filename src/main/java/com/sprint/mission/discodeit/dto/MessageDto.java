@@ -20,7 +20,7 @@ public class MessageDto {
             String content,
             UUID authorId,
             UUID channelId,
-            Instant createAt,
+            Instant createdAt,
             List<UUID> attachmentIds
     ) {
         public static Response of(Message message) {

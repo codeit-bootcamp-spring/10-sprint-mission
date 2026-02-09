@@ -4,14 +4,12 @@ import lombok.Getter;
 
 import java.util.*;
 
+@Getter
 public class User extends BaseEntity {
-    @Getter
+
     private String username;
-    @Getter
     private String email;
-    @Getter
     private String password;
-    @Getter
     private UUID profileId;
 
     public User(String username, String email, String password, UUID profileId) {

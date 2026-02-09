@@ -5,12 +5,11 @@ import lombok.Getter;
 import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class ReadStatus extends BaseEntity{
-    @Getter
+
     private final UUID userId;
-    @Getter
     private final UUID channelId;
-    @Getter
     private Instant lastReadAt;
 
     public ReadStatus(UUID userId, UUID channelId) {

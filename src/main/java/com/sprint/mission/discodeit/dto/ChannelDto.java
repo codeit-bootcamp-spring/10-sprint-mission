@@ -18,11 +18,11 @@ public class ChannelDto {
     ) {}
 
     public record Response(
-            UUID channelId,
+            UUID id,
             ChannelType type,
-            String channelName,
+            String name,
             String description,
-            List<UUID> userIds,
+            List<UUID> participantIds,
             Instant lastReadAt
     ) {
         public static Response of(Channel channel, List<UUID> allUserIds, Instant lastReadAt) {

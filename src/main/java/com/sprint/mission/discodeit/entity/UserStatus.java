@@ -6,10 +6,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 public class UserStatus extends BaseEntity{
-    @Getter
+
     private final UUID userId;
-    @Getter
     private Instant lastActiveAt;
 
     public UserStatus(UUID userId) {

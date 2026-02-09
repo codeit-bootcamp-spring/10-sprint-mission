@@ -7,14 +7,12 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
+@Getter
 public abstract class BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Getter
     private final UUID id;
-    @Getter
     private final Instant createdAt;
-    @Getter
     private Instant updatedAt;
 
     protected BaseEntity() {
