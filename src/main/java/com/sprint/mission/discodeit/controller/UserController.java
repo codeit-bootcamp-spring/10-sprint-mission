@@ -66,7 +66,7 @@ public class UserController {
 
     // 사용자 정보를 수정할 수 있다.
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public ResponseEntity<UserResponse> updateUser(
+    public ResponseEntity<UserResponse> update(
             @PathVariable UUID id,
             // @PathVariable -> URL 경로에 포함된 동적인 값을 파라미터로 받아오는 도구
             // 특정 리소스를 수정하거나 조회할 때는 URL에 해당 리소스의 고유 식별자를 포함하는 것이 REST API의 표준 방식
@@ -82,7 +82,7 @@ public class UserController {
 
     // 사용자를 삭제할 수 있다.
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         // 서비스 계층에 삭제 처리를 위임
         userService.delete(id);
 
@@ -93,7 +93,7 @@ public class UserController {
 
     // 모든 사용자를 조회할 수 있다.
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
+    public ResponseEntity<List<UserResponse>> getAll() {
         List<UserResponse> responses = userService.findAll();
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
