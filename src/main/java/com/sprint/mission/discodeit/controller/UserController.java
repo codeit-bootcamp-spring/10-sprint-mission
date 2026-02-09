@@ -45,9 +45,15 @@ public class UserController {
         userService.deleteUser(id);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(value = "/all", method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     public List<UserResponse> getUsers() {
         return userService.getAllUsers();
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponse getUser(@PathVariable UUID id) {
+        return userService.getUser(id);
     }
 }

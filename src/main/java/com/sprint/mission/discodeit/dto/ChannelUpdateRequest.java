@@ -1,14 +1,16 @@
 package com.sprint.mission.discodeit.dto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Getter
+@NoArgsConstructor
 public class ChannelUpdateRequest {
-    private final UUID id;
-    private final String name;
-    private final String type;
-    private final String description;
+    private UUID id;
+    private String name;
+    private String type;
+    private String description;
 
     public ChannelUpdateRequest(UUID id, String name, String type, String description) {
         validate(id, type);

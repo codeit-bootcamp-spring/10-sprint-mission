@@ -1,16 +1,18 @@
 package com.sprint.mission.discodeit.dto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
+@NoArgsConstructor
 public class ChannelCreateRequest {
-    private final String name;
-    private final String type;
-    private final String description;
-    private final List<UUID> participantIds;
+    private String name;
+    private String type;
+    private String description;
+    private List<UUID> participantIds;
 
     public ChannelCreateRequest(String name, String description) {
         if (name == null || name.isBlank()) {

@@ -40,4 +40,28 @@ public class ChannelController {
     public List<ChannelResponse> getChannels(@RequestParam UUID userId) {
         return channelService.findAllByUserId(userId);
     }
+
+    @RequestMapping(value = "/all", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    public List<ChannelResponse> getAllChannels() {
+        return channelService.getAllChannels();
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    public ChannelResponse getChannel(@PathVariable UUID id) {
+        return channelService.getChannel(id);
+    }
+
+    @PostMapping("/{channelId}/enter")
+    @ResponseStatus(HttpStatus.OK)
+    public ChannelResponse enterChannel(@RequestParam UUID userId, @PathVariable UUID channelId) {
+        return channelService.enterChannel(userId, channelId);
+    }
+
+    @PostMapping("/{channelId}/leave")
+    @ResponseStatus(HttpStatus.OK)
+    public void leaveChannel(@RequestParam UUID userId, @PathVariable UUID channelId) {
+        channelService.leaveChannel(userId, channelId);
+    }
 }

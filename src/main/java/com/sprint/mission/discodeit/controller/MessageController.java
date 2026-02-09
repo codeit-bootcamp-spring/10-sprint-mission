@@ -30,6 +30,24 @@ public class MessageController {
         return messageService.findAllByChannelId(channelId);
     }
 
+    @RequestMapping(value = "/all", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    public List<MessageResponse> getAllMessages() {
+        return messageService.getAllMessages();
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    public MessageResponse getMessage(@PathVariable UUID id) {
+        return messageService.getMessage(id);
+    }
+
+    @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
+    @ResponseStatus(HttpStatus.OK)
+    public List<MessageResponse> getMessagesByUser(@PathVariable UUID userId) {
+        return messageService.getMessagesByUserId(userId);
+    }
+
     @RequestMapping(method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.OK)
     public MessageResponse updateMessage(@RequestBody MessageUpdateRequest request) {

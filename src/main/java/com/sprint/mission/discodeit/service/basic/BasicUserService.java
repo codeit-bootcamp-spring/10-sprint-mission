@@ -117,6 +117,13 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
         for (Message message : new ArrayList<>(user.getMessages())) {
+            if (message.getAttachmentIds() != null) {
+                message.getAttachmentIds().forEach(binaryContentRepository::delete);
+            }
+            channelRepository.findById(message.getChannelId()).ifPresent(channel -> {
+                channel.removeMessage(message);
+                channelRepository.save(channel);
+            });
             messageRepository.delete(message.getId());
         }
 
