@@ -12,8 +12,10 @@ public class UserMapper {
 
     //  User -> UserInfoDto
     public UserResponseDto toUserInfoDto(User user, StatusType status){
-        return new UserResponseDto(user.getName(),
-                user.getId(),
+        return new UserResponseDto(user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getName(),
                 status,
                 user.getEmail(),
                 user.getProfileId());

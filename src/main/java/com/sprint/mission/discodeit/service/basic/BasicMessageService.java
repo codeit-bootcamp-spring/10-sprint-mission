@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.MessageCreateDto;
-import com.sprint.mission.discodeit.dto.MessageInfoDto;
+import com.sprint.mission.discodeit.dto.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.MessageUpdateDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -27,7 +26,7 @@ public class BasicMessageService implements MessageService, ClearMemory {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageInfoDto create(MessageCreateDto messageCreateDto) {
+    public MessageResponseDto create(MessageCreateDto messageCreateDto) {
         userRepository.findById(messageCreateDto.senderId())
                 .orElseThrow(() -> new IllegalArgumentException("일치하는 사용자가 없습니다."));
         Channel channel = channelRepository.findById(messageCreateDto.channelId())
@@ -64,15 +63,15 @@ public class BasicMessageService implements MessageService, ClearMemory {
     }
 
     @Override
-    public MessageInfoDto findById(UUID id) {
+    public MessageResponseDto findById(UUID id) {
         Message message = messageRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 메시지 ID입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 ID입니다."));
 
         return messageMapper.toMessageInfoDto(message);
     }
 
     @Override
-    public List<MessageInfoDto> findAllByChannelId(UUID channelId) {
+    public List<MessageResponseDto> findAllByChannelId(UUID channelId) {
         return messageRepository.findAllByChannelId(channelId)
                 .stream()
                 .map(messageMapper::toMessageInfoDto)
@@ -80,8 +79,8 @@ public class BasicMessageService implements MessageService, ClearMemory {
     }
 
     @Override
-    public MessageInfoDto update(MessageUpdateDto messageUpdateDto) {
-        Message message = messageRepository.findById(messageUpdateDto.id())
+    public MessageResponseDto update(UUID id, MessageUpdateDto messageUpdateDto) {
+        Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 없습니다."));
         validateAttachments(messageUpdateDto.attachmentIds());
 
@@ -90,7 +89,7 @@ public class BasicMessageService implements MessageService, ClearMemory {
         List<UUID> oldIds = message.getAttachmentIds();       // 1 2 3
 
         List<UUID> idsToDelete = oldIds.stream()
-                .filter(id -> !newIds.contains(id))
+                .filter(oId -> !newIds.contains(oId))
                 .toList();
         if (!idsToDelete.isEmpty()) {
             binaryContentRepository.deleteByIds(idsToDelete);
@@ -104,7 +103,7 @@ public class BasicMessageService implements MessageService, ClearMemory {
     }
 
     @Override
-    public List<MessageInfoDto> searchMessage(UUID channelId, String keyword) {
+    public List<MessageResponseDto> searchMessage(UUID channelId, String keyword) {
         channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 없습니다."));
 
@@ -114,7 +113,7 @@ public class BasicMessageService implements MessageService, ClearMemory {
     }
 
     @Override
-    public List<MessageInfoDto> getUserMessages(UUID id) {
+    public List<MessageResponseDto> getUserMessages(UUID id) {
         findById(id);
         return messageRepository.findAllByUserId(id).stream()
                 .sorted(Comparator.comparing(Message::getCreatedAt))
@@ -122,14 +121,14 @@ public class BasicMessageService implements MessageService, ClearMemory {
                 .toList();
     }
 
-    @Override
-    public List<MessageInfoDto> getChannelMessages(UUID channelId) {
-        findById(channelId);
-        return messageRepository.findAllByChannelId(channelId).stream()
-                .sorted(Comparator.comparing(Message::getCreatedAt))
-                .map(messageMapper::toMessageInfoDto)
-                .toList();
-    }
+//    @Override
+//    public List<MessageResponseDto> getChannelMessages(UUID channelId) {
+//        findById(channelId);
+//        return messageRepository.findAllByChannelId(channelId).stream()
+//                .sorted(Comparator.comparing(Message::getCreatedAt))
+//                .map(messageMapper::toMessageInfoDto)
+//                .toList();
+//    }
 
     //    @Override
 //    public UUID sendDirectMessage(UUID senderId, UUID receiverId, String content) {
@@ -164,7 +163,9 @@ public class BasicMessageService implements MessageService, ClearMemory {
     public void delete(UUID id) {
         Message message = messageRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 메시지가 없습니다."));
         // 첨부파일 삭제
-        binaryContentRepository.deleteByIds(message.getAttachmentIds());
+        if(message.getAttachmentIds() != null) {
+            binaryContentRepository.deleteByIds(message.getAttachmentIds());
+        }
         // 채널에 등록된 메시지 삭제
         channelRepository.deleteMessageByMessageId(message.getChannelId(), id);
         // 메시지 자체 삭제

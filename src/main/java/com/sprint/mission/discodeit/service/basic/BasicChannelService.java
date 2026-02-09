@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.ChannelInfoDto;
+import com.sprint.mission.discodeit.dto.ChannelResponseDto;
 import com.sprint.mission.discodeit.dto.ChannelUpdateDto;
 import com.sprint.mission.discodeit.dto.PrivateChannelCreateDto;
 import com.sprint.mission.discodeit.dto.PublicChannelCreateDto;
@@ -25,7 +25,7 @@ public class BasicChannelService implements ChannelService, ClearMemory {
     private final ChannelMapper channelMapper;
 
     @Override
-    public ChannelInfoDto createPublic(PublicChannelCreateDto publicChannelCreateDto) {
+    public ChannelResponseDto createPublic(PublicChannelCreateDto publicChannelCreateDto) {
        userRepository.findById(publicChannelCreateDto.ownerId())
                 .orElseThrow(() -> new IllegalArgumentException("일치하는 사용자가 없습니다."));
         Channel channel =
@@ -43,7 +43,7 @@ public class BasicChannelService implements ChannelService, ClearMemory {
     }
 
     @Override
-    public ChannelInfoDto createPrivate(PrivateChannelCreateDto privateChannelCreateDto) {
+    public ChannelResponseDto createPrivate(PrivateChannelCreateDto privateChannelCreateDto) {
         userRepository.findById(privateChannelCreateDto.ownerId())
                 .orElseThrow(() -> new IllegalArgumentException("일치하는 사용자가 없습니다."));
         Channel channel =
@@ -68,15 +68,15 @@ public class BasicChannelService implements ChannelService, ClearMemory {
     }
 
     @Override
-    public ChannelInfoDto findById(UUID id) {
+    public ChannelResponseDto findById(UUID id) {
         Channel channel = channelRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("실패 : 존재하지 않는 채널 ID입니다."));
+                .orElseThrow(() -> new IllegalArgumentException("실패 : 존재하지 않는 채널 ID입니다."));
 
         return channelMapper.toChannelInfoDto(channel, messageRepository);
     }
 
     @Override
-    public List<ChannelInfoDto> findAllByUserId(UUID userId) {
+    public List<ChannelResponseDto> findAllByUserId(UUID userId) {
         return channelRepository.findAll().stream()
                 .filter(ch -> isVisibleToUser(ch, userId))
                 .map(ch -> channelMapper.toChannelInfoDto(ch, messageRepository))
@@ -89,34 +89,37 @@ public class BasicChannelService implements ChannelService, ClearMemory {
     }
 
     @Override
-    public ChannelInfoDto update(ChannelUpdateDto channelUpdateDto) {
-        Channel channel = channelRepository.findById(channelUpdateDto.id())
+    public ChannelResponseDto update(UUID id, ChannelUpdateDto channelUpdateDto) {
+        Channel channel = channelRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 없습니다."));
         if (channel.getIsPrivate().equals(IsPrivate.PRIVATE)) {
             throw new IllegalArgumentException("PRIVATE 채널은 수정할 수 없습니다.");
         }
+        if (!channel.getUserIds().contains(channelUpdateDto.ownerId())) {
+            throw new IllegalArgumentException("채널 멤버가 아닙니다.");
+        }
         channel.updateName(channelUpdateDto.name());
         channel.updatePrivate(channelUpdateDto.isPrivate());
         channel.updateOwnerId(channelUpdateDto.ownerId());
+        channel.updateDescription(channelUpdateDto.description());
         channelRepository.save(channel);
         return channelMapper.toChannelInfoDto(channel, messageRepository);
     }
 
     @Override
-    public void joinChannel(UUID userId, UUID channelId) {
+    public ChannelResponseDto joinChannel(UUID userId, UUID channelId) {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 없습니다."));
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("일치하는 사용자가 없습니다."));
-        channel.addUserId(userId);
+        channel.addUserId(user.getId());
         ReadStatus readStatus = new ReadStatus(user.getId(), channel.getId());
         readStatusRepository.save(readStatus);
         channelRepository.save(channel);
-        userRepository.save(user);
-        UserStatus userStatus = userStatusRepository.findByUserId(userId).orElseThrow(() -> new IllegalArgumentException("해당 사용자 상태가 없습니다."));
+        UserStatus userStatus = userStatusRepository.findByUserId(user.getId()).orElseThrow(() -> new IllegalArgumentException("해당 사용자 상태가 없습니다."));
         userStatus.updateLastActiveTime();
         userStatus.updateStatusType();
         userStatusRepository.save(userStatus);
-
+        return channelMapper.toChannelInfoDto(channel, messageRepository);
     }
 
     @Override

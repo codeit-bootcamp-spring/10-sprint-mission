@@ -7,6 +7,9 @@ import com.sprint.mission.discodeit.dto.UserUpdateDto;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,7 +24,7 @@ public class UserController {
     private final UserStatusService userStatusService;
 
     // 사용자 등록
-    @RequestMapping(value = "", method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.POST)
     public UserResponseDto join(@RequestBody UserCreateDto dto) {
         return userService.create(dto);
     }
@@ -40,9 +43,9 @@ public class UserController {
     }
 
     // 모든 사용자 조회
-    @RequestMapping(value = "", method = RequestMethod.GET)
-    public List<UserResponseDto> findAll(){
-        return userService.findAll();
+    @RequestMapping(value = "/api/user/findAll", method = RequestMethod.GET)
+    public ResponseEntity<List<UserResponseDto>> findAll(){
+        return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }
 
     // 사용자 온라인 상태 업데이트

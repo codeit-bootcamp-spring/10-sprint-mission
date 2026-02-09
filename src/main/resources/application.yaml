@@ -1,7 +1,10 @@
 spring:
   application:
     name: discodeit
-
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
 discodeit:
   repository:
     type: jcf

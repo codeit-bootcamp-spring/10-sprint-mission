@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public record MessageInfoDto(
+public record MessageResponseDto(
         UUID id,
         UUID senderId,
         UUID channelId,

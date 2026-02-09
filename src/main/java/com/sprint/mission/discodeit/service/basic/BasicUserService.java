@@ -80,7 +80,7 @@ public class BasicUserService implements UserService, ClearMemory {
             }
             user.updateProfileId(request.profileId());
         }
-        updateLastActiveTime(request.userId());   // 마지막 접속 시간 갱신
+        updateLastActiveTime(user.getId());   // 마지막 접속 시간 갱신
         userRepository.save(user);
         return userMapper.toUserInfoDto(user, userStatus.updateStatusType());
     }

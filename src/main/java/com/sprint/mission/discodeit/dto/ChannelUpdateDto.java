@@ -5,9 +5,9 @@ import com.sprint.mission.discodeit.entity.IsPrivate;
 import java.util.UUID;
 
 public record ChannelUpdateDto(
-        UUID id,
         String name,
         IsPrivate isPrivate,
-        UUID ownerId
+        UUID ownerId,
+        String description
 ) {
 }

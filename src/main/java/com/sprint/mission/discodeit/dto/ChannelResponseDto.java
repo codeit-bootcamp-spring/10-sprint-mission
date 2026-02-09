@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public record ChannelInfoDto(
+public record ChannelResponseDto(
         UUID id,
         String name,
         IsPrivate isPrivate,
