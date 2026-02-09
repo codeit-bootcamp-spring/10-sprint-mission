@@ -14,10 +14,7 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -28,29 +25,47 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusDTOMapper readStatusDTOMapper;
 
 
+//    @Override
+//    public ReadStatusResponseDTO create(ReadStatusCreateRequestDTO req) {
+//        Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
+//
+//        Channel channel = channelRepository.findById(req.channelId())
+//                .orElseThrow(
+//                        () -> new IllegalStateException("채널이 존재하지 않습니다.")
+//                );
+//
+//        User user = userRepository.findById(req.userId())
+//                .orElseThrow(
+//                        () -> new IllegalStateException("유저가 존재하지 않습니다.")
+//                );
+//
+//        if(readStatusRepository.findAll().stream().anyMatch(rs ->
+//            channel.getId().equals(rs.getChannelID()) && user.getId().equals(rs.getUserID()))
+//        ){
+//            throw new IllegalStateException("해당 ReadStatus 정보가 중복됩니다.");
+//        }
+//
+//        ReadStatus readStatus = readStatusDTOMapper.createReqToReadStatus(req);
+//        ReadStatus saved = readStatusRepository.save(readStatus);
+//        return readStatusDTOMapper.rsToResponse(saved);
+//    }
+
     @Override
-    public ReadStatusResponseDTO create(ReadStatusCreateRequestDTO req) {
-        Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
+    public List<ReadStatusResponseDTO> create(UUID channelId) {
+        Objects.requireNonNull(channelId, "유효하지 않은 id입니다!");
 
-        Channel channel = channelRepository.findById(req.channelId())
-                .orElseThrow(
-                        () -> new IllegalStateException("채널이 존재하지 않습니다.")
-                );
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다!"));
 
-        User user = userRepository.findById(req.userId())
-                .orElseThrow(
-                        () -> new IllegalStateException("유저가 존재하지 않습니다.")
-                );
 
-        if(readStatusRepository.findAll().stream().anyMatch(rs ->
-            channel.getId().equals(rs.getChannelID()) && user.getId().equals(rs.getUserID()))
-        ){
-            throw new IllegalStateException("해당 ReadStatus 정보가 중복됩니다.");
-        }
+        return channel.getUserList().stream().map(u -> {
+            if(readStatusRepository.findAll().stream().anyMatch(rs -> u.equals(rs.getUserID()))){
+                throw new IllegalStateException("읽기 정보가 이미 존재합니다.");
+            }
+            ReadStatus readStatus = new ReadStatus(u, channelId);
 
-        ReadStatus readStatus = readStatusDTOMapper.createReqToReadStatus(req);
-        ReadStatus saved = readStatusRepository.save(readStatus);
-        return readStatusDTOMapper.rsToResponse(saved);
+            return readStatusDTOMapper.rsToResponse(readStatus);
+
+        }).toList();
     }
 
     @Override

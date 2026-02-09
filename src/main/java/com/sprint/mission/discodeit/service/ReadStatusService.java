@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ReadStatusService {
-    ReadStatusResponseDTO create(ReadStatusCreateRequestDTO req);
+    //ReadStatusResponseDTO create(ReadStatusCreateRequestDTO req);
+    List<ReadStatusResponseDTO> create(UUID channelId);
     ReadStatusResponseDTO find(UUID rsId);
     List<ReadStatusResponseDTO> findAllByUserId(UUID userId);
     ReadStatusResponseDTO update(ReadStatusUpdateRequestDTO req);
