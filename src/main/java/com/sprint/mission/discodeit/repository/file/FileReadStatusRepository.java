@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 
@@ -12,7 +11,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     private Map<UUID, ReadStatus> data;
 
     public FileReadStatusRepository() {
-        this.data = new HashMap<>();
+        this.data = load();
     }
 
     @Override
@@ -71,13 +70,13 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<UUID, Channel> load() {
+    private Map<UUID, ReadStatus> load() {
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             return new HashMap<>();
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, Channel>) ois.readObject();
+            return (Map<UUID, ReadStatus>) ois.readObject();
         } catch (Exception e) {
             throw new RuntimeException("읽음 상태 데이터 로드 실패", e);
         }

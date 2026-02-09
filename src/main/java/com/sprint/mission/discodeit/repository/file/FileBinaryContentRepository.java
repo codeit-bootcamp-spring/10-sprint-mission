@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 
 import java.io.*;
@@ -12,7 +11,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     private Map<UUID, BinaryContent> data;
 
     public FileBinaryContentRepository() {
-        this.data = new HashMap<>();
+        this.data = load();
     }
 
     @Override
@@ -55,13 +54,13 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<UUID, Channel> load() {
+    private Map<UUID, BinaryContent> load() {
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             return new HashMap<>();
         }
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, Channel>) ois.readObject();
+            return (Map<UUID, BinaryContent>) ois.readObject();
         } catch (Exception e) {
             throw new RuntimeException("파일 데이터 로드 실패", e);
         }
