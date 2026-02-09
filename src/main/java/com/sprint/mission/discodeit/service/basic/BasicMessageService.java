@@ -8,7 +8,10 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.*;
 
 @Service
@@ -25,7 +28,7 @@ public class BasicMessageService implements MessageService {
 
 
     @Override
-    public MessageDto.Response create(MessageDto.CreateRequest request) {
+    public MessageDto.Response create(MessageDto.CreateRequest request, List<MultipartFile> attachments) {
         Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + request.channelId()));
 
@@ -39,7 +42,7 @@ public class BasicMessageService implements MessageService {
             }
         }
 
-        List<UUID> attachmentIds = Optional.ofNullable(request.attachments())
+        List<UUID> attachmentIds = Optional.ofNullable(attachments)
                 .orElse(List.of())
                 .stream()
                 .map(this::saveAttachments)
@@ -101,13 +104,21 @@ public class BasicMessageService implements MessageService {
         messageRepository.deleteById(messageId);
     }
 
-    private UUID saveAttachments(BinaryContentDto.CreateRequest request) {
-        BinaryContent content = new BinaryContent(
-                request.fileName(),
-                request.contentType(),
-                request.content()
-        );
+    private UUID saveAttachments(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
 
-        return binaryContentRepository.save(content).getId();
+        try {
+            BinaryContent content = new BinaryContent(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getBytes()
+            );
+
+            return binaryContentRepository.save(content).getId();
+        } catch (IOException e) {
+            throw new UncheckedIOException("첨부파일 저장 중 오류가 발생했습니다: " + file.getOriginalFilename(), e);
+        }
     }
 }

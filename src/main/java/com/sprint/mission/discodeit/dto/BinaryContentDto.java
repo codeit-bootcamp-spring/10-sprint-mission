@@ -23,6 +23,7 @@ public class BinaryContentDto {
             Instant createdAt,
             String fileName,
             String contentType,
+            byte[] content,
             long size
     ) {}
 

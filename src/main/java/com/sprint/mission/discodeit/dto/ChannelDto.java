@@ -52,7 +52,7 @@ public class ChannelDto {
     ) {}
 
     public record UpdatePublicRequest(
-            @NotBlank
+            @NotBlank(message = "채널 이름은 필수입니다.")
             String newName,
             String newDescription
 

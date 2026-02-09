@@ -9,21 +9,14 @@ import java.util.UUID;
 
 public class MessageDto {
     public record CreateRequest(
-            @NotBlank(message = "내용은 필수입니다.")
+            @NotBlank(message = "메시지 내용은 필수입니다.")
             String content,
             @NotNull(message = "유저 ID는 필수입니다.")
             UUID authorId,
             @NotNull(message = "채널 ID는 필수입니다.")
-            UUID channelId,
-            List<BinaryContentDto.CreateRequest> attachments
+            UUID channelId
 
-    ) {
-        public CreateRequest { // attachments가 비어있으면 빈 리스트로 만듬
-            if(attachments == null || attachments.isEmpty()) {
-                attachments = List.of();
-            }
-        }
-    }
+    ) {}
 
     public record Response(
             UUID id,
@@ -36,7 +29,8 @@ public class MessageDto {
     ) {}
 
     public record UpdateRequest(
-       String content // null이면 메시지 삭제됨
+            @NotBlank(message = "메시지 내용은 필수입니다.")
+            String content
     ) {}
 
 

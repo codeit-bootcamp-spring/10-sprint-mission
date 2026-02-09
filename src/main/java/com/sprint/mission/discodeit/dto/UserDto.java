@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
@@ -24,8 +25,8 @@ public class UserDto {
             Instant updatedAt,
             String username,
             String email,
-            boolean isOnline,       // UserStatus에서 계산된 값
-            UUID profileId   // 이미지 ID
+            UUID profileId,   // 이미지 ID
+            boolean Online       // UserStatus에서 계산된 값
     ) {}
 
     public record UpdateRequest(
@@ -33,5 +34,10 @@ public class UserDto {
             @Email
             String newEmail,
             String newPassword
-    ) {}
+    ) {
+        @AssertTrue(message = "변경할 항목이 적어도 하나는 필요합니다.")
+        public boolean isValidUpdate() {
+            return newUsername != null || newEmail != null || newPassword != null;
+        }
+    }
 }
