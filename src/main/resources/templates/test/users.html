@@ -3,6 +3,7 @@
 <head>
     <title>사용자 관리 테스트</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body class="p-4">
 <div class="container">
@@ -59,6 +60,40 @@
     </div>
 </div>
 
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">사용자 정보 수정 (PATCH)</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUserId">
+                <div class="mb-2">
+                    <label>새 Username (선택)</label>
+                    <input type="text" class="form-control" id="editUsername">
+                </div>
+                <div class="mb-2">
+                    <label>새 Email (선택)</label>
+                    <input type="email" class="form-control" id="editEmail">
+                </div>
+                <div class="mb-2">
+                    <label>새 Password (선택)</label>
+                    <input type="password" class="form-control" id="editPassword">
+                </div>
+                <div class="mb-2">
+                    <label>새 프로필 이미지 (선택)</label>
+                    <input type="file" class="form-control" id="editFile">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" onclick="submitEditUser()">수정하기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     const API_BASE = '/api';
 
@@ -97,7 +132,7 @@
             const result = await res.json();
             if(res.ok) {
                 document.getElementById('loginResult').innerText = `로그인 성공! ID: ${result.id}`;
-                localStorage.setItem('myUserId', result.id); // 테스트 편의를 위해 저장
+                localStorage.setItem('myUserId', result.id);
             } else {
                 alert('로그인 실패');
             }
@@ -117,11 +152,62 @@
                     <td>${u.email}</td>
                     <td>${u.Online ? 'Online' : 'Offline'}</td>
                     <td>
+                        <button class="btn btn-sm btn-secondary" onclick="openEditModal('${u.id}')">수정</button>
                         <button class="btn btn-sm btn-warning" onclick="updateStatus('${u.id}')">활동갱신</button>
                         <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')">삭제</button>
                     </td>
                 </tr>`;
         });
+    }
+
+    // 수정 모달 열기
+    function openEditModal(userId) {
+        document.getElementById('editUserId').value = userId;
+        document.getElementById('editUsername').value = '';
+        document.getElementById('editEmail').value = '';
+        document.getElementById('editPassword').value = '';
+        document.getElementById('editFile').value = '';
+        const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        modal.show();
+    }
+
+    // 사용자 수정 요청 (PATCH)
+    async function submitEditUser() {
+        const userId = document.getElementById('editUserId').value;
+        const formData = new FormData();
+
+        const updateRequest = {};
+        const newUsername = document.getElementById('editUsername').value;
+        const newEmail = document.getElementById('editEmail').value;
+        const newPassword = document.getElementById('editPassword').value;
+
+        if(newUsername) updateRequest.newUsername = newUsername;
+        if(newEmail) updateRequest.newEmail = newEmail;
+        if(newPassword) updateRequest.newPassword = newPassword;
+
+        if (Object.keys(updateRequest).length === 0 && !document.getElementById('editFile').files[0]) {
+            alert("변경할 내용을 입력해주세요.");
+            return;
+        }
+
+        formData.append('request', new Blob([JSON.stringify(updateRequest)], {type: "application/json"}));
+
+        const fileInput = document.getElementById('editFile');
+        if(fileInput.files[0]) {
+            formData.append('profileImage', fileInput.files[0]);
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/users/${userId}`, { method: 'PATCH', body: formData });
+            if(res.ok) {
+                alert('수정 완료');
+                loadUsers();
+                // 모달 닫기 (배경 클릭 등으로 닫는 방식과 호환되게 reload로 대체하거나 bootstrap 인스턴스 제어 필요)
+                location.reload();
+            } else {
+                alert('수정 실패: ' + await res.text());
+            }
+        } catch(e) { console.error(e); }
     }
 
     async function updateStatus(id) {

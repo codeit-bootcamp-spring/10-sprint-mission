@@ -59,10 +59,8 @@
             channelId: document.getElementById('targetChannelId').value
         };
 
-        // JSON Part
         formData.append('request', new Blob([JSON.stringify(requestDto)], {type: "application/json"}));
 
-        // File Part
         const fileInput = document.getElementById('msgFiles');
         for (let i = 0; i < fileInput.files.length; i++) {
             formData.append('attachments', fileInput.files[i]);
@@ -93,7 +91,6 @@
         for (const msg of messages) {
             let attachmentsHtml = '';
             if(msg.attachmentIds && msg.attachmentIds.length > 0) {
-                // 바이너리 컨텐츠 조회 (미리보기)
                 for(const fileId of msg.attachmentIds) {
                     const fileRes = await fetch(`${API_BASE}/binary-contents/find?binary-content-id=${fileId}`);
                     const fileData = await fileRes.json();
@@ -109,15 +106,36 @@
                 <div class="border-bottom p-2">
                     <div class="d-flex justify-content-between">
                         <strong>User: ${msg.authorId}</strong>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteMessage('${msg.id}')">X</button>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="editMessage('${msg.id}', '${msg.content}')">수정</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteMessage('${msg.id}')">X</button>
+                        </div>
                     </div>
-                    <p class="mb-1">${msg.content}</p>
+                    <p class="mb-1" id="msg-content-${msg.id}">${msg.content}</p>
                     ${attachmentsHtml}
                     <small class="text-muted">${msg.createdAt}</small>
                 </div>
             `;
             container.innerHTML += html;
         }
+    }
+
+    async function editMessage(id, oldContent) {
+        const newContent = prompt("수정할 내용을 입력하세요:", oldContent);
+        if(newContent === null || newContent === oldContent) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/messages/${id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ content: newContent })
+            });
+            if(res.ok) {
+                loadMessages();
+            } else {
+                alert('수정 실패');
+            }
+        } catch(e) { console.error(e); }
     }
 
     async function deleteMessage(id) {

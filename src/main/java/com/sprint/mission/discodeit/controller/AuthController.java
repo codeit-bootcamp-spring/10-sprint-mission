@@ -20,6 +20,7 @@ public class AuthController {
     @RequestMapping(method = RequestMethod.POST, value = "/login")
     public ResponseEntity<UserDto.Response> login(@RequestBody LoginDto.LoginRequest request) {
         UserDto.Response response = authService.login(request);
+        // todo: 여기다가 로그인 유지를 위한 세션을 생성해야 할 듯
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

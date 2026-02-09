@@ -110,7 +110,7 @@ public class FileMessageRepository implements MessageRepository {
     public void deleteById(UUID id) {
         Path path = resolvePath(id);
         try {
-            Files.delete(path);
+            Files.deleteIfExists(path);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
