@@ -52,14 +52,14 @@ public class DiscodeitApplication {
                 SpringApplication.run(DiscodeitApplication.class, args);
 
         //javaApplication의 main메소드에서 Service를 초기화하는 코드를 SpringContext를 활용해 대체
-        UserService userService = context.getBean(UserService.class);
-        ChannelService channelService = context.getBean(ChannelService.class);
-        MessageService messageService = context.getBean(MessageService.class);
+//        UserService userService = context.getBean(UserService.class);
+//        ChannelService channelService = context.getBean(ChannelService.class);
+//        MessageService messageService = context.getBean(MessageService.class);
 
         // javaApplication의 main메소드의 셋업, 테스트 부분의 코드 복사
         // 셋업
-        UserSummaryResponseDTO userSummaryResponseDTO = setupUser(userService);
-        ChannelSummaryResponseDTO channelSummaryResponseDTO = setupPrivateChannel(channelService);
+//        UserSummaryResponseDTO userSummaryResponseDTO = setupUser(userService);
+//        ChannelSummaryResponseDTO channelSummaryResponseDTO = setupPrivateChannel(channelService);
         // 테스트
 //        UUID userId = userSummaryResponseDTO.userId();
 //        UUID channelId = channelSummaryResponseDTO.channelId();
