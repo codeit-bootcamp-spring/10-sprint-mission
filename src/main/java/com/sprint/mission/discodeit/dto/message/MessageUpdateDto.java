@@ -8,7 +8,6 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 public class MessageUpdateDto {
-    private UUID id;
     private UUID userId;
     private String text;
 }

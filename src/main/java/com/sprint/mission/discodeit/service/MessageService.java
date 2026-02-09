@@ -13,6 +13,6 @@ public interface MessageService {
     MessageResponseDto findMessage(UUID messageId);
     List<MessageResponseDto> findMessageByKeyword(UUID channelId, String keyword);
     List<MessageResponseDto> findAllMessagesByChannelId(UUID channelId);
-    MessageResponseDto update(MessageUpdateDto dto);
+    MessageResponseDto update(UUID messageId, MessageUpdateDto dto);
     void delete(UUID messageId);
 }

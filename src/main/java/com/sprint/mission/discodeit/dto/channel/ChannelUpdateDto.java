@@ -9,7 +9,5 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 public class ChannelUpdateDto {
-    private UUID id;
     private String channelName;
-    private ChannelType channelType;
 }

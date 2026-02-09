@@ -3,5 +3,5 @@ spring:
     name: discodeit
 discodeit:
   repository:
-#    type: jfc
+    type: file
     file-directory: ./data

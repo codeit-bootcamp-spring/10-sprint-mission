@@ -32,6 +32,13 @@ public class FileUserRepository implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByEmail(String email) {
+        return loadData().values().stream()
+                .filter(user-> user.getEmail().equals(email))
+                .findFirst();
+    }
+
+    @Override
     public Optional<User> findByName(String name) {
         return loadData().values().stream()
                 .filter(user-> user.getName().equals(name))

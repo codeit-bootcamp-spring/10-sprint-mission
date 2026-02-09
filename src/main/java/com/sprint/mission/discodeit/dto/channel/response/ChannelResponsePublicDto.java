@@ -14,5 +14,6 @@ public class ChannelResponsePublicDto implements ChannelResponseDto {
     private UUID id;
     private String channelName;
     private List<UUID> messageList;
+    private List<UUID> userList;
     private ChannelType channelType;
 }

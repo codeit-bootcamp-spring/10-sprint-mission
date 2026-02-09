@@ -125,8 +125,8 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponseDto update(MessageUpdateDto dto) {
-        Message message = getMessage(dto.getId());
+    public MessageResponseDto update(UUID messageId, MessageUpdateDto dto) {
+        Message message = getMessage(messageId);
         User user  = userRepository.findById(dto.getUserId())
                 .orElseThrow(()-> new NoSuchElementException("해당 유저가 없습니다."));
 

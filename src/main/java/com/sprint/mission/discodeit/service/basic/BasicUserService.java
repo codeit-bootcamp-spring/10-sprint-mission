@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final ReadStatusRepository readStatusRepository;
+    private final UserStatusService userStatusService;
 
     @Override
     public UserResponseDto create(UserCreateDto dto) {
@@ -91,7 +93,6 @@ public class BasicUserService implements UserService {
                 .toList();
 
         System.out.println("[유저 전체 조회]");
-        dtoList.forEach(System.out::println);
 
         return dtoList;
     }
@@ -159,6 +160,12 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
 
         return findUser(userId);
+    }
+
+
+    public void updateOnlineStatus(UUID userId){
+        User user = getUser(userId);
+        userStatusService.update(userId);
     }
 
     @Override

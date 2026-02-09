@@ -14,5 +14,6 @@ public interface UserService {
     UserResponseDto addFriend(UUID senderId, UUID recieverId);
     List<UserResponseDto> findFriends(UUID userId);
     UserResponseDto update(UUID userId, UserUpdateDto dto);
+    void updateOnlineStatus(UUID userId);
     void delete(UUID userId);
 }

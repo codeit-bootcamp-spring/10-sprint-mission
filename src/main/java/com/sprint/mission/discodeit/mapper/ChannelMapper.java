@@ -15,6 +15,7 @@ public class ChannelMapper {
         return new ChannelResponsePublicDto(channel.getId(),
                 channel.getChannelName(),
                 channel.getMessageList(),
+                channel.getUserList(),
                 channel.getChannelType());
     }
 
