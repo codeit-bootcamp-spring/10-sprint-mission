@@ -50,16 +50,6 @@ public class UserController {
         return ResponseEntity.ok(updated);
     }
 
-    @RequestMapping(value = "/{userId}/status", method = RequestMethod.PATCH)
-    public ResponseEntity updateUserStatus(
-            @PathVariable UUID userId,
-            @RequestBody UpdateUserRequestDTO dto
-    ) {
-        UserResponseDTO updated = userService.updateUser(userId, dto);
-
-        return ResponseEntity.ok(updated);
-    }
-
     @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
     public ResponseEntity deleteUser(
             @PathVariable UUID userId
