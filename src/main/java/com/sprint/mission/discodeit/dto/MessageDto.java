@@ -16,7 +16,7 @@ public class MessageDto {
     ) {}
 
     public record Response(
-            UUID id,
+            UUID messageId,
             String content,
             UUID authorId,
             UUID channelId,
@@ -36,7 +36,7 @@ public class MessageDto {
     }
 
     public record Update(
-            UUID id,
+            UUID messageId,
             String content,
             UUID authorId
     ) {}

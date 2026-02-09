@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -90,7 +89,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public MessageDto.Response update(UUID authorId, MessageDto.Update request) {
-        Message message = messageRepository.findById(request.id())
+        Message message = messageRepository.findById(request.messageId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
 
         if (!authorId.equals(message.getAuthorId())) {

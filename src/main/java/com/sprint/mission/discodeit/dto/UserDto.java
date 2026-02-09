@@ -17,7 +17,7 @@ public class UserDto {
     ) {}
 
     public record Response(
-            UUID id,
+            UUID userId,
             String username,
             String email,
             UUID profileId,

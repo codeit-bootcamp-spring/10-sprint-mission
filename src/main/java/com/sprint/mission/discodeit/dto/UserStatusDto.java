@@ -10,7 +10,7 @@ public class UserStatusDto {
     ) {}
 
     public record Response(
-            UUID id,
+            UUID userStatusId,
             UUID userId
     ) {
         public static Response of(UserStatus status) {
@@ -22,7 +22,7 @@ public class UserStatusDto {
     }
 
     public record Update(
-            UUID id,
+            UUID userStatusId,
             UUID userId
     ) {}
 }
