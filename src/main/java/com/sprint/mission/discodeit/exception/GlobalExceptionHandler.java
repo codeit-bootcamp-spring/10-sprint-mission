@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.exception;
 
 import com.sprint.mission.discodeit.user.exception.EmailDuplicationException;
+import com.sprint.mission.discodeit.user.exception.AuthenticationFailedException;
 import com.sprint.mission.discodeit.user.exception.UserDuplicationException;
 import com.sprint.mission.discodeit.user.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.userstatus.exception.UserStatusDuplicationException;
@@ -42,6 +43,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handle(UserStatusDuplicationException e) {
         ErrorResponse response = new ErrorResponse("USER_STATUS_DUPLICATION_ERROR", e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ResponseEntity<ErrorResponse> handle(AuthenticationFailedException e) {
+        ErrorResponse response = new ErrorResponse("AUTHENTICATION_FAILED", e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
