@@ -14,6 +14,7 @@ import java.util.UUID;
 public class ChannelController {
     private final ChannelService channelService;
 
+    // TODO: 채널 생성자 정보가 없으므로 로직 추가 예정. (채널을 누가 만들었는지 모름)
     @RequestMapping(value = "/public", method = RequestMethod.POST)
     public ChannelDto.Response createPublicChannel(@RequestBody ChannelDto.CreatePublicRequest createPublicRequest) {
         return channelService.createPublicChannel(createPublicRequest);
