@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +50,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     // [헬퍼 메서드]: 반복되는 조회 및 예외 처리 공통화
     private BinaryContent findBinaryContentById(UUID id) {
         return binaryContentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("바이너리 데이터를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.BINARY_CONTENT_NOT_FOUND));
     }
 
     private BinaryContentDto.Response convertToResponse(BinaryContent binaryContent) {

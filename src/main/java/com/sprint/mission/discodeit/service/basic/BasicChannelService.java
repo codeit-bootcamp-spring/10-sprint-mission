@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -69,7 +71,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = findChannelEntityById(request.id());
 
         if (channel.getType() == ChannelType.PRIVATE) {
-            throw new IllegalArgumentException("PRIVATE 채널은 수정할 수 없습니다.");
+            throw new BusinessException(ErrorCode.PRIVATE_CHANNEL_NOT_UPDATABLE);
         }
 
         channel.update(
@@ -99,7 +101,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = findChannelEntityById(channelId);
 
         if (isMember(userId, channelId)) {
-            throw new IllegalStateException("이미 가입된 채널입니다.");
+            throw new BusinessException(ErrorCode.ALREADY_IN_CHANNEL);
         }
 
         if (readStatusRepository != null) {
@@ -134,7 +136,7 @@ public class BasicChannelService implements ChannelService {
     // [헬퍼 메서드]: 반복되는 조회 및 예외 처리 공통화
     private Channel findChannelEntityById(UUID id) {
         return  channelRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHANNEL_NOT_FOUND));
     }
 
     // [헬퍼 메서드]: 엔티티를 Response DTO로 변환 (가장 최신 메시지 시간 포함)

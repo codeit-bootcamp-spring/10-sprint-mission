@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.ChannelDto;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +31,8 @@ public class ChannelController {
     @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
     public ChannelDto.Response update(@PathVariable UUID id,
                                       @RequestBody ChannelDto.UpdateRequest update) {
+        if (!id.equals(update.id())) throw new BusinessException(ErrorCode.PATH_ID_MISMATCH);
+
         return channelService.update(update);
     }
 
@@ -41,4 +45,5 @@ public class ChannelController {
     public List<ChannelDto.Response> getChannelsByUserId(@RequestParam(name = "userId") UUID userId) {
         return channelService.findAllByUserId(userId);
     }
+    // TODO: 채널 입장과 퇴장 로직 구현 예졍
 }

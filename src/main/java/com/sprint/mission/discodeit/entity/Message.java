@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -16,8 +18,7 @@ public class Message extends BaseEntity {
     private final List<UUID> attachmentIds;
 
     public Message(UUID authorId, UUID channelId, String content, List<UUID> attachmentIds) {
-        if (authorId == null) throw new IllegalArgumentException("유저 정보가 유효하지 않습니다.");
-        if (channelId == null) throw new IllegalArgumentException("채널 정보가 유효하지 않습니다.");
+        if (authorId == null || channelId == null) throw new BusinessException(ErrorCode.REQUIRED_PARAMETER_MISSING);
         validateContent(content);
 
         this.authorId = authorId;
@@ -39,10 +40,10 @@ public class Message extends BaseEntity {
     private void validateContent(String content) {
 
         // null, Blank 체크
-        if (content == null || content.isBlank()) throw new IllegalArgumentException("메세지 내용을 입력해주세요");
+        if (content == null || content.isBlank()) throw new BusinessException(ErrorCode.EMPTY_MESSAGE_CONTENT);
 
         // 메세지 길이 체크 (1자 이상, 500자 이하)
-        if (content.length() > 500) throw new IllegalArgumentException("메세지는 1자 이상, 500자 이하로 작성해주세요.");
+        if (content.length() > 500) throw new BusinessException(ErrorCode.MESSAGE_TOO_LONG);
     }
 
     @Override

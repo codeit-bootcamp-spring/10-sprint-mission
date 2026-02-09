@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.UserStatusDto;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,8 @@ public class UserController {
     @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
     public UserDto.Response update(@PathVariable UUID id,
                                    @RequestBody UserDto.UpdateRequest request) {
+        if (!id.equals(request.id())) throw new BusinessException(ErrorCode.PATH_ID_MISMATCH);
+
         return userService.update(request);
     }
 
@@ -46,6 +50,8 @@ public class UserController {
     @RequestMapping(value = "/{id}/status", method = RequestMethod.PATCH)
     public UserStatusDto.Response updateStatus(@PathVariable UUID id,
                              @RequestBody UserStatusDto.UpdateRequest request) {
+        if (!id.equals(request.id())) throw new BusinessException(ErrorCode.PATH_ID_MISMATCH);
+
         return userStatusService.update(request);
     }
 }

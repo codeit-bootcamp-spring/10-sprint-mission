@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,7 +34,7 @@ public class FileMessageRepository implements MessageRepository {
             try {
                 Files.createDirectories(DIRECTORY);
             } catch (IOException e) {
-                throw new RuntimeException("메시지 디렉토리 생성 실패", e);
+                throw new BusinessException(ErrorCode.DIRECTORY_CREATE_FAILED);
             }
         }
     }
@@ -48,7 +50,7 @@ public class FileMessageRepository implements MessageRepository {
                 new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
             oos.writeObject(message);
         } catch (IOException e) {
-            throw new RuntimeException("메시지 저장 실패", e);
+            throw new BusinessException(ErrorCode.FILE_SAVE_ERROR);
         }
         return message;
     }
@@ -81,7 +83,7 @@ public class FileMessageRepository implements MessageRepository {
         try {
             Files.deleteIfExists(resolvePath(id));
         } catch (IOException e) {
-            throw new RuntimeException("메시지 삭제 실패", e);
+            throw new BusinessException(ErrorCode.FILE_DELETE_ERROR);
         }
     }
 

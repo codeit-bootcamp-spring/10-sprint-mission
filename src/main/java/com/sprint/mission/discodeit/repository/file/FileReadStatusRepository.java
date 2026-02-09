@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,7 +32,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
             try {
             Files.createDirectories(DIRECTORY);
         } catch (IOException e){
-                throw new RuntimeException("ReadStatus 디렉토리 생성 실패", e);
+                throw new BusinessException(ErrorCode.DIRECTORY_CREATE_FAILED);
             }
     }
 
@@ -45,7 +47,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
                 new FileOutputStream(path.toFile()))) {
             oos.writeObject(readStatus);
         } catch (IOException e) {
-            throw new RuntimeException("ReadStatus 저장 실패", e);
+            throw new BusinessException(ErrorCode.FILE_SAVE_ERROR);
         }
         return readStatus;
     }
@@ -73,7 +75,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         try {
             Files.deleteIfExists(resolve(id));
         } catch (IOException e) {
-            throw new RuntimeException("ReadStatus 삭제 실패", e);
+            throw new BusinessException(ErrorCode.FILE_DELETE_ERROR);
         }
     }
 

@@ -20,20 +20,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponseDto> handleRuntimeException(RuntimeException e, HttpServletRequest request) {
-        ErrorCode errorCode = ErrorCode.STORAGE_ERROR;
+        ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE;
         return buildResponse(errorCode.getStatus(), errorCode.getCode(), e.getMessage(), request);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDto> handleAllException(Exception e, HttpServletRequest request) {
         e.printStackTrace();
-
-        return buildResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
-                "SERVER_ERROR",
-                "서버 내부에서 오류가 발생했습니다.",
-                request
-        );
+        ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE;
+        return buildResponse(errorCode.getStatus(), errorCode.getCode(), e.getMessage(), request);
     }
 
     private ResponseEntity<ErrorResponseDto> buildResponse(HttpStatus status, String code, String message, HttpServletRequest request) {

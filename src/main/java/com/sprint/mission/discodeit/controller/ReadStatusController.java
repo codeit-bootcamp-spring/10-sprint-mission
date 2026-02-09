@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.ReadStatusDto;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +22,10 @@ public class ReadStatusController {
     }
 
     // TODO: 경로의 id와 request body의 id가 일치하는지 검증 로직 추가 예정
-    @RequestMapping(method = RequestMethod.PATCH)
-    public ReadStatusDto.Response update(@RequestBody ReadStatusDto.UpdateRequest request) {
+    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    public ReadStatusDto.Response update(@PathVariable UUID id,
+                                         @RequestBody ReadStatusDto.UpdateRequest request) {
+        if (!id.equals(request.id())) throw new BusinessException(ErrorCode.PATH_ID_MISMATCH);
         return readStatusService.update(request);
     }
 

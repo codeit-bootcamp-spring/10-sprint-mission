@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -21,12 +23,12 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatusDto.Response create(ReadStatusDto.CreateRequest request) {
-        if (!userRepository.existsById(request.userId())) throw new IllegalArgumentException("사용자가 존재하지 않습니다.");
-        if (!channelRepository.existsById(request.channelId())) throw new IllegalArgumentException("채널이 존재하지 않습니다.");
+        if (!userRepository.existsById(request.userId())) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        if (!channelRepository.existsById(request.channelId())) throw new BusinessException(ErrorCode.CHANNEL_NOT_FOUND);
 
         boolean isDuplicate = readStatusRepository.findAll().stream()
                 .anyMatch(rs -> rs.getUserId().equals(request.userId()) && rs.getChannelId().equals(request.channelId()));
-        if (isDuplicate) throw new IllegalArgumentException("이미 존재하는 읽음 상태입니다.");
+        if (isDuplicate) throw new BusinessException(ErrorCode.READ_STATUS_ALREADY_EXISTS);
 
         ReadStatus readStatus = new ReadStatus(
                 request.userId(),
@@ -66,7 +68,7 @@ public class BasicReadStatusService implements ReadStatusService {
     // [헬퍼 메서드]: 반복되는 조회 및 예외 처리 공통화
     private ReadStatus findReadStatusEntityById(UUID id) {
         return readStatusRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("읽음 상태를 찾을 수 없습니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.READ_STATUS_NOT_FOUND));
     }
 
     // [헬퍼 메서드]: 엔티티를 클라이언트 응답용 DTO로 변환 및 데이터 가공

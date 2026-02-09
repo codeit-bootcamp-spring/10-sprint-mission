@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +65,7 @@ public class BasicUserService implements UserService {
     public List<User> findUsersByChannelId(UUID channelId) {
         List<UUID> memberIds = channelRepository.findById(channelId)
                 .map(channel -> channel.getMemberIds())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 채널입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHANNEL_NOT_FOUND));
         return memberIds.stream()
                 .map(this::findUserEntityById)
                 .collect(Collectors.toList());
@@ -119,21 +121,21 @@ public class BasicUserService implements UserService {
     // 이메일 중복 시 예외를 던져 가입 중단 (Fail-Fast)
     private void validateDuplicateEmail(String userEmail) {
         if (userRepository.findByEmail(userEmail).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다: " + userEmail);
+            throw new BusinessException(ErrorCode.DUPLICATE_EMAIL);
         }
     }
 
     // 이름 중복 시 예외를 던져 가입 중단 (Fail-Fast)
     private void validateDuplicateUserName(String username) {
         if (userRepository.findByUsername(username).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 이름입니다: " + username);
+            throw new BusinessException(ErrorCode.DUPLICATE_USERNAME);
         }
     }
 
     // [헬퍼 메서드]: 반복되는 조회 및 예외 처리 공통화
     private User findUserEntityById(UUID id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 사용자 입니다. ID: " + id));
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
     // [헬퍼 메서드]: 엔티티를 클라이언트 응답용 DTO로 변환 및 데이터 가공

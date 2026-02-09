@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -26,8 +28,8 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public MessageDto.Response create(MessageDto.CreateRequest request) {
-        if (!userRepository.existsById(request.authorId())) throw new IllegalArgumentException("존재하지 않은 사용자 입니다.");
-        if (!channelRepository.existsById(request.channelId())) throw new IllegalArgumentException("존재하지 않는 채널입니다.");
+        if (!userRepository.existsById(request.authorId())) throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        if (!channelRepository.existsById(request.channelId())) throw new BusinessException(ErrorCode.CHANNEL_NOT_FOUND);
 
         List<UUID> attachmentIds = new ArrayList<>();
         if (request.attachments() != null && binaryContentRepository != null) {
@@ -87,7 +89,7 @@ public class BasicMessageService implements MessageService {
     // [헬퍼 메서드]: 반복되는 조회 및 예외 처리 공통화
     private Message findMessageEntityById(UUID id) {
         return messageRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메세지 입니다."));
+                .orElseThrow(() -> new BusinessException(ErrorCode.MESSAGE_NOT_FOUND));
     }
 
     // [헬퍼 메서드]: 요구사항에 맞는 Response DTO 변환

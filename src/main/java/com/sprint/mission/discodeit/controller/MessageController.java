@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.MessageDto;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +21,11 @@ public class MessageController {
         return messageService.create(request);
     }
 
-    // TODO: 경로의 id와 request body의 id가 일치하는지 검증 로직 추가 예정
     @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
     public MessageDto.Response update(@PathVariable UUID id,
                                       @RequestBody MessageDto.UpdateRequest request) {
+        if (!id.equals(request.id())) throw new BusinessException(ErrorCode.PATH_ID_MISMATCH);
+
         return messageService.update(request);
     }
 

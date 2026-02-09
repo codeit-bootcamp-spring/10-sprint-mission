@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import lombok.Getter;
 
 import java.util.UUID;
@@ -61,21 +63,19 @@ public class User extends BaseEntity {
     }
 
     private void validateUsername(String username) {
-        if (username == null || username.isBlank() || username.contains(" "))
-            throw new IllegalArgumentException("이름은 공백 없이 필수 입력 사항입니다.");
-        if (username.length() < 2 || username.length() > 10)
-            throw new IllegalArgumentException("이름은 2자 이상, 10자 이하로 설정하세요.");
+        if (username == null || username.isBlank() || username.contains(" ") ||
+                username.length() < 2 || username.length() > 10)
+            throw new BusinessException(ErrorCode.INVALID_USERNAME);
     }
 
     private void validateEmail(String email) {
         if (email == null || email.isBlank() || email.contains(" "))
-            throw new IllegalArgumentException("이메일은 공백 없이 필수 입력 사항입니다.");
-        // 필요 시 여기서 정규표현식으로 이메일 형식을 검증할 수 있습니다.
+            throw new BusinessException(ErrorCode.INVALID_EMAIL);
     }
 
     private void validatePassword(String password) {
         if (password == null || password.length() < 8 || password.contains(" "))
-            throw new IllegalArgumentException("비밀번호는 공백 없이 8자 이상이어야 합니다.");
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
     }
 
     @Override

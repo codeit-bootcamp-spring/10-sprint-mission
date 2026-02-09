@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -31,7 +33,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
             try {
                 Files.createDirectories(DIRECTORY);
             } catch (IOException e) {
-                throw new RuntimeException("UserStatus 디렉토리 생성 실패", e);
+                throw new BusinessException(ErrorCode.DIRECTORY_CREATE_FAILED);
             }
         }
     }
@@ -47,7 +49,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
                 new FileOutputStream(path.toFile()))) {
             oos.writeObject(userStatus);
         } catch (IOException e) {
-            throw new RuntimeException("UserStatus 저장 실패", e);
+            throw new BusinessException(ErrorCode.FILE_SAVE_ERROR);
         }
         return userStatus;
     }
@@ -75,7 +77,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
         try {
             Files.deleteIfExists(resolve(id));
         } catch (IOException e) {
-            throw new RuntimeException("UserStatus 삭제 실패", e);
+            throw new BusinessException(ErrorCode.FILE_DELETE_ERROR);
         }
     }
 
