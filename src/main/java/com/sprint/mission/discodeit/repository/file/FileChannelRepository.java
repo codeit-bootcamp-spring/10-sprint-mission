@@ -10,7 +10,7 @@ import java.util.*;
 
 
 @Repository
-@Primary
+
 public class FileChannelRepository implements ChannelRepository {
     private static final String FILE_PATH = "channels.dat";
     private Map<UUID, Channel> data;

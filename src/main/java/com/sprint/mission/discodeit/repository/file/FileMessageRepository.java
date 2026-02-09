@@ -10,7 +10,7 @@ import java.io.*;
 import java.util.*;
 
 @Repository
-@Primary
+
 public class FileMessageRepository implements MessageRepository {
     private static final String FILE_PATH = "messages.dat";
     private Map<UUID, Message> data;
