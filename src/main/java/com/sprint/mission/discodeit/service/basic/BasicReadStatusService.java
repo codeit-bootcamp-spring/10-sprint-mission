@@ -4,43 +4,40 @@ import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusCreation;
 import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusResponse;
 import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusUpdate;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.ReadType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class BasicReadStatusService implements ReadStatusService {
-    private final String ID_NOT_FOUND = "ReadStatus with id, %s, not found";
+public class BasicReadStatusService extends BasicDomainService<ReadStatus> implements ReadStatusService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
 
     @Override
-    public List<ReadStatusResponse> findAllByUserId(UUID userId) {
-        return readStatusRepository.findByUserId(userId)
-                .stream()
+    public List<ReadStatusResponse> findAllByUserId(UUID userId) throws IOException {
+        return readStatusRepository.filter(status -> status.matchUserId(userId))
                 .map(ReadStatus::toResponse)
                 .toList();
     }
 
     @Override
-    public ReadStatusResponse create(ReadStatusCreation model) {
+    public ReadStatusResponse create(ReadStatusCreation model) throws IOException {
         // todo: refactoring
         if (!userRepository.existsById(model.userId())) {
-            throw new NoSuchElementException("User with id, %s, not found".formatted(model.userId()));
+            throw new NoSuchElementException(ID_NOT_FOUND.formatted("User", model.userId()));
         }
         if (!channelRepository.existsById(model.channelId())) {
-            throw new NoSuchElementException("Channel with id, %s, not found".formatted(model.channelId()));
+            throw new NoSuchElementException(ID_NOT_FOUND.formatted("Channel", model.channelId()));
         }
         if (readStatusRepository.existsByUserAndChannelId(model.userId(), model.channelId())) {
             throw new IllegalStateException(
@@ -51,30 +48,30 @@ public class BasicReadStatusService implements ReadStatusService {
         return status.toResponse();
     }
 
-    private ReadStatus findReadStatus(UUID id) {
-        return readStatusRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException(ID_NOT_FOUND.formatted(id)));
+    @Override
+    public ReadStatusResponse find(UUID id) throws IOException, ClassNotFoundException {
+        return findById(id).toResponse();
     }
 
     @Override
-    public ReadStatusResponse find(UUID id) {
-        return findReadStatus(id).toResponse();
-    }
-
-    @Override
-    public ReadStatusResponse update(ReadStatusUpdate model) {
-        ReadStatus status = findReadStatus(model.id());
+    public ReadStatusResponse update(ReadStatusUpdate model) throws IOException, ClassNotFoundException {
+        ReadStatus status = findById(model.id());
         status.update(model.type());
         readStatusRepository.save(status);
         return status.toResponse();
     }
 
     @Override
-    public void delete(UUID id) {
+    public void delete(UUID id) throws IOException {
         if (readStatusRepository.existsById(id)) {
             readStatusRepository.deleteById(id);
             return;
         }
-        throw new NoSuchElementException(ID_NOT_FOUND.formatted(id));
+        throw new NoSuchElementException(ID_NOT_FOUND.formatted("ReadStatus", id));
+    }
+
+    @Override
+    protected ReadStatus findById(UUID id) throws IOException, ClassNotFoundException {
+        return findEntityById(id, "ReadStatus", readStatusRepository);
     }
 }

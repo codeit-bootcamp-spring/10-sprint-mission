@@ -6,16 +6,16 @@ import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+
 @Service
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
 
     @Override
-    public boolean login(UserLogin model) {
-        return userRepository.findAll()
-                .stream()
-                .filter(user -> user.matchUsername(model.username()))
+    public boolean login(UserLogin model) throws IOException {
+        return userRepository.filter(user -> user.matchUsername(model.username()))
                 .anyMatch(user -> user.matchPassword(model.password()));
     }
 }

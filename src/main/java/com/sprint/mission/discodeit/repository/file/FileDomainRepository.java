@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
+import com.sprint.mission.discodeit.common.function.ThrowingFunction;
 import com.sprint.mission.discodeit.repository.DomainRepository;
 
 import java.io.*;
@@ -61,22 +62,8 @@ public abstract class FileDomainRepository<T> implements DomainRepository<T> {
         }
     }
 
-    @FunctionalInterface
-    protected interface ThrowingFunction<T, R, E extends Exception> {
-        R apply(T t) throws E;
-
-        static <T, R> Function<T, R> unchecked(ThrowingFunction<T, R, Exception> action) {
-            return t -> {
-                try {
-                    return action.apply(t);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            };
-        }
-    }
-
-    protected  <R> R streamAll(Function<Stream<T>, R> action) throws IOException {
+    @Override
+    public  <R> R streamAll(Function<Stream<T>, R> action) throws IOException {
         try (Stream<Path> paths = Files.list(DIRECTORY)) {
             Stream<T> stream = paths.map(ThrowingFunction.unchecked(this::findByPath))
                     .flatMap(Optional::stream);
@@ -84,11 +71,13 @@ public abstract class FileDomainRepository<T> implements DomainRepository<T> {
         }
     }
 
-    protected boolean anyMatch(Predicate<T> predicate) throws IOException {
+    @Override
+    public boolean anyMatch(Predicate<T> predicate) throws IOException {
         return streamAll(stream -> stream.anyMatch(predicate));
     }
 
-    protected Stream<T> filter(Predicate<T> predicate) throws IOException {
+    @Override
+    public Stream<T> filter(Predicate<T> predicate) throws IOException {
         return streamAll(stream -> stream.filter(predicate));
     }
 

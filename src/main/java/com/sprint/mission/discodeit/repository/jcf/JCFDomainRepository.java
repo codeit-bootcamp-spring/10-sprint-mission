@@ -24,11 +24,6 @@ public abstract class JCFDomainRepository<T> implements DomainRepository<T> {
     }
 
     @Override
-    public List<T> findAll() {
-        return data.values().stream().toList();
-    }
-
-    @Override
     public boolean existsById(UUID id) {
         return data.containsKey(id);
     }

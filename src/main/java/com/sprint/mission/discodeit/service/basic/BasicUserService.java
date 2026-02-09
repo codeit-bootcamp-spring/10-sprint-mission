@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.common.function.ThrowingFunction;
 import com.sprint.mission.discodeit.dto.UserServiceDTO.UserCreation;
 import com.sprint.mission.discodeit.dto.UserServiceDTO.UserInfoUpdate;
 import com.sprint.mission.discodeit.dto.UserServiceDTO.UserResponse;
@@ -15,50 +16,42 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class BasicUserService implements UserService {
+public class BasicUserService extends BasicDomainService<User> implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository profileRepository;
     private final UserStatusRepository userStatusRepository;
-    private final String ID_NOT_FOUND = "%s with id %s not found";
 
     @Override
-    public UserResponse find(UsernamePassword model) {
-        User user = userRepository.findAll()
-                .stream()
-                .filter(user1 -> user1.matchUsername(model.username()))
-                .filter(user1 -> user1.matchPassword(model.password()))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("incorrect username or password"));
+    public UserResponse find(UsernamePassword model) throws IOException {
+        User user = userRepository.findByUsernameAndEmail(model.username(), model.password())
+                .orElseThrow(() -> new NoSuchElementException("username or password incorrect"));
         UserStatus userStatus = findUserStatusByUserId(user.getId());
         return user.toResponse(userStatus.isActive());
     }
 
     @Override
-    public UserResponse find(UUID userId) {
-        User user = findEntityById(userId, "User", userRepository);
+    public UserResponse find(UUID userId) throws IOException, ClassNotFoundException {
+        User user = findById(userId);
         UserStatus userStatus = findUserStatusByUserId(user.getId());
         return user.toResponse(userStatus.isActive());
     }
 
     @Override
-    public List<UserResponse> findAll() {
-        return userRepository.findAll()
-                .stream()
-                .map(user -> {
-                    UserStatus status = findUserStatusByUserId(user.getId());
-                    return user.toResponse(status.isActive());
-                })
+    public List<UserResponse> findAll() throws IOException {
+        return userRepository.streamAll(stream ->
+                        stream.map(ThrowingFunction.unchecked(this::getUserResponse)))
                 .toList();
     }
 
     @Override
-    public UserResponse create(UserCreation model) {
+    public UserResponse create(UserCreation model) throws IOException {
         validateUserUniqueness(model);
 
         BinaryContent profileImage = registerProfileImage(model);
@@ -71,8 +64,8 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse update(UserInfoUpdate model) {
-        User user = findEntityById(model.userId(), "User", userRepository);
+    public UserResponse update(UserInfoUpdate model) throws IOException, ClassNotFoundException {
+        User user = findById(model.userId());
         user.update(model);
         userRepository.save(user);
         UserStatus userStatus = findUserStatusByUserId(model.userId());
@@ -80,23 +73,23 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public void delete(UUID userId) {
-        UserResponse userResponse = findEntityById(userId, "User", userRepository).toResponse(true);
+    public void delete(UUID userId) throws IOException, ClassNotFoundException {
+        UserResponse userResponse = findById(userId).toResponse(true);
         deleteIfExist(userResponse.profileId(), "Profile", profileRepository);
         UserStatus status = userStatusRepository.findByUserId(userId)
-                        .orElseThrow();
+                .orElseThrow();
         userStatusRepository.deleteById(status.getId());
         userRepository.deleteById(userId);
     }
 
-    private <T extends DomainRepository<?>> void deleteIfExist(UUID id, String type, T repository) {
+    private <T extends DomainRepository<?>> void deleteIfExist(UUID id, String type, T repository) throws IOException {
         if (!repository.existsById(id)) {
             throw new NoSuchElementException(ID_NOT_FOUND.formatted(type, id));
         }
         repository.deleteById(id);
     }
 
-    private void validateUserUniqueness(UserCreation model) {
+    private void validateUserUniqueness(UserCreation model) throws IOException {
         if (userRepository.existsByUsername(model.username())) {
             throw new IllegalArgumentException("username, %s, exist already.".formatted(model.username()));
         }
@@ -105,7 +98,7 @@ public class BasicUserService implements UserService {
         }
     }
 
-    private BinaryContent registerProfileImage(UserCreation model) {
+    private BinaryContent registerProfileImage(UserCreation model) throws IOException {
         if (model.profileImage() == null) {
             return null;
         }
@@ -113,14 +106,18 @@ public class BasicUserService implements UserService {
         return profileRepository.save(profileImage);
     }
 
-    private <T> T findEntityById(UUID id, String type, DomainRepository<T> repository) {
-        return repository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException(ID_NOT_FOUND.formatted(type, id)));
-    }
-
-    private UserStatus findUserStatusByUserId(UUID userId) {
+    private UserStatus findUserStatusByUserId(UUID userId) throws IOException {
         return userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException(ID_NOT_FOUND.formatted("User", userId)));
     }
 
+    private UserResponse getUserResponse(User user) throws IOException {
+        UserStatus userStatus = findUserStatusByUserId(user.getId());
+        return user.toResponse(userStatus.isActive());
+    }
+
+    @Override
+    protected User findById(UUID id) throws IOException, ClassNotFoundException {
+        return findEntityById(id, "User", userRepository);
+    }
 }

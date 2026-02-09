@@ -4,9 +4,10 @@ import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusCreation;
 import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusResponse;
 import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusUpdate;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
 public interface ReadStatusService extends DomainService<ReadStatusResponse, ReadStatusCreation, ReadStatusUpdate> {
-    List<ReadStatusResponse> findAllByUserId(UUID userId);
+    List<ReadStatusResponse> findAllByUserId(UUID userId) throws IOException;
 }
