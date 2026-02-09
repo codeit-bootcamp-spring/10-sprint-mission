@@ -89,12 +89,12 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponse update(MessageUpdateRequest request) {
+    public MessageResponse update(UUID messageId, MessageUpdateRequest request) {
         // 메시지 수정을 위한 필수 검증
-        validateUpdateRequest(request);
+        validateUpdateRequest(messageId, request);
 
         // 수정 대상 메시지가 존재하는지 검증
-        Message message = messageRepository.findById(request.messageId())
+        Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
 
         // 메시지 수정 및 저장
@@ -129,7 +129,7 @@ public class BasicMessageService implements MessageService {
 
     private void validateCreateRequest(MessageCreateRequest request) {
         if (request == null) {
-            throw new RuntimeException("요청이 필요합니다.");
+            throw new RuntimeException("요청이 올바르지 않습니다.");
         }
         if (request.channelId() == null) {
             throw new RuntimeException("채널이 필요합니다.");
@@ -142,9 +142,9 @@ public class BasicMessageService implements MessageService {
         }
     }
 
-    private void validateUpdateRequest(MessageUpdateRequest request) {
-        if (request == null || request.messageId() == null) {
-            throw new RuntimeException("메시지가 존재하지 않습니다.");
+    private void validateUpdateRequest(UUID messageId, MessageUpdateRequest request) {
+        if (request == null || messageId == null) {
+            throw new RuntimeException("요청이 올바르지 않습니다.");
         }
         if (request.newContent() == null || request.newContent().isBlank()) {
             throw new RuntimeException("내용이 필요합니다.");
