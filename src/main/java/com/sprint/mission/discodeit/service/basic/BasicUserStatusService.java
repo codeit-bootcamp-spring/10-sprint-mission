@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,10 +15,11 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class BasicUserStatusService {
+public class BasicUserStatusService implements UserStatusService {
     private final UserStatusRepository userStatusRepository;
     private final UserRepository userRepository;
 
+    @Override
     public UUID createUserStatus(CreateUserStatusRequest request) {
         validateUserExists(request.userId());
         validateDuplicateUserStatus(request);
@@ -47,12 +49,14 @@ public class BasicUserStatusService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다 userId: " + userId));
     }
 
+    @Override
     public UserStatusResponse findUserStatusByUserStatusId(UUID userStatusId) {
         UserStatus userStatus = getUserStatusOrThrow(userStatusId);
 
         return UserStatusResponse.of(userStatus, userStatus.getOnlineStatus());
     }
 
+    @Override
     public List<UserStatusResponse> findAllUserStatus() {
         List<UserStatus> userStatuses = userStatusRepository.findAll();
 
@@ -61,6 +65,7 @@ public class BasicUserStatusService {
         ).toList();
     }
 
+    @Override
     public UserStatusResponse updateUserStatusByUserId(UUID userId) {
         UserStatus userStatus = getUserStatusByUserIdOrThrow(userId);
 
@@ -75,7 +80,7 @@ public class BasicUserStatusService {
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus 를 찾을 수 없습니다 userId: " + userId));
     }
 
-
+    @Override
     public void deleteUserStatus(UUID userStatusId) {
         userStatusRepository.deleteById(userStatusId);
     }
@@ -84,5 +89,4 @@ public class BasicUserStatusService {
         return userStatusRepository.findById(userStatusId)
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus 를 찾을 수 없습니다 userStatusId: " + userStatusId));
     }
-
 }

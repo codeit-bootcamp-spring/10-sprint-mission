@@ -109,6 +109,7 @@ public class BasicUserService implements UserService {
                 .toList();
     }
 
+    //TODO: validation 없음
     @Override
     public UserResponse updateUser(UUID requestId, UpdateUserRequest request) {
         User user = getUserOrThrow(requestId);
