@@ -119,7 +119,7 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public void deleteByChannelId(UUID channelId) {
         this.findAllByChannelId(channelId)
-                .forEach(msg -> deleteById(msg.getChannelId()));
+                .forEach(msg -> deleteById(msg.getId()));
 
     }
 }
