@@ -100,7 +100,7 @@ public class UserController {
     // 사용자의 온라인 상태를 업데이트할 수 있다.
     @RequestMapping(value = "/{userId}/status", method = RequestMethod.PUT)
     public ResponseEntity<UserStatusResponse> updateUserStatus(
-            @PathVariable UUID userId
+            @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest request
     ) {
         UserStatusResponse response = userStatusService.updateByUserId(userId, request);
