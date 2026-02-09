@@ -1,0 +1,751 @@
+{
+  "info": {
+    "_postman_id": "de1bfbcd-9722-4206-bf90-27e72377be6f",
+    "name": "CodeIt-Sprint4-v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "34138836"
+  },
+  "item": [
+    {
+      "name": "회원 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"test@gmail.com\",\n    \"username\": \"test\",\n    \"password\": \"test1234\",\n    \"profileImage\": {\n        \"data\": \"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\",\n            \"contentType\": \"image/jpeg\",\n            \"filename\": \"test.jpeg\"\n    }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/user",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "user"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 정보 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"updated\",\n    \"statusType\": \"DO_NOT_DISTURB\",\n    \"profileImage\": \n        {\n            \"data\": \"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\",\n            \"contentType\": \"image/jpeg\",\n            \"filename\": \"test.jpeg\"\n        }\n\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/user/{{userId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "user",
+            "{{userId}}"
+          ],
+          "query": [
+            {
+              "key": "",
+              "value": null,
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 상태 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"statusType\": \"ONLINE\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/user/{{userId}}/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "user",
+            "{{userId}}",
+            "status"
+          ],
+          "query": [
+            {
+              "key": "",
+              "value": null,
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/user/{{userId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "user",
+            "{{userId}}"
+          ],
+          "query": [
+            {
+              "key": "",
+              "value": null,
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 리스트 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/user/findAll",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "user",
+            "findAll"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "특정 회원 정보 조회",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/user/{{userId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "user",
+            "{{userId}}"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "b713ee43-694f-4c0a-b76f-f6f9ceec9659",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 id로 채널 조회",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/user/{{userId}}/channels",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "user",
+            "{{userId}}",
+            "channels"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "로그인",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"test@gmail.com\",\n    \"password\": \"test1234\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "b713ee43-694f-4c0a-b76f-f6f9ceec9659",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널(공개) 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"channelName\": \"Test channel\",\n    \"description\": \"This is test channel\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/channel/create/public",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channel",
+            "create",
+            "public"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널(비공개) 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"joinedUserIds\": [\n        \"3d2bc6ce-a816-41f6-a94a-fb424e26d9ee\"\n    ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/channel/create/private",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channel",
+            "create",
+            "private"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 정보 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"newChannelName\": \"Update\",\n    \"newChannelDescription\": \"Channel is updated\",\n    \"channelType\": \"PUBLIC\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/channel/update/{{channelId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channel",
+            "update",
+            "{{channelId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/channel/{{channelId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channel",
+            "{{channelId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 입장",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/channel/{{channelId}}/join/{{userId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channel",
+            "{{channelId}}",
+            "join",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 탈퇴",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/channel/{{channelId}}/leave/{{userId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channel",
+            "{{channelId}}",
+            "leave",
+            "{{userId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 id로 입장한 유저 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/channel/{{channelId}}/users",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channel",
+            "{{channelId}}",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "메시지 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"content\": \"This is test message\",\n    \"sentUserId\": \"{{userId}}\",\n    \"sentChannelId\": \"{{channelId}}\",\n    \"attachmentDTOs\": [\n        {\n            \"data\": \"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\",\n            \"contentType\": \"image/jpeg\",\n            \"filename\": \"test.jpeg\"\n        }\n    ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/message",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "message"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "메시지 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"messageId\": \"{{messageId}}\",\n    \"content\": \"Update message\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/message/update/{{messageId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "message",
+            "update",
+            "{{messageId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 id로 메시지 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/message/by-user?userId={{userId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "message",
+            "by-user"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 id로 메시지 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/message/by-channel?channelId={{channelId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "message",
+            "by-channel"
+          ],
+          "query": [
+            {
+              "key": "channelId",
+              "value": "{{channelId}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "메시지 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/message/{{messageId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "message",
+            "{{messageId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "읽음 상태 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"userId\": \"{{userId}}\",\n    \"channelId\": \"{{channelId}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/readStatus",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "readStatus"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "읽음 상태 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"statusId\": \"{{statusId}}\",\n    \"lastReadAt\": \"2026-02-09T05:24:21.023609Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/readStatus",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "readStatus"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 id로 읽음 상태 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/readStatus?userId={{userId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "readStatus"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/binaryContent/findAll",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "binaryContent",
+            "findAll"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 단건 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/binaryContent?binaryContentId={{binaryId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "binaryContent"
+          ],
+          "query": [
+            {
+              "key": "binaryContentId",
+              "value": "{{binaryId}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 상태 수정 by userId",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"userId\": \"{{userId}}\",\n    \"statusType\": \"DO_NOT_DISTURB\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/userStatus/by-user",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "userStatus",
+            "by-user"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 상태 수정 by statusId",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"userStatusId\": \"{{userStatusId}}\",\n    \"statusType\": \"IDLE\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/userStatus",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "userStatus"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "channelId",
+      "value": ""
+    },
+    {
+      "key": "messageId",
+      "value": ""
+    },
+    {
+      "key": "statusId",
+      "value": ""
+    },
+    {
+      "key": "binaryId",
+      "value": ""
+    },
+    {
+      "key": "userStatusId",
+      "value": ""
+    }
+  ]
+}
