@@ -259,3 +259,81 @@ button:hover {
 .message-item.mine .message-time {
     text-align: left;
 }
+#login-view button,
+#signup-view button {
+    margin-top: 10px;
+}
+/* ===== 인증 화면 ===== */
+.auth-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;      /* ⭐ 이거 */
+    height: 100vh;     /* ⭐ 이거 */
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-color: #f5f6f8;
+    z-index: 1000;
+}
+
+.auth-box {
+    width: 420px;
+    background: white;
+    padding: 40px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.auth-box h1 {
+    margin-bottom: 10px;
+}
+
+.auth-box input {
+    padding: 12px 14px;
+    font-size: 15px;
+    border-radius: 8px;
+}
+
+.auth-box button {
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+/* 텍스트 버튼 */
+.text-btn {
+    background: none;
+    color: #4CAF50;
+    border: none;
+    font-size: 14px;
+}
+
+.text-btn:hover {
+    text-decoration: underline;
+}
+/* 프로필 업로드 */
+.profile-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+    color: #555;
+}
+
+.profile-upload input[type="file"] {
+    padding: 8px;
+    border: 1px dashed #bbb;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: #fafafa;
+}
+
+.profile-upload input[type="file"]:hover {
+    background-color: #f0f0f0;
+}

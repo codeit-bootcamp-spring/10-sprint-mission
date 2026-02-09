@@ -274,3 +274,68 @@ async function createMessageElement(m) {
 
     return li;
 }
+const signupView = document.getElementById('signup-view');
+const goSignupBtn = document.getElementById('goSignupBtn');
+const backToLoginBtn = document.getElementById('backToLoginBtn');
+const signupBtn = document.getElementById('signupBtn');
+goSignupBtn.addEventListener('click', () => {
+    loginView.style.display = 'none';
+    signupView.style.display = 'flex';
+});
+backToLoginBtn.addEventListener('click', () => {
+    signupView.style.display = 'none';
+    loginView.style.display = 'flex';
+});
+function fileToBytes(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const bytes = Array.from(new Uint8Array(reader.result));
+            resolve(bytes);
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+signupBtn.addEventListener('click', async () => {
+    const username = document.getElementById('signupUsername').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const profileFile = document.getElementById('signupProfile').files[0];
+
+    try {
+        let profileDto = null;
+
+        if (profileFile) {
+            const bytes = await fileToBytes(profileFile);
+            profileDto = {
+                fileName: profileFile.name,
+                bytes
+            };
+        }
+
+        const res = await fetch('/api/user', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                username,
+                email,
+                password,
+                profileDto
+            })
+        });
+
+        if (!res.ok) {
+            throw new Error('회원가입 실패');
+        }
+
+        alert('회원가입이 완료되었습니다! 로그인 해주세요.');
+
+        // 로그인 화면으로 이동
+        signupView.style.display = 'none';
+        loginView.style.display = 'flex';
+
+    } catch (e) {
+        document.getElementById('signupError').innerText = e.message;
+    }
+});

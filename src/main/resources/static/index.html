@@ -10,13 +10,42 @@
 <div class="container">
 
     <!-- 로그인 화면 -->
-    <div id="login-view">
-        <h1>로그인</h1>
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button id="loginBtn">로그인</button>
-        <p id="loginError" class="error-message"></p>
+    <div id="login-view" class="auth-wrapper">
+        <div class="auth-box">
+            <h1>로그인</h1>
+
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+
+            <button id="loginBtn">로그인</button>
+            <button id="goSignupBtn" class="text-btn">회원가입</button>
+
+            <p id="loginError" class="error-message"></p>
+        </div>
     </div>
+
+    <!-- 회원가입 화면 -->
+    <div id="signup-view" class="auth-wrapper" style="display:none;">
+        <div class="auth-box">
+            <h1>회원가입</h1>
+
+            <input type="text" id="signupUsername" placeholder="Username">
+            <input type="email" id="signupEmail" placeholder="Email">
+            <input type="password" id="signupPassword" placeholder="Password">
+
+            <!-- 프로필 이미지 -->
+            <label class="profile-upload">
+                <span>프로필 사진</span>
+                <input type="file" id="signupProfile" accept="image/*">
+            </label>
+
+            <button id="signupBtn">회원가입</button>
+            <button id="backToLoginBtn" class="text-btn">로그인으로</button>
+
+            <p id="signupError" class="error-message"></p>
+        </div>
+    </div>
+
 
     <!-- 채널 목록 화면 -->
     <div id="channel-view" style="display:none;">
