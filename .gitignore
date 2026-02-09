@@ -26,6 +26,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -38,3 +39,4 @@ out/
 
 ## 파일들
 .ser
+/file-data-map
