@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.user.request;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -23,6 +23,6 @@ public record UserUpdateRequest(
         String birthday,
 
         @Valid
-        BinaryContentCreateRequest profileImage
+        BinaryContentCreateInput profileImage
 ) {
 }

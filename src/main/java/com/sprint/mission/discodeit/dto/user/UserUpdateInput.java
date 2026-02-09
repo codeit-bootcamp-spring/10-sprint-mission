@@ -1,10 +1,7 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
+import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 
 import java.util.UUID;
 
@@ -16,6 +13,6 @@ public record UserUpdateInput(
         String userName,
         String nickName,
         String birthday,
-        BinaryContentCreateRequest profileImage
+        BinaryContentCreateInput profileImage
 ) {
 }

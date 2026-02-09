@@ -1,13 +1,12 @@
-package com.sprint.mission.discodeit.dto;
+package com.sprint.mission.discodeit.dto.binarycontent.input;
 
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
-public record BinaryContentCreateRequest(
+public record BinaryContentCreateInput(
         @NotEmpty(message = "binaryContent가 입력되지 않았습니다.")
         byte[] binaryContent
 ) {
-    public BinaryContentCreateRequest {
+    public BinaryContentCreateInput {
         if (binaryContent != null) {
             binaryContent = binaryContent.clone();
         }

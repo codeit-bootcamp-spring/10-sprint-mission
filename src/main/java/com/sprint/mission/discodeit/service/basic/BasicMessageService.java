@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
 import com.sprint.mission.discodeit.dto.message.input.MessageCreateInput;
 import com.sprint.mission.discodeit.dto.message.input.MessageUpdateInput;
 import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
@@ -49,7 +49,7 @@ public class BasicMessageService implements MessageService {
         Message message = new Message(channel, author, input.content());
 
         if (input.attachments() != null) {
-            for (BinaryContentCreateRequest attachment : input.attachments()) {
+            for (BinaryContentCreateInput attachment : input.attachments()) {
                 if (attachment == null) continue;
 
                 byte[] attachmentContent = attachment.binaryContent();
@@ -82,19 +82,11 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<MessageResponse> findAllByChannelId(UUID channelId) {
+    public List<Message> findAllByChannelId(UUID channelId) {
         // Channel ID null & channel 객체 존재 확인
         validateChannelByChannelId(channelId);
-        List<Message> messages = messageRepository.findByChannelId(channelId);
-        List<MessageResponse> messageInfos = new ArrayList<>();
-        for (Message message : messages) {
-            messageInfos.add(new MessageResponse(
-                    message.getId(), message.getChannel().getId(),
-                    message.getAuthor().getId(), message.getCreatedAt(),
-                    message.getUpdatedAt(), message.getContent(), message.getAttachmentIds()
-            ));
-        }
-        return messageInfos;
+
+        return messageRepository.findByChannelId(channelId);
     }
 
     @Override

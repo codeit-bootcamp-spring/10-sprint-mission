@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,7 +44,8 @@ public class MessageController {
      */
     @RequestMapping(value = "/channels/{channelId}/messages", method = RequestMethod.GET)
     public ResponseEntity findAllMessagesByChannelId(@PathVariable UUID channelId) {
-        List<MessageResponse> result = messageService.findAllByChannelId(channelId);
+        List<Message> messages = messageService.findAllByChannelId(channelId);
+        List<MessageResponse> result = messages.stream().map(m -> createMessageResponse(m)).toList();
 
         return ResponseEntity.status(200).body(result);
     }

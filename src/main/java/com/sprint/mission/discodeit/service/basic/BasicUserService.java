@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserWithOnlineResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateInput;
@@ -183,8 +183,8 @@ public class BasicUserService implements UserService {
         }
     }
     // 새로운 BinaryContent가 들어왔다면 true / 들어왔는데 기존과 동일하다면 false / 안들어왔다면 false
-    private boolean isBinaryContentChanged (BinaryContentCreateRequest binaryContentCreateRequest, UUID profileId) {
-        if (binaryContentCreateRequest != null) { // 새 BinaryContent 들어오는데
+    private boolean isBinaryContentChanged (BinaryContentCreateInput binaryContentCreateInput, UUID profileId) {
+        if (binaryContentCreateInput != null) { // 새 BinaryContent 들어오는데
             if (profileId == null) { // 기존에 BinaryContent 없을 때
                 return true; // 새로운 BinaryContent 들어옴
             } else { //기존 프로필이 존재
@@ -192,7 +192,7 @@ public class BasicUserService implements UserService {
                         .orElseThrow(() -> new NoSuchElementException("해당 profileId에 해당하는 BinaryContent가 없습니다."));
                 // 새로 들어온 BinaryContent와 비교
                 // 같으면 -> false -> change 되지 않음
-                return !Arrays.equals(oldBinaryContent.getContent(), binaryContentCreateRequest.binaryContent());
+                return !Arrays.equals(oldBinaryContent.getContent(), binaryContentCreateInput.binaryContent());
             }
         }
         return false; // 새 BinaryContent 안들어옴
