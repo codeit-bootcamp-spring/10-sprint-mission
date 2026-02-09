@@ -2,5 +2,5 @@ package com.sprint.mission.discodeit.dto.UserStatus;
 
 import java.util.UUID;
 
-public record UserStatusRequestUpdateDto(UUID userId) {
+public record UserStatusRequestUpdateDto(UUID id) {
 }

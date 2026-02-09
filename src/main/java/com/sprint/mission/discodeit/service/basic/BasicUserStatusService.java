@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.UserStatus.UserStatusRequestCreateDto;
 import com.sprint.mission.discodeit.dto.UserStatus.UserStatusRequestUpdateDto;
 import com.sprint.mission.discodeit.dto.UserStatus.UserStatusResponseDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -61,6 +62,18 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
+    public void updateByUserId(UUID userid) {
+        Validators.requireNonNull(userid, "userid는 null이 될 수 없습니다.");
+        UserStatus status = userStatusRepository.findAll().stream()
+                .filter(s -> s.getUserId().equals(userid))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저의 상태 정보를 찾을 수 없습니다."));
+
+        status.updateLastSeenAt();
+        userStatusRepository.save(status);
+    }
+
+    @Override
     public void delete(UUID id) {
         validateExistenceUserStatus(id);
         userStatusRepository.deleteById(id);
@@ -73,7 +86,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     }
 
-    public static UserStatusResponseDto toDto(UserStatus userStatus, boolean online) {
+    public static UserStatusResponseDto toDto(UserStatus userStatus, Boolean online) {
         return new UserStatusResponseDto(
                 userStatus.getId(),
                 userStatus.getUserId(),

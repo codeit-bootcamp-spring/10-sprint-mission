@@ -8,5 +8,6 @@ public record UserRequestUpdateDto(UUID id,
                                    String userName,
                                    String userEmail,
                                    String userPassword,
+                                   Boolean online,
                                    BinaryContentParam profileImage) {
 }

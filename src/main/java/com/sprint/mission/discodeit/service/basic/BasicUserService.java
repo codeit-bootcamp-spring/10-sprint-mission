@@ -59,6 +59,8 @@ public class BasicUserService implements UserService {
         return toDto(user, online);
     }
 
+
+
     @Override
     public List<UserResponseDto> findAll() {
         return userRepository.findAll().stream()
@@ -86,6 +88,13 @@ public class BasicUserService implements UserService {
                         validateDuplicationUserPassword(password);
                         user.updateUserPassword(password);
                 });
+
+        if (request.online() != null && request.online()) {
+            userStatusRepository.findAll().stream()
+                    .filter(us -> user.getId().equals(us.getUserId()))
+                    .findFirst()
+                    .ifPresent(UserStatus::updateLastSeenAt); // 시간을 '지금'으로 갱신
+        }
 
         BinaryContentParam profile = request.profileImage();
         if(profile != null) {
@@ -151,14 +160,15 @@ public class BasicUserService implements UserService {
 
     }
 
-    public static UserResponseDto toDto(User user, boolean online) {
+    public static UserResponseDto toDto(User user, Boolean online) {
         return new UserResponseDto(
                 user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUserName(),
                 user.getUserEmail(),
                 user.getProfileId(),
-                online,
-                user.getCreatedAt()
+                online
         );
     }
 
