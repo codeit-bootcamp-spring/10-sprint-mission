@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.user.service;
 
 import com.sprint.mission.discodeit.binarycontent.BinaryContent;
 import com.sprint.mission.discodeit.user.User;
+import com.sprint.mission.discodeit.user.exception.EmailDuplicationException;
+import com.sprint.mission.discodeit.user.exception.UserDuplicationException;
+import com.sprint.mission.discodeit.user.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.userstatus.UserStatus;
 import com.sprint.mission.discodeit.user.UserMapper;
 import com.sprint.mission.discodeit.binarycontent.repository.BinaryContentRepository;
@@ -57,7 +60,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserInfoWithStatus findUser(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+                .orElseThrow(UserNotFoundException::new);
         UserStatus status = userStatusRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자의 상태 정보가 존재하지 않습니다."));
         return UserMapper.toUserInfoWithStatus(user, status);
@@ -93,7 +96,7 @@ public class BasicUserService implements UserService {
         validateUserExist(updateInfo.userName());
         validateEmailExist(updateInfo.email());
         User findUser = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+                .orElseThrow(UserNotFoundException::new);
         Optional.ofNullable(updateInfo.userName())
                 .ifPresent(findUser::updateUserName);
         Optional.ofNullable(updateInfo.password())
@@ -127,7 +130,7 @@ public class BasicUserService implements UserService {
     @Override
     public void deleteUser(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
+                .orElseThrow(UserNotFoundException::new);
         channelRepository.findAllByUserId(userId).forEach(channel -> {
             channel.removeUserId(userId);
             channelRepository.save(channel);
@@ -140,11 +143,11 @@ public class BasicUserService implements UserService {
 
     private void validateUserExist(String userName) {
         if(userRepository.findByName(userName).isPresent())
-            throw new IllegalStateException("이미 존재하는 사용자 이름입니다.");
+            throw new UserDuplicationException();
     }
 
     private void validateEmailExist(String email) {
         if(userRepository.findByEmail(email).isPresent())
-            throw new IllegalStateException("이미 가입된 이메일입니다.");
+            throw new EmailDuplicationException();
     }
 }
