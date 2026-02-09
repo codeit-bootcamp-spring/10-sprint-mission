@@ -112,11 +112,11 @@ public class BasicChannelService implements ChannelService {
                 });
 
         // 채널 설명 변경
-        Optional.ofNullable(channelUpdateRequestDTO.getChannelDescription())
+        Optional.ofNullable(channelUpdateRequestDTO.getDescription())
                 .ifPresent(channelDescription -> {
                     validateString(channelDescription, "[채널 설명 변경 실패] 올바른 채널 설명 형식이 아닙니다.");
                     validateDuplicateValue(targetChannel.getDescription(), channelDescription, "[채널 설명 변경 실패] 현재 채널 설명과 동일합니다.");
-                    targetChannel.updateChannelDescription(channelUpdateRequestDTO.getChannelDescription());
+                    targetChannel.updateChannelDescription(channelUpdateRequestDTO.getDescription());
                 });
 
         channelRepository.save(targetChannel);
