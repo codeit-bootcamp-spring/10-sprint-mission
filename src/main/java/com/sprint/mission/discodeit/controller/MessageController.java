@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.DeleteMessageResponseDTO;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
