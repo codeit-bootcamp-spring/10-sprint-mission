@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/messages")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class MessageController {
     /*
@@ -25,7 +25,7 @@ public class MessageController {
      */
     private final MessageService messageService;
 
-    @RequestMapping(path = "/{channelid}", method = RequestMethod.POST)
+    @RequestMapping(path = "/channels/{channelid}/messages", method = RequestMethod.POST)
     public ResponseEntity<MessageResponseDto> sendMessage(
             @RequestHeader UUID userId,
             @PathVariable UUID channelid,
@@ -34,7 +34,7 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(messageService.create(channelid,userId,dto));
     }
 
-    @RequestMapping(path = "/{messageid}", method = RequestMethod.PATCH)
+    @RequestMapping(path = "/messages/{messageid}", method = RequestMethod.PATCH)
     public ResponseEntity<MessageResponseDto> updateMessage(
             @RequestHeader UUID userId,
             @PathVariable UUID messageid,
@@ -43,7 +43,7 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(messageService.update(messageid,userId,dto));
     }
 
-    @RequestMapping(path = "/{messageid}", method = RequestMethod.DELETE)
+    @RequestMapping(path = "/messages/{messageid}", method = RequestMethod.DELETE)
     public ResponseEntity<?> deleteMessage(
             @RequestHeader UUID userId,
             @PathVariable UUID messageid
@@ -53,8 +53,8 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @RequestMapping(path = "/{channelid}", method = RequestMethod.GET)
-    public ResponseEntity<List<MessageResponseDto>> updateMessage(
+    @RequestMapping(path = "/channels/{channelid}/messages", method = RequestMethod.GET)
+    public ResponseEntity<List<MessageResponseDto>> findMessagesByChannelId(
             @RequestHeader UUID userId,
             @PathVariable UUID channelid)
     {
