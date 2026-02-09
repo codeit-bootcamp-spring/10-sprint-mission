@@ -9,7 +9,6 @@ import java.util.UUID;
 
 public class MessageDto {
     public record CreateRequest(
-            @NotBlank(message = "메시지 내용은 필수입니다.")
             String content,
             @NotNull(message = "유저 ID는 필수입니다.")
             UUID authorId,
@@ -29,7 +28,6 @@ public class MessageDto {
     ) {}
 
     public record UpdateRequest(
-            @NotBlank(message = "메시지 내용은 필수입니다.")
             String content
     ) {}
 

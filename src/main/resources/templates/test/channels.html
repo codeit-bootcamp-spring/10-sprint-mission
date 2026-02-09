@@ -16,9 +16,11 @@
     <h2>2. 채널 관리</h2>
 
     <div class="mb-3">
-        <label>현재 사용자 ID (User Management에서 Copy 해오세요)</label>
-        <input type="text" id="currentUserId" class="form-control" placeholder="UUID 입력">
-        <button class="btn btn-sm btn-info mt-1" onclick="loadChannels()">내 채널 조회</button>
+        <label>현재 사용자 ID</label>
+        <div class="input-group">
+            <input type="text" id="currentUserId" class="form-control" placeholder="UUID 입력">
+            <button class="btn btn-info" onclick="loadChannels()">내 채널 조회</button>
+        </div>
     </div>
 
     <div class="row mb-4">
@@ -27,25 +29,24 @@
                 <h5>공개 채널 생성</h5>
                 <input type="text" id="pubName" class="form-control mb-2" placeholder="채널 이름">
                 <input type="text" id="pubDesc" class="form-control mb-2" placeholder="설명">
-                <button class="btn btn-success" onclick="createChannel('PUBLIC')">생성</button>
+                <button class="btn btn-success w-100" onclick="createChannel('PUBLIC')">생성</button>
             </div>
         </div>
         <div class="col-md-6">
             <div class="card p-3">
                 <h5>비공개 채널 생성</h5>
                 <input type="text" id="privMembers" class="form-control mb-2" placeholder="멤버 UUID (콤마로 구분)">
-                <small class="text-muted">예: uuid1, uuid2</small>
-                <button class="btn btn-dark mt-2" onclick="createChannel('PRIVATE')">생성</button>
+                <button class="btn btn-dark w-100" onclick="createChannel('PRIVATE')">생성</button>
             </div>
         </div>
     </div>
 
     <div class="card p-3">
-        <h5>채널 목록 (GET /api/channels?user-id=...)</h5>
-        <table class="table mt-2">
-            <thead>
+        <h5>채널 목록</h5>
+        <table class="table mt-2 align-middle">
+            <thead class="table-light">
             <tr>
-                <th>Channel ID</th>
+                <th>Channel ID (전체)</th>
                 <th>Type</th>
                 <th>Name / Desc</th>
                 <th>Action</th>
@@ -60,23 +61,16 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">공개 채널 수정 (PATCH)</h5>
+                <h5 class="modal-title">채널 수정</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <input type="hidden" id="editChannelId">
-                <div class="mb-2">
-                    <label>새 채널 이름</label>
-                    <input type="text" class="form-control" id="editChannelName">
-                </div>
-                <div class="mb-2">
-                    <label>새 설명</label>
-                    <input type="text" class="form-control" id="editChannelDesc">
-                </div>
+                <input type="text" class="form-control mb-2" id="editChannelName" placeholder="New Name">
+                <input type="text" class="form-control" id="editChannelDesc" placeholder="New Description">
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="btn btn-primary" onclick="submitEditChannel()">수정하기</button>
+                <button class="btn btn-primary" onclick="submitEditChannel()">수정 완료</button>
             </div>
         </div>
     </div>
@@ -85,18 +79,61 @@
 <script>
     const API_BASE = '/api';
 
+    function copyToClipboard(text) {
+        const t = document.createElement("textarea");
+        t.value = text;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand('copy');
+        document.body.removeChild(t);
+        alert('채널 ID가 복사되었습니다!');
+    }
+
     document.getElementById('currentUserId').value = localStorage.getItem('myUserId') || '';
+
+    async function loadChannels() {
+        const userId = document.getElementById('currentUserId').value;
+        if(!userId) return alert('사용자 ID가 필요합니다.');
+
+        try {
+            const res = await fetch(`${API_BASE}/channels?user-id=${userId}`);
+            if(!res.ok) throw new Error(await res.text());
+            const channels = await res.json();
+            const tbody = document.getElementById('channelTableBody');
+            tbody.innerHTML = '';
+
+            channels.forEach(ch => {
+                const editBtn = ch.type === 'PUBLIC'
+                    ? `<button class="btn btn-sm btn-outline-secondary" onclick="openEditModal('${ch.id}', '${ch.name}', '${ch.description}')">수정</button>`
+                    : '';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <code style="font-size: 0.85rem;">${ch.id}</code>
+                            <button class="btn btn-sm btn-light p-1" onclick="copyToClipboard('${ch.id}')" title="ID 복사">📋</button>
+                        </td>
+                        <td><span class="badge ${ch.type === 'PUBLIC' ? 'bg-primary' : 'bg-dark'}">${ch.type}</span></td>
+                        <td><strong>${ch.name || '비공개'}</strong><br><small>${ch.description || ''}</small></td>
+                        <td>
+                            ${editBtn}
+                            <button class="btn btn-sm btn-danger" onclick="deleteChannel('${ch.id}')">삭제</button>
+                        </td>
+                    </tr>`;
+            });
+        } catch(e) {
+            alert('채널 로드 실패: ' + e.message);
+        }
+    }
 
     async function createChannel(type) {
         let body = { type: type };
-
         if(type === 'PUBLIC') {
             body.name = document.getElementById('pubName').value;
             body.description = document.getElementById('pubDesc').value;
         } else {
-            const raw = document.getElementById('privMembers').value;
             const current = document.getElementById('currentUserId').value;
-            const members = raw.split(',').map(s => s.trim()).filter(s => s);
+            const members = document.getElementById('privMembers').value.split(',').map(s => s.trim()).filter(s => s);
             if(current && !members.includes(current)) members.push(current);
             body.memberIds = members;
         }
@@ -107,44 +144,23 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
             });
-            if(res.ok) { alert('생성 완료'); loadChannels(); }
-            else alert(await res.text());
-        } catch(e) { console.error(e); }
-    }
-
-    async function loadChannels() {
-        const userId = document.getElementById('currentUserId').value;
-        if(!userId) { alert('사용자 ID를 입력하세요'); return; }
-
-        const res = await fetch(`${API_BASE}/channels?user-id=${userId}`);
-        const channels = await res.json();
-
-        const tbody = document.getElementById('channelTableBody');
-        tbody.innerHTML = '';
-        channels.forEach(ch => {
-            // PUBLIC 채널만 수정 가능하도록 버튼 처리
-            const editBtn = ch.type === 'PUBLIC'
-                ? `<button class="btn btn-sm btn-secondary" onclick="openEditModal('${ch.id}', '${ch.name}', '${ch.description}')">수정</button>`
-                : '';
-
-            tbody.innerHTML += `
-                <tr>
-                    <td><small>${ch.id}</small> <button class="btn btn-xs btn-outline-secondary" onclick="navigator.clipboard.writeText('${ch.id}')">Copy</button></td>
-                    <td>${ch.type}</td>
-                    <td>${ch.name || '비공개'} <br><small>${ch.description || ''}</small></td>
-                    <td>
-                        ${editBtn}
-                        <button class="btn btn-sm btn-danger" onclick="deleteChannel('${ch.id}')">삭제</button>
-                    </td>
-                </tr>
-            `;
-        });
+            if(res.ok) {
+                loadChannels();
+                document.getElementById('pubName').value = '';
+                document.getElementById('pubDesc').value = '';
+                document.getElementById('privMembers').value = '';
+            } else {
+                alert('채널 생성 실패: ' + await res.text());
+            }
+        } catch(e) {
+            alert('네트워크 오류가 발생했습니다.');
+        }
     }
 
     function openEditModal(id, name, desc) {
         document.getElementById('editChannelId').value = id;
-        document.getElementById('editChannelName').value = name === 'null' ? '' : name;
-        document.getElementById('editChannelDesc').value = desc === 'null' ? '' : desc;
+        document.getElementById('editChannelName').value = name;
+        document.getElementById('editChannelDesc').value = desc;
         new bootstrap.Modal(document.getElementById('editChannelModal')).show();
     }
 
@@ -154,7 +170,6 @@
             newName: document.getElementById('editChannelName').value,
             newDescription: document.getElementById('editChannelDesc').value
         };
-
         try {
             const res = await fetch(`${API_BASE}/channels/${id}`, {
                 method: 'PATCH',
@@ -162,19 +177,24 @@
                 body: JSON.stringify(body)
             });
             if(res.ok) {
-                alert('수정 완료');
-                loadChannels();
                 location.reload();
             } else {
                 alert('수정 실패: ' + await res.text());
             }
-        } catch(e) { console.error(e); }
+        } catch(e) {
+            alert('오류 발생');
+        }
     }
 
     async function deleteChannel(id) {
         if(!confirm('삭제하시겠습니까?')) return;
-        await fetch(`${API_BASE}/channels/${id}`, { method: 'DELETE' });
-        loadChannels();
+        try {
+            const res = await fetch(`${API_BASE}/channels/${id}`, { method: 'DELETE' });
+            if(res.ok) loadChannels();
+            else alert('삭제 실패: ' + await res.text());
+        } catch(e) {
+            alert('오류 발생');
+        }
     }
 </script>
 </body>

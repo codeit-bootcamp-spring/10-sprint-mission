@@ -4,7 +4,9 @@
     <title>메시지 관리 테스트</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .msg-img { max-width: 150px; display: block; margin-top: 5px; }
+        .msg-img { max-width: 150px; border-radius: 8px; margin-top: 8px; }
+        .msg-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+        .id-label { font-family: monospace; font-size: 0.8rem; background: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
     </style>
 </head>
 <body class="p-4">
@@ -26,45 +28,110 @@
             <label>대상 채널 (Channel ID)</label>
             <div class="input-group">
                 <input type="text" id="targetChannelId" class="form-control" placeholder="Channel UUID">
-                <button class="btn btn-info" onclick="loadMessages()">메시지 조회</button>
+                <button class="btn btn-info" onclick="loadMessages()">조회</button>
             </div>
         </div>
     </div>
 
     <div class="card p-3 mb-4">
-        <h5>메시지 전송 (POST /api/messages)</h5>
-        <form id="msgForm">
-            <textarea id="msgContent" class="form-control mb-2" placeholder="내용 입력"></textarea>
-            <input type="file" id="msgFiles" class="form-control mb-2" multiple>
-            <button type="button" class="btn btn-primary" onclick="sendMessage()">전송</button>
-        </form>
+        <h5>메시지 전송</h5>
+        <textarea id="msgContent" class="form-control mb-2" placeholder="내용 입력"></textarea>
+        <input type="file" id="msgFiles" class="form-control mb-2" multiple>
+        <button class="btn btn-primary w-100" onclick="sendMessage()">전송</button>
     </div>
 
     <div class="card p-3">
-        <h5>메시지 목록 (GET /api/messages?channel-id=...)</h5>
-        <div id="messageList" class="mt-3">
-        </div>
+        <h5>메시지 목록</h5>
+        <div id="messageList"></div>
     </div>
 </div>
 
 <script>
     const API_BASE = '/api';
+
+    function copyToClipboard(text) {
+        const t = document.createElement("textarea");
+        t.value = text;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand('copy');
+        document.body.removeChild(t);
+        alert('복사되었습니다!');
+    }
+
     document.getElementById('authorId').value = localStorage.getItem('myUserId') || '';
+
+    async function loadMessages() {
+        const chId = document.getElementById('targetChannelId').value;
+        if(!chId) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/messages?channel-id=${chId}`);
+            if(!res.ok) throw new Error(await res.text());
+
+            let messages = await res.json();
+            // 시간순 정렬 (서버에서 안 되어 있을 경우 대비)
+            messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            const container = document.getElementById('messageList');
+            container.innerHTML = '';
+
+            for (const msg of messages) {
+                let fileHtml = '';
+                if(msg.attachmentIds) {
+                    for(const fid of msg.attachmentIds) {
+                        try {
+                            const fRes = await fetch(`${API_BASE}/binary-contents/find?binary-content-id=${fid}`);
+                            if(fRes.ok) {
+                                const fData = await fRes.json();
+                                fileHtml += `<img src="data:${fData.contentType};base64,${fData.content}" class="msg-img"><br>`;
+                            }
+                        } catch(e) {}
+                    }
+                }
+
+                container.innerHTML += `
+                    <div class="msg-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="mb-1">
+                                    <span class="text-muted small">Message ID:</span>
+                                    <span class="id-label">${msg.id}</span>
+                                    <button class="btn btn-sm btn-link p-0" onclick="copyToClipboard('${msg.id}')">복사</button>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="text-muted small">Author ID:</span>
+                                    <span class="id-label">${msg.authorId}</span>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="editMessage('${msg.id}', '${msg.content}')">수정</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteMessage('${msg.id}')">삭제</button>
+                            </div>
+                        </div>
+                        ${msg.content ? `<div class="p-2 bg-light rounded my-2"><strong>${msg.content}</strong></div>` : ''}
+                        ${fileHtml}
+                        <div class="text-end">
+                            <small class="text-muted" style="font-size: 0.7rem;">${msg.createdAt}</small>
+                        </div>
+                    </div>`;
+            }
+        } catch(e) {
+            alert('메시지 로드 실패: ' + e.message);
+        }
+    }
 
     async function sendMessage() {
         const formData = new FormData();
-        const requestDto = {
+        const dto = {
             content: document.getElementById('msgContent').value,
             authorId: document.getElementById('authorId').value,
             channelId: document.getElementById('targetChannelId').value
         };
+        formData.append('request', new Blob([JSON.stringify(dto)], {type: "application/json"}));
 
-        formData.append('request', new Blob([JSON.stringify(requestDto)], {type: "application/json"}));
-
-        const fileInput = document.getElementById('msgFiles');
-        for (let i = 0; i < fileInput.files.length; i++) {
-            formData.append('attachments', fileInput.files[i]);
-        }
+        const files = document.getElementById('msgFiles').files;
+        for(let i=0; i<files.length; i++) formData.append('attachments', files[i]);
 
         try {
             const res = await fetch(`${API_BASE}/messages`, { method: 'POST', body: formData });
@@ -75,73 +142,49 @@
             } else {
                 alert('전송 실패: ' + await res.text());
             }
-        } catch(e) { console.error(e); }
-    }
-
-    async function loadMessages() {
-        const channelId = document.getElementById('targetChannelId').value;
-        if(!channelId) return;
-
-        const res = await fetch(`${API_BASE}/messages?channel-id=${channelId}`);
-        const messages = await res.json();
-
-        const container = document.getElementById('messageList');
-        container.innerHTML = '';
-
-        for (const msg of messages) {
-            let attachmentsHtml = '';
-            if(msg.attachmentIds && msg.attachmentIds.length > 0) {
-                for(const fileId of msg.attachmentIds) {
-                    const fileRes = await fetch(`${API_BASE}/binary-contents/find?binary-content-id=${fileId}`);
-                    const fileData = await fileRes.json();
-                    attachmentsHtml += `
-                       <div>
-                           <small>File ID: ${fileId}</small><br>
-                           <img src="data:${fileData.contentType};base64,${fileData.content}" class="msg-img">
-                       </div>`;
-                }
-            }
-
-            const html = `
-                <div class="border-bottom p-2">
-                    <div class="d-flex justify-content-between">
-                        <strong>User: ${msg.authorId}</strong>
-                        <div>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="editMessage('${msg.id}', '${msg.content}')">수정</button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteMessage('${msg.id}')">X</button>
-                        </div>
-                    </div>
-                    <p class="mb-1" id="msg-content-${msg.id}">${msg.content}</p>
-                    ${attachmentsHtml}
-                    <small class="text-muted">${msg.createdAt}</small>
-                </div>
-            `;
-            container.innerHTML += html;
+        } catch(e) {
+            alert('전송 오류 발생');
         }
     }
 
-    async function editMessage(id, oldContent) {
-        const newContent = prompt("수정할 내용을 입력하세요:", oldContent);
-        if(newContent === null || newContent === oldContent) return;
+    async function editMessage(id, old) {
+        const next = prompt("수정할 내용:", old);
+        if(next === null || next === old) return;
+
+        // 디스코드 스타일: 빈 값이면 삭제 확인
+        if (next.trim() === "") {
+            if (confirm("내용을 지우면 메시지가 삭제됩니다. 삭제하시겠습니까?")) {
+                deleteMessage(id);
+            }
+            return;
+        }
 
         try {
             const res = await fetch(`${API_BASE}/messages/${id}`, {
                 method: 'PATCH',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ content: newContent })
+                body: JSON.stringify({ content: next })
             });
+
             if(res.ok) {
                 loadMessages();
             } else {
-                alert('수정 실패');
+                alert('수정 실패: ' + await res.text());
             }
-        } catch(e) { console.error(e); }
+        } catch(e) {
+            alert('수정 오류 발생');
+        }
     }
 
     async function deleteMessage(id) {
-        if(!confirm('삭제?')) return;
-        await fetch(`${API_BASE}/messages/${id}`, { method: 'DELETE' });
-        loadMessages();
+        if(!confirm('삭제하시겠습니까?')) return;
+        try {
+            const res = await fetch(`${API_BASE}/messages/${id}`, { method: 'DELETE' });
+            if(res.ok) loadMessages();
+            else alert('삭제 실패: ' + await res.text());
+        } catch(e) {
+            alert('삭제 오류 발생');
+        }
     }
 </script>
 </body>

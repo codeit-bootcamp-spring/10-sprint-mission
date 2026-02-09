@@ -38,7 +38,7 @@ public class UserController {
     @RequestMapping(method = RequestMethod.PATCH, value = "/{user-id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UserDto.Response> updateUser(
             @PathVariable("user-id") UUID userId,
-            @RequestPart("request") @Valid UserDto.UpdateRequest request,
+            @RequestPart(value = "request", required = false) @Valid UserDto.UpdateRequest request,
             @RequestPart(value = "profileImage", required = false) MultipartFile file) {
         UserDto.Response response = userService.update(userId, request, file);
         return ResponseEntity.ok(response);

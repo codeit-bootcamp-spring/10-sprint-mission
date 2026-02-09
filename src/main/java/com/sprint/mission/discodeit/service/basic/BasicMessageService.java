@@ -48,6 +48,15 @@ public class BasicMessageService implements MessageService {
                 .map(this::saveAttachments)
                 .toList();
 
+        // 텍스트가 비어있는지 체크
+        boolean hasText = request.content() != null && !request.content().trim().isEmpty();
+        // 파일이 하나라도 있는지 체크
+        boolean hasAttachments = attachments != null && attachments.stream().anyMatch(file -> !file.isEmpty());
+
+        if (!hasText && !hasAttachments) {
+            throw new IllegalArgumentException("메시지 내용이나 첨부파일 중 하나는 포함되어야 합니다.");
+        }
+
         Message message = new Message(request.content(), request.channelId(), request.authorId(), attachmentIds);
         Message savedMessage = messageRepository.save(message);
 

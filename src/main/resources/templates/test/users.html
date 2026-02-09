@@ -4,6 +4,27 @@
     <title>사용자 관리 테스트</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        /* 제공해주신 스타일 가이드 적용 */
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+        }
+        .online { background-color: #4CAF50; }
+        .offline { background-color: #9e9e9e; }
+        .table align-middle td { vertical-align: middle; }
+    </style>
 </head>
 <body class="p-4">
 <div class="container">
@@ -13,7 +34,7 @@
         <a href="/test/messages" class="btn btn-secondary">메시지 관리</a>
     </nav>
 
-    <h2>1. 사용자 관리</h2>
+    <h2>1. 사용자 관리 (프로필 포함)</h2>
 
     <div class="row mb-4">
         <div class="col-md-6">
@@ -24,7 +45,7 @@
                     <input type="email" class="form-control mb-2" id="signupEmail" placeholder="Email" required>
                     <input type="password" class="form-control mb-2" id="signupPw" placeholder="Password" required>
                     <input type="file" class="form-control mb-2" id="signupFile" accept="image/*">
-                    <button type="button" class="btn btn-success" onclick="signup()">가입하기</button>
+                    <button type="button" class="btn btn-success w-100" onclick="signup()">가입하기</button>
                 </form>
             </div>
         </div>
@@ -34,28 +55,29 @@
                 <h5>로그인 (POST /api/auth/login)</h5>
                 <input type="text" class="form-control mb-2" id="loginName" placeholder="Username">
                 <input type="password" class="form-control mb-2" id="loginPw" placeholder="Password">
-                <button type="button" class="btn btn-primary" onclick="login()">로그인 테스트</button>
-                <div id="loginResult" class="mt-2 text-primary"></div>
+                <button type="button" class="btn btn-primary w-100" onclick="login()">로그인 테스트</button>
+                <div id="loginResult" class="mt-2 text-primary text-center"></div>
             </div>
         </div>
     </div>
 
     <div class="card p-3">
-        <div class="d-flex justify-content-between">
+        <div class="d-flex justify-content-between align-items-center mb-3">
             <h5>사용자 목록 (GET /api/users/findAll)</h5>
             <button class="btn btn-sm btn-info" onclick="loadUsers()">목록 새로고침</button>
         </div>
-        <table class="table mt-2">
-            <thead>
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
             <tr>
+                <th>프로필</th>
+                <th>사용자 정보</th>
                 <th>ID (UUID)</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Action</th>
+                <th>상태</th>
+                <th>관리</th>
             </tr>
             </thead>
-            <tbody id="userTableBody"></tbody>
+            <tbody id="userTableBody">
+            </tbody>
         </table>
     </div>
 </div>
@@ -70,25 +92,25 @@
             <div class="modal-body">
                 <input type="hidden" id="editUserId">
                 <div class="mb-2">
-                    <label>새 Username (선택)</label>
+                    <label class="form-label">Username</label>
                     <input type="text" class="form-control" id="editUsername">
                 </div>
                 <div class="mb-2">
-                    <label>새 Email (선택)</label>
+                    <label class="form-label">Email</label>
                     <input type="email" class="form-control" id="editEmail">
                 </div>
                 <div class="mb-2">
-                    <label>새 Password (선택)</label>
+                    <label class="form-label">Password</label>
                     <input type="password" class="form-control" id="editPassword">
                 </div>
                 <div class="mb-2">
-                    <label>새 프로필 이미지 (선택)</label>
+                    <label class="form-label">프로필 이미지</label>
                     <input type="file" class="form-control" id="editFile" accept="image/*">
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="btn btn-primary" onclick="submitEditUser()">수정하기</button>
+                <button type="button" class="btn btn-primary" onclick="submitEditUser()">수정 완료</button>
             </div>
         </div>
     </div>
@@ -97,6 +119,73 @@
 <script>
     const API_BASE = '/api';
 
+    // 1. 프로필 이미지 개별 조회 함수 (제공해주신 로직 반영)
+    async function fetchUserProfile(profileId) {
+        if (!profileId) return '/default-avatar.jpg';
+        try {
+            const response = await fetch(`${API_BASE}/binary-contents/find?binary-content-id=${profileId}`);
+            if (!response.ok) throw new Error();
+            const profile = await response.json();
+            // base64 데이터를 data URL로 변환
+            return `data:${profile.contentType};base64,${profile.content}`;
+        } catch (error) {
+            console.error('이미지 로드 실패:', error);
+            return '/default-avatar.jpg';
+        }
+    }
+
+    // 2. HTTP 환경 대응용 복사 함수
+    function copyToClipboard(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('ID가 복사되었습니다.');
+    }
+
+    // 3. 사용자 목록 로드 (이미지 비동기 로딩 포함)
+    async function loadUsers() {
+        try {
+            const res = await fetch(`${API_BASE}/users/findAll`);
+            const users = await res.json();
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+
+            for (const u of users) {
+                // 각 유저별로 이미지를 비동기로 가져옴
+                const profileUrl = await fetchUserProfile(u.profileId);
+                const statusClass = u.Online ? 'online' : 'offline';
+                const statusText = u.Online ? '온라인' : '오프라인';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><img src="${profileUrl}" class="user-avatar" alt="profile"></td>
+                        <td>
+                            <div class="fw-bold">${u.username}</div>
+                            <div class="text-muted small">${u.email}</div>
+                        </td>
+                        <td>
+                            <code class="small">${u.id.substring(0,8)}...</code>
+                            <button class="btn btn-sm btn-light p-1" onclick="copyToClipboard('${u.id}')" title="전체 ID 복사">📋</button>
+                        </td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${u.id}')">수정</button>
+                                <button class="btn btn-sm btn-outline-warning" onclick="updateStatus('${u.id}')">활동갱신</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${u.id}')">삭제</button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }
+        } catch (e) {
+            console.error('목록 로딩 실패:', e);
+        }
+    }
+
+    // 4. 회원가입 (Multipart)
     async function signup() {
         const formData = new FormData();
         const requestDto = {
@@ -107,109 +196,71 @@
         formData.append('request', new Blob([JSON.stringify(requestDto)], {type: "application/json"}));
 
         const fileInput = document.getElementById('signupFile');
-        if(fileInput.files[0]) {
-            formData.append('profileImage', fileInput.files[0]);
-        }
+        if(fileInput.files[0]) formData.append('profileImage', fileInput.files[0]);
 
-        try {
-            const res = await fetch(`${API_BASE}/users/signup`, { method: 'POST', body: formData });
-            if(res.ok) { alert('가입 성공'); loadUsers(); }
-            else alert('실패: ' + await res.text());
-        } catch(e) { console.error(e); }
+        const res = await fetch(`${API_BASE}/users/signup`, { method: 'POST', body: formData });
+        if(res.ok) { alert('가입 성공!'); loadUsers(); }
+        else alert('실패: ' + await res.text());
     }
 
+    // 5. 로그인
     async function login() {
         const data = {
             username: document.getElementById('loginName').value,
             password: document.getElementById('loginPw').value
         };
-        try {
-            const res = await fetch(`${API_BASE}/auth/login`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            if(res.ok) {
-                document.getElementById('loginResult').innerText = `로그인 성공! ID: ${result.id}`;
-                localStorage.setItem('myUserId', result.id);
-            } else {
-                alert('로그인 실패');
-            }
-        } catch(e) { console.error(e); }
-    }
-
-    async function loadUsers() {
-        const res = await fetch(`${API_BASE}/users/findAll`);
-        const users = await res.json();
-        const tbody = document.getElementById('userTableBody');
-        tbody.innerHTML = '';
-        users.forEach(u => {
-            tbody.innerHTML += `
-                <tr>
-                    <td><small>${u.id}</small> <button class="btn btn-xs btn-outline-secondary" onclick="navigator.clipboard.writeText('${u.id}')">Copy</button></td>
-                    <td>${u.username}</td>
-                    <td>${u.email}</td>
-                    <td>${u.Online ? 'Online' : 'Offline'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-secondary" onclick="openEditModal('${u.id}')">수정</button>
-                        <button class="btn btn-sm btn-warning" onclick="updateStatus('${u.id}')">활동갱신</button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')">삭제</button>
-                    </td>
-                </tr>`;
+        const res = await fetch(`${API_BASE}/auth/login`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
         });
+        const result = await res.json();
+        if(res.ok) {
+            document.getElementById('loginResult').innerText = `로그인 성공 (ID: ${result.id})`;
+            localStorage.setItem('myUserId', result.id);
+        } else {
+            alert('로그인 실패');
+        }
     }
 
-    // 수정 모달 열기
+    // 6. 수정 모달 제어
     function openEditModal(userId) {
         document.getElementById('editUserId').value = userId;
         document.getElementById('editUsername').value = '';
         document.getElementById('editEmail').value = '';
         document.getElementById('editPassword').value = '';
         document.getElementById('editFile').value = '';
-        const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
-        modal.show();
+        new bootstrap.Modal(document.getElementById('editUserModal')).show();
     }
 
-    // 사용자 수정 요청 (PATCH)
+    // 7. 사용자 수정 (PATCH)
     async function submitEditUser() {
         const userId = document.getElementById('editUserId').value;
         const formData = new FormData();
-
         const updateRequest = {};
-        const newUsername = document.getElementById('editUsername').value;
+
+        const newName = document.getElementById('editUsername').value;
         const newEmail = document.getElementById('editEmail').value;
-        const newPassword = document.getElementById('editPassword').value;
+        const newPw = document.getElementById('editPassword').value;
 
-        if(newUsername) updateRequest.newUsername = newUsername;
+        if(newName) updateRequest.newUsername = newName;
         if(newEmail) updateRequest.newEmail = newEmail;
-        if(newPassword) updateRequest.newPassword = newPassword;
-
-        if (Object.keys(updateRequest).length === 0 && !document.getElementById('editFile').files[0]) {
-            alert("변경할 내용을 입력해주세요.");
-            return;
-        }
+        if(newPw) updateRequest.newPassword = newPw;
 
         formData.append('request', new Blob([JSON.stringify(updateRequest)], {type: "application/json"}));
-
         const fileInput = document.getElementById('editFile');
-        if(fileInput.files[0]) {
-            formData.append('profileImage', fileInput.files[0]);
-        }
+        if(fileInput.files[0]) formData.append('profileImage', fileInput.files[0]);
 
-        try {
-            const res = await fetch(`${API_BASE}/users/${userId}`, { method: 'PATCH', body: formData });
-            if(res.ok) {
-                alert('수정 완료');
-                loadUsers();
-                // 모달 닫기 (배경 클릭 등으로 닫는 방식과 호환되게 reload로 대체하거나 bootstrap 인스턴스 제어 필요)
-                location.reload();
-            } else {
-                alert('수정 실패: ' + await res.text());
-            }
-        } catch(e) { console.error(e); }
+        const res = await fetch(`${API_BASE}/users/${userId}`, { method: 'PATCH', body: formData });
+        if(res.ok) {
+            alert('수정 완료');
+            location.reload();
+        } else {
+            alert('실패: ' + await res.text());
+        }
     }
 
+    // 8. 상태 업데이트
     async function updateStatus(id) {
         await fetch(`${API_BASE}/users/${id}/status`, {
             method: 'POST',
@@ -219,12 +270,14 @@
         loadUsers();
     }
 
+    // 9. 사용자 삭제
     async function deleteUser(id) {
-        if(!confirm('삭제하시겠습니까?')) return;
+        if(!confirm('정말 삭제하시겠습니까?')) return;
         await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' });
         loadUsers();
     }
 
+    // 초기 실행
     loadUsers();
 </script>
 </body>

@@ -68,13 +68,19 @@ public class BasicUserService implements UserService {
         User user=  userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId));
 
+
+        if (request == null) {
+            request = new UserDto.UpdateRequest(null, null, null);
+        }
+
         if (request.newUsername() == null &&
                 request.newEmail() == null &&
                 request.newPassword() == null &&
                 (newProfileImage == null || newProfileImage.isEmpty())) {
             throw new IllegalArgumentException("변경할 항목이 적어도 하나는 필요합니다.");
         }
-        validateImageFile(newProfileImage);
+
+        validateImageFile(newProfileImage); // 이미지 파일인지 검사
 
         String newUsername = request.newUsername();
         String newEmail = request.newEmail();
@@ -84,16 +90,16 @@ public class BasicUserService implements UserService {
         if(newPassword != null) newPassword = passwordEncoder.encode(newPassword);
 
         UUID newProfileId = saveProfileImage(newProfileImage);
-        UUID oldProfileId = user.getProfileId();
+        if (newProfileId != null) { // 파일이 있다면
+            if (user.getProfileId() != null) { // 기존 유저 프로필 파일 삭제
+                binaryContentRepository.deleteById(user.getProfileId());
+            }
+        } else { // 파일이 없다면
+            newProfileId = user.getProfileId(); // 기존 유저 프로필 유지
+        }
 
         // password 업데이트는 엔티티 내 메서드를 따로 만들어서 책임 분리로 개선할 여지가 있음
         user.update(newUsername, newEmail, newPassword, newProfileId);
-
-        // 기존 프로필 삭제는 실패해도 유저 업데이트와는 별개로 성공해야 하므로 개선 여지 있음
-        if (oldProfileId != null && !oldProfileId.equals(newProfileId)) {
-            binaryContentRepository.deleteById(oldProfileId);
-        }
-
         User updatedUser = userRepository.save(user);
 
         return toDto(updatedUser);
