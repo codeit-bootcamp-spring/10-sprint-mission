@@ -59,6 +59,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
+    public List<BinaryContentResponseDTO> findAll() {
+        List<BinaryContent> binaryContents = binaryContentRepository.findAll();
+
+        return BinaryContentMapper.toResponseList(binaryContents);
+    }
+
+    @Override
     public void delete(UUID binaryContentId) {
         findBinaryContentOrThrow(binaryContentId);
 
