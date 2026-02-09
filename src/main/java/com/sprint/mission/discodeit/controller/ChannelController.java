@@ -31,13 +31,13 @@ public class ChannelController {
         return channelService.createPrivateChannel(req);
     }
 
-    @RequestMapping(value = "{userId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
     @ResponseBody
     public List<ChannelResponseDTO> getChannels(@PathVariable UUID userId){
         return channelService.findAllByUserId(userId);
     }
 
-    @RequestMapping(value = "{channelId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{channelId}", method = RequestMethod.DELETE)
     @ResponseBody
     public void deleteChannel(@PathVariable UUID channelId){
         channelService.delete(channelId);

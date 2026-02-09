@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Error Page</title>
+</head>
+<body>
+<h1>오류 발생</h1>
+<p><strong>상태 코드:</strong> <span th:text="${status}"></span></p>
+<p><strong>오류 유형:</strong> <span th:text="${error}"></span></p>
+<p><strong>메시지:</strong> <span th:text="${message}"></span></p>
+<p><strong>요청 경로:</strong> <span th:text="${path}"></span></p>
+<a href="/">홈으로 돌아가기</a>
+</body>
+</html>

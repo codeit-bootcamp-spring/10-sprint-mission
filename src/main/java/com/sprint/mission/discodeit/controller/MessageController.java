@@ -31,14 +31,14 @@ public class MessageController {
         return messageService.update(req);
     }
 
-    @RequestMapping(value = "{messageId}",method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{messageId}",method = RequestMethod.DELETE)
     @ResponseBody
     public void deleteMessage(@PathVariable UUID messageId){
         messageService.delete(messageId);
     }
 
 
-    @RequestMapping(value = "{channelId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{channelId}", method = RequestMethod.GET)
     @ResponseBody
     public List<MessageResponseDTO> viewChannelMessage(@PathVariable UUID channelId){
         return messageService.findallByChannelId(channelId);

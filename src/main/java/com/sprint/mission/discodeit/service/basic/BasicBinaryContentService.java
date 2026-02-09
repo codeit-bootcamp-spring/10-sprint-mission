@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.mapper.BinaryContentDTOMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,12 +33,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public BinaryContentResponseDTO find(UUID id) {
+    public ResponseEntity<BinaryContent> find(UUID id) {
         Objects.requireNonNull(id, "유효하지 않은 ID 입니다!");
         BinaryContent binaryContent = binaryContentRepository.findbyId(id).orElseThrow(() -> new NoSuchElementException("해당 첨부파일을 찾지 못했습니다."));
-
-        return binaryContentDTOMapper.binaryContentToResponse(binaryContent);
+        return ResponseEntity.ok(binaryContent);
     }
+
+
 
     @Override
     public List<BinaryContentResponseDTO> findAllByIdIn(List<UUID> ids) {

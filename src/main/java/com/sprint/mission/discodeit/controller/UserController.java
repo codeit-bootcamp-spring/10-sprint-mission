@@ -10,7 +10,9 @@ import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,14 +33,22 @@ public class UserController {
         return userService.create(req);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public List<UserResponseDTO> getUsers(){
         return userService.findAll();
     }
 
-    @RequestMapping(method = RequestMethod.DELETE)
-    public void deleteUser(UUID userId){
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET, produces = MediaType.TEXT_HTML_VALUE)
+    public String getUsersPage(Model model){
+        model.addAttribute("users", userService.findAll());
+        return "static/user-list";
+    }
+
+
+    @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
+    @ResponseBody
+    public void deleteUser(@PathVariable UUID userId){
         userService.delete(userId);
     }
 

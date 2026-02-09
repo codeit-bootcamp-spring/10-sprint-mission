@@ -17,7 +17,6 @@ public class UserDTOMapper {
                 user.getUsername(),
                 user.getEmail(),
                 userStatus.isOnline(),
-                userStatus.getLastActiveAt(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );

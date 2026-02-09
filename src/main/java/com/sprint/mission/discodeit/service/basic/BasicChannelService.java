@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.entity.mapper.ChannelDTOMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
+    private final UserRepository userRepository;
 
     // 최신 메시지를 받아와서 Message로 리턴하는 메소드
     private Message getLatestMessage(UUID channelId){
@@ -120,6 +122,9 @@ public class BasicChannelService implements ChannelService {
     @Override
     public List<ChannelResponseDTO> findAllByUserId(UUID userID) {
         Objects.requireNonNull(userID,"유효하지 않은 유저ID 입니다.");
+        if(userRepository.findAll().stream().noneMatch(u -> userID.equals(u.getId()))){
+            throw new NoSuchElementException("해당 유저가 존재하지 않습니다!");
+        }
 
         // 채널 레포지토리에서 모든 채널들을 스트림
         return channelRepository.findAll().stream()

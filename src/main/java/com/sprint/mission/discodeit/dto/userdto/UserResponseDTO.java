@@ -5,11 +5,10 @@ import java.util.UUID;
 
 public record UserResponseDTO(
     UUID id,
-    UUID profileID,
-    String userName,
+    UUID profileId,
+    String username,
     String email,
-    boolean online,
-    Instant lastActivedAt,
-    Instant CreatedAt,
-    Instant UpdatedAt
+    Boolean online,
+    Instant createdAt,
+    Instant updatedAt
 ){}
