@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import org.springframework.http.HttpStatus;
@@ -18,6 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Controller
+@RequestMapping("/api")
 public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
@@ -57,7 +57,7 @@ public class UserController {
 
     // 모든 사용자 조회
     @RequestMapping(value = "/user", method = RequestMethod.GET)
-    public ResponseEntity<List<UserDto>> getUsers() {
+    public ResponseEntity<List<UserDto>> findAll() {
         List<UserDto> userDtos = userService.findAll();
         return new ResponseEntity<>(userDtos, HttpStatus.OK);
     }
