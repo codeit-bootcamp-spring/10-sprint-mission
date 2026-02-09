@@ -1,4 +1,6 @@
 package com.sprint.mission.discodeit.dto.userstatus;
 
-public class UserStatusUpdateRequest {
-}
+
+public record UserStatusUpdateRequest (
+        boolean isOnline
+) {}

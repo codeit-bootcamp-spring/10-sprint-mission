@@ -3,12 +3,16 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 // 사용자 관리
@@ -33,10 +37,12 @@ import java.util.UUID;
 // 클래스 레벨 매핑, 메서드 레벨 매핑
 public class UserController {
     private final UserService userService;
+    private final UserStatusService userStatusService;
 
     @Autowired // 생성자가 하나일 경우 @AutoWired 생략 가능
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserStatusService userStatusService) {
         this.userService = userService;
+        this.userStatusService = userStatusService;
     }
 
     // 사용자를 등록할 수 있다.
@@ -84,6 +90,21 @@ public class UserController {
         // NO_CONTENT -> 204 : 요청이 성공했으나 응답 본문에 보낼 데이터는 없다
     }
 
+    // 모든 사용자를 조회할 수 있다.
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<UserResponse> responses = userService.findAll();
+        return ResponseEntity.ok(responses);
+    }
 
+    // 사용자의 온라인 상태를 업데이트할 수 있다.
+    @RequestMapping(value = "/{userId}/status", method = RequestMethod.PUT)
+    public ResponseEntity<UserStatusResponse> updateUserStatus(
+            @PathVariable UUID userId
+            @RequestBody UserStatusUpdateRequest request
+    ) {
+        UserStatusResponse response = userStatusService.updateByUserId(userId, request);
+        return ResponseEntity.ok(response);
+    }
 }
 
