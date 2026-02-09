@@ -31,8 +31,4 @@ public class ChannelCreateRequest {
         this.description = description;
         this.participantIds = participantIds;
     }
-
-    public ChannelCreateRequest(List<UUID> participantIds) {
-        this(null, null, participantIds);
-    }
 }
