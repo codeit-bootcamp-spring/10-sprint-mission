@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/v1/users")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -33,7 +33,7 @@ public class UserController {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()       // POST /v1/users
                 .path("/{id}")              // -> /v1/users/{id}
-                .buildAndExpand(created.userId())       // {id}에 실제 생성된 userId 삽입
+                .buildAndExpand(created.id())       // {id}에 실제 생성된 userId 삽입
                 .toUri();       // URI 객체로 변환(Location 헤더용)
 
         return ResponseEntity.created(location)
@@ -65,7 +65,7 @@ public class UserController {
         );
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
     public ResponseEntity findAll() {
         List<UserResponseDTO> users = userService.findAll();
 

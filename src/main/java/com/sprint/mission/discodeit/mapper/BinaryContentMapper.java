@@ -34,6 +34,7 @@ public class BinaryContentMapper {
                 binaryContent.getUserId(),
                 binaryContent.getMessageId(),
                 binaryContent.getSize(),
+                binaryContent.getData(),
                 binaryContent.getContentType(),
                 binaryContent.getFilename(),
                 binaryContent.getCreatedAt()

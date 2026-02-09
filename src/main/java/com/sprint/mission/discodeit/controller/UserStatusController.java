@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/v1/user-statuses")
+@RequestMapping("/api/userStatus")
 @RequiredArgsConstructor
 public class UserStatusController {
 

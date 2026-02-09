@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.UserStatusType;
 
 import java.util.*;
 
@@ -18,15 +19,21 @@ public class UserMapper {
     }
 
     public static UserResponseDTO toResponse(User user, UserStatus status) {
+        boolean online = false;
+
+        if (status.getStatusType().equals(UserStatusType.ONLINE))
+        {
+            online = true;
+        }
+
         return new UserResponseDTO(
                 user.getId(),
-                user.getEmail(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUsername(),
-
-                status.getEffectiveStatus(),
-                status.getLastLoginAt(),
-
-                user.getProfileImageId()
+                user.getEmail(),
+                user.getProfileImageId(),
+                online
         );
     }
 
