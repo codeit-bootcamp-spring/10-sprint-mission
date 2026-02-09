@@ -29,4 +29,7 @@ public class AuthController {
 
     // TODO: 로그인 실패 시 예외처리
 
+    // TODO: 로그아웃 구현
+    // TODO: 인증상태 유지 -> Session, JWT
+    // TODO: 중복 로그인 방지
 }

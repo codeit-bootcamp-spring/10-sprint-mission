@@ -57,11 +57,12 @@ public class UserController {
             // 헤더 + 본문 + 상태코드
         // @RequestBody -> 클라이언트가 보내는 JSON 데이터를 자바 객체인 UserCreateRequest(DTO)로 변환하려면 필요
         UserResponse response = userService.create(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
         // CREATED -> 201 : 요청이 성공적으로 처리되었으며, 자원이 생성되었음을 나타내는 성공 상태 응답 코드
     }
-    // TODO: Validation 추가
+    // TODO: Validation 추가 -> NotBlank, Email, Size...
     // TODO: Exception Handling
+    // TODO: BinaryContent -> 프로필 이미지 기능 확인
 
     // 사용자 정보를 수정할 수 있다.
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
@@ -86,7 +87,7 @@ public class UserController {
         userService.delete(id);
 
         // 삭제 성공 시 관례적으로 '204 No Content'를 반환
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
         // NO_CONTENT -> 204 : 요청이 성공했으나 응답 본문에 보낼 데이터는 없다
     }
 
@@ -97,6 +98,9 @@ public class UserController {
         return ResponseEntity.ok(responses);
     }
 
+    // TODO: 특정 사용자 조회? userService.find()
+    // TODO: username 또는 email로 유저 검색 기능
+
     // 사용자의 온라인 상태를 업데이트할 수 있다.
     @RequestMapping(value = "/{userId}/status", method = RequestMethod.PUT)
     public ResponseEntity<UserStatusResponse> updateUserStatus(
@@ -106,5 +110,7 @@ public class UserController {
         UserStatusResponse response = userStatusService.updateByUserId(userId, request);
         return ResponseEntity.ok(response);
     }
+
+    // TODO: 전역예외처리 @RestControllerAdvice
 }
 
