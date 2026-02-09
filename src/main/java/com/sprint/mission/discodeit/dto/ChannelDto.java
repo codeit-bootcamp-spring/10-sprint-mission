@@ -18,7 +18,7 @@ public class ChannelDto {
     ) {}
 
     public record Response(
-            UUID id,
+            UUID channelId,
             ChannelType type,
             String channelName,
             String description,
@@ -38,7 +38,6 @@ public class ChannelDto {
     }
 
     public record Update(
-            UUID id,
             String name,
             String description
     ) {}

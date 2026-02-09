@@ -22,14 +22,14 @@ public class UserController {
 
     //사용자를 등록할 수 있다.
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> postUser(@ModelAttribute UserDto.Create request) {
+    public ResponseEntity<?> create(@ModelAttribute UserDto.Create request) {
         UserDto.Response response = userService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     //사용자 정보를 수정할 수 있다.
     @RequestMapping(value = "/{userId}", method = RequestMethod.PATCH)
-    public ResponseEntity<?> updateUser(
+    public ResponseEntity<?> update(
             @PathVariable UUID userId,
             @ModelAttribute UserDto.Update request
     ) {
@@ -39,21 +39,21 @@ public class UserController {
 
     //사용자를 삭제할 수 있다.
     @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteUser(@PathVariable UUID userId) {
+    public ResponseEntity<?> delete(@PathVariable UUID userId) {
         userService.delete(userId);
         return ResponseEntity.noContent().build();
     }
 
     //특정 사용자를 조회할 수 있다.
     @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
-    public ResponseEntity<?> getUser(@PathVariable UUID userId) {
+    public ResponseEntity<?> findById(@PathVariable UUID userId) {
         UserDto.Response response = userService.findById(userId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     //모든 사용자를 조회할 수 있다.
     @RequestMapping(value = "/findAll", method = RequestMethod.GET)
-    public ResponseEntity<?> getAllUser() {
+    public ResponseEntity<?> findAll() {
         List<UserDto.Response> responses = userService.findAll();
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }

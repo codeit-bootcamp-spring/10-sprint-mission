@@ -19,7 +19,7 @@ public class AuthController {
 
     //사용자는 로그인할 수 있다.
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<?> login (@ModelAttribute UserDto.Login request) {
+    public ResponseEntity<?> login(@ModelAttribute UserDto.Login request) {
         UserDto.Response response = authService.login(request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -31,12 +33,13 @@ public class BasicMessageService implements MessageService {
         userRepository.findById(request.authorId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
-        channelRepository.findById(request.channelId())
+        Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
 
-        readStatusRepository.findByUserIdAndChannelId(request.authorId(), request.channelId())
-                .orElseThrow(() -> new IllegalArgumentException("채널에 참가하지 않은 유저는 글을 작성할 수 없습니다."));
-
+        if (channel.getType() == ChannelType.PRIVATE) {
+            readStatusRepository.findByUserIdAndChannelId(request.authorId(), request.channelId())
+                    .orElseThrow(() -> new IllegalArgumentException("비공개 채널은 참여자만 메시지를 작성할 수 있습니다."));
+        }
         //메시지 객체 내부의 첨부파일Id 리스트 저장용
         List<UUID> attachmentIds = new ArrayList<>();
         //요청에 첨부파일이 있다면 for-loop를 통해 객체 생성 후 저장
