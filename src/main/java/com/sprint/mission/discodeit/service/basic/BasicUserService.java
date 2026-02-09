@@ -30,7 +30,9 @@ public class BasicUserService extends BasicDomainService<User> implements UserSe
 
     @Override
     public UserResponse find(UsernamePassword model) throws IOException {
-        User user = userRepository.findByUsernameAndEmail(model.username(), model.password())
+        User user = userRepository.filter(user1 -> user1.matchUsername(model.username()))
+                .filter(user1 -> user1.matchPassword(model.password()))
+                .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("username or password incorrect"));
         UserStatus userStatus = findUserStatusByUserId(user.getId());
         return user.toResponse(userStatus.isActive());

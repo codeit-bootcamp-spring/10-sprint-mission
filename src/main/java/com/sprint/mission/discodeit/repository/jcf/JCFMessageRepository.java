@@ -23,9 +23,6 @@ public class JCFMessageRepository extends JCFDomainRepository<Message> implement
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
-        return getData().values()
-                .stream()
-                .filter(message -> message.isInChannel(channelId))
-                .toList();
+        return filter(message -> message.isInChannel(channelId)).toList();
     }
 }

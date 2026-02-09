@@ -23,25 +23,17 @@ public class JCFReadStatusRepository extends JCFDomainRepository<ReadStatus> imp
 
     @Override
     public List<ReadStatus> findAllByChannelId(UUID channelId) {
-        return getData().values()
-                .stream()
-                .filter(status -> status.matchChannelId(channelId))
-                .toList();
+        return filter(status -> status.matchChannelId(channelId)).toList();
     }
 
     @Override
     public List<ReadStatus> findAllByUserId(UUID userId) {
-        return getData().values()
-                .stream()
-                .filter(status -> status.matchUserId(userId))
-                .toList();
+        return filter(status -> status.matchUserId(userId)).toList();
     }
 
     @Override
     public boolean existsByUserAndChannelId(UUID userId, UUID channelId) {
-        return getData().values()
-                .stream()
-                .filter(status -> status.matchUserId(userId))
+        return filter(status -> status.matchUserId(userId))
                 .anyMatch(status -> status.matchChannelId(channelId));
     }
 }

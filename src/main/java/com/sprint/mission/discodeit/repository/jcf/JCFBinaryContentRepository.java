@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.HashMap;
 
 @Repository
 public class JCFBinaryContentRepository extends JCFDomainRepository<BinaryContent> implements BinaryContentRepository {

@@ -4,9 +4,12 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.stereotype.Repository;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Repository
 public class JCFUserStatusRepository extends JCFDomainRepository<UserStatus> implements UserStatusRepository {
@@ -23,16 +26,16 @@ public class JCFUserStatusRepository extends JCFDomainRepository<UserStatus> imp
 
     @Override
     public Optional<UserStatus> findByUserId(UUID userId) {
-        return getData().values()
-                .stream()
-                .filter(status -> status.matchUserId(userId))
-                .findFirst();
+        return filter(status -> status.matchUserId(userId)).findFirst();
     }
 
     @Override
     public boolean existsByUserId(UUID userId) {
-        return getData().values()
-                .stream()
-                .anyMatch(status -> status.matchUserId(userId));
+        return anyMatch(status -> status.matchUserId(userId));
+    }
+
+    @Override
+    public List<UserStatus> findAll() throws IOException {
+        return streamAll(Stream::toList);
     }
 }
