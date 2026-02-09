@@ -70,7 +70,7 @@ public class BasicUserService implements UserService {
         User targetUser = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-        UserStatus targetUserStatus = userStatusRepository.findById(targetUser.getId())
+        UserStatus targetUserStatus = userStatusRepository.findByUserId(targetUser.getId())
                 .orElseThrow(() -> new NoSuchElementException("UserStatus with id " + targetUser.getId() + " not found"));
 
         return userResponseMapper.toDto(targetUser, targetUserStatus);

@@ -10,6 +10,8 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.AllArgsConstructor;
+import org.apache.coyote.Response;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,13 +25,12 @@ import java.util.UUID;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
     //사용자 등록
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(value = "/users", method = RequestMethod.POST)
     public UserResponseDto postUser(
             @RequestPart("dto") UserCreateRequestDto dto,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage
@@ -45,7 +46,7 @@ public class UserController {
     }
 
     //사용자 정보 수정
-    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/users/{id}", method = RequestMethod.PATCH)
     public UserResponseDto patchUser(
             @PathVariable UUID id,
             @RequestPart("dto") UserCreateRequestDto dto,
@@ -61,17 +62,17 @@ public class UserController {
         return userService.update(new UserUpdateRequestDto(id, dto.username(), dto.email(), dto.password()), profileImage);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/users/{id}", method = RequestMethod.DELETE)
     public void deleteUser(@PathVariable UUID id) {
         userService.delete(id);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public List<UserResponseDto> getAllUser(){
-        return userService.findAll();
+    @RequestMapping(value = "/api/user/findall", method = RequestMethod.GET)
+    public ResponseEntity<List<UserResponseDto>> getAllUser(){
+        return ResponseEntity.ok(userService.findAll());
     }
 
-    @RequestMapping(value = "/{id}/status", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/users/{id}/status", method = RequestMethod.PATCH)
     public void updateUserStatus(@PathVariable UUID id){
         userStatusService.updateByUserId(new UserStatusUpdateRequestDto(true, id, Instant.now()));
     }
