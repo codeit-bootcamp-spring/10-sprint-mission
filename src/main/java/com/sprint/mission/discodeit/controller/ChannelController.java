@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/channels")
+@RequestMapping("/channels")
 @RequiredArgsConstructor
 public class ChannelController {
 
@@ -25,6 +25,7 @@ public class ChannelController {
 
 
     //public 채널 생성
+    // Channel Name
     @RequestMapping(value="/public", method = RequestMethod.POST)
     public ResponseEntity<ChannelResponse> createPublic(@RequestBody PublicChannelCreateRequest request){
         return ResponseEntity.status(HttpStatus.CREATED).body(channelService.createPublicChannel(request));
@@ -53,7 +54,7 @@ public class ChannelController {
         return ResponseEntity.noContent().build();
     }
     //user가 속한 채널 리스트 조회
-    @RequestMapping(value= "/{userId}/channels", method=RequestMethod.GET)
+    @RequestMapping(value= "/{userId}/channelList", method=RequestMethod.GET)
     public ResponseEntity<List<ChannelResponse>> getChannels(@PathVariable UUID userId){
         return ResponseEntity.ok(channelService.findAllByUserId(userId));
     }

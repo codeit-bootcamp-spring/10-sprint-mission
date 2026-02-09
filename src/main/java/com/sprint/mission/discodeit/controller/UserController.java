@@ -25,9 +25,12 @@ public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
+
+    //  유저 생성
+    //  name, alias, email, password, binaryContent
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<UserResponse> create(@RequestBody UserCreateRequest request){
-        // name, alias, email, password, binaryContent
+
         UserResponse userResponse = userService.createUser(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
     }
