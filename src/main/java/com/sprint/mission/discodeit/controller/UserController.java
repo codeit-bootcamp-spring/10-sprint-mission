@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/user")
 public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
@@ -51,7 +51,7 @@ public class UserController {
     }
 
     // user 다건 조회
-    @RequestMapping(value="/user/findAll", method = RequestMethod.GET)
+    @RequestMapping(value="/findAll", method = RequestMethod.GET)
     public ResponseEntity<List<UserResponse>> getAllUsers(){
         List<UserResponse> users = userService.findAll();
         return ResponseEntity.ok(users);
