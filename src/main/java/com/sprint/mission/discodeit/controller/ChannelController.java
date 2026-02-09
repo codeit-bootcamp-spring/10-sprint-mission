@@ -37,7 +37,7 @@ public class ChannelController {
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public List<ChannelDto.Response> getChannelsByUserId(@RequestParam(name = "id") UUID id) {
-        return channelService.findAllByUserId(id);
+    public List<ChannelDto.Response> getChannelsByUserId(@RequestParam(name = "userId") UUID userId) {
+        return channelService.findAllByUserId(userId);
     }
 }
