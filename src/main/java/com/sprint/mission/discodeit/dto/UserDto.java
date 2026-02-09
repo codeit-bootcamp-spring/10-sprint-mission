@@ -34,10 +34,5 @@ public class UserDto {
             @Email
             String newEmail,
             String newPassword
-    ) {
-        @AssertTrue(message = "변경할 항목이 적어도 하나는 필요합니다.")
-        public boolean isValidUpdate() {
-            return newUsername != null || newEmail != null || newPassword != null;
-        }
-    }
+    ) {}
 }

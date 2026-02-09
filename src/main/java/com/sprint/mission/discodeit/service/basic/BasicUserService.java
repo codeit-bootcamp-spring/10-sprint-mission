@@ -36,6 +36,7 @@ public class BasicUserService implements UserService {
         String username = request.username();
         String email = request.email();
         validateUser(null, username, email);
+        validateImageFile(profileImage);
 
         String password = passwordEncoder.encode(request.password());
         UUID profileId = saveProfileImage(profileImage);
@@ -66,6 +67,14 @@ public class BasicUserService implements UserService {
     public UserDto.Response update(UUID userId, UserDto.UpdateRequest request, MultipartFile newProfileImage) {
         User user=  userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId));
+
+        if (request.newUsername() == null &&
+                request.newEmail() == null &&
+                request.newPassword() == null &&
+                (newProfileImage == null || newProfileImage.isEmpty())) {
+            throw new IllegalArgumentException("변경할 항목이 적어도 하나는 필요합니다.");
+        }
+        validateImageFile(newProfileImage);
 
         String newUsername = request.newUsername();
         String newEmail = request.newEmail();
@@ -147,6 +156,18 @@ public class BasicUserService implements UserService {
             return binaryContentRepository.save(content).getId();
         } catch (IOException e) {
             throw new UncheckedIOException("프로필 이미지 파일 처리 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    private void validateImageFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            return;
+        }
+
+        // ContentType이 null이거나 image/로 시작하지 않는 경우 차단
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("이미지 파일(jpg, png, gif 등)만 업로드 가능합니다.");
         }
     }
 }
