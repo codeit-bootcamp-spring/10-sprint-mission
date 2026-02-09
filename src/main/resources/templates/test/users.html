@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>사용자 관리 테스트</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4">
+<div class="container">
+    <nav class="mb-4">
+        <a href="/test/users" class="btn btn-primary">사용자 관리</a>
+        <a href="/test/channels" class="btn btn-secondary">채널 관리</a>
+        <a href="/test/messages" class="btn btn-secondary">메시지 관리</a>
+    </nav>
+
+    <h2>1. 사용자 관리</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>회원가입 (POST /api/users/signup)</h5>
+                <form id="signupForm">
+                    <input type="text" class="form-control mb-2" id="signupName" placeholder="Username" required>
+                    <input type="email" class="form-control mb-2" id="signupEmail" placeholder="Email" required>
+                    <input type="password" class="form-control mb-2" id="signupPw" placeholder="Password" required>
+                    <input type="file" class="form-control mb-2" id="signupFile">
+                    <button type="button" class="btn btn-success" onclick="signup()">가입하기</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>로그인 (POST /api/auth/login)</h5>
+                <input type="text" class="form-control mb-2" id="loginName" placeholder="Username">
+                <input type="password" class="form-control mb-2" id="loginPw" placeholder="Password">
+                <button type="button" class="btn btn-primary" onclick="login()">로그인 테스트</button>
+                <div id="loginResult" class="mt-2 text-primary"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-3">
+        <div class="d-flex justify-content-between">
+            <h5>사용자 목록 (GET /api/users/findAll)</h5>
+            <button class="btn btn-sm btn-info" onclick="loadUsers()">목록 새로고침</button>
+        </div>
+        <table class="table mt-2">
+            <thead>
+            <tr>
+                <th>ID (UUID)</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const API_BASE = '/api';
+
+    async function signup() {
+        const formData = new FormData();
+        const requestDto = {
+            username: document.getElementById('signupName').value,
+            email: document.getElementById('signupEmail').value,
+            password: document.getElementById('signupPw').value
+        };
+        formData.append('request', new Blob([JSON.stringify(requestDto)], {type: "application/json"}));
+
+        const fileInput = document.getElementById('signupFile');
+        if(fileInput.files[0]) {
+            formData.append('profileImage', fileInput.files[0]);
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/users/signup`, { method: 'POST', body: formData });
+            if(res.ok) { alert('가입 성공'); loadUsers(); }
+            else alert('실패: ' + await res.text());
+        } catch(e) { console.error(e); }
+    }
+
+    async function login() {
+        const data = {
+            username: document.getElementById('loginName').value,
+            password: document.getElementById('loginPw').value
+        };
+        try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if(res.ok) {
+                document.getElementById('loginResult').innerText = `로그인 성공! ID: ${result.id}`;
+                localStorage.setItem('myUserId', result.id); // 테스트 편의를 위해 저장
+            } else {
+                alert('로그인 실패');
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    async function loadUsers() {
+        const res = await fetch(`${API_BASE}/users/findAll`);
+        const users = await res.json();
+        const tbody = document.getElementById('userTableBody');
+        tbody.innerHTML = '';
+        users.forEach(u => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><small>${u.id}</small> <button class="btn btn-xs btn-outline-secondary" onclick="navigator.clipboard.writeText('${u.id}')">Copy</button></td>
+                    <td>${u.username}</td>
+                    <td>${u.email}</td>
+                    <td>${u.Online ? 'Online' : 'Offline'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="updateStatus('${u.id}')">활동갱신</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteUser('${u.id}')">삭제</button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    async function updateStatus(id) {
+        await fetch(`${API_BASE}/users/${id}/status`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ userid: id, newLastActiveAt: new Date().toISOString() })
+        });
+        loadUsers();
+    }
+
+    async function deleteUser(id) {
+        if(!confirm('삭제하시겠습니까?')) return;
+        await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' });
+        loadUsers();
+    }
+
+    loadUsers();
+</script>
+</body>
+</html>
