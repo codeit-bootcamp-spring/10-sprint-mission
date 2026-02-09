@@ -89,10 +89,10 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserInfo updateUser(UserUpdateInfo updateInfo) {
+    public UserInfo updateUser(UUID userId, UserUpdateInfo updateInfo) {
         validateUserExist(updateInfo.userName());
         validateEmailExist(updateInfo.email());
-        User findUser = userRepository.findById(updateInfo.userId())
+        User findUser = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 존재하지 않습니다."));
         Optional.ofNullable(updateInfo.userName())
                 .ifPresent(findUser::updateUserName);

@@ -13,6 +13,6 @@ public interface UserService {
     UserInfoWithStatus findUser(UUID userId);
     List<UserInfoWithStatus> findAll();
     List<UserInfoWithStatus> findAllByChannelId(UUID channelId);
-    UserInfo updateUser(UserUpdateInfo updateInfo);
+    UserInfo updateUser(UUID userId, UserUpdateInfo updateInfo);
     void deleteUser(UUID userId);
 }
