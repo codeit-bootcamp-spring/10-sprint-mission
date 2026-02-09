@@ -61,9 +61,9 @@ public class DiscodeitApplication {
         UserSummaryResponseDTO userSummaryResponseDTO = setupUser(userService);
         ChannelSummaryResponseDTO channelSummaryResponseDTO = setupPrivateChannel(channelService);
         // 테스트
-        UUID userId = userSummaryResponseDTO.userId();
-        UUID channelId = channelSummaryResponseDTO.channelId();
-        messageCreateTest(messageService, channelId, userId);
+//        UUID userId = userSummaryResponseDTO.userId();
+//        UUID channelId = channelSummaryResponseDTO.channelId();
+//        messageCreateTest(messageService, channelId, userId);
     }
 
 }
