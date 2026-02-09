@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -29,7 +31,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public BinaryContent find(UUID id) {
         BinaryContent content = binaryContentRepository.find(id)
-                .orElseThrow(()-> new NoSuchElementException("No Such File: "+id));
+                .orElseThrow(()-> new BusinessLogicException(ExceptionCode.BINARY_CONTENT_NOT_FOUND));
         //return binaryContentMapper.toDto(content);
         return content;
     }
@@ -42,7 +44,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public void delete(UUID id) {
         if(!binaryContentRepository.existsById(id)) {
-            throw new NoSuchElementException("No Such File: "+id);
+            throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_NOT_FOUND);
         }
         binaryContentRepository.delete(id);
     }

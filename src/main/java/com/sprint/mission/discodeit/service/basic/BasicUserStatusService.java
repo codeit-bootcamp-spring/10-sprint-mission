@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.dto.userstatus.UserStatusCreateDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -22,17 +24,16 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatus create(UserStatusCreateDto dto) {
         User user = userRepository.findById(dto.userId())
-                .orElseThrow(()->new NoSuchElementException("User not found"));
+                .orElseThrow(()->new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
         if(userStatusRepository.existsByUserId(dto.userId())) {
-            throw new IllegalStateException("UserStatus already exists");
+            throw new BusinessLogicException(ExceptionCode.USER_STATUS_ALREADY_EXIST);
         }
         return userStatusRepository.save(new UserStatus(dto.userId()));
     }
 
     @Override
     public UserStatus update(UUID id, UserStatusUpdateDto dto) {
-        UserStatus status = userStatusRepository.find(id)
-                .orElseThrow(()->new NoSuchElementException("UserStatus not found"));
+        UserStatus status = find(id);
         status.update();
         return userStatusRepository.save(status);
     }
@@ -40,9 +41,9 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatus updateByUserId(UUID userId, UserStatusUpdateDto dto) {
         User user = userRepository.findById(userId)
-                .orElseThrow(()->new NoSuchElementException("User not found"));
+                .orElseThrow(()->new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
         UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(()->new NoSuchElementException("UserStatus not found"));
+                .orElseThrow(()->new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
         status.update();
         return userStatusRepository.save(status);
     }
@@ -50,7 +51,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatus find(UUID id) {
         return userStatusRepository.find(id)
-                .orElseThrow(()->new NoSuchElementException("User not found"));
+                .orElseThrow(()->new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
     }
 
     @Override
@@ -61,7 +62,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public void delete(UUID id) {
         if(! userStatusRepository.existsById(id)){
-            throw new NoSuchElementException("UserStatus not found");
+            throw new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND);
         }
         userStatusRepository.delete(id);
     }

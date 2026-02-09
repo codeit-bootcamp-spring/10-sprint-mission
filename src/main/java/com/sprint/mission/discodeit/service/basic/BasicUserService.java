@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
@@ -51,8 +53,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserDto find(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        User user = get(userId);
         return userMapper.toDto(user,findUserStatusByUserId(userId));
     }
 
@@ -66,8 +67,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public UserDto update(UUID userId, UserUpdateDto dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        User user = get(userId);
         BinaryContent profile = null;
         if(dto.profileDto() != null) {
             profile =binaryContentRepository.save(binaryContentMapper.toEntity(dto.profileDto()));
@@ -79,7 +79,7 @@ public class BasicUserService implements UserService {
 
     @Override
     public void delete(UUID userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        User user = get(userId);
         if(user.getProfileId()!=null) {//프로필 사진 있는경우 삭제
             binaryContentRepository.delete(user.getProfileId());
         }
@@ -89,18 +89,22 @@ public class BasicUserService implements UserService {
     }
     private void validateEmail(String email) {
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("이미 존재하는 이메일: "+email);
+            throw new BusinessLogicException(ExceptionCode.EMAIL_ALREADY_EXIST);
         }
     }
     private void validateUsername(String username) {
         if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("이미 존재하는 사용자 이름: "+username);
+            throw new BusinessLogicException(ExceptionCode.USER_NAME_ALREADY_EXIST);
         }
     }
 
     private UserStatus findUserStatusByUserId(UUID userId) {
       return userStatusRepository.findByUserId(userId)
-           .orElseThrow(() -> new NoSuchElementException("UserStatus with Userid " + userId + " not found"));
+           .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
     }
 
+    private User get(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+    }
 }

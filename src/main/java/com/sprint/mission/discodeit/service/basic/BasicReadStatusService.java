@@ -3,6 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -29,7 +31,7 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public ReadStatus find(UUID readStatusId) {
         return readStatusRepository.find(readStatusId)
-                .orElseThrow(() -> new NoSuchElementException("No read status with id: " + readStatusId));
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
     }
 
     @Override
@@ -39,29 +41,26 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatus update(UUID id,ReadStatusUpdateDto dto) {
-        //checkValidation(dto.userId(),dto.channelId());
-        ReadStatus status = readStatusRepository.find(id)
-                .orElseThrow(() -> new NoSuchElementException("No read status with id: " +id));
+        ReadStatus status = find(id);
         status.update();//마지막 시간 현재로 업데이트
         return readStatusRepository.save(status);
     }
 
     @Override
     public void delete(UUID readStatusId) {
-        readStatusRepository.find(readStatusId)
-                .orElseThrow(() -> new NoSuchElementException("No read status with id: " + readStatusId));
+        find(readStatusId);
         readStatusRepository.delete(readStatusId);
     }
 
     private void checkValidation(UUID userId, UUID channelId) {
         if(userRepository.findById(userId).isEmpty()) {
-            throw new NoSuchElementException("User not found");
+            throw new BusinessLogicException(ExceptionCode.USER_NOT_FOUND);
         }
         if(channelRepository.findById(channelId).isEmpty()) {
-            throw new NoSuchElementException("Channel not found");
+            throw new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND);
         }
         if(readStatusRepository.findByUserIdAndChannelId(userId, channelId).isPresent()) {
-            throw new IllegalArgumentException("already Exists");
+            throw new BusinessLogicException(ExceptionCode.READ_STATUS_ALREADY_EXIST);
         }
     }
 }
