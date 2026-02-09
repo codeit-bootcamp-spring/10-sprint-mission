@@ -61,7 +61,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelResponse findById(UUID channelId) {
         if (channelId == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
+            throw new RuntimeException("요청이 올바르지 않습니다.");
         }
 
         // 채널이 존재하는지 검색 및 검증
@@ -75,7 +75,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public List<ChannelResponse> findAllByUserId(UUID userId) {
         if (userId == null) {
-            throw new RuntimeException("유저가 존재하지 않습니다.");
+            throw new RuntimeException("요청이 올바르지 않습니다.");
         }
 
         // 전체 채널 목록 조회
@@ -105,14 +105,14 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelResponse update(PublicChannelUpdateRequest request) {
+    public ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request) {
         // DTO 검증
-        if (request == null || request.id() == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
+        if (request == null || channelId == null) {
+            throw new RuntimeException("요청이 올바르지 않습니다.");
         }
 
         // 수정 대상 채널이 존재하는지 검증
-        Channel channel = channelRepository.findById(request.id())
+        Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
 
         // 비공개 채널일 경우 수정 불가
@@ -149,7 +149,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void delete(UUID channelId) {
         if (channelId == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
+            throw new RuntimeException("요청이 올바르지 않습니다.");
         }
 
         // 삭제 대상 채널이 존재하는지 검증
