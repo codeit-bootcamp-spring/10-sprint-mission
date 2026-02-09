@@ -24,6 +24,14 @@ public class ReadStatusController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{read-status-id}")
+    public ResponseEntity<ReadStatusDto.Response> updateReadStatus(
+            @PathVariable("read-status-id") UUID readStatusId,
+            @RequestBody ReadStatusDto.UpdateRequest request) {
+        ReadStatusDto.Response response = readStatusService.update(readStatusId, request);
+        return ResponseEntity.ok(response);
+    }
+
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<ReadStatusDto.Response> findReadStatus(@RequestParam("read-status-id") UUID readStatusId) {
         ReadStatusDto.Response response = readStatusService.find(readStatusId);
