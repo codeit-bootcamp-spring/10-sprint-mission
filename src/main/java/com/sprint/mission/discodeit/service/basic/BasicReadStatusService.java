@@ -23,7 +23,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatusResponse create(ReadStatusCreateRequest request){
-        ReadStatus readStatus = new ReadStatus(request.userID(), request.channelID());
+        ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
         ReadStatus newReadStatus = readStatusRepository.save(readStatus);
         return new ReadStatusResponse(newReadStatus.getId(), newReadStatus.getLastReadTime());
     }

@@ -35,6 +35,7 @@ public class BasicChannelService implements ChannelService {
     public ChannelResponse createPublic(ChannelCreateRequestPublic request) {
         // 같은 이름 존재 check
         channelRepository.findAll().stream()
+                .filter(ch -> "Public".equals(ch.getDescriptions()))
                 .filter(ch -> ch.getName().equals(request.name()))
                 .findFirst()
                 .ifPresent(ch -> {
@@ -54,7 +55,15 @@ public class BasicChannelService implements ChannelService {
         Channel channel = channelMapper.toEntity(request);
 
         // private channel의 userList
-        List<User> users = new ArrayList<>(request.users());
+        List<User> users = new ArrayList<>();
+
+        for (UUID id : request.userIds()){
+            User user = userRepository.find(id)
+                    .orElseThrow();
+            users.add(user);
+            channel.addMember(user);
+            System.out.println(channel.getMembersList());
+        }
 
         // ReadStatus 생성 -> 저장 , ReadStatus = User의 Channel 목록
         for(User user : users) {
@@ -99,7 +108,7 @@ public class BasicChannelService implements ChannelService {
         // Channel 전체 정보 담을 List 선언
         List<ChannelFindResponse> channelResponses = new ArrayList<>();
 
-        // Channel type에 따라 channelReponses에 저장 : Public은 무조건 저장, Private은 user가 channel에 소속되어 있을 경우
+        // Channel type에 따라 channelResponses에 저장 : Public은 무조건 저장, Private은 user가 channel에 소속되어 있을 경우
         for (Channel channel : channels) {
             boolean isPublic = channel.getDescriptions().equals("Public");
             boolean isPrivate = channel.getDescriptions().equals("Private");

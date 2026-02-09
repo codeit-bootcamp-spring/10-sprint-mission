@@ -18,12 +18,12 @@ public class BinaryContentController {
 
     // binary-Content 단건 조회
     @RequestMapping(value="/{content-id}", method= RequestMethod.GET)
-    public BinaryContentResponse getBinaryContent(@PathVariable("content-id") UUID contentID){
-        return binaryContentService.find(contentID);
+    public BinaryContentResponse getBinaryContent(@PathVariable("content-id") UUID contentId){
+        return binaryContentService.find(contentId);
     }
 
     // binary-content 다건 조회
-    @RequestMapping(method=RequestMethod.GET)
+    @RequestMapping(value="/findAll",method=RequestMethod.GET)
     public List<BinaryContentResponse> getBinaryContents(@RequestParam("ids") List<UUID> contentIDs){
         return binaryContentService.findAllByIdIn(contentIDs);
     }

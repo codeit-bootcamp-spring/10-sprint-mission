@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.dto.user.response;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public record UserResponse(
         UUID userID,
+        Instant createdAt,
+        Instant updateAt,
         String name,
-        UserStatusResponse userStatus // DTO로 수정해야함
-) {
-}
+        String email,
+        UUID profileId,
+        Boolean online
+) {}

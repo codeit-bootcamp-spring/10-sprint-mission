@@ -19,7 +19,7 @@ public class ReadStatusController {
     }
 
     // ReadStatus 정보 생성
-    @RequestMapping(method= RequestMethod.POST)
+    @RequestMapping(method=RequestMethod.POST)
     public ReadStatusResponse postReadStatus(@RequestBody ReadStatusCreateRequest request){
         return readStatusService.create(request);
     }
@@ -32,8 +32,8 @@ public class ReadStatusController {
     }
 
     // 특정 사용자의 메시지 수신 정보 조회
-    @RequestMapping(value="/user", method=RequestMethod.GET)
-    public List<ReadStatusResponse> getReadStatusByUserId(@RequestParam("userId") UUID userId){
+    @RequestMapping(value="/list/{user-id}", method=RequestMethod.GET)
+    public List<ReadStatusResponse> getReadStatusByUserId(@PathVariable("user-id") UUID userId){
         return readStatusService.findAllByUserID(userId);
     }
 }

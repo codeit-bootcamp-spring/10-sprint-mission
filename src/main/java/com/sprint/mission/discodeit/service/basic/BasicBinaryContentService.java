@@ -34,7 +34,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public List<BinaryContentResponse> findAllByIdIn(List<UUID> contentIDs) {
         if (contentIDs.isEmpty()) {
-            return List.of();
+            return null;
         }
 
         List<BinaryContent> contents = new ArrayList<>();

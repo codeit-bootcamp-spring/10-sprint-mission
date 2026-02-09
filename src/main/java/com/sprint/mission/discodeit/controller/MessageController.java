@@ -38,7 +38,7 @@ public class MessageController {
     }
 
     // 특정 Channel 메시지 목록 조회
-    @RequestMapping(method=RequestMethod.GET)
+    @RequestMapping(value="/list-by-channel",method=RequestMethod.GET)
     public List<MessageResponse> getAllMessages(@RequestParam("channel-id") UUID channelID){
         return messageService.findMessagesByChannel(channelID);
     }

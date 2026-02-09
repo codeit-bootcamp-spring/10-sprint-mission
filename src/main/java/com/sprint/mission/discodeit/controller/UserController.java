@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import com.sprint.mission.discodeit.dto.userStatus.UserStatusResponse;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -50,9 +51,10 @@ public class UserController {
     }
 
     // user 다건 조회
-    @RequestMapping(method = RequestMethod.GET)
-    public List<UserResponse> getAllUsers(){
-        return userService.findAll();
+    @RequestMapping(value="/user/findAll", method = RequestMethod.GET)
+    public ResponseEntity<List<UserResponse>> getAllUsers(){
+        List<UserResponse> users = userService.findAll();
+        return ResponseEntity.ok(users);
     }
 
     // user status 업데이트

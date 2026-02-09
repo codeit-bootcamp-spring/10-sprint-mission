@@ -74,7 +74,7 @@ public class BasicUserService implements UserService {
         return users.stream()
                 .map(
                         user -> {
-                            UserStatus status = userStatusRepository.find(user.getId())
+                            UserStatus status = userStatusRepository.findByUserID(user.getId())
                                     .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + user.getId()));
                             return userMapper.toResponse(user, status);
                         })

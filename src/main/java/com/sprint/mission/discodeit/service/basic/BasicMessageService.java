@@ -33,8 +33,8 @@ public class BasicMessageService implements MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userID()));
         Channel channel = channelRepository.find(request.channelId());
 
-        // sender가 해당 channel의 member인지 check
-        if (!channel.getMembersList().contains(sender)) {
+        // Channel이 private일 경우 sender가 해당 channel의 member인지 check
+        if (channel.getDescriptions().equals("Private") && (!channel.getMembersList().contains(sender))) {
             throw new IllegalArgumentException("User is not in this channel." + request.channelId());
         }
 
