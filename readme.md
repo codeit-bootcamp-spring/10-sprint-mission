@@ -39,3 +39,7 @@ mission-3 start!
     - `MessageServiceDTO`
     - `ReadStatusServiceDTO`
     - `UserStatusServiceDTO`
+
+- Todo
+  - toJson
+  - encryption, decryption
