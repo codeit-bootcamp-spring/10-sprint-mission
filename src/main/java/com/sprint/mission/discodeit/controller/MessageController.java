@@ -20,6 +20,7 @@ public class MessageController {
     public MessageController(MessageService messageService) {
         this.messageService = messageService;
     }
+    // TODO: @RequiredArgsConstructor로 리펙토링 고려
 
     // 메시지를 보낼 수 있다.
     @RequestMapping(method = RequestMethod.POST)
