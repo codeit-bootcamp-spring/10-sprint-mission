@@ -6,10 +6,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,8 +26,17 @@ public class BinaryContentController {
         return binaryContentService.find(fileId);
     }
 
+    @RequestMapping(value = "/files", method = RequestMethod.GET)
+    public List<BinaryContentResponseDto> getAllFiles(
+            @RequestParam List<UUID> fileIdList
+    ){
+        return fileIdList.stream()
+                .map(binaryContentService::find)
+                .toList();
+    }
+
     //메시지 내부 이미지 전원 조회
-    @RequestMapping(value = "/channels/{channelId}/messages/{messageId}/files")
+    @RequestMapping(value = "/channels/{channelId}/messages/{messageId}/files", method = RequestMethod.GET)
     public List<BinaryContentResponseDto> getMessagesFiles(
             @PathVariable UUID messageId
     ){
