@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discodeit</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+
+    <!-- 로그인 화면 -->
+    <div id="login-view">
+        <h1>로그인</h1>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button id="loginBtn">로그인</button>
+        <p id="loginError" class="error-message"></p>
+    </div>
+
+    <!-- 채널 목록 화면 -->
+    <div id="channel-view" style="display:none;">
+        <h2>채널 목록</h2>
+        <ul id="channelList"></ul>
+        <button id="showUsersBtn">참여자 목록 보기</button>
+    </div>
+
+    <!-- 메시지 화면 -->
+    <div id="message-view" style="display:none;" class="chat-view">
+
+        <!-- 상단 헤더 -->
+        <div class="chat-header">
+            <h2>메시지</h2>
+            <button id="backToChannelsBtn">채널 목록으로</button>
+        </div>
+
+        <!-- 메시지 스크롤 영역 -->
+        <div id="messageList"></div>
+
+        <!-- 입력 영역 -->
+        <div class="message-input-area">
+            <textarea id="messageInput" rows="2" placeholder="메시지 입력"></textarea>
+            <button id="sendMessageBtn">전송</button>
+        </div>
+
+    </div>
+
+
+
+    <!-- 사용자 목록 화면 -->
+    <div id="user-view" style="display:none;">
+        <h2>사용자 목록</h2>
+        <div id="userList"></div>
+        <button id="closeUserListBtn">닫기</button>
+    </div>
+
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>

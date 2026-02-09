@@ -1,0 +1,261 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+
+    height: 100%;          /* 🔥 */
+    display: flex;         /* 🔥 */
+    flex-direction: column;
+}
+
+h1, h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+input, button {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+button {
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* 사용자 목록 스타일 */
+.user-list, #channelList{
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    list-style: none;
+    padding: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+#channelList {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#messageList {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 550px;
+    min-height: 0; /* 🔥 flex 스크롤 버그 방지용 */
+    padding: 15px;
+    background-color: #f9fafb;
+}
+
+.user-item, .channel-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.user-item:last-child, .channel-item:last-child, .message-item:last-child {
+    border-bottom: none;
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    object-fit: cover;
+}
+
+.user-info, .channel-info {
+    flex-grow: 1;
+}
+
+.user-name, .channel-name {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.user-email {
+    font-size: 14px;
+    color: #666;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.online { background-color: #4CAF50; color: white; }
+.offline { background-color: #9e9e9e; color: white; }
+
+.message-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.message-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+    object-fit: cover;
+}
+
+.message-content {
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    padding: 10px;
+    max-width: 70%;
+    flex-grow: 1;
+    position: relative;
+}
+
+.message-author {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.message-text {
+    word-wrap: break-word;
+}
+
+.message-time {
+    font-size: 12px;
+    color: #666;
+    text-align: right;
+    margin-top: 5px;
+}
+.channel-desc {
+    font-size: 12px;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.channel-section {
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.public-section { background-color: #e8f5e9; } /* 연한 초록 */
+.private-section { background-color: #fff3e0; } /* 연한 주황 */
+
+.section-header {
+    font-weight: bold;
+    padding: 5px 10px;
+    background-color: #cfd8dc;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    display: inline-block;
+}
+
+.channel-item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    margin-bottom: 5px;
+    border-radius: 6px;
+    background-color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.channel-item:hover {
+    background-color: #e0f7fa;
+}
+
+.channel-name {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.channel-desc {
+    font-size: 12px;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+}
+.chat-view {
+    display: flex;
+    flex-direction: column;
+    flex: 1;        /* 🔥 container 높이를 그대로 사용 */
+    min-height: 0; /* 🔥 flex 내부 스크롤 필수 */
+
+}
+.chat-header {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: white;
+    border-bottom: 1px solid #ddd;
+}
+
+.message-input-area {
+    flex-shrink: 0;
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background-color: white;
+}
+
+#messageInput {
+    flex: 1;
+    border-radius: 20px;
+    padding: 10px 14px;
+    resize: none;
+}
+.message-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    max-width: 75%;
+}
+
+.message-item.mine {
+    margin-left: auto;
+    flex-direction: row-reverse;
+}
+
+.message-item.mine .message-content {
+    background-color: #dbeafe;
+}
+
+.message-item.mine .message-time {
+    text-align: left;
+}
