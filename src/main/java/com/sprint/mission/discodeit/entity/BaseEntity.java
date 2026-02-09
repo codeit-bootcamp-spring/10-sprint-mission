@@ -15,16 +15,16 @@ public abstract class BaseEntity implements Serializable {
     @Getter
     private final Instant createdAt;
     @Getter
-    private Instant updateAt;
+    private Instant updatedAt;
 
     protected BaseEntity() {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.updateAt = this.createdAt;
+        this.updatedAt = this.createdAt;
     }
 
-    protected void setUpdateAt() {
-        this.updateAt = Instant.now();
+    protected void setUpdatedAt() {
+        this.updatedAt = Instant.now();
     }
 
     @Override

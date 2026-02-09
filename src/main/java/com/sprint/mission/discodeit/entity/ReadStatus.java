@@ -21,7 +21,7 @@ public class ReadStatus extends BaseEntity{
 
     public void updateLastReadAt() {
         this.lastReadAt = Instant.now();
-        setUpdateAt();
+        setUpdatedAt();
     }
 }
 

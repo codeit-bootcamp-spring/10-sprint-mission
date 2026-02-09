@@ -24,6 +24,6 @@ public class Message extends BaseEntity {
 
     public void update(String content) {
         this.content = content;
-        setUpdateAt();
+        setUpdatedAt();
     }
 }

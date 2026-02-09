@@ -17,22 +17,24 @@ public class UserDto {
     ) {}
 
     public record Response(
-            UUID userId,
+            UUID id,
+            Instant createdAt,
+            Instant updatedAt,
             String username,
             String email,
             UUID profileId,
-            boolean isOnline,
-            Instant lastActiveAt
+            boolean online
     ) {
         public static Response of(User user, UserStatus status) {
             return new Response(
                     user.getId(),
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
                     user.getUsername(),
                     user.getEmail(),
                     user.getProfileId(),
-                    status.isOnline(),
-                    status.getLastActiveAt()
-            );
+                    status.isOnline()
+                    );
         }
     }
 

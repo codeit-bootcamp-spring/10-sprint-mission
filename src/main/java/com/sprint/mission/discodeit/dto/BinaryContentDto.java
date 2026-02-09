@@ -14,7 +14,7 @@ public class BinaryContentDto {
     ) {}
 
     public record Response(
-            UUID contentId,
+            UUID binaryContentId,
             String fileName,
             long size,
             String contentType,

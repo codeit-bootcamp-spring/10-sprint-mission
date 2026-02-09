@@ -19,7 +19,7 @@ public class UserStatus extends BaseEntity{
 
     public void updateOnline() {
         this.lastActiveAt = Instant.now();
-        setUpdateAt();
+        setUpdatedAt();
     }
 
     public boolean isOnline() {

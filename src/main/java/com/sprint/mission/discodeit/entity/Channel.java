@@ -18,11 +18,11 @@ public class Channel extends BaseEntity {
 
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
-        setUpdateAt();
+        setUpdatedAt();
     }
 
     public void updateDescription(String description) {
         this.description = description;
-        setUpdateAt();
+        setUpdatedAt();
     }
 }
