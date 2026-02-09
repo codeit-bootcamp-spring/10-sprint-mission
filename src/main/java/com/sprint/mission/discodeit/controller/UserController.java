@@ -74,7 +74,7 @@ public class UserController {
     ) {
         // 서비스 계층에 수정을 위임
         UserResponse response = userService.update(id, request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
         // 200 : 요청이 성공했음을 나타내는 성공 응답 상태 코드
     }
     // TODO: 존재하지 않는 사용자 수정 시도 -> 404 반환
@@ -95,7 +95,7 @@ public class UserController {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<UserResponse> responses = userService.findAll();
-        return ResponseEntity.ok(responses);
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
     // TODO: 특정 사용자 조회? userService.find()
@@ -108,7 +108,7 @@ public class UserController {
             @RequestBody UserStatusUpdateRequest request
     ) {
         UserStatusResponse response = userStatusService.updateByUserId(userId, request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     // TODO: 전역예외처리 @RestControllerAdvice
