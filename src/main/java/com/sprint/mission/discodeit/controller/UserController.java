@@ -56,7 +56,7 @@ public class UserController {
     }
 
     // 모든 사용자 조회
-    @RequestMapping(value = "/user", method = RequestMethod.GET)
+    @RequestMapping(value = "/user/findAll", method = RequestMethod.GET)
     public ResponseEntity<List<UserDto>> findAll() {
         List<UserDto> userDtos = userService.findAll();
         return new ResponseEntity<>(userDtos, HttpStatus.OK);
