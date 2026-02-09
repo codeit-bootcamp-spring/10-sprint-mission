@@ -67,7 +67,7 @@ public class UserController {
         userService.delete(id);
     }
 
-    @RequestMapping(value = "/api/user/findall", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/user/findAll", method = RequestMethod.GET)
     public ResponseEntity<List<UserResponseDto>> getAllUser(){
         return ResponseEntity.ok(userService.findAll());
     }

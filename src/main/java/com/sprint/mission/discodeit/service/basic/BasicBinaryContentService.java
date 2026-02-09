@@ -27,11 +27,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public BinaryContentResponseDto find(UUID binaryContentId) {
+    public BinaryContent find(UUID binaryContentId) {
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
                 .orElseThrow(() -> new AssertionError("BinaryContent not found"));
 
-        return binaryContentResponseMapper.toDto(binaryContent);
+        return binaryContent;
     }
 
     @Override
