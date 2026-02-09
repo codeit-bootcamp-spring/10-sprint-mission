@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final ChannelRepository channelRepository;
+    private final BinaryContentService binaryContentService;
 
     @Override
     public UserDto.response createUser(UserDto.createRequest userReq, BinaryContentDto.createRequest profileReq) {
@@ -129,15 +131,16 @@ public class BasicUserService implements UserService {
     }
 
     private void processUpdateProfile(User user, BinaryContentDto.createRequest profileReq) {
+        // profile이미지가 삭제
         Optional.ofNullable(profileReq).ifPresent(p -> {
+            Optional.ofNullable(user.getProfileId()).ifPresent(binaryContentService::deleteById);
+
             BinaryContentType contentType = p.contentType();
             String fileName = p.filename();
             String url = p.url();
             BinaryContent content = new BinaryContent(contentType, fileName, url);
             binaryContentRepository.save(content);
-            binaryContentRepository.findById(content.getId()).ifPresent(c -> {
-                user.updateProfileId(c.getId());
-            });
+            user.updateProfileId(content.getId());
         });
     }
 
