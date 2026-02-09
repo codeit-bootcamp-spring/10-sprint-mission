@@ -5,8 +5,6 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
 
 @Repository
 public class JCFMessageRepository extends JCFDomainRepository<Message> implements MessageRepository {
@@ -21,8 +19,4 @@ public class JCFMessageRepository extends JCFDomainRepository<Message> implement
         return message;
     }
 
-    @Override
-    public List<Message> findAllByChannelId(UUID channelId) {
-        return filter(message -> message.isInChannel(channelId)).toList();
-    }
 }

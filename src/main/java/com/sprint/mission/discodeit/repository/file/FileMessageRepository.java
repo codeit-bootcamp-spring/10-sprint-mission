@@ -5,8 +5,6 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.UUID;
 
 public class FileMessageRepository extends FileDomainRepository<Message> implements MessageRepository {
 
@@ -20,8 +18,4 @@ public class FileMessageRepository extends FileDomainRepository<Message> impleme
         return save(message, Message::getId);
     }
 
-    @Override
-    public List<Message> findAllByChannelId(UUID channelId) throws IOException {
-        return filter(message -> message.isInChannel(channelId)).toList();
-    }
 }
