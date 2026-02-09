@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/messages")
+@RequestMapping("api/messages")
 public class MessageController {
     private final MessageService messageService;
 

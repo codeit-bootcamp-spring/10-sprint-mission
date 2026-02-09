@@ -13,17 +13,17 @@ import java.util.UUID;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/readStatus")
+@RequestMapping("api/readStatus")
 public class ReadStatusController {
     private final ReadStatusService readStatusService;
 
-    @RequestMapping(value = "{userId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
     @ResponseBody
     public List<ReadStatusResponseDTO> getReadStatus(@PathVariable UUID userId){
         return readStatusService.findAllByUserId(userId);
     }
 
-    @RequestMapping(value = "{channelId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/{channelId}", method = RequestMethod.POST)
     @ResponseBody
     public List<ReadStatusResponseDTO> createReadStatus(@PathVariable UUID channelId){
         return readStatusService.create(channelId);
