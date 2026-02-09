@@ -23,6 +23,7 @@ public class ReadStatusController {
 
     /**
      * 특정 채널 메시지 수신 정보 생성
+     * 채널 생성/참여 시 자동으로 생성되게 이미 설정되어 있음
      */
     @RequestMapping(value = "/read-status/{channelId}", method = RequestMethod.POST)
     public ResponseEntity createReadStatus(@PathVariable UUID channelId,
