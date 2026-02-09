@@ -1,4 +1,4 @@
 discodeit:
   repository:
-    type: jcf
+    type: file
     file-directory: .discodeit
