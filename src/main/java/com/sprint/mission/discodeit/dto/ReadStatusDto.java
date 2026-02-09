@@ -12,7 +12,7 @@ public class ReadStatusDto {
     ) {}
 
     public record Response(
-            UUID id,
+            UUID readStatusId,
             UUID userId,
             UUID channelId,
             Instant lastReadAt
