@@ -18,15 +18,15 @@ import java.util.UUID;
 public class ChannelController {
     private final ChannelService channelService;
 
-    @RequestMapping(value = "/create/public", method = RequestMethod.POST)
-    public ChannelResponseDto createPublicChannel(
+    @RequestMapping(value = "/public", method = RequestMethod.POST)
+    public ChannelResponseDto postPublicChannel(
             @RequestBody PublicChannelCreateRequestDto requestDto
     ){
         return channelService.createPublicChannel(requestDto);
     }
 
-    @RequestMapping(value = "create/private", method = RequestMethod.POST)
-    public ChannelResponseDto createPrivateChannel(
+    @RequestMapping(value = "/private", method = RequestMethod.POST)
+    public ChannelResponseDto postPrivateChannel(
             @RequestBody PrivateChannelCreateRequestDto requestDto
     ){
         return channelService.createPrivateChannel(requestDto);
