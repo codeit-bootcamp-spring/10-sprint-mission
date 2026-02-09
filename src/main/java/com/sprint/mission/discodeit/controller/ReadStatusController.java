@@ -9,15 +9,15 @@ import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/channels/{channelId}")
 public class ReadStatusController {
     private final ReadStatusService readStatusService;
 
-    @RequestMapping(value = "/readstatus", method = RequestMethod.POST)
+    @RequestMapping(value = "/channels/{channelId}/readstatus", method = RequestMethod.POST)
     public ReadStatusResponseDto createReadStatus(
             @PathVariable UUID channelId,
             @RequestParam UUID userId
@@ -25,7 +25,7 @@ public class ReadStatusController {
         return readStatusService.create(new ReadStatusCreateRequestDto(userId, channelId));
     }
 
-    @RequestMapping(value = "/readstatus", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/channels/{channelId}/readstatus", method = RequestMethod.PATCH)
     public ReadStatusResponseDto updateReadStatus(
             @PathVariable UUID channelId,
             @RequestParam UUID userId
@@ -33,12 +33,17 @@ public class ReadStatusController {
         return readStatusService.update(new ReadStatusUpdateRequestDto(channelId, userId, Instant.now()));
     }
 
-    @RequestMapping(value = "/messages/{messageId}/readstatus", method = RequestMethod.GET)
+    @RequestMapping(value = "/channels/{channelId}/messages/{messageId}/readstatus", method = RequestMethod.GET)
     public IsMessageReadResponseDto getReadStatus(
             @PathVariable UUID messageId,
             @RequestParam UUID userId
     ){
-    return readStatusService.findByUserIdAndMessageId(userId, messageId);
+        return readStatusService.findByUserIdAndMessageId(userId, messageId);
+    }
+
+    @RequestMapping(value = "/{userId}/readstatus")
+    public List<IsMessageReadResponseDto> getAllReadStatus(@PathVariable UUID userId){
+        return readStatusService.findAllByUserId(userId);
     }
 
 }

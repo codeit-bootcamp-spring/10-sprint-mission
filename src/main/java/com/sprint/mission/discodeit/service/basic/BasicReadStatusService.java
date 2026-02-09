@@ -4,8 +4,10 @@ import com.sprint.mission.discodeit.dto.readstatus.IsMessageReadResponseDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequestDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequestDto;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.mapper.channel.ChannelResponseMapper;
 import com.sprint.mission.discodeit.mapper.readstatus.ReadStatusResponseMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -16,23 +18,27 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
-    private final ChannelRepository ChannelRepository;
+    private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
     //
     private final ReadStatusResponseMapper readStatusResponseMapper;
+    private final ChannelResponseMapper channelResponseMapper;
 
     @Override
     public ReadStatusResponseDto create(ReadStatusCreateRequestDto readStatusCreateRequestDto) {
         //못 찾으면 예외 발생시킴
         if(!userRepository.existsById(readStatusCreateRequestDto.userId())) throw new AssertionError("User not found");
-        if(!ChannelRepository.existsById(readStatusCreateRequestDto.channelId())) throw new AssertionError("Channel not found");
+        if(!channelRepository.existsById(readStatusCreateRequestDto.channelId())) throw new AssertionError("Channel not found");
 
         //이미 존재하면 예외
         if(readStatusRepository.findAll().stream()
@@ -70,14 +76,30 @@ class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public List<ReadStatusResponseDto> findAllByUserId(UUID userId) {
+    public List<IsMessageReadResponseDto> findAllByUserId(UUID userId) {
+        if (!userRepository.existsById(userId)) throw new AssertionError("User not found");
 
-        return readStatusRepository.findAll().stream()
+        List<ReadStatus> statusList = readStatusRepository.findAll().stream()
                 .filter(readStatus -> readStatus.getUserID().equals(userId))
-                .map(readStatusResponseMapper::toDto)
                 .toList();
 
+        Map<UUID, ReadStatus> readStatusByChannelId = statusList.stream()
+                .collect(Collectors.toMap(
+                        ReadStatus::getChannelID,
+                        Function.identity(),
+                        (a, b) -> a
+                ));
+
+        return messageRepository.findAll().stream()
+                .filter(message -> readStatusByChannelId.containsKey(message.getChannelId()))
+                .map(message -> {
+                    ReadStatus rs = readStatusByChannelId.get(message.getChannelId());
+                    boolean isRead = message.getCreatedAt().isBefore(rs.getLastUserReadTimeInChannel());
+                    return new IsMessageReadResponseDto(isRead, userId, message.getId());
+                })
+                .toList();
     }
+
 
     @Override
     public ReadStatusResponseDto update(ReadStatusUpdateRequestDto readStatusUpdateRequestDto) {

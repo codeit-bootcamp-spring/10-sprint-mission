@@ -12,7 +12,7 @@ public interface ReadStatusService {
     public ReadStatusResponseDto create(ReadStatusCreateRequestDto readStatusCreateRequestDto);
     public ReadStatusResponseDto find(UUID id);
     public IsMessageReadResponseDto findByUserIdAndMessageId(UUID userId, UUID channelId);
-    public List<ReadStatusResponseDto> findAllByUserId(UUID userId);
+    public List<IsMessageReadResponseDto> findAllByUserId(UUID userId);
     public ReadStatusResponseDto update(ReadStatusUpdateRequestDto readStatusUpdateRequestDto);
     public void delete(UUID id);
 }
