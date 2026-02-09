@@ -145,12 +145,12 @@ public class BasicChannelService implements ChannelService {
         User user = getUserOrThrow(userId);
 
         if (channel.getParticipants().stream()
-                .anyMatch(u -> Objects.equals(u, userId))) {
+                .noneMatch(u -> Objects.equals(u, userId))) {
             throw new IllegalStateException("참여하지 않은 참가자입니다");
         }
 
         if (user.getJoinedChannels().stream()
-                .anyMatch(u -> Objects.equals(u, channelId))) {
+                .noneMatch(u -> Objects.equals(u, channelId))) {
             throw new IllegalStateException("참가하지 않은 채널입니다");
         }
 
