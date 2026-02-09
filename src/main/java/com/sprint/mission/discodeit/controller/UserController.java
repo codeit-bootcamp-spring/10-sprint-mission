@@ -2,13 +2,16 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-// 사용자관리 - 사용자를 등록할 수 있다.
+import java.util.UUID;
+
+// 사용자 관리
 
 /*
 학습 내용
@@ -36,6 +39,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    // 사용자를 등록할 수 있다.
     @RequestMapping(method = RequestMethod.POST)
     // 해당 메서드를 특정 HTTP 경로와 메서드에 바인딩
     // 클라이언트가 POST 방식으로 요청을 보낼 때만 메서드 실행
@@ -43,13 +47,43 @@ public class UserController {
     // method를 생략할 경우 모든 HTTP 메서드에 응답하게 되어 보안 취약점이 될 수 있으므로 유의
     public ResponseEntity<UserResponse> signUp(@RequestBody UserCreateRequest request) {
         // ResponseEntity -> HTTP 전체 메시지를 구성할 수 있게 해주는 스프링의 클래스
+            // HTTPEntity 클래스 상속 받음
+            // 헤더 + 본문 + 상태코드
         // @RequestBody -> 클라이언트가 보내는 JSON 데이터를 자바 객체인 UserCreateRequest(DTO)로 변환하려면 필요
         UserResponse response = userService.create(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
         // CREATED -> 201 : 요청이 성공적으로 처리되었으며, 자원이 생성되었음을 나타내는 성공 상태 응답 코드
     }
-
     // TODO: Validation 추가
     // TODO: Exception Handling
+
+    // 사용자 정보를 수정할 수 있다.
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<UserResponse> updateUser(
+            @PathVariable UUID id,
+            // @PathVariable -> URL 경로에 포함된 동적인 값을 파라미터로 받아오는 도구
+            // 특정 리소스를 수정하거나 조회할 때는 URL에 해당 리소스의 고유 식별자를 포함하는 것이 REST API의 표준 방식
+            @RequestBody UserUpdateRequest request
+    ) {
+        // 서비스 계층에 수정을 위임
+        UserResponse response = userService.update(id, request);
+        return ResponseEntity.ok(response);
+        // 200 : 요청이 성공했음을 나타내는 성공 응답 상태 코드
+    }
+    // TODO: 존재하지 않는 사용자 수정 시도 -> 404 반환
+    // TODO: 현재 API는 id만 알면 누구나 다른 사람의 정보를 수정할 수 있는 구조 -> 보안 문제
+
+    // 사용자를 삭제할 수 있다.
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+        // 서비스 계층에 삭제 처리를 위임
+        userService.delete(id);
+
+        // 삭제 성공 시 관례적으로 '204 No Content'를 반환
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        // NO_CONTENT -> 204 : 요청이 성공했으나 응답 본문에 보낼 데이터는 없다
+    }
+
+
 }
 

@@ -5,7 +5,7 @@ const API_BASE_URL = '/api';
 // 실제로는 로그인 후 세션/토큰에서 가져오거나, DB에 저장된 본인의 UUID를 넣어야 합니다.
 // 서버 로그 등을 확인하여 유효한 User UUID를 이곳에 입력해주세요.
 const currentUser = {
-    id: "YOUR_USER_UUID_HERE", // <--- 여기에 실제 DB의 User ID(UUID)를 붙여넣으세요!
+    id: "bac055ad-4c27-451e-9a68-2f29508da8f5", // <--- 여기에 실제 DB의 User ID(UUID)를 붙여넣으세요!
     username: "Woody" // 화면에 표시될 본인 이름
 };
 
