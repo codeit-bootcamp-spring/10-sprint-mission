@@ -15,13 +15,19 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/binary-contents")
+@RequestMapping("/api/binaryContent")
 @RequiredArgsConstructor
 public class BinaryContentController {
 
     private final BasicBinaryContentService binaryContentService;
 
-    @GetMapping("/{id}")
+    @RequestMapping(value = "/find", method = RequestMethod.GET)
+    public ResponseEntity<BinaryContent> find(@RequestParam UUID binaryContentId) {
+        BinaryContent content = binaryContentService.findContent(binaryContentId);
+        return ResponseEntity.ok(content);
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
     public ResponseEntity<byte[]> download(@PathVariable UUID id) {
         BinaryContent content = binaryContentService.findContent(id);
 
@@ -33,7 +39,7 @@ public class BinaryContentController {
                 .body(content.getBytes());
     }
 
-    @GetMapping
+    @RequestMapping(method = RequestMethod.GET)
     public List<BinaryContentResponse> getBinaryContents(@RequestParam List<UUID> ids) {
         return binaryContentService.findAllByIdIn(ids);
     }

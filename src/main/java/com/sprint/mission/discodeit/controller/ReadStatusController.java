@@ -18,19 +18,19 @@ public class ReadStatusController {
 
     private final BasicReadStatusService readStatusService;
 
-    @PostMapping
+    @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)
     public ReadStatusResponse createStatus(@RequestBody ReadStatusCreateRequest request) {
         return readStatusService.createStatus(request);
     }
 
-    @PutMapping
+    @RequestMapping(method = RequestMethod.PUT)
     @ResponseStatus(HttpStatus.OK)
     public ReadStatusResponse updateStatus(@RequestBody ReadStatusUpdateRequest request) {
         return readStatusService.updateStatus(request);
     }
 
-    @GetMapping
+    @RequestMapping(method = RequestMethod.GET)
     @ResponseStatus(HttpStatus.OK)
     public List<ReadStatusResponse> getReadStatuses(@RequestParam UUID userId) {
         return readStatusService.findAllByUserId(userId);

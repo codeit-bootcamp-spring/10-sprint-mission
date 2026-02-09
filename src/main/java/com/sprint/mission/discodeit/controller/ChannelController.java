@@ -53,13 +53,13 @@ public class ChannelController {
         return channelService.getChannel(id);
     }
 
-    @PostMapping("/{channelId}/enter")
+    @RequestMapping(value = "/{channelId}/enter", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
     public ChannelResponse enterChannel(@RequestParam UUID userId, @PathVariable UUID channelId) {
         return channelService.enterChannel(userId, channelId);
     }
 
-    @PostMapping("/{channelId}/leave")
+    @RequestMapping(value = "/{channelId}/leave", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.OK)
     public void leaveChannel(@RequestParam UUID userId, @PathVariable UUID channelId) {
         channelService.leaveChannel(userId, channelId);
