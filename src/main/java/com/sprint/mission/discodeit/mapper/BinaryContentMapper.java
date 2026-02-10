@@ -11,12 +11,14 @@ public class BinaryContentMapper {
         return new BinaryContentResponseDto(
                 content.getId(),
                 content.getFileName(),
+                content.getContentType(),
                 content.getBytes()
         );
     }
     public BinaryContent toEntity(BinaryContentCreateDto dto) {
         return new BinaryContent(
                 dto.fileName(),
+                dto.contentType(),
                 dto.bytes()
         );
     }
