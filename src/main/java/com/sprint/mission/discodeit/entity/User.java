@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserInfoUpdate;
+import com.sprint.mission.discodeit.dto.UserServiceDTO.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.UserServiceDTO.UserResponse;
 import lombok.Getter;
 import lombok.NonNull;
@@ -17,7 +17,7 @@ public class User implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     @Getter
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
     private final Long createdAt = Instant.now().getEpochSecond();
     private Long updatedAt = createdAt;
     private String username;
@@ -27,8 +27,9 @@ public class User implements Serializable {
     // todo: add message, channel id list
     // todo: add parameters of update, which is messageId, channelId
 
-    public User(@NonNull String username, @NonNull String email,
+    public User(@NonNull UUID id, @NonNull String username, @NonNull String email,
                 @NonNull String password, UUID profileId) {
+        this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
@@ -55,7 +56,7 @@ public class User implements Serializable {
         return true;
     }
 
-    public void update(UserInfoUpdate model) {
+    public void update(UserUpdateRequest model) {
         boolean hasUpdated = false;
         hasUpdated |= updateIfChanged(this.username, model.newUsername(), val -> this.username = val);
         hasUpdated |= updateIfChanged(this.email, model.newEmail(), val -> this.email = val);
