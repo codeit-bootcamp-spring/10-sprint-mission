@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentIdsRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,8 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/binary-contents")
+@RequestMapping("/api/binaryContent")
+// TODO: URL에서는 소문자 사용이 관례
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
 
@@ -40,4 +42,12 @@ public class BinaryContentController {
         List<BinaryContentResponse> response = binaryContentService.findAllByIdIn(request.ids());
         return ResponseEntity.ok(response);
     }
+
+//    @RequestMapping(value = "/find",method = RequestMethod.GET)
+//    public ResponseEntity<BinaryContent> findBinaryContent(
+//            @RequestParam UUID binaryContentId
+//    ) {
+//        BinaryContentResponse response = binaryContentService.find(binaryContentId);
+//
+//    }
 }

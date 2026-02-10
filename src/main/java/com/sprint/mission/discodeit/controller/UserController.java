@@ -31,7 +31,7 @@ import java.util.UUID;
 // @RestController =  @Controller + @ResponseBody
 // 해당 클래스가 HTTP 요청을 처리하는 컨트롤러임을 나타내며, 모든 메서드의 반환 값을 HTTP 응답 본문(Response Body)에 직접 쓰겠다는 의미
 // 스프링이 내부적으로 MappingJackson2HttpMessageConverter 등을 사용하여 자바 객체를 JSON 문자열로 자동 변환해 줌
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/users")
 // 해당 컨트롤러 내의 모든 메서드에 공통으로 적용될 기본 경로를 정의
 // 특정 URL 요청을 자바의 특정 메서드와 연결하는 역할
 // 여러 속성을 통해 요청을 필터링할 수도 있음

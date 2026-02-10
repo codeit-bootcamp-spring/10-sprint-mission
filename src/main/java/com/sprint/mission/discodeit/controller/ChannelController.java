@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/channels")
+@RequestMapping("/api/channels")
 public class ChannelController {
     private final ChannelService channelService;
 

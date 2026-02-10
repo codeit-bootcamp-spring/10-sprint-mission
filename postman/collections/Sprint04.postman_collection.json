@@ -24,13 +24,12 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/auth/login",
+              "raw": "{{baseURL}}/api/auth/login",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "auth",
                 "login"
               ]
@@ -60,77 +59,18 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/channels/public",
+              "raw": "{{baseURL}}/api/channels/public",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "channels",
                 "public"
               ]
             }
           },
-          "response": [
-            {
-              "id": "6ab82133-e825-4ff5-a672-f1eea818b17b",
-              "name": "createPublic",
-              "originalRequest": {
-                "method": "POST",
-                "header": [],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\r\n    \"name\": \"public채널2\",\r\n    \"description\": \"public 채널 생성 테스트 중\"\r\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": {
-                  "raw": "{{baseURL}}/api/v1/channels/public",
-                  "host": [
-                    "{{baseURL}}"
-                  ],
-                  "path": [
-                    "api",
-                    "v1",
-                    "channels",
-                    "public"
-                  ]
-                }
-              },
-              "status": "Created",
-              "code": 201,
-              "_postman_previewlanguage": "json",
-              "header": [
-                {
-                  "key": "Content-Type",
-                  "value": "application/json"
-                },
-                {
-                  "key": "Transfer-Encoding",
-                  "value": "chunked"
-                },
-                {
-                  "key": "Date",
-                  "value": "Tue, 10 Feb 2026 05:38:58 GMT"
-                },
-                {
-                  "key": "Keep-Alive",
-                  "value": "timeout=60"
-                },
-                {
-                  "key": "Connection",
-                  "value": "keep-alive"
-                }
-              ],
-              "cookie": [],
-              "responseTime": "2026-02-10T05:39:47.131Z",
-              "body": "{\n    \"id\": \"b3e2eeff-82fd-4370-9175-13648b001f36\",\n    \"type\": \"PUBLIC\",\n    \"name\": \"public채널2\",\n    \"description\": \"public 채널 생성 테스트 중\",\n    \"lastMessageAt\": null,\n    \"participantIds\": null\n}"
-            }
-          ]
+          "response": []
         },
         {
           "name": "createPrivate",
@@ -148,13 +88,12 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/channels/private",
+              "raw": "{{baseURL}}/api/channels/private",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "channels",
                 "private"
               ]
@@ -178,13 +117,12 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/channels/bab40a47-4e28-4e63-9d42-feb69ee76091",
+              "raw": "{{baseURL}}/api/channels/bab40a47-4e28-4e63-9d42-feb69ee76091",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "channels",
                 "bab40a47-4e28-4e63-9d42-feb69ee76091"
               ]
@@ -203,13 +141,12 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/channels/a4a88905-49a4-471d-acdc-7544c4299b84",
+              "raw": "{{baseURL}}/api/channels/a4a88905-49a4-471d-acdc-7544c4299b84",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "channels",
                 "a4a88905-49a4-471d-acdc-7544c4299b84"
               ]
@@ -236,20 +173,19 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/channels?userId={{userId}}",
+              "raw": "{{baseURL}}/api/channels?userId={{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "channels"
               ],
               "query": [
                 {
                   "key": "userId",
                   "value": "{{userId}}",
-                  "type": "text"
+                  "uuid": "addd9d16-d12f-479b-a75d-33a247e97efb"
                 }
               ]
             }
@@ -278,13 +214,12 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/messages",
+              "raw": "{{baseURL}}/api/messages",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "messages"
               ]
             }
@@ -307,13 +242,12 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/messages/{{messageId}}",
+              "raw": "{{baseURL}}/api/messages/{{messageId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "messages",
                 "{{messageId}}"
               ]
@@ -332,13 +266,12 @@
               "raw": "{\r\n    \"content\": \"변경된 메시지 내용입니다.\"\r\n}"
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/messages/{{messageId}}",
+              "raw": "{{baseURL}}/api/messages/{{messageId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "messages",
                 "{{messageId}}"
               ]
@@ -360,20 +293,19 @@
               "raw": "{\r\n    \"content\": \"변경된 메시지 내용입니다.\"\r\n}"
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/messages?channelId={{channelId}}",
+              "raw": "{{baseURL}}/api/messages?channelId={{channelId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "messages"
               ],
               "query": [
                 {
                   "key": "channelId",
                   "value": "{{channelId}}",
-                  "type": "text"
+                  "uuid": "5fd6c627-9d84-4852-8c00-564a3b32e1f0"
                 }
               ]
             }
@@ -402,13 +334,12 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/read-status",
+              "raw": "{{baseURL}}/api/read-status",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "read-status"
               ]
             }
@@ -422,13 +353,12 @@
             "method": "PATCH",
             "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/v1/read-status/{{readStatusId}}",
+              "raw": "{{baseURL}}/api/read-status/{{readStatusId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "read-status",
                 "{{readStatusId}}"
               ]
@@ -455,13 +385,12 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/read-status/user/{{userId}}",
+              "raw": "{{baseURL}}/api/read-status/user/{{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "read-status",
                 "user",
                 "{{userId}}"
@@ -483,13 +412,12 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/v1/binary-contents/{{binaryContentId}}",
+              "raw": "{{baseURL}}/api/binary-contents/{{binaryContentId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "binary-contents",
                 "{{binaryContentId}}"
               ]
@@ -513,13 +441,12 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/binary-contents",
+              "raw": "{{baseURL}}/api/binary-contents",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "binary-contents"
               ]
             }
@@ -548,13 +475,12 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/users",
+              "raw": "{{baseURL}}/api/users",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "users"
               ]
             }
@@ -577,13 +503,12 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/users/b605ad97-46dc-48e7-9c75-21462d50df3a",
+              "raw": "{{baseURL}}/api/users/b605ad97-46dc-48e7-9c75-21462d50df3a",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "users",
                 "b605ad97-46dc-48e7-9c75-21462d50df3a"
               ]
@@ -598,13 +523,12 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/v1/users/{{userId}}",
+              "raw": "{{baseURL}}/api/users/{{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "users",
                 "{{userId}}"
               ]
@@ -619,13 +543,12 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/v1/users",
+              "raw": "{{baseURL}}/api/users",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "users"
               ]
             }
@@ -648,13 +571,12 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/v1/users/b605ad97-46dc-48e7-9c75-21462d50df3a/status",
+              "raw": "{{baseURL}}/api/users/b605ad97-46dc-48e7-9c75-21462d50df3a/status",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "v1",
                 "users",
                 "b605ad97-46dc-48e7-9c75-21462d50df3a",
                 "status"
