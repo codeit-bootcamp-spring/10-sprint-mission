@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.dto.user.UserCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.entity.type.FileType;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
@@ -42,23 +41,12 @@ public class BasicUserService implements UserService {
         // 프로필 등록 여부 & binaryContent객체 생성
         if(dto.getProfileImg() != null){
             try{
-                // 파일 타입 설정
-                String mimeType = file.getContentType();
-                FileType fileType;
-
-                if(Objects.requireNonNull(mimeType).startsWith("image")){
-                    fileType = FileType.IMAGE;
-                } else if (Objects.requireNonNull(mimeType).startsWith("video")) {
-                    fileType = FileType.VIDEO;
-                } else if(Objects.requireNonNull(mimeType).startsWith("audio")){
-                    fileType = FileType.AUDIO;
-                } else fileType = FileType.GENERAL;
                 BinaryContent binaryContent =
                         new BinaryContent(user.getId(),
                                 null,
                                 file.getBytes(),
                                 file.getOriginalFilename(),
-                                fileType);
+                                file.getContentType());
                 // binarycontent 저장
                 binaryContentRepository.save(binaryContent);
                 // 연관성 주입
@@ -167,7 +155,7 @@ public class BasicUserService implements UserService {
                                 null,
                                     newBinaryContentCreateDto.getFileData(),
                                     newBinaryContentCreateDto.getName(),
-                                    newBinaryContentCreateDto.getFileType());
+                                    newBinaryContentCreateDto.getContentType());
             binaryContentRepository.save(newBinaryContent);
 
             user.updateProfileImg(newBinaryContent.getId());

@@ -11,15 +11,15 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/binary-contents")
+@RequestMapping("/api/binary-content")
 @RequiredArgsConstructor
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
 
     // 단건 조회
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity<BinaryContentResponseDto> getBinaryContent(@PathVariable UUID id){
-        BinaryContentResponseDto response = binaryContentService.findId(id);
+    @RequestMapping(value = "/find", method = RequestMethod.GET)
+    public ResponseEntity<BinaryContent> getBinaryContent(@RequestParam UUID id){
+        BinaryContent response = binaryContentService.findId(id);
         return ResponseEntity.ok(response);
     }
 
@@ -32,15 +32,15 @@ public class BinaryContentController {
 
     // 프로필 조회
     @RequestMapping(value = "/user/{user-id}", method = RequestMethod.GET)
-    public ResponseEntity<BinaryContentResponseDto> getProfileImg(@PathVariable("user-id") UUID userId){
-        BinaryContentResponseDto response = binaryContentService.findBinaryContentByUserId(userId);
+    public ResponseEntity<BinaryContent> getProfileImg(@PathVariable("user-id") UUID userId){
+        BinaryContent response = binaryContentService.findBinaryContentByUserId(userId);
         return ResponseEntity.ok(response);
     }
 
     // 메시지 첨부파일 조회
     @RequestMapping(value = "/message/{message-id}", method = RequestMethod.GET)
-    public ResponseEntity<List<BinaryContentResponseDto>> getAllMessageBinaryContent(@PathVariable("message-id") UUID messageId){
-        List<BinaryContentResponseDto> responseList = binaryContentService.findAllByMessageId(messageId);
+    public ResponseEntity<List<BinaryContent>> getAllMessageBinaryContent(@PathVariable("message-id") UUID messageId){
+        List<BinaryContent> responseList = binaryContentService.findAllByMessageId(messageId);
         return ResponseEntity.ok(responseList);
     }
 }

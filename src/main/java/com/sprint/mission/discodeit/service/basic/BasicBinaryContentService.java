@@ -21,21 +21,21 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentMapper binaryContentMapper;
 
     @Override
-    public BinaryContentResponseDto create(BinaryContentCreateDto dto) {
+    public BinaryContent create(BinaryContentCreateDto dto) {
         BinaryContent binaryContent = binaryContentMapper.toEntity(dto);
         binaryContentRepository.save(binaryContent);
 
-        return binaryContentMapper.toDto(binaryContent);
+        return binaryContent;
     }
     @Override
-    public BinaryContentResponseDto findId(UUID id) {
-        return binaryContentMapper.toDto(getBinaryContentId(id));
+    public BinaryContent findId(UUID id) {
+        return getBinaryContentId(id);
     }
 
     @Override
-    public BinaryContentResponseDto findBinaryContentByUserId(UUID userId) {
+    public BinaryContent findBinaryContentByUserId(UUID userId) {
 
-        return binaryContentMapper.toDto(getBinaryContentByUserId(userId));
+        return getBinaryContentByUserId(userId);
     }
 
     @Override
@@ -44,11 +44,9 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public List<BinaryContentResponseDto> findAllByMessageId(UUID messageId) {
+    public List<BinaryContent> findAllByMessageId(UUID messageId) {
 
-        return binaryContentRepository.findByMessageId(messageId).stream()
-                .map(binaryContentMapper::toDto)
-                .toList();
+        return binaryContentRepository.findByMessageId(messageId);
     }
 
     @Override

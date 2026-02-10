@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.dto.binaryContent;
 
-import com.sprint.mission.discodeit.entity.type.FileType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -13,7 +12,7 @@ public class BinaryContentResponseDto {
     private UUID id;
     private UUID userId;
     private UUID messageId;
-    private byte[] data;
+    private byte[] bytes;
     private String fileName;
-    private FileType fileType;
+    private String contentType;
 }
