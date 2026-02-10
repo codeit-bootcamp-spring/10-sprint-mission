@@ -4,12 +4,13 @@ import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentCreateInfo;
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentInfo;
 import com.sprint.mission.discodeit.binarycontent.BinaryContent;
 import com.sprint.mission.discodeit.binarycontent.BinaryContentMapper;
+import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentsRequest;
+import com.sprint.mission.discodeit.binarycontent.exception.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.binarycontent.repository.BinaryContentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -25,7 +26,7 @@ public class BinaryContentService {
 
     public BinaryContentInfo findBinaryContent(UUID contentId) {
         BinaryContent content = contentRepository.findById(contentId)
-                .orElseThrow(() -> new NoSuchElementException("해당 콘텐츠가 존재하지 않습니다."));
+                .orElseThrow(BinaryContentNotFoundException::new);
         return BinaryContentMapper.toBinaryContentInfo(content);
     }
 
@@ -36,10 +37,10 @@ public class BinaryContentService {
                 .toList();
     }
 
-    public List<BinaryContentInfo> findAllByIdIn(List<UUID> contentIds) {
+    public List<BinaryContentInfo> findAllByIdIn(BinaryContentsRequest request) {
         return contentRepository.findAll()
                 .stream()
-                .filter(content -> contentIds.contains(content.getId()))
+                .filter(content -> request.contentIds().contains(content.getId()))
                 .map(BinaryContentMapper::toBinaryContentInfo)
                 .toList();
     }

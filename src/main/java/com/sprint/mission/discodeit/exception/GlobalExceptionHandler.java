@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.exception;
 
+import com.sprint.mission.discodeit.binarycontent.exception.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.channel.exception.AlreadyJoinedException;
 import com.sprint.mission.discodeit.channel.exception.ChannelDuplicationException;
 import com.sprint.mission.discodeit.channel.exception.ChannelNotFoundException;
@@ -90,6 +91,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ReadStatusNotFoundException.class)
     public ResponseEntity<ErrorResponse> handle(ReadStatusNotFoundException e) {
         ErrorResponse response = new ErrorResponse("READ_STATUS_NOT_FOUND", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(BinaryContentNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handle(BinaryContentNotFoundException e) {
+        ErrorResponse response = new ErrorResponse("BINARY_CONTENT_NOT_FOUND", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
