@@ -47,8 +47,8 @@ public class ChannelController {
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ResponseEntity<ChannelResponseDTO> update(@PathVariable UUID id,
                                                      @RequestBody ChannelUpdateRequestDTO channelUpdateRequestDTO) {
-        channelUpdateRequestDTO.setId(id);
-        ChannelResponseDTO updateChannel = channelService.update(channelUpdateRequestDTO);
+
+        ChannelResponseDTO updateChannel = channelService.update(id, channelUpdateRequestDTO);
 
         return ResponseEntity.ok(updateChannel);
     }
