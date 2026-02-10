@@ -69,9 +69,9 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto.Response findById(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
         UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 상태입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
         return UserDto.Response.of(user, status);
     }
 
@@ -80,7 +80,7 @@ public class BasicUserService implements UserService {
         return userRepository.findAll().stream()
                 .map(user -> {
                     UserStatus status = userStatusRepository.findByUserId(user.getId())
-                            .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 상태입니다."));
+                            .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
                     return UserDto.Response.of(user, status);
                 })
                 .toList();
@@ -89,7 +89,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto.Response update(UUID userId, UserDto.Update request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
 
         Optional.ofNullable(request.username()).ifPresent(user::updateUsername);
         Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
@@ -121,7 +121,7 @@ public class BasicUserService implements UserService {
 
         //유저 상태 객체 획인 후 온라인으로 갱신
         UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 상태입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
         status.updateOnline();
 
         userStatusRepository.save(status);
@@ -131,7 +131,7 @@ public class BasicUserService implements UserService {
     @Override
     public void delete(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
 
         //유저가 작성한 메시지 목록
         List<Message> messages = messageRepository.findAll().stream()
@@ -152,7 +152,7 @@ public class BasicUserService implements UserService {
 
         //유저 상태 삭제
         UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저 상태입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
         userStatusRepository.delete(status);
 
         //유저 프로필 삭제

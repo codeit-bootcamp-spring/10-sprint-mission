@@ -6,17 +6,17 @@ import lombok.Getter;
 public class Channel extends BaseEntity {
 
     private final ChannelType type;
-    private String channelName;
+    private String name;
     private String description;
 
-    public Channel(ChannelType type, String channelName, String description) {
+    public Channel(ChannelType type, String name, String description) {
         this.type = type;
-        this.channelName = channelName;
+        this.name = name;
         this.description = description;
     }
 
     public void updateChannelName(String channelName) {
-        this.channelName = channelName;
+        this.name = channelName;
         setUpdatedAt();
     }
 

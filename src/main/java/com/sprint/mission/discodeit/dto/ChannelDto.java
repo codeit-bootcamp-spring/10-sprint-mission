@@ -29,7 +29,7 @@ public class ChannelDto {
             return new Response(
                     channel.getId(),
                     channel.getType(),
-                    channel.getChannelName(),
+                    channel.getName(),
                     channel.getDescription(),
                     allUserIds,
                     lastReadAt

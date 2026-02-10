@@ -24,7 +24,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     private final Path dirPath;
 
     public FileReadStatusRepository(@Value("${discodeit.repository.file-directory}") String dir) {
-        this.dirPath = Paths.get(dir + "/readstatuses");
+        this.dirPath = Paths.get(dir, "readstatuses");
         init();
     }
 

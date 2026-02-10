@@ -24,7 +24,7 @@ public class FileChannelRepository implements ChannelRepository {
     private final Path dirPath;
 
     public FileChannelRepository(@Value("${discodeit.repository.file-directory}") String dir) {
-        this.dirPath = Paths.get(dir + "/channels");
+        this.dirPath = Paths.get(dir, "channels");
         init();
     }
 
