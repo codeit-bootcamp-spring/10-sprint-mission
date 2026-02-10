@@ -8,13 +8,10 @@ const ENDPOINTS = {
 };
 
 const loginView = document.getElementById('login-view');
-const channelView = document.getElementById('channel-view');
-const messageView = document.getElementById('message-view');
 const userView = document.getElementById('user-view');
 
 const loginBtn = document.getElementById('loginBtn');
 const showUsersBtn = document.getElementById('showUsersBtn');
-const closeUserListBtn = document.getElementById('closeUserListBtn');
 const backToChannelsBtn = document.getElementById('backToChannelsBtn');
 const sendMessageBtn = document.getElementById('sendMessageBtn');
 
@@ -34,8 +31,17 @@ loginBtn.addEventListener('click', async () => {
         if (!res.ok) throw new Error('로그인 실패');
         currentUser = await res.json();
         loginView.style.display = 'none';
+        document.getElementById('app').style.display = 'flex';
+        document.getElementById('currentUsername').innerText = currentUser.username;
+        // 프로필 이미지 세팅
+        if (currentUser.profileId) {
+            const avatarUrl = await fetchUserProfile(currentUser.profileId);
+            document.getElementById('currentUserAvatar').src = avatarUrl;
+        } else {
+            document.getElementById('currentUserAvatar').src = 'default-avatar.png';
+        }
+
         await fetchAndRenderChannels();
-        channelView.style.display = 'block';
     } catch (err) {
         document.getElementById('loginError').innerText = err.message;
     }
@@ -66,7 +72,7 @@ async function fetchAndRenderChannels() {
                 <div class="channel-name">${c.name}</div>
                 <div class="channel-desc">${description}</div>
             `;
-            li.addEventListener('click', () => openChannel(c.id));
+            li.addEventListener('click', () => openChannel(c.id,c.name));
             publicWrapper.appendChild(li);
         });
 
@@ -93,7 +99,7 @@ async function fetchAndRenderChannels() {
             else displayText = `${memberNames[0]} 외 ${memberNames.length - 1}명`;
 
             li.innerHTML = `<div class="channel-name">${displayText}</div>`;
-            li.addEventListener('click', () => openChannel(c.id));
+            li.addEventListener('click', () => openChannel(c.id,displayText));
             privateWrapper.appendChild(li);
         }
 
@@ -103,14 +109,15 @@ async function fetchAndRenderChannels() {
 
 
 // 채널 클릭 → 메시지 화면
-async function openChannel(channelId) {
+async function openChannel(channelId, channelName) {
     currentChannelId = channelId;
-    channelView.style.display = 'none';
-    messageView.style.display = 'block';
+    document.getElementById('currentChannelName').innerText = channelName;
+    document.getElementById('chatArea').style.display = 'flex';
     await fetchAndRenderMessages(channelId);
 }
 
-// 메시지 목록
+
+// 메시지 목록ba
 async function fetchAndRenderMessages(channelId) {
     const res = await fetch(
         `${ENDPOINTS.MESSAGES}/${channelId}/messages`,
@@ -183,24 +190,26 @@ messageInput.addEventListener('keydown', (e) => {
 });
 
 
-// 메시지 화면 → 채널 목록
-backToChannelsBtn.addEventListener('click', () => {
-    messageView.style.display = 'none';
-    channelView.style.display = 'block';
-});
 
-// 참여자 목록
+
 showUsersBtn.addEventListener('click', async () => {
-    channelView.style.display = 'none';
-    userView.style.display = 'block';
-    const users = await fetchUsersApi();
-    renderUserList(users);
+    const isOpen = userView.style.display === 'block';
+
+    if (isOpen) {
+        userView.style.display = 'none';
+    } else {
+        userView.style.display = 'block';
+        const users = await fetchUsersApi();
+        renderUserList(users);
+    }
+});
+document.addEventListener('click', (e) => {
+    if (!userView.contains(e.target) && !showUsersBtn.contains(e.target)) {
+        userView.style.display = 'none';
+    }
 });
 
-closeUserListBtn.addEventListener('click', () => {
-    userView.style.display = 'none';
-    channelView.style.display = 'block';
-});
+
 
 // 사용자 목록 API 호출
 async function fetchUsersApi() {
@@ -332,3 +341,5 @@ signupBtn.addEventListener('click', async () => {
         document.getElementById('signupError').innerText = e.message;
     }
 });
+
+document.getElementById('chatArea').style.display = 'none';

@@ -46,42 +46,59 @@
         </div>
     </div>
 
+    <!-- 로그인 성공 후 -->
+    <div id="app" class="app-layout" style="display:none;">
 
-    <!-- 채널 목록 화면 -->
-    <div id="channel-view" style="display:none;">
-        <h2>채널 목록</h2>
-        <ul id="channelList"></ul>
-        <button id="showUsersBtn">참여자 목록 보기</button>
+        <!-- 왼쪽 사이드바 -->
+        <aside class="sidebar">
+
+            <!-- 상단: 사용자 목록 버튼 -->
+            <div class="sidebar-header">
+                <button id="showUsersBtn">👥</button>
+            </div>
+            <!-- 사용자 목록 화면 -->
+            <div id="user-view" class="user-popup" style="display:none;">
+                <h2>사용자 목록</h2>
+                <div id="userList"></div>
+            </div>
+
+            <!-- 채널 목록 -->
+            <div id="channelList" class="channel-list"></div>
+
+            <!-- 하단: 현재 사용자 -->
+            <div class="sidebar-footer">
+                <div class="current-user">
+                    <img id="currentUserAvatar" class="current-user-avatar" src="default-avatar.png" alt="profile">
+                    <span id="currentUsername"></span>
+                    <button id="editProfileBtn">⚙</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 오른쪽 메인 영역 -->
+        <main class="main-content">
+
+            <!-- 채널 헤더 -->
+            <div class="chat-header">
+                <h2 id="currentChannelName">채널을 선택하세요</h2>
+            </div>
+
+            <!-- 메시지 -->
+            <div id="chatArea" style="display:none;">
+                <div id="messageList"></div>
+
+                <div class="message-input-area">
+                    <textarea id="messageInput" rows="2" placeholder="메시지 입력"></textarea>
+                    <button id="sendMessageBtn">전송</button>
+                </div>
+            </div>
+
+
+        </main>
+
     </div>
 
-    <!-- 메시지 화면 -->
-    <div id="message-view" style="display:none;" class="chat-view">
 
-        <!-- 상단 헤더 -->
-        <div class="chat-header">
-            <h2>메시지</h2>
-            <button id="backToChannelsBtn">채널 목록으로</button>
-        </div>
-
-        <!-- 메시지 스크롤 영역 -->
-        <div id="messageList"></div>
-
-        <!-- 입력 영역 -->
-        <div class="message-input-area">
-            <textarea id="messageInput" rows="2" placeholder="메시지 입력"></textarea>
-            <button id="sendMessageBtn">전송</button>
-        </div>
-
-    </div>
-
-
-
-    <!-- 사용자 목록 화면 -->
-    <div id="user-view" style="display:none;">
-        <h2>사용자 목록</h2>
-        <div id="userList"></div>
-        <button id="closeUserListBtn">닫기</button>
-    </div>
 
 </div>
 <script src="js/app.js"></script>
