@@ -37,6 +37,7 @@
       <list>
         <option value="Interface" />
         <option value="Class" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -55,6 +56,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
     "Gradle./Users/lynn/IdeaProjects/codeit/discodeit.executor": "Run",
     "Gradle.Build discodeit.executor": "Run",
     "Gradle.Download Sources.executor": "Run",
@@ -68,7 +70,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "Spring Boot.DiscodeitApplication.executor": "Run",
-    "git-widget-placeholder": "sprint3",
+    "git-widget-placeholder": "sprint4",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "/Users/lynn/IdeaProjects/codeit/discodeit",
     "project.structure.last.edited": "Modules",

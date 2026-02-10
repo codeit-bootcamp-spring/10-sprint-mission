@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
@@ -56,6 +55,12 @@ public class UserController {
     public ResponseEntity<UserStatus> updateStatus(@PathVariable UUID id, @RequestBody UserStatusUpdateRequest request) {
         UserStatus status = userStatusService.updateByUserId(id, request);
         return ResponseEntity.ok(status);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/api/user/findAll")
+    public ResponseEntity<List<UserDto>> findAllUsers() {
+        List<UserDto> userDto = userService.findAll();
+        return ResponseEntity.ok(userDto);
     }
 
 }
