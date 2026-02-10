@@ -79,7 +79,7 @@ public class JCFChannelService implements ChannelService {
 		// 	.findFirst()
 		// 	.orElseThrow(() -> new NoSuchElementException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
 		//
-		// User user = userService.findById(userId);
+		// User user = userService.findById(authorId);
 		//
 		// channel.addUserId(user);
 		//
@@ -96,8 +96,8 @@ public class JCFChannelService implements ChannelService {
 		// 	.orElseThrow(() -> new NoSuchElementException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
 		//
 		// // 해당 채널에 유저가 속해있는지 확인한 후 내보낸다.
-		// if (this.isUserInvolved(channelId, userId)) {
-		// 	return channel.getUserIds().removeIf(u -> u.getId().equals(userId));
+		// if (this.isUserInvolved(channelId, authorId)) {
+		// 	return channel.getUserIds().removeIf(u -> u.getId().equals(authorId));
 		// }
 		//
 		return false;
@@ -117,7 +117,7 @@ public class JCFChannelService implements ChannelService {
 		// 	.findFirst()
 		// 	.orElseThrow(() -> new NoSuchElementException("id가 " + channelId + "인 채널은 존재하지 않습니다."));
 		//
-		// User user = userService.findById(userId);
+		// User user = userService.findById(authorId);
 		//
 		// return channel.getUserIds().contains(user);
 		return false;

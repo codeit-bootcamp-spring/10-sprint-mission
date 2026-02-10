@@ -70,7 +70,7 @@ public class FileUserService implements UserService {
 
 	@Override
 	public UserResponseDto updateUser(UUID userId, UserPatchDto userPatchDTO) {
-		//        User updatedUser = this.findById(userId);
+		//        User updatedUser = this.findById(authorId);
 		//
 		//        // input이 null이 아닌 필드 업데이트
 		//        Optional.ofNullable(user.getNickName())
@@ -82,7 +82,7 @@ public class FileUserService implements UserService {
 		//        Optional.ofNullable(user.getPhoneNumber())
 		//            .ifPresent(updatedUser::updatePhoneNumber);
 		//
-		//        fileIo.save(userId, updatedUser);
+		//        fileIo.save(authorId, updatedUser);
 		//
 		//        return updatedUser;
 

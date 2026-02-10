@@ -64,9 +64,9 @@ public class JCFUserService implements UserService {
 	@Override
 	public UserResponseDto updateUser(UUID userId, UserPatchDto userPatchDTO) {
 		//        User updatedUser = data.stream()
-		//            .filter(u -> u.getId().equals(userId))
+		//            .filter(u -> u.getId().equals(authorId))
 		//            .findFirst()
-		//            .orElseThrow(() -> new NoSuchElementException("id가 " + userId + "인 유저를 찾을 수 없습니다."));
+		//            .orElseThrow(() -> new NoSuchElementException("id가 " + authorId + "인 유저를 찾을 수 없습니다."));
 		//
 		//        // input이 null이 아닌 필드 업데이트
 		//        Optional.ofNullable(user.getNickName())

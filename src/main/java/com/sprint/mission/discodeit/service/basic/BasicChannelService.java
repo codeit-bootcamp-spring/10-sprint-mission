@@ -47,19 +47,28 @@ public class BasicChannelService implements ChannelService {
 
 	@Override
 	public ChannelResponseDto createPrivateChannel(PrivateChannelPostDto privateChannelPostDto) {
+		List<User> users = privateChannelPostDto.userIds().stream()
+			.map(userRepository::findById)
+			.flatMap(Optional::stream)
+			.toList();
+
 		Channel channel = channelRepository.save(
 			channelMapper.toChannel(privateChannelPostDto)
 		);
 
 		// 채널에 참여하는 User의 정보를 받아 User 별 ReadStatus 정보를 생성
-		privateChannelPostDto.userIds().stream()
-			.forEach(
-				userId -> {
-					readStatusRepository.save(
-						new ReadStatus(userId, channel.getId(), Instant.now())
-					);
-				}
-			);
+		privateChannelPostDto.userIds().forEach(userId -> {
+				readStatusRepository.save(
+					new ReadStatus(userId, channel.getId(), Instant.now())
+				);
+			}
+		);
+
+		// 유저의 채널 리스트에 채널 id 추가 및 저장
+		for (User user : users) {
+			user.addChannelId(channel.getId());
+			userRepository.save(user);
+		}
 
 		return channelMapper.fromChannel(channel, null);
 	}

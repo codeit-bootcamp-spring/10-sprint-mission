@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
+import java.util.List;
 import java.util.UUID;
 
 public record UserResponseDto(
@@ -8,6 +9,7 @@ public record UserResponseDto(
 	String nickName,
 	String userName,
 	String email,
-	String phoneNumber
+	String phoneNumber,
+	List<UUID> channelIds
 ) {
 }
