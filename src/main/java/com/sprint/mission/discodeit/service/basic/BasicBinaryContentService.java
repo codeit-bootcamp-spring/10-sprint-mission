@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -32,7 +33,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public BinaryContentDto.Response findById(UUID binaryContentId) {
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 파일입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 파일입니다."));
         return BinaryContentDto.Response.of(binaryContent);
     }
 
@@ -46,7 +47,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public void delete(UUID binaryContentId) {
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 파일입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 파일입니다."));
         binaryContentRepository.delete(binaryContent);
     }
 }

@@ -63,7 +63,7 @@ public class BasicChannelService implements ChannelService {
     public ChannelDto.Response findById(UUID channelId) {
         //채널Id로 채널 객체 조회
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다."));
         //채널Id로 ReadStatus를 조회해서 userId를 찾아옴
         List<UUID> allUserIds = readStatusRepository.findAllByChannelId(channelId).stream()
                 .map(ReadStatus::getUserId)
@@ -101,7 +101,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDto.Response update(UUID channelId, ChannelDto.Update request) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다."));
 
         if (channel.getType() == ChannelType.PRIVATE) {
             throw new IllegalArgumentException("PRIVATE 채널은 수정할 수 없습니다.");
@@ -116,7 +116,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void delete(UUID channelId) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다."));
 
         //채널에 있는 메시지 목록
         List<Message> messages = messageRepository.findAll().stream()

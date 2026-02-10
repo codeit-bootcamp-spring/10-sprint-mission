@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -30,10 +31,10 @@ public class BasicMessageService implements MessageService {
     public MessageDto.Response create(MessageDto.Create request) {
 
         userRepository.findById(request.authorId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
 
         Channel channel = channelRepository.findById(request.channelId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 채널입니다."));
 
         if (channel.getType() == ChannelType.PRIVATE) {
             readStatusRepository.findByUserIdAndChannelId(request.authorId(), request.channelId())
@@ -75,7 +76,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageDto.Response findById(UUID messageId) {
         Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 메시지입니다."));
         return MessageDto.Response.of(message);
     }
 
@@ -89,8 +90,8 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public MessageDto.Response update(UUID authorId, MessageDto.Update request) {
-        Message message = messageRepository.findById(request.messageId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
+        Message message = messageRepository.findById(request.id())
+                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 메시지입니다."));
 
         if (!authorId.equals(message.getAuthorId())) {
             throw new IllegalArgumentException("작성자만이 글을 수정할 수 있습니다.");
@@ -104,7 +105,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public void delete(UUID authorId, UUID messageId) {
         Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
+            .orElseThrow(() -> new NoSuchElementException("존재하지 않는 메시지입니다."));
 
         if (!authorId.equals(message.getAuthorId())) {
             throw new IllegalArgumentException("작성자만이 글을 수정할 수 있습니다.");

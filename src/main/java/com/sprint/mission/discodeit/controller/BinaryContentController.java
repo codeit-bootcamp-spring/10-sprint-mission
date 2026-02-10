@@ -28,8 +28,8 @@ public class BinaryContentController {
     }
 
     @RequestMapping(value = "/findAll", method = RequestMethod.GET)
-    public ResponseEntity<?> findAll(@RequestParam List<UUID> contentsIds) {
-        List<BinaryContentDto.Response> response = binaryContentService.findAllByIdIn(contentsIds);
+    public ResponseEntity<?> findAll(@RequestParam List<UUID> binaryContentIds) {
+        List<BinaryContentDto.Response> response = binaryContentService.findAllByIdIn(binaryContentIds);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
