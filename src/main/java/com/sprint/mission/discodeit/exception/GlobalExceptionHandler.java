@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.channel.exception.ChannelDuplicationExceptio
 import com.sprint.mission.discodeit.channel.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.channel.exception.ChannelUpdateNotAllowedException;
 import com.sprint.mission.discodeit.message.exception.MessageNotFoundException;
+import com.sprint.mission.discodeit.readstatus.exception.ReadStatusDuplicationException;
 import com.sprint.mission.discodeit.readstatus.exception.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.user.exception.EmailDuplicationException;
 import com.sprint.mission.discodeit.user.exception.AuthenticationFailedException;
@@ -92,6 +93,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handle(ReadStatusNotFoundException e) {
         ErrorResponse response = new ErrorResponse("READ_STATUS_NOT_FOUND", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(ReadStatusDuplicationException.class)
+    public ResponseEntity<ErrorResponse> handle(ReadStatusDuplicationException e) {
+        ErrorResponse response = new ErrorResponse("READ_STATUS_DUPLICATION_ERROR", e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
     @ExceptionHandler(BinaryContentNotFoundException.class)

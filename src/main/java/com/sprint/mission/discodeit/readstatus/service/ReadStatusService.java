@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.readstatus.dto.ReadStatusInfo;
 import com.sprint.mission.discodeit.readstatus.dto.ReadStatusUpdateInfo;
 import com.sprint.mission.discodeit.channel.Channel;
 import com.sprint.mission.discodeit.readstatus.ReadStatus;
+import com.sprint.mission.discodeit.readstatus.exception.ReadStatusDuplicationException;
 import com.sprint.mission.discodeit.readstatus.exception.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.user.User;
 import com.sprint.mission.discodeit.readstatus.ReadStatusMapper;
@@ -33,7 +34,7 @@ public class ReadStatusService {
                 .orElseThrow(ChannelNotFoundException::new);
 
         if(readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
-                .isPresent()) throw new ReadStatusNotFoundException();
+                .isPresent()) throw new ReadStatusDuplicationException();
 
         ReadStatus readStatus = new ReadStatus(channel.getId(), user.getId());
         readStatusRepository.save(readStatus);
