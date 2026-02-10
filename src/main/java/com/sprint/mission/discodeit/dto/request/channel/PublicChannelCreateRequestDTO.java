@@ -2,24 +2,20 @@ package com.sprint.mission.discodeit.dto.request.channel;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class PublicChannelCreateRequestDTO {
+public record PublicChannelCreateRequestDTO (
     @NotNull
-    private UUID userId;
+    UUID userId,
 
     @NotNull
-    private String channelName;
+    String channelName,
 
     @NotBlank
-    private String description;
+    String description
+) {
+
 }

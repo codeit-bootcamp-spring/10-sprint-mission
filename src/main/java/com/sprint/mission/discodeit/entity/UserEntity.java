@@ -21,9 +21,9 @@ public class UserEntity extends BaseEntity implements Serializable {
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
 
-        this.email = userCreateRequestDTO.getEmail();
-        this.password = userCreateRequestDTO.getPassword();
-        this.nickname = userCreateRequestDTO.getNickname();
+        this.email = userCreateRequestDTO.email();
+        this.password = userCreateRequestDTO.password();
+        this.nickname = userCreateRequestDTO.nickname();
     }
 
     public void updatePassword(String newPassword) {

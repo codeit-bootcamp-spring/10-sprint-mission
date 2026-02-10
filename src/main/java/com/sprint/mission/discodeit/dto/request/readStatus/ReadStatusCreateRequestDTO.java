@@ -1,25 +1,20 @@
 package com.sprint.mission.discodeit.dto.request.readStatus;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@Getter
 @Builder
-@NoArgsConstructor
-public class ReadStatusCreateRequestDTO {
+public record ReadStatusCreateRequestDTO (
     @NotNull
-    private UUID userId;
+    UUID memberId,
 
     @NotNull
-    private UUID channelId;
-
+    UUID channelId
+) {
     public ReadStatusCreateRequestDTO(UUID memberId, UUID channelId) {
-        this.userId = memberId;
+        this.memberId = memberId;
         this.channelId = channelId;
     }
 }
