@@ -25,12 +25,17 @@ public class AuthService {
 				() -> new IllegalArgumentException("사용자명이 일치하지 않습니다.")
 			);
 
-		// 해당 user의 userstatus를 찾지 못하면 새로 만들도록 하낟.
-		UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-			.orElse(userStatusRepository.save(new UserStatus(user.getId())));
+		// 해당 user의 userStatus가 존재한다면 lastAccessedTime을 업데이트, 없다면 새로 만들어 저장한다.
+		userStatusRepository.findByUserId(user.getId()).ifPresentOrElse(
+			userStatus -> {
+				userStatus.updateLastAccessedTime();
+				userStatusRepository.save(userStatus);
+			},
+			() -> userStatusRepository.save(new UserStatus(user.getId()))
+		);
 
 		if (user.getPassword().equals(loginDto.password()))
-			return userMapper.toUserResponseDTO(user);
+			return userMapper.toUserResponseDto(user, true);
 
 		throw new IllegalArgumentException("패스워드가 일치하지 않습니다.");
 	}

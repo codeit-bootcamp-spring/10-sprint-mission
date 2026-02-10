@@ -55,7 +55,7 @@ public class BasicUserService implements UserService {
 		// UserStatus를 같이 생성 및 저장
 		UserStatus userStatus = userStatusRepository.save(new UserStatus(newUser.getId()));
 
-		return userMapper.toUserResponseDTO(userRepository.save(newUser));
+		return userMapper.toUserResponseDto(userRepository.save(newUser), getOnlineStatus(newUser.getId()));
 	}
 
 	public boolean isUserNameDuplicated(String userName) {
@@ -75,7 +75,7 @@ public class BasicUserService implements UserService {
 		UserStatus userStatus = userStatusRepository.findByUserId(userId)
 			.orElseThrow(() -> new NoSuchElementException("userId가 " + userId + "인 UserStatus를 찾을 수 없습니다."));
 
-		return userMapper.toUserResponseDTO(user);
+		return userMapper.toUserResponseDto(user, getOnlineStatus(userId));
 	}
 
 	@Override
@@ -87,14 +87,15 @@ public class BasicUserService implements UserService {
 		UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
 			.orElseThrow(() -> new NoSuchElementException("userId가 " + user.getId() + "인 UserStatus를 찾을 수 없습니다."));
 
-		return userMapper.toUserResponseDTO(user);
+		return userMapper.toUserResponseDto(user, getOnlineStatus(user.getId()));
 	}
 
 	@Override
 	public List<UserResponseDto> findAll() {
+		// todo: UserStatus의 isLogined를 활용하여 온라인 상태 반환
 		return userRepository.findAll().stream()
-			.map(userMapper::toUserResponseDTO
-			).collect(Collectors.toList());
+			.map(user -> userMapper.toUserResponseDto(user, getOnlineStatus(user.getId())))
+			.collect(Collectors.toList());
 	}
 
 	@Override
@@ -127,7 +128,7 @@ public class BasicUserService implements UserService {
 			.ifPresent(updatedUser::updatePassword);
 		// todo: binarycontent 업데이트
 
-		return userMapper.toUserResponseDTO(userRepository.save(updatedUser));
+		return userMapper.toUserResponseDto(userRepository.save(updatedUser), getOnlineStatus(userId));
 	}
 
 	@Override
@@ -141,5 +142,11 @@ public class BasicUserService implements UserService {
 			.ifPresent(userStatus -> userStatusRepository.delete(userStatus.getId()));
 		Optional.ofNullable(user.getProfileId()).ifPresent(binaryContentRepository::delete);
 
+	}
+
+	private boolean getOnlineStatus(UUID userId) {
+		return userStatusRepository.findByUserId(userId)
+			.map(UserStatus::isLogined)
+			.orElse(false);
 	}
 }

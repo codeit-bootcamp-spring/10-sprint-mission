@@ -21,7 +21,7 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
 	private final UserService userService;
@@ -48,7 +48,7 @@ public class UserController {
 	}
 
 	// 모든 사용자 조회
-	@RequestMapping(method = RequestMethod.GET)
+	@RequestMapping(value = "/findAll", method = RequestMethod.GET)
 	public ResponseEntity<List<UserResponseDto>> getAllUser() {
 		return ResponseEntity.ok(userService.findAll());
 	}

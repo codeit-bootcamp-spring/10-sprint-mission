@@ -18,15 +18,15 @@ public class UserMapper {
 		);
 	}
 
-	public UserResponseDto toUserResponseDTO(User user) {
+	public UserResponseDto toUserResponseDto(User user, boolean online) {
 		return new UserResponseDto(
 			user.getId(),
-			user.getProfileId(),
-			user.getNickName(),
+			user.getCreatedAt(),
+			user.getUpdatedAt(),
 			user.getUserName(),
 			user.getEmail(),
-			user.getPhoneNumber(),
-			user.getChannelIds()
+			user.getProfileId(),
+			online
 		);
 	}
 }
