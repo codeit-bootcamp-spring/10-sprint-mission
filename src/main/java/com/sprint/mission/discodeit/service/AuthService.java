@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.service;
 
 import org.springframework.stereotype.Service;
 
-import com.sprint.mission.discodeit.dto.LoginDTO;
-import com.sprint.mission.discodeit.dto.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.LoginDto;
+import com.sprint.mission.discodeit.dto.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -19,8 +19,8 @@ public class AuthService {
 	private final UserStatusRepository userStatusRepository;
 	private final UserMapper userMapper;
 
-	UserResponseDTO login(LoginDTO loginDTO) {
-		User user = userRepository.findByUserName(loginDTO.username())
+	public UserResponseDto login(LoginDto loginDto) {
+		User user = userRepository.findByUserName(loginDto.userName())
 			.orElseThrow(
 				() -> new IllegalArgumentException("사용자명이 일치하지 않습니다.")
 			);
@@ -29,8 +29,8 @@ public class AuthService {
 		UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
 			.orElse(userStatusRepository.save(new UserStatus(user.getId())));
 
-		if (user.getPassword().equals(loginDTO.password()))
-			return userMapper.toUserResponseDTO(user, userStatus);
+		if (user.getPassword().equals(loginDto.password()))
+			return userMapper.toUserResponseDTO(user);
 
 		throw new IllegalArgumentException("패스워드가 일치하지 않습니다.");
 	}
