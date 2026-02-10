@@ -9,12 +9,12 @@ import java.util.UUID;
 import static com.sprint.mission.discodeit.entity.UserStatusType.*;
 
 @Getter
-public class UserStatus extends BaseEntity {
+public class UserStatusEntity extends BaseEntity {
     private UUID userId;                    // 사용자 고유 id (변경 불가능)
     private UserStatusType status;          // 사용자 접속 상태 (변경 가능)
     private Instant lastOnlineTime;         // 마지막 접속 시간 (변경 가능)
 
-    public UserStatus(UUID userId) {
+    public UserStatusEntity(UUID userId) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.status = ONLINE;

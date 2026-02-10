@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-public class Channel extends BaseEntity implements Serializable {
+public class ChannelEntity extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String channelName;         // 채널 이름 (변경 가능)
@@ -20,7 +20,7 @@ public class Channel extends BaseEntity implements Serializable {
     private ChannelType type;           // PUBLIC, PRIVATE (변경 불가능)
     private String description;         // 채널 설명 (변경 가능)
 
-    public Channel(PublicChannelCreateRequestDTO publicChannelCreateRequestDTO) {
+    public ChannelEntity(PublicChannelCreateRequestDTO publicChannelCreateRequestDTO) {
         this.members = new ArrayList<>();
 
         this.id = UUID.randomUUID();
@@ -34,7 +34,7 @@ public class Channel extends BaseEntity implements Serializable {
         this.members.add(userId);
     }
 
-    public Channel(PrivateChannelCreateRequestDTO privateChannelCreateRequestDTO) {
+    public ChannelEntity(PrivateChannelCreateRequestDTO privateChannelCreateRequestDTO) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
@@ -57,7 +57,7 @@ public class Channel extends BaseEntity implements Serializable {
         this.members.add(memberId);
     }
 
-    public void removeMember(User user) {
+    public void removeMember(UserEntity user) {
         this.members.remove(user);
     }
 }

@@ -3,10 +3,10 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.request.readStatus.ReadStatusCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.readStatus.ReadStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.ReadStatusResponseDTO;
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.ChannelEntity;
+import com.sprint.mission.discodeit.entity.ReadStatusEntity;
 import com.sprint.mission.discodeit.entity.ReadStatusType;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -27,14 +27,14 @@ public class BasicReadStatusService implements ReadStatusService {
     // 읽음 상태 생성
     @Override
     public ReadStatusResponseDTO create(ReadStatusCreateRequestDTO readStatusCreateRequestDTO) {
-        User targetUser = userRepository.findById(readStatusCreateRequestDTO.getUserId())
+        UserEntity targetUser = userRepository.findById(readStatusCreateRequestDTO.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
-        Channel targetChannel = channelRepository.findById(readStatusCreateRequestDTO.getChannelId())
+        ChannelEntity targetChannel = channelRepository.findById(readStatusCreateRequestDTO.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
         existsByUserIdAndChannelId(targetUser.getId(), targetChannel.getId());
 
-        ReadStatus newReadStatus = new ReadStatus(readStatusCreateRequestDTO);
+        ReadStatusEntity newReadStatus = new ReadStatusEntity(readStatusCreateRequestDTO);
         readStatusRepository.save(newReadStatus);
 
         return toResponseDTO(newReadStatus);
@@ -43,7 +43,7 @@ public class BasicReadStatusService implements ReadStatusService {
     // 읽음 상태 단건 조회
     @Override
     public ReadStatusResponseDTO findById(UUID id) {
-        ReadStatus targetReadStatus = findEntityById(id);
+        ReadStatusEntity targetReadStatus = findEntityById(id);
 
         return toResponseDTO(targetReadStatus);
     }
@@ -69,7 +69,7 @@ public class BasicReadStatusService implements ReadStatusService {
     // 읽음 상태 수정
     @Override
     public ReadStatusResponseDTO update(ReadStatusUpdateRequestDTO readStatusUpdateRequestDTO) {
-        ReadStatus targetReadStatus = findEntityById(readStatusUpdateRequestDTO.getId());
+        ReadStatusEntity targetReadStatus = findEntityById(readStatusUpdateRequestDTO.getId());
 
         if (readStatusUpdateRequestDTO.getReadStatusType() != null) {
             targetReadStatus.updateReadStatusType(readStatusUpdateRequestDTO.getReadStatusType());
@@ -87,7 +87,7 @@ public class BasicReadStatusService implements ReadStatusService {
     // 읽음 상태 삭제
     @Override
     public void delete(UUID id) {
-        ReadStatus targetReadStatus = findEntityById(id);
+        ReadStatusEntity targetReadStatus = findEntityById(id);
         readStatusRepository.delete(targetReadStatus);
     }
 
@@ -99,13 +99,13 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     // 단일 엔티티 조회 및 반환
-    public ReadStatus findEntityById(UUID readStatusId) {
+    public ReadStatusEntity findEntityById(UUID readStatusId) {
         return readStatusRepository.findById(readStatusId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
     }
 
     // 응답 DTO 생성 및 반환
-    public ReadStatusResponseDTO toResponseDTO(ReadStatus readStatus) {
+    public ReadStatusResponseDTO toResponseDTO(ReadStatusEntity readStatus) {
         return ReadStatusResponseDTO.builder()
                 .id(readStatus.getId())
                 .userId(readStatus.getUserId())
