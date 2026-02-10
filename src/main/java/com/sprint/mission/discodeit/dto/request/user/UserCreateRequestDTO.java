@@ -4,22 +4,29 @@ import com.sprint.mission.discodeit.dto.request.binaryContent.BinaryContentCreat
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
+@Getter
 @Builder
-public record UserCreateRequestDTO (
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserCreateRequestDTO {
     @Email
     @NotBlank
-    String email,
+    private String email;
 
     @NotBlank
-    String password,
+    private String password;
 
     @NotBlank
-    String nickname,
+    private String nickname;
 
     @Valid
-    BinaryContentCreateRequestDTO binaryContentCreateRequestDTO
-) {
-
+    private BinaryContentCreateRequestDTO binaryContentCreateRequestDTO;
 }

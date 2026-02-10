@@ -1,17 +1,21 @@
 package com.sprint.mission.discodeit.dto.request.user;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+@Getter
 @Builder
-public record MemberFindRequestDTO (
+@NoArgsConstructor
+@AllArgsConstructor
+public class MemberFindRequestDTO {
     @NotNull
-    UUID requesterId,
+    private UUID requesterId;
 
     @NotNull
-    UUID channelId
-) {
-
+    private UUID channelId;
 }

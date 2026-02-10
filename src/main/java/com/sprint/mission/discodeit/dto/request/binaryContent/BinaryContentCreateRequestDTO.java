@@ -3,17 +3,22 @@ package com.sprint.mission.discodeit.dto.request.binaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
 
 @Builder
-public record BinaryContentCreateRequestDTO (
+@NoArgsConstructor
+@AllArgsConstructor
+public class BinaryContentCreateRequestDTO {
     @NotBlank
-    String fileName,
+    private String fileName;
 
-    byte[] binaryContent,
+    private byte[] binaryContent;
 
     @NotNull
-    BinaryContentType binaryContentType
-) {
-
+    private BinaryContentType binaryContentType;
 }

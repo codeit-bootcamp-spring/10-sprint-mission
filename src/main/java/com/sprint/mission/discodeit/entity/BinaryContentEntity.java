@@ -17,8 +17,8 @@ public class BinaryContentEntity {                             // 수정 불가�
     public BinaryContentEntity(BinaryContentCreateRequestDTO binaryContentCreateRequestDTO){
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.fileName = binaryContentCreateRequestDTO.fileName();
-        this.binaryContent = binaryContentCreateRequestDTO.binaryContent();
-        this.binaryContentType = binaryContentCreateRequestDTO.binaryContentType();
+        this.fileName = binaryContentCreateRequestDTO.getFileName();
+        this.binaryContent = binaryContentCreateRequestDTO.getBinaryContent();
+        this.binaryContentType = binaryContentCreateRequestDTO.getBinaryContentType();
     }
 }

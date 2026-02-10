@@ -4,21 +4,29 @@ import com.sprint.mission.discodeit.dto.request.binaryContent.BinaryContentCreat
 import com.sprint.mission.discodeit.dto.request.userStatus.UserStatusUpdateRequestDTO;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
+import java.util.UUID;
+
+@Getter
 @Builder
-public record UserUpdateRequestDTO (
-    @NotBlank
-    String password,
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserUpdateRequestDTO {
+    @Setter
+    @NotNull
+    private UUID id;
 
     @NotBlank
-    String nickname,
+    private String password;
+
+    @NotBlank
+    private String nickname;
 
     @Valid
-    UserStatusUpdateRequestDTO userStatusCreateRequestDTO,
+    private UserStatusUpdateRequestDTO userStatusCreateRequestDTO;
 
     @Valid
-    BinaryContentCreateRequestDTO binaryContentCreateRequestDTO
-) {
-
+    private BinaryContentCreateRequestDTO binaryContentCreateRequestDTO;
 }

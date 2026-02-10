@@ -2,20 +2,24 @@ package com.sprint.mission.discodeit.dto.request.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+@Getter
 @Builder
-public record AuthLoginRequestDTO (
+@NoArgsConstructor
+@AllArgsConstructor
+public class AuthLoginRequestDTO {
     @NotNull
-    UUID userId,
+    private UUID userId;
 
     @NotBlank
-    String nickname,
+    private String nickname;
 
     @NotBlank
-    String password
-) {
-
+    private String password;
 }

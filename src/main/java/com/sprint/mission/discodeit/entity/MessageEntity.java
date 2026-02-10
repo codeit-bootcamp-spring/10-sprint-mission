@@ -25,10 +25,10 @@ public class MessageEntity extends BaseEntity implements Serializable {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
-        this.message = messageCreateRequestDTO.message();
-        this.authorId = messageCreateRequestDTO.authorId();
-        this.channelId = messageCreateRequestDTO.channelId();
-        this.messageType = messageCreateRequestDTO.messageType();
+        this.message = messageCreateRequestDTO.getMessage();
+        this.authorId = messageCreateRequestDTO.getAuthorId();
+        this.channelId = messageCreateRequestDTO.getChannelId();
+        this.messageType = messageCreateRequestDTO.getMessageType();
     }
 
     public void updateMessage(String message) {

@@ -24,7 +24,7 @@ public interface MessageService {
     List<MessageResponseDTO> findAllByUserId(UUID targetUserId);
 
     // 메시지 수정
-    MessageResponseDTO update(UUID messageId, MessageUpdateRequestDTO messageUpdateRequestDTO);
+    MessageResponseDTO update(MessageUpdateRequestDTO messageUpdateRequestDTO);
 
     // 메시지 삭제
     void delete(UUID targetMessageId);

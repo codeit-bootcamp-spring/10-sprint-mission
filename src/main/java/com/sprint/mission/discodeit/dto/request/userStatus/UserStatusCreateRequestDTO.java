@@ -1,14 +1,18 @@
 package com.sprint.mission.discodeit.dto.request.userStatus;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+@Getter
 @Builder
-public record UserStatusCreateRequestDTO (
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserStatusCreateRequestDTO {
     @NotNull
-    UUID userId
-) {
-
+    private UUID userId;
 }

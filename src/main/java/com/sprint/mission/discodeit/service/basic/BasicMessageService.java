@@ -33,15 +33,15 @@ public class BasicMessageService implements MessageService {
     // 메시지 생성
     @Override
     public MessageResponseDTO create(MessageCreateRequestDTO messageCreateRequestDTO) {
-        userRepository.findById(messageCreateRequestDTO.authorId())
+        userRepository.findById(messageCreateRequestDTO.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
-        channelRepository.findById(messageCreateRequestDTO.channelId())
+        channelRepository.findById(messageCreateRequestDTO.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
         MessageEntity newMessage = new MessageEntity(messageCreateRequestDTO);
         messageRepository.save(newMessage);
 
-        Optional.ofNullable(messageCreateRequestDTO.binaryContentCreateRequestDTOList())
+        Optional.ofNullable(messageCreateRequestDTO.getBinaryContentCreateRequestDTOList())
                 .map(binaryContentCreateRequestDTOS -> binaryContentCreateRequestDTOS.stream()
                         // 첨부파일 하나씩 생성 및 저장
                         .map(binaryContentCreateRequestDTO -> {
@@ -102,14 +102,14 @@ public class BasicMessageService implements MessageService {
 
     // 메시지 수정
     @Override
-    public MessageResponseDTO update(UUID messageId, MessageUpdateRequestDTO messageUpdateRequestDTO) {
-        MessageEntity targetMessage = findMessageEntityById(messageId);
+    public MessageResponseDTO update(MessageUpdateRequestDTO messageUpdateRequestDTO) {
+        MessageEntity targetMessage = findMessageEntityById(messageUpdateRequestDTO.getId());
 
-        Optional.ofNullable(messageUpdateRequestDTO.message())
+        Optional.ofNullable(messageUpdateRequestDTO.getMessage())
                 .ifPresent(message -> {
                     validateString(message, "[메시지 변경 실패] 올바른 메시지 형식이 아닙니다.");
                     validateDuplicateValue(targetMessage.getMessage(), message, "[메시지 변경 실패] 이전 메시지와 동일합니다.");
-                    targetMessage.updateMessage(messageUpdateRequestDTO.message());
+                    targetMessage.updateMessage(messageUpdateRequestDTO.getMessage());
                 });
 
         messageRepository.save(targetMessage);

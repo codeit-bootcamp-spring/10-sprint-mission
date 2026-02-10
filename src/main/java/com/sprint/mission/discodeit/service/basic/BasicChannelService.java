@@ -33,7 +33,7 @@ public class BasicChannelService implements ChannelService {
     // 공개 채널 생성
     @Override
     public ChannelResponseDTO createPublicChannel(PublicChannelCreateRequestDTO publicChannelCreateRequestDTO) {
-        userRepository.findById(publicChannelCreateRequestDTO.userId())
+        userRepository.findById(publicChannelCreateRequestDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
 
         ChannelEntity newChannel = new ChannelEntity(publicChannelCreateRequestDTO);
@@ -45,7 +45,7 @@ public class BasicChannelService implements ChannelService {
     // 비공개 채널 생성
     @Override
     public ChannelResponseDTO createPrivateChannel(PrivateChannelCreateRequestDTO privateChannelCreateRequestDTO) {
-        userRepository.findById(privateChannelCreateRequestDTO.userId())
+        userRepository.findById(privateChannelCreateRequestDTO.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
 
         ChannelEntity newChannel = new ChannelEntity(privateChannelCreateRequestDTO);
@@ -96,27 +96,27 @@ public class BasicChannelService implements ChannelService {
 
     // 채널 정보 수정
     @Override
-    public ChannelResponseDTO update(UUID channelId, ChannelUpdateRequestDTO channelUpdateRequestDTO) {
-        ChannelEntity targetChannel = findEntityById(channelId);
+    public ChannelResponseDTO update(ChannelUpdateRequestDTO channelUpdateRequestDTO) {
+        ChannelEntity targetChannel = findEntityById(channelUpdateRequestDTO.getId());
 
         // Private 채널 제외
         if (targetChannel.getType() == ChannelType.PRIVATE)
             throw new RuntimeException("Private 채널은 설정 및 정보를 변경할 수 없습니다.");
 
         // 채널 이름 변경
-        Optional.ofNullable(channelUpdateRequestDTO.channelName())
+        Optional.ofNullable(channelUpdateRequestDTO.getChannelName())
                 .ifPresent(channelName -> {
                     validateString(channelName, "[채널 이름 변경 실패] 올바른 채널 이름 형식이 아닙니다.");
                     validateDuplicateValue(targetChannel.getChannelName(), channelName, "[채널 이름 변경 실패] 현재 채널 이름과 동일합니다.");
-                    targetChannel.updateChannelName(channelUpdateRequestDTO.channelName());
+                    targetChannel.updateChannelName(channelUpdateRequestDTO.getChannelName());
                 });
 
         // 채널 설명 변경
-        Optional.ofNullable(channelUpdateRequestDTO.description())
+        Optional.ofNullable(channelUpdateRequestDTO.getDescription())
                 .ifPresent(channelDescription -> {
                     validateString(channelDescription, "[채널 설명 변경 실패] 올바른 채널 설명 형식이 아닙니다.");
                     validateDuplicateValue(targetChannel.getDescription(), channelDescription, "[채널 설명 변경 실패] 현재 채널 설명과 동일합니다.");
-                    targetChannel.updateChannelDescription(channelUpdateRequestDTO.description());
+                    targetChannel.updateChannelDescription(channelUpdateRequestDTO.getDescription());
                 });
 
         channelRepository.save(targetChannel);
@@ -146,11 +146,11 @@ public class BasicChannelService implements ChannelService {
     // 채널 참가자 초대
     @Override
     public void inviteMember(ChannelMemberRequestDTO channelMemberRequestDTO) {
-        UserEntity newUser = userRepository.findById(channelMemberRequestDTO.userId())
+        UserEntity newUser = userRepository.findById(channelMemberRequestDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
-        ChannelEntity targetChannel = findEntityById(channelMemberRequestDTO.channelId());
+        ChannelEntity targetChannel = findEntityById(channelMemberRequestDTO.getChannelId());
 
-        validateMemberExists(channelMemberRequestDTO.userId(), channelMemberRequestDTO.channelId());
+        validateMemberExists(channelMemberRequestDTO.getUserId(), channelMemberRequestDTO.getChannelId());
 
         targetChannel.getMembers().add(newUser.getId());
         channelRepository.save(targetChannel);
@@ -159,11 +159,11 @@ public class BasicChannelService implements ChannelService {
     // 채널 퇴장
     @Override
     public void leaveMember(ChannelMemberRequestDTO channelMemberRequestDTO) {
-        UserEntity targetUser = userRepository.findById(channelMemberRequestDTO.userId())
+        UserEntity targetUser = userRepository.findById(channelMemberRequestDTO.getUserId())
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
-        ChannelEntity targetChannel = findEntityById(channelMemberRequestDTO.channelId());
+        ChannelEntity targetChannel = findEntityById(channelMemberRequestDTO.getChannelId());
 
-        validateUserNotInChannel(channelMemberRequestDTO.userId(), channelMemberRequestDTO.channelId());
+        validateUserNotInChannel(channelMemberRequestDTO.getUserId(), channelMemberRequestDTO.getChannelId());
 
         targetChannel.getMembers().removeIf(memberId -> memberId.equals(targetUser.getId()));
         channelRepository.save(targetChannel);

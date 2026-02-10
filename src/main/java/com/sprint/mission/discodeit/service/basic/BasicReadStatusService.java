@@ -27,9 +27,9 @@ public class BasicReadStatusService implements ReadStatusService {
     // 읽음 상태 생성
     @Override
     public ReadStatusResponseDTO create(ReadStatusCreateRequestDTO readStatusCreateRequestDTO) {
-        UserEntity targetUser = userRepository.findById(readStatusCreateRequestDTO.memberId())
+        UserEntity targetUser = userRepository.findById(readStatusCreateRequestDTO.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
-        ChannelEntity targetChannel = channelRepository.findById(readStatusCreateRequestDTO.channelId())
+        ChannelEntity targetChannel = channelRepository.findById(readStatusCreateRequestDTO.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
         existsByUserIdAndChannelId(targetUser.getId(), targetChannel.getId());
@@ -68,11 +68,11 @@ public class BasicReadStatusService implements ReadStatusService {
 
     // 읽음 상태 수정
     @Override
-    public ReadStatusResponseDTO update(UUID readStatusId, ReadStatusUpdateRequestDTO readStatusUpdateRequestDTO) {
-        ReadStatusEntity targetReadStatus = findEntityById(readStatusId);
+    public ReadStatusResponseDTO update(ReadStatusUpdateRequestDTO readStatusUpdateRequestDTO) {
+        ReadStatusEntity targetReadStatus = findEntityById(readStatusUpdateRequestDTO.getId());
 
-        if (readStatusUpdateRequestDTO.readStatusType() != null) {
-            targetReadStatus.updateReadStatusType(readStatusUpdateRequestDTO.readStatusType());
+        if (readStatusUpdateRequestDTO.getReadStatusType() != null) {
+            targetReadStatus.updateReadStatusType(readStatusUpdateRequestDTO.getReadStatusType());
         }
         else {
             targetReadStatus.updateReadStatusType(ReadStatusType.READ);
