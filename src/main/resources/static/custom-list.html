@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용자 목록 - Custom</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* 멘토님 예시 이미지와 비슷하게 보이기 위한 추가 스타일 */
+        .user-item {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .avatar-wrapper {
+            position: relative;
+            margin-right: 15px;
+        }
+        .profile-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #eee;
+        }
+        .status-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        .online { background-color: #2ecc71; }
+        .offline { background-color: #95a5a6; }
+        .user-info { flex-grow: 1; }
+        .user-name { font-weight: bold; display: block; }
+        .user-email { color: #7f8c8d; font-size: 0.9em; }
+        .online-label {
+            background: #2ecc71;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>사용자 목록</h1>
+    <div class="user-list" id="userList">
+        <p style="text-align: center;">로딩 중...</p>
+    </div>
+</div>
+
+<script>
+    async function init() {
+        const userListElement = document.getElementById('userList');
+
+        try {
+            // 1. 사용자 전체 목록 가져오기
+            const userRes = await fetch('/api/user/findAll');
+            const users = await userRes.json();
+
+            userListElement.innerHTML = ''; // 로딩 메시지 제거
+
+            // 2. 각 사용자를 순회하며 화면 그리기
+            for (const user of users) {
+                let profileSrc = 'https://via.placeholder.com/50'; // 기본 이미지
+
+                // 3. profileId가 있다면 BinaryContent API 호출
+                if (user.profileId) {
+                    try {
+                        // 멘토님 요구사항대로 binaryContentId 파라미터로 요청
+                        const contentRes = await fetch(`/api/binaryContent/find?binaryContentId=${user.profileId}`);
+                        if (contentRes.ok) {
+                            const contentData = await contentRes.json();
+                            // JSON 내의 byte[]는 자동으로 Base64 문자열로 전송됨
+                            profileSrc = `data:image/png;base64,${contentData.binaryContent}`;
+                        }
+                    } catch (e) {
+                        console.error("이미지 로드 실패:", e);
+                    }
+                }
+
+                // 4. HTML 구조 생성 (이미지 포함)
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                    <div class="avatar-wrapper">
+                        <img src="${profileSrc}" class="profile-img" alt="profile">
+                        <div class="status-badge ${user.online ? 'online' : 'offline'}"></div>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">${user.username}</span>
+                        <span class="user-email">${user.email}</span>
+                    </div>
+                    ${user.online ? '<span class="online-label">온라인</span>' : ''}
+                `;
+                userListElement.appendChild(userItem);
+            }
+        } catch (err) {
+            userListElement.innerHTML = '<p style="color:red;">데이터를 불러오는 데 실패했습니다.</p>';
+            console.error(err);
+        }
+    }
+
+    // 실행
+    init();
+</script>
+</body>
+</html>
