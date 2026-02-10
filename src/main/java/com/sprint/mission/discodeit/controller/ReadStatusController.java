@@ -18,19 +18,19 @@ import java.util.UUID;
 public class ReadStatusController {
     private final ReadStatusService readStatusService;
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public ResponseEntity<ReadStatusResponse> createReadStatus(@RequestBody ReadStatusCreateRequest request){
         return ResponseEntity.status(HttpStatus.CREATED).body(readStatusService.create(request));
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    @PatchMapping("/{id}")
     public ResponseEntity<ReadStatusResponse> updateReadStatus(
             @PathVariable UUID id,
             @RequestBody ReadStatusUpdateRequest request){
         return ResponseEntity.ok(readStatusService.update(id, request));
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public ResponseEntity<List<ReadStatusResponse>> findAllByUserId(@RequestParam UUID userId){
         return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
     }

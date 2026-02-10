@@ -18,32 +18,32 @@ import java.util.UUID;
 public class MessageController {
     private final MessageService messageService;
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public ResponseEntity<MessageResponse> createMessage(@RequestBody MessageCreateRequest request){
         return ResponseEntity.status(HttpStatus.CREATED).body(messageService.create(request));
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    @PatchMapping("/{id}")
     public ResponseEntity<MessageResponse> updateMessage(
             @PathVariable UUID id,
             @RequestBody MessageUpdateRequest request){
         return ResponseEntity.ok(messageService.update(id, request));
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMessage(@PathVariable UUID id){
         messageService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
-    @RequestMapping(value = "/channel/{channelId}", method = RequestMethod.GET)
+    @GetMapping("/channel/{channelId}")
     public ResponseEntity<List<MessageResponse>> findAllByChannel(
             @PathVariable UUID channelId,
             @RequestParam UUID userId){
         return ResponseEntity.ok(messageService.findAllByChannelId(channelId, userId));
     }
 
-    @RequestMapping(value= "/{id}/pin", method = RequestMethod.PATCH)
+    @PatchMapping("/{id}/pin")
     public ResponseEntity<MessageResponse> togglePin(@PathVariable UUID id){
         return ResponseEntity.ok(messageService.togglePin(id));
     }

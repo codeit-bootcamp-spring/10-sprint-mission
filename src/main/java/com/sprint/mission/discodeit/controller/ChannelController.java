@@ -19,30 +19,30 @@ import java.util.UUID;
 public class ChannelController {
     private final ChannelService channelService;
 
-    @RequestMapping(value = "/public", method = RequestMethod.POST)
+    @PostMapping("/public")
     public ResponseEntity<ChannelResponse> createPublicChannel(@RequestBody PublicChannelCreateRequest request){
         return ResponseEntity.status(HttpStatus.CREATED).body(channelService.createPublicChannel(request));
 
     }
 
-    @RequestMapping(value = "/private", method = RequestMethod.POST)
+    @PostMapping("/private")
     public ResponseEntity<ChannelResponse> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(channelService.createPrivateChannel(request));
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    @PatchMapping("/{id}")
     public ResponseEntity<ChannelResponse> updateChannel(
             @PathVariable UUID id,
             @RequestBody ChannelUpdateRequest request) {
         return ResponseEntity.ok(channelService.update(id, request));
     }
 
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping
     public ResponseEntity<List<ChannelResponse>> findAllByUserId(@RequestParam UUID userId) {
         return ResponseEntity.ok(channelService.findAllByUserId(userId));
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteChannel(@PathVariable UUID id) {
         channelService.deleteById(id);
         return ResponseEntity.noContent().build();
