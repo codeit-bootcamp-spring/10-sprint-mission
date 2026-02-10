@@ -9,17 +9,17 @@ import java.util.Objects;
 import java.util.UUID;
 
 public interface ChannelServiceDTO {
-    record ChannelCreation(@NonNull ChannelType type, String channelName, String description,
-                           List<UUID> userIdsInChannel) {
+    record ChannelCreateRequest(@NonNull ChannelType type, String channelName, String description,
+                                List<UUID> userIdsInChannel) {
     }
 
-    record PublicChannelCreation(@NonNull String channelName, @NonNull String description) {
+    record PublicChannelCreateRequest(@NonNull String channelName, @NonNull String description) {
     }
 
-    record PrivateChannelCreation(@NonNull List<UUID> userIdsInPrivateChannel) {
+    record PrivateChannelCreateRequest(@NonNull List<UUID> userIdsInPrivateChannel) {
     }
 
-    record PublicChannelUpdate(@NonNull UUID channelId, String newName, String newDescription) {
+    record PublicChannelUpdateRequest(@NonNull UUID channelId, String newName, String newDescription) {
     }
 
     @Builder

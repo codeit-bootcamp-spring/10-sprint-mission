@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.common.function.ThrowingFunction;
-import com.sprint.mission.discodeit.dto.MessageServiceDTO.MessageContentUpdate;
-import com.sprint.mission.discodeit.dto.MessageServiceDTO.MessageCreation;
+import com.sprint.mission.discodeit.dto.MessageServiceDTO.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.MessageServiceDTO.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.MessageServiceDTO.MessageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
@@ -29,7 +29,7 @@ public class BasicMessageService extends BasicDomainService<Message> implements 
     private final BinaryContentRepository attachmentRepository;
 
     @Override
-    public MessageResponse create(MessageCreation model) throws IOException {
+    public MessageResponse create(MessageCreateRequest model) throws IOException {
         // todo: extract validate
         if (!channelRepository.existsById(model.channelId())) {
             throw new NoSuchElementException("Channel not found with id " + model.channelId());
@@ -56,7 +56,7 @@ public class BasicMessageService extends BasicDomainService<Message> implements 
     }
 
     @Override
-    public MessageResponse update(MessageContentUpdate model) throws IOException, ClassNotFoundException {
+    public MessageResponse update(MessageUpdateRequest model) throws IOException, ClassNotFoundException {
         // todo: refactoring
         Message message = findById(model.messageId());
         message.update(model.newContent(), model.attachmentIds());

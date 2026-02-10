@@ -28,13 +28,13 @@ public class BasicChannelService extends BasicDomainService<Channel> implements 
     private final MessageRepository messageRepository;
 
     @Override
-    public ChannelResponse create(ChannelCreation model) throws IOException {
+    public ChannelResponse create(ChannelCreateRequest model) throws IOException {
         if (model.type() == ChannelType.PUBLIC) {
             return createPublicChannel(
-                    new PublicChannelCreation(model.channelName(), model.description()));
+                    new PublicChannelCreateRequest(model.channelName(), model.description()));
         }
         return createPrivateChannel(
-                new PrivateChannelCreation(model.userIdsInChannel()));
+                new PrivateChannelCreateRequest(model.userIdsInChannel()));
     }
 
     @Override
@@ -55,7 +55,7 @@ public class BasicChannelService extends BasicDomainService<Channel> implements 
     }
 
     @Override
-    public ChannelResponse update(PublicChannelUpdate model) throws IOException, ClassNotFoundException {
+    public ChannelResponse update(PublicChannelUpdateRequest model) throws IOException, ClassNotFoundException {
         // todo refactoring
         Channel channel = findById(model.channelId());
         MessageResponse lastMsgResp = getLastMessageResponse(channel.getId());
@@ -91,7 +91,7 @@ public class BasicChannelService extends BasicDomainService<Channel> implements 
         return findEntityById(id, "Channel", channelRepository);
     }
 
-    private ChannelResponse createPrivateChannel(PrivateChannelCreation model) throws IOException {
+    private ChannelResponse createPrivateChannel(PrivateChannelCreateRequest model) throws IOException {
         Channel channel = new Channel(model.userIdsInPrivateChannel());
         channelRepository.save(channel);
         ChannelResponse response = channel.toResponse();
@@ -102,7 +102,7 @@ public class BasicChannelService extends BasicDomainService<Channel> implements 
         return response;
     }
 
-    private ChannelResponse createPublicChannel(PublicChannelCreation model) throws IOException {
+    private ChannelResponse createPublicChannel(PublicChannelCreateRequest model) throws IOException {
         Channel channel = new Channel(model.channelName(), model.description());
         channelRepository.save(channel);
         return channel.toResponse();

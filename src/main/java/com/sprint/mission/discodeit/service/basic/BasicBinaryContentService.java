@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.common.function.ThrowingFunction;
-import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentCreation;
+import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -28,7 +28,7 @@ public class BasicBinaryContentService extends BasicDomainService<BinaryContent>
     }
 
     @Override
-    public BinaryContentResponse create(BinaryContentCreation model) throws IOException {
+    public BinaryContentResponse create(BinaryContentCreateRequest model) throws IOException {
         BinaryContent content = new BinaryContent(model.fileName(), model.fileType(), model.data());
         binaryContentRepository.save(content);
         return content.toResponse();
