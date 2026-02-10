@@ -12,9 +12,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateDuplicateValue;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateString;
@@ -156,22 +154,22 @@ public class BasicUserService implements UserService {
                 });
 
         // 삭제된 사용자가 발행한 메시지 연쇄 삭제
-        messageRepository.findAll().stream()
+        List<MessageEntity> deleteMessages = messageRepository.findAll().stream()
                 .filter(message ->  message.getAuthorId().equals(userId))
-                .toList()
-                .forEach(messageRepository::delete);
+                .toList();
+        deleteMessages.forEach(messageRepository::delete);
 
         // 사용자 상태 연쇄 삭제
-        userStatusRepository.findAll().stream()
+        List<UserStatusEntity> deleteUserStatuses = userStatusRepository.findAll().stream()
                 .filter(userStatus -> userStatus.getUserId().equals(targetUser.getId()))
-                .toList()
-                .forEach(userStatusRepository::delete);
+                .toList();
+        deleteUserStatuses.forEach(userStatusRepository::delete);
 
         // 사용자 프로필 이미지 연쇄 삭제
-        binaryContentRepository.findAll().stream()
+        List<BinaryContentEntity> deleteBinaryContents = binaryContentRepository.findAll().stream()
                 .filter(binaryContent -> binaryContent.getId().equals(targetUser.getProfileId()))
-                .toList()
-                .forEach(binaryContentRepository::delete);
+                .toList();
+        deleteBinaryContents.forEach(binaryContentRepository::delete);
 
         userRepository.delete(targetUser);
     }

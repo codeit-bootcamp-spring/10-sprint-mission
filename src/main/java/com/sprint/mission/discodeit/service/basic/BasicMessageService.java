@@ -83,12 +83,11 @@ public class BasicMessageService implements MessageService {
 
         return messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(taregetChannel.getId()))
-                // 메시지 -> 메시지 응답 반환
                 .map(this::toResponseDTO)
                 .toList();
     }
 
-    // 특정 사욪자가 발행한 전체 메시지 목록 조회
+    // 특정 사용자가 발행한 전체 메시지 목록 조회
     @Override
     public List<MessageResponseDTO> findAllByUserId(UUID targetUserId) {
         UserEntity targetUser = userRepository.findById(targetUserId)
