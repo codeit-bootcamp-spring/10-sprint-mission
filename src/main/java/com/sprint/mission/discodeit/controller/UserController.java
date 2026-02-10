@@ -8,10 +8,12 @@ import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,16 +32,20 @@ public class UserController {
 
 
     // 1. 사용자 등록
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ResponseEntity<UserResponseDto> create(@RequestBody UserRequestCreateDto requestCreateDto) {
-        UserResponseDto urDto = userService.create(requestCreateDto);
+    @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponseDto> create(@RequestPart("request") UserRequestCreateDto requestCreateDto,
+                                                  @RequestPart(value = "profileImage", required = false)
+                                                  MultipartFile profileImage) {
+        UserResponseDto urDto = userService.create(requestCreateDto, profileImage);
         return ResponseEntity.ok(urDto);
     }
 
     // 2. 사용자 정보 수정
-    @RequestMapping(value = "/update",  method = RequestMethod.PATCH)
-    public ResponseEntity<UserResponseDto> update(@RequestBody UserRequestUpdateDto requestUpdateDto) {
-        UserResponseDto urDto = userService.update(requestUpdateDto);
+    @RequestMapping(value = "/update",  method = RequestMethod.PATCH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponseDto> update(@RequestPart("request") UserRequestUpdateDto requestUpdateDto,
+                                                  @RequestPart(value = "profileImage", required = false)
+                                                  MultipartFile profileImage) {
+        UserResponseDto urDto = userService.update(requestUpdateDto, profileImage);
         return ResponseEntity.ok(urDto);
     }
 

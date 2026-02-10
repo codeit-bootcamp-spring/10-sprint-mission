@@ -5,8 +5,10 @@ import com.sprint.mission.discodeit.dto.message.MessageRequestUpdateDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,9 +24,11 @@ public class MessageController {
     }
 
     // 1. 메시지 생성
-    @RequestMapping(value = "/create", method = RequestMethod.POST)
-    public ResponseEntity<MessageResponseDto> create(@RequestBody MessageRequestCreateDto messageRequestDto) {
-        MessageResponseDto messageResponseDto = messageService.create(messageRequestDto);
+    @RequestMapping(value = "/create", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<MessageResponseDto> create(@RequestPart("request") MessageRequestCreateDto messageRequestDto,
+                                                     @RequestPart(value = "attachments", required = false)
+                                                     List<MultipartFile> attachments) {
+        MessageResponseDto messageResponseDto = messageService.create(messageRequestDto, attachments);
         return ResponseEntity.ok(messageResponseDto);
     }
 

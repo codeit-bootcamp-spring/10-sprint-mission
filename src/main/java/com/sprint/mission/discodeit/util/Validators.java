@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.util;
 
 import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusRequestCreateDto;
-import com.sprint.mission.discodeit.dto.common.BinaryContentParam;
 import com.sprint.mission.discodeit.dto.message.MessageRequestCreateDto;
 
 import java.util.List;
