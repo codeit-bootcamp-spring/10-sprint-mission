@@ -2,20 +2,12 @@ package com.sprint.mission.discodeit.dto.request.readStatus;
 
 import com.sprint.mission.discodeit.entity.ReadStatusType;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.Builder;
 
-import java.time.Instant;
-import java.util.UUID;
-
-@Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ReadStatusUpdateRequestDTO {
-    @Setter
+public record ReadStatusUpdateRequestDTO (
     @NotNull
-    private UUID id;
+    ReadStatusType readStatusType
+) {
 
-    @NotNull
-    private ReadStatusType readStatusType;
 }

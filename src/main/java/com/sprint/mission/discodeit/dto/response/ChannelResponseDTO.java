@@ -8,16 +8,17 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-@Getter
 @Builder
-public class ChannelResponseDTO {
-    private UUID id;
-    private UUID userId;
-    private String channelName;
-    private List<UUID> members;
-    private ChannelType channelType;
-    private String description;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private Instant lastMessageAt;
+public record ChannelResponseDTO (
+    UUID id,
+    UUID userId,
+    String channelName,
+    List<UUID> members,
+    ChannelType channelType,
+    String description,
+    Instant createdAt,
+    Instant updatedAt,
+    Instant lastMessageAt
+) {
+
 }

@@ -18,12 +18,12 @@ public class BasicAuthService implements AuthService {
 
     // 로그인
     public UserResponseDTO login(AuthLoginRequestDTO authLoginRequestDTO) {
-        UserEntity targetUser = userRepository.findById(authLoginRequestDTO.getUserId())
+        UserEntity targetUser = userRepository.findById(authLoginRequestDTO.userId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
         UserStatusEntity targetUserStatus = userStatusRepository.findByUserId(targetUser.getId());
 
-        if (!targetUser.getPassword().equals(authLoginRequestDTO.getPassword()) ||
-                !targetUser.getNickname().equals(authLoginRequestDTO.getNickname())){
+        if (!targetUser.getPassword().equals(authLoginRequestDTO.password()) ||
+                !targetUser.getNickname().equals(authLoginRequestDTO.nickname())){
             throw new IllegalArgumentException(("[로그인 실패] 잘못된 닉네임 혹은 비밀번호를 입력하셨습니다."));
         }
 

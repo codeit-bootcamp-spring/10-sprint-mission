@@ -38,8 +38,8 @@ public class MessageController {
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ResponseEntity<MessageResponseDTO> update(@PathVariable UUID id,
                                                      @RequestBody MessageUpdateRequestDTO messageUpdateRequestDTO) {
-        messageUpdateRequestDTO.setId(id);
-        MessageResponseDTO updateMessage = messageService.update(messageUpdateRequestDTO);
+
+        MessageResponseDTO updateMessage = messageService.update(id, messageUpdateRequestDTO);
 
         return ResponseEntity.ok(updateMessage);
     }

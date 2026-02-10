@@ -15,8 +15,8 @@ public class ReadStatusEntity extends BaseEntity {
 
     public ReadStatusEntity(ReadStatusCreateRequestDTO readStatusCreateRequestDTO) {
         this.id = UUID.randomUUID();
-        this.userId = readStatusCreateRequestDTO.getUserId();
-        this.channelId = readStatusCreateRequestDTO.getChannelId();
+        this.userId = readStatusCreateRequestDTO.memberId();
+        this.channelId = readStatusCreateRequestDTO.channelId();
         this.readStatusType = ReadStatusType.READ;
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();

@@ -41,8 +41,8 @@ public class UserController {
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ResponseEntity<UserResponseDTO> update(@PathVariable UUID id,
                                                   @RequestBody UserUpdateRequestDTO userUpdateRequestDTO){
-        userUpdateRequestDTO.setId(id);
-        UserResponseDTO updateUser = userService.update(userUpdateRequestDTO);
+
+        UserResponseDTO updateUser = userService.update(id, userUpdateRequestDTO);
 
         return ResponseEntity.ok(updateUser);
     }

@@ -18,7 +18,7 @@ public interface UserStatusService {
     List<UserStatusResponseDTO> findAll();
 
     // 사용자 상태 수정
-    UserStatusResponseDTO update(UserStatusUpdateRequestDTO userStatusUpdateRequestDTO);
+    UserStatusResponseDTO update(UUID userStatusId, UserStatusUpdateRequestDTO userStatusUpdateRequestDTO);
 
     // 특정 사용자의 상태 수정
     UserStatusResponseDTO updateByUserId(UUID targetUserId);

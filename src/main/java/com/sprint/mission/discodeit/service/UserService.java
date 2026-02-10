@@ -22,7 +22,7 @@ public interface UserService {
     List<UserResponseDTO> findMembersByChannelId(MemberFindRequestDTO memberFindRequestDTO);
 
     // 사용자 수정
-    UserResponseDTO update(UserUpdateRequestDTO userUpdateRequestDTO);
+    UserResponseDTO update(UUID userId, UserUpdateRequestDTO userUpdateRequestDTO);
 
     // 사용자 삭제
     void delete(UUID userId);
