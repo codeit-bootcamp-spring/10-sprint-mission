@@ -168,6 +168,8 @@ public class BasicUserService implements UserService {
     private UserDetailResponseDTO toUserDetailResponseDTO(User user, UserStatus userStatus) {
         return new UserDetailResponseDTO(
                 user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
                 userStatus.isOnline(),
