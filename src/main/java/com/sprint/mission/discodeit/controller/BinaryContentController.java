@@ -13,7 +13,7 @@ import java.util.UUID;
 
 
 @RestController
-@RequestMapping("/api/binaryContents")
+@RequestMapping("/api/binaryContent")
 @RequiredArgsConstructor
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
@@ -28,7 +28,7 @@ public class BinaryContentController {
     }
 
     // 1개 조회
-    @RequestMapping(value = "/{binaryContentId}", method = RequestMethod.GET)
+    @RequestMapping(value = "find/{binaryContentId}", method = RequestMethod.GET)
     public ResponseEntity<BinaryContentResponse> findById(
             @PathVariable UUID binaryContentId
     ) {

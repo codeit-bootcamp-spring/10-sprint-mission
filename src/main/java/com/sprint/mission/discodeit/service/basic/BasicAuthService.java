@@ -26,11 +26,13 @@ public class BasicAuthService implements AuthService {
 
         return new UserResponse(
                 user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUserName(),
                 user.getAlias(),
                 user.getEmail(),
-                true,
-                user.getProfileId()
+                user.getProfileId(),
+                true
         );
     }
 }

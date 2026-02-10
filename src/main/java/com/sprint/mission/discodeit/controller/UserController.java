@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -28,7 +28,7 @@ public class UserController {
 
     //  유저 생성
     //  name, alias, email, password, binaryContent
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping( method = RequestMethod.POST)
     public ResponseEntity<UserResponse> create(@RequestBody UserCreateRequest request){
 
         UserResponse userResponse = userService.createUser(request);
@@ -58,10 +58,14 @@ public class UserController {
         return ResponseEntity.noContent().build();
     } //responseEntity.ok -> 바디값 반환. 삭제시에는 바디값 반환 필요 x
 
-    @RequestMapping(method = RequestMethod.GET)
+
+    // 심화 기능 추가
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
     public ResponseEntity<List<UserResponse>> findAll(){
         return ResponseEntity.ok(userService.getUserAll());
     }
+
+
 
     @RequestMapping(value = "/{userId}/status", method = RequestMethod.PATCH)
     public ResponseEntity<UserStatusResponse> updateOnlineStatus(@PathVariable UUID userId,
@@ -70,6 +74,8 @@ public class UserController {
                 new UserStatusUpdateByUserIdRequest(userId, body.refreshLogin());
         return ResponseEntity.ok(userStatusService.updateByUserId(request));
     }
+
+
 
 
 }

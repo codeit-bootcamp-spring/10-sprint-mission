@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/readstatus")
+@RequestMapping("/api/readstatus")
 public class ReadstatusController {
 
     private final ReadStatusService readStatusService;
