@@ -1,62 +1,54 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
 
-public class User extends BaseEntity {
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.UUID;
+
+@Getter
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
     private String username;
-    private String password;
     private String email;
-    private List<Channel> myChannels = new ArrayList<>();
-    private List<Message> myMessages = new ArrayList<>();
+    private String password;
+    private UUID profileId;     // BinaryContent
 
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void updateUsername(String newUsername){
-        this.username = newUsername;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public void updateEmail(String newEmail){
-        this.email = newEmail;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public void updatePassword(String newPassword){
-        this.password = newPassword;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public List<Message> getMyMessages() {
-        return myMessages;
-    }
-
-    public List<Channel> getMyChannels() {
-        return myChannels;
-    }
-
-    public void addMessage(Message message){
-        this.myMessages.add(message);
-    }
-
-    public User(String username, String password, String email) {
+    public User(String username, String email, String password, UUID profileId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
         this.username = username;
-        this.password = password;
         this.email = email;
+        this.password = password;
+        this.profileId = profileId;
     }
 
-    @Override
-    public String toString() {
-        return "이름: " + username + ", 이메일: " + email + ", 비밀번호: " + password;
+    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+            this.profileId = newProfileId;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }
