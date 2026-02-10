@@ -1,8 +1,0 @@
-spring:
-  application:
-    name: discodeit
-
-discodeit:
-  repository:
-    type: jcf # jcf | file (기본값 jcf)
-    file-directory: discodeit.fileRepo # File 기반 저장 시 사용할 디렉토리명
