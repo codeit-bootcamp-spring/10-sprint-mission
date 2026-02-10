@@ -11,6 +11,8 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.response.ErrorCode;
+import com.sprint.mission.discodeit.response.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -62,7 +64,8 @@ public class BasicChannelService implements ChannelService {
 
     private void validateMemberExists(UUID memberId) {
         if (!userRepository.existsById(memberId)) {
-            throw new IllegalArgumentException("존재하지 않는 memberId 입니다. memberId: " + memberId);
+            throw new ApiException(ErrorCode.USER_NOT_FOUND,
+                    "존재하지 않는 memberId 입니다. memberId: " + memberId);
         }
     }
 
@@ -77,7 +80,8 @@ public class BasicChannelService implements ChannelService {
 
     private Channel getChannelOrThrow(UUID id) {
         return channelRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다 channelId: " + id));
+                .orElseThrow(() -> new ApiException(ErrorCode.CHANNEL_NOT_FOUND,
+                        "채널을 찾을 수 없습니다 channelId: " + id));
     }
 
     @Override
@@ -118,7 +122,8 @@ public class BasicChannelService implements ChannelService {
 
     private void validateChannelType(Channel channel) {
         if (channel.isPrivate()) {
-            throw new IllegalArgumentException("PRIVATE 채널은 수정할 수 없습니다. channelId: " + channel.getId());
+            throw new ApiException(ErrorCode.CHANNEL_UPDATE_FORBIDDEN,
+                    "PRIVATE 채널은 수정할 수 없습니다. channelId: " + channel.getId());
         }
     }
 

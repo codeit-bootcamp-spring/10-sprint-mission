@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.utils.FileIOHelper;
+import com.sprint.mission.discodeit.response.ApiException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,7 +20,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 public class BasicChannelServiceTest {
@@ -182,8 +183,8 @@ public class BasicChannelServiceTest {
                     );
 
             // then
-            assertThatIllegalArgumentException()
-                    .isThrownBy(() -> channelService.updateChannelInfo(request));
+            assertThatThrownBy(() -> channelService.updateChannelInfo(request))
+                    .isInstanceOf(ApiException.class);
         }
     }
 

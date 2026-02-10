@@ -31,8 +31,7 @@ public class FileUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findByUsername(String username) {
-        return FileIOHelper.<Optional<User>>loadAll(USER_DIRECTORY).stream()
-                .flatMap(Optional::stream)
+        return FileIOHelper.<User>loadAll(USER_DIRECTORY).stream()
                 .filter(user -> user.getUsername().equals(username))
                 .findFirst();
     }

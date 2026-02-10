@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
+import com.sprint.mission.discodeit.response.ErrorCode;
+import com.sprint.mission.discodeit.response.ApiException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +36,8 @@ public class Message extends BaseEntity {
 
     public void validateSender(UUID userId) {
         if (!senderId.equals(userId)) {
-            throw new IllegalArgumentException("메세지의 sender가 아닙니다. userId: " + userId);
+            throw new ApiException(ErrorCode.MESSAGE_SENDER_MISMATCH,
+                    "메세지의 sender가 아닙니다. userId: " + userId);
         }
     }
 }

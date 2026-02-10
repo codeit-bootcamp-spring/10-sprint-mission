@@ -13,6 +13,8 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.response.ErrorCode;
+import com.sprint.mission.discodeit.response.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +51,10 @@ public class BasicMessageService implements MessageService {
     }
 
     private List<UUID> saveAttachments(List<BinaryContentRequest> binaryContentRequests, UUID userId) {
+        if (binaryContentRequests == null) {
+            return List.of();
+        }
+
         List<UUID> attachmentsIds = new ArrayList<>();
 
         for (BinaryContentRequest binaryContentRequest : new ArrayList<>(binaryContentRequests)) {
@@ -127,16 +133,19 @@ public class BasicMessageService implements MessageService {
 
     private Message getMessageOrThrow(UUID messageId) {
         return messageRepository.findById(messageId)
-                .orElseThrow(() -> new IllegalArgumentException("메세지를 찾을 수 없습니다 messageId: " + messageId));
+                .orElseThrow(() -> new ApiException(ErrorCode.MESSAGE_NOT_FOUND,
+                        "메세지를 찾을 수 없습니다 messageId: " + messageId));
     }
 
     private User getUserOrThrow(UUID userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다 userId: " + userId));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND,
+                        "사용자를 찾을 수 없습니다 userId: " + userId));
     }
 
     private Channel getChannelOrThrow(UUID id) {
         return channelRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("채널을 찾을 수 없습니다 channelId: " + id));
+                .orElseThrow(() -> new ApiException(ErrorCode.CHANNEL_NOT_FOUND,
+                        "채널을 찾을 수 없습니다 channelId: " + id));
     }
 }

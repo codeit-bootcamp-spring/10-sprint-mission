@@ -43,18 +43,11 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public boolean existsByChannelId(UUID channelId) {
-        return FileIOHelper.<ReadStatus>loadAll(READ_STATUS_DIRECTORY).stream()
-                .anyMatch(readStatus ->
-                        readStatus.getChannelId().equals(channelId)
-                );
-    }
-
-    @Override
-    public boolean existsByUserId(UUID userId) {
+    public boolean existsByUserIdAndChannelId(UUID userId, UUID channelId) {
         return FileIOHelper.<ReadStatus>loadAll(READ_STATUS_DIRECTORY).stream()
                 .anyMatch(readStatus ->
                         readStatus.getUserId().equals(userId)
+                                && readStatus.getChannelId().equals(channelId)
                 );
     }
 

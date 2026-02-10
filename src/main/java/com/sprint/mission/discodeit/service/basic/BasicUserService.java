@@ -10,6 +10,8 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.response.ErrorCode;
+import com.sprint.mission.discodeit.response.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -47,11 +49,13 @@ public class BasicUserService implements UserService {
 
     private void validateDuplicateUser(CreateUserRequest request) {
         if (userRepository.existsByUsername(request.username())) {
-            throw new IllegalArgumentException("이미 존재하는 username 입니다 username: " + request.username());
+            throw new ApiException(ErrorCode.USERNAME_ALREADY_EXISTS,
+                    "이미 존재하는 username 입니다 username: " + request.username());
         }
 
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("이미 존재하는 email 입니다. email: " + request.email());
+            throw new ApiException(ErrorCode.EMAIL_ALREADY_EXISTS,
+                    "이미 존재하는 email 입니다. email: " + request.email());
         }
     }
 
@@ -80,13 +84,15 @@ public class BasicUserService implements UserService {
 
     private User getUserOrThrow(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다 userId: " + userId));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND,
+                        "사용자를 찾을 수 없습니다 userId: " + userId));
         return user;
     }
 
     private UserStatus getUserStatusOrThrow(UUID userId) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus 찾을 수 없습니다 userId: " + userId));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_STATUS_NOT_FOUND,
+                        "UserStatus 찾을 수 없습니다 userId: " + userId));
         return userStatus;
     }
 
@@ -113,6 +119,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserResponse updateUser(UUID requestId, UpdateUserRequest request) {
         User user = getUserOrThrow(requestId);
+        validateDuplicateUserOnUpdate(user, request);
 
         UUID profileId = createBinaryContentIfExist(request, user);
 
@@ -127,6 +134,24 @@ public class BasicUserService implements UserService {
 
         UserStatus userStatus = getUserStatusOrThrow(user.getId());
         return UserResponse.of(user, userStatus.getOnlineStatus());
+    }
+
+    private void validateDuplicateUserOnUpdate(User user, UpdateUserRequest request) {
+        String newUsername = request.username();
+        if (newUsername != null
+                && !newUsername.equals(user.getUsername())
+                && userRepository.existsByUsername(newUsername)) {
+            throw new ApiException(ErrorCode.USERNAME_ALREADY_EXISTS,
+                    "이미 존재하는 username 입니다 username: " + newUsername);
+        }
+
+        String newEmail = request.email();
+        if (newEmail != null
+                && !newEmail.equals(user.getEmail())
+                && userRepository.existsByEmail(newEmail)) {
+            throw new ApiException(ErrorCode.EMAIL_ALREADY_EXISTS,
+                    "이미 존재하는 email 입니다. email: " + newEmail);
+        }
     }
 
     private UUID createBinaryContentIfExist(UpdateUserRequest request, User user) {

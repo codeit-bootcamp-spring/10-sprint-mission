@@ -8,6 +8,8 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.response.ErrorCode;
+import com.sprint.mission.discodeit.response.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -38,23 +40,23 @@ public class BasicReadStatusService implements ReadStatusService {
 
     private void validateUserExists(UUID userId) {
         if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("존재하지 않는 userId 입니다. userId: " + userId);
+            throw new ApiException(ErrorCode.USER_NOT_FOUND,
+                    "존재하지 않는 userId 입니다. userId: " + userId);
         }
     }
 
     private void validateChannelExists(UUID channelId) {
         if (!channelRepository.existsById(channelId)) {
-            throw new IllegalArgumentException("존재하지 않는 channelId 입니다. channelId: " + channelId);
+            throw new ApiException(ErrorCode.CHANNEL_NOT_FOUND,
+                    "존재하지 않는 channelId 입니다. channelId: " + channelId);
         }
     }
 
     private void validateDuplicateReadStatus(CreateReadStatusRequest request) {
-        if (readStatusRepository.existsByChannelId(request.channelId())) {
-            throw new IllegalArgumentException("이미 존재하는 readStatus 입니다 channelId: " + request.channelId());
-        }
-
-        if (readStatusRepository.existsByUserId(request.userId())) {
-            throw new IllegalArgumentException("이미 존재하는 readStatus 입니다 userId: " + request.userId());
+        if (readStatusRepository.existsByUserIdAndChannelId(request.userId(), request.channelId())) {
+            throw new ApiException(ErrorCode.READ_STATUS_ALREADY_EXISTS,
+                    "이미 존재하는 readStatus 입니다 userId: " + request.userId()
+                            + ", channelId: " + request.channelId());
         }
     }
 
@@ -90,6 +92,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
     private ReadStatus getReadStatusOrThrow(UUID readStatusId) {
         return readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new IllegalArgumentException("ReadStatus 를 찾을 수 없습니다 readStatusId: " + readStatusId));
+                .orElseThrow(() -> new ApiException(ErrorCode.READ_STATUS_NOT_FOUND,
+                        "ReadStatus 를 찾을 수 없습니다 readStatusId: " + readStatusId));
     }
 }

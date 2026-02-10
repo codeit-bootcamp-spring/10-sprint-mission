@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.utils.FileIOHelper;
+import com.sprint.mission.discodeit.response.ApiException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 public class BasicReadStatusServiceTest {
@@ -70,8 +71,8 @@ public class BasicReadStatusServiceTest {
     }
 
     @Test
-    @DisplayName("중복 ReadStatus 생성 실패")
-    void testDuplicateReadStatusFail() {
+    @DisplayName("같은 userId + channelId 조합이면 생성 실패")
+    void testDuplicateReadStatusFail_sameUserAndChannel() {
         // given
         User user = new User("user6", "1234", "user6@test.com");
         userRepository.save(user);
@@ -85,8 +86,58 @@ public class BasicReadStatusServiceTest {
         readStatusService.createReadStatus(request);
 
         // then
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> readStatusService.createReadStatus(request));
+        assertThatThrownBy(() -> readStatusService.createReadStatus(request))
+                .isInstanceOf(ApiException.class);
+    }
+
+    @Test
+    @DisplayName("같은 userId, 다른 channelId는 생성 가능")
+    void testCreateReadStatus_sameUserDifferentChannel_success() {
+        // given
+        User user = new User("user7", "1234", "user7@test.com");
+        userRepository.save(user);
+
+        Channel channel1 = Channel.buildPublic("c7-1", "d7-1");
+        Channel channel2 = Channel.buildPublic("c7-2", "d7-2");
+        channelRepository.save(channel1);
+        channelRepository.save(channel2);
+
+        CreateReadStatusRequest req1 =
+                new CreateReadStatusRequest(user.getId(), channel1.getId());
+        CreateReadStatusRequest req2 =
+                new CreateReadStatusRequest(user.getId(), channel2.getId());
+
+        // when
+        UUID id1 = readStatusService.createReadStatus(req1);
+        UUID id2 = readStatusService.createReadStatus(req2);
+
+        // then
+        assertThat(id1).isNotEqualTo(id2);
+    }
+
+    @Test
+    @DisplayName("같은 channelId, 다른 userId는 생성 가능")
+    void testCreateReadStatus_sameChannelDifferentUser_success() {
+        // given
+        User user1 = new User("user8", "1234", "user8@test.com");
+        User user2 = new User("user9", "1234", "user9@test.com");
+        userRepository.save(user1);
+        userRepository.save(user2);
+
+        Channel channel = Channel.buildPublic("c8", "d8");
+        channelRepository.save(channel);
+
+        CreateReadStatusRequest req1 =
+                new CreateReadStatusRequest(user1.getId(), channel.getId());
+        CreateReadStatusRequest req2 =
+                new CreateReadStatusRequest(user2.getId(), channel.getId());
+
+        // when
+        UUID id1 = readStatusService.createReadStatus(req1);
+        UUID id2 = readStatusService.createReadStatus(req2);
+
+        // then
+        assertThat(id1).isNotEqualTo(id2);
     }
 
     @Test

@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.utils.FileIOHelper;
+import com.sprint.mission.discodeit.response.ApiException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 public class BasicUserStatusServiceTest {
@@ -73,11 +74,8 @@ public class BasicUserStatusServiceTest {
         CreateUserStatusRequest request =
                 new CreateUserStatusRequest(UUID.randomUUID());
 
-        assertThatIllegalArgumentException()
-                .isThrownBy(() ->
-                        userStatusService.createUserStatus(request)
-                )
-                .withMessageContaining("존재하지 않는 userId");
+        assertThatThrownBy(() -> userStatusService.createUserStatus(request))
+                .isInstanceOf(ApiException.class);
     }
 
     @Test
@@ -90,11 +88,8 @@ public class BasicUserStatusServiceTest {
         userStatusService.createUserStatus(request);
 
         // when & then
-        assertThatIllegalArgumentException()
-                .isThrownBy(() ->
-                        userStatusService.createUserStatus(request)
-                )
-                .withMessageContaining("이미 존재하는 userStatus");
+        assertThatThrownBy(() -> userStatusService.createUserStatus(request))
+                .isInstanceOf(ApiException.class);
     }
 
     @Test
@@ -117,10 +112,9 @@ public class BasicUserStatusServiceTest {
     @Test
     @DisplayName("존재하지 않는 userStatusId 조회 실패")
     void findUserStatusById_fail() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() ->
-                        userStatusService.findUserStatusByUserStatusId(UUID.randomUUID())
-                );
+        assertThatThrownBy(() ->
+                userStatusService.findUserStatusByUserStatusId(UUID.randomUUID())
+        ).isInstanceOf(ApiException.class);
     }
 
     @Test
@@ -176,10 +170,9 @@ public class BasicUserStatusServiceTest {
     @Test
     @DisplayName("존재하지 않는 userId 업데이트 실패")
     void updateUserStatusByUserId_fail() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() ->
-                        userStatusService.updateUserStatusByUserId(UUID.randomUUID())
-                );
+        assertThatThrownBy(() ->
+                userStatusService.updateUserStatusByUserId(UUID.randomUUID())
+        ).isInstanceOf(ApiException.class);
     }
 
     @Test

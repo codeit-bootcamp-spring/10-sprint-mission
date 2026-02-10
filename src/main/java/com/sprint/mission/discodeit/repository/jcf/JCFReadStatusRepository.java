@@ -36,15 +36,10 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
     }
 
     @Override
-    public boolean existsByChannelId(UUID channelId) {
+    public boolean existsByUserIdAndChannelId(UUID userId, UUID channelId) {
         return data.values().stream()
-                .anyMatch(rs -> rs.getChannelId().equals(channelId));
-    }
-
-    @Override
-    public boolean existsByUserId(UUID userId) {
-        return data.values().stream()
-                .anyMatch(rs -> rs.getUserId().equals(userId));
+                .anyMatch(rs -> rs.getUserId().equals(userId)
+                        && rs.getChannelId().equals(channelId));
     }
 
     @Override

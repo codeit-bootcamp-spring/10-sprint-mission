@@ -110,6 +110,7 @@ public class BasicMessageServiceTest {
 
     static Stream<Arguments> createMessageProvider() {
         return Stream.of(
+                Arguments.of((List<BinaryContentRequest>) null),
                 Arguments.of(List.of()),
                 Arguments.of(List.of(
                         new BinaryContentRequest(

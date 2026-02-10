@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import com.sprint.mission.discodeit.response.ErrorCode;
+import com.sprint.mission.discodeit.response.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -34,19 +36,22 @@ public class BasicUserStatusService implements UserStatusService {
 
     private void validateUserExists(UUID userId) {
         if (!userRepository.existsById(userId)) {
-            throw new IllegalArgumentException("존재하지 않는 userId 입니다. userId: " + userId);
+            throw new ApiException(ErrorCode.USER_NOT_FOUND,
+                    "존재하지 않는 userId 입니다. userId: " + userId);
         }
     }
 
     private void validateDuplicateUserStatus(CreateUserStatusRequest request) {
         if (userStatusRepository.existsByUserId(request.userId())) {
-            throw new IllegalArgumentException("이미 존재하는 userStatus 입니다 userId: " + request.userId());
+            throw new ApiException(ErrorCode.USER_STATUS_ALREADY_EXISTS,
+                    "이미 존재하는 userStatus 입니다 userId: " + request.userId());
         }
     }
 
     private User getUserOrThrow(UUID userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다 userId: " + userId));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND,
+                        "사용자를 찾을 수 없습니다 userId: " + userId));
     }
 
     @Override
@@ -77,7 +82,8 @@ public class BasicUserStatusService implements UserStatusService {
 
     private UserStatus getUserStatusByUserIdOrThrow(UUID userId) {
         return userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus 를 찾을 수 없습니다 userId: " + userId));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_STATUS_NOT_FOUND,
+                        "UserStatus 를 찾을 수 없습니다 userId: " + userId));
     }
 
     @Override
@@ -87,6 +93,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     private UserStatus getUserStatusOrThrow(UUID userStatusId) {
         return userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus 를 찾을 수 없습니다 userStatusId: " + userStatusId));
+                .orElseThrow(() -> new ApiException(ErrorCode.USER_STATUS_NOT_FOUND,
+                        "UserStatus 를 찾을 수 없습니다 userStatusId: " + userStatusId));
     }
 }

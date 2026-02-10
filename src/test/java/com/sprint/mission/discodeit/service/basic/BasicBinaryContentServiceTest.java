@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentOwnerType;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.utils.FileIOHelper;
+import com.sprint.mission.discodeit.response.ApiException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 public class BasicBinaryContentServiceTest {
@@ -90,10 +91,8 @@ public class BasicBinaryContentServiceTest {
         UUID wrongId = UUID.randomUUID();
 
         // expect
-        assertThatIllegalArgumentException()
-                .isThrownBy(() ->
-                        binaryContentService.findBinaryContent(wrongId)
-                );
+        assertThatThrownBy(() -> binaryContentService.findBinaryContent(wrongId))
+                .isInstanceOf(ApiException.class);
     }
 
     @Test
