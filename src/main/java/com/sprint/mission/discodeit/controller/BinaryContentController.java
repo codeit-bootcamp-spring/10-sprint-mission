@@ -20,7 +20,7 @@ import java.util.UUID;
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
 
-    @RequestMapping(method = RequestMethod.POST, value = "/users", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(method = RequestMethod.POST, value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<UUID> uploadProfileFile(@RequestPart MultipartFile file) {
         if (file.getContentType() == null || !file.getContentType().startsWith("image/")) {
             throw new IllegalArgumentException("이미지만 업로드 가능합니다.");

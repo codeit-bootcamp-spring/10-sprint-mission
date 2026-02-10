@@ -53,4 +53,9 @@ public class User implements Serializable {
             this.updatedAt = Instant.now();
         }
     }
+
+    public void deleteProfile() {
+        this.profileId = null;
+        this.updatedAt = Instant.now();
+    }
 }

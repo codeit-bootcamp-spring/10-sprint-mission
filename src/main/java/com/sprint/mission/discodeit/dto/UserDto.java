@@ -43,6 +43,7 @@ public class UserDto {
             @Pattern(regexp = "^\\S*$", message = "새 비밀번호에 공백을 포함할 수 없습니다.")
             String newPassword,
 
-            UUID profileId
+            UUID profileId,
+            Boolean isProfileDeleted
     ) {}
 }
