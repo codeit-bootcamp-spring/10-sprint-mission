@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import com.sprint.mission.discodeit.dto.ChannelResponseDTO;
+import com.sprint.mission.discodeit.dto.ChannelResponseDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -45,7 +45,7 @@ public class FileChannelService {
 		return null;
 	}
 
-	public ChannelResponseDTO findById(UUID channelId) {
+	public ChannelResponseDto findById(UUID channelId) {
 		//        return channelFileIo.load().stream()
 		//            .filter(ch -> ch.getId().equals(channelId))
 		//            .findFirst()
@@ -55,7 +55,7 @@ public class FileChannelService {
 		return null;
 	}
 
-	public List<ChannelResponseDTO> findAllChannel() {
+	public List<ChannelResponseDto> findAllChannel() {
 		//        return channelFileIo.load();
 		return null;
 	}

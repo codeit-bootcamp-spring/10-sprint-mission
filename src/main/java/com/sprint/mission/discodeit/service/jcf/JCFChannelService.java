@@ -1,14 +1,15 @@
 package com.sprint.mission.discodeit.service.jcf;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-import com.sprint.mission.discodeit.dto.ChannelPatchDTO;
-import com.sprint.mission.discodeit.dto.ChannelResponseDTO;
-import com.sprint.mission.discodeit.dto.PrivateChannelPostDTO;
-import com.sprint.mission.discodeit.dto.PublicChannelPostDTO;
+import com.sprint.mission.discodeit.dto.ChannelPatchDto;
+import com.sprint.mission.discodeit.dto.ChannelResponseDto;
+import com.sprint.mission.discodeit.dto.PrivateChannelPostDto;
+import com.sprint.mission.discodeit.dto.PublicChannelPostDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
@@ -31,17 +32,17 @@ public class JCFChannelService implements ChannelService {
 	}
 
 	@Override
-	public Channel createPublicChannel(PublicChannelPostDTO publicChannelPostDTO) {
+	public ChannelResponseDto createPublicChannel(PublicChannelPostDto publicChannelPostDTO) {
 		return null;
 	}
 
 	@Override
-	public Channel createPrivateChannel(PrivateChannelPostDTO channelPostDTO) {
+	public ChannelResponseDto createPrivateChannel(PrivateChannelPostDto channelPostDTO) {
 		return null;
 	}
 
 	@Override
-	public ChannelResponseDTO findById(UUID channelId) {
+	public ChannelResponseDto findById(UUID channelId) {
 		// return data.stream()
 		// 	.filter(ch -> ch.getId().equals(channelId))
 		// 	.findFirst()
@@ -52,13 +53,13 @@ public class JCFChannelService implements ChannelService {
 	}
 
 	@Override
-	public List<ChannelResponseDTO> findAllByUserId(UUID userId) {
+	public List<ChannelResponseDto> findAllByUserId(UUID userId) {
 		// return data;
 		return null;
 	}
 
 	@Override
-	public Channel updateName(ChannelPatchDTO channelPatchDTO) {
+	public ChannelResponseDto update(UUID channelId, ChannelPatchDto channelPatchDTO) {
 		// Channel channel = data.stream()
 		// 	.filter(ch -> ch.getId().equals(channelId))
 		// 	.findFirst()
@@ -72,7 +73,7 @@ public class JCFChannelService implements ChannelService {
 	}
 
 	@Override
-	public Channel addUser(UUID channelId, UUID userId) {
+	public ChannelResponseDto addUser(UUID channelId, UUID userId) {
 		// Channel channel = data.stream()
 		// 	.filter(ch -> ch.getId().equals(channelId))
 		// 	.findFirst()
@@ -120,5 +121,10 @@ public class JCFChannelService implements ChannelService {
 		//
 		// return channel.getUserIds().contains(user);
 		return false;
+	}
+
+	@Override
+	public Instant findLastMessageTime(UUID channelId) {
+		return null;
 	}
 }

@@ -1,30 +1,32 @@
 package com.sprint.mission.discodeit.service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import com.sprint.mission.discodeit.dto.ChannelPatchDTO;
-import com.sprint.mission.discodeit.dto.ChannelResponseDTO;
-import com.sprint.mission.discodeit.dto.PrivateChannelPostDTO;
-import com.sprint.mission.discodeit.dto.PublicChannelPostDTO;
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.ChannelPatchDto;
+import com.sprint.mission.discodeit.dto.ChannelResponseDto;
+import com.sprint.mission.discodeit.dto.PrivateChannelPostDto;
+import com.sprint.mission.discodeit.dto.PublicChannelPostDto;
 
 public interface ChannelService {
-	Channel createPublicChannel(PublicChannelPostDTO publicChannelPostDTO);
+	ChannelResponseDto createPublicChannel(PublicChannelPostDto publicChannelPostDTO);
 
-	Channel createPrivateChannel(PrivateChannelPostDTO channelPostDTO);
+	ChannelResponseDto createPrivateChannel(PrivateChannelPostDto channelPostDTO);
 
-	ChannelResponseDTO findById(UUID channelId);
+	ChannelResponseDto findById(UUID channelId);
 
-	List<ChannelResponseDTO> findAllByUserId(UUID userId);
+	List<ChannelResponseDto> findAllByUserId(UUID userId);
 
-	Channel updateName(ChannelPatchDTO channelPatchDTO);
+	ChannelResponseDto update(UUID channelId, ChannelPatchDto channelPatchDTO);
 
-	Channel addUser(UUID channelId, UUID userId);
+	ChannelResponseDto addUser(UUID channelId, UUID userId);
 
 	boolean deleteUser(UUID channelId, UUID userId);
 
 	void delete(UUID channelId);
 
 	boolean isUserInvolved(UUID channelId, UUID userId);
+
+	Instant findLastMessageTime(UUID channelId);
 }
