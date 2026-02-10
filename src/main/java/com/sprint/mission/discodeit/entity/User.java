@@ -4,67 +4,50 @@ import lombok.Getter;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 @Getter
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final UUID id;
-    private final Instant createdAt;
+    private UUID id;
+    private Instant createdAt;
     private Instant updatedAt;
-
-    private final String email;
+    private String username;
+    private String email;
     private String password;
-    private String nickname;
-    private UUID profileId; // BinaryContent
+    private UUID profileId;     // BinaryContent
 
-    public User(String email, String password, String nickname, UUID profileId) {
+    public User(String username, String email, String password, UUID profileId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = createdAt;
-
+        this.username = username;
         this.email = email;
         this.password = password;
-        this.nickname = nickname;
         this.profileId = profileId;
     }
 
-    public void update(String newPassword, String newNickname, UUID newProfileId) {
-        this.password = newPassword;
-        this.nickname = newNickname;
-        this.profileId = newProfileId;
-        // 업데이트 시간 갱신
-        this.updatedAt = Instant.now();
-    }
-
-    @Override
-    public String toString() {
-        return String.format(
-                "User [id=%s, nickname=%s, email=%s]",
-                getId().toString().substring(0, 5),
-                nickname,
-                email
-        );
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
         }
-        User user = (User) o;
-        return Objects.equals(id, user.id);
-    }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+            this.profileId = newProfileId;
+            anyValueUpdated = true;
+        }
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }
