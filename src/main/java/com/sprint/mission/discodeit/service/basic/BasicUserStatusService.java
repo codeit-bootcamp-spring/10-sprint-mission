@@ -24,14 +24,14 @@ public class BasicUserStatusService implements UserStatusService {
     // 사용자 상태 생성
     @Override
     public UserStatusResponseDTO create(UserStatusCreateRequestDTO userStatusCreateRequestDTO) {
-        UserEntity targetUser = userRepository.findById(userStatusCreateRequestDTO.userId())
+        UserEntity targetUser = userRepository.findById(userStatusCreateRequestDTO.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
 
         if (userStatusRepository.existsById(targetUser.getId())) {
             throw new RuntimeException("이미 사용자의 상태 정보가 존재합니다.");
         }
 
-        UserStatusEntity newUserStatus = new UserStatusEntity(userStatusCreateRequestDTO.userId());
+        UserStatusEntity newUserStatus = new UserStatusEntity(userStatusCreateRequestDTO.getUserId());
         userStatusRepository.save(newUserStatus);
 
         return toResponseDTO(newUserStatus);
@@ -55,10 +55,10 @@ public class BasicUserStatusService implements UserStatusService {
 
     // 사용자 상태 수정
     @Override
-    public UserStatusResponseDTO update(UUID userStatusId, UserStatusUpdateRequestDTO userStatusUpdateRequestDTO) {
-        UserStatusEntity targetUserStatus = findEntityById(userStatusId);
+    public UserStatusResponseDTO update(UserStatusUpdateRequestDTO userStatusUpdateRequestDTO) {
+        UserStatusEntity targetUserStatus = findEntityById(userStatusUpdateRequestDTO.getId());
 
-        Optional.ofNullable(userStatusUpdateRequestDTO.userStatusType())
+        Optional.ofNullable(userStatusUpdateRequestDTO.getUserStatusType())
                 .ifPresent(userStatusType -> {
                     targetUserStatus.updateStatus(userStatusType);
                     userStatusRepository.save(targetUserStatus);

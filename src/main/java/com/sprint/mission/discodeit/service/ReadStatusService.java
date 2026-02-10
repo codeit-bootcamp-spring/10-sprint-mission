@@ -21,7 +21,7 @@ public interface ReadStatusService {
     ReadStatusResponseDTO findByUserId(UUID userId);
 
     // 읽음 상태 수정
-    ReadStatusResponseDTO update(UUID readStatusId, ReadStatusUpdateRequestDTO readStatusUpdateRequestDTO);
+    ReadStatusResponseDTO update(ReadStatusUpdateRequestDTO readStatusUpdateRequestDTO);
 
     // 읽음 상태 삭제
     void delete(UUID id);

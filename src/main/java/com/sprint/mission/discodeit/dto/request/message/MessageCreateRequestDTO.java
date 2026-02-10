@@ -5,27 +5,31 @@ import com.sprint.mission.discodeit.entity.MessageType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.UUID;
 
+@Getter
 @Builder
-public record MessageCreateRequestDTO (
+@NoArgsConstructor
+@AllArgsConstructor
+public class MessageCreateRequestDTO {
     @NotNull
-    UUID authorId,
+    private UUID authorId;
 
     @NotNull
-    UUID channelId,
+    private UUID channelId;
 
     @NotBlank
-    String message,
+    private String message;
 
     @NotNull
-    MessageType messageType,
+    private MessageType messageType;
 
     @Valid
-    List<BinaryContentCreateRequestDTO> binaryContentCreateRequestDTOList
-) {
-
+    private List<BinaryContentCreateRequestDTO> binaryContentCreateRequestDTOList;
 }

@@ -1,12 +1,20 @@
 package com.sprint.mission.discodeit.dto.request.message;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
 
+import java.util.UUID;
+
+@Getter
 @Builder
-public record MessageUpdateRequestDTO (
-    @NotBlank
-    String message
-) {
+@NoArgsConstructor
+@AllArgsConstructor
+public class MessageUpdateRequestDTO {
+    @Setter
+    @NotNull
+    private UUID id;
 
+    @NotBlank
+    private String message;
 }

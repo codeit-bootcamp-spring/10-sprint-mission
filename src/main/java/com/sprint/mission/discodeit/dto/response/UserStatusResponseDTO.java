@@ -2,18 +2,18 @@ package com.sprint.mission.discodeit.dto.response;
 
 import com.sprint.mission.discodeit.entity.UserStatusType;
 import lombok.Builder;
+import lombok.Getter;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@Getter
 @Builder
-public record UserStatusResponseDTO(
-        UUID id,
-        UUID userId,
-        UserStatusType userStatusType,
-        Instant createdAt,
-        Instant updatedAt,
-        Instant lastOnlineTime
-){
-
+public class UserStatusResponseDTO {
+    private UUID id;
+    private UUID userId;
+    private UserStatusType userStatusType;
+    private Instant createdAt;
+    private Instant updatedAt;
+    private Instant lastOnlineTime;
 }

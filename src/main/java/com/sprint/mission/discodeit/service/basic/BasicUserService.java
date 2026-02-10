@@ -31,8 +31,8 @@ public class BasicUserService implements UserService {
     // 사용자 생성
     @Override
     public UserResponseDTO create(UserCreateRequestDTO userCreateRequestDTO) {
-        isEmailDuplicate(userCreateRequestDTO.email());
-        isNicknameDuplicate(userCreateRequestDTO.nickname());
+        isEmailDuplicate(userCreateRequestDTO.getEmail());
+        isNicknameDuplicate(userCreateRequestDTO.getNickname());
 
         UserEntity newUser = new UserEntity(userCreateRequestDTO);
         userRepository.save(newUser);
@@ -40,11 +40,11 @@ public class BasicUserService implements UserService {
         UserStatusEntity newUserStatus = new UserStatusEntity(newUser.getId());
         userStatusRepository.save(newUserStatus);
 
-        Optional.ofNullable(userCreateRequestDTO.binaryContentCreateRequestDTO())
-                .map(BinaryContentCreateRequestDTO:: binaryContent)
+        Optional.ofNullable(userCreateRequestDTO.getBinaryContentCreateRequestDTO())
+                .map(BinaryContentCreateRequestDTO::getBinaryContent)
                 // 선택적 프로필 이미지 생성
                 .ifPresent(content -> {
-                    BinaryContentEntity newBinaryContent = new BinaryContentEntity(userCreateRequestDTO.binaryContentCreateRequestDTO());
+                    BinaryContentEntity newBinaryContent = new BinaryContentEntity(userCreateRequestDTO.getBinaryContentCreateRequestDTO());
                     binaryContentRepository.save(newBinaryContent);
                     newUser.updateProfileId(newBinaryContent.getId());
                 });
@@ -77,12 +77,12 @@ public class BasicUserService implements UserService {
     // 특정 채널의 참가자 목록 조회
     @Override
     public List<UserResponseDTO> findMembersByChannelId(MemberFindRequestDTO memberFindRequestDTO) {
-        ChannelEntity targetChannel = channelRepository.findById(memberFindRequestDTO.channelId())
+        ChannelEntity targetChannel = channelRepository.findById(memberFindRequestDTO.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
         // Private 채널은 채널 참여자만 조회 가능
         if (targetChannel.getType() == ChannelType.PRIVATE &&
-                !targetChannel.getMembers().contains(memberFindRequestDTO.requesterId())) {
+                !targetChannel.getMembers().contains(memberFindRequestDTO.getRequesterId())) {
                 throw new RuntimeException("비공개 채널의 멤버 목록은 해당 채널 참여자만 조회할 수 있습니다.");
         }
 
@@ -97,13 +97,13 @@ public class BasicUserService implements UserService {
 
     // 사용자 정보 수정
     @Override
-    public UserResponseDTO update(UUID userId, UserUpdateRequestDTO userUpdateRequestDTO) {
-        UserEntity targetUser = findEntityById(userId);
+    public UserResponseDTO update(UserUpdateRequestDTO userUpdateRequestDTO) {
+        UserEntity targetUser = findEntityById(userUpdateRequestDTO.getId());
 
         UserStatusEntity targetUserStatus = userStatusRepository.findByUserId(targetUser.getId());
 
         // 비밀번호 필드 변경
-        Optional.ofNullable(userUpdateRequestDTO.password())
+        Optional.ofNullable(userUpdateRequestDTO.getPassword())
                 .ifPresent(password -> {
                     validateString(password, "[비밀 번호 변경 실패] 올바른 비밀 번호 형식이 아닙니다.");
                     validateDuplicateValue(targetUser.getPassword(), password, "[비밀 번호 변경 실패] 현재 비밀 번호와 일치합니다.");
@@ -111,7 +111,7 @@ public class BasicUserService implements UserService {
                 });
 
         // 닉네임 필드 변경
-        Optional.ofNullable(userUpdateRequestDTO.nickname())
+        Optional.ofNullable(userUpdateRequestDTO.getNickname())
                 .ifPresent(nickname -> {
                     validateString(nickname, "[닉네임 변경 실패] 올바른 닉네임 형식이 아닙니다.");
                     validateDuplicateValue(targetUser.getNickname(), nickname, "[닉네임 변경 실패] 현재 닉네임과 일치합니다.");
@@ -119,18 +119,18 @@ public class BasicUserService implements UserService {
                 });
 
         // 상태 필드 변경
-        Optional.ofNullable(userUpdateRequestDTO.userStatusCreateRequestDTO())
-                .map(UserStatusUpdateRequestDTO::userStatusType)
+        Optional.ofNullable(userUpdateRequestDTO.getUserStatusCreateRequestDTO())
+                .map(UserStatusUpdateRequestDTO::getUserStatusType)
                 .ifPresent(userStatusType -> {
                     targetUserStatus.updateStatus(userStatusType);
                     userStatusRepository.save(targetUserStatus);
                 });
 
         // 프로필 이미지 변경
-        Optional.ofNullable(userUpdateRequestDTO.binaryContentCreateRequestDTO())
-                .map(BinaryContentCreateRequestDTO:: binaryContent)
+        Optional.ofNullable(userUpdateRequestDTO.getBinaryContentCreateRequestDTO())
+                .map(BinaryContentCreateRequestDTO::getBinaryContent)
                 .map(binaryContent -> {
-                    BinaryContentEntity newBinaryContent = new BinaryContentEntity(userUpdateRequestDTO.binaryContentCreateRequestDTO());
+                    BinaryContentEntity newBinaryContent = new BinaryContentEntity(userUpdateRequestDTO.getBinaryContentCreateRequestDTO());
                     binaryContentRepository.save(newBinaryContent);
                     return newBinaryContent.getId();
                 })

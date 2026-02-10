@@ -2,16 +2,24 @@ package com.sprint.mission.discodeit.dto.request.userStatus;
 
 import com.sprint.mission.discodeit.entity.UserStatusType;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
+import java.util.UUID;
 
+@Getter
 @Builder
-public record UserStatusUpdateRequestDTO (
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserStatusUpdateRequestDTO {
     @NotNull
-    UserStatusType userStatusType,
+    private UUID id;
 
-    Instant lastOnlineTime
-) {
+    @NotNull
+    private UserStatusType userStatusType;
 
+    private Instant lastOnlineTime;
 }
