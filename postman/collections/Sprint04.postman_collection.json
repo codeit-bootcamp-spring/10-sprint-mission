@@ -452,6 +452,33 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "findBinaryContent",
+          "id": "316953bd-dd72-4bf8-9dec-6605e2fdeb0d",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/binaryContent/find?binaryContentId={{binaryContentId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "binaryContent",
+                "find"
+              ],
+              "query": [
+                {
+                  "key": "binaryContentId",
+                  "value": "{{binaryContentId}}",
+                  "uuid": "e2672ca0-4d6f-40ae-99b2-8547d9400830"
+                }
+              ]
+            }
+          },
+          "response": []
         }
       ],
       "id": "a38952e0-2e60-4772-9650-05dd1b1dc942"
@@ -611,32 +638,32 @@
   ],
   "variable": [
     {
-      "id": "134b946f-fe7c-43eb-acb7-a338f9014b61",
+      "id": "bca67e8c-29e2-4f17-bb46-26c81260738e",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "d0eea231-5636-41e5-8bdc-97fcadb66523",
+      "id": "6e4f7d3f-1ad4-4b0b-9542-c22df0cd6e5d",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "38d76d0b-48dc-4281-9bd6-a6080f72dcda",
+      "id": "450ebbb9-54c1-4685-80aa-7327add7eaa5",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "78696ee1-9a3d-42b2-98b2-ff9a899b2984",
+      "id": "16cfefdf-74a9-49fb-8d8f-cdc7cbd3628e",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "9868bd3e-e136-4486-aa3d-471467692e1a",
+      "id": "e7ad24e2-1d5c-4037-abb3-b14afeb04845",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "57a5820c-8d08-4870-915f-859f3b0c0908",
+      "id": "cc367257-0a74-49f8-881e-de0452bbf0ed",
       "key": "binaryContentId",
       "value": ""
     }

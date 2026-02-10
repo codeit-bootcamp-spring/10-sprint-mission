@@ -42,12 +42,12 @@ public class BinaryContentController {
         List<BinaryContentResponse> response = binaryContentService.findAllByIdIn(request.ids());
         return ResponseEntity.ok(response);
     }
-//
-//    @RequestMapping(value = "/find",method = RequestMethod.GET)
-//    public ResponseEntity<BinaryContent> findBinaryContent(
-//            @RequestParam UUID binaryContentId
-//    ) {
-//        BinaryContentResponse response = binaryContentService.find(binaryContentId);
-//
-//    }
+
+    @RequestMapping(value = "/find",method = RequestMethod.GET)
+    public ResponseEntity<BinaryContent> findBinaryContent(
+            @RequestParam UUID binaryContentId
+    ) {
+        BinaryContent content = binaryContentService.findContent(binaryContentId);
+        return ResponseEntity.ok(content);
+    }
 }

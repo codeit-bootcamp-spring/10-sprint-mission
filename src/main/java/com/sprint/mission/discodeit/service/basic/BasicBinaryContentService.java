@@ -58,6 +58,12 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContentRepository.deleteById(id);
     }
 
+    @Override
+    public BinaryContent findContent(UUID id) {
+        return binaryContentRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("해당 첨부파일(BinaryContent)을 찾을 수 없습니다. id: " + id));
+    }
+
     // ===
 
     // Entity -> DTO 변환 로직
