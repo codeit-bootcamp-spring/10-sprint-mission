@@ -35,11 +35,9 @@ public final class MessageMapper {
     }
 
     public static MessageUpdateInfo toMessageUpdateInfo(
-            UUID messageId,
             String content
     ) {
         return new MessageUpdateInfo(
-                messageId,
                 content
         );
     }

@@ -6,7 +6,7 @@ import java.util.UUID;
 public record MessageInfo(
         UUID messageId,
         String content,
-        UUID senderID,
-        UUID channelID,
+        UUID senderId,
+        UUID channelId,
         List<UUID> attachmentIds
 ) {}

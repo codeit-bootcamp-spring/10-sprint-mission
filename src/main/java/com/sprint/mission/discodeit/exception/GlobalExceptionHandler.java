@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.channel.exception.AlreadyJoinedException;
 import com.sprint.mission.discodeit.channel.exception.ChannelDuplicationException;
 import com.sprint.mission.discodeit.channel.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.channel.exception.ChannelUpdateNotAllowedException;
+import com.sprint.mission.discodeit.message.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.user.exception.EmailDuplicationException;
 import com.sprint.mission.discodeit.user.exception.AuthenticationFailedException;
 import com.sprint.mission.discodeit.user.exception.UserDuplicationException;
@@ -77,6 +78,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handle(AlreadyJoinedException e) {
         ErrorResponse response = new ErrorResponse("ALREADY_JOINED", e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(MessageNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handle(MessageNotFoundException e) {
+        ErrorResponse response = new ErrorResponse("MESSAGE_NOT_FOUND", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public record MessageCreateInfo(
         String content,
-        UUID senderID,
-        UUID channelID,
+        UUID senderId,
+        UUID channelId,
         List<byte[]> attachments
 ) {}

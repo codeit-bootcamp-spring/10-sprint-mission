@@ -1,22 +1,24 @@
 package com.sprint.mission.discodeit.message.service;
 
+import com.sprint.mission.discodeit.channel.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.message.dto.MessageCreateInfo;
 import com.sprint.mission.discodeit.message.dto.MessageInfo;
 import com.sprint.mission.discodeit.message.dto.MessageUpdateInfo;
 import com.sprint.mission.discodeit.binarycontent.BinaryContent;
 import com.sprint.mission.discodeit.channel.Channel;
 import com.sprint.mission.discodeit.message.Message;
+import com.sprint.mission.discodeit.message.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.user.User;
 import com.sprint.mission.discodeit.message.MessageMapper;
 import com.sprint.mission.discodeit.binarycontent.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.channel.repository.ChannelRepository;
 import com.sprint.mission.discodeit.message.repository.MessageRepository;
+import com.sprint.mission.discodeit.user.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,13 +39,13 @@ public class BasicMessageService implements MessageService {
                 .map(BinaryContent::getId)
                 .toList();
 
-        Message message = new Message(createInfo.content(), createInfo.senderID(),
-                createInfo.channelID(), attachmentIds);
+        Message message = new Message(createInfo.content(), createInfo.senderId(),
+                createInfo.channelId(), attachmentIds);
 
         User sender = userRepository.findById(message.getSenderId())
-                        .orElseThrow(() -> new NoSuchElementException("발신자를 찾을 수 없습니다."));
+                        .orElseThrow(UserNotFoundException::new);
         Channel findChannel = channelRepository.findById(message.getChannelId())
-                        .orElseThrow(() -> new NoSuchElementException("채널을 찾을 수 없습니다."));
+                        .orElseThrow(ChannelNotFoundException::new);
 
         sender.addMessageId(message.getId());
         findChannel.addMessageId(message.getId());
@@ -57,7 +59,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageInfo findMessage(UUID messageId) {
         Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 존재하지 않습니다."));
+                .orElseThrow(MessageNotFoundException::new);
 
         return MessageMapper.toMessageInfo(message);
     }
@@ -78,9 +80,9 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageInfo updateMessage(MessageUpdateInfo messageInfo) {
-        Message findMessage = messageRepository.findById(messageInfo.messageId())
-                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 존재하지 않습니다."));
+    public MessageInfo updateMessage(UUID messageId, MessageUpdateInfo messageInfo) {
+        Message findMessage = messageRepository.findById(messageId)
+                .orElseThrow(MessageNotFoundException::new);
 
         Optional.ofNullable(messageInfo.content())
                 .ifPresent(findMessage::updateContent);
@@ -92,11 +94,11 @@ public class BasicMessageService implements MessageService {
     @Override
     public void deleteMessage(UUID messageId) {
         Message findMessage = messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 존재하지 않습니다."));
+                .orElseThrow(MessageNotFoundException::new);
         User findUser = userRepository.findById(findMessage.getSenderId())
-                .orElseThrow(() -> new NoSuchElementException("메세지의 발신자가 존재하지 않습니다."));
+                .orElseThrow(UserNotFoundException::new);
         Channel findChannel = channelRepository.findById(findMessage.getChannelId())
-                .orElseThrow(() -> new NoSuchElementException("메세지의 채널이 존재하지 않습니다."));
+                .orElseThrow(ChannelNotFoundException::new);
 
         findMessage.getAttachmentIds()
                 .forEach(contentRepository::deleteById);
