@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import org.springframework.util.Assert;
 
@@ -19,6 +20,7 @@ public class BinaryContent implements Serializable {
     private String contentType;
     private long size;
 
+    @JsonProperty("bytes")
     private byte[] contents;
 
     public BinaryContent(String fileName, String contentType, long size, byte[] contents) {

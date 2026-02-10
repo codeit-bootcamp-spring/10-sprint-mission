@@ -21,7 +21,7 @@ public class BinaryContentController {
     private final BinaryContentService binaryContentService;
 
     @RequestMapping(method = RequestMethod.GET,value = "/find")
-    public ResponseEntity<BinaryContent> find(@RequestParam UUID contentId){
+    public ResponseEntity<BinaryContent> find(@RequestParam("binaryContentId") UUID contentId){
         BinaryContent content = binaryContentService.findEntity(contentId);
         return ResponseEntity.ok(content);
     }

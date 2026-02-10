@@ -1,16 +1,16 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.CreateUserRequestDto;
-import com.sprint.mission.discodeit.dto.UpdateUserRequestDto;
-import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.dto.UserStatusDto;
+import com.sprint.mission.discodeit.dto.*;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,8 +21,24 @@ public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
-    @RequestMapping(method = RequestMethod.POST)
-    public UserDto create(@Valid @RequestBody CreateUserRequestDto request){
+    @RequestMapping(method = RequestMethod.POST,
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public UserDto create(
+            @RequestPart("request") @Valid CreateUserRequestDto request,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) throws IOException {
+
+        // 파일이 전송되었다면 DTO로 변환하여 request 객체에 주입
+        if (file != null && !file.isEmpty()) {
+            BinaryContentDto profileImage = new BinaryContentDto(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getSize(),
+                    file.getBytes()
+            );
+            request.setProfileImage(profileImage);
+        }
+
         return userService.create(request);
     }
 
@@ -36,8 +52,28 @@ public class UserController {
         return ResponseEntity.ok(userService.findAll());
     }
 
-    @RequestMapping(method = RequestMethod.PATCH, value = "/{userId}")
-    public UserDto update(@PathVariable UUID userId, @RequestBody UpdateUserRequestDto request){
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{userId}",
+            consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
+    public UserDto update(
+            @PathVariable UUID userId,
+            @RequestPart(value = "request", required = false) UpdateUserRequestDto request,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) throws IOException {
+        if (request == null) {
+            request = new UpdateUserRequestDto(null, null, null, null);
+        }
+
+        // 파일이 전송되었다면 DTO로 변환하여 request 객체의 newProfileImage에 주입
+        if (file != null && !file.isEmpty()) {
+            BinaryContentDto newProfileImage = new BinaryContentDto(
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getSize(),
+                    file.getBytes()
+            );
+
+            request.setNewProfileImage(newProfileImage);
+        }
         return userService.update(userId, request);
     }
 

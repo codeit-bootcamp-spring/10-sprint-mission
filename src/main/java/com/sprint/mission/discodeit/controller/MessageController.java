@@ -30,7 +30,7 @@ public class MessageController {
     @RequestMapping(method = RequestMethod.POST,
                     consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE})
     public MessageDto send(@RequestPart("request") @Valid CreateMessageRequestDto request,
-                           @RequestPart("files") List<MultipartFile> files) throws IOException {
+                           @RequestPart(value = "files", required = false) List<MultipartFile> files) throws IOException {
         //MultipartFile -> byte[] 변환
         List<BinaryContentDto> attachments = new ArrayList<>();
         if(files != null && !files.isEmpty()){
