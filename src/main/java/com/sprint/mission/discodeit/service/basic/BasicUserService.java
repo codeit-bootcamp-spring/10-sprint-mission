@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -148,6 +149,25 @@ public class BasicUserService implements UserService {
 
         // User 삭제
         userRepository.deleteById(userId);
+    }
+
+    @Override
+    public List<UserDto> findAllUsers() {
+        return userRepository.findAll().stream()
+                .map(user -> {
+                    UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
+                            .orElseThrow(() -> new NoSuchElementException("UserStatus를 찾을 수 없습니다."));
+
+                    return new UserDto(
+                            user.getId(),
+                            user.getCreatedAt(),
+                            user.getUpdatedAt(),
+                            user.getUsername(),
+                            user.getEmail(),
+                            user.getProfileImageId(),
+                            userStatus.isOnline()
+                    );
+                }).collect(Collectors.toList());
     }
 
     // ===

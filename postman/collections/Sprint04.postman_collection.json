@@ -584,6 +584,26 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "findAllUsers",
+          "id": "5ba1e319-7d66-49a8-88bc-bd5b21c676cb",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/users/findAll",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "findAll"
+              ]
+            }
+          },
+          "response": []
         }
       ],
       "id": "90fce08b-b98d-4bac-bc9e-ed65502c2300"

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 
@@ -15,5 +16,6 @@ public interface UserService {
     UserResponse update(UUID userId, UserUpdateRequest request);
     void delete(UUID userId);
 
+    List<UserDto> findAllUsers();
     // 비즈니스 로직이 명확한 경우 구체적인 메서드명 사용
 }

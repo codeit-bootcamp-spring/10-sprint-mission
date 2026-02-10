@@ -102,13 +102,6 @@ public class UserController {
     // TODO: 특정 사용자 조회? userService.find()
     // TODO: username 또는 email로 유저 검색 기능
 
-//    // + 추가
-//    @RequestMapping(value = "findAll", method = RequestMethod.GET)
-//    public ResponseEntity<List<UserDto>> findAllUsers() {
-//        List<UserResponse> users = userService.findAll();
-//        return ResponseEntity.ok(UserDto);
-//    }
-
     // 사용자의 온라인 상태를 업데이트할 수 있다.
     @RequestMapping(value = "/{userId}/status", method = RequestMethod.PUT)
     public ResponseEntity<UserStatusResponse> updateUserStatus(
@@ -119,6 +112,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    // TODO: 전역예외처리 @RestControllerAdvice
+    // TODO: getAll() 이랑 무슨 차이가 있는 것인지 정리 필요
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
+    public ResponseEntity<List<UserDto>> findAllUsers() {
+        List<UserDto> users = userService.findAllUsers();
+        return ResponseEntity.ok(users);
+    }
 }
 
