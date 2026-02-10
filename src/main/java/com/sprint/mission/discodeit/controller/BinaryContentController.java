@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/binaryContent")
 @RequiredArgsConstructor
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
@@ -25,7 +25,7 @@ public class BinaryContentController {
 //    }
 
     // 첨부 파일 단건 조회
-    @RequestMapping(value = "/binaryContent/find", method = RequestMethod.GET)
+    @RequestMapping(value = "/find", method = RequestMethod.GET)
     public ResponseEntity<BinaryContentEntity> findById (@RequestParam UUID binaryContentId) {
         BinaryContentEntity binaryContent = binaryContentService.findEntityById(binaryContentId);
 
@@ -33,7 +33,7 @@ public class BinaryContentController {
     }
 
     // 첨부 파일 전체 조회
-    @RequestMapping(value = "/binary-content", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<BinaryContentResponseDTO>> findAllByIds(@RequestParam List<UUID> ids) {
         List<BinaryContentResponseDTO> binaryContents = binaryContentService.findAllByIds(ids);
 

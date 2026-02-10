@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/read-status")
+@RequestMapping("/api/readStatus")
 @RequiredArgsConstructor
 public class ReadStatusController {
     private final ReadStatusService readStatusService;

@@ -20,7 +20,7 @@ public class ChannelController {
     private final ChannelService channelService;
 
     // 공개 채널 생성
-    @RequestMapping(value = "/channels/public", method = RequestMethod.POST)
+    @RequestMapping(value = "/channel/public", method = RequestMethod.POST)
     public ResponseEntity<ChannelResponseDTO> createPublicChannel(@RequestBody PublicChannelCreateRequestDTO publicChannelCreateRequestDTO) {
         ChannelResponseDTO newChannel = channelService.createPublicChannel(publicChannelCreateRequestDTO);
 
@@ -28,7 +28,7 @@ public class ChannelController {
     }
 
     // 비공개 채널 생성
-    @RequestMapping(value = "/channels/private", method = RequestMethod.POST)
+    @RequestMapping(value = "/channel/private", method = RequestMethod.POST)
     public ResponseEntity<ChannelResponseDTO> createPrivateChannel(@RequestBody PrivateChannelCreateRequestDTO privateChannelCreateRequestDTO) {
         ChannelResponseDTO newChannel = channelService.createPrivateChannel(privateChannelCreateRequestDTO);
 
@@ -36,7 +36,7 @@ public class ChannelController {
     }
 
     // 특정 사용자가 볼 수 있는 모든 채널 목록 조회
-    @RequestMapping(value = "/users/{userId}/channels", method = RequestMethod.GET)
+    @RequestMapping(value = "/user/{userId}/channel", method = RequestMethod.GET)
     public ResponseEntity<List<ChannelResponseDTO>> findAllByUserId(@PathVariable UUID userId) {
         List<ChannelResponseDTO> channels = channelService.findAllByUserId(userId);
 
@@ -44,7 +44,7 @@ public class ChannelController {
     }
 
     // 공개 채널 정보 수정
-    @RequestMapping(value = "/channels/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/channel/{id}", method = RequestMethod.PUT)
     public ResponseEntity<ChannelResponseDTO> update(@PathVariable UUID id,
                                                      @RequestBody ChannelUpdateRequestDTO channelUpdateRequestDTO) {
 
@@ -54,7 +54,7 @@ public class ChannelController {
     }
 
     // 채널 삭제
-    @RequestMapping(value = "/channels/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/channel/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<ChannelResponseDTO> delete(@PathVariable UUID id) {
         channelService.delete(id);
 
