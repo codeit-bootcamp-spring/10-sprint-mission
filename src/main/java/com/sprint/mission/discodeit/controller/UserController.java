@@ -16,37 +16,36 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
 
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping("/api/users")
     public ResponseEntity<UserDto> createUser(@RequestBody UserCreateRequest request){
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(request));
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    @PatchMapping("/api/users/{id}")
     public ResponseEntity<UserDto> updateUser(
             @PathVariable UUID id,
             @RequestBody UserUpdateRequest request){
         return ResponseEntity.ok(userService.update(id, request));
     }
 
-    @RequestMapping(value = "/{id}",method = RequestMethod.DELETE)
+    @DeleteMapping("/api/users/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id){
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
-    @RequestMapping(value= "/findAll", method = RequestMethod.GET)
+    @GetMapping("/api/user/findAll")
     public ResponseEntity<List<UserDto>> findAll(){
         List<UserDto> users = userService.findAll();
         return ResponseEntity.ok(users);
     }
 
-    @RequestMapping(value = "/{id}/status", method = RequestMethod.PATCH)
+    @PatchMapping("/api/users/{id}/status")
     public ResponseEntity<UserStatusResponse> updateStatus(
             @PathVariable UUID id,
             @RequestBody UserStatusUpdateRequest request){
