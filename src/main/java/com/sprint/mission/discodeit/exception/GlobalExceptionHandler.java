@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.channel.exception.ChannelDuplicationExceptio
 import com.sprint.mission.discodeit.channel.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.channel.exception.ChannelUpdateNotAllowedException;
 import com.sprint.mission.discodeit.message.exception.MessageNotFoundException;
+import com.sprint.mission.discodeit.readstatus.exception.ReadStatusNotFoundException;
 import com.sprint.mission.discodeit.user.exception.EmailDuplicationException;
 import com.sprint.mission.discodeit.user.exception.AuthenticationFailedException;
 import com.sprint.mission.discodeit.user.exception.UserDuplicationException;
@@ -83,6 +84,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MessageNotFoundException.class)
     public ResponseEntity<ErrorResponse> handle(MessageNotFoundException e) {
         ErrorResponse response = new ErrorResponse("MESSAGE_NOT_FOUND", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(ReadStatusNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handle(ReadStatusNotFoundException e) {
+        ErrorResponse response = new ErrorResponse("READ_STATUS_NOT_FOUND", e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
