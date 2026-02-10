@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.request.binaryContent.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponseDTO;
+import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,4 +25,7 @@ public interface BinaryContentService {
 
     // 첨부파일 삭제
     void delete(UUID targetBinaryContentId);
+
+    // 단일 엔티티 조회
+    BinaryContentEntity findEntityById(UUID targetBinaryContentId);
 }

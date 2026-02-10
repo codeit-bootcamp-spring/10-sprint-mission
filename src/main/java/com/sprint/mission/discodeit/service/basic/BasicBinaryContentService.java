@@ -66,6 +66,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContentRepository.delete(targetBinaryContent);
     }
 
+    @Override
     // 단일 엔티티 조회
     public BinaryContentEntity findEntityById(UUID binaryContentId) {
         return binaryContentRepository.findById(binaryContentId)
