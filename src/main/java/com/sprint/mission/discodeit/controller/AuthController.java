@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/auth")
-public class AuthController {
+public class gitAuthController {
 
     private final AuthService authService;
 

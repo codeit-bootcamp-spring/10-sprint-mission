@@ -21,7 +21,7 @@ public class BinaryContentController {
 
     // 기존 API 유지
     // GET /binaryContents?ids=...
-    @RequestMapping(value = "/binaryContents", method = RequestMethod.GET)
+    @RequestMapping(value = "/binarycontents", method = RequestMethod.GET)
     public List<BinaryContentResponse> getBinaryContents(
             @RequestParam List<UUID> ids
     ) {
@@ -30,7 +30,7 @@ public class BinaryContentController {
 
     // 심화 요구사항
     // GET /api/binaryContent/find?binaryContentId=...
-    @RequestMapping(value = "/api/binaryContent/find", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/binarycontent/find", method = RequestMethod.GET)
     public ResponseEntity<BinaryContent> findBinaryContent(
             @RequestParam UUID binaryContentId
     ) {
