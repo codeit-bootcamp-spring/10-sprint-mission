@@ -1,0 +1,689 @@
+{
+  "info": {
+    "_postman_id": "4d9dc2a2-fefe-476c-80d1-cf1d6319f38c",
+    "name": "Sprint4",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "유저 생성",
+          "id": "92b1b636-c6cd-43c2-a731-dc14a708c95f",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dustle3\",\n  \"password\": \"1234\",\n  \"email\": \"dustle3@email.com\",\n  \"profileImage\": {\n    \"type\": \"USER\",\n    \"image\": \"aGVsbG8=\" \n  }\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "유저 단건 조회",
+          "id": "66376973-2cbb-4036-8339-23278f0aa62d",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "유저 다건 조회",
+          "id": "6444ff81-eb52-47d1-b75f-84a208c511f7",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "유저 수정",
+          "id": "ca482eb2-d38d-4c34-9486-45a40d40e274",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "\n{\n  \"username\": \"user1-upd\",\n  \"password\": \"5678\",\n  \"email\": \"user1-upd@test.com\",\n  \"profileImage\": {\n    \"type\": \"USER\",\n    \"image\": \"dXBkYXRlZA==\" \n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ],
+              "query": [
+                {
+                  "key": "user-id",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "유저 삭제",
+          "id": "a057925c-8c25-427c-bc86-5a1f39adaa4f",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "유저 status 변경",
+          "id": "0c0e10a9-65cc-44b9-ac54-1fff263c1457",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{userId}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "{{userId}}",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "130cbab0-adb7-47aa-91bf-12df4fbdaa1c"
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "로그인",
+          "id": "41cffd9b-44a5-4879-9535-e00983ef544e",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"dustle\",\n  \"password\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "f80ae2d1-fb02-441b-aefa-70891e749aff"
+    },
+    {
+      "name": "Channels",
+      "item": [
+        {
+          "name": "public 채널 생성",
+          "id": "9ec9239e-b2f3-4b4e-bdbf-3a53f93c52cb",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"공지\",\n  \"description\": \"공지 채널\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/channels/public",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "channels",
+                "public"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "private 채널 생성",
+          "id": "762c79c7-65bf-49a2-8d79-a72537c152b8",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberIds\": [\n    \"6f7e8ac7-6b84-4b29-8fc5-1b66b3bfdd11\",\n    \"28ea0814-09b2-4cb5-833a-8c886dc487cb\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/channels/private",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "channels",
+                "private"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "채널 단건 조회",
+          "id": "9d404746-067e-4141-8c72-e33e9220d871",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/channels/{{channelId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "channels",
+                "{{channelId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "채널 다건 조회 (유저 기준)",
+          "id": "2e01dc93-513b-4768-94b9-0da624e4a37c",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/channels?userId={{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "channels"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "채널 수정",
+          "id": "be0d4b39-a17e-4460-8350-6f0a6756ac82",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channelId\": \"6e4be7c3-e196-447e-8b95-558e365fc01d\",\n  \"name\": \"공지-수정\",\n  \"description\": \"설명-수정\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/channels",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "channels"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "채널 삭제",
+          "id": "54a50865-1d7c-4063-8262-f604ce90c34e",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/channels/{{channelId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "channels",
+                "{{channelId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "a5efe145-bc46-48dc-988d-2d8358443024"
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "메세지 생성",
+          "id": "be454036-4fd6-48b8-90d7-7297231bd2b4",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"channelId\": \"{{channelId}}\",\n  \"content\": \"hello world\",\n  \"attachments\": [\n    {\n      \"type\": \"MESSAGE\",\n      \"image\": \"aW1hZ2U=\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/messages?userId={{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "메세지 다건 조회 (채널 기준)",
+          "id": "4904b86b-0e00-4e4a-95fc-524e6cc6d34b",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/messages?channelId={{channelId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "channelId",
+                  "value": "{{channelId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "메세지 수정",
+          "id": "e44d1e8b-8be0-44fa-8952-bd657974dccb",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": \"{{messageId}}\",\n  \"content\": \"updated content\",\n  \"attachments\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/messages?userId={{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "메세지 삭제",
+          "id": "8c2892bb-95c6-4649-a54c-f646df20e598",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/messages/{{messageId}}?userId={{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "messages",
+                "{{messageId}}"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "45ba2a7e-cf9b-46dc-8bc4-5f363111aa4f"
+    },
+    {
+      "name": "Read Statuses",
+      "item": [
+        {
+          "name": "생성",
+          "id": "08992e9c-415e-4f6a-9543-21a58367bdd6",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"channelId\": \"{{channelId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/read-statuses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "read-statuses"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "수정",
+          "id": "257ce34a-b8b8-405f-b823-bcab8b4cb636",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{readStatusId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/read-statuses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "read-statuses"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "단건 조회",
+          "id": "8cc09030-0fbf-492d-bf14-c5e85b0990d1",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"channelId\": \"{{channelId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/read-statuses/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "read-statuses",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "a62de5b7-3c47-499b-ae98-0c843149a31e"
+    },
+    {
+      "name": "Binary Contents",
+      "item": [
+        {
+          "name": "이미지 생성",
+          "id": "19692680-394b-4686-af3c-449e28fbd1aa",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"USER\",\n  \"image\": \"aGVsbG8=\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/binary-contents?ownerId={{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "binary-contents"
+              ],
+              "query": [
+                {
+                  "key": "ownerId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "이미지 단건 조회",
+          "id": "9541e4ae-8b5e-4f13-92df-d36d87ccf7e9",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/binary-contents/{{binaryContentId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "binary-contents",
+                "{{binaryContentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "이미지 다건 조회",
+          "id": "24628aaf-3f40-43d8-80a9-7ed12934e90d",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/binary-contents/{{binaryContentId}}?ids={{binaryContentId}}&ids={{binaryContentId2}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "binary-contents",
+                "{{binaryContentId}}"
+              ],
+              "query": [
+                {
+                  "key": "ids",
+                  "value": "{{binaryContentId}}"
+                },
+                {
+                  "key": "ids",
+                  "value": "{{binaryContentId2}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "이미지 삭제",
+          "id": "40394a80-8af7-4dad-8df7-2d454ec685b5",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/binary-contents/{{binaryContentId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "binary-contents",
+                "{{binaryContentId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "719d716a-4be3-4c41-89e6-8e6c3a9bc0bb"
+    }
+  ],
+  "variable": [
+    {
+      "id": "1999b7c9-5c91-4d8c-8d0f-e43c32730150",
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "id": "9f308acc-4c4f-4279-9727-b3eb1999c7c3",
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "id": "a1bfc0ae-c4b9-4d39-9291-8232325308b7",
+      "key": "channelId",
+      "value": ""
+    },
+    {
+      "id": "ee9fd5e6-997d-4a6a-b109-3497f5a51ff7",
+      "key": "messageId",
+      "value": ""
+    },
+    {
+      "id": "7fc7b487-a8d5-4575-b032-bfebeee3ccc9",
+      "key": "readStatusId",
+      "value": ""
+    },
+    {
+      "id": "e0a1a095-2a5f-4ce0-8488-152e2ed8d5f5",
+      "key": "binaryContentId",
+      "value": ""
+    },
+    {
+      "id": "777c9f3b-485f-4a3f-b08b-eeccb7cf74b4",
+      "key": "binaryContentId2",
+      "value": ""
+    }
+  ]
+}
