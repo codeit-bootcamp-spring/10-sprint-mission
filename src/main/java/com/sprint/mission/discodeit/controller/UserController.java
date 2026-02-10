@@ -24,35 +24,35 @@ public class UserController {
     private final UserStatusService userStatusService;
 
     // 사용자 등록
-    @PostMapping
+    @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<User> createUser(@RequestBody UserCreateRequest request) {
         User user = userService.create(request, Optional.empty());
         return ResponseEntity.ok(user);
     }
 
     // 사용자 정보 수정
-    @PutMapping("/{id}")
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
     public ResponseEntity<User> updateUser(@PathVariable UUID id, @RequestBody UserUpdateRequest request) {
         User user = userService.update(id, request, Optional.empty());
         return ResponseEntity.ok(user);
     }
 
     // 사용자 삭제
-    @DeleteMapping( "/{id}")
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     // 모든 사용자 조회
-    @GetMapping
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<UserDto> users = userService.findAll();
         return ResponseEntity.ok(users);
     }
 
     // 사용자의 온라인 상태 업데이트
-    @PatchMapping("/{id}/status")
+    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
     public ResponseEntity<UserStatus> updateStatus(@PathVariable UUID id, @RequestBody UserStatusUpdateRequest request) {
         UserStatus status = userStatusService.updateByUserId(id, request);
         return ResponseEntity.ok(status);

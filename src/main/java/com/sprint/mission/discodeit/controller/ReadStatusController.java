@@ -18,20 +18,20 @@ public class ReadStatusController {
     public final ReadStatusService readStatusService;
 
     // 특정 채널의 메시지 수신 정보 생성
-    @PostMapping
+    @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<ReadStatus> createReadStatus(@RequestBody ReadStatusCreateRequest request) {
         return ResponseEntity.ok(readStatusService.create(request));
     }
 
     // 특정 채널의 메시지 수신 정보 수정
-    @PatchMapping("/{readStatusId}")
+    @RequestMapping(value = "/{readStatusId}", method = RequestMethod.PATCH)
     public ResponseEntity<ReadStatus> updateReadStatus(@PathVariable UUID readStatusId,
                                                        @RequestBody ReadStatusUpdateRequest request) {
         return ResponseEntity.ok(readStatusService.update(readStatusId, request));
     }
 
     // 특정 사용자의 메시지 수신 정보 조회
-    @GetMapping
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<ReadStatus>> getReadStatusesByUserId(@RequestParam UUID userId) {
         return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
     }

@@ -18,27 +18,27 @@ public class MessageController {
     private final MessageService messageService;
 
     // 메시지 보내기
-    @PostMapping
+    @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<Message> createMessage(@RequestBody MessageWithBinaryRequest request) {
         return ResponseEntity.ok(messageService.create(request.messageRequest(), request.binaryRequests()));
     }
 
     // 메시지 수정
-    @PatchMapping("/{messageId}")
+    @RequestMapping(value = "/{messageId}", method = RequestMethod.POST)
         public ResponseEntity<Message> updateMessage(@PathVariable UUID messageId,
                                                      @RequestBody MessageUpdateRequest messageUpdateRequest) {
             return ResponseEntity.ok(messageService.update(messageId, messageUpdateRequest));
         }
 
     // 메시지 삭제
-    @DeleteMapping("/{messageId}")
+    @RequestMapping(value = "/{messageId}", method = RequestMethod.POST)
     public ResponseEntity<Void> deleteMessage(@PathVariable UUID messageId) {
         messageService.delete(messageId);
         return ResponseEntity.noContent().build();
     }
 
     // 특정 채널의 메시지 목록 조회
-    @GetMapping
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<Message>> getMessages(@RequestParam UUID channelId) {
         return ResponseEntity.ok(messageService.findAllByChannelId(channelId));
     }
