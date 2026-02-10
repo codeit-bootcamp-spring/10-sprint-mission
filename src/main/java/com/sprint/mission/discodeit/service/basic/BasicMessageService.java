@@ -33,14 +33,17 @@ public class BasicMessageService implements MessageService {
     // 메시지 생성
     @Override
     public MessageResponseDTO create(MessageCreateRequestDTO messageCreateRequestDTO) {
+        // 1, 사용자 및 채널 존재 여부 확인
         userRepository.findById(messageCreateRequestDTO.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
         channelRepository.findById(messageCreateRequestDTO.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
+        // 2. 메시지 생성 및 저장
         Message newMessage = new Message(messageCreateRequestDTO);
         messageRepository.save(newMessage);
 
+        // 3. 첨부파일 선택적 생성 및 저장
         Optional.ofNullable(messageCreateRequestDTO.getBinaryContentCreateRequestDTOList())
                 .map(binaryContentCreateRequestDTOS -> binaryContentCreateRequestDTOS.stream()
                         // 첨부파일 하나씩 생성 및 저장
@@ -62,10 +65,12 @@ public class BasicMessageService implements MessageService {
     // 메시지 단건 조회
     @Override
     public MessageResponseDTO findById(UUID targetMessageId) {
+        // 1. 메시지 존재 여부 확인
         Message targetMessage = messageRepository.findById(targetMessageId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
 
-       return toResponseDTO(targetMessage);
+        // 2. 응답 DTO 생성 및 반환
+        return toResponseDTO(targetMessage);
     }
 
     // 메시지 전체 조회
@@ -79,9 +84,11 @@ public class BasicMessageService implements MessageService {
     // 특정 채널의 전체 메시지 목록 조회
     @Override
     public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
+        // 1. 채널 존재 여부 확인
         Channel taregetChannel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
+        // 2. 특정 채널의 전체 메시지 응답 DTO 변환 및 반환
         return messageRepository.findAll().stream()
                 .filter(message -> message.getChannelId().equals(taregetChannel.getId()))
                 // 메시지 -> 메시지 응답 반환
@@ -92,9 +99,11 @@ public class BasicMessageService implements MessageService {
     // 특정 사욪자가 발행한 전체 메시지 목록 조회
     @Override
     public List<MessageResponseDTO> findAllByUserId(UUID targetUserId) {
+        // 1. 사용자 존재 여부 확인
         User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
 
+        // 2. 특정 사용자가 발행한 전체 메시지 응답 DTO 변환 및 반환
         return messageRepository.findAll().stream()
                 .filter(message -> message.getAuthorId().equals(targetUser.getId()))
                 .map(this::toResponseDTO)
@@ -104,8 +113,10 @@ public class BasicMessageService implements MessageService {
     // 메시지 수정
     @Override
     public MessageResponseDTO update(MessageUpdateRequestDTO messageUpdateRequestDTO) {
+        // 1. 메시지 존재 여부 확인
         Message targetMessage = findMessageEntityById(messageUpdateRequestDTO.getId());
 
+        // 2. 메시지 내용 수정
         Optional.ofNullable(messageUpdateRequestDTO.getMessage())
                 .ifPresent(message -> {
                     validateString(message, "[메시지 변경 실패] 올바른 메시지 형식이 아닙니다.");
@@ -113,6 +124,7 @@ public class BasicMessageService implements MessageService {
                     targetMessage.updateMessage(messageUpdateRequestDTO.getMessage());
                 });
 
+        // 3. 메시지 수정 내용 저장 및 응답 DTO 반환
         messageRepository.save(targetMessage);
         return toResponseDTO(targetMessage);
     }
