@@ -1,0 +1,150 @@
+body {
+    background-color: #f0f2f5;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 60px 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 850px;
+}
+
+.main-title {
+    text-align: center;
+    font-size: 36px;
+    font-weight: 800;
+    color: #1c1e21;
+    margin-bottom: 40px;
+}
+
+.user-card-list {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    padding: 25px 35px;
+    border-bottom: 1px solid #f0f2f5;
+    transition: background 0.2s;
+}
+
+.user-item:hover {
+    background-color: #f9f9f9;
+}
+
+/* 1. 아바타 컨테이너 고정 (이미지가 깨져도 틀이 유지되도록) */
+.avatar-container {
+    position: relative;
+    margin-right: 25px;
+    flex-shrink: 0; /* 이미지 공간이 줄어들지 않게 함 */
+    width: 80px;
+    height: 80px;
+}
+
+.user-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    background-color: #eee; /* 이미지 로딩 전/실패 시 배경색 */
+    display: block;
+}
+
+.status-dot {
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 3px solid white;
+    z-index: 2;
+}
+
+.status-dot.online { background-color: #42b72a; }
+.status-dot.offline { background-color: #bcc0c4; }
+
+/* 2. 정보 텍스트 영역 */
+.user-info {
+    flex: 1;
+    min-width: 0; /* 텍스트 오버플로우 방지 */
+}
+
+.user-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.user-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1c1e21;
+}
+
+.user-id-tag {
+    font-size: 14px;
+    color: #bcc0c4;
+    font-weight: 400;
+    margin-left: 10px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.user-email {
+    font-size: 15px;
+    color: #65676b;
+}
+
+.user-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.user-meta {
+    font-size: 12px;
+    color: #8a8d91;
+    display: flex;
+    align-items: center;
+}
+
+/* 3. 오른쪽 버튼 섹션 */
+.action-section {
+    text-align: right;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.status-text {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.text-online { color: #42b72a; }
+.text-offline { color: #8a8d91; }
+
+.detail-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #dddfe2;
+    background: #f0f2f5;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.detail-btn:hover { background: #e4e6eb; }
