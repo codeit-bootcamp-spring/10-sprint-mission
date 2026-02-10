@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.CreateMessageRequestDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.UpdateMessageRequestDto;
+import com.sprint.mission.discodeit.event.MessageSentEvent;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
@@ -13,6 +14,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public MessageDto create(CreateMessageRequestDto request, List<BinaryContentDto> attachments) {
@@ -46,7 +49,8 @@ public class BasicMessageService implements MessageService {
                 attachmentIds
         );
         messageRepository.save(message);
-
+        // 메시지 생성 시 그 유저는 활동중임을 나타냄
+        eventPublisher.publishEvent(new MessageSentEvent(request.getAuthorId()));
         return messageMapper.toDto(message);
     }
 
