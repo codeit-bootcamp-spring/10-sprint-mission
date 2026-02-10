@@ -1,3 +1,20 @@
+:root {
+    --primary-bg: #36393f;
+    --secondary-bg: #2f3136;
+    --tertiary-bg: #202225;
+    --header-bg: #202225;
+    --text-primary: #ffffff;
+    --text-secondary: #b9bbbe;
+    --text-tertiary: #8e9297;
+    --interactive-normal: #b9bbbe;
+    --interactive-hover: #dcddde;
+    --interactive-active: #ffffff;
+    --button-bg: #5865f2;
+    --button-hover-bg: #4752c4;
+    --scrollbar-thumb: #202225;
+    --scrollbar-track: #2e3338;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -5,76 +22,283 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: var(--text-primary);
+    background-color: var(--primary-bg);
+    overflow: hidden;
 }
 
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
+.hidden {
+    display: none !important;
 }
 
-h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #333;
+/* --- Login Page --- */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
-.user-list {
-    background-color: white;
+.login-box {
+    width: 400px;
+    padding: 40px;
+    background-color: var(--secondary-bg);
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-align: center;
 }
 
+.login-box h2 {
+    margin-bottom: 24px;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 16px;
+    border: 1px solid var(--tertiary-bg);
+    border-radius: 4px;
+    background-color: var(--primary-bg);
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.login-box button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 4px;
+    background-color: var(--button-bg);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.login-box button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+
+/* --- App Layout --- */
+.app-container {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--secondary-bg);
+    flex-shrink: 0;
+}
+
+.channels-sidebar {
+    width: 240px;
+}
+
+.users-sidebar {
+    width: 240px;
+}
+
+.sidebar-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--tertiary-bg);
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.channel-list,
+.user-list {
+    list-style: none;
+    padding: 8px;
+    overflow-y: auto;
+}
+
+.channel-item,
 .user-item {
+    padding: 10px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
     display: flex;
     align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid #eee;
+    font-weight: 500;
+}
+.channel-item::before {
+    content: '#';
+    margin-right: 8px;
+    color: var(--text-tertiary);
 }
 
-.user-item:last-child {
-    border-bottom: none;
+
+.channel-item:hover,
+.user-item:hover {
+    background-color: var(--primary-bg);
+    color: var(--interactive-hover);
 }
 
-.user-avatar {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    margin-right: 20px;
-    object-fit: cover;
+.channel-item.active {
+    background-color: #40444b;
+    color: var(--text-primary);
 }
 
-.user-info {
+.main-content {
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--primary-bg);
+}
+
+/* --- Chat Area --- */
+.chat-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--tertiary-bg);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+    font-size: 18px;
+    font-weight: bold;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+.chat-header::before {
+    content: '#';
+    color: var(--text-tertiary);
+    margin-right: 6px;
+    font-size: 20px;
+}
+
+
+.message-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.message-item {
+    display: flex;
+    margin-bottom: 16px;
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.message-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-header {
+    display: flex;
+    align-items: baseline;
+    margin-bottom: 4px;
+}
+
+.message-username {
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-right: 8px;
+}
+
+.message-timestamp {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.message-text {
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+
+.message-input-container {
+    padding: 20px;
+    background-color: var(--primary-bg);
+}
+
+#message-form {
+    display: flex;
+    background-color: var(--secondary-bg);
+    border-radius: 8px;
+}
+
+#message-input {
+    flex-grow: 1;
+    padding: 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+#message-input:focus {
+    outline: none;
+}
+
+#message-form button {
+    padding: 0 16px;
+    border: none;
+    background-color: var(--button-bg);
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 0 8px 8px 0;
+    transition: background-color 0.2s;
+}
+
+#message-form button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+/* --- User List Specifics --- */
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 12px;
 }
 
 .user-name {
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
+    font-size: 15px;
+    font-weight: 500;
 }
 
-.user-email {
-    font-size: 14px;
-    color: #666;
+.status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: auto;
+    border: 2px solid var(--secondary-bg);
 }
 
-.status-badge {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: bold;
+.status-online {
+    background-color: #3ba55d;
 }
 
-.online {
-    background-color: #4CAF50;
-    color: white;
+.status-offline {
+    background-color: #747f8d;
 }
 
-.offline {
-    background-color: #9e9e9e;
-    color: white;
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--secondary-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--tertiary-bg);
+    border-radius: 4px;
 }
