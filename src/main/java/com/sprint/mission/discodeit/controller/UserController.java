@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
@@ -23,12 +23,12 @@ public class UserController {
     private final UserStatusService userStatusService;
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<UserResponse> createUser(@RequestBody UserCreateRequest request){
+    public ResponseEntity<UserDto> createUser(@RequestBody UserCreateRequest request){
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(request));
     }
 
     @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
-    public ResponseEntity<UserResponse> updateUser(
+    public ResponseEntity<UserDto> updateUser(
             @PathVariable UUID id,
             @RequestBody UserUpdateRequest request){
         return ResponseEntity.ok(userService.update(id, request));
@@ -41,8 +41,8 @@ public class UserController {
     }
 
     @RequestMapping(value= "/findAll", method = RequestMethod.GET)
-    public ResponseEntity<List<UserResponse>> findAll(){
-        List<UserResponse> users = userService.findAll();
+    public ResponseEntity<List<UserDto>> findAll(){
+        List<UserDto> users = userService.findAll();
         return ResponseEntity.ok(users);
     }
 
