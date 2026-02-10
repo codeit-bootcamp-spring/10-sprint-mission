@@ -13,6 +13,9 @@ public interface BinaryContentService {
     // 첨푸파일 단일 조회
     BinaryContentResponseDTO findById(UUID targetBinaryContentId);
 
+    // 첨부파일 다건 조회
+    List<BinaryContentResponseDTO> findAllByIds(List<UUID> ids);
+
     // 첨부파일 전체 조회
     List<BinaryContentResponseDTO> findAll();
 

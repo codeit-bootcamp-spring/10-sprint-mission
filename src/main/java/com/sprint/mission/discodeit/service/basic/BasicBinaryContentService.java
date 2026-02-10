@@ -33,6 +33,15 @@ public class BasicBinaryContentService implements BinaryContentService {
         return toResponseDTO(targetBinaryContent);
     }
 
+    // 첨부 파일 다건 조회
+    @Override
+    public List<BinaryContentResponseDTO> findAllByIds(List<UUID> ids) {
+        return binaryContentRepository.findAll().stream()
+                .filter(binaryContentEntity -> ids.contains(binaryContentEntity.getId()))
+                .map(this::toResponseDTO)
+                .toList();
+    }
+
     // 첨부 파일 전체 조회
     @Override
     public List<BinaryContentResponseDTO> findAll() {

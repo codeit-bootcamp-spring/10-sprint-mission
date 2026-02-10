@@ -4,10 +4,7 @@ import com.sprint.mission.discodeit.dto.response.BinaryContentResponseDTO;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,8 +25,8 @@ public class BinaryContentController {
 
     // 첨부 파일 전체 조회
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<BinaryContentResponseDTO>> findAll() {
-        List<BinaryContentResponseDTO> binaryContents = binaryContentService.findAll();
+    public ResponseEntity<List<BinaryContentResponseDTO>> findAllByIds(@RequestParam List<UUID> ids) {
+        List<BinaryContentResponseDTO> binaryContents = binaryContentService.findAllByIds(ids);
 
         return ResponseEntity.ok(binaryContents);
     }
