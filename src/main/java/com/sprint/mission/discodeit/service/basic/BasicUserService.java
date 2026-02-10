@@ -37,7 +37,7 @@ public class BasicUserService implements UserService {
                 .map(pr -> {
                     BinaryContent profile = new BinaryContent(
                             pr.fileName(),
-                            pr.bytes(),
+                            pr.content(),
                             pr.contentType()
                     );
                     return binaryContentRepository.save(profile).getId();
@@ -104,7 +104,7 @@ public class BasicUserService implements UserService {
         // user의 프로필 선택적 업데이트
         UUID profileID = optionalProfileCreateRequest
                 .map(pr ->{
-                    BinaryContent profile = new BinaryContent(pr.fileName(), pr.bytes(), pr.contentType());
+                    BinaryContent profile = new BinaryContent(pr.fileName(), pr.content(), pr.contentType());
                     return binaryContentRepository.save(profile).getId();
                 })
                 .orElse(null);

@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public record BinaryContentResponse(
         UUID binaryContentID,
-        byte[] data,
+        byte[] content,
         String contentType
 ) {
 }

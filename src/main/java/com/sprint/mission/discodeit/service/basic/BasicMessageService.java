@@ -42,7 +42,7 @@ public class BasicMessageService implements MessageService {
         List<UUID> attachments = new ArrayList<>();
         if(request.attachments() != null){
             for(BinaryContentCreateRequest req : request.attachments()){
-                BinaryContent attachment = new BinaryContent(req.fileName(), req.bytes(), req.contentType());
+                BinaryContent attachment = new BinaryContent(req.fileName(), req.content(), req.contentType());
                 BinaryContent newAttachment = binaryContentRepository.save(attachment);
 
                 attachments.add(newAttachment.getId());
@@ -133,7 +133,7 @@ public class BasicMessageService implements MessageService {
         // attachment 업데이트
         if (request.attachments() != null) {
             for (BinaryContentCreateRequest req : request.attachments()) {
-                BinaryContent attachment = new BinaryContent(req.fileName(), req.bytes(), req.contentType());
+                BinaryContent attachment = new BinaryContent(req.fileName(), req.content(), req.contentType());
                 BinaryContent savedAttach = binaryContentRepository.save(attachment);
                 msg.addAttachment(savedAttach.getId());
             }

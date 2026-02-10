@@ -1,8 +1,8 @@
 // API endpoints
-const API_BASE_URL = '';
+const API_BASE_URL = '/api';
 const ENDPOINTS = {
-    USERS: `${API_BASE_URL}/api/user/findAll`,
-    BINARY_CONTENT: `${API_BASE_URL}/api/binaryContent/find`
+    USERS: `${API_BASE_URL}/user/findAll`,
+    BINARY_CONTENT: `${API_BASE_URL}/binaryContent/find`
 };
 
 // Initialize the application
@@ -29,35 +29,27 @@ async function fetchUserProfile(profileId) {
         if (!response.ok) throw new Error('Failed to fetch profile');
         const profile = await response.json();
 
-        const payload = profile.data ?? profile.bytes;
-        if (!payload) {
-            return '/default-avatar.png';
-        }
-
-        if (Array.isArray(payload)) {
-            const binary = String.fromCharCode(...payload);
-            return `data:${profile.contentType};base64,${btoa(binary)}`;
-        }
-
-        return `data:${profile.contentType};base64,${payload}`;
+        // Convert base64 encoded bytes to data URL
+        return `data:${profile.contentType};base64,${profile.bytes}`;
     } catch (error) {
         console.error('Error fetching profile:', error);
-        return '/default-avatar.png'; // Fallback to default avatar
+        return '/default.png'; // Fallback to default avatar
     }
 }
 
 // Render user list
 async function renderUserList(users) {
     const userListElement = document.getElementById('userList');
-    userListElement.innerHTML = '';
+    userListElement.innerHTML = ''; // Clear existing content
 
     for (const user of users) {
         const userElement = document.createElement('div');
         userElement.className = 'user-item';
 
-        const profileUrl = user.profileId
-            ? await fetchUserProfile(user.profileId)
-            : '/default-avatar.png';
+        // Get profile image URL
+        const profileUrl = user.profileId ?
+            await fetchUserProfile(user.profileId) :
+            '/default.png';
 
         userElement.innerHTML = `
             <img src="${profileUrl}" alt="${user.username}" class="user-avatar">
@@ -66,7 +58,7 @@ async function renderUserList(users) {
                 <div class="user-email">${user.email}</div>
             </div>
             <div class="status-badge ${user.online ? 'online' : 'offline'}">
-                ${user.online ? 'Online' : 'Offline'}
+                ${user.online ? '온라인' : '오프라인'}
             </div>
         `;
 
