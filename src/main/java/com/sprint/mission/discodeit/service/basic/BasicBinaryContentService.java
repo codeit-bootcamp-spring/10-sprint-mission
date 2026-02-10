@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -18,7 +19,12 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContentDto.Response create(BinaryContentDto.Create request) {
-        BinaryContent binaryContent = new BinaryContent(request.fileName(), request.bytes());
+        BinaryContent binaryContent = new BinaryContent(
+                request.fileName(),
+                request.contentType(),
+                request.size(),
+                request.bytes()
+        );
         binaryContentRepository.save(binaryContent);
 
         return BinaryContentDto.Response.of(binaryContent);
@@ -27,7 +33,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public BinaryContentDto.Response findById(UUID binaryContentId) {
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 파일입니다."));
+                .orElseThrow(() -> new NoSuchElementException("파일이 존재하지 않습니다."));
         return BinaryContentDto.Response.of(binaryContent);
     }
 
@@ -41,7 +47,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public void delete(UUID binaryContentId) {
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 파일입니다."));
+                .orElseThrow(() -> new NoSuchElementException("파일이 존재하지 않습니다."));
         binaryContentRepository.delete(binaryContent);
     }
 }

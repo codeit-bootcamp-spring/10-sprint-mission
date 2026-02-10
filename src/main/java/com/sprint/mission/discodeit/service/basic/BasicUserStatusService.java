@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -23,7 +24,7 @@ public class BasicUserStatusService implements UserStatusService {
 
         //유저가 존재하지 않으면 예외
         userRepository.findById(request.userId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
 
         //유저 상태가 이미 존재하면 에외
         userStatusRepository.findByUserId(request.userId())
@@ -40,7 +41,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatusDto.Response findById(UUID userStatusId) {
         UserStatus status = userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
         return UserStatusDto.Response.of(status);
     }
 
@@ -54,7 +55,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatusDto.Response update(UserStatusDto.Update request) {
         UserStatus status = userStatusRepository.findByUserId(request.id())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
         status.updateOnline();
         userStatusRepository.save(status);
         return UserStatusDto.Response.of(status);
@@ -63,7 +64,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatusDto.Response updateByUserId(UUID userId) {
         UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
         status.updateOnline();
         userStatusRepository.save(status);
         return UserStatusDto.Response.of(status);
@@ -72,7 +73,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public void delete(UUID userStatusId) {
         UserStatus status = userStatusRepository.findById(userStatusId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
         userStatusRepository.delete(status);
     }
 }

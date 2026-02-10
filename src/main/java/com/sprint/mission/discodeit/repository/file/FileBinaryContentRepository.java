@@ -24,7 +24,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
     private final Path dirPath;
 
     public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory}") String dir) {
-        this.dirPath = Paths.get(dir + "/binarycontents");
+        this.dirPath = Paths.get(dir, "binarycontents");
         init();
     }
 

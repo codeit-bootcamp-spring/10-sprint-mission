@@ -7,8 +7,11 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,15 +34,20 @@ public class BasicUserService implements UserService {
         UUID profileId = null;
 
         //요청에 프로필이 있다면 binaryContent 객체 생성 후 저장
-        if (request.profile() != null) {
-            BinaryContentDto.Create profileDto = request.profile();
-            BinaryContent profile = new BinaryContent(
-                    profileDto.fileName(),
-                    profileDto.bytes()
-            );
-            binaryContentRepository.save(profile);
-            //프로필 Id에 값을 넣어줌
-            profileId = profile.getId();
+        if (request.profile() != null && !request.profile().isEmpty()) {
+            try {
+                MultipartFile file = request.profile();
+                BinaryContent profile = new BinaryContent(
+                        file.getOriginalFilename(),
+                        file.getContentType(),
+                        file.getSize(),
+                        file.getBytes()
+                );
+                binaryContentRepository.save(profile);
+                profileId = profile.getId();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         User user = new User(
@@ -61,9 +69,9 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto.Response findById(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
         UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
         return UserDto.Response.of(user, status);
     }
 
@@ -72,43 +80,48 @@ public class BasicUserService implements UserService {
         return userRepository.findAll().stream()
                 .map(user -> {
                     UserStatus status = userStatusRepository.findByUserId(user.getId())
-                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
+                            .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
                     return UserDto.Response.of(user, status);
                 })
                 .toList();
     }
 
     @Override
-    public UserDto.Response update(UserDto.Update request) {
-        User user = userRepository.findById(request.id())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+    public UserDto.Response update(UUID userId, UserDto.Update request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
 
         Optional.ofNullable(request.username()).ifPresent(user::updateUsername);
         Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
         Optional.ofNullable(request.password()).ifPresent(user::updatePassword);
 
-        if (request.profile() != null) { //요청에 프로필 파일이 있는지 확인
+        if (request.profile() != null && !request.profile().isEmpty()) { //요청에 프로필 파일이 있는지 확인
             if (user.getProfileId() != null) { //기존 유저에게 프로필이 있는지 확인, 프로필이 있으면 지움
                 binaryContentRepository.findById(user.getProfileId())
                         .ifPresent(binaryContentRepository::delete);
             }
 
-            BinaryContentDto.Create profileDto = request.profile();
+            try {
+                MultipartFile file = request.profile();
+                BinaryContent newProfile = new BinaryContent(
+                        file.getOriginalFilename(),
+                        file.getContentType(),
+                        file.getSize(),
+                        file.getBytes()
+                );
+                binaryContentRepository.save(newProfile);
+                user.updateProfileId(newProfile.getId());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-            BinaryContent newProfile = new BinaryContent(
-                    profileDto.fileName(),
-                    profileDto.bytes()
-            );
-            binaryContentRepository.save(newProfile);
-
-            user.updateProfileId(newProfile.getId());
         }
         //프로필 말고 다른 변경사항이 있을 수 있으니 if문 밖에서 저장
         userRepository.save(user);
 
         //유저 상태 객체 획인 후 온라인으로 갱신
-        UserStatus status = userStatusRepository.findByUserId(request.id())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
+        UserStatus status = userStatusRepository.findByUserId(userId)
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
         status.updateOnline();
 
         userStatusRepository.save(status);
@@ -118,7 +131,7 @@ public class BasicUserService implements UserService {
     @Override
     public void delete(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
 
         //유저가 작성한 메시지 목록
         List<Message> messages = messageRepository.findAll().stream()
@@ -139,7 +152,7 @@ public class BasicUserService implements UserService {
 
         //유저 상태 삭제
         UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
         userStatusRepository.delete(status);
 
         //유저 프로필 삭제

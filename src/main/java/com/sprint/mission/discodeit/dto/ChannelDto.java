@@ -20,16 +20,16 @@ public class ChannelDto {
     public record Response(
             UUID id,
             ChannelType type,
-            String channelName,
+            String name,
             String description,
-            List<UUID> userIds,
+            List<UUID> participantIds,
             Instant lastReadAt
     ) {
         public static Response of(Channel channel, List<UUID> allUserIds, Instant lastReadAt) {
             return new Response(
                     channel.getId(),
                     channel.getType(),
-                    channel.getChannelName(),
+                    channel.getName(),
                     channel.getDescription(),
                     allUserIds,
                     lastReadAt
@@ -38,7 +38,6 @@ public class ChannelDto {
     }
 
     public record Update(
-            UUID id,
             String name,
             String description
     ) {}
