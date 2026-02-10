@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentIdsRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +33,11 @@ public class BinaryContentController {
     // 다건 조회 (특정 메시지의 첨부파일 목록 등)
     // 사용자가 메시지를 보낼 때 사진 3장을 한 번에 올렸다고 가정해보면
     // 프론트에서 사진 3장의 상세 정보를 가져오기 위해 다건 조회
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<BinaryContentResponse>> findAllByIds(@RequestParam List<UUID> ids) {
-        List<BinaryContentResponse> responses = binaryContentService.findAllByIdIn(ids);
-        return ResponseEntity.ok(responses);
+    @RequestMapping(method = RequestMethod.POST)
+    // GET은 Body를 권장하지 않음 -> POST 사용
+    // RequestParam -> RequestBody / DTO로 받아서 처리(URL 길이 제한 문제 및 확장성 확보)
+    public ResponseEntity<List<BinaryContentResponse>> findAllByIds(@RequestBody BinaryContentIdsRequest request) {
+        List<BinaryContentResponse> response = binaryContentService.findAllByIdIn(request.ids());
+        return ResponseEntity.ok(response);
     }
 }

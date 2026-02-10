@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
@@ -94,12 +95,19 @@ public class UserController {
     // 모든 사용자를 조회할 수 있다.
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<UserResponse>> getAll() {
-        List<UserResponse> responses = userService.findAll();
-        return ResponseEntity.status(HttpStatus.OK).body(responses);
+        List<UserResponse> users = userService.findAll();
+        return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
     // TODO: 특정 사용자 조회? userService.find()
     // TODO: username 또는 email로 유저 검색 기능
+
+//    // + 추가
+//    @RequestMapping(value = "findAll", method = RequestMethod.GET)
+//    public ResponseEntity<List<UserDto>> findAllUsers() {
+//        List<UserResponse> users = userService.findAll();
+//        return ResponseEntity.ok(UserDto);
+//    }
 
     // 사용자의 온라인 상태를 업데이트할 수 있다.
     @RequestMapping(value = "/{userId}/status", method = RequestMethod.PUT)

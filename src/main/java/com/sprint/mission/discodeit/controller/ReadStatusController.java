@@ -37,7 +37,7 @@ public class ReadStatusController {
         return ResponseEntity.ok(response);
     }
 
-    //  특정 사용자의 메시지 수신 정보를 조회할 수 있다.
+    // 특정 사용자의 메시지 수신 정보를 조회할 수 있다.
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<ReadStatusResponse>> findAllByUserId(@RequestParam UUID userId) {
         List<ReadStatusResponse> responses = readStatusService.findAllByUserId(userId);
