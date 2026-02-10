@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.channel.service;
 
 import com.sprint.mission.discodeit.channel.Channel;
 import com.sprint.mission.discodeit.channel.dto.*;
+import com.sprint.mission.discodeit.channel.exception.ChannelDuplicationException;
+import com.sprint.mission.discodeit.channel.exception.ChannelNotFoundException;
+import com.sprint.mission.discodeit.channel.exception.ChannelUpdateNotAllowedException;
 import com.sprint.mission.discodeit.common.ChannelType;
 import com.sprint.mission.discodeit.channel.ChannelMapper;
 import com.sprint.mission.discodeit.channel.repository.ChannelRepository;
@@ -9,6 +12,7 @@ import com.sprint.mission.discodeit.message.Message;
 import com.sprint.mission.discodeit.message.repository.MessageRepository;
 import com.sprint.mission.discodeit.readstatus.ReadStatus;
 import com.sprint.mission.discodeit.readstatus.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.user.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.user.repository.UserRepository;
 import com.sprint.mission.discodeit.user.User;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +46,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelInfo findChannel(UUID channelId) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
+                .orElseThrow(ChannelNotFoundException::new);
 
         return ChannelMapper.toChannelInfo(channel, getLastMessageTime(channelId));
     }
@@ -70,11 +74,11 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelInfo updateChannel(UpdateChannelInfo channelInfo) {
-        Channel findChannel = channelRepository.findById(channelInfo.channelId())
-                .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다."));
+    public ChannelInfo updateChannel(UUID channelId, PublicChannelCreateInfo channelInfo) {
+        Channel findChannel = channelRepository.findById(channelId)
+                .orElseThrow(ChannelNotFoundException::new);
         if(findChannel.getChannelType() == ChannelType.PRIVATE)
-            throw new IllegalStateException("해당 채널은 수정할 수 없습니다.");
+            throw new ChannelUpdateNotAllowedException();
         validateChannelExist(channelInfo.channelName());
 
         Optional.ofNullable(channelInfo.channelName())
@@ -90,7 +94,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void deleteChannel(UUID channelId) {
         channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다."));
+                .orElseThrow(ChannelNotFoundException::new);
         userRepository.findAllByChannelId(channelId).forEach(user -> {
                 user.removeChannelId(channelId);
                 userRepository.save(user);
@@ -108,9 +112,9 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
+                .orElseThrow(ChannelNotFoundException::new);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저가 존재하지 않습니다."));
+                .orElseThrow(UserNotFoundException::new);
 
         channel.addUserId(userId);
         user.addChannelId(channelId);
@@ -123,9 +127,9 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다."));
+                .orElseThrow(ChannelNotFoundException::new);
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 유저가 존재하지 않습니다."));
+                .orElseThrow(UserNotFoundException::new);
         ReadStatus findReadStatus = readStatusRepository.findByUserIdAndChannelId(userId, channelId)
                 .orElseThrow(() -> new IllegalStateException("유저가 채널에 가입되어 있지 않습니다."));
 
@@ -139,7 +143,7 @@ public class BasicChannelService implements ChannelService {
 
     private void validateChannelExist(String channelName) {
         if(channelRepository.findByName(channelName).isPresent())
-            throw new IllegalStateException("이미 존재하는 채널 이름입니다.");
+            throw new ChannelDuplicationException();
     }
 
     private Instant getLastMessageTime(UUID channelId) {

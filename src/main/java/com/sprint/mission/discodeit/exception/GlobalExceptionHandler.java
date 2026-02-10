@@ -1,5 +1,9 @@
 package com.sprint.mission.discodeit.exception;
 
+import com.sprint.mission.discodeit.channel.exception.AlreadyJoinedException;
+import com.sprint.mission.discodeit.channel.exception.ChannelDuplicationException;
+import com.sprint.mission.discodeit.channel.exception.ChannelNotFoundException;
+import com.sprint.mission.discodeit.channel.exception.ChannelUpdateNotAllowedException;
 import com.sprint.mission.discodeit.user.exception.EmailDuplicationException;
 import com.sprint.mission.discodeit.user.exception.AuthenticationFailedException;
 import com.sprint.mission.discodeit.user.exception.UserDuplicationException;
@@ -49,6 +53,30 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handle(AuthenticationFailedException e) {
         ErrorResponse response = new ErrorResponse("AUTHENTICATION_FAILED", e.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(ChannelNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handle(ChannelNotFoundException e) {
+        ErrorResponse response = new ErrorResponse("CHANNEL_NOT_FOUND", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(ChannelDuplicationException.class)
+    public ResponseEntity<ErrorResponse> handle(ChannelDuplicationException e) {
+        ErrorResponse response = new ErrorResponse("CHANNEL_DUPLICATION_ERROR", e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(ChannelUpdateNotAllowedException.class)
+    public ResponseEntity<ErrorResponse> handle(ChannelUpdateNotAllowedException e) {
+        ErrorResponse response = new ErrorResponse("CHANNEL_UPDATE_NOT_ALLOWED", e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+
+    @ExceptionHandler(AlreadyJoinedException.class)
+    public ResponseEntity<ErrorResponse> handle(AlreadyJoinedException e) {
+        ErrorResponse response = new ErrorResponse("ALREADY_JOINED", e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

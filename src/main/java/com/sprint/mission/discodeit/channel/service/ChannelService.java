@@ -11,7 +11,7 @@ public interface ChannelService {
     ChannelInfo findChannel(UUID channelId);
     List<ChannelInfo> findAll();
     List<ChannelInfo> findAllByUserId(UUID userId);
-    ChannelInfo updateChannel(UpdateChannelInfo channelInfo);
+    ChannelInfo updateChannel(UUID channelId, PublicChannelCreateInfo channelInfo);
     void deleteChannel(UUID channelId);
     void joinChannel(UUID channelId, UUID userId);
     void leaveChannel(UUID channelId, UUID userId);
