@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserEntity;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -17,7 +17,7 @@ import java.util.UUID;
         matchIfMissing = true
 )
 public class JCFUserRepository implements UserRepository {
-    private final List<User> data;      // 모든 사용자
+    private final List<UserEntity> data;      // 모든 사용자
 
     public JCFUserRepository() {
         data = new ArrayList<>();
@@ -25,7 +25,7 @@ public class JCFUserRepository implements UserRepository {
 
     // 사용자 저장
     @Override
-    public void save(User user) {
+    public void save(UserEntity user) {
         data.removeIf(existUser -> existUser.getId().equals(user.getId()));
 
         data.add(user);
@@ -33,7 +33,7 @@ public class JCFUserRepository implements UserRepository {
 
     // 사용자 단건 조회
     @Override
-    public Optional<User> findById(UUID userId) {
+    public Optional<UserEntity> findById(UUID userId) {
         return data.stream()
                 .filter(user -> user.getId().equals(userId))
                 .findFirst();
@@ -41,13 +41,13 @@ public class JCFUserRepository implements UserRepository {
 
     // 사용자 전체 조회
     @Override
-    public List<User> findAll() {
+    public List<UserEntity> findAll() {
         return data;
     }
 
     // 사용자 삭제
     @Override
-    public void delete(User user) {
+    public void delete(UserEntity user) {
         data.remove(user);
     }
 

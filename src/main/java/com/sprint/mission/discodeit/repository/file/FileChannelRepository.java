@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelEntity;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.util.FileUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,27 +30,27 @@ public class FileChannelRepository implements ChannelRepository {
 
     // 채널 저장
     @Override
-    public void save(Channel channel) {
+    public void save(ChannelEntity channel) {
         Path filePath = directory.resolve(channel.getId() + ".ser");
         FileUtil.save(filePath, channel);
     }
 
     // 채널 단건 조회
     @Override
-    public Optional<Channel> findById(UUID channelId) {
-        Channel channel = FileUtil.loadSingle(directory.resolve(channelId + ".ser"));
+    public Optional<ChannelEntity> findById(UUID channelId) {
+        ChannelEntity channel = FileUtil.loadSingle(directory.resolve(channelId + ".ser"));
         return Optional.ofNullable(channel);
     }
 
     // 채널 전체 조회
     @Override
-    public List<Channel> findAll() {
+    public List<ChannelEntity> findAll() {
         return FileUtil.load(directory);
     }
 
     // 채널 삭제
     @Override
-    public void delete(Channel channel) {
+    public void delete(ChannelEntity channel) {
         try {
             Files.deleteIfExists(directory.resolve(channel.getId() + ".ser"));
         } catch (IOException e) {

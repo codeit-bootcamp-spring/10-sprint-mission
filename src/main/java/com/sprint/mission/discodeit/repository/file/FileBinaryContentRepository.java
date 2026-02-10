@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.BinaryContentEntity;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.util.FileUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,28 +30,28 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     // 첨부 파일 저장
     @Override
-    public void save(BinaryContent binaryContent) {
+    public void save(BinaryContentEntity binaryContent) {
         Path filePath = Paths.get(directory.toString(), binaryContent.getId() + ".ser");
         FileUtil.save(filePath, binaryContent);
     }
 
     // 첨부 파일 단건 조회
     @Override
-    public Optional<BinaryContent> findById(UUID binaryContentId) {
-        BinaryContent binaryContent = FileUtil.loadSingle(directory.resolve(binaryContentId + ".ser"));
+    public Optional<BinaryContentEntity> findById(UUID binaryContentId) {
+        BinaryContentEntity binaryContent = FileUtil.loadSingle(directory.resolve(binaryContentId + ".ser"));
 
         return Optional.ofNullable(binaryContent);
     }
 
     // 첨부 파일 전체 조회
     @Override
-    public List<BinaryContent> findAll() {
+    public List<BinaryContentEntity> findAll() {
         return FileUtil.load(directory);
     }
 
     // 첨부 파일 삭제
     @Override
-    public void delete(BinaryContent binaryContent) {
+    public void delete(BinaryContentEntity binaryContent) {
         try {
             Files.deleteIfExists(directory.resolve(binaryContent.getId() + ".ser"));
         } catch (IOException e) {

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.MessageEntity;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.util.FileUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,28 +32,28 @@ public class FileMessageRepository implements MessageRepository {
 
     // 메시지 저장
     @Override
-    public void save(Message message) {
+    public void save(MessageEntity message) {
         Path filePath = directory.resolve(message.getId() + ".ser");
         FileUtil.save(filePath, message);
     }
 
     // 메시지 단건 조회
     @Override
-    public Optional<Message> findById(UUID messageId) {
-        Message message = FileUtil.loadSingle(directory.resolve(messageId + ".ser"));
+    public Optional<MessageEntity> findById(UUID messageId) {
+        MessageEntity message = FileUtil.loadSingle(directory.resolve(messageId + ".ser"));
 
         return Optional.ofNullable(message);
     }
 
     // 메시지 다건 조회
     @Override
-    public List<Message> findAll() {
+    public List<MessageEntity> findAll() {
         return FileUtil.load(directory);
     }
 
     // 메시지 삭제
     @Override
-    public void delete(Message message) {
+    public void delete(MessageEntity message) {
         try {
             Files.deleteIfExists(directory.resolve(message.getId() + ".ser"));
         } catch (IOException e) {
@@ -65,8 +65,8 @@ public class FileMessageRepository implements MessageRepository {
     public Instant getLastMessageAt(UUID channelId) {
         return findAll().stream()
                 .filter(message -> message.getChannelId().equals(channelId))
-                .max(Comparator.comparing(Message::getCreatedAt))
-                .map(Message::getCreatedAt)
+                .max(Comparator.comparing(MessageEntity::getCreatedAt))
+                .map(MessageEntity::getCreatedAt)
                 .orElse(null);
     }
 }

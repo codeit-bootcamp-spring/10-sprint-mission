@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelEntity;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -17,7 +17,7 @@ import java.util.UUID;
         matchIfMissing = true
 )
 public class JCFChannelRepository implements ChannelRepository {
-    private final List<Channel> data;
+    private final List<ChannelEntity> data;
 
     public JCFChannelRepository() {
         data = new ArrayList<>();
@@ -25,7 +25,7 @@ public class JCFChannelRepository implements ChannelRepository {
 
     // 채널 저장
     @Override
-    public void save(Channel channel) {
+    public void save(ChannelEntity channel) {
         data.removeIf(existChannel -> existChannel.getId().equals(channel.getId()));
 
         data.add(channel);
@@ -33,7 +33,7 @@ public class JCFChannelRepository implements ChannelRepository {
 
     // 채널 단건 조회
     @Override
-    public Optional<Channel> findById(UUID channelId) {
+    public Optional<ChannelEntity> findById(UUID channelId) {
         return data.stream()
                 .filter(channel -> channel.getId().equals(channelId))
                 .findFirst();
@@ -41,13 +41,13 @@ public class JCFChannelRepository implements ChannelRepository {
 
     // 채널 전체 조회
     @Override
-    public List<Channel> findAll() {
+    public List<ChannelEntity> findAll() {
         return data;
     }
 
     // 채널 삭제
     @Override
-    public void delete(Channel channel) {
+    public void delete(ChannelEntity channel) {
         data.remove(channel);
     }
 }

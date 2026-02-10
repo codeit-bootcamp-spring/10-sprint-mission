@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,14 +8,14 @@ import java.util.UUID;
 
 public interface ChannelRepository {
     // 채널 저장
-    void save(Channel channel);
+    void save(ChannelEntity channel);
 
     // 채널 단건 조회
-    Optional<Channel> findById(UUID channelId);
+    Optional<ChannelEntity> findById(UUID channelId);
 
     // 채널 전체 조회
-    List<Channel> findAll();
+    List<ChannelEntity> findAll();
 
     // 채널 삭제
-    void delete(Channel channel);
+    void delete(ChannelEntity channel);
 }

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.UserStatusEntity;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -17,7 +17,7 @@ import java.util.UUID;
         matchIfMissing = true
 )
 public class JCFUserStatusRepository implements UserStatusRepository {
-    private final List<UserStatus> data;
+    private final List<UserStatusEntity> data;
 
     public JCFUserStatusRepository() {
         this.data = new ArrayList<>();
@@ -25,7 +25,7 @@ public class JCFUserStatusRepository implements UserStatusRepository {
 
     // 사용자 상태 저장
     @Override
-    public void save(UserStatus userStatus) {
+    public void save(UserStatusEntity userStatus) {
         data.removeIf(existUserStatus ->  existUserStatus.getId().equals(userStatus.getId()));
 
         data.add(userStatus);
@@ -33,7 +33,7 @@ public class JCFUserStatusRepository implements UserStatusRepository {
 
     // 사용자 상태 단건 조회
     @Override
-    public Optional<UserStatus> findById(UUID userStatusId) {
+    public Optional<UserStatusEntity> findById(UUID userStatusId) {
         return data.stream().
                 filter(userStatus ->  userStatus.getId().equals(userStatusId))
                 .findFirst();
@@ -41,7 +41,7 @@ public class JCFUserStatusRepository implements UserStatusRepository {
 
     // 특정 사용자 상태 단건 조회
     @Override
-    public UserStatus findByUserId(UUID userId) {
+    public UserStatusEntity findByUserId(UUID userId) {
         return findAll().stream()
                 .filter(s -> s.getUserId().equals(userId))
                 .findFirst()
@@ -51,13 +51,13 @@ public class JCFUserStatusRepository implements UserStatusRepository {
 
     // 사용자 전체 조회
     @Override
-    public List<UserStatus> findAll() {
+    public List<UserStatusEntity> findAll() {
         return data;
     }
 
     // 사용자 상태 삭제
     @Override
-    public void delete(UserStatus userStatus) {
+    public void delete(UserStatusEntity userStatus) {
         data.remove(userStatus);
     }
 

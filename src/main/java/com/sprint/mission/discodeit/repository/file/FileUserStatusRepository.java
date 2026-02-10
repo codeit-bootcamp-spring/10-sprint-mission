@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.entity.UserStatusEntity;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.util.FileUtil;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,22 +30,22 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     // 사용자 상태 저장
     @Override
-    public void save(UserStatus userStatus) {
+    public void save(UserStatusEntity userStatus) {
         Path filePath = Paths.get(directory.toString(), userStatus.getId() + ".ser");
         FileUtil.save(filePath, userStatus);
     }
 
     // 사용자 상태 단건 조회
     @Override
-    public Optional<UserStatus> findById(UUID userStatusId) {
-        UserStatus userStatus = FileUtil.loadSingle(directory.resolve(userStatusId + ".ser"));
+    public Optional<UserStatusEntity> findById(UUID userStatusId) {
+        UserStatusEntity userStatus = FileUtil.loadSingle(directory.resolve(userStatusId + ".ser"));
 
         return Optional.ofNullable(userStatus);
     }
 
     // 특정 사용자의 상태 단건 조회
     @Override
-    public UserStatus findByUserId(UUID userId) {
+    public UserStatusEntity findByUserId(UUID userId) {
         return findAll().stream()
                 .filter(s -> s.getUserId().equals(userId))
                 .findFirst()
@@ -54,13 +54,13 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
     // 사용자 상태 전체 조회
     @Override
-    public List<UserStatus> findAll() {
+    public List<UserStatusEntity> findAll() {
         return FileUtil.load(directory);
     }
 
     // 사용자 상태 삭제
     @Override
-    public void delete(UserStatus userStatus) {
+    public void delete(UserStatusEntity userStatus) {
         try {
             Files.deleteIfExists(directory.resolve(userStatus.getId() + ".ser"));
         } catch (IOException e) {

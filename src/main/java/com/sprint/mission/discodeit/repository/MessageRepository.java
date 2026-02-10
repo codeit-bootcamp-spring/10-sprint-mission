@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.MessageEntity;
 
 import java.time.Instant;
 import java.util.List;
@@ -9,16 +9,16 @@ import java.util.UUID;
 
 public interface MessageRepository {
     // 메세지 저장
-    void save(Message message);
+    void save(MessageEntity message);
 
     // 메시지 단건 조회
-    Optional<Message> findById(UUID messageId);
+    Optional<MessageEntity> findById(UUID messageId);
 
     // 메시지 전체 조회
-    List<Message> findAll();
+    List<MessageEntity> findAll();
 
     // 메시지 삭제
-    void delete(Message message);
+    void delete(MessageEntity message);
 
     // 특정 채널에서 마지막으로 발행된 메시지 시간 조회
     Instant getLastMessageAt(UUID channelId);
