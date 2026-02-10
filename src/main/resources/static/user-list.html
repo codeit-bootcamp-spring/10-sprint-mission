@@ -3,16 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>사용자 목록</title>
+    <title>사용자 목록 관리</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="container">
-    <h1>사용자 목록</h1>
-    <div class="user-list" id="userList">
-        <!-- Users will be dynamically inserted here -->
-    </div>
+    <header>
+        <h1><i class="fa-solid fa-users"></i> 사용자 목록</h1>
+    </header>
+
+    <main>
+        <div id="statusMessage" class="status-message">
+            데이터를 불러오는 중입니다...
+        </div>
+
+        <ul class="user-list" id="userList">
+        </ul>
+    </main>
 </div>
+
 <script src="script.js"></script>
 </body>
 </html>
