@@ -34,18 +34,29 @@ public class DiscodeitApplication {
             UserCreateRequest userRequest = new UserCreateRequest("tester", "password123", "test@example.com", null);
             UserResponse user = userService.create(userRequest);
 
+            UserCreateRequest userRequest2 = new UserCreateRequest("tester2", "password123", "test2@example.com", null);
+            UserResponse user2 = userService.create(userRequest2);
+
             // 2. 테스트용 공용 채널 생성
             PublicChannelCreateRequest channelRequest = new PublicChannelCreateRequest("자유게시판", "자유롭게 대화하는 곳입니다.");
             ChannelResponse channel = channelService.createPublic(channelRequest);
 
             // 3. 테스트용 초기 메시지 생성
             MessageCreateRequest messageRequest = new MessageCreateRequest(
-                    "서버가 시작되었습니다. 환영합니다!",
+                    "메시지1",
                     channel.id(),
                     user.id(),
                     List.of() // 첨부파일 없음
             );
             MessageResponse message = messageService.create(messageRequest);
+
+            MessageCreateRequest messageRequest2 = new MessageCreateRequest(
+                    "메시지2",
+                    channel.id(),
+                    user.id(),
+                    List.of() // 첨부파일 없음
+            );
+            MessageResponse message2 = messageService.create(messageRequest2);
 
             // 콘솔에 ID 정보 출력 (Postman 테스트 시 복사해서 사용 가능)
             System.out.println("\n===== [Initial Data Seeded] =====");
