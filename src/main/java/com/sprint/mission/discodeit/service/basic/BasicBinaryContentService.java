@@ -35,10 +35,10 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public BinaryContentResponse findById(UUID messageId) {
-        if (messageId == null) throw new IllegalArgumentException("id는 null일 수 없습니다.");
+    public BinaryContentResponse findById(UUID Id) {
+        if (Id == null) throw new IllegalArgumentException("id는 null일 수 없습니다.");
 
-        BinaryContent bc = binaryContentRepository.findById(messageId)
+        BinaryContent bc = binaryContentRepository.findById(Id)
                 .orElseThrow(() -> new NoSuchElementException("BinaryContent가 없습니다."));
 
         return mapper.toResponse(bc);

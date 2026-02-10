@@ -38,9 +38,9 @@ public class BinaryContentController {
     }
 
     // 여러 개 조회
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<BinaryContentResponse>> findAllByIds(
-            @RequestBody UUID messageId
+    @RequestMapping(value="/messages/{messageId}", method = RequestMethod.GET)
+    public ResponseEntity<List<BinaryContentResponse>> findAllByMessageId(
+            @PathVariable UUID messageId
     ) {
         return ResponseEntity.ok(binaryContentService.findAll(messageId));
     }
