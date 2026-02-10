@@ -1,12 +1,9 @@
 package com.sprint.mission.discodeit.dto.message;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
-
-import java.util.List;
-import java.util.UUID;
+import jakarta.validation.constraints.NotBlank;
 
 public record MessageUpdateRequest(
-        String newContent,
-        List<BinaryContentCreateRequest> newAttachments
+        @NotBlank(message = "메시지를 입력해주세요.")
+        String newContent
 ) {
 }
