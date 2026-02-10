@@ -10,24 +10,33 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleAll(Exception e) {
-        ErrorCode errorCode = ErrorCode.resolve(e);
-
-        String messageOverride = normalizeMessage(e);
-        ErrorResponse body = ErrorResponse.from(errorCode, messageOverride);
-
+    @ExceptionHandler(BusinessLogicException.class)
+    public ResponseEntity<ErrorResponse> handleBusiness(BusinessLogicException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        ErrorResponse body = ErrorResponse.from(errorCode, e.getMessage());
         return ResponseEntity.status(errorCode.getHttpStatus()).body(body);
     }
 
-    private String normalizeMessage(Exception e) {
-        if (e instanceof MethodArgumentTypeMismatchException) {
-            return "요청 파라미터 타입이 올바르지 않습니다.";
-        }
-        if (e instanceof HttpMessageNotReadableException) {
-            return "요청 바디(JSON)가 올바르지 않습니다.";
-        }
-        String msg = e.getMessage();
-        return (msg == null || msg.isBlank()) ? null : msg;
+    @ExceptionHandler({
+            IllegalArgumentException.class,
+            HttpMessageNotReadableException.class,
+            MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<ErrorResponse> handleBadRequest(Exception e) {
+        ErrorCode code = (e instanceof MethodArgumentTypeMismatchException)
+                ? ErrorCode.TYPE_MISMATCH
+                : (e instanceof HttpMessageNotReadableException)
+                ? ErrorCode.INVALID_JSON
+                : ErrorCode.BAD_REQUEST;
+
+        ErrorResponse body = ErrorResponse.from(code, e.getMessage());
+        return ResponseEntity.status(code.getHttpStatus()).body(body);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAll(Exception e) {
+        ErrorCode code = ErrorCode.INTERNAL_ERROR;
+        ErrorResponse body = ErrorResponse.from(code, null);
+        return ResponseEntity.status(code.getHttpStatus()).body(body);
     }
 }

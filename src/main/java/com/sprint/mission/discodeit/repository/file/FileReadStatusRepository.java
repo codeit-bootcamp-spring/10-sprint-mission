@@ -1,13 +1,11 @@
 package com.sprint.mission.discodeit.repository.file;
 
-
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.exception.DuplicationReadStatusException;
-import com.sprint.mission.discodeit.exception.StatusNotFoundException;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,14 +65,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     public synchronized ReadStatus save(ReadStatus readStatus) {
         Map<UUID, ReadStatus> map = loadReadStatusFile();
 
-        boolean duplicate = map.values().stream().anyMatch(existing ->
-                existing.getUserId().equals(readStatus.getUserId())
-                        && existing.getChannelId().equals(readStatus.getChannelId())
-                        && !existing.getId().equals(readStatus.getId())
-        );
-
-        if (duplicate) throw new DuplicationReadStatusException();
-
+        // 중복 검증은 서비스에서 수행하도록 레포에서는 예외를 던지지 않음
         map.put(readStatus.getId(), readStatus);
         saveReadStatusFile(map);
         return readStatus;
@@ -103,8 +94,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     @Override
     public synchronized void delete(UUID id) {
         Map<UUID, ReadStatus> map = loadReadStatusFile();
-        ReadStatus removed = map.remove(id);
-        if (removed == null) throw new StatusNotFoundException();
+        map.remove(id); // 없으면 그냥 무시
         saveReadStatusFile(map);
     }
 

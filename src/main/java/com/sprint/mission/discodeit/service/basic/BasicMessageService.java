@@ -1,14 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
-
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.exception.MessageNotFoundException;
-import com.sprint.mission.discodeit.exception.MessageNotInputException;
-import com.sprint.mission.discodeit.exception.StatusNotFoundException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -16,6 +13,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -36,19 +34,19 @@ public class BasicMessageService implements MessageService {
         requireNonNull(req.userId(), "userId");
 
         if (req.content() == null || req.content().isBlank()) {
-            throw new MessageNotInputException();
+            throw new BusinessLogicException(ErrorCode.MESSAGE_EMPTY);
         }
 
         // 존재 검증
-        channelRepository.findChannel(req.channelId()); // 없으면 ChannelNotFoundException
+        findChannelOrThrow(req.channelId());
+
         if (userRepository.findById(req.userId()) == null) {
-            throw new UserNotFoundException();
+            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
         }
 
-        // 첨부파일(선택) 정리 + 방어적 복사
-        List<UUID> attachmentIds = (req.attachmentIds() == null) ? List.of() : List.copyOf(req.attachmentIds());
+        List<UUID> attachmentIds =
+                (req.attachmentIds() == null) ? List.of() : List.copyOf(req.attachmentIds());
 
-        // 첨부파일 존재 검증(중복 제거 후 비교)
         if (!attachmentIds.isEmpty()) {
             List<UUID> distinctIds = attachmentIds.stream()
                     .filter(Objects::nonNull)
@@ -57,7 +55,7 @@ public class BasicMessageService implements MessageService {
 
             var found = binaryContentRepository.findAllByIdIn(distinctIds);
             if (found.size() != distinctIds.size()) {
-                throw new StatusNotFoundException();
+                throw new BusinessLogicException(ErrorCode.BINARY_CONTENT_NOT_FOUND);
             }
         }
 
@@ -77,7 +75,7 @@ public class BasicMessageService implements MessageService {
     public List<MessageResponse> findAllByChannelId(UUID channelId) {
         requireNonNull(channelId, "channelId");
 
-        channelRepository.findChannel(channelId); // 없으면 ChannelNotFoundException
+        findChannelOrThrow(channelId);
 
         return messageRepository.findAllByChannelId(channelId).stream()
                 .map(this::toResponse)
@@ -90,11 +88,13 @@ public class BasicMessageService implements MessageService {
         requireNonNull(req.messageId(), "messageId");
 
         if (req.content() == null || req.content().isBlank()) {
-            throw new MessageNotInputException();
+            throw new BusinessLogicException(ErrorCode.MESSAGE_EMPTY);
         }
 
         Message message = messageRepository.findById(req.messageId())
-                .orElseThrow(MessageNotFoundException::new);
+                .orElseThrow(() ->
+                        new BusinessLogicException(ErrorCode.MESSAGE_NOT_FOUND)
+                );
 
         message.updateContent(req.content());
         Message saved = messageRepository.save(message);
@@ -107,23 +107,31 @@ public class BasicMessageService implements MessageService {
         requireNonNull(messageId, "messageId");
 
         Message message = messageRepository.findById(messageId)
-                .orElseThrow(MessageNotFoundException::new);
+                .orElseThrow(() ->
+                        new BusinessLogicException(ErrorCode.MESSAGE_NOT_FOUND)
+                );
 
-        List<UUID> attachmentIds = (message.getAttachmentIds() == null)
-                ? List.of()
-                : List.copyOf(message.getAttachmentIds());
+        List<UUID> attachmentIds =
+                (message.getAttachmentIds() == null) ? List.of() : List.copyOf(message.getAttachmentIds());
 
         for (UUID attachmentId : attachmentIds) {
             if (attachmentId != null) {
-                binaryContentRepository.delete(attachmentId); // 없으면(StatusNotFoundException 등) 구현체 기준
+                binaryContentRepository.delete(attachmentId);
             }
         }
 
         messageRepository.delete(messageId);
     }
 
+    private void findChannelOrThrow(UUID channelId) {
+        if (channelRepository.findChannel(channelId) == null) {
+            throw new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND);
+        }
+    }
+
     private MessageResponse toResponse(Message m) {
-        List<UUID> attachmentIds = (m.getAttachmentIds() == null) ? List.of() : List.copyOf(m.getAttachmentIds());
+        List<UUID> attachmentIds =
+                (m.getAttachmentIds() == null) ? List.of() : List.copyOf(m.getAttachmentIds());
 
         return new MessageResponse(
                 m.getId(),

@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.UserStatusResponse;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.StatusNotFoundException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -26,11 +26,11 @@ public class BasicUserStatusService implements UserStatusService {
         requireNonNull(userId, "userId");
 
         if (userRepository.findById(userId) == null) {
-            throw new UserNotFoundException();
+            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
         }
 
         if (userStatusRepository.findByUserId(userId) != null) {
-            throw new IllegalStateException("UserStatus already exists for userId=" + userId);
+            throw new BusinessLogicException(ErrorCode.CONFLICT);
         }
 
         UserStatus saved = userStatusRepository.save(new UserStatus(userId, Instant.now()));
@@ -43,7 +43,7 @@ public class BasicUserStatusService implements UserStatusService {
 
         UserStatus status = userStatusRepository.findById(id);
         if (status == null) {
-            throw new StatusNotFoundException();
+            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
         }
 
         return toDto(status);
@@ -62,7 +62,7 @@ public class BasicUserStatusService implements UserStatusService {
 
         UserStatus status = userStatusRepository.findById(id);
         if (status == null) {
-            throw new StatusNotFoundException();
+            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
         }
 
         status.updateLastSeenAt(Instant.now());
@@ -76,12 +76,12 @@ public class BasicUserStatusService implements UserStatusService {
         requireNonNull(userId, "userId");
 
         if (userRepository.findById(userId) == null) {
-            throw new UserNotFoundException();
+            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
         }
 
         UserStatus status = userStatusRepository.findByUserId(userId);
         if (status == null) {
-            throw new StatusNotFoundException();
+            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
         }
 
         status.updateLastSeenAt(Instant.now());
@@ -95,12 +95,12 @@ public class BasicUserStatusService implements UserStatusService {
         requireNonNull(userId, "userId");
 
         if (userRepository.findById(userId) == null) {
-            throw new UserNotFoundException();
+            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
         }
 
         UserStatus status = userStatusRepository.findByUserId(userId);
         if (status == null) {
-            throw new StatusNotFoundException();
+            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
         }
 
         status.updateOnline(online);
@@ -114,7 +114,7 @@ public class BasicUserStatusService implements UserStatusService {
         requireNonNull(id, "id");
 
         if (userStatusRepository.findById(id) == null) {
-            throw new StatusNotFoundException();
+            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
         }
         userStatusRepository.delete(id);
     }
@@ -124,10 +124,10 @@ public class BasicUserStatusService implements UserStatusService {
         requireNonNull(userId, "userId");
 
         if (userRepository.findById(userId) == null) {
-            throw new UserNotFoundException();
+            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
         }
         if (userStatusRepository.findByUserId(userId) == null) {
-            throw new StatusNotFoundException();
+            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
         }
 
         userStatusRepository.deleteByUserId(userId);

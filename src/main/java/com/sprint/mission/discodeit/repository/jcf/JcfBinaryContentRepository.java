@@ -1,11 +1,10 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.exception.StatusNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
+
 import java.util.*;
 
 @Repository
@@ -41,8 +40,6 @@ public class JcfBinaryContentRepository implements BinaryContentRepository {
 
     @Override
     public synchronized void delete(UUID id) {
-        if (store.remove(id) == null) {
-            throw new StatusNotFoundException();
-        }
+        store.remove(id); // 없으면 그냥 무시
     }
 }

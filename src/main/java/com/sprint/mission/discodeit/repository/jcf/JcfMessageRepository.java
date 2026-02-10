@@ -1,11 +1,10 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
+
 import java.util.*;
 
 @Repository
@@ -50,6 +49,6 @@ public class JcfMessageRepository implements MessageRepository {
     @Override
     public synchronized void delete(UUID id) {
         if (id == null) return;
-        if (messages.remove(id) == null) throw new MessageNotFoundException();
+        messages.remove(id); // 없으면 그냥 무시
     }
 }

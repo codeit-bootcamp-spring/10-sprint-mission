@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-
 import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
 import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
@@ -9,7 +8,8 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.*;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -38,11 +39,10 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalArgumentException("PRIVATE 채널은 최소 1명 이상의 참여자가 필요합니다.");
         }
 
-        // UserRepository는 Optional 미사용: 없으면 null
         List<User> participants = req.participantIds().stream()
                 .map(id -> {
                     User u = userRepository.findById(id);
-                    if (u == null) throw new UserNotFoundException();
+                    if (u == null) throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
                     return u;
                 })
                 .toList();
@@ -75,15 +75,13 @@ public class BasicChannelService implements ChannelService {
     public ChannelResponse find(UUID channelId) {
         requireNonNull(channelId, "channelId");
 
-        // findChannel은 구현체에서 ChannelNotFoundException 던지는 형태로 맞춤
-        Channel channel = channelRepository.findChannel(channelId);
+        Channel channel = findChannelOrThrow(channelId);
 
         Instant lastMessageTime = messageRepository.findAllByChannelId(channelId).stream()
                 .map(Message::getCreatedAt)
                 .max(Instant::compareTo)
                 .orElse(null);
 
-        // 규칙: PRIVATE만 participantIds 포함, PUBLIC은 null
         List<UUID> participantIds = channel.isPrivate()
                 ? channel.getParticipants().stream().map(User::getId).toList()
                 : null;
@@ -102,9 +100,8 @@ public class BasicChannelService implements ChannelService {
     public List<ChannelResponse> findAllByUserId(UUID userId) {
         requireNonNull(userId, "userId");
 
-        // user 존재 확인(없으면 예외)
         if (userRepository.findById(userId) == null) {
-            throw new UserNotFoundException();
+            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
         }
 
         return channelRepository.findAllChannel().stream()
@@ -139,13 +136,13 @@ public class BasicChannelService implements ChannelService {
         requireNonNull(channelId, "channelId");
         requireNonNull(userId, "userId");
 
-        Channel channel = channelRepository.findChannel(channelId);
+        Channel channel = findChannelOrThrow(channelId);
 
         User user = userRepository.findById(userId);
-        if (user == null) throw new UserNotFoundException();
+        if (user == null) throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
 
         if (channel.getParticipants().stream().anyMatch(u -> u.getId().equals(userId))) {
-            throw new AlreadyJoinedChannelException();
+            throw new BusinessLogicException(ErrorCode.ALREADY_JOINED_CHANNEL);
         }
 
         channel.addParticipant(user);
@@ -164,11 +161,10 @@ public class BasicChannelService implements ChannelService {
         requireNonNull(req, "req");
         requireNonNull(req.channelId(), "channelId");
 
-        Channel channel = channelRepository.findChannel(req.channelId());
+        Channel channel = findChannelOrThrow(req.channelId());
 
         if (channel.isPrivate()) {
-            // 요구사항: PRIVATE 채널 수정 불가
-            throw new IllegalStateException("PRIVATE 채널은 수정할 수 없습니다.");
+            throw new BusinessLogicException(ErrorCode.CONFLICT);
         }
 
         channel.updateChannel(req.name(), req.description());
@@ -181,8 +177,7 @@ public class BasicChannelService implements ChannelService {
     public void delete(UUID channelId) {
         requireNonNull(channelId, "channelId");
 
-        // 존재 확인(없으면 예외)
-        channelRepository.findChannel(channelId);
+        findChannelOrThrow(channelId);
 
         messageRepository.findAllByChannelId(channelId)
                 .forEach(m -> messageRepository.delete(m.getId()));
@@ -196,16 +191,15 @@ public class BasicChannelService implements ChannelService {
         requireNonNull(channelId, "channelId");
         requireNonNull(userId, "userId");
 
-        Channel channel = channelRepository.findChannel(channelId);
+        Channel channel = findChannelOrThrow(channelId);
 
-        // 존재 확인
         if (userRepository.findById(userId) == null) {
-            throw new UserNotFoundException();
+            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
         }
 
         boolean removed = channel.getParticipants().removeIf(u -> u.getId().equals(userId));
         if (!removed) {
-            throw new UserNotInChannelException();
+            throw new BusinessLogicException(ErrorCode.USER_NOT_IN_CHANNEL);
         }
 
         if (channel.isPrivate()) {
@@ -222,21 +216,22 @@ public class BasicChannelService implements ChannelService {
     public List<UUID> findAllUserInChannel(UUID channelId) {
         requireNonNull(channelId, "channelId");
 
-        Channel channel = channelRepository.findChannel(channelId);
+        Channel channel = findChannelOrThrow(channelId);
         return channel.getParticipants().stream().map(User::getId).toList();
     }
 
     @Override
     public boolean existsById(UUID channelId) {
         if (channelId == null) return false;
+        return channelRepository.findChannel(channelId) != null;
+    }
 
-        // findChannel은 예외를 던지므로 안전하게 확인
-        try {
-            channelRepository.findChannel(channelId);
-            return true;
-        } catch (ChannelNotFoundException e) {
-            return false;
+    private Channel findChannelOrThrow(UUID channelId) {
+        Channel channel = channelRepository.findChannel(channelId);
+        if (channel == null) {
+            throw new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND);
         }
+        return channel;
     }
 
     private static <T> void requireNonNull(T value, String name) {

@@ -4,15 +4,15 @@ import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.exception.DuplicationReadStatusException;
-import com.sprint.mission.discodeit.exception.StatusNotFoundException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -32,17 +32,17 @@ public class BasicReadStatusService implements ReadStatusService {
         requireNonNull(request.channelId(), "channelId");
 
         if (userRepository.findById(request.userId()) == null) {
-            throw new UserNotFoundException();
+            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
         }
 
-        channelRepository.findChannel(request.channelId());
+        findChannelOrThrow(request.channelId());
 
         ReadStatus duplicated =
                 readStatusRepository.findByUserIdAndChannelId(
                         request.userId(), request.channelId());
 
         if (duplicated != null) {
-            throw new DuplicationReadStatusException();
+            throw new BusinessLogicException(ErrorCode.DUPLICATION_READ_STATUS);
         }
 
         ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
@@ -57,7 +57,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
         ReadStatus readStatus = readStatusRepository.findById(id);
         if (readStatus == null) {
-            throw new StatusNotFoundException();
+            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
         }
 
         return toDto(readStatus);
@@ -68,7 +68,7 @@ public class BasicReadStatusService implements ReadStatusService {
         requireNonNull(userId, "userId");
 
         if (userRepository.findById(userId) == null) {
-            throw new UserNotFoundException();
+            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
         }
 
         return readStatusRepository.findAllByUserId(userId).stream()
@@ -83,7 +83,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
         ReadStatus rs = readStatusRepository.findById(req.readStatus());
         if (rs == null) {
-            throw new StatusNotFoundException();
+            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
         }
 
         rs.updateLastReadAt(Instant.now());
@@ -98,10 +98,16 @@ public class BasicReadStatusService implements ReadStatusService {
 
         ReadStatus existing = readStatusRepository.findById(id);
         if (existing == null) {
-            throw new StatusNotFoundException();
+            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
         }
 
         readStatusRepository.delete(id);
+    }
+
+    private void findChannelOrThrow(UUID channelId) {
+        if (channelRepository.findChannel(channelId) == null) {
+            throw new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND);
+        }
     }
 
     private ReadStatusResponse toDto(ReadStatus rs) {

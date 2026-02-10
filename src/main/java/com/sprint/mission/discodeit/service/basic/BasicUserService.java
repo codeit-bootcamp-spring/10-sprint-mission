@@ -8,7 +8,8 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.*;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -38,15 +39,15 @@ public class BasicUserService implements UserService {
         requireNonNull(request.password(), "password");
 
         if (request.password().isEmpty()) {
-            throw new ZeroLengthPasswordException();
+            throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
         }
 
         if (userRepository.existsByName(request.userName())) {
-            throw new DuplicationUserException();
+            throw new BusinessLogicException(ErrorCode.DUPLICATION_USER);
         }
 
         if (userRepository.existsByEmail(request.email())) {
-            throw new DuplicationEmailException();
+            throw new BusinessLogicException(ErrorCode.DUPLICATION_EMAIL);
         }
 
         User user = new User(request.userName(), request.email(), request.password());
@@ -79,10 +80,10 @@ public class BasicUserService implements UserService {
         requireNonNull(userId, "userId");
 
         User user = userRepository.findById(userId);
-        if (user == null) throw new UserNotFoundException();
+        if (user == null) throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
 
         UserStatus status = userStatusRepository.findByUserId(userId);
-        if (status == null) throw new StatusNotFoundException();
+        if (status == null) throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
 
         return toResponse(user, status);
     }
@@ -92,7 +93,7 @@ public class BasicUserService implements UserService {
         return userRepository.findAll().stream()
                 .map(user -> {
                     UserStatus status = userStatusRepository.findByUserId(user.getId());
-                    if (status == null) throw new StatusNotFoundException();
+                    if (status == null) throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
                     return toResponse(user, status);
                 })
                 .toList();
@@ -103,7 +104,7 @@ public class BasicUserService implements UserService {
         return userRepository.findAll().stream()
                 .map(user -> {
                     UserStatus status = userStatusRepository.findByUserId(user.getId());
-                    if (status == null) throw new StatusNotFoundException();
+                    if (status == null) throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
 
                     return new UserDto(
                             user.getId(),
@@ -124,25 +125,25 @@ public class BasicUserService implements UserService {
         requireNonNull(request.userId(), "userId");
 
         User user = userRepository.findById(request.userId());
-        if (user == null) throw new UserNotFoundException();
+        if (user == null) throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
 
         request.userName().ifPresent(newName -> {
             if (!user.getName().equals(newName) && userRepository.existsByName(newName)) {
-                throw new DuplicationUserException();
+                throw new BusinessLogicException(ErrorCode.DUPLICATION_USER);
             }
             user.updateName(newName);
         });
 
         request.email().ifPresent(newEmail -> {
             if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
-                throw new DuplicationEmailException();
+                throw new BusinessLogicException(ErrorCode.DUPLICATION_EMAIL);
             }
             user.updateEmail(newEmail);
         });
 
         request.password().ifPresent(newPassword -> {
             if (newPassword.isEmpty()) {
-                throw new ZeroLengthPasswordException();
+                throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
             }
             user.updatePassword(newPassword);
         });
@@ -167,7 +168,7 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
 
         UserStatus status = userStatusRepository.findByUserId(user.getId());
-        if (status == null) throw new StatusNotFoundException();
+        if (status == null) throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
 
         return toResponse(user, status);
     }
@@ -177,7 +178,7 @@ public class BasicUserService implements UserService {
         requireNonNull(userId, "userId");
 
         User user = userRepository.findById(userId);
-        if (user == null) throw new UserNotFoundException();
+        if (user == null) throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
 
         if (user.getProfileImageId() != null) {
             binaryContentRepository.delete(user.getProfileImageId());

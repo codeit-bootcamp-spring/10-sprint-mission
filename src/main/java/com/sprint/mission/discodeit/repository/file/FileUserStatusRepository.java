@@ -1,12 +1,11 @@
 package com.sprint.mission.discodeit.repository.file;
 
-
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.StatusNotFoundException;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -91,8 +90,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     @Override
     public synchronized void delete(UUID id) {
         Map<UUID, UserStatus> map = loadUserStatusFile();
-        UserStatus removed = map.remove(id);
-        if (removed == null) throw new StatusNotFoundException();
+        map.remove(id); // 없으면 그냥 무시
         saveUserStatusFile(map);
     }
 
