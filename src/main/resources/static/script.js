@@ -47,9 +47,14 @@ async function renderUserList(users) {
         userElement.className = 'user-item';
 
         // Get profile image URL
-        const profileUrl = user.profileId ?
-            await fetchUserProfile(user.profileId) :
-            '/default-avatar.png';
+        // const profileUrl =
+        //     user.profileId ?
+        //     await fetchUserProfile(user.profileId) :
+        //     '/default-avatar.png';
+
+        // 프로필 이미지를 아직 sprint4 과제에서 실제 이미지 파일이 아니라 byte[] bytes = [1,2,3,4]
+        // 이런식으로 사용했기 때문에 default-avatar.png를 그대로 사용했음
+        const profileUrl = '/default-avatar.png';
 
         userElement.innerHTML = `
             <img src="${profileUrl}" alt="${user.username}" class="user-avatar">
@@ -57,8 +62,8 @@ async function renderUserList(users) {
                 <div class="user-name">${user.username}</div>
                 <div class="user-email">${user.email}</div>
             </div>
-            <div class="status-badge ${user.online ? "online" : "offline"}">
-                ${user.online ? '온라인' : '오프라인'}
+            <div class="status-badge ${user.isOnline ? "online" : "offline"}">
+                ${user.isOnline ? '온라인' : '오프라인'}
             </div>
         `;
 
