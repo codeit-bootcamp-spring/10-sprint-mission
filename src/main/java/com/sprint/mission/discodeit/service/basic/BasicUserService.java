@@ -5,12 +5,14 @@ import com.sprint.mission.discodeit.dto.user.UserCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.entity.type.FileType;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -36,21 +38,35 @@ public class BasicUserService implements UserService {
                 dto.getPassword());
 
         // 유저 dto 내부 받아온 파일 dto
-        BinaryContentCreateDto binaryContentCreateDto = dto.getProfileImg();
+        MultipartFile file = dto.getProfileImg();
         // 프로필 등록 여부 & binaryContent객체 생성
         if(dto.getProfileImg() != null){
-            BinaryContent binaryContent =
-                    new BinaryContent(user.getId(),
-                            null,
-                            binaryContentCreateDto.getFileData(),
-                            binaryContentCreateDto.getName(),
-                            binaryContentCreateDto.getFileType());
-            // binarycontent 저장
-            binaryContentRepository.save(binaryContent);
-            // 연관성 주입
-            user.addProfileImage(binaryContent.getId());
-        }
+            try{
+                // 파일 타입 설정
+                String mimeType = file.getContentType();
+                FileType fileType;
 
+                if(Objects.requireNonNull(mimeType).startsWith("image")){
+                    fileType = FileType.IMAGE;
+                } else if (Objects.requireNonNull(mimeType).startsWith("video")) {
+                    fileType = FileType.VIDEO;
+                } else if(Objects.requireNonNull(mimeType).startsWith("audio")){
+                    fileType = FileType.AUDIO;
+                } else fileType = FileType.GENERAL;
+                BinaryContent binaryContent =
+                        new BinaryContent(user.getId(),
+                                null,
+                                file.getBytes(),
+                                file.getOriginalFilename(),
+                                fileType);
+                // binarycontent 저장
+                binaryContentRepository.save(binaryContent);
+                // 연관성 주입
+                user.addProfileImage(binaryContent.getId());
+            } catch (Exception e) {
+                throw new RuntimeException("파일 업로드 오류가 발생했습니다",e);
+            }
+        }
         // 유저정보 저장
         userRepository.save(user);
         // 유저 상태 생성

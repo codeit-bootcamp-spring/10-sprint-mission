@@ -15,6 +15,8 @@ public class UserResponseDto {
     private String name;
     private String email;
     private UUID profileImageId;
+    private Instant createdAt;
+    private Instant updatedAt;
     private List<UUID> messageList;
     private List<UUID> friendsList;
     private boolean online;

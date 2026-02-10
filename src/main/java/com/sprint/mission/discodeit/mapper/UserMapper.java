@@ -13,6 +13,8 @@ public class UserMapper {
                 ,user.getName()
                 ,user.getEmail()
                 ,user.getProfileImageId()
+                ,user.getCreatedAt()
+                ,user.getUpdatedAt()
                 ,user.getMessageList()
                 ,user.getFriendsList()
                 ,online );

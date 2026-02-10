@@ -14,14 +14,14 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
 
     // 유저 생성
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<UserResponseDto> postUser(@RequestBody UserCreateDto dto){
+    public ResponseEntity<UserResponseDto> postUser(@ModelAttribute UserCreateDto dto){
         UserResponseDto response = userService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -34,7 +34,7 @@ public class UserController {
     }
 
     // 유저 전체 조회
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
     public ResponseEntity<List<UserResponseDto>> getAllUser(){
         List<UserResponseDto> userList = userService.findAllUsers();
         return ResponseEntity.ok(userList);
