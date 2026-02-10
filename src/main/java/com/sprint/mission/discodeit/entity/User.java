@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class UserEntity extends BaseEntity implements Serializable {
+public class User extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String email;                    // 이메일 (변경 불가능)
@@ -16,7 +16,7 @@ public class UserEntity extends BaseEntity implements Serializable {
     private String nickname;                 // 닉네임 (변경 가능)
     private UUID profileId;                  // 사용자의 프로필 고유 id
 
-    public UserEntity(UserCreateRequestDTO userCreateRequestDTO) {
+    public User(UserCreateRequestDTO userCreateRequestDTO) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();

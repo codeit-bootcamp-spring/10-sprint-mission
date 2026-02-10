@@ -34,17 +34,17 @@ public class BasicUserService implements UserService {
         isEmailDuplicate(userCreateRequestDTO.getEmail());
         isNicknameDuplicate(userCreateRequestDTO.getNickname());
 
-        UserEntity newUser = new UserEntity(userCreateRequestDTO);
+        User newUser = new User(userCreateRequestDTO);
         userRepository.save(newUser);
 
-        UserStatusEntity newUserStatus = new UserStatusEntity(newUser.getId());
+        UserStatus newUserStatus = new UserStatus(newUser.getId());
         userStatusRepository.save(newUserStatus);
 
         Optional.ofNullable(userCreateRequestDTO.getBinaryContentCreateRequestDTO())
                 .map(BinaryContentCreateRequestDTO::getBinaryContent)
                 // 선택적 프로필 이미지 생성
                 .ifPresent(content -> {
-                    BinaryContentEntity newBinaryContent = new BinaryContentEntity(userCreateRequestDTO.getBinaryContentCreateRequestDTO());
+                    BinaryContent newBinaryContent = new BinaryContent(userCreateRequestDTO.getBinaryContentCreateRequestDTO());
                     binaryContentRepository.save(newBinaryContent);
                     newUser.updateProfileId(newBinaryContent.getId());
                 });
@@ -55,9 +55,9 @@ public class BasicUserService implements UserService {
     // 사용자 단건 조회
     @Override
     public UserResponseDTO findById(UUID userId) {
-        UserEntity targetUser = findEntityById(userId);
+        User targetUser = findEntityById(userId);
 
-        UserStatusEntity targetUserStatus = userStatusRepository.findByUserId(targetUser.getId());
+        UserStatus targetUserStatus = userStatusRepository.findByUserId(targetUser.getId());
 
         return toResponseDTO(targetUser, targetUserStatus);
     }
@@ -68,7 +68,7 @@ public class BasicUserService implements UserService {
         return userRepository.findAll().stream()
                 .map(user -> {
                     // 사용자별 상태 조회
-                    UserStatusEntity userStatus = userStatusRepository.findByUserId(user.getId());
+                    UserStatus userStatus = userStatusRepository.findByUserId(user.getId());
                     return toResponseDTO(user, userStatus);
                 })
                 .toList();
@@ -77,7 +77,7 @@ public class BasicUserService implements UserService {
     // 특정 채널의 참가자 목록 조회
     @Override
     public List<UserResponseDTO> findMembersByChannelId(MemberFindRequestDTO memberFindRequestDTO) {
-        ChannelEntity targetChannel = channelRepository.findById(memberFindRequestDTO.getChannelId())
+        Channel targetChannel = channelRepository.findById(memberFindRequestDTO.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
         // Private 채널은 채널 참여자만 조회 가능
@@ -88,8 +88,8 @@ public class BasicUserService implements UserService {
 
         return targetChannel.getMembers().stream()
                 .map(memberId -> {
-                    UserEntity user = findEntityById(memberId);
-                    UserStatusEntity userStatus = userStatusRepository.findByUserId(user.getId());
+                    User user = findEntityById(memberId);
+                    UserStatus userStatus = userStatusRepository.findByUserId(user.getId());
                     return toResponseDTO(user,userStatus);
                 })
                 .toList();
@@ -98,9 +98,9 @@ public class BasicUserService implements UserService {
     // 사용자 정보 수정
     @Override
     public UserResponseDTO update(UserUpdateRequestDTO userUpdateRequestDTO) {
-        UserEntity targetUser = findEntityById(userUpdateRequestDTO.getId());
+        User targetUser = findEntityById(userUpdateRequestDTO.getId());
 
-        UserStatusEntity targetUserStatus = userStatusRepository.findByUserId(targetUser.getId());
+        UserStatus targetUserStatus = userStatusRepository.findByUserId(targetUser.getId());
 
         // 비밀번호 필드 변경
         Optional.ofNullable(userUpdateRequestDTO.getPassword())
@@ -130,7 +130,7 @@ public class BasicUserService implements UserService {
         Optional.ofNullable(userUpdateRequestDTO.getBinaryContentCreateRequestDTO())
                 .map(BinaryContentCreateRequestDTO::getBinaryContent)
                 .map(binaryContent -> {
-                    BinaryContentEntity newBinaryContent = new BinaryContentEntity(userUpdateRequestDTO.getBinaryContentCreateRequestDTO());
+                    BinaryContent newBinaryContent = new BinaryContent(userUpdateRequestDTO.getBinaryContentCreateRequestDTO());
                     binaryContentRepository.save(newBinaryContent);
                     return newBinaryContent.getId();
                 })
@@ -144,7 +144,7 @@ public class BasicUserService implements UserService {
     // 사용자 삭제
     @Override
     public void delete(UUID userId) {
-        UserEntity targetUser = findEntityById(userId);
+        User targetUser = findEntityById(userId);
 
         // 삭제된 사용자가 참여한 모든 채널 내 멤버에서 사용자 연쇄 삭제
         channelRepository.findAll().stream()
@@ -189,13 +189,13 @@ public class BasicUserService implements UserService {
     }
 
     // 단일 엔티티 조회 및 반환
-    public UserEntity findEntityById(UUID userId) {
+    public User findEntityById(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
     }
 
     // 엔티티 -> 응답 DTO 변환
-    public UserResponseDTO toResponseDTO(UserEntity user, UserStatusEntity userStatus) {
+    public UserResponseDTO toResponseDTO(User user, UserStatus userStatus) {
         return UserResponseDTO.builder()
                 .id(user.getId())
                 .email(user.getEmail())

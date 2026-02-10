@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.binaryContent.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.BinaryContentResponseDTO;
-import com.sprint.mission.discodeit.entity.BinaryContentEntity;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     // 첨부 파일 생성
     @Override
     public BinaryContentResponseDTO create(BinaryContentCreateRequestDTO binaryContentCreateRequestDTO) {
-        BinaryContentEntity newBinaryContent = new BinaryContentEntity(binaryContentCreateRequestDTO);
+        BinaryContent newBinaryContent = new BinaryContent(binaryContentCreateRequestDTO);
         binaryContentRepository.save(newBinaryContent);
 
         return toResponseDTO(newBinaryContent);
@@ -28,7 +28,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     // 첨부 파일 단건 조회
     @Override
     public BinaryContentResponseDTO findById(UUID targetBinaryContentId) {
-        BinaryContentEntity targetBinaryContent = findEntityById(targetBinaryContentId);
+        BinaryContent targetBinaryContent = findEntityById(targetBinaryContentId);
 
         return toResponseDTO(targetBinaryContent);
     }
@@ -53,18 +53,18 @@ public class BasicBinaryContentService implements BinaryContentService {
     // 첨부 파일 삭제
     @Override
     public void delete(UUID targetBinaryContentId) {
-        BinaryContentEntity targetBinaryContent = findEntityById(targetBinaryContentId);
+        BinaryContent targetBinaryContent = findEntityById(targetBinaryContentId);
         binaryContentRepository.delete(targetBinaryContent);
     }
 
     // 단일 엔티티 조회
-    public BinaryContentEntity findEntityById(UUID binaryContentId) {
+    public BinaryContent findEntityById(UUID binaryContentId) {
         return binaryContentRepository.findById(binaryContentId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 첨부 파일이 존재하지 않습니다."));
     }
 
     // 응답 DTO 생성 및 반환
-    public BinaryContentResponseDTO toResponseDTO(BinaryContentEntity binaryContent) {
+    public BinaryContentResponseDTO toResponseDTO(BinaryContent binaryContent) {
         return BinaryContentResponseDTO.builder()
                 .id(binaryContent.getId())
                 .createdAt(binaryContent.getCreatedAt())

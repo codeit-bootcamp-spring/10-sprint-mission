@@ -3,10 +3,10 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.MessageResponseDTO;
-import com.sprint.mission.discodeit.entity.BinaryContentEntity;
-import com.sprint.mission.discodeit.entity.ChannelEntity;
-import com.sprint.mission.discodeit.entity.MessageEntity;
-import com.sprint.mission.discodeit.entity.UserEntity;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -38,14 +38,14 @@ public class BasicMessageService implements MessageService {
         channelRepository.findById(messageCreateRequestDTO.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
-        MessageEntity newMessage = new MessageEntity(messageCreateRequestDTO);
+        Message newMessage = new Message(messageCreateRequestDTO);
         messageRepository.save(newMessage);
 
         Optional.ofNullable(messageCreateRequestDTO.getBinaryContentCreateRequestDTOList())
                 .map(binaryContentCreateRequestDTOS -> binaryContentCreateRequestDTOS.stream()
                         // 첨부파일 하나씩 생성 및 저장
                         .map(binaryContentCreateRequestDTO -> {
-                            BinaryContentEntity binaryContent = new BinaryContentEntity(binaryContentCreateRequestDTO);
+                            BinaryContent binaryContent = new BinaryContent(binaryContentCreateRequestDTO);
                             binaryContentRepository.save(binaryContent);
                             return binaryContent.getId();
                         })
@@ -55,13 +55,14 @@ public class BasicMessageService implements MessageService {
                 .ifPresent(attachmentIds -> attachmentIds
                         .forEach(newMessage::addAttachment));
 
+        // 4. 응답 DTO 생성 및 반환
         return toResponseDTO(newMessage);
     }
 
     // 메시지 단건 조회
     @Override
     public MessageResponseDTO findById(UUID targetMessageId) {
-        MessageEntity targetMessage = messageRepository.findById(targetMessageId)
+        Message targetMessage = messageRepository.findById(targetMessageId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
 
        return toResponseDTO(targetMessage);
@@ -78,7 +79,7 @@ public class BasicMessageService implements MessageService {
     // 특정 채널의 전체 메시지 목록 조회
     @Override
     public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
-        ChannelEntity taregetChannel = channelRepository.findById(channelId)
+        Channel taregetChannel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
         return messageRepository.findAll().stream()
@@ -91,7 +92,7 @@ public class BasicMessageService implements MessageService {
     // 특정 사욪자가 발행한 전체 메시지 목록 조회
     @Override
     public List<MessageResponseDTO> findAllByUserId(UUID targetUserId) {
-        UserEntity targetUser = userRepository.findById(targetUserId)
+        User targetUser = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
 
         return messageRepository.findAll().stream()
@@ -103,7 +104,7 @@ public class BasicMessageService implements MessageService {
     // 메시지 수정
     @Override
     public MessageResponseDTO update(MessageUpdateRequestDTO messageUpdateRequestDTO) {
-        MessageEntity targetMessage = findMessageEntityById(messageUpdateRequestDTO.getId());
+        Message targetMessage = findMessageEntityById(messageUpdateRequestDTO.getId());
 
         Optional.ofNullable(messageUpdateRequestDTO.getMessage())
                 .ifPresent(message -> {
@@ -119,11 +120,11 @@ public class BasicMessageService implements MessageService {
     // 메시지 삭제
     @Override
     public void delete(UUID targetMessageId) {
-        MessageEntity targetMessage = findMessageEntityById(targetMessageId);
+        Message targetMessage = findMessageEntityById(targetMessageId);
 
         targetMessage.getAttachmentIds()
                 .forEach(binaryContentId -> {
-                    BinaryContentEntity binaryContent = binaryContentRepository.findById(binaryContentId)
+                    BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
                             .orElseThrow(() -> new IllegalArgumentException("해당 첨부 파일이 존재하지 않습니다."));
                     binaryContentRepository.delete(binaryContent);
                 });
@@ -132,13 +133,13 @@ public class BasicMessageService implements MessageService {
     }
 
     // 메시지 엔티티 반환
-    public MessageEntity findMessageEntityById(UUID messageId) {
+    public Message findMessageEntityById(UUID messageId) {
         return messageRepository.findById(messageId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
     }
 
     // 응답 DTO 변환
-    public MessageResponseDTO toResponseDTO(MessageEntity message) {
+    public MessageResponseDTO toResponseDTO(Message message) {
         return MessageResponseDTO.builder()
                 .id(message.getId())
                 .authorId(message.getAuthorId())

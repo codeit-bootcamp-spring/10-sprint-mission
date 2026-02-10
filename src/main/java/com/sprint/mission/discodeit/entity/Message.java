@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-public class MessageEntity extends BaseEntity implements Serializable {
+public class Message extends BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String message;                // 메시지 내용 (변경 가능)
@@ -19,7 +19,7 @@ public class MessageEntity extends BaseEntity implements Serializable {
     private UUID authorId;                 // 보낸 사람 id (변경 불가능)
     private List<UUID> attachmentIds;      // 메시지에 묶여있는 파일 목록 (변경 불가능)
 
-    public MessageEntity(MessageCreateRequestDTO messageCreateRequestDTO) {
+    public Message(MessageCreateRequestDTO messageCreateRequestDTO) {
         this.attachmentIds = new ArrayList<>();
 
         this.id = UUID.randomUUID();
