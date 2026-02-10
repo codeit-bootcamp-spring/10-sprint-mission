@@ -44,6 +44,8 @@ public class UserDto {
             String newPassword,
 
             UUID profileId,
+
+            // 요구 사항 외 구현, 유저 수정 시 프로필 삭제 여부
             Boolean isProfileDeleted
     ) {}
 }

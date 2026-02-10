@@ -125,6 +125,6 @@ public class FileUserStatusRepository implements UserStatusRepository {
     @Override
     public void deleteByUserId(UUID id) {
         this.findByUserId(id)
-                .ifPresent(userStatus -> this.deleteByUserId(userStatus.getId()));
+                .ifPresent(userStatus -> deleteById(userStatus.getId()));
     }
 }

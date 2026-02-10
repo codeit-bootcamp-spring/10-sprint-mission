@@ -1,17 +1,16 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.event.ChannelDeletedEvent;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.*;
 
 @Service
@@ -87,5 +86,12 @@ public class BasicMessageService implements MessageService {
                 .forEach(binaryContentRepository::deleteById);
 
         messageRepository.deleteById(messageId);
+    }
+
+    @EventListener
+    @Transactional
+    public void handleChannelDeletedEvent(ChannelDeletedEvent event) {
+        List<Message> messages = messageRepository.findAllByChannelId(event.channelId());
+        messages.forEach((message) -> {this.delete(message.getId());});
     }
 }

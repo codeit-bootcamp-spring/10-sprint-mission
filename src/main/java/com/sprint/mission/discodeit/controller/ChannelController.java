@@ -52,4 +52,11 @@ public class ChannelController {
         return ResponseEntity.ok(response);
     }
 
+    // 관리자용 전체 채널 조회 API
+    @RequestMapping(method = RequestMethod.GET, value = "/findAll")
+    public ResponseEntity<List<ChannelDto.Response>> findAllChannels() {
+        List<ChannelDto.Response> response = channelService.findAll();
+        return ResponseEntity.ok(response);
+    }
+
 }

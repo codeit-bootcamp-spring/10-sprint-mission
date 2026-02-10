@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.event.ChannelDeletedEvent;
+import com.sprint.mission.discodeit.event.ChannelNoMemberEvent;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -10,7 +12,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.context.event.EventListener;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,34 +29,9 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
     //
     private final ChannelMapper channelMapper;
+    //
+    private final ApplicationEventPublisher eventPublisher;
 
-//    @Override
-//    private Channel create(ChannelDto.CreatePublicRequest request) {
-//        String channelName = request.name();
-//        String channelDescription = request.description();
-//        Channel channel = new Channel(ChannelType.PUBLIC, channelName, channelDescription);
-//        return channelRepository.save(channel);
-//    }
-//
-//    @Override
-//    private Channel create(ChannelDto.CreatePrivateRequest request) {
-//        Set<UUID> memberIds = new HashSet<>(request.memberIds()); // 유저 중복 검출
-//
-//        memberIds.forEach(userId -> // 멤버가 실제로 존재하는 유저인지 확인
-//                userRepository.findById(userId)
-//                            .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다." + userId)));
-//
-//        Channel channel = new Channel(ChannelType.PRIVATE, null, null);
-//        Channel createChannel = channelRepository.save(channel);
-//
-//        request.memberIds().stream()
-//                .map(userId -> new ReadStatus(userId, createChannel.getId(), createChannel.getCreatedAt()))
-//                .forEach(readStatusRepository::save);
-//
-//        return createChannel;
-//    }
-
-    @Transactional
     @Override
     public ChannelDto.Response create(ChannelDto.CreateRequest request) {
         if (request.type() == ChannelType.PUBLIC) {
@@ -116,6 +95,13 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
+    public List<ChannelDto.Response> findAll() {
+        return channelRepository.findAll().stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    @Override
     public ChannelDto.Response update(UUID channelId, ChannelDto.UpdatePublicRequest request) {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널은 찾을 수 없습니다: " + channelId));
@@ -129,14 +115,13 @@ public class BasicChannelService implements ChannelService {
         return toDto(channelRepository.save(channel));
     }
 
-    @Transactional
     @Override
     public void delete(UUID channelId) {
         if (!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("해당 채널을 찾을 수 없습니다:" + channelId);
         }
 
-        messageRepository.deleteByChannelId(channelId);
+        eventPublisher.publishEvent(new ChannelDeletedEvent(channelId));
         readStatusRepository.deleteByChannelId(channelId);
         channelRepository.deleteById(channelId);
     }
@@ -155,6 +140,12 @@ public class BasicChannelService implements ChannelService {
         }
 
         return channelMapper.toResponse(channel, memberIds);
+    }
+
+    @EventListener // 이벤트 구독
+    @Transactional
+    public void handleChannelNoMemberEvent(ChannelNoMemberEvent event) {
+        this.delete(event.channelId());
     }
 
 }

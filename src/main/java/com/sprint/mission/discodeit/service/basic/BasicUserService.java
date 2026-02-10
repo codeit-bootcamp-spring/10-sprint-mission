@@ -1,14 +1,18 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.event.ChannelDeletedEvent;
+import com.sprint.mission.discodeit.event.ChannelNoMemberEvent;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.Locked;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -23,10 +27,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
+    //
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
+    private final ReadStatusRepository readStatusRepository;
+    //
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    //
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public UserDto.Response create(UserDto.CreateRequest request) {
@@ -88,6 +97,8 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId));
 
+        deleteMemberInPrivate(userId);
+
         if (user.getProfileId() != null) {
             binaryContentRepository.deleteById(user.getProfileId());
         }
@@ -121,5 +132,23 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("유저의 상태가 없습니다:" + user.getId()));
 
         return userMapper.toResponse(user, userStatus.isOnline());
+    }
+
+    // 요구사항 외 구현
+    // 비공개 채널의 멤버가 삭제될 때
+    private void deleteMemberInPrivate(UUID userId) {
+        List<ReadStatus> userReadStatuses = readStatusRepository.findAllByUserId(userId);
+
+        for (ReadStatus rs : userReadStatuses) {
+            UUID channelId = rs.getChannelId();
+
+            List<ReadStatus> channelMembers = readStatusRepository.findAllByChannelId(channelId);
+
+            if (channelMembers.size() <= 1) { // 채널에 자신만 존재
+                eventPublisher.publishEvent(new ChannelNoMemberEvent(channelId));
+            } else {
+                readStatusRepository.deleteById(rs.getId());
+            }
+        }
     }
 }

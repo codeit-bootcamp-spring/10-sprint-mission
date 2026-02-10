@@ -11,6 +11,7 @@ public interface ChannelService {
     ChannelDto.Response create(ChannelDto.CreateRequest request);
     ChannelDto.Response find(UUID channelId);
     List<ChannelDto.Response> findAllByUserId(UUID userId);
+    List<ChannelDto.Response> findAll();
     ChannelDto.Response update(UUID channelId, ChannelDto.UpdatePublicRequest request);
     void delete(UUID channelId);
 }
