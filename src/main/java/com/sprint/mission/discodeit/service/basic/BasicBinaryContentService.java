@@ -60,12 +60,28 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void delete(UUID id) {
         requireNonNull(id, "id");
 
-        // File 구현체가 "없어도 조용히 삭제"라서 서비스에서 예외 보장
         if (binaryContentRepository.findById(id) == null) {
             throw new StatusNotFoundException();
         }
 
         binaryContentRepository.delete(id);
+    }
+
+    @Override
+    public BinaryContent findEntity(UUID id) {
+        requireNonNull(id, "id");
+
+        BinaryContent found = binaryContentRepository.findById(id);
+        if (found == null) {
+            throw new StatusNotFoundException();
+        }
+        return found;
+    }
+
+    @Override
+    public List<BinaryContent> findAllEntitiesByIdIn(List<UUID> ids) {
+        requireNonNull(ids, "ids");
+        return binaryContentRepository.findAllByIdIn(ids);
     }
 
     private BinaryContentResponse toResponse(BinaryContent bc) {

@@ -1,12 +1,12 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
+
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.DuplicationReadStatusException;
 import com.sprint.mission.discodeit.exception.StatusNotFoundException;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
-
 import java.util.*;
 
 @Repository

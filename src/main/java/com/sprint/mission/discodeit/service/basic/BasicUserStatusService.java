@@ -29,7 +29,6 @@ public class BasicUserStatusService implements UserStatusService {
             throw new UserNotFoundException();
         }
 
-        // 중복이면 예외 (요구 예외 목록에 전용 예외가 없어서 IllegalStateException 유지)
         if (userStatusRepository.findByUserId(userId) != null) {
             throw new IllegalStateException("UserStatus already exists for userId=" + userId);
         }
@@ -92,6 +91,25 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
+    public UserStatusResponse updateOnline(UUID userId, boolean online) {
+        requireNonNull(userId, "userId");
+
+        if (userRepository.findById(userId) == null) {
+            throw new UserNotFoundException();
+        }
+
+        UserStatus status = userStatusRepository.findByUserId(userId);
+        if (status == null) {
+            throw new StatusNotFoundException();
+        }
+
+        status.updateOnline(online);
+        userStatusRepository.save(status);
+
+        return toDto(status);
+    }
+
+    @Override
     public void delete(UUID id) {
         requireNonNull(id, "id");
 
@@ -121,7 +139,6 @@ public class BasicUserStatusService implements UserStatusService {
                 status.getUserId(),
                 status.getLastSeenAt(),
                 status.isOnline()
-
         );
     }
 

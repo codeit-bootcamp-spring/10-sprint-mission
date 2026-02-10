@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
+
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.exception.MessageNotFoundException;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
-
 import java.util.*;
 
 @Repository

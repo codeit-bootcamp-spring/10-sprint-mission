@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.ProfileImageCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -48,15 +49,12 @@ public class BasicUserService implements UserService {
             throw new DuplicationEmailException();
         }
 
-        // User 생성/저장 (ID 확정)
         User user = new User(request.userName(), request.email(), request.password());
         userRepository.save(user);
 
-        // UserStatus 생성/저장
         UserStatus status = new UserStatus(user.getId(), Instant.now());
         userStatusRepository.save(status);
 
-        // 프로필 이미지(선택)
         if (request.profileImage() != null) {
             ProfileImageCreateRequest imgReq = request.profileImage();
 
@@ -96,6 +94,26 @@ public class BasicUserService implements UserService {
                     UserStatus status = userStatusRepository.findByUserId(user.getId());
                     if (status == null) throw new StatusNotFoundException();
                     return toResponse(user, status);
+                })
+                .toList();
+    }
+
+    @Override
+    public List<UserDto> findAllDto() {
+        return userRepository.findAll().stream()
+                .map(user -> {
+                    UserStatus status = userStatusRepository.findByUserId(user.getId());
+                    if (status == null) throw new StatusNotFoundException();
+
+                    return new UserDto(
+                            user.getId(),
+                            user.getCreatedAt(),
+                            user.getUpdatedAt(),
+                            user.getName(),
+                            user.getEmail(),
+                            user.getProfileImageId(),
+                            status.isOnline()
+                    );
                 })
                 .toList();
     }
