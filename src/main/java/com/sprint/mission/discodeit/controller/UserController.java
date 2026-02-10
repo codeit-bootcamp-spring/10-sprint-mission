@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.request.user.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequestDTO;
-import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.dto.response.UserStatusResponseDTO;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -23,33 +23,33 @@ public class UserController {
 
     // 사용자 생성
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<UserResponseDTO> creat (@RequestBody UserCreateRequestDTO userCreateRequestDTO){
-        UserResponseDTO newUser = userService.create(userCreateRequestDTO);
+    public ResponseEntity<UserDto> creat (@RequestBody UserCreateRequestDTO userCreateRequestDTO){
+        UserDto newUser = userService.create(userCreateRequestDTO);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
     }
 
     // 사용자 전체 조회
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<UserResponseDTO>> findAll(){
-        List<UserResponseDTO> users = userService.findAll();
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
+    public ResponseEntity<List<UserDto>> findAll(){
+        List<UserDto> users = userService.findAll();
 
         return ResponseEntity.ok(users);
     }
 
     // 사용자 정보 수정
     @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public ResponseEntity<UserResponseDTO> update(@PathVariable UUID id,
-                                                  @RequestBody UserUpdateRequestDTO userUpdateRequestDTO){
+    public ResponseEntity<UserDto> update(@PathVariable UUID id,
+                                          @RequestBody UserUpdateRequestDTO userUpdateRequestDTO){
 
-        UserResponseDTO updateUser = userService.update(id, userUpdateRequestDTO);
+        UserDto updateUser = userService.update(id, userUpdateRequestDTO);
 
         return ResponseEntity.ok(updateUser);
     }
 
     // 사용자 삭제
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<UserResponseDTO> delete (@PathVariable UUID id){
+    public ResponseEntity<UserDto> delete (@PathVariable UUID id){
         userService.delete(id);
 
         return ResponseEntity.noContent().build();

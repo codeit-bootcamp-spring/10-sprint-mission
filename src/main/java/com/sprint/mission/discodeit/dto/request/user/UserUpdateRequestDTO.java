@@ -12,7 +12,7 @@ public record UserUpdateRequestDTO (
     String password,
 
     @NotBlank
-    String nickname,
+    String username,
 
     @Valid
     UserStatusUpdateRequestDTO userStatusCreateRequestDTO,

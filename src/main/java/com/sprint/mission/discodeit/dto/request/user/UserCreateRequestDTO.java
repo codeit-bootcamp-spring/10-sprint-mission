@@ -16,7 +16,7 @@ public record UserCreateRequestDTO (
     String password,
 
     @NotBlank
-    String nickname,
+    String username,
 
     @Valid
     BinaryContentCreateRequestDTO binaryContentCreateRequestDTO

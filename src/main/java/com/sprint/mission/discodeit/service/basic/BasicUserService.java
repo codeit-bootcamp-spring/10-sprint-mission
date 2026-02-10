@@ -5,7 +5,7 @@ import com.sprint.mission.discodeit.dto.request.user.MemberFindRequestDTO;
 import com.sprint.mission.discodeit.dto.request.user.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.user.UserUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.userStatus.UserStatusUpdateRequestDTO;
-import com.sprint.mission.discodeit.dto.response.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
@@ -30,9 +30,9 @@ public class BasicUserService implements UserService {
 
     // 사용자 생성
     @Override
-    public UserResponseDTO create(UserCreateRequestDTO userCreateRequestDTO) {
+    public UserDto create(UserCreateRequestDTO userCreateRequestDTO) {
         isEmailDuplicate(userCreateRequestDTO.email());
-        isNicknameDuplicate(userCreateRequestDTO.nickname());
+        isUsernameDuplicate(userCreateRequestDTO.username());
 
         UserEntity newUser = new UserEntity(userCreateRequestDTO);
         userRepository.save(newUser);
@@ -54,7 +54,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 단건 조회
     @Override
-    public UserResponseDTO findById(UUID userId) {
+    public UserDto findById(UUID userId) {
         UserEntity targetUser = findEntityById(userId);
 
         UserStatusEntity targetUserStatus = userStatusRepository.findByUserId(targetUser.getId());
@@ -64,7 +64,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 전체 조회
     @Override
-    public List<UserResponseDTO> findAll() {
+    public List<UserDto> findAll() {
         return userRepository.findAll().stream()
                 .map(user -> {
                     // 사용자별 상태 조회
@@ -76,7 +76,7 @@ public class BasicUserService implements UserService {
 
     // 특정 채널의 참가자 목록 조회
     @Override
-    public List<UserResponseDTO> findMembersByChannelId(MemberFindRequestDTO memberFindRequestDTO) {
+    public List<UserDto> findMembersByChannelId(MemberFindRequestDTO memberFindRequestDTO) {
         ChannelEntity targetChannel = channelRepository.findById(memberFindRequestDTO.channelId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
@@ -97,7 +97,7 @@ public class BasicUserService implements UserService {
 
     // 사용자 정보 수정
     @Override
-    public UserResponseDTO update(UUID userId, UserUpdateRequestDTO userUpdateRequestDTO) {
+    public UserDto update(UUID userId, UserUpdateRequestDTO userUpdateRequestDTO) {
         UserEntity targetUser = findEntityById(userId);
 
         UserStatusEntity targetUserStatus = userStatusRepository.findByUserId(targetUser.getId());
@@ -111,11 +111,11 @@ public class BasicUserService implements UserService {
                 });
 
         // 닉네임 필드 변경
-        Optional.ofNullable(userUpdateRequestDTO.nickname())
-                .ifPresent(nickname -> {
-                    validateString(nickname, "[닉네임 변경 실패] 올바른 닉네임 형식이 아닙니다.");
-                    validateDuplicateValue(targetUser.getNickname(), nickname, "[닉네임 변경 실패] 현재 닉네임과 일치합니다.");
-                    targetUser.updateNickname(nickname);
+        Optional.ofNullable(userUpdateRequestDTO.username())
+                .ifPresent(username -> {
+                    validateString(username, "[닉네임 변경 실패] 올바른 닉네임 형식이 아닙니다.");
+                    validateDuplicateValue(targetUser.getUsername(), username, "[닉네임 변경 실패] 현재 닉네임과 일치합니다.");
+                    targetUser.updateUsername(username);
                 });
 
         // 상태 필드 변경
@@ -183,8 +183,8 @@ public class BasicUserService implements UserService {
     }
 
     // 유효성 검사 (이름 중복)
-    public void isNicknameDuplicate(String nickname) {
-        if (userRepository.existsByNickname(nickname))
+    public void isUsernameDuplicate(String username) {
+        if (userRepository.existsByUsername(username))
             throw new IllegalArgumentException("이미 존재하는 이름입니다.");
     }
 
@@ -195,15 +195,15 @@ public class BasicUserService implements UserService {
     }
 
     // 엔티티 -> 응답 DTO 변환
-    public UserResponseDTO toResponseDTO(UserEntity user, UserStatusEntity userStatus) {
-        return UserResponseDTO.builder()
+    public UserDto toResponseDTO(UserEntity user, UserStatusEntity userStatus) {
+        return UserDto.builder()
                 .id(user.getId())
                 .email(user.getEmail())
-                .nickname(user.getNickname())
+                .username(user.getUsername())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .profileId(user.getProfileId())
-                .status(userStatus.getStatus())
+                .online(userStatus.getStatus() == UserStatusType.ONLINE)
                 .build();
     }
 }

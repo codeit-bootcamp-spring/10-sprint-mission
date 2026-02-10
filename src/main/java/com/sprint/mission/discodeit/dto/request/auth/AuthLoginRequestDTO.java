@@ -12,7 +12,7 @@ public record AuthLoginRequestDTO (
     UUID userId,
 
     @NotBlank
-    String nickname,
+    String username,
 
     @NotBlank
     String password
