@@ -12,9 +12,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserResponseDto {
     private UUID userId;
-    private String name;
+    private String username;
     private String email;
-    private UUID profileImageId;
+    private UUID profileId;
     private Instant createdAt;
     private Instant updatedAt;
     private List<UUID> messageList;
@@ -25,9 +25,9 @@ public class UserResponseDto {
     public String toString() {
         return "UserResponseDto{" +
                 "userId=" + userId +
-                ", name='" + name + '\'' +
+                ", name='" + username + '\'' +
                 ", email='" + email + '\'' +
-                ", profileImageId=" + profileImageId +
+                ", profileImageId=" + profileId +
                 ", messageList=" + messageList +
                 ", friendsList=" + friendsList +
                 ", online=" + online +

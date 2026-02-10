@@ -25,7 +25,7 @@ async function fetchAndRenderUsers() {
 // Fetch user profile image
 async function fetchUserProfile(profileId) {
     try {
-        const response = await fetch(`${ENDPOINTS.BINARY_CONTENT}?binaryContentId=${profileImageId}`);
+        const response = await fetch(`${ENDPOINTS.BINARY_CONTENT}?binaryContentId=${profileId}`);
         if (!response.ok) throw new Error('Failed to fetch profile');
         const profile = await response.json();
 
@@ -46,17 +46,15 @@ async function renderUserList(users) {
         const userElement = document.createElement('div');
         userElement.className = 'user-item';
 
-        let profileUrl = '/default-avatar.png'; // 기본값 설정
-
-        // 만약 사진이 있다면 사진 불러오기
-        if (user.profileImageId) {
-            profileUrl = await fetchUserProfile(user.profileImageId);
-        }
+        // Get profile image URL
+        const profileUrl = user.profileId ?
+            await fetchUserProfile(user.profileId) :
+            '/default-avatar.png';
 
         userElement.innerHTML = `
-            <img src="${profileUrl}" alt="${user.name}" class="user-avatar">
+            <img src="${profileUrl}" alt="${user.username}" class="user-avatar">
             <div class="user-info">
-                <div class="user-name">${user.name}</div>
+                <div class="user-name">${user.username}</div>
                 <div class="user-email">${user.email}</div>
             </div>
             <div class="status-badge ${user.online ? 'online' : 'offline'}">
