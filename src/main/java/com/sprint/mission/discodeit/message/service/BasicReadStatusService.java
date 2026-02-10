@@ -59,11 +59,7 @@ public class BasicReadStatusService implements ReadStatusService {
        return    readStatusRepository.findAll()
                 .stream()
                .filter(rs -> rs.getUserId().equals(userId))
-               .map(rs -> new ReadStatusResponse(
-                        rs.getUserId(),
-                        rs.getChannelId(),
-                        rs.getLastReadAt()
-                )).toList();
+               .map(readStatusMapper::convertToResponse).toList();
 
     }
 

@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.binarycontent.entity;
 
-public enum BinaryContentType {
+import java.io.Serializable;
+
+public enum BinaryContentType implements Serializable {
     MESSAGE,
     PROFILE
 }

@@ -28,9 +28,10 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelResponse createPrivate(ChannelCreatePrivateRequest request) {
-        Channel channel = new Channel(request.type(), request.name(), request.description(),request.ownerId());
+        Channel channel = new Channel(request.type(), request.name(), request.description(),request.userIds(),request.ownerId());
 
         Channel savedChannel = channelRepository.save(channel);
+
 
         for(UUID userId : channel.getParticipantUserIds()){
             ReadStatus readStatus = new ReadStatus(userId,channel.getId());
@@ -124,8 +125,8 @@ public class BasicChannelService implements ChannelService {
                  resultChannels.add(new ChannelResponse(
                          channel.getId(),
                          channel.getType().toString(),
-                         null,
-                         null,
+                         channel.getName(),
+                         channel.getDescription(),
                          lastMessageAt,
                          participantUserIds
                  ));
