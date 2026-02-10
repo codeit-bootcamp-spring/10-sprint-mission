@@ -34,6 +34,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
+    public BinaryContent findEntityById(UUID id) {
+        return findBinaryContentById(id);
+    }
+
+    @Override
     public List<BinaryContentDto.Response> findAllIdIn(List<UUID> ids) {
         return binaryContentRepository.findAll().stream()
                 .filter(content -> ids.contains(content.getId()))

@@ -20,7 +20,7 @@ public class BinaryContent implements Serializable {
         this.id = id;
         this.fileName = fileName;
         this.data = data;
-        this.createdAt = Instant.now();
+        this.createdAt = (createdAt != null) ? createdAt : Instant.now();
     }
 
     @Override

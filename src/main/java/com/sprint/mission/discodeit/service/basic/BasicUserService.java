@@ -148,6 +148,8 @@ public class BasicUserService implements UserService {
         }
         return new UserDto.Response(
                 user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getProfileId(),

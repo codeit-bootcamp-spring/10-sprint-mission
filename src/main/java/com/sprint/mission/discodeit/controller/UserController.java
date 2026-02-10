@@ -7,13 +7,14 @@ import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
@@ -41,9 +42,9 @@ public class UserController {
     }
 
     // 모든 유저 조회
-    @RequestMapping(method = RequestMethod.GET)
-    public List<UserDto.Response> findAll() {
-        return userService.findAll();
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
+    public ResponseEntity<List<UserDto.Response>> findAll() {
+        return ResponseEntity.ok(userService.findAll());
     }
 
     // 유저 온라인 상태 업데이트
