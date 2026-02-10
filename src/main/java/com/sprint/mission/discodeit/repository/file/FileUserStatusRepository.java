@@ -24,7 +24,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
 
 	@Override
 	public UserStatus save(UserStatus userStatus) {
-		return fileIo.save(userStatus.getUserId(), userStatus);
+		return fileIo.save(userStatus.getId(), userStatus);
 	}
 
 	@Override

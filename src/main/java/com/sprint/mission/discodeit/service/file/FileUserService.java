@@ -6,9 +6,9 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import com.sprint.mission.discodeit.dto.UserPatchDTO;
-import com.sprint.mission.discodeit.dto.UserPostDTO;
-import com.sprint.mission.discodeit.dto.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.UserPatchDto;
+import com.sprint.mission.discodeit.dto.UserPostDto;
+import com.sprint.mission.discodeit.dto.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.util.FileIo;
@@ -29,7 +29,7 @@ public class FileUserService implements UserService {
 	}
 
 	@Override
-	public User create(UserPostDTO userPostDTO) {
+	public UserResponseDto create(UserPostDto userPostDTO) {
 		//        User newUser = new User(nickName, userName, email, phoneNumber);
 		//
 		//        List<User> users = fileIo.load();
@@ -41,7 +41,7 @@ public class FileUserService implements UserService {
 	}
 
 	@Override
-	public UserResponseDTO findById(UUID userId) {
+	public UserResponseDto findById(UUID userId) {
 		//        return fileIo.load().stream()
 		//            .filter(u -> u.getId().equals(id))
 		//            .findFirst()
@@ -52,7 +52,7 @@ public class FileUserService implements UserService {
 	}
 
 	@Override
-	public UserResponseDTO findByUserName(String userName) {
+	public UserResponseDto findByUserName(String userName) {
 		//        return fileIo.load().stream()
 		//            .filter(u -> u.getUserName().equals(userName))
 		//            .findFirst()
@@ -63,13 +63,13 @@ public class FileUserService implements UserService {
 	}
 
 	@Override
-	public List<UserResponseDTO> findAll() {
+	public List<UserResponseDto> findAll() {
 		//        return fileIo.load();
 		return null;
 	}
 
 	@Override
-	public User updateUser(UserPatchDTO userPatchDTO) {
+	public UserResponseDto updateUser(UUID userId, UserPatchDto userPatchDTO) {
 		//        User updatedUser = this.findById(userId);
 		//
 		//        // input이 null이 아닌 필드 업데이트

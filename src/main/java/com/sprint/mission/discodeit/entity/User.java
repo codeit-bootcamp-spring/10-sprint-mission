@@ -57,6 +57,11 @@ public class User extends Base {
 		updateUpdatedAt(Instant.now());
 	}
 
+	public void updatePassword(String password) {
+		this.password = password;
+		updateUpdatedAt(Instant.now());
+	}
+
 	public void addChannelId(UUID channelId) {
 		this.channelIds.add(channelId);
 	}
