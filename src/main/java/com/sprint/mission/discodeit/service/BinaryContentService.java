@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.sprint.mission.discodeit.dto.BinaryContentPostDTO;
-import com.sprint.mission.discodeit.dto.BinaryContentResponseDTO;
+import com.sprint.mission.discodeit.dto.BinaryContentPostDto;
+import com.sprint.mission.discodeit.dto.BinaryContentResponseDto;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 
@@ -21,13 +21,13 @@ public class BinaryContentService {
 
 	private final BinaryContentMapper binaryContentMapper;
 
-	public BinaryContentResponseDTO create(BinaryContentPostDTO binaryContentPostDTO) {
+	public BinaryContentResponseDto create(BinaryContentPostDto binaryContentPostDto) {
 		return binaryContentMapper.toResponseDto(
-			binaryContentRepository.save(binaryContentMapper.fromDto(binaryContentPostDTO))
+			binaryContentRepository.save(binaryContentMapper.fromDto(binaryContentPostDto))
 		);
 	}
 
-	public BinaryContentResponseDTO findById(UUID id) {
+	public BinaryContentResponseDto findById(UUID id) {
 		return binaryContentMapper.toResponseDto(binaryContentRepository.findById(id)
 			.orElseThrow(() ->
 				new NoSuchElementException("id가 " + id + "인 BinaryContent가 존재하지 않습니다.")
@@ -35,7 +35,7 @@ public class BinaryContentService {
 		);
 	}
 
-	public List<BinaryContentResponseDTO> findAllByIdIn(List<UUID> idList) {
+	public List<BinaryContentResponseDto> findAllByIdIn(List<UUID> idList) {
 		return binaryContentRepository.findByIdIn(idList).stream()
 			.map(binaryContentMapper::toResponseDto)
 			.collect(Collectors.toList());
