@@ -148,10 +148,12 @@ async function fetchUserById(userId) {
 // 메시지 전송
 sendMessageBtn.addEventListener('click', async () => {
     const input = document.getElementById('messageInput');
-    if (!input.value.trim()) return;
+    if (!input.value.trim() && fileInput.files.length === 0) return;
 
     const content = input.value;
     input.value = '';
+
+    const attachments = await filesToBinaryDtos(fileInput.files);
 
     const res = await fetch(
         `${ENDPOINTS.MESSAGES}/${currentChannelId}/messages`,
@@ -163,20 +165,22 @@ sendMessageBtn.addEventListener('click', async () => {
             },
             body: JSON.stringify({
                 content,
-                attachmentsIds: []
+                attachments
             })
         }
     );
 
-    // 서버가 생성한 메시지 반환한다고 가정
     const savedMessage = await res.json();
 
     const ul = document.getElementById('messageList');
     const el = await createMessageElement(savedMessage);
     ul.appendChild(el);
 
-    // 자연스럽게 아래로
     ul.scrollTop = ul.scrollHeight;
+
+    // 초기화
+    fileInput.value = '';
+    attachmentPreview.innerHTML = '';
 });
 
 //send message with enter
@@ -267,13 +271,41 @@ async function createMessageElement(m) {
         <img src="${profileUrl}" class="message-avatar">
         <div class="message-content">
             <div class="message-author">${author.username}</div>
-            <div class="message-text">${m.content}</div>
+            <div class="message-text">${m.content ?? ''}</div>
             <div class="message-time">
                 ${new Date(m.createdAt).toLocaleTimeString()}
             </div>
         </div>
     `;
+    /* ==========================
+       📎 여기서 첨부파일 불러오기
+       ========================== */
+    if (m.attachmentsIds && m.attachmentsIds.length > 0) {
+        const contents = await fetchBinaryContents(m.attachmentsIds);
 
+        const attachmentsDiv = document.createElement('div');
+        attachmentsDiv.className = 'message-attachments';
+
+        contents.forEach(c => {
+            const url = `data:${c.contentType};base64,${c.bytes}`;
+
+            if (c.contentType.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = url;
+                img.className = 'message-attachment-img';
+                attachmentsDiv.appendChild(img);
+            } else {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = c.fileName;
+                link.innerText = `📎 ${c.fileName}`;
+                attachmentsDiv.appendChild(link);
+            }
+        });
+
+        li.querySelector('.message-content').appendChild(attachmentsDiv);
+    }
+    /* ========================== */
     return li;
 }
 const signupView = document.getElementById('signup-view');
@@ -312,6 +344,7 @@ signupBtn.addEventListener('click', async () => {
             const bytes = await fileToBytes(profileFile);
             profileDto = {
                 fileName: profileFile.name,
+                contentType: profileFile.type|| "application/octet-stream",
                 bytes
             };
         }
@@ -343,3 +376,45 @@ signupBtn.addEventListener('click', async () => {
 });
 
 document.getElementById('chatArea').style.display = 'none';
+async function filesToBinaryDtos(files) {
+    const dtos = [];
+
+    for (const file of files) {
+        const bytes = await fileToBytes(file);
+        dtos.push({
+            fileName: file.name,
+            contentType: file.type|| "application/octet-stream",
+            bytes
+        });
+    }
+
+    return dtos;
+}
+const fileInput = document.getElementById('fileInput');
+const attachmentPreview = document.getElementById('attachmentPreview');
+
+fileInput.addEventListener('change', () => {
+    attachmentPreview.innerHTML = '';
+
+    for (const file of fileInput.files) {
+        const div = document.createElement('div');
+        div.className = 'attachment-item';
+        div.innerText = file.name;
+        attachmentPreview.appendChild(div);
+    }
+});
+async function fetchBinaryContents(ids) {
+    if (!ids || ids.length === 0) return [];
+
+    const params = ids
+        .map(id => `binaryContentIds=${id}`)
+        .join('&');
+
+    const res = await fetch(
+        `${ENDPOINTS.BINARY_CONTENT}-all?${params}`
+    );
+
+    if (!res.ok) return [];
+
+    return res.json();
+}

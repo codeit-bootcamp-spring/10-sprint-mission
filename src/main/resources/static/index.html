@@ -88,9 +88,15 @@
                 <div id="messageList"></div>
 
                 <div class="message-input-area">
+                    <label class="attach-btn">
+                        ➕
+                        <input type="file" id="fileInput" multiple hidden>
+                    </label>
                     <textarea id="messageInput" rows="2" placeholder="메시지 입력"></textarea>
                     <button id="sendMessageBtn">전송</button>
                 </div>
+                <!-- 첨부파일 미리보기 -->
+                <div id="attachmentPreview" class="attachment-preview"></div>
             </div>
 
 
