@@ -1,100 +1,118 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.util.SerializedFileUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+@Repository
 public class FileChannelRepository implements ChannelRepository {
-    private static final String FILE_PREFIX = "channel";
-    private static final String ENTITY_NAME = "채널";
+    private final Path DIRECTORY;
+    private final String FILE_PREFIX = "channel-";
+    private final String EXTENSION = ".ser";
 
-    private final Map<UUID, Channel> data; // 빠른 조회를 위한 컬렉션
-    private final Path channelDir;
-
-    public FileChannelRepository(Path baseDir) {
-        this.data = new HashMap<>();
-        this.channelDir = baseDir.resolve(FILE_PREFIX);
-        try {
-            // 파일이 저장될 디렉토리가 존재하지 않을 경우 폴더 생성
-            Files.createDirectories(channelDir);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public FileChannelRepository(
+            @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+    ) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory, Channel.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 저장소 초기화에 실패했습니다.");
+            }
         }
-        // 생성 시 디렉토리와 컬렉션 동기화
-        loadAllFromDirectory();
     }
 
-    private Path channelFilePath(UUID channelId) {
-        // 채널을 구분하기 위한 파일 경로 생성
-        return channelDir.resolve(FILE_PREFIX + "-" + channelId + ".ser");
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(FILE_PREFIX + id + EXTENSION);
     }
 
     @Override
     public Channel save(Channel channel) {
-        // 경로 생성 (channel-id.ser)
-        Path filePath = channelFilePath(channel.getId());
-
-        try (FileOutputStream fos = new FileOutputStream(filePath.toFile());
-             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
-            // 파일 저장
+        Path path = resolvePath(channel.getId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
             oos.writeObject(channel);
-            data.put(channel.getId(), channel);
-            return channel;
         } catch (IOException e) {
-            throw new RuntimeException("채널 파일 저장을 실패했습니다.");
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 저장에 실패했습니다.");
         }
+        return channel;
     }
 
     @Override
-    public Optional<Channel> findById(UUID channelId) {
-        return Optional.ofNullable(data.get(channelId));
+    public Optional<Channel> findById(UUID id) {
+        Channel channelNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                channelNullable = (Channel) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일을 읽는 중 오류가 발생했습니다.");
+            }
+        }
+        return Optional.ofNullable(channelNullable);
     }
 
     @Override
     public List<Channel> findAll() {
-        return new ArrayList<>(data.values());
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
+                    .filter(path -> {
+                        String fileName = path.getFileName().toString();
+                        return fileName.startsWith(FILE_PREFIX) && fileName.endsWith(EXTENSION);
+                    })
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (Channel) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일을 읽는 중 오류가 발생했습니다.");
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 목록 조회에 실패했습니다.");
+        }
     }
 
     @Override
-    public void delete(UUID channelId) {
-        if (!data.containsKey(channelId)) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
-
-        Path filePath = channelFilePath(channelId);
-        SerializedFileUtils.deleteFileOrThrow(filePath, ENTITY_NAME);
-        data.remove(channelId);
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
     }
 
-    public Channel loadByIdFromFile(UUID channelId) {
-        // 경로 생성 (channel-id.ser)
-        Path filePath = channelFilePath(channelId);
-        // 파일 역직렬화
-        Channel channel = (Channel) SerializedFileUtils.deserialize(filePath, ENTITY_NAME);
-        // 컬렉션과 동기화
-        data.put(channel.getId(), channel);
-        return channel;
-    }
-
-    private void loadAllFromDirectory() {
-        data.clear();
-
-        for (Object object : SerializedFileUtils.deserializeAll(channelDir, FILE_PREFIX, ENTITY_NAME)) {
-            Channel channel = (Channel) object;
-            data.put(channel.getId(), channel);
+    @Override
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 삭제에 실패했습니다.");
         }
     }
 }
