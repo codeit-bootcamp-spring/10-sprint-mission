@@ -22,7 +22,7 @@ public class ReadStatusController {
 
     // 메시지 수신 정보 생성
     @RequestMapping(method = RequestMethod.POST, path = "")
-    public ResponseEntity<ReadStatusDto.ReadStatusResponse> create(
+    public ResponseEntity<ReadStatusDto.ReadStatusResponse> createReadStatus(
             @RequestBody ReadStatusDto.ReadStatusRequest request
     ) {
         ReadStatusDto.ReadStatusResponse created =
@@ -32,7 +32,7 @@ public class ReadStatusController {
 
     // 메시지 수신 정보 수정
     @RequestMapping(method = RequestMethod.PUT, path = "/{readStatusId}")
-    public ResponseEntity<ReadStatusDto.ReadStatusResponse> update(
+    public ResponseEntity<ReadStatusDto.ReadStatusResponse> updateReadStatus(
             @PathVariable UUID readStatusId,
             @RequestBody Map<String, String> body
     ) {

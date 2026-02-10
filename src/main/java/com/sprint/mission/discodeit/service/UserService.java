@@ -10,7 +10,7 @@ public interface UserService {
     // 사용자 관련 기능 정의
     UserDto.UserResponse create(UserDto.UserRequest request, String filePath);
     UserDto.UserResponse findById(UUID id);
-    List<UserDto.UserResponse> findAll();
+    List<UserDto.FindAllUserResponse> findAll();
     UserDto.UserResponse update(UUID userId, UserDto.UserRequest request, String filePath);
     void delete(UUID userId);
     void joinChannel(UUID userId, UUID channelId);

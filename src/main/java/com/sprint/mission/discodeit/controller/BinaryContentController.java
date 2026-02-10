@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.service.helper.EntityFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -17,13 +19,14 @@ import java.util.UUID;
 public class BinaryContentController {
 
     private final BinaryContentService binaryContentService;
+    private final EntityFinder entityFinder;
 
     // 바이너리 파일 1개 조회
-    @RequestMapping(method = RequestMethod.GET, path = "/{binaryContentId}")
-    public ResponseEntity<BinaryContentDto.BinaryContentResponse> findById(
-            @PathVariable UUID binaryContentId
+    @RequestMapping(method = RequestMethod.GET, path = "/api/binaryContent/find")
+    public ResponseEntity<BinaryContent> findById(
+            @RequestParam UUID binaryContentId
     ) {
-        BinaryContentDto.BinaryContentResponse data = binaryContentService.findById(binaryContentId);
+        BinaryContent data = entityFinder.getBinaryContent(binaryContentId);
         return new ResponseEntity<>(data, HttpStatus.OK);
     }
 

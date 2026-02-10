@@ -1,9 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final UserStatusService userStatusService;
 
     // 회원가입
     @RequestMapping(method = RequestMethod.POST, path = "/signup")
@@ -41,9 +44,9 @@ public class UserController {
     }
 
     // 전체 회원 조회
-    @RequestMapping(method = RequestMethod.GET, path = "")
-    public ResponseEntity<List<UserDto.UserResponse>> findAllUsers() {
-        List<UserDto.UserResponse> userDatas = userService.findAll();
+    @RequestMapping(method = RequestMethod.GET, path = "/api/user/findAll")
+    public ResponseEntity<List<UserDto.FindAllUserResponse>> findAllUsers() {
+        List<UserDto.FindAllUserResponse> userDatas = userService.findAll();
         return new ResponseEntity<>(userDatas, HttpStatus.OK);
     }
 
@@ -67,23 +70,13 @@ public class UserController {
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
 
-    // 채널 참가
-    @RequestMapping(method = RequestMethod.POST, path = "/{userId}/channels/{channelId}")
-    public ResponseEntity<Void> joinChannel(
+    // 유저 온라인 상태 갱신
+    @RequestMapping(method = RequestMethod.PATCH, path = "/{userId}/status")
+    public ResponseEntity<Void> updateStatus(
             @PathVariable UUID userId,
-            @PathVariable UUID channelId
+            @RequestBody UserStatusDto.UserStatusUpdateRequest request
     ) {
-        userService.joinChannel(userId, channelId);
-        return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-    }
-
-    // 채널 탈퇴
-    @RequestMapping(method = RequestMethod.DELETE, path = "/{userId}/channels/{channelId}")
-    public ResponseEntity<Void> leaveChannel(
-            @PathVariable UUID userId,
-            @PathVariable UUID channelId
-    ) {
-        userService.leaveChannel(userId, channelId);
+        userStatusService.updateByUserId(userId, request.status());
         return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
 

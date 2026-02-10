@@ -40,18 +40,18 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatusDto.UserStatusResponse findById(UUID userStatusId){
+    public UserStatusDto.UserStatusResponse findById(UUID userStatusId) {
         Objects.requireNonNull(userStatusId, "상태 ID가 유효하지 않습니다.");
         return UserStatusDto.UserStatusResponse.from(entityFinder.getUserStatus(userStatusId));
     }
 
     @Override
-    public List<UserStatusDto.UserStatusResponse> findAll(){
+    public List<UserStatusDto.UserStatusResponse> findAll() {
         return userStatusRepository.findAll().stream().map(UserStatusDto.UserStatusResponse::from).toList();
     }
 
     @Override
-    public UserStatusDto.UserStatusResponse update(UUID userStatusId, UserStatus.Status status){
+    public UserStatusDto.UserStatusResponse update(UUID userStatusId, UserStatus.Status status) {
         UserStatus userStatus = entityFinder.getUserStatus(userStatusId);
         Optional.ofNullable(status).ifPresent(userStatus::updateStatus);
         userStatusRepository.save(userStatus);
@@ -59,7 +59,15 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public void delete(UUID userStatusId){
+    public UserStatusDto.UserStatusResponse updateByUserId(UUID userId, UserStatus.Status status) {
+        UserStatus userStatus = entityFinder.getStatusByUser(userId);
+        Optional.ofNullable(status).ifPresent(userStatus::updateStatus);
+        userStatusRepository.save(userStatus);
+        return UserStatusDto.UserStatusResponse.from(userStatus);
+    }
+
+    @Override
+    public void delete(UUID userStatusId) {
         entityFinder.getUserStatus(userStatusId);
         userStatusRepository.delete(userStatusId);
 

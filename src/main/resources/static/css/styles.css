@@ -1,0 +1,110 @@
+:root{
+    --bg:#f6f7fb;
+    --card:#ffffff;
+    --text:#111827;
+    --muted:#6b7280;
+    --border:#e5e7eb;
+    --shadow: 0 10px 24px rgba(17,24,39,.08);
+    --radius:16px;
+    --online:#22c55e;
+    --offline:#9ca3af;
+}
+
+*{ box-sizing:border-box; }
+
+body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+
+.page{
+    min-height:100vh;
+    padding:48px 16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:28px;
+}
+
+h1{
+    margin:0;
+    font-size:48px;
+    letter-spacing:-0.02em;
+    font-weight:800;
+}
+
+.card{
+    width:min(980px, 100%);
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+}
+
+.row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:22px 28px;
+}
+.row + .row{
+    border-top:1px solid var(--border);
+}
+
+.left{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    min-width:0;
+}
+
+.avatar{
+    width:64px;
+    height:64px;
+    border-radius:50%;
+    object-fit:cover;
+    border:1px solid var(--border);
+    flex:0 0 auto;
+    background:#fff;
+}
+
+.meta{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    min-width:0;
+}
+
+.name{
+    font-size:26px;
+    font-weight:800;
+    line-height:1.1;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.email{
+    font-size:18px;
+    color:var(--muted);
+    line-height:1.1;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.badge{
+    padding:10px 18px;
+    border-radius:999px;
+    font-weight:800;
+    color:#fff;
+    font-size:16px;
+    flex:0 0 auto;
+    background:var(--online);
+}
+
+.badge.is-online{ background:var(--online); }
+.badge.is-offline{ background:var(--offline); }

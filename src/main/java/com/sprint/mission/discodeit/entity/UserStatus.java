@@ -41,6 +41,7 @@ public class UserStatus extends BaseEntity{
 
     public void updateStatus(Status status) {
         this.status = status;
+        this.updateTimestamp();
     }
     // 로그인
     public void userLogin() {

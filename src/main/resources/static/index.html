@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>사용자 목록</title>
+
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" th:href="@{/css/styles.css}" href="/css/styles.css" />
+</head>
+
+<body>
+<main class="page">
+    <h1>사용자 목록</h1>
+
+    <!-- ✅ JS가 여기에 row들을 채워 넣음 -->
+    <section class="card" id="userList"></section>
+</main>
+
+<script th:src="@{/js/script.js}" src="/js/script.js"></script>
+</body>
+</html>

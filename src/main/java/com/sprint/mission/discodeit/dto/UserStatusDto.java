@@ -8,13 +8,19 @@ public class UserStatusDto {
 
     public record UserStatusRequest(
             UUID userId
-    ) {}
+    ) {
+    }
+
+    public record UserStatusUpdateRequest(
+            UserStatus.Status status
+    ) {
+    }
 
     public record UserStatusResponse(
             UUID userStatusId,
             UUID userId,
             UserStatus.Status status
-    ){
+    ) {
         public static UserStatusResponse from(UserStatus userStatus) {
             return new UserStatusResponse(
                     userStatus.getId(),

@@ -14,6 +14,30 @@ public class UserDto {
             String password
     ) {}
 
+    // 전체 호출 응답
+    public record FindAllUserResponse(
+            UUID userId,
+            Instant createdAt,
+            Instant updatedAt,
+            String username,
+            String email,
+            UUID profileId,
+            Boolean online
+    ) {
+        public static FindAllUserResponse from(User user, UserStatus userStatus){
+            return new FindAllUserResponse(
+                    user.getId(),
+                    user.getCreatedAt(),
+                    user.getUpdatedAt(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.getBinaryContentId(),
+                    userStatus.isOnline()
+            );
+        }
+    }
+
+
     // 응답 DTO -- 온라인 상태 포함, 패스워드 제외
     public record UserResponse(
             UUID userId,

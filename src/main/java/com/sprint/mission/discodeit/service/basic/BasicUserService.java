@@ -64,11 +64,11 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserDto.UserResponse> findAll() {
+    public List<UserDto.FindAllUserResponse> findAll() {
         return userRepository.findAll().stream()
                 .map(user -> {
                     UserStatus status = entityFinder.getStatusByUser(user.getId());
-                    return UserDto.UserResponse.from(user, status);
+                    return UserDto.FindAllUserResponse.from(user, status);
                 })
                 .toList();
     }

@@ -12,5 +12,6 @@ public interface UserStatusService {
     UserStatusDto.UserStatusResponse findById(UUID userStatusId);
     List<UserStatusDto.UserStatusResponse> findAll();
     UserStatusDto.UserStatusResponse update(UUID userStatusId, UserStatus.Status status);
+    UserStatusDto.UserStatusResponse updateByUserId(UUID userId, UserStatus.Status status);
     void delete(UUID userStatusId);
 }
