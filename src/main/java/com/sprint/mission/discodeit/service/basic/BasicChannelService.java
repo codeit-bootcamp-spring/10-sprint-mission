@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.IdGenerator;
 
 import java.io.IOException;
 import java.util.List;
@@ -26,6 +27,7 @@ public class BasicChannelService extends BasicDomainService<Channel> implements 
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
+    private final IdGenerator idGenerator;
 
     @Override
     public ChannelResponse create(ChannelCreateRequest model) throws IOException {
@@ -92,7 +94,7 @@ public class BasicChannelService extends BasicDomainService<Channel> implements 
     }
 
     private ChannelResponse createPrivateChannel(PrivateChannelCreateRequest model) throws IOException {
-        Channel channel = new Channel(model.userIdsInPrivateChannel());
+        Channel channel = new Channel(idGenerator.generateId(), model.userIdsInPrivateChannel());
         channelRepository.save(channel);
         ChannelResponse response = channel.toResponse();
         response.userIdsInPrivateChannel()
@@ -103,7 +105,7 @@ public class BasicChannelService extends BasicDomainService<Channel> implements 
     }
 
     private ChannelResponse createPublicChannel(PublicChannelCreateRequest model) throws IOException {
-        Channel channel = new Channel(model.channelName(), model.description());
+        Channel channel = new Channel(idGenerator.generateId(), model.channelName(), model.description());
         channelRepository.save(channel);
         return channel.toResponse();
     }
