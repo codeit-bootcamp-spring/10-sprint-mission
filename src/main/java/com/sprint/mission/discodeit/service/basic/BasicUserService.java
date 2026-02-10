@@ -41,7 +41,7 @@ public class BasicUserService implements UserService {
         if(profile == null) {
             user = new User(request.userName(), request.userEmail(), request.userPassword() ,null);
         } else {
-            BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
+            BinaryContent binaryContent = new BinaryContent(profile.bytes(), profile.contentType());
             binaryContentRepository.save(binaryContent);
             user = new User(request.userName(), request.userEmail(), request.userPassword(), binaryContent.getId());
         }
@@ -89,17 +89,10 @@ public class BasicUserService implements UserService {
                         user.updateUserPassword(password);
                 });
 
-        if (request.online() != null && request.online()) {
-            userStatusRepository.findAll().stream()
-                    .filter(us -> user.getId().equals(us.getUserId()))
-                    .findFirst()
-                    .ifPresent(UserStatus::updateLastSeenAt); // 시간을 '지금'으로 갱신
-        }
-
         BinaryContentParam profile = request.profileImage();
         if(profile != null) {
             validateProfileImageParam(profile);
-            BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
+            BinaryContent binaryContent = new BinaryContent(profile.bytes(), profile.contentType());
             user.updateProfileImage(binaryContent.getId());
         }
 
@@ -182,7 +175,7 @@ public class BasicUserService implements UserService {
 
     private void validateProfileImageParam(BinaryContentParam profile) {
         if (profile != null) {
-            if(profile.data() == null || profile.data().length == 0) {
+            if(profile.bytes() == null || profile.bytes().length == 0) {
                 throw new IllegalArgumentException("프로필 이미지 데이터가 비어있습니다.");
             }
             if(profile.contentType() == null || profile.contentType().isBlank()) {

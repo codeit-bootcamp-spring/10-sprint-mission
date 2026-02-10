@@ -80,8 +80,8 @@ public class BasicReadStatusService implements ReadStatusService {
     public static ReadStatusResponseDto toDto(ReadStatus readStatus) {
         return new ReadStatusResponseDto(
                 readStatus.getId(),
-                readStatus.getChannelId(),
                 readStatus.getUserId(),
+                readStatus.getChannelId(),
                 readStatus.getLastReadAt()
         );
     }

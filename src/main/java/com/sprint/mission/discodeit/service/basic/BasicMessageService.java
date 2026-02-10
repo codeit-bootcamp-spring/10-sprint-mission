@@ -45,7 +45,7 @@ public class BasicMessageService implements MessageService {
         List<UUID> attachmentIds = new ArrayList<>(attachments.size());
 
         for(BinaryContentParam a : attachments) {
-            BinaryContent saved = binaryContentRepository.save(new BinaryContent(a.data(), a.contentType()));
+            BinaryContent saved = binaryContentRepository.save(new BinaryContent(a.bytes(), a.contentType()));
             attachmentIds.add(saved.getId());
         }
 
@@ -117,7 +117,7 @@ public class BasicMessageService implements MessageService {
             if (a == null) {
                 throw new IllegalArgumentException("attachments에 null 요소가 포함될 수 없습니다.");
             }
-            if (a.data() == null || a.data().length == 0) {
+            if (a.bytes() == null || a.bytes().length == 0) {
                 throw new IllegalArgumentException("첨부파일 데이터가 비어있습니다.");
             }
             if (a.contentType() == null || a.contentType().isBlank()) {
