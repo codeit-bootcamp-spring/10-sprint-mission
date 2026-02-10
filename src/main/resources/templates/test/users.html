@@ -302,6 +302,17 @@
         }
     }
 
+    // [추가] ID 복사를 위한 헬퍼 함수
+    function copyToClipboard(text) {
+        const t = document.createElement("textarea");
+        t.value = text;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand('copy');
+        document.body.removeChild(t);
+        alert('ID가 클립보드에 복사되었습니다!');
+    }
+
     // 사용자 목록 로드
     async function loadUsers() {
         try {
@@ -316,6 +327,7 @@
                 const statusClass = u.Online ? 'online' : 'offline';
                 const statusText = u.Online ? 'Online' : 'Offline';
 
+                // ID 복사 버튼 추가
                 tbody.innerHTML += `
                     <tr>
                         <td>
@@ -326,7 +338,8 @@
                             <div class="text-muted small">${u.email}</div>
                         </td>
                         <td>
-                            <code class="small text-muted">${u.id.substring(0,8)}...</code>
+                            <code class="small text-muted">${u.id}</code>
+                            <button class="btn btn-sm btn-light p-1" onclick="copyToClipboard('${u.id}')">📋</button>
                         </td>
                         <td>
                             <span class="status-badge ${statusClass}">${statusText}</span>
