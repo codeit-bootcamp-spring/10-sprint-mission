@@ -12,13 +12,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class DiscodeitApplication {
 
     public static void main(String[] args) {
-
-        ConfigurableApplicationContext context = SpringApplication.run(DiscodeitApplication.class, args);
-
-        FileIOHelper.flushData();
-
-        UserService userService = context.getBean(UserService.class);
-        ChannelService channelService = context.getBean(ChannelService.class);
-        MessageService messageService = context.getBean(MessageService.class);
+        SpringApplication.run(DiscodeitApplication.class, args);
     }
 }
