@@ -13,13 +13,13 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/messages")
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class MessageController {
     private final MessageService messageService;
 
     // 메시지 생성
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(value = "/messages", method = RequestMethod.POST)
     public ResponseEntity<MessageResponseDTO> create(@RequestBody MessageCreateRequestDTO messageCreateRequestDTO) {
         MessageResponseDTO newMessage = messageService.create(messageCreateRequestDTO);
 
@@ -27,7 +27,7 @@ public class MessageController {
     }
 
     // 특정 채널에서 발행된 메시지 목록 조회
-    @RequestMapping(value = "/{channelId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/channels/{channelId}/messages", method = RequestMethod.GET)
     public ResponseEntity<List<MessageResponseDTO>> findAllByChannelId (@PathVariable UUID channelId) {
         List<MessageResponseDTO> messages = messageService.findAllByChannelId(channelId);
 
@@ -35,7 +35,7 @@ public class MessageController {
     }
 
     // 메시지 수정
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/messages/{id}", method = RequestMethod.PUT)
     public ResponseEntity<MessageResponseDTO> update(@PathVariable UUID id,
                                                      @RequestBody MessageUpdateRequestDTO messageUpdateRequestDTO) {
 
@@ -45,7 +45,7 @@ public class MessageController {
     }
 
     // 메시지 삭제
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/messages/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<MessageResponseDTO> delete(@PathVariable UUID id) {
         messageService.delete(id);
 
