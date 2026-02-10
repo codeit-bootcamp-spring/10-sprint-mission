@@ -24,11 +24,9 @@ public class MessageController {
      * @param attachments  첨부파일 리스트 (선택 사항)
      */
 
-    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<MessageDto.Response> createMessage(
-            @RequestPart("request") @Valid MessageDto.CreateRequest request,
-            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
-        MessageDto.Response response = messageService.create(request, attachments);
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<MessageDto.Response> createMessage(@RequestBody @Valid MessageDto.CreateRequest request){
+        MessageDto.Response response = messageService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 

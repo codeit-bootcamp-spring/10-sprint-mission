@@ -17,7 +17,9 @@ public class UserDto {
             @NotBlank(message = "비밀번호는 필수입니다.")
             @Size(min = 4, message = "비밀번호는 최소 4자 이상이어야 합니다.")
             @Pattern(regexp = "^\\S+$", message = "비밀번호에 공백을 포함할 수 없습니다.")
-            String password
+            String password,
+
+            UUID profileId
     ) {}
 
     public record Response(
@@ -33,10 +35,14 @@ public class UserDto {
     public record UpdateRequest(
             @Pattern(regexp = "^\\S*$", message = "새 사용자 이름에 공백을 포함할 수 없습니다.")
             String newUsername,
+
             @Email(message = "올바른 이메일 형식이어야 합니다")
             String newEmail,
+
             @Size(min = 4, message = "비밀번호는 최소 4자 이상이어야 합니다.")
             @Pattern(regexp = "^\\S*$", message = "새 비밀번호에 공백을 포함할 수 없습니다.")
-            String newPassword
+            String newPassword,
+
+            UUID profileId
     ) {}
 }

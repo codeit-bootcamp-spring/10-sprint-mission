@@ -4,7 +4,7 @@
     <title>메시지 관리 테스트</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .msg-img { max-width: 150px; border-radius: 8px; margin-top: 8px; }
+        .msg-img { max-width: 150px; border-radius: 8px; margin-top: 8px; margin-right: 5px; }
         .msg-item { border-bottom: 1px solid #eee; padding: 15px 0; }
         .id-label { font-family: monospace; font-size: 0.8rem; background: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
     </style>
@@ -17,7 +17,7 @@
         <a href="/test/messages" class="btn btn-primary">메시지 관리</a>
     </nav>
 
-    <h2>3. 메시지 & 파일 관리</h2>
+    <h2>3. 메시지 & 파일 관리 (파일 업로드 분리 적용)</h2>
 
     <div class="row mb-3">
         <div class="col-md-6">
@@ -49,17 +49,72 @@
 <script>
     const API_BASE = '/api';
 
-    function copyToClipboard(text) {
-        const t = document.createElement("textarea");
-        t.value = text;
-        document.body.appendChild(t);
-        t.select();
-        document.execCommand('copy');
-        document.body.removeChild(t);
-        alert('복사되었습니다!');
+    document.getElementById('authorId').value = localStorage.getItem('myUserId') || '';
+
+    // 1. 메시지 파일 다중 업로드 헬퍼
+    async function uploadMessageFiles(fileList) {
+        const formData = new FormData();
+        // Controller에서 @RequestPart("files") List<MultipartFile> files 로 받음
+        for (let i = 0; i < fileList.length; i++) {
+            formData.append('files', fileList[i]);
+        }
+
+        // 메시지 전용 다중 업로드 API 호출
+        const res = await fetch(`${API_BASE}/binary-contents/messages`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!res.ok) throw new Error("파일 업로드 실패");
+        return await res.json(); // List<UUID> 반환
     }
 
-    document.getElementById('authorId').value = localStorage.getItem('myUserId') || '';
+    // 2. 메시지 전송 (Step 1: 파일 업로드 -> Step 2: JSON 전송)
+    async function sendMessage() {
+        const content = document.getElementById('msgContent').value;
+        const fileInput = document.getElementById('msgFiles');
+        const authorId = document.getElementById('authorId').value;
+        const channelId = document.getElementById('targetChannelId').value;
+
+        // Validation: 내용도 없고 파일도 없으면 전송 막음
+        if (!content.trim() && fileInput.files.length === 0) {
+            alert('메시지 내용이나 파일을 입력해주세요.');
+            return;
+        }
+
+        try {
+            let attachmentIds = [];
+
+            // 1. 파일이 있다면 먼저 업로드해서 UUID 리스트 획득
+            if (fileInput.files.length > 0) {
+                attachmentIds = await uploadMessageFiles(fileInput.files);
+            }
+
+            // 2. 메시지 생성 요청 (Pure JSON)
+            const requestDto = {
+                content: content,
+                authorId: authorId,
+                channelId: channelId,
+                attachmentIds: attachmentIds // List<UUID>
+            };
+
+            const res = await fetch(`${API_BASE}/messages`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(requestDto)
+            });
+
+            if(res.ok) {
+                document.getElementById('msgContent').value = '';
+                document.getElementById('msgFiles').value = '';
+                loadMessages();
+            } else {
+                alert('전송 실패: ' + await res.text());
+            }
+        } catch(e) {
+            alert('오류 발생: ' + e.message);
+        }
+    }
 
     async function loadMessages() {
         const chId = document.getElementById('targetChannelId').value;
@@ -68,9 +123,7 @@
         try {
             const res = await fetch(`${API_BASE}/messages?channel-id=${chId}`);
             if(!res.ok) throw new Error(await res.text());
-
             let messages = await res.json();
-            // 시간순 정렬 (서버에서 안 되어 있을 경우 대비)
             messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
             const container = document.getElementById('messageList');
@@ -78,13 +131,19 @@
 
             for (const msg of messages) {
                 let fileHtml = '';
-                if(msg.attachmentIds) {
+                // 첨부파일 렌더링
+                if(msg.attachmentIds && msg.attachmentIds.length > 0) {
                     for(const fid of msg.attachmentIds) {
                         try {
                             const fRes = await fetch(`${API_BASE}/binary-contents/find?binary-content-id=${fid}`);
                             if(fRes.ok) {
                                 const fData = await fRes.json();
-                                fileHtml += `<img src="data:${fData.contentType};base64,${fData.content}" class="msg-img"><br>`;
+                                // 이미지인 경우만 미리보기 (확장자/타입 체크는 생략)
+                                if(fData.contentType.startsWith('image/')) {
+                                    fileHtml += `<img src="data:${fData.contentType};base64,${fData.content}" class="msg-img">`;
+                                } else {
+                                    fileHtml += `<div class="mt-1"><small>📁 파일 ID: ${fid}</small></div>`;
+                                }
                             }
                         } catch(e) {}
                     }
@@ -95,63 +154,27 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div class="flex-grow-1">
                                 <div class="mb-1">
-                                    <span class="text-muted small">Message ID:</span>
-                                    <span class="id-label">${msg.id}</span>
-                                    <button class="btn btn-sm btn-link p-0" onclick="copyToClipboard('${msg.id}')">복사</button>
-                                </div>
-                                <div class="mb-2">
-                                    <span class="text-muted small">Author ID:</span>
-                                    <span class="id-label">${msg.authorId}</span>
+                                    <span class="text-muted small">ID:</span> <span class="id-label">${msg.id}</span>
+                                    <span class="text-muted small ms-2">Author:</span> <span class="id-label">${msg.authorId}</span>
                                 </div>
                             </div>
                             <div class="btn-group">
-                                <button class="btn btn-sm btn-outline-secondary" onclick="editMessage('${msg.id}', '${msg.content}')">수정</button>
+                                <button class="btn btn-sm btn-outline-secondary" onclick="editMessage('${msg.id}', '${msg.content || ''}')">수정</button>
                                 <button class="btn btn-sm btn-outline-danger" onclick="deleteMessage('${msg.id}')">삭제</button>
                             </div>
                         </div>
                         ${msg.content ? `<div class="p-2 bg-light rounded my-2"><strong>${msg.content}</strong></div>` : ''}
                         ${fileHtml}
-                        <div class="text-end">
-                            <small class="text-muted" style="font-size: 0.7rem;">${msg.createdAt}</small>
-                        </div>
+                        <div class="text-end"><small class="text-muted">${msg.createdAt}</small></div>
                     </div>`;
             }
-        } catch(e) {
-            alert('메시지 로드 실패: ' + e.message);
-        }
-    }
-
-    async function sendMessage() {
-        const formData = new FormData();
-        const dto = {
-            content: document.getElementById('msgContent').value,
-            authorId: document.getElementById('authorId').value,
-            channelId: document.getElementById('targetChannelId').value
-        };
-        formData.append('request', new Blob([JSON.stringify(dto)], {type: "application/json"}));
-
-        const files = document.getElementById('msgFiles').files;
-        for(let i=0; i<files.length; i++) formData.append('attachments', files[i]);
-
-        try {
-            const res = await fetch(`${API_BASE}/messages`, { method: 'POST', body: formData });
-            if(res.ok) {
-                document.getElementById('msgContent').value = '';
-                document.getElementById('msgFiles').value = '';
-                loadMessages();
-            } else {
-                alert('전송 실패: ' + await res.text());
-            }
-        } catch(e) {
-            alert('전송 오류 발생');
-        }
+        } catch(e) { alert('로드 실패: ' + e.message); }
     }
 
     async function editMessage(id, old) {
         const next = prompt("수정할 내용:", old);
         if(next === null || next === old) return;
 
-        // 디스코드 스타일: 빈 값이면 삭제 확인
         if (next.trim() === "") {
             if (confirm("내용을 지우면 메시지가 삭제됩니다. 삭제하시겠습니까?")) {
                 deleteMessage(id);
@@ -165,26 +188,15 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ content: next })
             });
-
-            if(res.ok) {
-                loadMessages();
-            } else {
-                alert('수정 실패: ' + await res.text());
-            }
-        } catch(e) {
-            alert('수정 오류 발생');
-        }
+            if(res.ok) loadMessages();
+            else alert('수정 실패: ' + await res.text());
+        } catch(e) { alert('오류 발생'); }
     }
 
     async function deleteMessage(id) {
         if(!confirm('삭제하시겠습니까?')) return;
-        try {
-            const res = await fetch(`${API_BASE}/messages/${id}`, { method: 'DELETE' });
-            if(res.ok) loadMessages();
-            else alert('삭제 실패: ' + await res.text());
-        } catch(e) {
-            alert('삭제 오류 발생');
-        }
+        await fetch(`${API_BASE}/messages/${id}`, { method: 'DELETE' });
+        loadMessages();
     }
 </script>
 </body>

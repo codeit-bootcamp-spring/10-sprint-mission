@@ -27,20 +27,17 @@ public class UserController {
     private final UserService userService;
     private final UserStatusService userStatus;
 
-    @RequestMapping(method = RequestMethod.POST, value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserDto.Response> createUser(
-            @RequestPart("request") @Valid UserDto.CreateRequest request,
-            @RequestPart(value = "profileImage", required = false) MultipartFile file) {
-        UserDto.Response response = userService.create(request, file);
+    @RequestMapping(method = RequestMethod.POST, value = "/signup")
+    public ResponseEntity<UserDto.Response> createUser(@RequestBody @Valid UserDto.CreateRequest request) {
+        UserDto.Response response = userService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @RequestMapping(method = RequestMethod.PATCH, value = "/{user-id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{user-id}")
     public ResponseEntity<UserDto.Response> updateUser(
             @PathVariable("user-id") UUID userId,
-            @RequestPart(value = "request", required = false) @Valid UserDto.UpdateRequest request,
-            @RequestPart(value = "profileImage", required = false) MultipartFile file) {
-        UserDto.Response response = userService.update(userId, request, file);
+            @RequestBody @Valid UserDto.UpdateRequest request) {
+        UserDto.Response response = userService.update(userId, request);
         return ResponseEntity.ok(response);
     }
 

@@ -26,10 +26,10 @@ public class Message implements Serializable {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         //
-        this.content = content;
+        this.content = (content == null) ? "" : content;
         this.channelId = channelId;
         this.authorId = authorId;
-        this.attachmentIds = attachmentIds;
+        this.attachmentIds = (attachmentIds == null) ? List.of() : attachmentIds;
     }
 
     public void update(String newContent) {

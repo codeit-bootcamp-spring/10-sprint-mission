@@ -46,7 +46,7 @@
         <table class="table mt-2 align-middle">
             <thead class="table-light">
             <tr>
-                <th>Channel ID (전체)</th>
+                <th>Channel ID</th>
                 <th>Type</th>
                 <th>Name / Desc</th>
                 <th>Action</th>
@@ -79,6 +79,8 @@
 <script>
     const API_BASE = '/api';
 
+    document.getElementById('currentUserId').value = localStorage.getItem('myUserId') || '';
+
     function copyToClipboard(text) {
         const t = document.createElement("textarea");
         t.value = text;
@@ -86,10 +88,8 @@
         t.select();
         document.execCommand('copy');
         document.body.removeChild(t);
-        alert('채널 ID가 복사되었습니다!');
+        alert('ID가 복사되었습니다!');
     }
-
-    document.getElementById('currentUserId').value = localStorage.getItem('myUserId') || '';
 
     async function loadChannels() {
         const userId = document.getElementById('currentUserId').value;
@@ -111,7 +111,7 @@
                     <tr>
                         <td>
                             <code style="font-size: 0.85rem;">${ch.id}</code>
-                            <button class="btn btn-sm btn-light p-1" onclick="copyToClipboard('${ch.id}')" title="ID 복사">📋</button>
+                            <button class="btn btn-sm btn-light p-1" onclick="copyToClipboard('${ch.id}')">📋</button>
                         </td>
                         <td><span class="badge ${ch.type === 'PUBLIC' ? 'bg-primary' : 'bg-dark'}">${ch.type}</span></td>
                         <td><strong>${ch.name || '비공개'}</strong><br><small>${ch.description || ''}</small></td>
@@ -121,9 +121,7 @@
                         </td>
                     </tr>`;
             });
-        } catch(e) {
-            alert('채널 로드 실패: ' + e.message);
-        }
+        } catch(e) { alert('채널 로드 실패: ' + e.message); }
     }
 
     async function createChannel(type) {
@@ -146,15 +144,16 @@
             });
             if(res.ok) {
                 loadChannels();
-                document.getElementById('pubName').value = '';
-                document.getElementById('pubDesc').value = '';
-                document.getElementById('privMembers').value = '';
+                if(type === 'PUBLIC') {
+                    document.getElementById('pubName').value = '';
+                    document.getElementById('pubDesc').value = '';
+                } else {
+                    document.getElementById('privMembers').value = '';
+                }
             } else {
                 alert('채널 생성 실패: ' + await res.text());
             }
-        } catch(e) {
-            alert('네트워크 오류가 발생했습니다.');
-        }
+        } catch(e) { alert('네트워크 오류'); }
     }
 
     function openEditModal(id, name, desc) {
@@ -176,25 +175,15 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
             });
-            if(res.ok) {
-                location.reload();
-            } else {
-                alert('수정 실패: ' + await res.text());
-            }
-        } catch(e) {
-            alert('오류 발생');
-        }
+            if(res.ok) location.reload();
+            else alert('수정 실패: ' + await res.text());
+        } catch(e) { alert('오류 발생'); }
     }
 
     async function deleteChannel(id) {
         if(!confirm('삭제하시겠습니까?')) return;
-        try {
-            const res = await fetch(`${API_BASE}/channels/${id}`, { method: 'DELETE' });
-            if(res.ok) loadChannels();
-            else alert('삭제 실패: ' + await res.text());
-        } catch(e) {
-            alert('오류 발생');
-        }
+        await fetch(`${API_BASE}/channels/${id}`, { method: 'DELETE' });
+        loadChannels();
     }
 </script>
 </body>

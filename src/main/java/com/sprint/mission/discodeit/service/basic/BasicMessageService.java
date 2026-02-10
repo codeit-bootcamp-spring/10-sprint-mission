@@ -28,7 +28,7 @@ public class BasicMessageService implements MessageService {
 
 
     @Override
-    public MessageDto.Response create(MessageDto.CreateRequest request, List<MultipartFile> attachments) {
+    public MessageDto.Response create(MessageDto.CreateRequest request) {
         Channel channel = channelRepository.findById(request.channelId())
                 .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다: " + request.channelId()));
 
@@ -42,22 +42,7 @@ public class BasicMessageService implements MessageService {
             }
         }
 
-        List<UUID> attachmentIds = Optional.ofNullable(attachments)
-                .orElse(List.of())
-                .stream()
-                .map(this::saveAttachments)
-                .toList();
-
-        // 텍스트가 비어있는지 체크
-        boolean hasText = request.content() != null && !request.content().trim().isEmpty();
-        // 파일이 하나라도 있는지 체크
-        boolean hasAttachments = attachments != null && attachments.stream().anyMatch(file -> !file.isEmpty());
-
-        if (!hasText && !hasAttachments) {
-            throw new IllegalArgumentException("메시지 내용이나 첨부파일 중 하나는 포함되어야 합니다.");
-        }
-
-        Message message = new Message(request.content(), request.channelId(), request.authorId(), attachmentIds);
+        Message message = new Message(request.content(), request.channelId(), request.authorId(), request.attachmentIds());
         Message savedMessage = messageRepository.save(message);
 
         channel.updateLastMessageAt(savedMessage.getCreatedAt());
@@ -86,15 +71,6 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageDto.Response update(UUID messageId, MessageDto.UpdateRequest request) {
         String newContent = request.content();
-
-        // 메시지를 수정할 때 빈 메시지로 바꿀 때 삭제되는 로직을 구현하려고 하였음
-        // 그러나 삭제 로직이 업데이트에 들어있어서 책임 분리가 필요함
-        // 실제 서비스 시에는 프론트엔드에서 빈 메시지로 수정 시에 delete를 호출하도록 하는게 맞는 설계일 듯 함
-//        if (newContent == null) {
-//            delete(messageId); // 메시지를 수정할 때 빈 메시지로 하면 삭제됨
-//            return null;
-//        }
-
         Message message = messageRepository.findById(messageId)
                 .orElseThrow(() -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다: " + messageId));
         message.update(newContent);
@@ -111,23 +87,5 @@ public class BasicMessageService implements MessageService {
                 .forEach(binaryContentRepository::deleteById);
 
         messageRepository.deleteById(messageId);
-    }
-
-    private UUID saveAttachments(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
-
-        try {
-            BinaryContent content = new BinaryContent(
-                    file.getOriginalFilename(),
-                    file.getContentType(),
-                    file.getBytes()
-            );
-
-            return binaryContentRepository.save(content).getId();
-        } catch (IOException e) {
-            throw new UncheckedIOException("첨부파일 저장 중 오류가 발생했습니다: " + file.getOriginalFilename(), e);
-        }
     }
 }

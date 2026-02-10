@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MessageService {
-    MessageDto.Response create(MessageDto.CreateRequest request, List<MultipartFile> attachments);
+    MessageDto.Response create(MessageDto.CreateRequest request);
     MessageDto.Response find(UUID messageId);
     List<MessageDto.Response> findAllByChannelId(UUID channelId);
     MessageDto.Response update(UUID messageId, MessageDto.UpdateRequest request);

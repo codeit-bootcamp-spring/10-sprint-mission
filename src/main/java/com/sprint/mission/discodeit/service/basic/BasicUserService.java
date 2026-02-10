@@ -1,8 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserMapper;
@@ -13,13 +11,12 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -32,14 +29,12 @@ public class BasicUserService implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public UserDto.Response create(UserDto.CreateRequest request, MultipartFile profileImage) {
+    public UserDto.Response create(UserDto.CreateRequest request) {
         String username = request.username();
         String email = request.email();
         validateUser(null, username, email);
-        validateImageFile(profileImage);
-
+        UUID profileId = request.profileId();
         String password = passwordEncoder.encode(request.password());
-        UUID profileId = saveProfileImage(profileImage);
 
         User user = new User(username, email, password, profileId);
         User createdUser = userRepository.save(user);
@@ -64,42 +59,18 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserDto.Response update(UUID userId, UserDto.UpdateRequest request, MultipartFile newProfileImage) {
+    public UserDto.Response update(UUID userId, UserDto.UpdateRequest request) {
         User user=  userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다: " + userId));
 
+        validateUser(user, request.newUsername(), request.newEmail());
 
-        if (request == null) {
-            request = new UserDto.UpdateRequest(null, null, null);
-        }
-
-        if (request.newUsername() == null &&
-                request.newEmail() == null &&
-                request.newPassword() == null &&
-                (newProfileImage == null || newProfileImage.isEmpty())) {
-            throw new IllegalArgumentException("변경할 항목이 적어도 하나는 필요합니다.");
-        }
-
-        validateImageFile(newProfileImage); // 이미지 파일인지 검사
-
-        String newUsername = request.newUsername();
-        String newEmail = request.newEmail();
-        validateUser(user, newUsername, newEmail);
-
-        String newPassword = request.newPassword();
-        if(newPassword != null) newPassword = passwordEncoder.encode(newPassword);
-
-        UUID newProfileId = saveProfileImage(newProfileImage);
-        if (newProfileId != null) { // 파일이 있다면
-            if (user.getProfileId() != null) { // 기존 유저 프로필 파일 삭제
-                binaryContentRepository.deleteById(user.getProfileId());
-            }
-        } else { // 파일이 없다면
-            newProfileId = user.getProfileId(); // 기존 유저 프로필 유지
-        }
+        String encodedPassword = (request.newPassword() != null) // null일 때 암호화해서 null이 아니게 되는 것을 방지
+                ? passwordEncoder.encode(request.newPassword())
+                : null;
 
         // password 업데이트는 엔티티 내 메서드를 따로 만들어서 책임 분리로 개선할 여지가 있음
-        user.update(newUsername, newEmail, newPassword, newProfileId);
+        user.update(request.newUsername(), request.newEmail(), encodedPassword, request.profileId());
         User updatedUser = userRepository.save(user);
 
         return toDto(updatedUser);
@@ -146,34 +117,5 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("유저의 상태가 없습니다:" + user.getId()));
 
         return userMapper.toResponse(user, userStatus.isOnline());
-    }
-
-    private UUID saveProfileImage(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
-
-        try {
-            BinaryContent content = new BinaryContent(
-                    file.getOriginalFilename(),
-                    file.getContentType(),
-                    file.getBytes() // IOException 발생 가능
-            );
-            return binaryContentRepository.save(content).getId();
-        } catch (IOException e) {
-            throw new UncheckedIOException("프로필 이미지 파일 처리 중 오류가 발생했습니다.", e);
-        }
-    }
-
-    private void validateImageFile(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            return;
-        }
-
-        // ContentType이 null이거나 image/로 시작하지 않는 경우 차단
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("이미지 파일(jpg, png, gif 등)만 업로드 가능합니다.");
-        }
     }
 }
