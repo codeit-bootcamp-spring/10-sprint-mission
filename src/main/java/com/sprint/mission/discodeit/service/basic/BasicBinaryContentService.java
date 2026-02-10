@@ -27,7 +27,7 @@ public class BasicBinaryContentService implements BinaryContentService {
                 new BinaryContent(
                         request.fileName(),
                         request.contentType(),
-                        request.data(),
+                        request.bytes(),
                         request.profileUserId(),
                         request.messageId()
                 )

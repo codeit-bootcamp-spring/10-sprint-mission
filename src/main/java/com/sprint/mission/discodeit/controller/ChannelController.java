@@ -42,6 +42,27 @@ public class ChannelController {
         return channelService.find(channelId);
     }
 
+    // 채널에 유저 참여(공개/비공개 공통)
+    @RequestMapping(value = "/{channelId}/users/{userId}", method = RequestMethod.POST)
+    public ChannelResponse postUserInChannel(
+            @PathVariable UUID channelId,
+            @PathVariable UUID userId
+    ) {
+        channelService.addUserInChannel(channelId, userId);
+        return channelService.find(channelId);
+    }
+
+    // 채널에서 유저 제거(공개/비공개 공통)
+    @RequestMapping(value = "/{channelId}/users/{userId}", method = RequestMethod.DELETE)
+    public ChannelResponse deleteUserFromChannel(
+            @PathVariable UUID channelId,
+            @PathVariable UUID userId
+    ) {
+        channelService.removeUserFromChannel(channelId, userId);
+        return channelService.find(channelId);
+    }
+
+
     // 공개채널의 정보 수정
     @RequestMapping(value = "/{channelId}", method = RequestMethod.PUT)
     public ChannelResponse putChannelId(
