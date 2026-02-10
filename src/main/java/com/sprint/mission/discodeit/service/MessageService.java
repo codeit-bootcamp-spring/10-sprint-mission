@@ -8,9 +8,9 @@ import java.util.UUID;
 
 public interface MessageService {
 
-    MessageDto.MessageResponse create(MessageDto.MessageRequest request, List<BinaryContentDto.BinaryContentRequest> fileInfo);
+    MessageDto.MessageResponse create(MessageDto.MessageCreateRequest request);
     MessageDto.MessageResponse findById(UUID messageId);
     List<MessageDto.MessageResponse> findAllByChannelId(UUID channelId);
-    MessageDto.MessageResponse update(UUID id, String content, List<BinaryContentDto.BinaryContentRequest> fileInfo);
+    MessageDto.MessageResponse update(UUID messageId, MessageDto.MessageUpdateRequest request);
     void delete(UUID id);
 }

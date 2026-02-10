@@ -26,7 +26,7 @@ public class BasicMessageService implements MessageService {
     private final EntityFinder entityFinder;
 
     @Override
-    public MessageDto.MessageResponse create(MessageDto.MessageRequest request, List<BinaryContentDto.BinaryContentRequest> fileInfo) {
+    public MessageDto.MessageResponse create(MessageDto.MessageCreateRequest request) {
         // 입력값 검증
         entityFinder.getUser(request.userId());
         Channel channel = entityFinder.getChannel(request.channelId());
@@ -37,7 +37,7 @@ public class BasicMessageService implements MessageService {
         // 여러 개의 첨부파일 구현
         List<UUID> binaryContentIds = new ArrayList<>();
         // binaryContent에 정보 입력 후 레포에 저장
-        fileInfo.forEach(fileInform -> {
+        request.fileInfo().forEach(fileInform -> {
             BinaryContent binaryContent = new BinaryContent(fileInform);
             binaryContentRepository.save(binaryContent);
             binaryContentIds.add(binaryContent.getId());
@@ -68,13 +68,13 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageDto.MessageResponse update(UUID messageId, String content, List<BinaryContentDto.BinaryContentRequest> fileInfo) {
+    public MessageDto.MessageResponse update(UUID messageId, MessageDto.MessageUpdateRequest request) {
         Message message = entityFinder.getMessage(messageId);
-        Optional.ofNullable(content).ifPresent(message::updateContent);
+        Optional.ofNullable(request.content()).ifPresent(message::updateContent);
         // 여러 개의 첨부파일 구현
         List<UUID> binaryContentIds = new ArrayList<>();
         // binaryContent에 정보 입력 후 레포에 저장
-        fileInfo.forEach(fileInform -> {
+        request.fileInfo().forEach(fileInform -> {
             BinaryContent binaryContent = new BinaryContent(fileInform);
             binaryContentRepository.save(binaryContent);
             binaryContentIds.add(binaryContent.getId());

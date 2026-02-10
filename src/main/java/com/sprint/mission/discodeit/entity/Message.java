@@ -24,7 +24,7 @@ public class Message extends BaseEntity implements Serializable {
     private final List<UUID> binaryContentIds;
 
     // constructor
-    public Message(MessageDto.MessageRequest request, List<UUID> binaryContentIds) {
+    public Message(MessageDto.MessageCreateRequest request, List<UUID> binaryContentIds) {
         this.content = request.content();
         this.userId = Objects.requireNonNull(request.userId(), "유효한 사용자 ID를 입력해주세요.");
         this.channelId = Objects.requireNonNull(request.channelId(), "유효한 채널 ID를 입력해주세요.");

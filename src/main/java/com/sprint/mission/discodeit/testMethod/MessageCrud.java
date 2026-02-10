@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.testMethod;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -27,7 +28,7 @@ public class MessageCrud {
         Channel channel = channelService.checkChannel(channelNameOrId);
         List<BinaryContentDto.BinaryContentRequest> fileInfo = Arrays.stream(filePathAndType)
                 .map(pathAndType -> new BinaryContentDto.BinaryContentRequest(pathAndType[0], pathAndType[1])).toList();
-        messageService.create(new MessageDto.MessageRequest(content, user.getId(), channel.getId()), fileInfo);
+        messageService.create(new MessageDto.MessageCreateRequest(content, user.getId(), channel.getId(), fileInfo));
         System.out.println("채널에 메세지가 작성되었습니다.");
     }
 
@@ -38,7 +39,7 @@ public class MessageCrud {
                 .findFirst().orElseThrow(() -> new IllegalArgumentException("채널에 존재하지 않는 메세지입니다."));
         List<BinaryContentDto.BinaryContentRequest> fileInfo = Arrays.stream(filePathAndType)
                 .map(pathAndType -> new BinaryContentDto.BinaryContentRequest(pathAndType[0], pathAndType[1])).toList();
-        messageService.update(message, content, fileInfo);
+        messageService.update(message, new MessageDto.MessageUpdateRequest(content, fileInfo));
         System.out.println("메세지가 수정되었습니다.");
     }
 

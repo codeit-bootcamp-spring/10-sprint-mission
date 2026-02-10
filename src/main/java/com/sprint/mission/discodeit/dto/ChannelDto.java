@@ -21,6 +21,7 @@ public class ChannelDto {
             UUID channelId,
             String name,
             String description,
+            Channel.channelType type,
             Instant lastMessageAt
     ) implements ChannelResponse {
         public static ChannelResponsePublic from(Channel channel) {
@@ -28,6 +29,7 @@ public class ChannelDto {
                     channel.getId(),
                     channel.getName(),
                     channel.getDescription(),
+                    channel.getType(),
                     channel.getLastMessageAt()
             );
         }

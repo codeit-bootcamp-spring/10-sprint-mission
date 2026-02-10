@@ -8,10 +8,17 @@ import java.util.UUID;
 
 public class MessageDto {
     // 요청 DTO
-    public record MessageRequest(
+    public record MessageCreateRequest(
             String content,
             UUID userId,
-            UUID channelId
+            UUID channelId,
+            List<BinaryContentDto.BinaryContentRequest> fileInfo
+    ) {
+    }
+
+    public record MessageUpdateRequest(
+            String content,
+            List<BinaryContentDto.BinaryContentRequest> fileInfo
     ) {
     }
 
@@ -31,7 +38,7 @@ public class MessageDto {
                     message.getChannelId(),
                     message.getBinaryContentIds(),
                     message.getCreatedAt()
-            ) ;
+            );
         }
     }
 }
