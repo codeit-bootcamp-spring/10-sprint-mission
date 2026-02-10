@@ -60,7 +60,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     private BinaryContent getBinaryContentId(UUID id){
-        return binaryContentRepository.findByUserId(id)
+        return binaryContentRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("해당 파일컨텐츠가 없습니다."));
     }
 }

@@ -43,7 +43,7 @@ public class BasicMessageService implements MessageService {
                             message.getId(),
                             bcDto.getFileData(),
                             bcDto.getName(),
-                            bcDto.getFileType());
+                            bcDto.getContentType());
                     message.addBinaryContent(binaryContent.getId());
                     binaryContentRepository.save(binaryContent);
                 }

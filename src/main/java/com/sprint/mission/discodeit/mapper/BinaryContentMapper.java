@@ -13,9 +13,9 @@ public class BinaryContentMapper {
         return new BinaryContentResponseDto(binaryContent.getId(),
                 binaryContent.getUserId(),
                 binaryContent.getMessageId(),
-                binaryContent.getData(),
+                binaryContent.getBytes(),
                 binaryContent.getFileName(),
-                binaryContent.getFileType());
+                binaryContent.getContentType());
     }
 
     public BinaryContent toEntity(BinaryContentCreateDto dto){
@@ -24,6 +24,6 @@ public class BinaryContentMapper {
         return new BinaryContent(null, null,
                 dto.getFileData(),
                 dto.getName(),
-                dto.getFileType());
+                dto.getContentType());
     }
 }

@@ -72,6 +72,6 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     private UserStatus getUserStatus(UUID id){
-        return userStatusRepository.findById(id).orElseThrow(() -> new NoSuchElementException("해당 유저상태가 없습니다."));
+        return userStatusRepository.findByUserId(id).orElseThrow(() -> new NoSuchElementException("해당 유저상태가 없습니다."));
     }
 }

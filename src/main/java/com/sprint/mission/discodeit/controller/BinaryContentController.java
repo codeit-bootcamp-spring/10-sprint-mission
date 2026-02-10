@@ -18,7 +18,7 @@ public class BinaryContentController {
 
     // 단건 조회
     @RequestMapping(value = "/find", method = RequestMethod.GET)
-    public ResponseEntity<BinaryContent> getBinaryContent(@RequestParam UUID id){
+    public ResponseEntity<BinaryContent> getBinaryContent(@RequestParam("binaryContentId") UUID id){
         BinaryContent response = binaryContentService.findId(id);
         return ResponseEntity.ok(response);
     }
