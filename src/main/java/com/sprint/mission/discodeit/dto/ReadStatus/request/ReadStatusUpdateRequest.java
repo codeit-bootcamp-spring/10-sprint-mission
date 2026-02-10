@@ -1,7 +1,6 @@
-package com.sprint.mission.discodeit.dto.ReadStatus;
+package com.sprint.mission.discodeit.dto.ReadStatus.request;
 
 import java.time.Instant;
-import java.util.UUID;
 
 public record ReadStatusUpdateRequest(
         Instant lastReadTime

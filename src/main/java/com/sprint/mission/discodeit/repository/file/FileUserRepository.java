@@ -80,7 +80,7 @@ public class FileUserRepository implements UserRepository {
     @Override
     public List<User> findAll() {
         loadData();
-        return userData;
+        return new ArrayList<>(userData);
     }
 
     @Override

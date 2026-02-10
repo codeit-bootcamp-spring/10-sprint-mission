@@ -78,7 +78,7 @@ public class FileReadStatusRepository implements ReadStatusRepository {
     @Override
     public List<ReadStatus> findAll(){
         loadData();
-        return readStatusData;
+        return new ArrayList<>(readStatusData);
     }
 
     @Override

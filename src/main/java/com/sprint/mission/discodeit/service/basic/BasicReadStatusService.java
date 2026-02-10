@@ -1,14 +1,11 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusResponse;
-import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.ReadStatus.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.ReadStatus.response.ReadStatusResponse;
+import com.sprint.mission.discodeit.dto.ReadStatus.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

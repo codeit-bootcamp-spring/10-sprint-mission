@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
@@ -114,6 +114,8 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = userStatusRepository.findByUserID(user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + user.getId()));
 
+        userStatus.updateLastLogin();
+
         User savedUser = userRepository.save(user);
 
         Set<UUID> channelIDs = new HashSet<>();
@@ -133,7 +135,7 @@ public class BasicUserService implements UserService {
             channelRepository.save(channelRepository.find(channelID));
         }
 
-        // message의 sender 이름 변경
+        // message의 sender 이름 변경, Message Entity는 업데이트 필요없지 않나??
         Set<UUID> messageIDs = new HashSet<>();
         for (Message message : user.getMessageList()) {
             message.getSender().updateName(request.newUserName());

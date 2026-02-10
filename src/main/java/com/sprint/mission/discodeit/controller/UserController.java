@@ -1,10 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserResponse;
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusResponse;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +57,7 @@ public class UserController {
     }
 
     // user status 업데이트
-    @RequestMapping(method = RequestMethod.PATCH, value = "/status/{user-id}")
+    @RequestMapping(method = RequestMethod.PATCH, value = "/{user-id}/status")
     public UserStatusResponse updateStatus(@PathVariable("user-id") UUID userID){
         return userStatusService.updateByUserID(userID);
     }
