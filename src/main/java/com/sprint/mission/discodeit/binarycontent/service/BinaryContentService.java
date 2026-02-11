@@ -30,6 +30,11 @@ public class BinaryContentService {
         return BinaryContentMapper.toBinaryContentInfo(content);
     }
 
+    public BinaryContent findBinaryContentEntity(UUID contentId) {
+        return contentRepository.findById(contentId)
+                .orElseThrow(BinaryContentNotFoundException::new);
+    }
+
     public List<BinaryContentInfo> findAll() {
         return contentRepository.findAll()
                 .stream()
