@@ -2,14 +2,19 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.extend.FileSerDe;
+import com.sprint.mission.discodeit.extend.FileSerializerDeserializer;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-public class FileMessageRepository extends FileSerDe<Message> implements MessageRepository {
-    private final String MESSAGE_DATA_DIRECTORY = "data/message";
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+public class FileMessageRepository extends FileSerializerDeserializer<Message> implements MessageRepository {
+    private final String MESSAGE_DATA_DIRECTORY = "message";
 
     public FileMessageRepository() {
         super(Message.class);
@@ -21,17 +26,25 @@ public class FileMessageRepository extends FileSerDe<Message> implements Message
     }
 
     @Override
-    public Optional<Message> findById(UUID messageId) {
-        return super.load(MESSAGE_DATA_DIRECTORY, messageId);
+    public Optional<Message> findById(UUID uuid) {
+        return super.load(MESSAGE_DATA_DIRECTORY, uuid);
     }
 
     @Override
-    public List<Message> findAll() {
-        return super.loadAll(MESSAGE_DATA_DIRECTORY);
+    public List<Message> findAllByChannelId(UUID channelId) {
+        return super.loadAll(MESSAGE_DATA_DIRECTORY).stream()
+                .filter(m -> Objects.equals(m.getChannelId(), channelId))
+                .toList();
     }
 
     @Override
-    public void deleteById(UUID messageId) {
-        super.delete(MESSAGE_DATA_DIRECTORY, messageId);
+    public void deleteById(UUID uuid) {
+        super.delete(MESSAGE_DATA_DIRECTORY, uuid);
+    }
+
+    @Override
+    public void deleteAllByChannelId(UUID channelId) {
+        findAllByChannelId(channelId)
+                .forEach(m -> deleteById(m.getId()));
     }
 }
