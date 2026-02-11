@@ -41,19 +41,19 @@ public class BasicMessageService implements MessageService {
         MessageEntity newMessage = new MessageEntity(messageCreateRequestDTO);
         messageRepository.save(newMessage);
 
-        Optional.ofNullable(messageCreateRequestDTO.binaryContentCreateRequestDTOList())
-                .map(binaryContentCreateRequestDTOS -> binaryContentCreateRequestDTOS.stream()
-                        // 첨부파일 하나씩 생성 및 저장
-                        .map(binaryContentCreateRequestDTO -> {
-                            BinaryContentEntity binaryContent = new BinaryContentEntity(binaryContentCreateRequestDTO);
-                            binaryContentRepository.save(binaryContent);
-                            return binaryContent.getId();
-                        })
-                        // 첨부파일 식별자 목록 반환
-                        .toList())
-                // 생성한 메시지의 첨부파일 목록에 생성한 첨부파일 추가
-                .ifPresent(attachmentIds -> attachmentIds
-                        .forEach(newMessage::addAttachment));
+        List<BinaryContentEntity> newAttachments = Optional.ofNullable(messageCreateRequestDTO.binaryContentCreateRequestDTOList())
+                // DTO가 없으면 빈 문자열 반환
+                .orElse(List.of())
+                .stream()
+                // DTO -> Entity 생성
+                .map(BinaryContentEntity::new)
+                .toList();
+
+        newAttachments.forEach(binaryContentRepository::save);
+
+        newAttachments.stream()
+                .map(BinaryContentEntity::getId)
+                .forEach(newMessage::addAttachment);
 
         return toResponseDTO(newMessage);
     }
@@ -120,12 +120,12 @@ public class BasicMessageService implements MessageService {
     public void delete(UUID targetMessageId) {
         MessageEntity targetMessage = findMessageEntityById(targetMessageId);
 
-        targetMessage.getAttachmentIds()
-                .forEach(binaryContentId -> {
-                    BinaryContentEntity binaryContent = binaryContentRepository.findById(binaryContentId)
-                            .orElseThrow(() -> new IllegalArgumentException("해당 첨부 파일이 존재하지 않습니다."));
-                    binaryContentRepository.delete(binaryContent);
-                });
+        List<BinaryContentEntity> deleteBinaryContents = targetMessage.getAttachmentIds().stream()
+                .map(binaryContentId -> binaryContentRepository.findById(binaryContentId)
+                            .orElseThrow(() -> new IllegalArgumentException("해당 첨부 파일이 존재하지 않습니다."))
+                )
+                .toList();
+        deleteBinaryContents.forEach(binaryContentRepository::delete);
 
         messageRepository.delete(targetMessage);
     }

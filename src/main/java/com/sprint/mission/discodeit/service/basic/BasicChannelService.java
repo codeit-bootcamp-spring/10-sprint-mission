@@ -51,13 +51,12 @@ public class BasicChannelService implements ChannelService {
         ChannelEntity newChannel = new ChannelEntity(privateChannelCreateRequestDTO);
         channelRepository.save(newChannel);
 
-        newChannel.getMembers()
-                .forEach(memberId -> {
-                    // 채널한 속한 멤버마다 ReadStatus 생성
-                    ReadStatusCreateRequestDTO readStatusCreateRequestDTO = new ReadStatusCreateRequestDTO(memberId, newChannel.getId());
-                    ReadStatusEntity memeberReadStatus = new ReadStatusEntity(readStatusCreateRequestDTO);
-                    readStatusRepository.save(memeberReadStatus);
-                });
+        List<ReadStatusEntity> newReadStatues = newChannel.getMembers().stream()
+                .map(memberId -> new ReadStatusCreateRequestDTO(memberId, newChannel.getId()))
+                .map(ReadStatusEntity::new)
+                .toList();
+
+        newReadStatues.forEach(readStatusRepository::save);
 
         return toResponseDTO(newChannel);
     }

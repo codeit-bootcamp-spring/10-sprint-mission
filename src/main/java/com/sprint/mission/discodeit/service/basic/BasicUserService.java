@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateDuplicateValue;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateString;
@@ -38,14 +39,14 @@ public class BasicUserService implements UserService {
         UserStatusEntity newUserStatus = new UserStatusEntity(newUser.getId());
         userStatusRepository.save(newUserStatus);
 
-        Optional.ofNullable(userCreateRequestDTO.binaryContentCreateRequestDTO())
-                .map(BinaryContentCreateRequestDTO:: binaryContent)
-                // 선택적 프로필 이미지 생성
-                .ifPresent(content -> {
-                    BinaryContentEntity newBinaryContent = new BinaryContentEntity(userCreateRequestDTO.binaryContentCreateRequestDTO());
-                    binaryContentRepository.save(newBinaryContent);
-                    newUser.updateProfileId(newBinaryContent.getId());
-                });
+        List<BinaryContentEntity> newBinaryContents = Optional.ofNullable(userCreateRequestDTO.binaryContentCreateRequestDTO())
+                .map(BinaryContentEntity::new)
+                .stream()
+                .toList();
+        newBinaryContents.forEach(content -> {
+            binaryContentRepository.save(content);
+            newUser.updateProfileId(content.getId());
+        });
 
         return toResponseDTO(newUser, newUserStatus);
     }
@@ -63,12 +64,11 @@ public class BasicUserService implements UserService {
     // 사용자 전체 조회
     @Override
     public List<UserDto> findAll() {
-        return userRepository.findAll().stream()
-                .map(user -> {
-                    // 사용자별 상태 조회
-                    UserStatusEntity userStatus = userStatusRepository.findByUserId(user.getId());
-                    return toResponseDTO(user, userStatus);
-                })
+        List<UserEntity> users = userRepository.findAll();
+        Map<UUID, UserStatusEntity> statusMap = getUserStatusMap();
+
+        return users.stream()
+                .map(user -> toResponseDTO(user, statusMap.get(user.getId())))
                 .toList();
     }
 
@@ -84,12 +84,13 @@ public class BasicUserService implements UserService {
                 throw new RuntimeException("비공개 채널의 멤버 목록은 해당 채널 참여자만 조회할 수 있습니다.");
         }
 
-        return targetChannel.getMembers().stream()
-                .map(memberId -> {
-                    UserEntity user = findEntityById(memberId);
-                    UserStatusEntity userStatus = userStatusRepository.findByUserId(user.getId());
-                    return toResponseDTO(user,userStatus);
-                })
+        List<UserEntity> members = targetChannel.getMembers().stream()
+                .map(this::findEntityById)
+                .toList();
+        Map<UUID, UserStatusEntity> statusMap = getUserStatusMap();
+
+        return members.stream()
+                .map(user -> toResponseDTO(user, statusMap.get(user.getId())))
                 .toList();
     }
 
@@ -126,7 +127,7 @@ public class BasicUserService implements UserService {
 
         // 프로필 이미지 변경
         Optional.ofNullable(userUpdateRequestDTO.binaryContentCreateRequestDTO())
-                .map(BinaryContentCreateRequestDTO:: binaryContent)
+                .map(BinaryContentCreateRequestDTO:: bytes)
                 .map(binaryContent -> {
                     BinaryContentEntity newBinaryContent = new BinaryContentEntity(userUpdateRequestDTO.binaryContentCreateRequestDTO());
                     binaryContentRepository.save(newBinaryContent);
@@ -203,5 +204,11 @@ public class BasicUserService implements UserService {
                 .profileId(user.getProfileId())
                 .online(userStatus.getStatus() == UserStatusType.ONLINE)
                 .build();
+    }
+
+    // UserStatusMap 생성
+    private Map<UUID, UserStatusEntity> getUserStatusMap() {
+        return userStatusRepository.findAll().stream()
+                .collect(Collectors.toMap(UserStatusEntity::getUserId, status -> status));
     }
 }
