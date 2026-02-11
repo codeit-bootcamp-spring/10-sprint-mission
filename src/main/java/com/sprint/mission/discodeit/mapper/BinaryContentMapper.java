@@ -15,8 +15,8 @@ public class BinaryContentMapper {
 		return new BinaryContent(
 			userId,
 			messageId,
-			binaryContentDTO.fileName(),
-			binaryContentDTO.data()
+			binaryContentDTO.fileName()
+			// binaryContentDTO.data()
 		);
 	}
 
@@ -24,8 +24,8 @@ public class BinaryContentMapper {
 		return new BinaryContent(
 			binaryContentPostDTO.userId(),
 			binaryContentPostDTO.messageId(),
-			binaryContentPostDTO.fileName(),
-			binaryContentPostDTO.data()
+			binaryContentPostDTO.fileName()
+			// binaryContentPostDTO.data() // todo
 		);
 	}
 
@@ -33,7 +33,7 @@ public class BinaryContentMapper {
 		return new BinaryContentResponseDto(
 			binaryContent.getUserId(),
 			binaryContent.getMessageId(),
-			binaryContent.getData()
+			null
 		);
 	}
 

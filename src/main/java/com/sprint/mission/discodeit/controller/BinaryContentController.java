@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
-import java.util.List;
+import java.io.IOException;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -16,14 +16,15 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/binary-contents")
+@RequestMapping("/api/binaryContent")
 @RequiredArgsConstructor
 public class BinaryContentController {
 	private final BinaryContentService binaryContentService;
 
-	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<List<BinaryContentResponseDto>> getBinaryContent(@RequestParam("id") List<UUID> ids) {
-		return ResponseEntity.status(HttpStatus.OK).body(binaryContentService.findAllByIdIn(ids));
+	@RequestMapping(value = "/find", method = RequestMethod.GET)
+	public ResponseEntity<BinaryContentResponseDto> getBinaryContent(@RequestParam("binaryContentId") UUID id) throws
+		IOException {
+		return ResponseEntity.status(HttpStatus.OK).body(binaryContentService.findById(id));
 	}
 
 }

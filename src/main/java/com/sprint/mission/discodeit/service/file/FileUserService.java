@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.sprint.mission.discodeit.dto.UserPatchDto;
 import com.sprint.mission.discodeit.dto.UserPostDto;
@@ -29,7 +30,7 @@ public class FileUserService implements UserService {
 	}
 
 	@Override
-	public UserResponseDto create(UserPostDto userPostDTO) {
+	public UserResponseDto create(UserPostDto userPostDTO, MultipartFile profileImage) {
 		//        User newUser = new User(nickName, userName, email, phoneNumber);
 		//
 		//        List<User> users = fileIo.load();

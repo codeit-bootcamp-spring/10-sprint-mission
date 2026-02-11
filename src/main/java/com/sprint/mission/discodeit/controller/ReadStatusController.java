@@ -19,7 +19,7 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/readstatuses")
+@RequestMapping("/api/read-statuses")
 @RequiredArgsConstructor
 public class ReadStatusController {
 	public final ReadStatusService readStatusService;

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.sprint.mission.discodeit.dto.UserPatchDto;
 import com.sprint.mission.discodeit.dto.UserPostDto;
 import com.sprint.mission.discodeit.dto.UserResponseDto;
@@ -30,7 +32,7 @@ public class JCFUserService implements UserService {
 
 	//  [ ] data 필드를 활용해 생성, 조회, 수정, 삭제하는 메소드를 구현하세요.
 	@Override
-	public UserResponseDto create(UserPostDto userPostDTO) {
+	public UserResponseDto create(UserPostDto userPostDTO, MultipartFile profileImage) {
 		//        User newUser = new User(nickName, userName, email, phoneNumber);
 		//        data.add(newUser);
 		//        return newUser;

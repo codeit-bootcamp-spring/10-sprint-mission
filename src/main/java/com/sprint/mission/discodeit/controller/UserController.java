@@ -4,12 +4,15 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.sprint.mission.discodeit.dto.UserPatchDto;
 import com.sprint.mission.discodeit.dto.UserPostDto;
@@ -28,9 +31,10 @@ public class UserController {
 	private final UserStatusService userStatusService;
 
 	// 사용자 등록
-	@RequestMapping(method = RequestMethod.POST)
-	public ResponseEntity<UserResponseDto> createUser(@RequestBody UserPostDto userPostDto) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(userPostDto));
+	@RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<UserResponseDto> createUser(@RequestPart("userPostDto") UserPostDto userPostDto,
+		@RequestPart("profileImage") MultipartFile profileImage) {
+		return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(userPostDto, profileImage));
 	}
 
 	// 사용자 정보 수정

@@ -1,5 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -7,6 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.sprint.mission.discodeit.dto.UserPatchDto;
 import com.sprint.mission.discodeit.dto.UserPostDto;
@@ -28,32 +32,47 @@ import lombok.RequiredArgsConstructor;
 public class BasicUserService implements UserService {
 	private final UserMapper userMapper;
 	private final BinaryContentMapper binaryContentMapper;
-
 	private final UserRepository userRepository;
 	private final UserStatusRepository userStatusRepository;
 	private final BinaryContentRepository binaryContentRepository;
 
 	@Override
-	public UserResponseDto create(UserPostDto userPostDTO) {
+	public UserResponseDto create(UserPostDto userPostDto, MultipartFile profileImage) {
 		// username과 email이 다른 유저와 같으면 안 된다.
-		if (isUserNameDuplicated(userPostDTO.userName()) ||
-			isEmailDuplicated(userPostDTO.email()))
+		if (isUserNameDuplicated(userPostDto.userName()) ||
+			isEmailDuplicated(userPostDto.email()))
 			throw new IllegalArgumentException("중복된 사용자명 또는 이메일입니다.");
 
 		// 새 user 객체 생성
-		User newUser = userMapper.toUser(userPostDTO);
+		User newUser = userMapper.toUser(userPostDto);
 
 		// 프로필 정보를 선택적으로 저장
-		Optional.ofNullable(userPostDTO.profileImage())
-			.ifPresent(profileImage -> {
-					BinaryContent binaryContent = binaryContentRepository.save(
-						binaryContentMapper.fromDto(newUser.getId(), null, profileImage));
-					newUser.updateProfileId(binaryContent.getId()); // user에 프로필 정보 업데이트
-				}
+		// binaryContent 생성 및 저장
+
+		// 이미지 파일 저장
+		File uploadDest = new File(
+			Paths.get(System.getProperty("user.dir"), "src", "main", "resources", "static", "images",
+				profileImage.getOriginalFilename()).toString());
+
+		if (!uploadDest.getParentFile().exists()) {
+			uploadDest.getParentFile().mkdirs();
+		}
+
+		try {
+			profileImage.transferTo(new File(uploadDest.toString()));
+			BinaryContent binaryContent = new BinaryContent(
+				newUser.getId(),
+				null,
+				profileImage.getOriginalFilename()
 			);
+			binaryContentRepository.save(binaryContent);
+			newUser.updateProfileId(binaryContent.getId()); // user에 프로필 정보 업데이트
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 
 		// UserStatus를 같이 생성 및 저장
-		UserStatus userStatus = userStatusRepository.save(new UserStatus(newUser.getId()));
+		userStatusRepository.save(new UserStatus(newUser.getId()));
 
 		return userMapper.toUserResponseDto(userRepository.save(newUser), getOnlineStatus(newUser.getId()));
 	}
@@ -107,11 +126,11 @@ public class BasicUserService implements UserService {
 		 * 유저 정보 업데이트
 		 * todo: Binarycontent를 수정 불가능한 도메인이니까 새로 생성해줘야 하나?
 		 */
-		Optional.ofNullable(userPatchDto.binaryContentDTO())
+		Optional.ofNullable(userPatchDto.binaryContentDto())
 			.ifPresent(
-				binaryContentDTO -> {
+				binaryContentDto -> {
 					BinaryContent binaryContent = binaryContentRepository.save(
-						binaryContentMapper.fromDto(updatedUser.getId(), null, binaryContentDTO)
+						binaryContentMapper.fromDto(updatedUser.getId(), null, binaryContentDto)
 					);
 					updatedUser.updateProfileId(binaryContent.getId());
 				}

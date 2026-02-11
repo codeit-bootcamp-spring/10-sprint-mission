@@ -3,12 +3,14 @@ package com.sprint.mission.discodeit.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.sprint.mission.discodeit.dto.UserPatchDto;
 import com.sprint.mission.discodeit.dto.UserPostDto;
 import com.sprint.mission.discodeit.dto.UserResponseDto;
 
 public interface UserService {
-	UserResponseDto create(UserPostDto userPostDTO);
+	UserResponseDto create(UserPostDto userPostDTO, MultipartFile profileImage);
 
 	UserResponseDto findById(UUID userId);
 

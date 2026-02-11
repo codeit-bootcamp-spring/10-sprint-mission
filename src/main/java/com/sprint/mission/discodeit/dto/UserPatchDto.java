@@ -5,6 +5,6 @@ public record UserPatchDto(
 	String email,
 	String phoneNumber,
 	String password,
-	BinaryContentDto binaryContentDTO
+	BinaryContentDto binaryContentDto
 ) {
 }

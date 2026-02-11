@@ -21,7 +21,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/channels")
+@RequestMapping("/api/channels")
 @RequiredArgsConstructor
 public class ChannelController {
 	private final ChannelService channelService;
