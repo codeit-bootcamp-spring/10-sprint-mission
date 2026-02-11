@@ -1,15 +1,20 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+@Getter
 public class Channel extends CommonEntity{
     private static final long serialVersionUID = 1L;
     private String channelName;
     private ChannelType channelType;
     private String description;
-    private final List<Message> messages = new ArrayList<>();
-    private final List<User> users = new ArrayList<>();
+    private final List<UUID> messageIds = new ArrayList<>();
+    private final List<UUID> userIds = new ArrayList<>();
 
     public Channel(String channelName, ChannelType channelType, String description) {
         this.channelName = channelName;
@@ -17,63 +22,46 @@ public class Channel extends CommonEntity{
         this.description = description;
     }
 
-    public String getChannelName() {
-        return channelName;
+    public List<UUID> getMessageIds() {
+        return List.copyOf(messageIds);
     }
 
-    public ChannelType getChannelType() {
-        return channelType;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public List<Message> getMessages() {
-        return List.copyOf(messages);
-    }
-
-    public List<User> getUsers() {
-        return List.copyOf(users);
+    public List<UUID> getUserIds() {
+        return List.copyOf(userIds);
     }
 
     public void updateChannelName(String channelName) {
         this.channelName = channelName;
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 
     public void updateChannelType(ChannelType channelType) {
         this.channelType = channelType;
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 
     public void updateDescription(String description) {
         this.description = description;
-        this.updateAt = System.currentTimeMillis();
+        this.updateAt = Instant.now();
     }
 
-    public void addMessage(Message message) {
-        messages.add(message);
-        this.updateAt = System.currentTimeMillis();
+    public void addMessageId(UUID messageId) {
+        messageIds.add(messageId);
+        this.updateAt = Instant.now();
     }
 
-    public void removeMessage(Message message) {
-        messages.remove(message);
-        this.updateAt = System.currentTimeMillis();
+    public void removeMessageId(UUID messageId) {
+        messageIds.remove(messageId);
+        this.updateAt = Instant.now();
     }
 
-    public void addUser(User user) {
-        users.add(user);
-        this.updateAt = System.currentTimeMillis();
+    public void addUserId(UUID userId) {
+        userIds.add(userId);
+        this.updateAt = Instant.now();
     }
 
-    public void removeUser(User user) {
-        users.remove(user);
-        this.updateAt = System.currentTimeMillis();
-    }
-
-    public void updateUser(User user) {
-        users.set(users.indexOf(user), user);
-        this.updateAt = System.currentTimeMillis();
+    public void removeUserId(UUID userId) {
+        userIds.remove(userId);
+        this.updateAt = Instant.now();
     }
 }

@@ -2,9 +2,16 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+@Repository
+@ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "jcf", matchIfMissing = true)
 public class JCFUserRepository implements UserRepository {
     private final List<User> data = new ArrayList<>();
 
@@ -30,13 +37,25 @@ public class JCFUserRepository implements UserRepository {
     @Override
     public List<User> findAllByChannelId(UUID channelId) {
         return data.stream()
-                .filter(u -> u.getChannels().stream().anyMatch(c -> c.getId().equals(channelId)))
+                .filter(u -> u.getChannelIds()
+                        .stream()
+                        .anyMatch(findChannelId -> findChannelId.equals(channelId)))
                 .toList();
     }
 
     @Override
+    public Optional<User> findByEmail(String email) {
+        return data.stream()
+                .filter(u -> u.getEmail().equals(email))
+                .findFirst();
+    }
+
+    @Override
     public void save(User user) {
-        data.add(user);
+        if(data.contains(user))
+            data.set(data.indexOf(user), user);
+        else
+            data.add(user);
     }
 
     @Override

@@ -2,12 +2,16 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
+@ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "jcf", matchIfMissing = true)
 public class JCFMessageRepository implements MessageRepository {
     private final List<Message> data = new ArrayList<>();
 
@@ -26,20 +30,23 @@ public class JCFMessageRepository implements MessageRepository {
     @Override
     public List<Message> findAllByUserId(UUID userId) {
         return data.stream()
-                .filter(m -> m.getSender().getId().equals(userId))
+                .filter(m -> m.getSenderId().equals(userId))
                 .toList();
     }
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
         return data.stream()
-                .filter(m -> m.getChannel().getId().equals(channelId))
+                .filter(m -> m.getChannelId().equals(channelId))
                 .toList();
     }
 
     @Override
     public void save(Message message) {
-        data.add(message);
+        if(data.contains(message))
+            data.set(data.indexOf(message), message);
+        else
+            data.add(message);
     }
 
     @Override

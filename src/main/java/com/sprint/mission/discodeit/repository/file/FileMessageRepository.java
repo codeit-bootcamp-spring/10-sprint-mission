@@ -2,14 +2,30 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+@Repository
+@ConditionalOnProperty(prefix = "discodeit.repository", name = "type", havingValue = "file")
 public class FileMessageRepository implements MessageRepository {
+    private final Path messagePath;
+
+    public FileMessageRepository(
+            @Value("${discodeit.repository.file-directory:data}") String rootPath
+    ) {
+        this.messagePath = Paths.get(rootPath, "messages");
+    }
+
     @Override
     public Optional<Message> findById(UUID messageId) {
         Path messagePath = getMessagePath(messageId);
@@ -28,7 +44,6 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public List<Message> findAll() {
-        Path messagePath = Paths.get("messages");
         if(Files.exists(messagePath)) {
             try {
                 List<Message> messages = Files.list(messagePath)
@@ -56,14 +71,14 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public List<Message> findAllByUserId(UUID userId) {
         return findAll().stream()
-                .filter(m -> m.getSender().getId().equals(userId))
+                .filter(m -> m.getSenderId().equals(userId))
                 .toList();
     }
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
         return findAll().stream()
-                .filter(m -> m.getChannel().getId().equals(channelId))
+                .filter(m -> m.getChannelId().equals(channelId))
                 .toList();
     }
 
@@ -90,7 +105,13 @@ public class FileMessageRepository implements MessageRepository {
         }
     }
 
-    private Path getMessagePath(UUID messagelId) {
-        return Paths.get("messages", messagelId.toString() + ".ser");
+    private Path getMessagePath(UUID messageId) {
+        try {
+            Files.createDirectories(messagePath);
+        } catch (IOException e) {
+            throw new IllegalStateException("messages 경로를 만드는데 실패했습니다.");
+        }
+
+        return messagePath.resolve(messageId.toString() + ".ser");
     }
 }
