@@ -1,158 +1,165 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
-
-    public BasicMessageService(UserRepository userRepository,
-                               ChannelRepository channelRepository,
-                               MessageRepository messageRepository) {
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.messageRepository = messageRepository;
-    }
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message createMessage(UUID channelId, UUID userId, String content) {
-        // 존재하는 유저인지 검색 및 검증
-        Channel channel = channelRepository.findChannelById(channelId)
+    public MessageResponse create(MessageCreateRequest request) {
+        // 메시지 생성을 위한 필수 검증
+        validateCreateRequest(request);
+
+        // 채널이 존재하는지 검증
+        channelRepository.findById(request.channelId())
                 .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
 
-        // 존재하는 유저인지 검색 및 검증
-        User user = userRepository.findUserById(userId)
+        // 유저가 존재하는지 검증
+        userRepository.findById(request.authorId())
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
-        // 채널에 가입된 유저만 메시지 작성 가능
-        if (!channel.getUsers().contains(user)) {
-            throw new RuntimeException("채널에 가입되어 있지 않습니다.");
+        List<UUID> attachmentIds = new ArrayList<>();
+        // 첨부파일 존재 여부 확인
+        if (request.attachments() != null) {
+            for (BinaryContentCreateRequest attachment : request.attachments()) {
+                if (attachment == null) {
+                    throw new RuntimeException("첨부파일이 올바르지 않습니다.");
+                }
+
+                // 첨부파일 저장
+                BinaryContent saved = saveAttachment(attachment);
+                attachmentIds.add(saved.getId());
+            }
         }
 
         // 메시지 생성
-        Message message = new Message(channel, user, content);
-        // 메시지를 소유해야 하는 채널과 유저의 메시지 목록에 추가
-        message.addToChannelAndUser();
+        Message message = new Message(
+                request.channelId(),
+                request.authorId(),
+                request.content(),
+                List.copyOf(attachmentIds)
+        );
 
-        // 메시지 저장 반영
-        messageRepository.saveMessage(message);
-        userRepository.saveUser(user);
-        channelRepository.saveChannel(channel);
+        // 메시지 저장
+        messageRepository.save(message);
 
-        return message;
+        return MessageResponse.from(message);
     }
 
     @Override
-    public List<String> readMessagesByChannelId(UUID channelId) {
-        // 메시지를 조회하려는 채널이 존재하는지 검증
-        Channel channel = channelRepository.findChannelById(channelId)
-                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
-
-        // 해당 채널의 모든 메시지를 반환
-        return channel.getMessages()
-                .stream()
-                .map(Message::formatForDisplay)
-                .toList();
-    }
-
-    @Override
-    public List<String> readMessagesByUserId(UUID userId) {
-        // 메시지를 조회하려는 유저가 존재하는지 검증
-        User user = userRepository.findUserById(userId)
-                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
-
-        // 해당 유저가 작성한 모든 메시지를 반환
-        return user.getMessages()
-                .stream()
-                .map(Message::formatForDisplay)
-                .toList();
-    }
-
-    @Override
-    public List<Message> findMessagesByChannelId(UUID channelId) {
-        // 메시지를 조회하려는 채널이 존재하는지 검증
-        Channel channel = channelRepository.findChannelById(channelId)
-                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
-
-        // 해당 채널의 모든 메시지 정보를 반환
-        return channel.getMessages();
-    }
-
-    @Override
-    public Message findMessageByChannelIdAndMessageId(UUID channelId, UUID messageId) {
-        // 존재하는 채널인지 검색 및 검증
-        Channel channel = channelRepository.findChannelById(channelId)
-                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
-
-        // 메시지가 존재하지 않거나 채널이 일치하지 않을 경우 예외 발생
-        return messageRepository.findMessageByMessageId(messageId)
-                .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
-    }
-
-    @Override
-    public Message updateMessageContent(UUID channelId, UUID userId, UUID messageId, String newContent) {
-        // 메시지 검색 및 권한 확인
-        Message message = validateMessageAccess(channelId, userId, messageId);
-        // 메시지 내용 수정
-        message.updateMessageContent(newContent);
-
-        // 수정 내용 반영
-        messageRepository.saveMessage(message);
-        userRepository.saveUser(message.getUser());
-        channelRepository.saveChannel(message.getChannel());
-
-        return message;
-    }
-
-    @Override
-    public void deleteMessage(UUID channelId, UUID userId, UUID messageId) {
-        // 메시지 검색 및 권한 확인
-        Message message = validateMessageAccess(channelId, userId, messageId);
-        // 메시지를 소유하고 있는 채널과 유저의 메시지 목록에서 제거
-        message.removeFromChannelAndUser();
-
-        // 메시지 삭제 및 삭제 내용 반영
-        messageRepository.deleteMessage(message.getId());
-        userRepository.saveUser(message.getUser());
-        channelRepository.saveChannel(message.getChannel());
-    }
-
-    private Message validateMessageAccess(UUID channelId, UUID userId, UUID messageId) {
-        // 존재하는 채널인지 검색 및 검증
-        Channel channel = channelRepository.findChannelById(channelId)
-                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
-
-        // 존재하는 유저인지 검색 및 검증
-        User user = userRepository.findUserById(userId)
-                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
-
-        // 채널에 가입된 유저인지 확인
-        if (!user.getChannels().contains(channel)) {
-            throw new RuntimeException("채널에 가입되어 있지 않습니다.");
+    public List<MessageResponse> findAllByChannelId(UUID channelId) {
+        if (channelId == null) {
+            throw new RuntimeException("채널이 존재하지 않습니다.");
         }
 
-        // 메시지가 존재하지 않거나 채널이 일치하지 않을 경우 예외 발생
-        Message message = messageRepository.findMessageByMessageId(messageId)
+        // 메시지를 조회하려는 채널이 존재하는지 검증
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
+
+        // 채널의 전체 메시지 목록 조회
+        List<Message> messages = messageRepository.findAllByChannelId(channelId);
+        List<MessageResponse> responses = new ArrayList<>();
+        for (Message message : messages) {
+            responses.add(MessageResponse.from(message));
+        }
+
+        return responses;
+    }
+
+    @Override
+    public MessageResponse update(MessageUpdateRequest request) {
+        // 메시지 수정을 위한 필수 검증
+        validateUpdateRequest(request);
+
+        // 수정 대상 메시지가 존재하는지 검증
+        Message message = messageRepository.findById(request.messageId())
                 .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
-        if (!message.getChannel().equals(channel)) {
+
+        // 메시지 수정 및 저장
+        message.update(request.newContent());
+        messageRepository.save(message);
+
+        return MessageResponse.from(message);
+    }
+
+    @Override
+    public void delete(UUID messageId) {
+        if (messageId == null) {
             throw new RuntimeException("메시지가 존재하지 않습니다.");
         }
 
-        // 작성자가 아닐 경우 예외 발생
-        if (!message.getUser().equals(user)) {
-            throw new RuntimeException("해당 메시지에 대한 권한이 없습니다.");
+        // 삭제 대상 메시지가 존재하는지 검증
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
+
+        // 메시지의 첨부파일이 존재하면 함께 삭제
+        if (message.getAttachmentIds() != null) {
+            for (UUID attachmentId : message.getAttachmentIds()) {
+                if (attachmentId != null) {
+                    binaryContentRepository.delete(attachmentId);
+                }
+            }
         }
 
-        return message;
+        // 메시지 삭제
+        messageRepository.delete(messageId);
+    }
+
+    private void validateCreateRequest(MessageCreateRequest request) {
+        if (request == null) {
+            throw new RuntimeException("요청이 필요합니다.");
+        }
+        if (request.channelId() == null) {
+            throw new RuntimeException("채널이 필요합니다.");
+        }
+        if (request.authorId() == null) {
+            throw new RuntimeException("작성자가 필요합니다.");
+        }
+        if (request.content() == null || request.content().isBlank()) {
+            throw new RuntimeException("내용이 필요합니다.");
+        }
+    }
+
+    private void validateUpdateRequest(MessageUpdateRequest request) {
+        if (request == null || request.messageId() == null) {
+            throw new RuntimeException("메시지가 존재하지 않습니다.");
+        }
+        if (request.newContent() == null || request.newContent().isBlank()) {
+            throw new RuntimeException("내용이 필요합니다.");
+        }
+    }
+
+    private BinaryContent saveAttachment(BinaryContentCreateRequest request) {
+        if (request.bytes() == null || request.bytes().length == 0) {
+            throw new RuntimeException("파일이 없습니다.");
+        }
+        BinaryContent binaryContent = new BinaryContent(
+                request.fileName(),
+                request.contentType(),
+                request.bytes()
+        );
+        return binaryContentRepository.save(binaryContent);
     }
 }

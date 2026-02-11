@@ -1,108 +1,70 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
+import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
-public class User extends Entity {
+@Getter
+public class User implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final UUID id;
+    private final Instant createdAt;
+    private Instant updatedAt;
+
     private final String email;
+    private String password;
     private String nickname;
-    private final List<Channel> channels;
-    private final List<Message> messages;
+    private UUID profileId; // BinaryContent
 
-    public User(String nickname, String email) {
-        super();
-        this.nickname = nickname;
+    public User(String email, String password, String nickname, UUID profileId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        this.updatedAt = createdAt;
+
         this.email = email;
-        this.channels = new ArrayList<>();
-        this.messages = new ArrayList<>();
+        this.password = password;
+        this.nickname = nickname;
+        this.profileId = profileId;
     }
 
-    public String getNickname() {
-        return nickname;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public List<Channel> getChannels() {
-        return Collections.unmodifiableList(channels);
-    }
-
-    public List<Message> getMessages() {
-        return Collections.unmodifiableList(messages);
-    }
-
-    public void joinChannel(Channel channel) {
-        // 이미 가입한 채널이라면 return
-        if (channels.contains(channel)) {
-            return;
-        }
-
-        // 유저가 가입한 채널 목록에 채널 추가
-        channels.add(channel);
-
-        // 채널의 유저 목록에 유저가 없다면 유저 추가
-        if (!channel.getUsers().contains(this)) {
-            channel.addUser(this);
-        }
-
-
-        // 수정 시각 갱신
-        super.update();
-    }
-
-    public void leaveChannel(Channel channel) {
-        // 가입한 채널이 아니라면 return
-        if (!channels.contains(channel)) {
-            return;
-        }
-
-        // 유저가 가입한 채널 목록에서 채널 제거
-        channels.remove(channel);
-
-        // 채널의 유저 목록에 유저가 있다면 유저 제거
-        if (channel.getUsers().contains(this)) {
-            channel.removeUser(this);
-        }
-
-        // 수정 시각 갱신
-        super.update();
-    }
-
-    public void addMessage(Message message) {
-        // 유저가 작성한 메시지 목록에 메시지 추가
-        messages.add(message);
-        // 수정 시각 갱신
-        super.update();
-    }
-
-    public void removeMessage(Message message) {
-        // 유저가 작성한 메시지 목록에서 메시지 제거
-        messages.remove(message);
-        // 수정 시각 갱신
-        super.update();
-    }
-
-    public User updateUserNickname(String newNickname) {
-        // 닉네임 변경
+    public void update(String newPassword, String newNickname, UUID newProfileId) {
+        this.password = newPassword;
         this.nickname = newNickname;
-        // 수정 시각 갱신
-        super.update();
-        return this;
+        this.profileId = newProfileId;
+        // 업데이트 시간 갱신
+        this.updatedAt = Instant.now();
     }
 
     @Override
     public String toString() {
         return String.format(
-                "User [id=%s, nickname=%s, email=%s, joinedChannels=%s, messageCount=%s]",
+                "User [id=%s, nickname=%s, email=%s]",
                 getId().toString().substring(0, 5),
                 nickname,
-                email,
-                channels.stream()
-                        .map(ch -> "[id=" + ch.getId().toString().substring(0,5) + ", name=" + ch.getName() + "]").toList(),
-                messages.size()
+                email
         );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        User user = (User) o;
+        return Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }
