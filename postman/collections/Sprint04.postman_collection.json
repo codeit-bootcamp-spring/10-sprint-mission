@@ -80,7 +80,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"participantIds\": [\r\n        \"ba4a52e5-a6ac-4aaf-a142-ec5414d26fc0\",\r\n        \"7bad9acf-921e-422f-b8b4-a6878bc5507e\"\r\n    ]\r\n}",
+              "raw": "{\r\n    \"participantIds\": [\r\n        \"a8bb1eda-3874-4de3-a9e6-1cffa336dbd6\",\r\n        \"a2e92114-7d87-4efe-a95b-1667cbf8559b\"\r\n    ]\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -88,13 +88,13 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/channels/private",
+              "raw": "{{baseURL}}/api/channel/private",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "channels",
+                "channel",
                 "private"
               ]
             }
@@ -141,14 +141,14 @@
               "raw": ""
             },
             "url": {
-              "raw": "{{baseURL}}/api/channels/a4a88905-49a4-471d-acdc-7544c4299b84",
+              "raw": "{{baseURL}}/api/channel/{{channelId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "channels",
-                "a4a88905-49a4-471d-acdc-7544c4299b84"
+                "channel",
+                "{{channelId}}"
               ]
             }
           },
@@ -173,13 +173,13 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/channels?userId={{userId}}",
+              "raw": "{{baseURL}}/api/channel?userId={{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "channels"
+                "channel"
               ],
               "query": [
                 {
@@ -214,13 +214,13 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/messages",
+              "raw": "{{baseURL}}/api/message",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "messages"
+                "message"
               ]
             }
           },
@@ -242,13 +242,13 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/messages/{{messageId}}",
+              "raw": "{{baseURL}}/api/message/{{messageId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "messages",
+                "message",
                 "{{messageId}}"
               ]
             }
@@ -290,16 +290,16 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"content\": \"변경된 메시지 내용입니다.\"\r\n}"
+              "raw": ""
             },
             "url": {
-              "raw": "{{baseURL}}/api/messages?channelId={{channelId}}",
+              "raw": "{{baseURL}}/api/message?channelId={{channelId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "messages"
+                "message"
               ],
               "query": [
                 {
@@ -412,13 +412,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/binary-contents/{{binaryContentId}}",
+              "raw": "{{baseURL}}/api/binaryContent/{{binaryContentId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "binary-contents",
+                "binaryContent",
                 "{{binaryContentId}}"
               ]
             }
@@ -426,14 +426,14 @@
           "response": []
         },
         {
-          "name": "findAllByIds",
+          "name": "find",
           "id": "41f4a5d9-ef8f-4074-8c8a-61ad7e83c35e",
           "request": {
             "method": "POST",
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"ids\": [\r\n        \"07111b30-ce46-4b21-b346-2e96e609eeb9\",\r\n        \"5ed6fdd6-ae2e-47aa-bf59-31d7de6dd348\"\r\n    ]\r\n}",
+              "raw": "{\r\n    \"ids\": [\r\n        \"7da69b83-0507-4c3e-810c-3cf39ac5e659\",\r\n        \"8caafe81-5172-472f-9481-804c97bf95bc\"\r\n    ]\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -441,13 +441,13 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/binary-contents",
+              "raw": "{{baseURL}}/api/binaryContent",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "binary-contents"
+                "binaryContent"
               ]
             }
           },
@@ -637,32 +637,32 @@
   ],
   "variable": [
     {
-      "id": "6f150bea-c4d5-449e-a6cc-19b3c8b96f57",
+      "id": "85055170-554c-4af0-b3a7-a231ff284d49",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "20d4c149-691a-4ba9-bf5c-b4d406bd1abf",
+      "id": "5477edec-c396-4bfb-8c51-91c94e9571ff",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "eb13c6f9-853d-438d-ac4c-49c5922f1c64",
+      "id": "e3d18109-bc5c-4f35-8481-8b34dc2b692a",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "f74ef0c1-68d3-45f2-924e-81c2e8e23940",
+      "id": "e9a8125d-be43-4fc1-9433-e643a103ccdd",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "9c00a920-0f06-4bc7-9c1a-e3cfecabc17a",
+      "id": "13a4f94d-48c8-4bd6-9419-d078e4281d75",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "c217ed40-511b-4d9f-a2b3-33ba9cc0faa3",
+      "id": "6de9fa25-115e-44db-8644-1fb2a3e3f109",
       "key": "binaryContentId",
       "value": ""
     }
