@@ -1,46 +1,63 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.validation.ValidationMethods;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
-
-    public BasicMessageService(MessageRepository messageRepository, UserRepository userRepository, ChannelRepository channelRepository) {
-        this.messageRepository = messageRepository;
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-    }
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message createMessage(UUID channelId, UUID authorId, String content) {
+    public Message createMessage(MessageCreateRequest request) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User author = validateAndGetUserByUserId(authorId);
+        User author = userRepository.findById(request.authorId())
+                .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
+
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(channelId);
-        // String `null` or `blank` 검증
-        ValidationMethods.validateNullBlankString(content, "content");
+        Channel channel = channelRepository.findById(request.channelId())
+                .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
 
         // author의 channel 참여 여부 확인
         if (!channel.getChannelMembersList().stream()
-                .anyMatch(user -> user.getId().equals(authorId))) {
+                .anyMatch(user -> user.getId().equals(request.authorId()))) {
             throw new IllegalArgumentException("현재 author은 해당 channel에 참가하지 않았습니다.");
         }
 
-        Message message = new Message(channel, author, content);
+        Message message = new Message(channel, author, request.content());
 
+        if (request.attachments() != null) {
+            for (BinaryContentCreateRequest attachment : request.attachments()) {
+                if (attachment == null) continue;
+
+                byte[] attachmentContent = attachment.binaryContent();
+
+                if (attachmentContent == null || attachmentContent.length == 0) continue;
+                BinaryContent binaryContent = new BinaryContent(attachmentContent);
+                message.addAttachmentId(binaryContent.getId());
+                binaryContentRepository.save(binaryContent);
+            }
+        }
         linkMessage(author, channel, message);
         messageRepository.save(message);
         channelRepository.save(channel);
@@ -63,7 +80,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<Message> findChannelMessagesByChannelId(UUID channelId) {
+    public List<Message> findAllByChannelId(UUID channelId) {
         // Channel ID null & channel 객체 존재 확인
         validateChannelByChannelId(channelId);
 
@@ -79,16 +96,15 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message updateMessageContent(UUID requestUserId, UUID messageId, String content) {
+    public Message updateMessageContent(MessageUpdateRequest request) {
         // Message ID null & Message 객체 존재 확인
-        Message message = findMessageById(messageId);
+        Message message = messageRepository.findById(request.messageId())
+                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
+
         // requestUser가 해당 message를 작성한 게 맞는지 확인
-        verifyMessageAuthor(message, requestUserId);
+        verifyMessageAuthor(message, request.requestUserId());
 
-        // content `null` or `blank` 검증
-        ValidationMethods.validateNullBlankString(content, "content");
-
-        message.updateContent(content);
+        message.updateContent(request.content());
         messageRepository.save(message);
         return message;
     }
@@ -98,9 +114,9 @@ public class BasicMessageService implements MessageService {
         // 요청자의 user ID null / user 객체 존재 확인
         validateUserByUserId(userId);
         // Message ID null & Message 객체 존재 확인
-        Message message = findMessageById(messageId);
+        Message message = validateAndGetMessageByMessageId(messageId);
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = validateAndGetChannelByChannelId(message.getMessageChannel().getId());
+        Channel channel = validateAndGetChannelByChannelId(message.getChannel().getId());
 
         // message author의 id와 삭제 요청한 user id가 동일한지 확인하고
         // 메세지가 작성된 channel의 owner와 user가 동일한지 확인해서 동일하지 않다면 exception
@@ -111,6 +127,12 @@ public class BasicMessageService implements MessageService {
         User author = validateAndGetUserByUserId(message.getAuthor().getId());
 
         unlinkMessage(author, channel, message);
+
+        if (message.getAttachmentIds() != null && !message.getAttachmentIds().isEmpty()) {
+            for (UUID attachmentId : message.getAttachmentIds()) {
+                binaryContentRepository.delete(attachmentId);
+            }
+        }
         messageRepository.delete(messageId);
         channelRepository.save(channel);
         userRepository.save(author);
@@ -131,22 +153,32 @@ public class BasicMessageService implements MessageService {
     //// validation
     // 로그인 되어있는 user ID null & user 객체 존재 확인
     public void validateUserByUserId(UUID userId) {
+        ValidationMethods.validateId(userId);
         userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
     public User validateAndGetUserByUserId(UUID userId) {
+        ValidationMethods.validateId(userId);
         return userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
     }
 
     // Channel ID null & channel 객체 존재 확인
     public Channel validateAndGetChannelByChannelId(UUID channelId) {
+        ValidationMethods.validateId(channelId);
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
     }
     public void validateChannelByChannelId(UUID channelId) {
+        ValidationMethods.validateId(channelId);
         channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
+    }
+    // Message ID null & Message 객체 존재 확인
+    public Message validateAndGetMessageByMessageId(UUID messageId) {
+        ValidationMethods.validateId(messageId);
+        return messageRepository.findById(messageId)
+                .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
     }
 
     // message의 author와 삭제 요청한 user가 동일한지
