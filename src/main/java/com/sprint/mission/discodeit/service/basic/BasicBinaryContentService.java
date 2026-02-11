@@ -79,8 +79,8 @@ public class BasicBinaryContentService implements BinaryContentService {
                 .id(binaryContent.getId())
                 .createdAt(binaryContent.getCreatedAt())
                 .fileName(binaryContent.getFileName())
-                .binaryContent(binaryContent.getBinaryContent())
-                .binaryContentType(binaryContent.getBinaryContentType())
+                .binaryContent(binaryContent.getBytes())
+                .binaryContentType(binaryContent.getContentType())
                 .build();
     }
 }

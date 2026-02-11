@@ -81,7 +81,7 @@
                         if (contentRes.ok) {
                             const contentData = await contentRes.json();
                             // JSON 내의 byte[]는 자동으로 Base64 문자열로 전송됨
-                            profileSrc = `data:image/png;base64,${contentData.binaryContent}`;
+                            profileSrc = `data:image/png;base64,${contentData.bytes}`;
                         }
                     } catch (e) {
                         console.error("이미지 로드 실패:", e);
