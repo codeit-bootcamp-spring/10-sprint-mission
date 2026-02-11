@@ -8,9 +8,9 @@ import java.util.Base64;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.sprint.mission.discodeit.dto.BinaryContentPostDto;
 import com.sprint.mission.discodeit.dto.BinaryContentResponseDto;
@@ -27,10 +27,8 @@ public class BinaryContentService {
 
 	private final BinaryContentMapper binaryContentMapper;
 
-	public BinaryContentResponseDto create(BinaryContentPostDto binaryContentPostDto) {
-		return binaryContentMapper.toResponseDto(
-			binaryContentRepository.save(binaryContentMapper.fromDto(binaryContentPostDto))
-		);
+	public BinaryContent create(BinaryContentPostDto binaryContentPostDto) {
+		return binaryContentRepository.save(binaryContentMapper.fromDto(binaryContentPostDto));
 	}
 
 	public BinaryContentResponseDto findById(UUID id) throws IOException {
@@ -46,13 +44,14 @@ public class BinaryContentService {
 		byte[] fileBytes = Files.readAllBytes(file.toPath());
 		String base64 = Base64.getEncoder().encodeToString(fileBytes);
 
-		return new BinaryContentResponseDto(binaryContent.getUserId(), binaryContent.getMessageId(), base64);
+		return new BinaryContentResponseDto(
+			"image/" + StringUtils.getFilenameExtension(binaryContent.getFileName()),
+			base64
+		);
 	}
 
-	public List<BinaryContentResponseDto> findAllByIdIn(List<UUID> idList) {
-		return binaryContentRepository.findByIdIn(idList).stream()
-			.map(binaryContentMapper::toResponseDto)
-			.collect(Collectors.toList());
+	public List<BinaryContent> findAllByIdIn(List<UUID> idList) {
+		return binaryContentRepository.findByIdIn(idList);
 	}
 
 	public void delete(UUID id) {
