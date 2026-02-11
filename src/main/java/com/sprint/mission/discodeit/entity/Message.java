@@ -1,68 +1,61 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
+import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+@Setter
+@Getter
+@RequiredArgsConstructor
 public class Message extends BaseEntity implements Serializable {
+    @Serial
     private static final long serialVersionUID = 1L;
 
-    private User user;
-    private Channel channel;
+    private UUID id;
     private String content;
+    private UUID channelId;
+    private UUID authorId;
+    private List<UUID> attachmentIds = new ArrayList<>();  // 첨부파일 ID 목록
+    private Instant createdAt;
+    private Instant updatedAt;
 
-    public Message(User user, Channel channel, String content) {
-//        this.id = UUID.randomUUID();
-//        this.createdAt = System.currentTimeMillis();
-//        this.updatedAt = this.createdAt;
-        super();
-        this.user = user;
-        this.channel = channel;
+
+    // 첨부파일 포함 생성자
+    public Message(String content, UUID channelId, UUID authorId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
         this.content = content;
+        this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = new ArrayList<>();
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public Channel getChannel() {
-        return channel;
-    }
-    public String getContent() {
-        return content;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-
-
-    public void setChannel(Channel channel) {
-        this.channel = channel;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public void setContent(String content) {
+    public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
         this.content = content;
+        this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = attachmentIds != null ? new ArrayList<>(attachmentIds) : new ArrayList<>();
     }
 
-    @Override
-    public String toString() {
-        return "Message{" +
-                "user=" + user +
-                ", channel=" + channel +
-                ", content='" + content + '\'' +
-                '}';
+    public void update(String newContent) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
+
 }

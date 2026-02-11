@@ -1,8 +1,10 @@
 plugins {
     id 'java'
+    id 'org.springframework.boot' version '3.2.4'
+    id 'io.spring.dependency-management' version '1.1.4'
 }
 
-group = 'org.example'
+group = 'com.sprint.mission'
 version = '1.0-SNAPSHOT'
 
 repositories {
@@ -10,16 +12,28 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.springframework:spring-tx'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+//    lombok plugin
+    implementation('org.projectlombok:lombok')
+    annotationProcessor('org.projectlombok:lombok')
+
+//    test 환경
+    testImplementation('org.projectlombok:lombok')
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    testAnnotationProcessor('org.projectlombok:lombok')
+
 }
+
 
 test {
     useJUnitPlatform()
-<<<<<<< HEAD
 }
 
-=======
-}
->>>>>>> 3a7b55e457e0d55f5042c220079e6b60cb0acc7f
+
+
+

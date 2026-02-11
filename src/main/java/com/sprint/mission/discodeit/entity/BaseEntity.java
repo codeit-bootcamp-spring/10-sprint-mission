@@ -1,32 +1,45 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
-public class BaseEntity {
+@Setter
+@Getter
+public class BaseEntity implements Serializable {
+    private static final long serialVersionUID =1L;
+
     protected UUID id;
-    protected long createdAt;
-    protected long updatedAt;
+    protected Instant createdAt;
+    protected Instant updatedAt;
 
     protected BaseEntity() {
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = this.createdAt;
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public long getCreatedAt() {
-        return createdAt;
-    }
-
-    public long getUpdatedAt() {
-        return updatedAt;
-    }
+//    public Long getUpdatedAt() {
+//        return updatedAt;
+//    }
+//
+//    public void setUpdatedAt(Long updatedAt) {
+//        this.updatedAt = updatedAt;
+//    }
+//
+//    public Long getCreatedAt() {
+//        return createdAt;
+//    }
+//
+//    public UUID getId() {
+//        return id;
+//    }
 
     public void touch() { // 수정 시점 갱신용 헬퍼
-        this.updatedAt = System.currentTimeMillis();
+        this.updatedAt = Instant.ofEpochSecond(System.currentTimeMillis());
     }
 
 }
