@@ -20,7 +20,7 @@ public class BasicAuthService implements AuthService {
     public LoginResponseDTO login(LoginRequestDTO dto) {
         // username 존재 여부 확인까지 하기
         User user = userRepository.findAll().stream()
-                .filter(u -> u.getUsername().equals(dto.username()))
+                .filter(u -> u.getEmail().equals(dto.email()))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException(
                         "로그인에 실패하였습니다."

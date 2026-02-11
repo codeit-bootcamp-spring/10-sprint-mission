@@ -15,7 +15,7 @@ public interface ChannelService {
 
     ChannelWithLastMessageDTO findByChannelId(UUID channelId);
 
-    ChannelWithLastMessageDTO updateChannel(UpdateChannelRequestDTO dto);
+    ChannelWithLastMessageDTO updateChannel(UUID channelId, UpdateChannelRequestDTO dto);
 
     void joinChannel(UUID channelId, UUID userId);
 
