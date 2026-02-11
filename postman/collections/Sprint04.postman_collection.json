@@ -1,0 +1,670 @@
+{
+  "info": {
+    "_postman_id": "f76d973a-738f-4a49-aeb9-e3eb65fdac1b",
+    "name": "Sprint04",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "AuthController",
+      "item": [
+        {
+          "name": "login",
+          "id": "e47027c9-d8a2-46b7-9110-41c5c14813ec",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"tester\",\r\n    \"password\": \"password123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/auth/login",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "0fcc2fde-be60-489e-b081-3ffc7127262e"
+    },
+    {
+      "name": "ChannelController",
+      "item": [
+        {
+          "name": "createPublic",
+          "id": "b212d3a3-f016-4d02-b217-a1737dd3d735",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"public채널2\",\r\n    \"description\": \"public 채널 생성 테스트 중\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/channel/public",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "channel",
+                "public"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "createPrivate",
+          "id": "40edd817-8eea-4389-b870-7f3d5cf5898a",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"participantIds\": [\r\n        \"a8bb1eda-3874-4de3-a9e6-1cffa336dbd6\",\r\n        \"a2e92114-7d87-4efe-a95b-1667cbf8559b\"\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/channel/private",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "channel",
+                "private"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "id": "63709b29-1a80-402b-b753-60ec8cedfc63",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"수정된 Public 채널\",\r\n    \"description\": \"수정되었습니다.\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/channel/{{channelId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "channel",
+                "{{channelId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete",
+          "id": "c0180da3-91c3-4292-9044-3d79a470c94d",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/channel/{{channelId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "channel",
+                "{{channelId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "findAllByUserId",
+          "id": "7a9cb39b-5f35-41a9-bf5e-fd4afe2f184f",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/channel?userId={{userId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "channel"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{userId}}",
+                  "uuid": "addd9d16-d12f-479b-a75d-33a247e97efb"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "339abd3e-5951-474d-bf8d-3c2ff0cdec76"
+    },
+    {
+      "name": "MessageController",
+      "item": [
+        {
+          "name": "create",
+          "id": "bb79f39a-0721-4224-8c68-51b07c723eff",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"content\": \"안녕하세요! 두 번째 메시지입니다.\",\r\n    \"channelId\": \"{{channelId}}\",\r\n    \"authorId\": \"{{userId}}\",\r\n    \"attachments\": []\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/message",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "message"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "id": "c33b8161-7b90-4b3f-af0b-3a84cb8b366a",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"content\": \"변경된 메시지 내용입니다.\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/message/{{messageId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "message",
+                "{{messageId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete",
+          "id": "1e39cc05-ee1a-4a44-bfca-3d2a2924c5e8",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"content\": \"변경된 메시지 내용입니다.\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/messages/{{messageId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "messages",
+                "{{messageId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "findAllByChannelId",
+          "id": "1465b1b0-489e-4999-9da5-01264f3ac99f",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/message?channelId={{channelId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "message"
+              ],
+              "query": [
+                {
+                  "key": "channelId",
+                  "value": "{{channelId}}",
+                  "uuid": "5fd6c627-9d84-4852-8c00-564a3b32e1f0"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "8d368ea4-defb-4cb0-b6b8-7acbdf5f35e2"
+    },
+    {
+      "name": "ReadStatusController",
+      "item": [
+        {
+          "name": "create",
+          "id": "fa597f03-d1fb-463e-afaa-a2e51ab18ffc",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"userId\": \"{{userId}}\",\r\n    \"channelId\": \"{{channelId}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/read-status",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "read-status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "id": "f01c0a87-0f30-4ca4-bd5c-44e3c618b377",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/read-status/{{readStatusId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "read-status",
+                "{{readStatusId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "findAllByUserId",
+          "id": "7ece0b02-9974-49ae-b91b-1d1a6daf31cc",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/read-status/user/{{userId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "read-status",
+                "user",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "c8fb63bf-e141-427e-8a06-22b5716dd3dd"
+    },
+    {
+      "name": "BinaryContentController",
+      "item": [
+        {
+          "name": "findById",
+          "id": "b30dd2c3-45e6-458f-ba42-aac24d28c876",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/binaryContent/{{binaryContentId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "binaryContent",
+                "{{binaryContentId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "find",
+          "id": "41f4a5d9-ef8f-4074-8c8a-61ad7e83c35e",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"ids\": [\r\n        \"7da69b83-0507-4c3e-810c-3cf39ac5e659\",\r\n        \"8caafe81-5172-472f-9481-804c97bf95bc\"\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/binaryContent",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "binaryContent"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "findBinaryContent",
+          "id": "316953bd-dd72-4bf8-9dec-6605e2fdeb0d",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/binaryContent/find?binaryContentId={{binaryContentId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "binaryContent",
+                "find"
+              ],
+              "query": [
+                {
+                  "key": "binaryContentId",
+                  "value": "{{binaryContentId}}",
+                  "uuid": "e2672ca0-4d6f-40ae-99b2-8547d9400830"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "a38952e0-2e60-4772-9650-05dd1b1dc942"
+    },
+    {
+      "name": "UserController",
+      "item": [
+        {
+          "name": "signUp",
+          "id": "9dabb8a2-75f9-4d5e-9b90-503283026b7d",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"tester01\",\r\n    \"email\": \"test1@example\",\r\n    \"password\": \"password\",\r\n    \"profileImage\": null\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/user",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update",
+          "id": "b08b7911-4e2e-417c-b699-529029710b1a",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"updated_user\",\r\n    \"email\": \"updated@example.com\",\r\n    \"password\": \"newpassword123\",\r\n    \"profileImage\": null\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/user/{{userId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete",
+          "id": "acbea87e-154e-4372-9ae4-8645439152c7",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/user/{{userId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "getAll",
+          "id": "6c8dd7f9-9248-4d12-8037-edf700b1f996",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/user",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "updateUserStatus",
+          "id": "1946ed06-f306-4db5-a1a6-4b1fb23e6fcb",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"isOnline\": true\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/api/user/{{userId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "{{userId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "findAll",
+          "id": "5ba1e319-7d66-49a8-88bc-bd5b21c676cb",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/user/findAll",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "user",
+                "findAll"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "90fce08b-b98d-4bac-bc9e-ed65502c2300"
+    }
+  ],
+  "variable": [
+    {
+      "id": "85055170-554c-4af0-b3a7-a231ff284d49",
+      "key": "baseURL",
+      "value": ""
+    },
+    {
+      "id": "5477edec-c396-4bfb-8c51-91c94e9571ff",
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "id": "e3d18109-bc5c-4f35-8481-8b34dc2b692a",
+      "key": "channelId",
+      "value": ""
+    },
+    {
+      "id": "e9a8125d-be43-4fc1-9433-e643a103ccdd",
+      "key": "messageId",
+      "value": ""
+    },
+    {
+      "id": "13a4f94d-48c8-4bd6-9419-d078e4281d75",
+      "key": "readStatusId",
+      "value": ""
+    },
+    {
+      "id": "6de9fa25-115e-44db-8644-1fb2a3e3f109",
+      "key": "binaryContentId",
+      "value": ""
+    }
+  ]
+}

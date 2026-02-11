@@ -1,0 +1,42 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.0' // 3.5.10 -> 3.4.0
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.sprint.mission'
+version = '0.0.1-SNAPSHOT'
+description = 'Demo project - discodeit'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	compileOnly 'org.projectlombok:lombok'
+		// compileOnly -> 컴파일할 때까지만 필요. 실제 프로그램이 실행될 때는 필요 없음.
+	annotationProcessor 'org.projectlombok:lombok'
+		// annotationProcessor -> 어노테이션에의해 정의된 프로세스를 동작하게 하는 역할. 컴파일 타임에 어노테이션을 기반으로 코드를 자동 생성하거나 변형하는 데 필요.
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// Thymeleaf 추가
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
