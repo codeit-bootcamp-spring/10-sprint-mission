@@ -22,9 +22,14 @@ public class MessageController {
         return ResponseEntity.ok(messageService.createMessage(messageInfo));
     }
 
-    @RequestMapping(value = "/{channelId}", method = RequestMethod.GET)
-    public ResponseEntity<List<MessageInfo>> getMessages(@PathVariable UUID channelId) {
-        return ResponseEntity.ok(messageService.findAllByChannelId(channelId));
+    @RequestMapping(value = "/{messageId}", method = RequestMethod.GET)
+    public ResponseEntity<MessageInfo> getMessage(@PathVariable UUID messageId) {
+        return ResponseEntity.ok(messageService.findMessage(messageId));
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<List<MessageInfo>> getAllMessages() {
+        return ResponseEntity.ok(messageService.findAll());
     }
 
     @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
