@@ -637,32 +637,32 @@
   ],
   "variable": [
     {
-      "id": "665d1d16-8b1a-4bb3-bf48-d0daa3a92a85",
+      "id": "6f150bea-c4d5-449e-a6cc-19b3c8b96f57",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "0f756094-94d1-459d-b9c0-a8d26cde360b",
+      "id": "20d4c149-691a-4ba9-bf5c-b4d406bd1abf",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "044848b2-917d-40fa-a206-978245d3360b",
+      "id": "eb13c6f9-853d-438d-ac4c-49c5922f1c64",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "ad667694-1fd7-4b5b-baf6-46dd383f9044",
+      "id": "f74ef0c1-68d3-45f2-924e-81c2e8e23940",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "b3d1a72d-8386-4af9-8f68-16fcbeae2afd",
+      "id": "9c00a920-0f06-4bc7-9c1a-e3cfecabc17a",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "c7d559c8-17b4-490b-b9d7-9df9cde2976c",
+      "id": "c217ed40-511b-4d9f-a2b3-33ba9cc0faa3",
       "key": "binaryContentId",
       "value": ""
     }
