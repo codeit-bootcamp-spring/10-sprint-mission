@@ -17,6 +17,7 @@ public enum ErrorCode {
     BINARY_CONTENT_NOT_FOUND("BINARY_CONTENT_NOT_FOUND", HttpStatus.NOT_FOUND, "Binary content not found"),
     IMAGE_BINARY_CONVERSION_FAILED("IMAGE_BINARY_CONVERSION_FAILED", HttpStatus.INTERNAL_SERVER_ERROR, "Image binary conversion failed"),
     READ_STATUS_NOT_FOUND("READ_STATUS_NOT_FOUND", HttpStatus.NOT_FOUND, "Read status not found"),
+    INVALID_CONTENT_TYPE("INVALID_CONTENT_TYPE", HttpStatus.BAD_REQUEST, "Invalid content type"),
 
     USERNAME_ALREADY_EXISTS("USERNAME_ALREADY_EXISTS", HttpStatus.CONFLICT, "Username already exists"),
     EMAIL_ALREADY_EXISTS("EMAIL_ALREADY_EXISTS", HttpStatus.CONFLICT, "Email already exists"),

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
-
+import com.sprint.mission.discodeit.response.ApiException;
+import com.sprint.mission.discodeit.response.ErrorCode;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -40,7 +41,10 @@ public class BinaryContent implements Serializable {
 
     private void validateContentType(String contentType) {
         if (!contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("이미지만 업로드 가능합니다");
+            throw new ApiException(
+                    ErrorCode.INVALID_CONTENT_TYPE,
+                    "이미지만 업로드 가능합니다"
+            );
         }
     }
 }
