@@ -1,30 +1,46 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
+import lombok.Getter;
 
+import java.io.Serializable;
+import java.util.UUID;
+
+
+@Getter
 public class User extends BaseEntity implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private String name;
     private String email;
+    private String password;
+    private UUID profileImageId;
 
-    public User(String name, String email) {
+    public User(String name, String email, String password) {
         super();
         this.name = name;
         this.email = email;
+        this.password = password;
     }
 
-    public void update(String name, String email) {
+    public void updateName(String name) {
         this.name = name;
+        touch(); // 수정시간 갱신
+    }
+
+    public void updateEmail(String email) {
         this.email = email;
         touch();
     }
 
-    public String getUserName() {
-        return name;
+    public void updatePassword(String password) {
+        this.password = password;
+        touch();
     }
 
-    public String getUserEmail() {
-        return email;
+    public void updateProfileImage(UUID imageId) {
+        this.profileImageId = imageId;
+        touch();
     }
 
     @Override

@@ -1,91 +1,144 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.MessageNotInputException;
+import com.sprint.mission.discodeit.exception.StatusNotFoundException;
+import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
 
+    private final MessageRepository messageRepository;
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
-    private final MessageRepository messageRepository;
-    private final UserService userService;
-    private final ChannelService channelService;
+    private final BinaryContentRepository binaryContentRepository;
 
-    public BasicMessageService(
-            ChannelRepository channelRepository,
-            UserRepository userRepository,
-            MessageRepository messageRepository,
-            UserService userService,
-            ChannelService channelService
-    ) {
-        this.channelRepository = channelRepository;
-        this.userRepository = userRepository;
-        this.messageRepository = messageRepository;
-        this.userService = userService;
-        this.channelService = channelService;
+    @Override
+    public MessageResponse create(MessageCreateRequest req) {
+        requireNonNull(req, "request");
+        requireNonNull(req.channelId(), "channelId");
+        requireNonNull(req.userId(), "userId");
+
+        if (req.content() == null || req.content().isBlank()) {
+            throw new MessageNotInputException();
+        }
+
+        // 존재 검증
+        channelRepository.findChannel(req.channelId()); // 없으면 ChannelNotFoundException
+        if (userRepository.findById(req.userId()) == null) {
+            throw new UserNotFoundException();
+        }
+
+        // 첨부파일(선택) 정리 + 방어적 복사
+        List<UUID> attachmentIds = (req.attachmentIds() == null) ? List.of() : List.copyOf(req.attachmentIds());
+
+        // 첨부파일 존재 검증(중복 제거 후 비교)
+        if (!attachmentIds.isEmpty()) {
+            List<UUID> distinctIds = attachmentIds.stream()
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList();
+
+            var found = binaryContentRepository.findAllByIdIn(distinctIds);
+            if (found.size() != distinctIds.size()) {
+                throw new StatusNotFoundException();
+            }
+        }
+
+        Message saved = messageRepository.save(
+                new Message(
+                        req.channelId(),
+                        req.userId(),
+                        req.content(),
+                        attachmentIds
+                )
+        );
+
+        return toResponse(saved);
     }
 
     @Override
-    public Message createMessage(UUID userId, UUID channelId, String content) {
-        // 존재 여부만 검증
-        userService.findUser(userId);
-        channelService.findChannel(channelId);
+    public List<MessageResponse> findAllByChannelId(UUID channelId) {
+        requireNonNull(channelId, "channelId");
 
-        return messageRepository.createMessage(userId, channelId, content);
-    }
+        channelRepository.findChannel(channelId); // 없으면 ChannelNotFoundException
 
-    @Override
-    public Message findMessage(UUID messageId) {
-        return messageRepository.findMessage(messageId);
-    }
-
-    @Override
-    public List<Message> findAllByChannelMessage(UUID channelId) {
-        channelRepository.findChannel(channelId);
-        return messageRepository.findAllByChannelMessage(channelId);
-    }
-
-    @Override
-    public List<Message> findAllMessage() {
-        return messageRepository.findAllMessage();
-    }
-
-    @Override
-    public List<Message> findAllByUserMessage(UUID userId) {
-        // 1. 유저 존재 확인
-        userRepository.findUser(userId);
-
-        // 2. 전체 채널 탐색
-        List<Message> result = channelRepository.findAllChannel().stream()
-                .filter(channel -> channel.hasUserId(userId))  // 채널에 유저 포함 여부
-                .flatMap(channel -> messageRepository.findAllByChannelMessage(channel.getId()).stream()) // 채널 메시지 스트림
-                .filter(message -> message.getSender().getId().equals(userId)) // 유저가 보낸 메시지
+        return messageRepository.findAllByChannelId(channelId).stream()
+                .map(this::toResponse)
                 .toList();
-
-        // 3. 메시지 없으면 예외
-        if (result.isEmpty()) throw new MessageNotFoundException();
-
-        return result;
     }
 
     @Override
-    public Message updateMessage(UUID messageId, String newContent) {
-        return messageRepository.updateMessage(messageId, newContent);
+    public MessageResponse update(MessageUpdateRequest req) {
+        requireNonNull(req, "request");
+        requireNonNull(req.messageId(), "messageId");
+
+        if (req.content() == null || req.content().isBlank()) {
+            throw new MessageNotInputException();
+        }
+
+        Message message = messageRepository.findById(req.messageId())
+                .orElseThrow(MessageNotFoundException::new);
+
+        message.updateContent(req.content());
+        Message saved = messageRepository.save(message);
+
+        return toResponse(saved);
     }
 
     @Override
-    public void deleteMessage(UUID messageId) {
-        messageRepository.deleteMessage(messageId);
+    public void delete(UUID messageId) {
+        requireNonNull(messageId, "messageId");
+
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(MessageNotFoundException::new);
+
+        List<UUID> attachmentIds = (message.getAttachmentIds() == null)
+                ? List.of()
+                : List.copyOf(message.getAttachmentIds());
+
+        for (UUID attachmentId : attachmentIds) {
+            if (attachmentId != null) {
+                binaryContentRepository.delete(attachmentId); // 없으면(StatusNotFoundException 등) 구현체 기준
+            }
+        }
+
+        messageRepository.delete(messageId);
+    }
+
+    private MessageResponse toResponse(Message m) {
+        List<UUID> attachmentIds = (m.getAttachmentIds() == null) ? List.of() : List.copyOf(m.getAttachmentIds());
+
+        return new MessageResponse(
+                m.getId(),
+                m.getChannelId(),
+                m.getUserId(),
+                m.getContent(),
+                attachmentIds,
+                m.getCreatedAt(),
+                m.getUpdatedAt()
+        );
+    }
+
+    private static <T> void requireNonNull(T value, String name) {
+        if (value == null) {
+            throw new IllegalArgumentException(name + " null이 될 수 없습니다.");
+        }
     }
 }

@@ -1,50 +1,55 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-public class Channel extends BaseEntity implements Serializable {
+@Getter
+@NoArgsConstructor
+public class Channel extends BaseEntity {
 
     private String channelName;
-    private final List<User> channelUsers = new ArrayList<>();
+    private String description;
+    private boolean isPrivate;
+    private List<User> participants;
 
-    public Channel(String channelName) {
+    // PUBLIC 채널
+    public Channel(String name, String description) {
         super();
-        this.channelName = channelName;
+        this.channelName = name;
+        this.description = description;
+        this.isPrivate = false;
+        this.participants = new ArrayList<>();
     }
 
-    public void updateChannelName(String channelName) {
-        this.channelName = channelName;
-        touch();
+    // PRIVATE 채널
+    public Channel(List<User> participants) {
+        super();
+        this.isPrivate = true;
+        this.participants = participants != null ? participants : new ArrayList<>();
     }
 
-    public void addChannelUser(User user) {
-        channelUsers.add(user);
-        touch();
+    public void updateChannel(String name, String description) {
+        if (isPrivate) {
+            throw new IllegalStateException("PRIVATE 채널은 수정할 수 없습니다.");
+        }
+        if (name != null) this.channelName = name;
+        if (description != null) this.description = description;
+        // touch();
     }
 
-    public void removeChannelUser(User user) {
-        channelUsers.remove(user);
-        touch();
+    public void addParticipant(User user) {
+        if (!participants.contains(user)) {
+            participants.add(user);
+            // touch();
+        }
     }
 
-    public boolean hasChannelUser(User user) {
-        return channelUsers.contains(user);
-    }
-
-    public boolean hasUserId(UUID userId) {
-        return channelUsers.stream()
-                .anyMatch(user -> user.getId().equals(userId));
-    }
-
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public List<User> getChannelUser() {
-        return channelUsers;
+    public void removeParticipant(User user) {
+        if (participants.remove(user)) {
+            // touch();
+        }
     }
 }
