@@ -12,32 +12,33 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/api/messages")
 @RequiredArgsConstructor
 public class MessageController {
     private final MessageService messageService;
 
     // 메시지 보내기
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(value = "/api/messages", method = RequestMethod.POST)
     public ResponseEntity<Message> createMessage(@RequestBody MessageWithBinaryRequest request) {
         return ResponseEntity.ok(messageService.create(request.messageRequest(), request.binaryRequests()));
     }
 
     // 메시지 수정
-    @RequestMapping(value = "/{messageId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/messages/{messageId}", method = RequestMethod.PATCH)
         public ResponseEntity<Message> updateMessage(@PathVariable UUID messageId,
                                                      @RequestBody MessageUpdateRequest messageUpdateRequest) {
             return ResponseEntity.ok(messageService.update(messageId, messageUpdateRequest));
         }
 
     // 메시지 삭제
-    @RequestMapping(value = "/{messageId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/messages/{messageId}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> deleteMessage(@PathVariable UUID messageId) {
         messageService.delete(messageId);
         return ResponseEntity.noContent().build();
     }
 
     // 특정 채널의 메시지 목록 조회
-    @RequestMapping(method = RequestMethod.GET)
+    @RequestMapping(value = "/api/messages", method = RequestMethod.GET)
     public ResponseEntity<List<Message>> getMessages(@RequestParam UUID channelId) {
         return ResponseEntity.ok(messageService.findAllByChannelId(channelId));
     }

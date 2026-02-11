@@ -23,40 +23,34 @@ public class UserController {
     private final UserStatusService userStatusService;
 
     // 사용자 등록
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(value = "/api/user", method = RequestMethod.POST)
     public ResponseEntity<User> createUser(@RequestBody UserCreateRequest request) {
         User user = userService.create(request, Optional.empty());
         return ResponseEntity.ok(user);
     }
 
     // 사용자 정보 수정
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/api/user/{id}", method = RequestMethod.PUT)
     public ResponseEntity<User> updateUser(@PathVariable UUID id, @RequestBody UserUpdateRequest request) {
         User user = userService.update(id, request, Optional.empty());
         return ResponseEntity.ok(user);
     }
 
     // 사용자 삭제
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/api/user/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    // 모든 사용자 조회
-    @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        List<UserDto> users = userService.findAll();
-        return ResponseEntity.ok(users);
-    }
-
     // 사용자의 온라인 상태 업데이트
-    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/api/user/{id}", method = RequestMethod.PATCH)
     public ResponseEntity<UserStatus> updateStatus(@PathVariable UUID id, @RequestBody UserStatusUpdateRequest request) {
         UserStatus status = userStatusService.updateByUserId(id, request);
         return ResponseEntity.ok(status);
     }
 
+    // 모든 사용자 조회(수정)
     @RequestMapping(method = RequestMethod.GET, value = "/api/user/findAll")
     public ResponseEntity<List<UserDto>> findAllUsers() {
         List<UserDto> userDto = userService.findAll();

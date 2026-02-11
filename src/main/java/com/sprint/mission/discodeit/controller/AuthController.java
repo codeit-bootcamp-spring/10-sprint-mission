@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/auth/login", method = RequestMethod.POST)
     public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
         User user = authService.login(loginRequest);
         return ResponseEntity.ok(user);
