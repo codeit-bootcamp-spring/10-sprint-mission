@@ -3,15 +3,17 @@ package com.sprint.mission.discodeit.dto;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Getter
+@NoArgsConstructor
 @ToString
 public class ReadStatusResponse {
-    private final UUID id;
-    private final UUID userId;
-    private final UUID channelId;
-    private final Instant lastReadAt;
+    private UUID id;
+    private UUID userId;
+    private UUID channelId;
+    private Instant lastReadAt;
 
     public ReadStatusResponse(UUID id, UUID userId, UUID channelId, Instant lastReadAt) {
         this.id = id;

@@ -1,16 +1,18 @@
 package com.sprint.mission.discodeit.dto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.UUID;
 
 @Getter
+@NoArgsConstructor
 public class MessageCreateRequest {
-    private final UUID channelId;
-    private final UUID authorId;
-    private final String content;
-    private final List<BinaryContentRequest> binaryContents;
+    private UUID channelId;
+    private UUID authorId;
+    private String content;
+    private List<BinaryContentRequest> binaryContents;
 
     public MessageCreateRequest(UUID channelId, UUID authorId, String content, List<BinaryContentRequest> binaryContents) {
         validate(channelId, authorId, content);

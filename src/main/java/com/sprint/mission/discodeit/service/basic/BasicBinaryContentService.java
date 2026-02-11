@@ -34,6 +34,11 @@ public class BasicBinaryContentService{
         return binaryContentMapper.toResponse(binaryContent);
     }
 
+    public BinaryContent findContent(UUID id) {
+        return binaryContentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 컨텐츠입니다."));
+    }
+
     public List<BinaryContentResponse> findAllByIdIn(List<UUID> ids) {
         return binaryContentRepository.findAllByIdIn(ids).stream()
                 .map(binaryContentMapper::toResponse)

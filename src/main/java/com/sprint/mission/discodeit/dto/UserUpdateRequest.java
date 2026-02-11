@@ -1,14 +1,16 @@
 package com.sprint.mission.discodeit.dto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Getter
+@NoArgsConstructor
 public class UserUpdateRequest {
-    private final UUID id;
-    private final String name;
-    private final String email;
-    private final BinaryContentRequest binaryContent;
+    private UUID id;
+    private String name;
+    private String email;
+    private BinaryContentRequest binaryContent;
 
     public UserUpdateRequest(UUID id, String name, String email, BinaryContentRequest binaryContent) {
         validate(id, name, email);

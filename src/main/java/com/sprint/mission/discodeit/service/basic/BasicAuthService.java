@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.LoginRequest;
 import com.sprint.mission.discodeit.dto.UserResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class BasicAuthService {
 
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
+    private final UserMapper userMapper;
     private User loggedInUser;
 
     public UserResponse login(LoginRequest request) {
@@ -59,12 +61,6 @@ public class BasicAuthService {
                 .map(UserStatus::isOnline)
                 .orElse(false);
 
-        return new UserResponse(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                isOnline,
-                user.getProfileId()
-        );
+        return userMapper.toResponse(user, isOnline);
     }
 }

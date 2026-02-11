@@ -1,13 +1,15 @@
 package com.sprint.mission.discodeit.dto;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class UserCreateRequest {
-    private final String name;
-    private final String email;
-    private final String password;
-    private final BinaryContentRequest binaryContent;
+    private String name;
+    private String email;
+    private String password;
+    private BinaryContentRequest binaryContent;
 
     public UserCreateRequest(String name, String email, String password, BinaryContentRequest binaryContent) {
         validate(name, email, password);

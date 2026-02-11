@@ -48,11 +48,8 @@ public class JavaApplication {
         
         BasicUserStatusService userStatusService = new BasicUserStatusService(userStatusRepository, userRepository, userStatusMapper);
         BasicReadStatusService readStatusService = new BasicReadStatusService(readStatusRepository, userRepository, channelRepository, readStatusMapper);
-        BasicAuthService authService = new BasicAuthService(userRepository, userStatusRepository);
+        BasicAuthService authService = new BasicAuthService(userRepository, userStatusRepository, userMapper);
 
         DiscodeitApplication app = new DiscodeitApplication();
-
-        System.out.println("=== JavaApplication (수동 초기화) 테스트 ===");
-        app.runTest(userService, channelService, messageService, authService, readStatusService, userStatusService);
     }
 }
