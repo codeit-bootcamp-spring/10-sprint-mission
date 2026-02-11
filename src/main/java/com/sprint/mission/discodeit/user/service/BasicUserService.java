@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.user.service;
 
 import com.sprint.mission.discodeit.binarycontent.entity.BinaryContent;
+import com.sprint.mission.discodeit.user.dto.*;
 import com.sprint.mission.discodeit.user.entity.User;
 import com.sprint.mission.discodeit.user.exception.EmailDuplicationException;
 import com.sprint.mission.discodeit.user.exception.UserDuplicationException;
@@ -12,10 +13,6 @@ import com.sprint.mission.discodeit.channel.repository.ChannelRepository;
 import com.sprint.mission.discodeit.user.repository.UserRepository;
 import com.sprint.mission.discodeit.userstatus.exception.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.userstatus.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.user.dto.UserCreateInfo;
-import com.sprint.mission.discodeit.user.dto.UserInfo;
-import com.sprint.mission.discodeit.user.dto.UserInfoWithStatus;
-import com.sprint.mission.discodeit.user.dto.UserUpdateInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +71,17 @@ public class BasicUserService implements UserService {
                     UserStatus status = userStatusRepository.findByUserId(user.getId())
                             .orElseThrow(UserStatusNotFoundException::new);
                     return UserMapper.toUserInfoWithStatus(user, status);
+                })
+                .toList();
+    }
+
+    public List<UserDto> findAllWithUserDTO() {
+        return userRepository.findAll()
+                .stream()
+                .map(user -> {
+                    UserStatus status = userStatusRepository.findByUserId(user.getId())
+                            .orElseThrow(UserStatusNotFoundException::new);
+                    return UserMapper.toUserDto(user, status);
                 })
                 .toList();
     }
