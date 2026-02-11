@@ -3,9 +3,11 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -24,9 +26,10 @@ public class MessageController {
         this.messageService = messageService;
     }
 
-    @RequestMapping(value = "/message", method = RequestMethod.POST)
-    public ResponseEntity<Message> postMessage(@RequestBody MessageCreateRequest request) {
-        Message message = messageService.create(request, new ArrayList<>());
+    @RequestMapping(value = "/message", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Message> postMessage(@RequestPart("message") MessageCreateRequest request,
+                                               @RequestPart("binarycontent")List<BinaryContentCreateRequest> binaryContents) {
+        Message message = messageService.create(request, binaryContents);
         return new ResponseEntity<>(message, HttpStatus.CREATED);
     }
 
