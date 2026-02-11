@@ -15,7 +15,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/readstatus")
 public class ReadStatusController {
-    private ReadStatusService readStatusService;
+    private final ReadStatusService readStatusService;
 
     // ReadStatus 생성
     @RequestMapping(method = RequestMethod.POST)
@@ -25,28 +25,28 @@ public class ReadStatusController {
     }
 
     // ReadStatus 조회
-    @RequestMapping(value = "{read-status-id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{read-status-id}", method = RequestMethod.GET)
     public ResponseEntity<ReadStatusDto.response> findReadStatus(@PathVariable("read-status-id") UUID readStatusId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(readStatusService.findById(readStatusId));
     }
 
     // 특정 사용자별 ReadStatus 조회
-    @RequestMapping(value = "findAll/{user-id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/findAll/{user-id}", method = RequestMethod.GET)
     public ResponseEntity<List<ReadStatusDto.response>> findAllByUserId(@PathVariable("user-id") UUID userId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(readStatusService.findAllByUserId(userId));
     }
 
     // ReadStatus 수정
-    @RequestMapping(value = "{read-status-id}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{read-status-id}", method = RequestMethod.PATCH)
     public ResponseEntity<ReadStatusDto.response> updateReadStatus(@PathVariable("read-status-id") UUID readStatusId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(readStatusService.updateReadStatus(readStatusId, new ReadStatusDto.updateRequest(Instant.now())));
     }
 
     // ReadStatus 삭제
-    @RequestMapping(value = "{read-status-id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{read-status-id}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> deleteReadStatus(@PathVariable("read-status-id") UUID readStatusId) {
         readStatusService.deleteReadStatusById(readStatusId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

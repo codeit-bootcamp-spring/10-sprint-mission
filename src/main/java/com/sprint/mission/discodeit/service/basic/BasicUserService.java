@@ -4,11 +4,17 @@ import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
-import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Service
@@ -18,16 +24,17 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final ChannelRepository channelRepository;
-    private final BinaryContentService binaryContentService;
+    @Value("${discodeit.upload.profile}")
+    private String PROFILE_DIR;
 
     @Override
     public UserDto.response createUser(UserDto.createRequest userReq, BinaryContentDto.createRequest profileReq) {
         userRepository.findAll().forEach(u -> {
             if (Objects.equals(u.getAccountId(), userReq.accountId())) throw new IllegalStateException("이미 존재하는 accountId입니다");
-            if (Objects.equals(u.getMail(), userReq.mail())) throw new IllegalStateException("이미 존재하는 mail입니다");
+            if (Objects.equals(u.getEmail(), userReq.email())) throw new IllegalStateException("이미 존재하는 mail입니다");
         });
 
-        User user = new User(userReq.accountId(), userReq.password(), userReq.name(), userReq.mail());
+        User user = new User(userReq.accountId(), userReq.password(), userReq.username(), userReq.email());
         UserStatus userStatus = new UserStatus(user.getId());
         userStatusRepository.save(userStatus);
 
@@ -54,8 +61,8 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserDto.response findUserByMail(String mail) {
-        return findUserEntityByMail(mail)
+    public UserDto.response findUserByEmail(String email) {
+        return findUserEntityByEmail(email)
                 .map(this::toResponse)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
     }
@@ -74,13 +81,13 @@ public class BasicUserService implements UserService {
         // accountId와 mail 중복성 검사
         if (userReq.accountId() != null && !Objects.equals(user.getAccountId(), userReq.accountId()))
             validateDuplicateAccount(userReq.accountId());
-        if (userReq.mail() != null && !Objects.equals(user.getMail(), userReq.accountId()))
-            validateDuplicateMail(userReq.accountId());
+        if (userReq.email() != null && !Objects.equals(user.getEmail(), userReq.accountId()))
+            validateDuplicateEmail(userReq.accountId());
 
         Optional.ofNullable(userReq.accountId()).ifPresent(user::updateAccountId);
         Optional.ofNullable(userReq.password()).ifPresent(user::updatePassword);
-        Optional.ofNullable(userReq.name()).ifPresent(user::updateName);
-        Optional.ofNullable(userReq.mail()).ifPresent(user::updateMail);
+        Optional.ofNullable(userReq.username()).ifPresent(user::updateUserName);
+        Optional.ofNullable(userReq.email()).ifPresent(user::updateEmail);
 
         // 변경되는 프로필 이미지가 있으면
         processUpdateProfile(user, profileReq);
@@ -105,8 +112,9 @@ public class BasicUserService implements UserService {
             channelRepository.save(channel);
         });
 
-        Optional.ofNullable(user.getProfileId())
-                        .ifPresent(binaryContentRepository::deleteById);
+        // 기존 프로필 이미지 있으면 삭제
+        deleteProfileIfExists(user.getProfileId(), Paths.get(PROFILE_DIR));
+
         userStatusRepository.deleteByUserId(user.getId());
         userRepository.deleteById(user.getId());
     }
@@ -115,33 +123,54 @@ public class BasicUserService implements UserService {
         findUserEntityByAccountId(accountId).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 accountId입니다"); });
     }
 
-    private void validateDuplicateMail(String mail) {
-        findUserEntityByMail(mail).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 mail입니다"); });
+    private void validateDuplicateEmail(String email) {
+        findUserEntityByEmail(email).ifPresent(u -> { throw new IllegalStateException("이미 존재하는 mail입니다"); });
     }
 
     private UserDto.response toResponse(User user) {
-        boolean isOnline = userStatusRepository.findByUserId(user.getId())
+        boolean online = userStatusRepository.findByUserId(user.getId())
                                                 .map(UserStatus::isOnline).orElse(false);
 
         return new UserDto.response(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
-                user.getAccountId(), user.getName(), user.getMail(),
-                user.getProfileId(), isOnline,
+                user.getAccountId(), user.getUsername(), user.getEmail(),
+                user.getProfileId(), online,
                 user.getJoinedChannels().stream().toList(),
                 user.getMessageHistory());
     }
 
     private void processUpdateProfile(User user, BinaryContentDto.createRequest profileReq) {
-        // profile이미지가 삭제
-        Optional.ofNullable(profileReq).ifPresent(p -> {
-            Optional.ofNullable(user.getProfileId()).ifPresent(binaryContentService::deleteById);
+        Optional.ofNullable(profileReq).ifPresent(req -> {
+            Path dir = Paths.get(PROFILE_DIR);
+            // 기존 프로필 이미지 있으면 삭제
+            deleteProfileIfExists(user.getProfileId(), dir);
 
-            BinaryContentType contentType = p.contentType();
-            String fileName = p.filename();
-            String url = p.url();
-            BinaryContent content = new BinaryContent(contentType, fileName, url);
+            BinaryContent content = new BinaryContent(req.contentType(), req.filename(), PROFILE_DIR);
+            // 이미지 저장
+            String fileName = content.getId() + "." + StringUtils.getFilenameExtension(req.filename());
+            try {
+                Files.createDirectories(dir);
+                Files.write(dir.resolve(fileName), req.bytes());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
             binaryContentRepository.save(content);
             user.updateProfileId(content.getId());
         });
+    }
+
+    private void deleteProfileIfExists(UUID profileId, Path dir) {
+        if (profileId != null) {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, profileId + ".*")) {
+                for (Path p : stream) {
+                    Files.deleteIfExists(p);
+                    break;
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            binaryContentRepository.deleteById(profileId);
+        }
     }
 
     private Optional<User> findUserEntityByAccountId(String accountId) {
@@ -150,9 +179,9 @@ public class BasicUserService implements UserService {
                 .findFirst();
     }
 
-    private Optional<User> findUserEntityByMail(String mail) {
+    private Optional<User> findUserEntityByEmail(String email) {
         return userRepository.findAll().stream()
-                .filter(u -> Objects.equals(u.getMail(), mail))
+                .filter(u -> Objects.equals(u.getEmail(), email))
                 .findFirst();
     }
 }

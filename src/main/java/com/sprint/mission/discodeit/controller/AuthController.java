@@ -14,7 +14,7 @@ public class AuthController {
     private final AuthService authService;
 
     // 로그인
-    @RequestMapping(value = "login", method = RequestMethod.POST)
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<UserDto.response> login(@RequestBody UserDto.LoginRequest loginReq) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(authService.login(loginReq));

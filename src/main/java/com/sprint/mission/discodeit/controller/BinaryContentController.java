@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,33 +21,38 @@ public class BinaryContentController {
 
     // BinaryContent 생성
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<BinaryContentDto.response> createBinaryContent(@RequestPart("file") MultipartFile attachment) {
+    public ResponseEntity<BinaryContentDto.response> createBinaryContent(@RequestPart("file") MultipartFile attachment) throws IOException {
 
-        // TODO attachment
-
+        BinaryContentDto.createRequest createReq = toServiceDto(attachment);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(binaryContentService.create(
-                        new BinaryContentDto.createRequest(BinaryContentType.FILE, "tmp", "tmp")));
+                .body(binaryContentService.create(createReq));
     }
 
     // BinaryContent 조회
-    @RequestMapping(params = "binaryContentId", method = RequestMethod.GET)
+    @RequestMapping(value = "/find", params = "binaryContentId", method = RequestMethod.GET)
     public ResponseEntity<BinaryContentDto.response> findById(@RequestParam UUID binaryContentId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(binaryContentService.findById(binaryContentId));
     }
 
     // BinaryContent 다건 조회
-    @RequestMapping(value = "findAll", method = RequestMethod.GET)
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
     public ResponseEntity<List<BinaryContentDto.response>> findAllByIdIn(@RequestBody List<UUID> uuids) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(binaryContentService.findAllByIdIn(uuids));
     }
 
     // BinaryContent 삭제
-    @RequestMapping(value = "{binary-content-id}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{binary-content-id}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> deleteById(@PathVariable("binary-content-id") UUID binaryContentId) {
         binaryContentService.deleteById(binaryContentId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    private BinaryContentDto.createRequest toServiceDto(MultipartFile attachment) throws IOException {
+        if (attachment == null) return null;
+
+        return new BinaryContentDto.createRequest(BinaryContentType.fromMimeType(attachment.getContentType()),
+                attachment.getOriginalFilename(), attachment.getBytes());
     }
 }
