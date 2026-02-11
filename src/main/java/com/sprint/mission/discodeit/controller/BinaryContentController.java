@@ -19,4 +19,10 @@ public class BinaryContentController {
         BinaryContent content = binaryContentService.find(binaryContentId);
         return ResponseEntity.ok(content);
     }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/api/binaryContents")
+    public ResponseEntity<List<BinaryContent>> getBinaryContents(@RequestParam List<UUID> ids) {
+        List<BinaryContent> contents = binaryContentService.findAllByIdIn(ids);
+        return ResponseEntity.ok(contents);
+    }
 }
