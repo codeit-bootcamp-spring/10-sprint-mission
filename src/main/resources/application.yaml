@@ -1,0 +1,4 @@
+discodeit:
+  repository:
+    type: file
+    file-directory: .discodeit

@@ -1,75 +1,145 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.common.BinaryContentParam;
+import com.sprint.mission.discodeit.dto.user.UserRequestCreateDto;
+import com.sprint.mission.discodeit.dto.user.UserRequestUpdateDto;
+import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.util.Validators;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
+    private final UserStatusRepository userStatusRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
-    public BasicUserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    @Override
+    public UserResponseDto create(UserRequestCreateDto request) {
+            Validators.validationUser(request.userName(), request.userEmail(), request.userPassword());
+            validateDuplicationUserName(request.userName());
+            validateDuplicationEmail(request.userEmail());
+            validateDuplicationUserPassword(request.userPassword());
+
+        BinaryContentParam profile = request.profileImage();
+        User user;
+        validateProfileImageParam(profile);
+        if(profile == null) {
+            user = new User(request.userName(), request.userEmail(), request.userPassword() ,null);
+        } else {
+            BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
+            binaryContentRepository.save(binaryContent);
+            user = new User(request.userName(), request.userEmail(), request.userPassword(), binaryContent.getId());
+        }
+
+        User savedUser = userRepository.save(user);
+        UserStatus userStatus = new UserStatus(savedUser.getId(), Instant.now());
+        userStatusRepository.save(userStatus);
+        return toDto(savedUser, userStatus.isOnline());
     }
 
     @Override
-    public User createUser(String userName, String userEmail) {
-        Validators.validationUser(userName, userEmail);
-        validateDuplicationEmail(userEmail);
-        User user = new User(userName, userEmail);
-        return userRepository.save(user);
-    }
-
-    @Override
-    public User readUser(UUID id) {
-        return validateExistenceUser(id);
-    }
-
-    @Override
-    public List<User> readAllUser() {
-        return userRepository.findAll();
-    }
-
-    @Override
-    public User updateUser(UUID id, String userName, String userEmail) {
+    public UserResponseDto find(UUID id) {
         User user = validateExistenceUser(id);
-        Optional.ofNullable(userName)
-                .ifPresent(name -> {Validators.requireNotBlank(name, "userName");
-                    user.updateUserName(name);
-                });
-        Optional.ofNullable(userEmail)
-                .ifPresent(email -> {Validators.requireNotBlank(email, "userEmail");
-                    validateDuplicationEmail(email);
-                    user.updateUserEmail(email);
-                });
-
-        return userRepository.save(user);
+        boolean online = resolveOnline(id);
+        return toDto(user, online);
     }
 
     @Override
-    public void deleteUser(UUID userId) {
-        validateExistenceUser(userId);
+    public List<UserResponseDto> findAll() {
+        return userRepository.findAll().stream()
+                .map(u -> toDto(u, resolveOnline(u.getId())))
+                .toList();
+    }
+
+    @Override
+    public UserResponseDto update(UserRequestUpdateDto request) {
+        Validators.requireNonNull(request, "request");
+        User user = validateExistenceUser(request.id());
+
+        Optional.ofNullable(request.userName())
+                .ifPresent(name -> {Validators.requireNotBlank(name, "userName");
+                        validateDuplicationUserName(name);
+                        user.updateUserName(name);
+                });
+        Optional.ofNullable(request.userEmail())
+                .ifPresent(email -> {Validators.requireNotBlank(email, "userEmail");
+                        validateDuplicationEmail(email);
+                        user.updateUserEmail(email);
+                });
+        Optional.ofNullable(request.userPassword())
+                .ifPresent(password -> {Validators.requireNotBlank(password, "userPassword");
+                        validateDuplicationUserPassword(password);
+                        user.updateUserPassword(password);
+                });
+
+        BinaryContentParam profile = request.profileImage();
+        if(profile != null) {
+            validateProfileImageParam(profile);
+            BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
+            user.updateProfileImage(binaryContent.getId());
+        }
+
+        User savedUser = userRepository.save(user);
+        boolean online = resolveOnline(savedUser.getId());
+        return toDto(savedUser, online);
+    }
+
+    @Override
+    public void delete(UUID userId) {
+        User user = validateExistenceUser(userId);
+        UUID profileId = user.getProfileId();
+        if(profileId != null) {
+            binaryContentRepository.deleteById(profileId);
+        }
+
+        userStatusRepository.deleteById(userId);
         userRepository.deleteById(userId);
     }
 
-
-
     @Override
-    public List<User> readUsersByChannel(UUID channelId) {
+    public List<UserResponseDto> findUsersByChannel(UUID channelId) {
         return userRepository.findAll().stream()
-                .filter(user -> user.getJoinedChannels().stream()
-                        .anyMatch(ch -> channelId.equals(ch.getId())))
+                .filter(user -> user.getJoinedChannelIds().contains(channelId))
+                .map(u -> toDto(u, resolveOnline(u.getId())))
                 .toList();
     }
 
     private void validateDuplicationEmail(String userEmail) {
         if(userRepository.findAll().stream()
-                .anyMatch(user -> userEmail.equals(user.getUserEmail()))) {
+                .anyMatch(user -> userEmail.equals(user.getUserEmail())))
+        {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+        }
+    }
+
+    private void validateDuplicationUserName(String userName) {
+        if(userRepository.findAll().stream()
+        .anyMatch(user -> userName.equals(user.getUserName())))
+        {
+            throw new IllegalArgumentException("이미 존재하는 이름입니다.");
+        }
+    }
+
+    private void validateDuplicationUserPassword(String userPassword) {
+        if(userRepository.findAll().stream()
+                .anyMatch(user -> userPassword.equals(user.getUserPassword())))
+        {
+            throw new IllegalArgumentException("이미 존재하는 비밀번호입니다.");
         }
     }
 
@@ -78,5 +148,36 @@ public class BasicUserService implements UserService {
         Validators.requireNonNull(id, "id는 null이 될 수 없습니다.");
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("유저 id가 존재하지 않습니다."));
+
+    }
+
+    public static UserResponseDto toDto(User user, boolean online) {
+        return new UserResponseDto(
+                user.getId(),
+                user.getUserName(),
+                user.getUserEmail(),
+                user.getProfileId(),
+                online,
+                user.getCreatedAt()
+        );
+    }
+
+    private boolean resolveOnline(UUID userId) {
+        return userStatusRepository.findAll().stream()
+                .filter(us -> userId.equals(us.getUserId()))
+                .findFirst()
+                .map(UserStatus::isOnline)
+                .orElse(false);
+    }
+
+    private void validateProfileImageParam(BinaryContentParam profile) {
+        if (profile != null) {
+            if(profile.data() == null || profile.data().length == 0) {
+                throw new IllegalArgumentException("프로필 이미지 데이터가 비어있습니다.");
+            }
+            if(profile.contentType() == null || profile.contentType().isBlank()) {
+                throw new IllegalArgumentException("contentType은 필수입니다.");
+            }
+        }
     }
 }

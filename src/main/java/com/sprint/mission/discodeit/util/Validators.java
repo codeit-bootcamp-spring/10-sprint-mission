@@ -1,8 +1,12 @@
 package com.sprint.mission.discodeit.util;
 
-import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusRequestCreateDto;
+import com.sprint.mission.discodeit.dto.common.BinaryContentParam;
+import com.sprint.mission.discodeit.dto.message.MessageRequestCreateDto;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public class Validators {
 
@@ -21,17 +25,34 @@ public class Validators {
         requireNotBlank(content, "content");
     }
 
-    public static void validationUser(String userName, String userEmail) {
+    public static void validateCreateMessageRequest(MessageRequestCreateDto request) {
+        requireNonNull(request, "request");
+        requireNonNull(request.channelId(), "channelId");
+        requireNonNull(request.authorId(), "authorId");
+    }
+
+    public static void validateCreateReadStatusRequest(ReadStatusRequestCreateDto request) {
+        requireNonNull(request, "request");
+        requireNonNull(request.channelId(), "channelId");
+        requireNonNull(request.userId(), "userId");
+    }
+
+    public static void validationUser(String userName, String userEmail, String userPassword) {
         requireNotBlank(userName, "userName");
         requireNotBlank(userEmail, "userEmail");
+        requireNotBlank(userPassword, "userPassword");
     }
 
-    public static void validationChannel(ChannelType type, String channelName, String channelDescription) {
-        requireNonNull(type, "type");
-        requireNotBlank(channelName, "channelName");
-        requireNotBlank(channelDescription, "channelDescription");
+    public static void validateCreatePublicChannel(String name, String description) {
+        requireNotBlank(name, "channelName");
+        requireNotBlank(description, "channelDescription");
     }
 
+    public static void validateCreatePrivateChannel(List<UUID> joinedUserIds) {
+        if (joinedUserIds == null || joinedUserIds.isEmpty()) {
+            throw new IllegalArgumentException("joinedUserIds는 필수입니다.");
+        }
+    }
 
 
 }
