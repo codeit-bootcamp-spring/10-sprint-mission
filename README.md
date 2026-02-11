@@ -6,14 +6,9 @@ mission-3 start!
 
 - 기능별로 package 를 구성했다.
 - `service`
-    - `AuthService`
-    - `BinaryContentService`
-    - `DomainService`
     - `UserService`
     - `ChannelService`
     - `MessageService`
-    - `ReadStatusService`
-    - `UserStatusService`
 - `repository`
     - `DomainRepository`
     - `UserRepository`
@@ -25,6 +20,7 @@ mission-3 start!
 - `entity`
     - `User`
     - `UserStatus`
+    - `UserPresence`
     - `Channel`
     - `ChannelType`
     - `ReadStatus`
@@ -33,13 +29,5 @@ mission-3 start!
     - `BinaryContent`
 - `dto`
     - `UserServiceDTO`
-    - `AuthServiceDTO`
-    - `BinaryContentServiceDTO`
     - `ChannelServiceDTO`
     - `MessageServiceDTO`
-    - `ReadStatusServiceDTO`
-    - `UserStatusServiceDTO`
-
-- Todo
-  - toJson
-  - encryption, decryption
