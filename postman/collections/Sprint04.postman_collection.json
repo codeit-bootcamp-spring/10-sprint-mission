@@ -16,7 +16,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"username\": \"tester04\",\r\n    \"password\": \"password\"\r\n}",
+              "raw": "{\r\n    \"username\": \"tester\",\r\n    \"password\": \"password123\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -59,13 +59,13 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/channels/public",
+              "raw": "{{baseURL}}/api/channel/public",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "channels",
+                "channel",
                 "public"
               ]
             }
@@ -117,14 +117,14 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/channels/bab40a47-4e28-4e63-9d42-feb69ee76091",
+              "raw": "{{baseURL}}/api/channel/{{channelId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "channels",
-                "bab40a47-4e28-4e63-9d42-feb69ee76091"
+                "channel",
+                "{{channelId}}"
               ]
             }
           },
@@ -502,13 +502,13 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/users",
+              "raw": "{{baseURL}}/api/user",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "users"
+                "user"
               ]
             }
           },
@@ -530,14 +530,14 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/users/b605ad97-46dc-48e7-9c75-21462d50df3a",
+              "raw": "{{baseURL}}/api/user/{{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "users",
-                "b605ad97-46dc-48e7-9c75-21462d50df3a"
+                "user",
+                "{{userId}}"
               ]
             }
           },
@@ -550,13 +550,13 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/users/{{userId}}",
+              "raw": "{{baseURL}}/api/user/{{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "users",
+                "user",
                 "{{userId}}"
               ]
             }
@@ -570,13 +570,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/users",
+              "raw": "{{baseURL}}/api/user",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "users"
+                "user"
               ]
             }
           },
@@ -598,34 +598,33 @@
               }
             },
             "url": {
-              "raw": "{{baseURL}}/api/users/b605ad97-46dc-48e7-9c75-21462d50df3a/status",
+              "raw": "{{baseURL}}/api/user/{{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "users",
-                "b605ad97-46dc-48e7-9c75-21462d50df3a",
-                "status"
+                "user",
+                "{{userId}}"
               ]
             }
           },
           "response": []
         },
         {
-          "name": "findAllUsers",
+          "name": "findAll",
           "id": "5ba1e319-7d66-49a8-88bc-bd5b21c676cb",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/users/findAll",
+              "raw": "{{baseURL}}/api/user/findAll",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "users",
+                "user",
                 "findAll"
               ]
             }
@@ -638,32 +637,32 @@
   ],
   "variable": [
     {
-      "id": "bca67e8c-29e2-4f17-bb46-26c81260738e",
+      "id": "665d1d16-8b1a-4bb3-bf48-d0daa3a92a85",
       "key": "baseURL",
       "value": ""
     },
     {
-      "id": "6e4f7d3f-1ad4-4b0b-9542-c22df0cd6e5d",
+      "id": "0f756094-94d1-459d-b9c0-a8d26cde360b",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "450ebbb9-54c1-4685-80aa-7327add7eaa5",
+      "id": "044848b2-917d-40fa-a206-978245d3360b",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "16cfefdf-74a9-49fb-8d8f-cdc7cbd3628e",
+      "id": "ad667694-1fd7-4b5b-baf6-46dd383f9044",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "e7ad24e2-1d5c-4037-abb3-b14afeb04845",
+      "id": "b3d1a72d-8386-4af9-8f68-16fcbeae2afd",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "cc367257-0a74-49f8-881e-de0452bbf0ed",
+      "id": "c7d559c8-17b4-490b-b9d7-9df9cde2976c",
       "key": "binaryContentId",
       "value": ""
     }

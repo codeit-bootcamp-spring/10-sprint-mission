@@ -48,7 +48,8 @@ public class DiscodeitApplication {
             BinaryContentRequest profileImageRequest = new BinaryContentRequest(
                     "profile.png",
                     "image/png",
-                    "dummy_image_data".getBytes(StandardCharsets.UTF_8)); // 테스트용 더미 바이트 데이터
+                    "Beer".getBytes(StandardCharsets.UTF_8)
+            ); // 테스트용 더미 바이트 데이터
             UserCreateRequest userRequest2 = new UserCreateRequest(
                     "tester2 - 프로필 이미지",
                     "test2@example.com",
