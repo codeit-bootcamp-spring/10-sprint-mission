@@ -2,39 +2,45 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.jcf.JCFUserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-public class JCFUserRepository implements UserRepository {
-    private final Map<UUID, User>userStore;
 
-    public JCFUserRepository(){
-        userStore = new HashMap<>();
-    }
+public class JCFUserRepository implements UserRepository {
+    private final Map<UUID, User> data = new HashMap<>();;
 
     @Override
     public User save(User user) {
-        userStore.put(user.getId(), user);
+       this.data.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public User findById(UUID id) {
-        User user = userStore.get(id);
-        if(user == null){
-            throw new IllegalArgumentException("해당 유저를 찾을 수 없습니다");
-        }
-
-        return user;
-    }
-
-    public List<User> findAll(){
-        return new ArrayList<>(userStore.values());
+   public Optional<User> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
-    public void delete(UUID id) {
-        userStore.remove(id);
+    public Optional<User> findByUsername(String name) {
+        return data.values().stream()
+                .filter(u -> u.getUsername().equals(name))
+                .findFirst();
     }
+
+    @Override
+    public List<User> findAll() {
+        return this.data.values().stream().toList();
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
+    }
+
+     @Override
+   public void deleteById(UUID id) {
+       this.data.remove(id);
+   }
 }
