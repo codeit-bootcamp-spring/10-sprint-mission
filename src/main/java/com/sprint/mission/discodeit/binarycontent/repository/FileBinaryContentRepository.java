@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.binarycontent.repository;
 
-import com.sprint.mission.discodeit.binarycontent.BinaryContent;
+import com.sprint.mission.discodeit.binarycontent.entity.BinaryContent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;

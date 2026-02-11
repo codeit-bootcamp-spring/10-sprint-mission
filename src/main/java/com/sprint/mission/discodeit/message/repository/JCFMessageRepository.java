@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.message.repository;
 
-import com.sprint.mission.discodeit.message.Message;
+import com.sprint.mission.discodeit.message.entity.Message;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 

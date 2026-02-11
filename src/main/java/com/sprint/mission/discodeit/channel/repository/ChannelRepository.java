@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.channel.repository;
 
-import com.sprint.mission.discodeit.channel.Channel;
+import com.sprint.mission.discodeit.channel.entity.Channel;
 
 import java.util.List;
 import java.util.Optional;

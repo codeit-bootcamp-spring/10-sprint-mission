@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.binarycontent;
+package com.sprint.mission.discodeit.binarycontent.mapper;
 
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentInfo;
+import com.sprint.mission.discodeit.binarycontent.entity.BinaryContent;
 
 public class BinaryContentMapper {
     private BinaryContentMapper(){}

@@ -1,9 +1,10 @@
-package com.sprint.mission.discodeit.channel;
+package com.sprint.mission.discodeit.channel.mapper;
 
 import com.sprint.mission.discodeit.channel.dto.ChannelInfo;
 import com.sprint.mission.discodeit.channel.dto.PrivateChannelCreateInfo;
 import com.sprint.mission.discodeit.channel.dto.PrivateChannelInfo;
 import com.sprint.mission.discodeit.channel.dto.PublicChannelInfo;
+import com.sprint.mission.discodeit.channel.entity.Channel;
 import com.sprint.mission.discodeit.common.ChannelType;
 
 import java.time.Instant;

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.userstatus.repository;
 
-import com.sprint.mission.discodeit.userstatus.UserStatus;
+import com.sprint.mission.discodeit.userstatus.entity.UserStatus;
 
 import java.util.List;
 import java.util.Optional;

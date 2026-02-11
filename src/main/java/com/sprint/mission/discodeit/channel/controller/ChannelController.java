@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.channel;
+package com.sprint.mission.discodeit.channel.controller;
 
 import com.sprint.mission.discodeit.channel.dto.*;
 import com.sprint.mission.discodeit.channel.service.ChannelService;

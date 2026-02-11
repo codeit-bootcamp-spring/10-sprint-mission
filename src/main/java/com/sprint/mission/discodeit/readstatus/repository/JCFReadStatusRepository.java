@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.readstatus.repository;
 
-import com.sprint.mission.discodeit.readstatus.ReadStatus;
+import com.sprint.mission.discodeit.readstatus.entity.ReadStatus;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 

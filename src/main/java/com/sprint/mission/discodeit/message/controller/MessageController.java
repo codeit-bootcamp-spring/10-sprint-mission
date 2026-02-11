@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.message;
+package com.sprint.mission.discodeit.message.controller;
 
 import com.sprint.mission.discodeit.message.dto.MessageCreateInfo;
 import com.sprint.mission.discodeit.message.dto.MessageInfo;

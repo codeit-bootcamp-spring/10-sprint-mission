@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.user;
+package com.sprint.mission.discodeit.user.mapper;
 
-import com.sprint.mission.discodeit.userstatus.UserStatus;
+import com.sprint.mission.discodeit.user.entity.User;
+import com.sprint.mission.discodeit.userstatus.entity.UserStatus;
 import com.sprint.mission.discodeit.user.dto.UserCreateInfo;
 import com.sprint.mission.discodeit.user.dto.UserInfo;
 import com.sprint.mission.discodeit.user.dto.UserInfoWithStatus;

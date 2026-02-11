@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.user.repository;
 
-import com.sprint.mission.discodeit.user.User;
+import com.sprint.mission.discodeit.user.entity.User;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 

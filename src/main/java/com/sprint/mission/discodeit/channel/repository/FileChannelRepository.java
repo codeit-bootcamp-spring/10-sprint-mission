@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.channel.repository;
 
-import com.sprint.mission.discodeit.channel.Channel;
+import com.sprint.mission.discodeit.channel.entity.Channel;
 import com.sprint.mission.discodeit.common.ChannelType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;

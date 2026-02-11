@@ -2,8 +2,8 @@ package com.sprint.mission.discodeit.binarycontent.service;
 
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentCreateInfo;
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentInfo;
-import com.sprint.mission.discodeit.binarycontent.BinaryContent;
-import com.sprint.mission.discodeit.binarycontent.BinaryContentMapper;
+import com.sprint.mission.discodeit.binarycontent.entity.BinaryContent;
+import com.sprint.mission.discodeit.binarycontent.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentsRequest;
 import com.sprint.mission.discodeit.binarycontent.exception.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.binarycontent.repository.BinaryContentRepository;

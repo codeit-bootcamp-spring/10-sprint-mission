@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.binarycontent;
+package com.sprint.mission.discodeit.binarycontent.entity;
 
 import lombok.Getter;
 

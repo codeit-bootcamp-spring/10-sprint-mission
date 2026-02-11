@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.message;
+package com.sprint.mission.discodeit.message.entity;
 
 import com.sprint.mission.discodeit.common.CommonEntity;
 import lombok.Getter;

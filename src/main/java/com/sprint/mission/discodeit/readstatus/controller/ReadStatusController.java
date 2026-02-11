@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.readstatus;
+package com.sprint.mission.discodeit.readstatus.controller;
 
 import com.sprint.mission.discodeit.readstatus.dto.ReadStatusCreateInfo;
 import com.sprint.mission.discodeit.readstatus.dto.ReadStatusInfo;

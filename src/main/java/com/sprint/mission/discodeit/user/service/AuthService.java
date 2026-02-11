@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.user.service;
 
 import com.sprint.mission.discodeit.user.dto.UserLoginInfo;
-import com.sprint.mission.discodeit.user.User;
+import com.sprint.mission.discodeit.user.entity.User;
 import com.sprint.mission.discodeit.user.exception.AuthenticationFailedException;
 import com.sprint.mission.discodeit.user.exception.UserNotFoundException;
-import com.sprint.mission.discodeit.userstatus.UserStatus;
-import com.sprint.mission.discodeit.user.UserMapper;
+import com.sprint.mission.discodeit.userstatus.entity.UserStatus;
+import com.sprint.mission.discodeit.user.mapper.UserMapper;
 import com.sprint.mission.discodeit.user.repository.UserRepository;
 import com.sprint.mission.discodeit.user.dto.UserInfo;
 import com.sprint.mission.discodeit.userstatus.exception.UserStatusNotFoundException;

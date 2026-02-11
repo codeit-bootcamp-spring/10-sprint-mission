@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.user.repository;
 
-import com.sprint.mission.discodeit.user.User;
+import com.sprint.mission.discodeit.user.entity.User;
 
 import java.util.List;
 import java.util.Optional;

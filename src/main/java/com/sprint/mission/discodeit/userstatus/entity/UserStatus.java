@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.userstatus;
+package com.sprint.mission.discodeit.userstatus.entity;
 
 import com.sprint.mission.discodeit.common.CommonEntity;
 import lombok.Getter;

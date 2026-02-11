@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.readstatus.repository;
 
-import com.sprint.mission.discodeit.readstatus.ReadStatus;
+import com.sprint.mission.discodeit.readstatus.entity.ReadStatus;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.userstatus.repository;
 
-import com.sprint.mission.discodeit.userstatus.UserStatus;
+import com.sprint.mission.discodeit.userstatus.entity.UserStatus;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 

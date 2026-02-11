@@ -1,8 +1,9 @@
-package com.sprint.mission.discodeit.message;
+package com.sprint.mission.discodeit.message.mapper;
 
 import com.sprint.mission.discodeit.message.dto.MessageCreateInfo;
 import com.sprint.mission.discodeit.message.dto.MessageInfo;
 import com.sprint.mission.discodeit.message.dto.MessageUpdateInfo;
+import com.sprint.mission.discodeit.message.entity.Message;
 
 import java.util.List;
 import java.util.UUID;

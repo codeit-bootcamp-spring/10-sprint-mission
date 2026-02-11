@@ -1,6 +1,7 @@
-package com.sprint.mission.discodeit.userstatus;
+package com.sprint.mission.discodeit.userstatus.mapper;
 
 import com.sprint.mission.discodeit.userstatus.dto.UserStatusInfo;
+import com.sprint.mission.discodeit.userstatus.entity.UserStatus;
 
 public class UserStatusMapper {
     private UserStatusMapper(){}

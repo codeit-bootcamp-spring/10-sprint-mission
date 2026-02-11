@@ -4,8 +4,8 @@ import com.sprint.mission.discodeit.user.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.userstatus.dto.UserStatusCreateInfo;
 import com.sprint.mission.discodeit.userstatus.dto.UserStatusInfo;
 import com.sprint.mission.discodeit.userstatus.dto.UserStatusUpdateInfo;
-import com.sprint.mission.discodeit.userstatus.UserStatus;
-import com.sprint.mission.discodeit.userstatus.UserStatusMapper;
+import com.sprint.mission.discodeit.userstatus.entity.UserStatus;
+import com.sprint.mission.discodeit.userstatus.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.user.repository.UserRepository;
 import com.sprint.mission.discodeit.userstatus.exception.UserStatusDuplicationException;
 import com.sprint.mission.discodeit.userstatus.exception.UserStatusNotFoundException;
@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RequiredArgsConstructor

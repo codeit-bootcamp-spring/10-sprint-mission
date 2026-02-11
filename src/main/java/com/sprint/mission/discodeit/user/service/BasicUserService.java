@@ -1,12 +1,12 @@
 package com.sprint.mission.discodeit.user.service;
 
-import com.sprint.mission.discodeit.binarycontent.BinaryContent;
-import com.sprint.mission.discodeit.user.User;
+import com.sprint.mission.discodeit.binarycontent.entity.BinaryContent;
+import com.sprint.mission.discodeit.user.entity.User;
 import com.sprint.mission.discodeit.user.exception.EmailDuplicationException;
 import com.sprint.mission.discodeit.user.exception.UserDuplicationException;
 import com.sprint.mission.discodeit.user.exception.UserNotFoundException;
-import com.sprint.mission.discodeit.userstatus.UserStatus;
-import com.sprint.mission.discodeit.user.UserMapper;
+import com.sprint.mission.discodeit.userstatus.entity.UserStatus;
+import com.sprint.mission.discodeit.user.mapper.UserMapper;
 import com.sprint.mission.discodeit.binarycontent.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.channel.repository.ChannelRepository;
 import com.sprint.mission.discodeit.user.repository.UserRepository;

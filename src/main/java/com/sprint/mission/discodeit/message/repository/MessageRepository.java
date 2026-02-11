@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.message.repository;
 
-import com.sprint.mission.discodeit.message.Message;
+import com.sprint.mission.discodeit.message.entity.Message;
 
 import java.util.List;
 import java.util.Optional;

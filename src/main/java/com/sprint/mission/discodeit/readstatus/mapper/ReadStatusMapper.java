@@ -1,7 +1,8 @@
-package com.sprint.mission.discodeit.readstatus;
+package com.sprint.mission.discodeit.readstatus.mapper;
 
 import com.sprint.mission.discodeit.readstatus.dto.ReadStatusCreateInfo;
 import com.sprint.mission.discodeit.readstatus.dto.ReadStatusInfo;
+import com.sprint.mission.discodeit.readstatus.entity.ReadStatus;
 
 public class ReadStatusMapper {
     private ReadStatusMapper(){}
