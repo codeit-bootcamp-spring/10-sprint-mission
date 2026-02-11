@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
 import java.util.*;
@@ -32,6 +33,14 @@ public class FileMessageRepository implements MessageRepository {
     }
 
     @Override
+    public List<Message> findByChannelId(UUID channelId) {
+        return data.values().stream()
+                .filter(message -> message.getSentChannelId().equals(channelId))
+                .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
+                .toList();
+    }
+
+    @Override
     public void deleteById(UUID messageId) {
         data.remove(messageId);
         saveToFile();
@@ -40,7 +49,7 @@ public class FileMessageRepository implements MessageRepository {
     @Override
     public void deleteByChannelId(UUID channelId) {
         data.values().removeIf(
-                message -> message.getSentChannel().getId().equals(channelId)
+                message -> message.getSentChannelId().equals(channelId)
         );
         saveToFile();
     }

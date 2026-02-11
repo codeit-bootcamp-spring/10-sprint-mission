@@ -1,74 +1,130 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
+import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
+import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.*;
 
+@Service
+@RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
-    private final MessageRepository messageRepository;
-
-    public BasicUserService(
-            UserRepository userRepository,
-            ChannelRepository channelRepository,
-            MessageRepository messageRepository
-    ) {
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.messageRepository = messageRepository;
-    }
+    private final UserStatusRepository userStatusRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public User createUser(String username, String email, String password) {
-        return userRepository.save(new User(username, email, password));
-    }
-
-    @Override
-    public List<User> getUserList() {
-        return userRepository.findAll();
-    }
-
-    @Override
-    public List<User> getUsersByChannel(UUID channelId) {
-        if (channelRepository.findById(channelId).isEmpty()) {
-            throw new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
+    public UserResponseDTO createUser(CreateUserRequestDTO dto) {
+        if (userRepository.existsByUsername(dto.username())) {
+            throw new IllegalArgumentException("이미 사용중인 username입니다.");
         }
 
-        return userRepository.findAll().stream()
-                .filter(user -> user.getJoinedChannels().stream()
-                        .anyMatch(channel -> channel.getId().equals(channelId)))
-                .toList();
-    }
+        if (userRepository.existsByEmail(dto.email())) {
+            throw new IllegalArgumentException("이미 사용중인 email입니다.");
+        }
 
-    @Override
-    public User getUserInfoByUserId(UUID userId) {
-        return findUserInfoById(userId);
-    }
+        // userId를 받아오기 위해 우선 객체 생성
+        User user = UserMapper.toEntity(dto, null);
 
-    @Override
-    public User updateUserName(UUID userId, String newName) {
-        User user = findUserInfoById(userId);
-        user.updateUsername(newName);
+        if (dto.profileImage() != null) {
+            var payload = dto.profileImage();
+            BinaryContent bc = BinaryContentMapper.toEntity(user.getId(), null, payload);
+
+            binaryContentRepository.save(bc);
+
+            // 프로필 사진이 있으면 갱신하기
+            user.updateProfileImage(bc.getId());
+        }
+
+        UserStatus status = new UserStatus(user.getId(), Instant.now());
+        userStatusRepository.save(status);
+
         userRepository.save(user);
 
-        // 메시지 파일 업데이트
-        updateMessagesUsername(userId, newName);
-        // 채널 파일 업데이트
-        updateChannelsUsername(userId, newName);
+        return UserMapper.toResponse(user, status);
+    }
 
-        return user;
+    @Override
+    public List<UserResponseDTO> findAll() {
+        List<User> users = userRepository.findAll();
+        List<UserStatus> statuses = userStatusRepository.findAll();
+
+        return UserMapper.toResponseList(users, statuses);
+    }
+
+    @Override
+    public List<UserResponseDTO> findAllByChannel(UUID channelId) {
+
+        List<User> users = userRepository.findAll().stream()
+                .filter(user -> user.getJoinedChannelIds().stream()
+                        .anyMatch(c -> c.equals(channelId)))
+                .toList();
+        List<UserStatus> statuses = userStatusRepository.findAll();
+
+        return UserMapper.toResponseList(users, statuses);
+    }
+
+    @Override
+    public UserResponseDTO findByUserId(UUID userId) {
+        return UserMapper.toResponse(
+                findUserInfoById(userId),
+                userStatusRepository.findByUserId(userId)
+                        .orElseThrow(() -> new NoSuchElementException(
+                                "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
+                        ))
+        );
+    }
+
+    @Override
+    public UserResponseDTO updateUser(UpdateUserRequestDTO dto) {
+        User user = findUserInfoById(dto.userId());
+
+        if (dto.username() != null) {
+            updateUserName(dto, user);
+        }
+        if (dto.statusType() != null) {
+            updateUserStatus(dto);
+        }
+        if (dto.profileImage() != null) {
+            updateUserProfileImage(dto, user);
+        }
+
+        return UserMapper.toResponse(
+                user,
+                userStatusRepository.findByUserId(dto.userId())
+                        .orElseThrow(() -> new NoSuchElementException(
+                                "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + dto.userId()
+                        ))
+        );
     }
 
     @Override
     public void deleteUser(UUID userId) {
-        findUserInfoById(userId);
+        User user = findUserInfoById(userId);
+        UUID binaryContentId = user.getProfileImageId();
+
+        userStatusRepository.deleteById(userStatusRepository.findByUserId(userId)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
+                )).getId());
+        if (binaryContentId != null){
+            binaryContentRepository.deleteById(binaryContentId);
+        }
         userRepository.deleteById(userId);
     }
+
+    // === 여기부터 내부 메서드 ===
 
     private User findUserInfoById(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null 값일 수 없습니다.");
@@ -77,29 +133,39 @@ public class BasicUserService implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다."));
     }
 
-    private void updateMessagesUsername(UUID userId, String newName) {
-        messageRepository.findAll().stream()
-                .filter(message -> message.getSentUser().getId().equals(userId))
-                .forEach(message -> {
-                    message.getSentUser().updateUsername(newName);
-                    messageRepository.save(message);
-                });
+    private void updateUserName(UpdateUserRequestDTO dto, User user) {
+        if (!user.getUsername().equals(dto.username())){
+            if (userRepository.existsByUsername(dto.username())) {
+                throw new IllegalArgumentException("이미 사용중인 username입니다.");
+            }
+        }
+
+        user.updateUsername(dto.username());
+        userRepository.save(user);
     }
 
-    private void updateChannelsUsername(UUID userId, String newName) {
-        channelRepository.findAll().forEach( channel -> {
-            boolean updated = false;
+    private void updateUserStatus(UpdateUserRequestDTO dto) {
+        UserStatus status = userStatusRepository.findByUserId(dto.userId())
+                .orElseThrow(() -> new NoSuchElementException(
+                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + dto.userId()
+                ));
+        status.updateStatusType(dto.statusType());
+        userStatusRepository.save(status);
+    }
 
-            for (User joinedUser : channel.getJoinedUsers()) {
-                if (joinedUser.getId().equals(userId)) {
-                    joinedUser.updateUsername(newName);
-                    updated = true;
-                }
-            }
-            // 갱신 되면 저장
-            if (updated) {
-                channelRepository.save(channel);
-            }
-        });
+    private void updateUserProfileImage(UpdateUserRequestDTO dto, User user) {
+        if (dto.profileImage() == null) {
+            throw new IllegalArgumentException("profile 값이 존재하지 않습니다.");
+        }
+
+        CreateBinaryContentPayloadDTO payload = dto.profileImage();
+
+        BinaryContent binaryContent = BinaryContentMapper.toEntity(user.getId(), null, payload);
+
+        binaryContentRepository.save(binaryContent);
+
+        // 프로필 사진이 있으면 갱신하기
+        user.updateProfileImage(binaryContent.getId());
+        userRepository.save(user);
     }
 }

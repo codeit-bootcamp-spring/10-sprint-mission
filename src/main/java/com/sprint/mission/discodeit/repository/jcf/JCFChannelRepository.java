@@ -29,6 +29,15 @@ public class JCFChannelRepository implements ChannelRepository {
     }
 
     @Override
+    public boolean existsByChannelName(String channelName) {
+        // 비공개 채널의 channelName이 Null이기 때문에 이렇게 진행
+        return data.values().stream()
+                .map(Channel::getChannelName)          // 각 채널의 name을 꺼내고
+                .filter(Objects::nonNull)              // null은 제거
+                .anyMatch(name -> name.equals(channelName));
+    }
+
+    @Override
     public void deleteById(UUID channelId) {
         data.remove(channelId);
     }

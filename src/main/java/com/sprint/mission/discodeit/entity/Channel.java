@@ -1,26 +1,25 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Getter
 public class Channel extends BaseEntity {
     private String channelName;
-    private List<User> joinedUsers;
+    private String description;
+    private ChannelType channelType;
+    private List<UUID> joinedUserIds;
 
-    public Channel(String channelName) {
+    public Channel(String channelName, String description, ChannelType channelType) {
         super();
         // 필드 초기화
         this.channelName = channelName;
-        this.joinedUsers = new ArrayList<>();
-    }
-
-    public String getChannelName() {
-        return channelName;
-    }
-
-    public List<User> getJoinedUsers() {
-        return joinedUsers;
+        this.description = description;
+        this.channelType = channelType;
+        this.joinedUserIds = new ArrayList<>();
     }
 
     public void updateChannelName(String channelName) {
@@ -28,12 +27,24 @@ public class Channel extends BaseEntity {
         setUpdatedAt();
     }
 
-    public void addUser(User user) {
-        joinedUsers.add(user);
+    public void updateDescription(String description) {
+        this.description = description;
+        setUpdatedAt();
+    }
+
+    public void updateChannelType(ChannelType channelType) {
+        this.channelType = channelType;
+        setUpdatedAt();
+    }
+
+    public void addUser(UUID userId) {
+        if (joinedUserIds.stream().noneMatch(id -> id.equals(userId))) {
+            joinedUserIds.add(userId);
+        }
     }
 
     public void removeUser(UUID userId) {
-        joinedUsers.removeIf(user -> user.getId().equals(userId));
+        joinedUserIds.removeIf(user -> user.equals(userId));
     }
 
     @Override
@@ -43,7 +54,8 @@ public class Channel extends BaseEntity {
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 ", channelName='" + channelName + '\'' +
-                ", joinedUsers=" + joinedUsers +
+                ", description=" + description +
+                ", joinedUsers=" + joinedUserIds +
                 '}';
     }
 }
