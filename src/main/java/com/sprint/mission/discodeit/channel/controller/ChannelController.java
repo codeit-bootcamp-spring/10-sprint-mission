@@ -39,7 +39,7 @@ public class ChannelController {
         return ResponseEntity.ok(channelService.findAllByUserId(findChannelInfo.userId()));
     }
 
-    @RequestMapping(value = "/public/{channelId}", method = RequestMethod.PATCH, consumes = "application/json")
+    @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH, consumes = "application/json")
     public ResponseEntity<Void> updateChannel(
             @PathVariable UUID channelId,
             @RequestBody PublicChannelCreateInfo channelInfo
