@@ -1,39 +1,49 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serializable;
+import lombok.Getter;
+
 import java.util.*;
 
 public class User extends Base  {
+    // Getter
     // 필드
+    @Getter
     private String name;
+    @Getter
     private final List<Channel> channelsList;
+    @Getter
     private final List<Message> messageList;
+    @Getter
+    private String email;
+    @Getter
+    private String password;
+    @Getter
+    private UUID profileImageID;
 
     // 생성자
-    public User(String name) {
+    public User(String name, String email, String password, UUID profileImageID) {
         super();
         this.name = name;
+        this.email = email;
+        this.password = password;
+        this.profileImageID = profileImageID;
         this.channelsList = new ArrayList<>();
         this.messageList = new ArrayList<Message>();
-    }
-
-    // Getter
-    public String getName() {
-        return name;
-    }
-
-    public List<Channel> getChannels() {
-        return channelsList;
-    }
-
-    public List<Message> getMessageList(){
-        return messageList;
     }
 
     // Setter
     public void updateName(String name) {
         this.name = name;
         updateUpdatedAt();
+    }
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+    public void updateProfileImageID(UUID profileImageID) {
+        this.profileImageID = profileImageID;
     }
 
     // other
@@ -43,7 +53,7 @@ public class User extends Base  {
     }
 
     public void leaveChannel(Channel channel){
-        channelsList.remove(channel);
+        channelsList.removeIf(ch -> ch.getId().equals(channel.getId()));
         updateUpdatedAt();
     }
 

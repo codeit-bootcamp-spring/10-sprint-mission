@@ -1,4 +1,4 @@
-package com.sprint.mission;
+package com.sprint.mission.discodeit;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -34,7 +34,7 @@ public class SerializationTest {
             List<User> users = (List<User>) ois.readObject();
             System.out.println("Users loaded: " + users.size());
             users.forEach(u -> System.out.println("  id=" + u.getId() + ", name=" + u.getName()
-                    + ", channels=" + u.getChannels().size() + ", messages=" + u.getMessageList().size()));
+                    + ", channels=" + u.getChannelsList() + ", messages=" + u.getMessageList().size()));
         } catch (Exception e) {
             System.out.println("User serialization failed: " + e.getMessage());
         }

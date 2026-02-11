@@ -2,9 +2,12 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
-
+@Repository
+@ConditionalOnProperty(name = "repository.type", havingValue = "jcf")
 public class JCFMessageRepository implements MessageRepository {
     final Map<UUID, Message> messageData;
 
@@ -23,8 +26,8 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void deleteMessage(Message message) {
-        messageData.remove(message.getId());
+    public void deleteMessage(UUID messageID) {
+        messageData.remove(messageID);
     }
 
     @Override
