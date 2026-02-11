@@ -2,9 +2,17 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
+@ConditionalOnProperty(
+        name = "discodeit.repository.type",
+        havingValue = "jcf",
+        matchIfMissing = true
+)
 public class JCFMessageRepository implements MessageRepository {
     private final Map<UUID, Message> data = new HashMap<>();
 
@@ -25,7 +33,21 @@ public class JCFMessageRepository implements MessageRepository {
     }
 
     @Override
-    public void delete(Message message){
-        data.remove(message.getId());
+    public List<Message> findAllByChannelId(UUID channelId){
+        return data.values().stream()
+                .filter(message -> message.getChannel().getId().equals(channelId))
+                .toList();
+    }
+
+    @Override
+    public void deleteById(UUID id){
+        data.remove(id);
+    }
+
+    // 특정 채널의 모든 메시지 삭제
+    @Override
+    public void deleteByChannelId(UUID channelId){
+        data.values().removeIf(message ->
+                message.getChannel().getId().equals(channelId));
     }
 }

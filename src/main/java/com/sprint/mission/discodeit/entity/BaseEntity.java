@@ -1,42 +1,30 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Objects;
+import java.time.Instant;
 import java.util.UUID;
 
+@Getter
+@EqualsAndHashCode(of = "id") // ID가 같으면 같은 객체로 인식하도록 설정
 public abstract class BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
     protected final UUID id;
-    protected final Long createdAt;
-    protected Long updatedAt;
+    protected final Instant createdAt;
+    protected Instant updatedAt;
 
     protected BaseEntity(){
         this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
+        this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
     }
 
     protected void updated(){
-        this.updatedAt = System.currentTimeMillis();
-    }
-
-    public UUID getId(){ return id; }
-    public Long getCreatedAt(){ return createdAt; }
-    public Long getUpdatedAt(){ return updatedAt; }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        BaseEntity that = (BaseEntity) o;
-        return Objects.equals(id, that.id); // 주소가 달라도 ID가 같으면 같은 객체로 취급
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
+        this.updatedAt = Instant.now();
     }
 }

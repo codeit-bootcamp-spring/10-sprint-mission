@@ -10,7 +10,11 @@ public interface UserRepository {
 
     Optional<User> findById(UUID id);
 
+    Optional<User> findByEmail(String email);
+
+    Optional<User> findByName(String name);
+
     List<User> findAll();
 
-    void delete(User user);
+    void deleteById(UUID id);
 }
