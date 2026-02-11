@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sprint.mission.discodeit.dto.ReadStatusPostDto;
@@ -19,25 +18,24 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/read-statuses")
 @RequiredArgsConstructor
 public class ReadStatusController {
 	public final ReadStatusService readStatusService;
 
-	@RequestMapping(value = "", method = RequestMethod.POST)
+	@RequestMapping(value = "/api/readStatus", method = RequestMethod.POST)
 	public ResponseEntity<ReadStatusResponseDto> createReadStatus(
 		@RequestBody ReadStatusPostDto readStatusPostDto) {
 		return ResponseEntity.status(HttpStatus.CREATED).body(readStatusService.create(readStatusPostDto));
 	}
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+	@RequestMapping(value = "/api/readStatus/{id}", method = RequestMethod.PATCH)
 	public ResponseEntity<ReadStatusResponseDto> updateReadStatus(@PathVariable UUID id) {
 		return ResponseEntity.status(HttpStatus.OK).body(readStatusService.update(id));
 	}
 
-	@RequestMapping(value = "", method = RequestMethod.GET)
+	@RequestMapping(value = "/api/users/{user-id}/readStatus", method = RequestMethod.GET)
 	public ResponseEntity<List<ReadStatusResponseDto>> getReadStatusByUserId(
-		@RequestParam(value = "user") UUID userId) {
+		@PathVariable(value = "user-id") UUID userId) {
 		return ResponseEntity.status(HttpStatus.OK).body(readStatusService.findAllByUserId(userId));
 	}
 }
