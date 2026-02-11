@@ -1,95 +1,113 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+@Repository
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 public class FileUserRepository implements UserRepository {
-    private Map<UUID, User> data;
-//    private ChannelRepository channelRepository;
-//    private MessageRepository messageRepository;
-    // 다른 레포지토리를 의존하면 안됨
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
-    public FileUserRepository() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./users.ser"))) {
-            data = (Map<UUID, User>) ois.readObject();
-        }catch (IOException | ClassNotFoundException e) {
-            System.out.println(e.getMessage());
-            data = new HashMap<>();
+    public FileUserRepository(@Value("${discodeit.repository.file-directory}") String dir) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), dir, User.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
-        saveData();
+    }
+
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     @Override
     public User save(User user) {
-        loadData();
-        data.put(user.getId(), user);
-        saveData();
+        Path path = resolvePath(user.getId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(user);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return user;
     }
 
     @Override
     public Optional<User> findById(UUID id) {
-        loadData();
-        return Optional.ofNullable(data.get(id));
+        User userNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                userNullable = (User) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Optional.ofNullable(userNullable);
     }
 
     @Override
     public List<User> findAll() {
-        loadData();
-        return new ArrayList<>(data.values());
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (User) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
     }
 
     @Override
     public void deleteById(UUID id) {
-        loadData();
-        data.remove(id);
-        saveData();
-    }
-
-//    @Override
-//    public List<User> getUsersByChannelId(UUID channelId) {
-//        loadData();
-//        return data.values()
-//                .stream()
-//                .filter(user ->
-//                        user.getChannels().
-//                                stream().
-//                                anyMatch(channel -> channel.getId().equals(channelId)))
-//                .toList();
-//    }
-    // 서비스 영역으로
-
-    // 다른 레포지토리 의존 X
-//    @Override
-//    public void setChannelRepository(ChannelRepository channelRepository) {
-//        this.channelRepository = channelRepository;
-//    }
-//
-//    @Override
-//    public void setMessageRepository(MessageRepository messageRepository) {
-//        this.messageRepository = messageRepository;
-//    }
-
-    // File 레포지토리에만 필요한 기능
-    public void saveData() {
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("./users.ser"))){
-            oos.writeObject(data);
-        } catch (Exception e) {
-            e.printStackTrace();
+        Path path = resolvePath(id);
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
-    
-    // File 레포지토리에만 필요한 기능 
-    public void loadData() {
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("./users.ser"))) {
-            data = (Map<UUID, User>) ois.readObject();
-        }catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        List<User> users = findAll();
+        return users.stream()
+                .filter(user -> user.getUsername().equals(username))
+                .findFirst();
     }
 }
