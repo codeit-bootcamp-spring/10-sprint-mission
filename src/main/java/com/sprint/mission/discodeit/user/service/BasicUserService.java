@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.user.mapper.UserMapper;
 import com.sprint.mission.discodeit.binarycontent.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.channel.repository.ChannelRepository;
 import com.sprint.mission.discodeit.user.repository.UserRepository;
+import com.sprint.mission.discodeit.userstatus.exception.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.userstatus.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.user.dto.UserCreateInfo;
 import com.sprint.mission.discodeit.user.dto.UserInfo;
@@ -19,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -62,7 +62,7 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
         UserStatus status = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("해당 사용자의 상태 정보가 존재하지 않습니다."));
+                .orElseThrow(UserStatusNotFoundException::new);
         return UserMapper.toUserInfoWithStatus(user, status);
     }
 
@@ -72,7 +72,7 @@ public class BasicUserService implements UserService {
                 .stream()
                 .map(user -> {
                     UserStatus status = userStatusRepository.findByUserId(user.getId())
-                            .orElseThrow(() -> new NoSuchElementException("해당 사용자의 상태 정보가 존재하지 않습니다."));
+                            .orElseThrow(UserStatusNotFoundException::new);
                     return UserMapper.toUserInfoWithStatus(user, status);
                 })
                 .toList();
@@ -85,7 +85,7 @@ public class BasicUserService implements UserService {
                 .filter(user -> user.getChannelIds().contains(channelId))
                 .map(user -> {
                     UserStatus status = userStatusRepository.findByUserId(user.getId())
-                            .orElseThrow(() -> new NoSuchElementException("해당 사용자의 상태 정보가 존재하지 않습니다."));
+                            .orElseThrow(UserStatusNotFoundException::new);
                     return UserMapper.toUserInfoWithStatus(user, status);
                 })
                 .toList();
@@ -119,7 +119,7 @@ public class BasicUserService implements UserService {
                     findStatus.updateLastOnlineAt();
                     return findStatus;
                 })
-                .orElseThrow(() -> new IllegalStateException("해당 사용자의 접속 정보를 찾을 수 없습니다."));
+                .orElseThrow(UserStatusNotFoundException::new);
         // status 업데이트 & save
         userStatusRepository.save(status);
 
