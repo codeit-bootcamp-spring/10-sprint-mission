@@ -2,9 +2,9 @@ package com.sprint.mission.discodeit.dto;
 
 import java.util.UUID;
 
-public record BinaryContentResponseDTO(
+public record ReadStatusPatchDto(
+	UUID readStatusId,
 	UUID userId,
-	UUID messageId,
-	byte[] data
+	UUID channelId
 ) {
 }

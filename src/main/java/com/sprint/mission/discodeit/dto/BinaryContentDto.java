@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
-public record BinaryContentDTO(
+public record BinaryContentDto(
 	String fileName,
 	byte[] data
 ) {

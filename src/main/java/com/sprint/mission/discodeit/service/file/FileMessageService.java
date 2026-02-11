@@ -7,8 +7,9 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import com.sprint.mission.discodeit.dto.MessagePatchDTO;
-import com.sprint.mission.discodeit.dto.MessagePostDTO;
+import com.sprint.mission.discodeit.dto.MessagePatchDto;
+import com.sprint.mission.discodeit.dto.MessagePostDto;
+import com.sprint.mission.discodeit.dto.MessageResponseDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -47,10 +48,10 @@ public class FileMessageService implements MessageService {
 	}
 
 	@Override
-	public Message create(MessagePostDTO messagePostDTO) {
+	public MessageResponseDto create(MessagePostDto messagePostDTO) {
 		//        // 메시지를 생성 전, 유저가 해당 채널에 속해있는지 확인한다.
 		//        Channel channel = channelService.findById(channelId);
-		//        User user = userService.findById(userId);
+		//        User user = userService.findById(authorId);
 		//
 		//        if (user.getChannelList().stream()
 		//            .noneMatch(ch -> ch.getId().equals(channelId))) {
@@ -68,7 +69,7 @@ public class FileMessageService implements MessageService {
 		//        channelFileIo.save(channelId, channel);
 		//
 		//        user.addMessage(newMessage);
-		//        userFileIo.save(userId, user);
+		//        userFileIo.save(authorId, user);
 		//
 		//
 		//        return newMessage;
@@ -76,7 +77,7 @@ public class FileMessageService implements MessageService {
 	}
 
 	@Override
-	public Message findById(UUID id) {
+	public MessageResponseDto findById(UUID id) {
 		//        return messageFileIo.load().stream()
 		//            .filter(u -> u.getId().equals(id))
 		//            .findFirst()
@@ -87,19 +88,19 @@ public class FileMessageService implements MessageService {
 	}
 
 	@Override
-	public List<Message> findByUser(UUID userId) {
-		//        return userService.findById(userId).getMessageList();
+	public List<MessageResponseDto> findByUser(UUID userId) {
+		//        return userService.findById(authorId).getMessageList();
 		return null;
 	}
 
 	@Override
-	public List<Message> findByChannelId(UUID channelId) {
+	public List<MessageResponseDto> findByChannelId(UUID channelId) {
 		//        return channelService.findById(channelId).getMessageIds();
 		return null;
 	}
 
 	@Override
-	public Message updateById(MessagePatchDTO messagePatchDTO) {
+	public MessageResponseDto updateById(UUID messageId, MessagePatchDto messagePatchDTO) {
 		//        Message updateMessage = this.findById(messageId);
 		//
 		//        updateMessage.updateText(text);

@@ -2,14 +2,13 @@ package com.sprint.mission.discodeit.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.sprint.mission.discodeit.dto.UserPostDTO;
-import com.sprint.mission.discodeit.dto.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.UserPostDto;
+import com.sprint.mission.discodeit.dto.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 
 @Component
 public class UserMapper {
-	public User toUser(UserPostDTO userPostDTO) {
+	public User toUser(UserPostDto userPostDTO) {
 		return new User(
 			userPostDTO.nickName(),
 			userPostDTO.userName(),
@@ -19,14 +18,15 @@ public class UserMapper {
 		);
 	}
 
-	public UserResponseDTO toUserResponseDTO(User user, UserStatus userStatus) {
-		return new UserResponseDTO(
-			userStatus,
-			user.getProfileId(),
-			user.getNickName(),
+	public UserResponseDto toUserResponseDto(User user, boolean online) {
+		return new UserResponseDto(
+			user.getId(),
+			user.getCreatedAt(),
+			user.getUpdatedAt(),
 			user.getUserName(),
 			user.getEmail(),
-			user.getPhoneNumber()
+			user.getProfileId(),
+			online
 		);
 	}
 }

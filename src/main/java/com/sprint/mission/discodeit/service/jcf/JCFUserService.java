@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-import com.sprint.mission.discodeit.dto.UserPatchDTO;
-import com.sprint.mission.discodeit.dto.UserPostDTO;
-import com.sprint.mission.discodeit.dto.UserResponseDTO;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.sprint.mission.discodeit.dto.UserPatchDto;
+import com.sprint.mission.discodeit.dto.UserPostDto;
+import com.sprint.mission.discodeit.dto.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 
@@ -30,7 +32,7 @@ public class JCFUserService implements UserService {
 
 	//  [ ] data 필드를 활용해 생성, 조회, 수정, 삭제하는 메소드를 구현하세요.
 	@Override
-	public User create(UserPostDTO userPostDTO) {
+	public UserResponseDto create(UserPostDto userPostDTO, MultipartFile profileImage) {
 		//        User newUser = new User(nickName, userName, email, phoneNumber);
 		//        data.add(newUser);
 		//        return newUser;
@@ -38,7 +40,7 @@ public class JCFUserService implements UserService {
 	}
 
 	@Override
-	public UserResponseDTO findById(UUID userId) {
+	public UserResponseDto findById(UUID userId) {
 		//        return data.stream()
 		//            .filter(user -> user.getId().equals(id))
 		//            .findFirst()
@@ -47,7 +49,7 @@ public class JCFUserService implements UserService {
 	}
 
 	@Override
-	public UserResponseDTO findByUserName(String userName) {
+	public UserResponseDto findByUserName(String userName) {
 		//        return data.stream()
 		//            .filter(user -> user.getUserName().equals(userName))
 		//            .findFirst()
@@ -56,17 +58,17 @@ public class JCFUserService implements UserService {
 	}
 
 	@Override
-	public List<UserResponseDTO> findAll() {
+	public List<UserResponseDto> findAll() {
 		//        return data;
 		return null;
 	}
 
 	@Override
-	public User updateUser(UserPatchDTO userPatchDTO) {
+	public UserResponseDto updateUser(UUID userId, UserPatchDto userPatchDTO) {
 		//        User updatedUser = data.stream()
-		//            .filter(u -> u.getId().equals(userId))
+		//            .filter(u -> u.getId().equals(authorId))
 		//            .findFirst()
-		//            .orElseThrow(() -> new NoSuchElementException("id가 " + userId + "인 유저를 찾을 수 없습니다."));
+		//            .orElseThrow(() -> new NoSuchElementException("id가 " + authorId + "인 유저를 찾을 수 없습니다."));
 		//
 		//        // input이 null이 아닌 필드 업데이트
 		//        Optional.ofNullable(user.getNickName())

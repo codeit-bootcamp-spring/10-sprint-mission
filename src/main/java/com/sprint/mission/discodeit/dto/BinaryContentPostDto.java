@@ -2,8 +2,10 @@ package com.sprint.mission.discodeit.dto;
 
 import java.util.UUID;
 
-public record ReadStatusPostDTO(
+public record BinaryContentPostDto(
 	UUID userId,
-	UUID channelId
+	UUID messageId,
+	String fileName,
+	byte[] data
 ) {
 }

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 
-import com.sprint.mission.discodeit.dto.ChannelResponseDTO;
+import com.sprint.mission.discodeit.dto.ChannelResponseDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -45,7 +45,7 @@ public class FileChannelService {
 		return null;
 	}
 
-	public ChannelResponseDTO findById(UUID channelId) {
+	public ChannelResponseDto findById(UUID channelId) {
 		//        return channelFileIo.load().stream()
 		//            .filter(ch -> ch.getId().equals(channelId))
 		//            .findFirst()
@@ -55,7 +55,7 @@ public class FileChannelService {
 		return null;
 	}
 
-	public List<ChannelResponseDTO> findAllChannel() {
+	public List<ChannelResponseDto> findAllChannel() {
 		//        return channelFileIo.load();
 		return null;
 	}
@@ -72,11 +72,11 @@ public class FileChannelService {
 
 	public Channel addUser(UUID channelId, UUID userId) {
 		//        Channel channel = this.findById(channelId);
-		//        User user = userService.findById(userId);
+		//        User user = userService.findById(authorId);
 		//
 		//        channel.addUserId(user);
 		//        channelFileIo.save(channelId, channel);
-		//        userFileIo.save(userId, user);
+		//        userFileIo.save(authorId, user);
 		//
 		//        return channel;
 
@@ -86,16 +86,16 @@ public class FileChannelService {
 	public boolean deleteUser(UUID channelId, UUID userId) {
 		//        boolean result = false;
 		//        Channel channel = this.findById(channelId);
-		//        User user = userService.findById(userId);
+		//        User user = userService.findById(authorId);
 		//
 		//        // 해당 채널에 유저가 속해있는지 확인한 후 내보낸다.
 		//        // 이때 유저 쪽도 채널 정보를 제거해야 한다.
-		//        if (this.isUserInvolved(channelId, userId)) {
-		//            result = channel.getUserIds().removeIf(u -> u.getId().equals(userId));
+		//        if (this.isUserInvolved(channelId, authorId)) {
+		//            result = channel.getUserIds().removeIf(u -> u.getId().equals(authorId));
 		//            result = result && user.getChannelList().removeIf(ch -> ch.getId().equals(channelId));
 		//
 		//            channelFileIo.save(channelId, channel);
-		//            userFileIo.save(userId, user);
+		//            userFileIo.save(authorId, user);
 		//        }
 
 		return false;
@@ -111,7 +111,7 @@ public class FileChannelService {
 
 	public boolean isUserInvolved(UUID channelId, UUID userId) {
 		//        Channel channel = this.findById(channelId);
-		//        User user = userService.findById(userId);
+		//        User user = userService.findById(authorId);
 		//
 		//        return channel.getUserIds().contains(user);
 
