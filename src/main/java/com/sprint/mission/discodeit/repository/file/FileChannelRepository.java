@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.utils.FileIOHelper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import org.springframework.stereotype.Repository;
+import com.sprint.mission.discodeit.utils.FileIOHelper;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -41,16 +40,15 @@ public class FileChannelRepository implements ChannelRepository {
         List<Channel> channels = FileIOHelper.loadAll(CHANNEL_DIRECTORY);
 
         return channels.stream()
-                .filter(channel ->
-                        channel.isPublic()
-                                || (channel.isPrivate() && channel.hasMember(requesterId))
-                )
+                .filter(channel -> channel.isPublic()
+                        || (channel.isPrivate() && channel.hasMember(requesterId)))
                 .toList();
     }
 
     @Override
     public boolean existsById(UUID channelId) {
         Path channelFilePath = CHANNEL_DIRECTORY.resolve(channelId.toString());
+
         return FileIOHelper.exists(channelFilePath);
     }
 }

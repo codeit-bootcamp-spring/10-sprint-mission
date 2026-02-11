@@ -3,10 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.user.CreateUserRequest;
 import com.sprint.mission.discodeit.dto.user.UpdateUserRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -61,9 +59,14 @@ public class BasicUserService implements UserService {
     }
 
     private User saveUserProfileImage(CreateUserRequest request, User user) {
-        if (request.profileImage() == null) return user;
+        if (request.profileImage() == null) {
+            return user;
+        }
 
-        UUID binaryContentId = binaryContentService.createBinaryContent(user.getId(), request.profileImage());
+        UUID binaryContentId = binaryContentService.createBinaryContent(
+                user.getId(),
+                request.profileImage()
+        );
         user.updateProfileId(binaryContentId);
 
         return user;
@@ -81,6 +84,7 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND,
                         "사용자를 찾을 수 없습니다 userId: " + userId));
+
         return user;
     }
 
@@ -88,6 +92,7 @@ public class BasicUserService implements UserService {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_STATUS_NOT_FOUND,
                         "UserStatus 찾을 수 없습니다 userId: " + userId));
+
         return userStatus;
     }
 
@@ -110,13 +115,16 @@ public class BasicUserService implements UserService {
                 .toList();
     }
 
-    //TODO: validation 없음
+    // TODO: validation 없음
     @Override
     public UserResponse updateUser(UUID requestId, UpdateUserRequest request) {
         User user = getUserOrThrow(requestId);
         validateDuplicateUserOnUpdate(user, request);
 
-        UUID profileId = binaryContentService.createBinaryContent(user.getId(), request.profileImage());
+        UUID profileId = binaryContentService.createBinaryContent(
+                user.getId(),
+                request.profileImage()
+        );
 
         user.update(
                 request.username(),
