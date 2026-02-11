@@ -15,8 +15,41 @@
             "method": "POST",
             "header": [],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"dustle3\",\n  \"password\": \"1234\",\n  \"email\": \"dustle3@email.com\",\n  \"profileImage\": {\n    \"type\": \"USER\",\n    \"image\": \"aGVsbG8=\" \n  }\n}\n",
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "username",
+                  "value": "dustle",
+                  "type": "text",
+                  "uuid": "95857329-6477-47db-a4e5-026b1361810a"
+                },
+                {
+                  "key": "password",
+                  "value": "1234",
+                  "type": "text",
+                  "uuid": "9e321757-768e-412a-9a05-e7365e7b903c"
+                },
+                {
+                  "key": "email",
+                  "value": "dustle@email.com",
+                  "type": "text",
+                  "uuid": "1129f516-8374-43c2-b64f-9dadd7eaa9a6"
+                },
+                {
+                  "key": "profileImage.type ",
+                  "value": "USER",
+                  "type": "text",
+                  "uuid": "b0f93c1e-b961-4356-8681-94c0c19c5d6b"
+                },
+                {
+                  "key": "profileImage.file",
+                  "type": "file",
+                  "uuid": "b42db389-4a9c-473f-91e9-408387e9a67c",
+                  "src": [
+                    "postman-cloud:///1f106e56-f350-4860-96d0-39c3e5876ed6"
+                  ]
+                }
+              ],
               "options": {
                 "raw": {
                   "language": "json"
@@ -80,7 +113,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "\n{\n  \"username\": \"user1-upd\",\n  \"password\": \"5678\",\n  \"email\": \"user1-upd@test.com\",\n  \"profileImage\": {\n    \"type\": \"USER\",\n    \"image\": \"dXBkYXRlZA==\" \n  }\n}",
+              "raw": "\n{\n  \"username\": \"user1-upd\",\n  \"password\": \"5678\",\n  \"email\": \"user1-upd@test.com\",\n  \"profileImage\": null\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -345,7 +378,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"channelId\": \"{{channelId}}\",\n  \"content\": \"hello world\",\n  \"attachments\": [\n    {\n      \"type\": \"MESSAGE\",\n      \"image\": \"aW1hZ2U=\"\n    }\n  ]\n}",
+              "raw": "{\n  \"channelId\": \"{{channelId}}\",\n  \"content\": \"hello world\",\n  \"attachments\": null\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -363,7 +396,8 @@
               "query": [
                 {
                   "key": "userId",
-                  "value": "{{userId}}"
+                  "value": "{{userId}}",
+                  "uuid": "7750a0af-d1ce-475f-92de-b79f3622a876"
                 }
               ]
             }
@@ -552,8 +586,23 @@
             "method": "POST",
             "header": [],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"type\": \"USER\",\n  \"image\": \"aGVsbG8=\"\n}",
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "type",
+                  "value": "USER",
+                  "type": "text",
+                  "uuid": "5cd63904-c1da-4057-93db-0d9e26ff9e3f"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "uuid": "f7be1a66-af7d-4fc6-992d-114866dcfc93",
+                  "src": [
+                    "postman-cloud:///1f106e56-f350-4860-96d0-39c3e5876ed6"
+                  ]
+                }
+              ],
               "options": {
                 "raw": {
                   "language": "json"
@@ -571,7 +620,8 @@
               "query": [
                 {
                   "key": "ownerId",
-                  "value": "{{userId}}"
+                  "value": "{{userId}}",
+                  "uuid": "534f1676-6717-441d-b08a-468e598ff060"
                 }
               ]
             }
@@ -585,13 +635,20 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/binary-contents/{{binaryContentId}}",
+              "raw": "{{base_url}}/binary-contents?binaryContentId={{binaryContentId}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
-                "binary-contents",
-                "{{binaryContentId}}"
+                "binary-contents"
+              ],
+              "query": [
+                {
+                  "key": "binaryContentId",
+                  "value": "{{binaryContentId}}",
+                  "type": "text",
+                  "uuid": "f8cdda10-d752-4bbe-80cf-b75e45268828"
+                }
               ]
             }
           },
@@ -651,37 +708,37 @@
   ],
   "variable": [
     {
-      "id": "1999b7c9-5c91-4d8c-8d0f-e43c32730150",
+      "id": "9aa55fbe-437f-49c0-8d7b-71e9e9604ef8",
       "key": "base_url",
       "value": ""
     },
     {
-      "id": "9f308acc-4c4f-4279-9727-b3eb1999c7c3",
+      "id": "43f46a4c-7d5f-4288-8dc4-9d67f32400ee",
       "key": "userId",
       "value": ""
     },
     {
-      "id": "a1bfc0ae-c4b9-4d39-9291-8232325308b7",
+      "id": "b8618955-38d7-4918-ac32-9030bdde6690",
       "key": "channelId",
       "value": ""
     },
     {
-      "id": "ee9fd5e6-997d-4a6a-b109-3497f5a51ff7",
+      "id": "dc774f32-ee34-480b-8c8b-d77494553305",
       "key": "messageId",
       "value": ""
     },
     {
-      "id": "7fc7b487-a8d5-4575-b032-bfebeee3ccc9",
+      "id": "d4f7dcd0-f8ab-42d8-ac91-8ace61780d7a",
       "key": "readStatusId",
       "value": ""
     },
     {
-      "id": "e0a1a095-2a5f-4ce0-8488-152e2ed8d5f5",
+      "id": "b1d564f0-9d9b-4959-bb84-b21066b44bdf",
       "key": "binaryContentId",
       "value": ""
     },
     {
-      "id": "777c9f3b-485f-4a3f-b08b-eeccb7cf74b4",
+      "id": "38a67bde-a3be-4f96-8fce-d04a97dec9ca",
       "key": "binaryContentId2",
       "value": ""
     }

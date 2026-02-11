@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.utils.FileIOHelper;
-import org.springframework.stereotype.Repository;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -21,7 +20,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
                 .map(id -> BINARY_CONTENT_DIRECTORY.resolve(id.toString()))
                 .map(path -> FileIOHelper.<BinaryContent>load(path))
                 .flatMap(Optional::stream)
-                .map(BinaryContent::getImage)
+                .map(BinaryContent::getBytes)
                 .toList();
     }
 

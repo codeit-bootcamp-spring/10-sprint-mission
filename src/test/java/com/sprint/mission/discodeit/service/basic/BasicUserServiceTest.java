@@ -18,6 +18,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -49,7 +50,7 @@ public class BasicUserServiceTest {
     @ParameterizedTest
     @MethodSource("createUserBinaryContentRequestProvider")
     @DisplayName("User 생성 성공")
-    void testCreateUser(BinaryContentRequest binaryContentRequest) {
+    void testCreateUser(BinaryContentRequest binaryContentRequest) throws Exception {
         // given
         CreateUserRequest request = new CreateUserRequest(
                 "testUser" + UUID.randomUUID(),
@@ -82,7 +83,7 @@ public class BasicUserServiceTest {
             assertThat(binaryContent.getOwnerId()).isEqualTo(user.getId());
             assertThat(binaryContent.getBinaryContentOwnerType())
                     .isEqualTo(BinaryContentOwnerType.USER);
-            assertThat(binaryContent.getImage()).isEqualTo(binaryContentRequest.image());
+            assertThat(binaryContent.getBytes()).isEqualTo(binaryContentRequest.file().getBytes());
         }
     }
 
@@ -91,7 +92,12 @@ public class BasicUserServiceTest {
                 Arguments.of((BinaryContentRequest) null),
                 Arguments.of(new BinaryContentRequest(
                         BinaryContentOwnerType.USER,
-                        "test-image".getBytes()
+                        new MockMultipartFile(
+                                "file",
+                                "test.png",
+                                "image/png",
+                                "test-bytes".getBytes()
+                        )
                 ))
         );
     }
@@ -165,7 +171,7 @@ public class BasicUserServiceTest {
 
         // then
         assertThat(response.username()).isEqualTo("findUser");
-        assertThat(response.userOnlineStatus()).isEqualTo(UserOnlineStatus.ONLINE);
+        assertThat(response.online()).isTrue();
     }
 
     @Test
@@ -193,7 +199,7 @@ public class BasicUserServiceTest {
 
     @Test
     @DisplayName("User 수정 성공 - 프로필 이미지 포함")
-    void testUpdateUserWithProfileImage() {
+    void testUpdateUserWithProfileImage() throws Exception {
         // given
         UUID userId = basicUserService.createUser(
                 new CreateUserRequest(
@@ -207,7 +213,12 @@ public class BasicUserServiceTest {
         BinaryContentRequest imageRequest =
                 new BinaryContentRequest(
                         BinaryContentOwnerType.USER,
-                        "update-image".getBytes()
+                        new MockMultipartFile(
+                                "file",
+                                "update.png",
+                                "image/png",
+                                "update-bytes".getBytes()
+                        )
                 );
 
         UpdateUserRequest updateRequest = new UpdateUserRequest(
@@ -229,7 +240,7 @@ public class BasicUserServiceTest {
                 binaryContentRepository.findById(user.getProfileId()).orElseThrow();
 
         assertThat(content.getOwnerId()).isEqualTo(userId);
-        assertThat(content.getImage()).isEqualTo(imageRequest.image());
+        assertThat(content.getBytes()).isEqualTo(imageRequest.file().getBytes());
 
         assertThat(response.username()).isEqualTo("afterImg");
     }
@@ -241,7 +252,12 @@ public class BasicUserServiceTest {
         BinaryContentRequest imageRequest =
                 new BinaryContentRequest(
                         BinaryContentOwnerType.USER,
-                        "orig-image".getBytes()
+                        new MockMultipartFile(
+                                "file",
+                                "orig.png",
+                                "image/png",
+                                "orig-bytes".getBytes()
+                        )
                 );
 
         UUID userId = basicUserService.createUser(
@@ -348,7 +364,12 @@ public class BasicUserServiceTest {
         BinaryContentRequest imageRequest =
                 new BinaryContentRequest(
                         BinaryContentOwnerType.USER,
-                        "delete-image".getBytes()
+                        new MockMultipartFile(
+                                "file",
+                                "delete.png",
+                                "image/png",
+                                "delete-bytes".getBytes()
+                        )
                 );
 
         UUID userId = basicUserService.createUser(

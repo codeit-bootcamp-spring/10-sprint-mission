@@ -15,6 +15,7 @@ public enum ErrorCode {
     CHANNEL_NOT_FOUND("CHANNEL_NOT_FOUND", HttpStatus.NOT_FOUND, "Channel not found"),
     MESSAGE_NOT_FOUND("MESSAGE_NOT_FOUND", HttpStatus.NOT_FOUND, "Message not found"),
     BINARY_CONTENT_NOT_FOUND("BINARY_CONTENT_NOT_FOUND", HttpStatus.NOT_FOUND, "Binary content not found"),
+    IMAGE_BINARY_CONVERSION_FAILED("IMAGE_BINARY_CONVERSION_FAILED", HttpStatus.INTERNAL_SERVER_ERROR, "Image binary conversion failed"),
     READ_STATUS_NOT_FOUND("READ_STATUS_NOT_FOUND", HttpStatus.NOT_FOUND, "Read status not found"),
 
     USERNAME_ALREADY_EXISTS("USERNAME_ALREADY_EXISTS", HttpStatus.CONFLICT, "Username already exists"),

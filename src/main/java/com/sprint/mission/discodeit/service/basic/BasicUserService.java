@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.response.ErrorCode;
 import com.sprint.mission.discodeit.response.ApiException;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
-    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentService binaryContentService;
 
     @Override
     public UUID createUser(CreateUserRequest request) {
@@ -38,7 +39,7 @@ public class BasicUserService implements UserService {
                 request.email()
         );
 
-        user = saveUserProfileImage(request, user);
+        saveUserProfileImage(request, user);
         userRepository.save(user);
 
         UserStatus userStatus = new UserStatus(user.getId(), user.getUpdatedAt());
@@ -62,14 +63,8 @@ public class BasicUserService implements UserService {
     private User saveUserProfileImage(CreateUserRequest request, User user) {
         if (request.profileImage() == null) return user;
 
-        BinaryContent binaryContent = new BinaryContent(
-                user.getId(),
-                request.profileImage().type(),
-                request.profileImage().image()
-        );
-
-        user.updateProfileId(binaryContent.getId());
-        binaryContentRepository.save(binaryContent);
+        UUID binaryContentId = binaryContentService.createBinaryContent(user.getId(), request.profileImage());
+        user.updateProfileId(binaryContentId);
 
         return user;
     }
@@ -121,7 +116,7 @@ public class BasicUserService implements UserService {
         User user = getUserOrThrow(requestId);
         validateDuplicateUserOnUpdate(user, request);
 
-        UUID profileId = createBinaryContentIfExist(request, user);
+        UUID profileId = binaryContentService.createBinaryContent(user.getId(), request.profileImage());
 
         user.update(
                 request.username(),
@@ -154,21 +149,6 @@ public class BasicUserService implements UserService {
         }
     }
 
-    private UUID createBinaryContentIfExist(UpdateUserRequest request, User user) {
-        if (request.profileImage() == null) {
-            return null;
-        }
-
-        BinaryContent binaryContent = new BinaryContent(
-                user.getId(),
-                request.profileImage().type(),
-                request.profileImage().image()
-        );
-
-        binaryContentRepository.save(binaryContent);
-        return  binaryContent.getId();
-    }
-
     @Override
     public void deleteUser(UUID requestId) {
         User user = getUserOrThrow(requestId);
@@ -181,7 +161,7 @@ public class BasicUserService implements UserService {
 
     private void deleteBinaryContentById(UUID profileId) {
         if (profileId != null) {
-            binaryContentRepository.deleteById(profileId);
+            binaryContentService.deleteBinaryContent(profileId);
         }
     }
 }

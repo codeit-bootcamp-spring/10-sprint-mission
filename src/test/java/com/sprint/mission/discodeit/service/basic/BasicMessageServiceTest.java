@@ -17,6 +17,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -115,7 +116,12 @@ public class BasicMessageServiceTest {
                 Arguments.of(List.of(
                         new BinaryContentRequest(
                                 BinaryContentOwnerType.MESSAGE,
-                                "image".getBytes()
+                                new MockMultipartFile(
+                                        "file",
+                                        "image.png",
+                                        "image/png",
+                                        "image".getBytes()
+                                )
                         )
                 ))
         );
@@ -191,7 +197,12 @@ public class BasicMessageServiceTest {
                         List.of(
                                 new BinaryContentRequest(
                                         BinaryContentOwnerType.MESSAGE,
-                                        "img".getBytes()
+                                        new MockMultipartFile(
+                                                "file",
+                                                "img.png",
+                                                "image/png",
+                                                "img".getBytes()
+                                        )
                                 )
                         )
                 )

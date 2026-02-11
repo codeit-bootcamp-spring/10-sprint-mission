@@ -6,16 +6,18 @@ import java.util.UUID;
 
 public record BinaryContentResponse(
         UUID id,
-        UUID ownerId,
-        byte[] image
+        byte[] bytes,
+        String contentType,
+        String filename
 ) {
     public static BinaryContentResponse from(
             BinaryContent binaryContent
     ) {
         return new BinaryContentResponse(
                 binaryContent.getId(),
-                binaryContent.getOwnerId(),
-                binaryContent.getImage()
+                binaryContent.getBytes(),
+                binaryContent.getContentType(),
+                binaryContent.getFilename()
         );
     }
 }

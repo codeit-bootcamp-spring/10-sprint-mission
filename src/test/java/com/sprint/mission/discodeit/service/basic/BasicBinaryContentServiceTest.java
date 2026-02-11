@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +46,12 @@ public class BasicBinaryContentServiceTest {
         // given
         BinaryContentRequest request = new BinaryContentRequest(
                 BinaryContentOwnerType.USER,
-                "image-data".getBytes()
+                new MockMultipartFile(
+                        "file",
+                        "bytes-data.png",
+                        "image/png",
+                        "bytes-data".getBytes()
+                )
         );
 
         // when
@@ -69,7 +75,12 @@ public class BasicBinaryContentServiceTest {
 
         BinaryContentRequest request = new BinaryContentRequest(
                 BinaryContentOwnerType.USER,
-                image
+                new MockMultipartFile(
+                        "file",
+                        "hello.png",
+                        "image/png",
+                        image
+                )
         );
 
         UUID id = binaryContentService.createBinaryContent(ownerId, request);
@@ -80,8 +91,9 @@ public class BasicBinaryContentServiceTest {
 
         // then
         assertThat(response.id()).isEqualTo(id);
-        assertThat(response.ownerId()).isEqualTo(ownerId);
-        assertThat(response.image()).isEqualTo(image);
+        assertThat(response.bytes()).isEqualTo(image);
+        assertThat(binaryContentRepository.findById(id).orElseThrow().getOwnerId())
+                .isEqualTo(ownerId);
     }
 
     @Test
@@ -103,7 +115,12 @@ public class BasicBinaryContentServiceTest {
                 ownerId,
                 new BinaryContentRequest(
                         BinaryContentOwnerType.USER,
-                        "a".getBytes()
+                        new MockMultipartFile(
+                                "file",
+                                "a.png",
+                                "image/png",
+                                "a".getBytes()
+                        )
                 )
         );
 
@@ -111,7 +128,12 @@ public class BasicBinaryContentServiceTest {
                 ownerId,
                 new BinaryContentRequest(
                         BinaryContentOwnerType.USER,
-                        "b".getBytes()
+                        new MockMultipartFile(
+                                "file",
+                                "b.png",
+                                "image/png",
+                                "b".getBytes()
+                        )
                 )
         );
 
@@ -137,7 +159,12 @@ public class BasicBinaryContentServiceTest {
                 ownerId,
                 new BinaryContentRequest(
                         BinaryContentOwnerType.USER,
-                        "delete".getBytes()
+                        new MockMultipartFile(
+                                "file",
+                                "delete.png",
+                                "image/png",
+                                "delete".getBytes()
+                        )
                 )
         );
 

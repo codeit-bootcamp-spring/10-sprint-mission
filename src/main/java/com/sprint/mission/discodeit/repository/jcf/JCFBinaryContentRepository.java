@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import org.springframework.stereotype.Repository;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,7 +31,7 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     @Override
     public List<byte[]> findAllImagesByIds(List<UUID> attachmentIds) {
         return idsToContents(attachmentIds).stream()
-                .map(BinaryContent::getImage) // BinaryContent 안에 byte[] content 필드 있다고 가정
+                .map(BinaryContent::getBytes)
                 .collect(Collectors.toList());
     }
 

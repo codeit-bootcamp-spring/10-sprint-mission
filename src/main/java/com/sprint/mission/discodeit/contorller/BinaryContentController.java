@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,21 +22,22 @@ public class BinaryContentController {
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<UUID> createBinaryContent(
             @RequestParam UUID ownerId,
-            @RequestBody BinaryContentRequest request
+            @ModelAttribute BinaryContentRequest request
     ) {
         UUID id = binaryContentService.createBinaryContent(ownerId, request);
 
         return ResponseEntity.ok(id);
     }
 
-    @RequestMapping(value = "/{binaryContentId}", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET, params = "binaryContentId")
     public ResponseEntity<BinaryContentResponse> findBinaryContent(
-            @PathVariable UUID binaryContentId
+            @RequestParam UUID binaryContentId
     ) {
         BinaryContentResponse response =
                 binaryContentService.findBinaryContent(binaryContentId);
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok()
+                .body(response);
     }
 
     @RequestMapping(method = RequestMethod.GET)

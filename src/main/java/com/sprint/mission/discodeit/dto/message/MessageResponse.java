@@ -8,13 +8,13 @@ import java.util.UUID;
 public record MessageResponse(
         UUID id,
         String content,
-        List<byte[]> attachments
+        List<UUID> attachments
 ) {
-    public static MessageResponse of(Message message, List<byte[]> attachments) {
+    public static MessageResponse from(Message message) {
         return new MessageResponse(
                 message.getId(),
                 message.getContent(),
-                attachments
+                message.getAttachmentIds()
         );
     }
 }

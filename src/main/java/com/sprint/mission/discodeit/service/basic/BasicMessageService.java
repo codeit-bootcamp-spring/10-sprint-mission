@@ -4,14 +4,13 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequest;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.response.ErrorCode;
 import com.sprint.mission.discodeit.response.ApiException;
@@ -28,7 +27,7 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
-    private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentService binaryContentService;
 
     @Override
     public UUID createMessage(UUID requesterId, CreateMessageRequest request) {
@@ -58,13 +57,8 @@ public class BasicMessageService implements MessageService {
         List<UUID> attachmentsIds = new ArrayList<>();
 
         for (BinaryContentRequest binaryContentRequest : new ArrayList<>(binaryContentRequests)) {
-            BinaryContent binaryContent = new BinaryContent(
-                    userId,
-                    binaryContentRequest.type(),
-                    binaryContentRequest.image()
-            );
-            attachmentsIds.add(binaryContent.getId());
-            binaryContentRepository.save(binaryContent);
+            UUID binaryContentId = binaryContentService.createBinaryContent(userId, binaryContentRequest);
+            attachmentsIds.add(binaryContentId);
         }
 
         return attachmentsIds;
@@ -74,11 +68,7 @@ public class BasicMessageService implements MessageService {
     public List<MessageResponse> findAllMessagesByChannelId(UUID channelId) {
         List<Message> messages = messageRepository.findAllByChannelId(channelId);
 
-        return messages.stream().map(message -> {
-            List<byte[]> images = getImages(message.getAttachmentIds());
-
-            return MessageResponse.of(message, images);
-        }).toList();
+        return messages.stream().map(message -> MessageResponse.from(message)).toList();
     }
 
     @Override
@@ -94,12 +84,7 @@ public class BasicMessageService implements MessageService {
 
         messageRepository.save(message);
 
-        List<byte[]> images = getImages(message.getAttachmentIds());
-        return MessageResponse.of(message, images);
-    }
-
-    private List<byte[]> getImages(List<UUID> attachmentIds) {
-        return binaryContentRepository.findAllImagesByIds(attachmentIds);
+        return MessageResponse.from(message);
     }
 
     @Override
@@ -113,7 +98,7 @@ public class BasicMessageService implements MessageService {
         List<UUID> attachmentIds = message.getAttachmentIds();
 
         for (UUID attachmentId : attachmentIds) {
-            binaryContentRepository.deleteById(attachmentId);
+            binaryContentService.deleteBinaryContent(attachmentId);
         }
 
         messageRepository.delete(message);

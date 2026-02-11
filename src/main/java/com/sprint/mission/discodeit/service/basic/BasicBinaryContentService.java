@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.response.ErrorCode;
 import com.sprint.mission.discodeit.response.ApiException;
+import com.sprint.mission.discodeit.utils.ImageBinaryConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +21,16 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public UUID createBinaryContent(UUID ownerId, BinaryContentRequest request) {
+        if (request == null || request.file() == null || request.file().isEmpty()) {
+            return null;
+        }
+
         BinaryContent binaryContent = new BinaryContent(
                 ownerId,
                 request.type(),
-                request.image()
+                ImageBinaryConverter.convert(request.file()),
+                request.file().getContentType(),
+                request.file().getOriginalFilename()
         );
 
         binaryContentRepository.save(binaryContent);
