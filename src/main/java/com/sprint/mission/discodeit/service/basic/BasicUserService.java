@@ -69,11 +69,15 @@ public class BasicUserService implements UserService {
     public UserDto update(UUID userId, UserUpdateDto dto) {
         User user = get(userId);
         BinaryContent profile = null;
+        UUID oldProfileId = null;
         if(dto.profileDto() != null) {
             profile =binaryContentRepository.save(binaryContentMapper.toEntity(dto.profileDto()));
-            binaryContentRepository.delete(user.getProfileId());//기존 프로필 사진 삭제
+            oldProfileId = user.getProfileId();
         }
         user.update(dto.username(), dto.email(), dto.password(),profile==null?null:profile.getId());
+        if(oldProfileId!=null) {//기존 프로필을 가지고 있는경우만
+            binaryContentRepository.delete(oldProfileId);//기존 프로필 사진 삭제
+        }
         return userMapper.toDto(userRepository.save(user),findUserStatusByUserId(userId));
     }
 
