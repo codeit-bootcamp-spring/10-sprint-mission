@@ -81,8 +81,8 @@ public class BasicUserService implements UserService {
         // accountId와 mail 중복성 검사
         if (userReq.accountId() != null && !Objects.equals(user.getAccountId(), userReq.accountId()))
             validateDuplicateAccount(userReq.accountId());
-        if (userReq.email() != null && !Objects.equals(user.getEmail(), userReq.accountId()))
-            validateDuplicateEmail(userReq.accountId());
+        if (userReq.email() != null && !Objects.equals(user.getEmail(), userReq.email()))
+            validateDuplicateEmail(userReq.email());
 
         Optional.ofNullable(userReq.accountId()).ifPresent(user::updateAccountId);
         Optional.ofNullable(userReq.password()).ifPresent(user::updatePassword);

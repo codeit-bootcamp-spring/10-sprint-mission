@@ -72,7 +72,7 @@ public class UserController {
     }
 
     // 사용자 온라인 상태 업데이트
-    @RequestMapping(value = "/{user-id}/updateLastActive", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{user-id}/status", method = RequestMethod.PATCH)
     public ResponseEntity<Void> updateLastActive(@PathVariable("user-id") UUID userId) {
         userStatusService.updateUserStatusByUserId(userId,
                 new UserStatusDto.updateRequest(Instant.now()));
