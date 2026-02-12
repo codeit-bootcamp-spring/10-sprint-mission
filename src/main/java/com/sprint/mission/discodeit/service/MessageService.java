@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface MessageService {
     MessageResponseDTO create(MessageCreateRequestDTO req);
     MessageResponseDTO find(UUID messageId);
-    List<MessageResponseDTO> findallByChannelId(UUID channelId);
+    List<MessageResponseDTO> findAllByChannelId(UUID channelId);
     MessageResponseDTO update(MessageUpdateRequestDto req);
     void delete(UUID messageId);
 }

@@ -77,7 +77,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<MessageResponseDTO> findallByChannelId(UUID channelId) {
+    public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
         Objects.requireNonNull(channelId, "유효하지 않은 채널id 입니다.");
 
         return messageRepository.findByChannelId(channelId)
