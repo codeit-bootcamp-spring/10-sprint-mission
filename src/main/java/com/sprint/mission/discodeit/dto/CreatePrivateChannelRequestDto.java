@@ -9,5 +9,6 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 public class CreatePrivateChannelRequestDto {
+    private String name;
     private List<UUID> participantIds;
 }

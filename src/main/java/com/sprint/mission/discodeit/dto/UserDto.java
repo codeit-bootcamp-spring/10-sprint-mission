@@ -1,24 +1,15 @@
 package com.sprint.mission.discodeit.dto;
 
-import com.sprint.mission.discodeit.entity.User;
-import lombok.Getter;
-
+import java.time.Instant;
 import java.util.UUID;
 
-@Getter
-public class UserDto { // 유저 응답 dto
-    private UUID id;
-    private String username;
-    private String email;
-    private boolean isOnline;
-    private UUID profileImageId;
+public record UserDto(
+        UUID id,
+        Instant createdAt,
+        Instant updatedAt,
+        String username,
+        String email,
+        UUID profileId, // profileImageId
+        Boolean online //isOnline
+){}
 
-    public UserDto(User user, boolean isOnline) {
-        this.id = user.getId();
-        this.username = user.getUsername();
-        this.email = user.getEmail();
-        this.profileImageId = user.getProfileImageId();
-        this.isOnline = isOnline;
-    }
-
-}

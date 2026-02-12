@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
-import com.sprint.mission.discodeit.dto.CreateUserRequest;
-import com.sprint.mission.discodeit.dto.UpdateUserRequest;
+import com.sprint.mission.discodeit.dto.CreateUserRequestDto;
+import com.sprint.mission.discodeit.dto.UpdateUserRequestDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
@@ -30,7 +30,7 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public UserDto create(CreateUserRequest request) {
+    public UserDto create(CreateUserRequestDto request) {
 
         validateDuplicateUser(request.getUsername(), request.getEmail());
 
@@ -66,7 +66,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserDto update(UUID userId, UpdateUserRequest request) {
+    public UserDto update(UUID userId, UpdateUserRequestDto request) {
         User user = getUserEntity(userId);
 
         user.update(request.getUsername(), request.getEmail(), request.getPassword());
