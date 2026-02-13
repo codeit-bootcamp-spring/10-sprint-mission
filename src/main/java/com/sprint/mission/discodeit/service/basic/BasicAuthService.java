@@ -3,7 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.auth.LoginRequest;
 import com.sprint.mission.discodeit.dto.auth.LoginResponse;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.CanNotLoginException;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,12 @@ public class BasicAuthService implements AuthService {
     public LoginResponse login(LoginRequest request) {
         if (request == null ||
                 request.userName() == null ||
-                request.password() == null ||
-                request.password().isEmpty()) {
-            throw new CanNotLoginException();
+                request.password() == null) {
+            throw new BusinessLogicException(ErrorCode.BAD_REQUEST);
+        }
+
+        if (request.password().isEmpty()) {
+            throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
         }
 
         User user = userRepository.findAll().stream()
@@ -32,7 +36,9 @@ public class BasicAuthService implements AuthService {
                                 u.getPassword().equals(request.password())
                 )
                 .findFirst()
-                .orElseThrow(CanNotLoginException::new);
+                .orElseThrow(() ->
+                        new BusinessLogicException(ErrorCode.UNAUTHORIZED)
+                );
 
         return new LoginResponse(
                 user.getId(),

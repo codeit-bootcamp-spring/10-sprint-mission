@@ -1,13 +1,11 @@
 package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
-
 import java.io.Serializable;
 import java.util.UUID;
 
 @Getter
 public class BinaryContent extends BaseEntity implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     private final String fileName;
@@ -15,8 +13,6 @@ public class BinaryContent extends BaseEntity implements Serializable {
     private final byte[] data;
     private final UUID profileUserId;
     private final UUID messageId;
-
-
 
     public BinaryContent(String fileName, String contentType, byte[] data, UUID profileUserId, UUID messageId) {
         super();
@@ -26,6 +22,4 @@ public class BinaryContent extends BaseEntity implements Serializable {
         this.profileUserId = profileUserId;
         this.messageId = messageId;
     }
-
 }
-

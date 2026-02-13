@@ -3,7 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.exception.StatusNotFoundException;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class BasicBinaryContentService implements BinaryContentService {
                 new BinaryContent(
                         request.fileName(),
                         request.contentType(),
-                        request.data(),
+                        request.bytes(),
                         request.profileUserId(),
                         request.messageId()
                 )
@@ -39,11 +40,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     public BinaryContentResponse find(UUID id) {
         requireNonNull(id, "id");
 
-        BinaryContent found = binaryContentRepository.findById(id);
-        if (found == null) {
-            throw new StatusNotFoundException();
-        }
-
+        BinaryContent found = findEntityOrThrow(id);
         return toResponse(found);
     }
 
@@ -60,12 +57,28 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void delete(UUID id) {
         requireNonNull(id, "id");
 
-        // File 구현체가 "없어도 조용히 삭제"라서 서비스에서 예외 보장
-        if (binaryContentRepository.findById(id) == null) {
-            throw new StatusNotFoundException();
-        }
-
+        findEntityOrThrow(id);
         binaryContentRepository.delete(id);
+    }
+
+    @Override
+    public BinaryContent findEntity(UUID id) {
+        requireNonNull(id, "id");
+        return findEntityOrThrow(id);
+    }
+
+    @Override
+    public List<BinaryContent> findAllEntitiesByIdIn(List<UUID> ids) {
+        requireNonNull(ids, "ids");
+        return binaryContentRepository.findAllByIdIn(ids);
+    }
+
+    private BinaryContent findEntityOrThrow(UUID id) {
+        BinaryContent found = binaryContentRepository.findById(id);
+        if (found == null) {
+            throw new BusinessLogicException(ErrorCode.BINARY_CONTENT_NOT_FOUND);
+        }
+        return found;
     }
 
     private BinaryContentResponse toResponse(BinaryContent bc) {
