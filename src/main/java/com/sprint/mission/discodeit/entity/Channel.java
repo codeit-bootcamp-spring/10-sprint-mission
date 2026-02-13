@@ -1,68 +1,45 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
 
-public class Channel extends Common implements Serializable {
+@Getter
+public class Channel implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private UUID id;
+    private Instant createdAt;
+    private Instant updatedAt;
+    //
+    private ChannelType type;
+    private String name;
+    private String description;
 
-    private String channelName;
-    private String type;
-    private User owner;
-    private List<User> userList;
-    private List<Message> messageList;
-
-
-    public Channel(String channelName, String type, User owner){
-        //super();
-        this.channelName = channelName;
+    public Channel(ChannelType type, String name, String description) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now();
+        //
         this.type = type;
-        this.owner  = owner;
-        this.userList = new ArrayList<>();
-        this.messageList = new ArrayList<>();
+        this.name = name;
+        this.description = description;
     }
 
-    public String getChannelName() {
-        return channelName;
-    }
 
-    public String getType() {
-        return type;
-    }
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
 
-    public User getOwner() {
-        return owner;
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
-
-    public void setChannelName(String channelName) {
-        this.channelName = channelName;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public void setOwner(User ownerId){
-        this.owner = owner;
-    }
-
-    public List<User> getUserList(){
-        return userList;
-    }
-
-    public List<Message> getMessageList(){
-        return messageList;
-    }
-
-    @Override
-    public String toString() {
-        return String.format(
-                "[채널명:%s, 타입:%s, 방장:%s]",
-                channelName,
-                type,
-                owner.getUserName()
-        );
-    }
-
 }

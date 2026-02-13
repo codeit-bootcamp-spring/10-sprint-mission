@@ -1,33 +1,57 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class JCFChannelRepository implements ChannelRepository {
+    private final Map<UUID, Channel> data;
 
-    private final Map<UUID,Channel> data = new HashMap<>();
-
-    @Override
-    public Channel save(Channel channel) {
-        data.put(channel.getId(),channel);
-        return data.get(channel.getId());
+    public JCFChannelRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
-    public Channel findById(UUID channelId) {
-        return data.get(channelId);
+    public Channel save(Channel channel) {
+        this.data.put(channel.getId(), channel);
+        return channel;
+    }
+
+    @Override
+    public Optional<Channel> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
     public List<Channel> findAll() {
-        return new ArrayList<>(data.values());
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public void delete(UUID channelId) {
-        data.remove(channelId);
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
+    }
 
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
+    }
+
+    @Override
+    public List<Channel> findByChannelType(ChannelType channelType) {
+        return this.data.values().stream()
+                .filter(channel -> channel.getType().equals(channelType))
+                .toList();
+    }
+
+    @Override
+    public List<Channel> findByIds(List<UUID> channelIds) {
+        return this.data.values().stream()
+                .filter(channel -> channelIds.contains(channel.getId()))
+                .toList();
     }
 }
