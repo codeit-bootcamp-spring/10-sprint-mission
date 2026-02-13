@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 public record MessageCreateDto(
-        String content,
-        List<BinaryContentCreateDto> attachments
+        String content
 ) {
 }

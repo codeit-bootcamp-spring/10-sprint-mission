@@ -1,18 +1,23 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateDto;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -29,15 +34,26 @@ public class UserController {
      */
     private final UserService userService;
     private final UserStatusService userStatusService;
+    private final BinaryContentMapper binaryContentMapper;
 
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<UserDto> createUser(@Valid @RequestBody UserCreateDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(dto));
+    @RequestMapping(method = RequestMethod.POST,consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<UserDto> createUser(@Valid @RequestPart(value = "userCreateDto") UserCreateDto dto,
+                                                @RequestPart(value = "profile",required = false) MultipartFile multipartFile) {
+        BinaryContentCreateDto binaryContentCreateDto = null;
+        if(multipartFile != null && !multipartFile.isEmpty()){
+            binaryContentCreateDto = binaryContentMapper.toCreateDto(multipartFile);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(dto, Optional.ofNullable(binaryContentCreateDto)));
     }
 
-    @RequestMapping(method = RequestMethod.PATCH)
-    public ResponseEntity<UserDto> updateUser(@RequestHeader UUID userId, @Valid @RequestBody UserUpdateDto dto) {
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(userService.update(userId, dto));
+    @RequestMapping(method = RequestMethod.PATCH,consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<UserDto> updateUser(@RequestHeader UUID userId, @Valid @RequestPart("userUpdateDto") UserUpdateDto dto,
+                                              @RequestPart(value = "profile",required = false) MultipartFile multipartFile) {
+        BinaryContentCreateDto binaryContentCreateDto = null;
+        if(multipartFile != null && !multipartFile.isEmpty()){
+            binaryContentCreateDto = binaryContentMapper.toCreateDto(multipartFile);
+        }
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(userService.update(userId, dto,Optional.ofNullable(binaryContentCreateDto)));
     }
 
     @RequestMapping(method = RequestMethod.DELETE)

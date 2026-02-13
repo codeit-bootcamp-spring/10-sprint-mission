@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
@@ -16,10 +17,8 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
+
 @Service
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
@@ -33,13 +32,13 @@ public class BasicUserService implements UserService {
     private final BinaryContentMapper binaryContentMapper;
 
     @Override
-    public UserDto create(UserCreateDto dto) {
+    public UserDto create(UserCreateDto dto, Optional<BinaryContentCreateDto> binaryContentCreateDto) {
         validateEmail(dto.email());
         validateUsername(dto.username());
-        //프로필 사진 없을때
+        //프로필 사진
         BinaryContent profile = null;
-        if(dto.profileDto() != null) {
-            profile=binaryContentRepository.save(binaryContentMapper.toEntity(dto.profileDto()));
+        if(binaryContentCreateDto.isPresent()) {
+            profile = binaryContentRepository.save(binaryContentMapper.toEntity(binaryContentCreateDto.get()));
         }
         User user =  userMapper.toEntity(dto, profile);
         UserStatus userStatus = new UserStatus(user.getId());
@@ -66,12 +65,12 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserDto update(UUID userId, UserUpdateDto dto) {
+    public UserDto update(UUID userId, UserUpdateDto dto, Optional<BinaryContentCreateDto> binaryContentCreateDto) {
         User user = get(userId);
         BinaryContent profile = null;
         UUID oldProfileId = null;
-        if(dto.profileDto() != null) {
-            profile =binaryContentRepository.save(binaryContentMapper.toEntity(dto.profileDto()));
+        if(binaryContentCreateDto.isPresent()) {
+            profile = binaryContentRepository.save(binaryContentMapper.toEntity(binaryContentCreateDto.get()));
             oldProfileId = user.getProfileId();
         }
         user.update(dto.username(), dto.email(), dto.password(),profile==null?null:profile.getId());

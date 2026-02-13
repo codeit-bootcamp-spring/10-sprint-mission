@@ -1,14 +1,19 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.message.MessageCreateDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateDto;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,14 +29,22 @@ public class MessageController {
     - [ ]  특정 채널의 메시지 목록을 조회할 수 있다.
      */
     private final MessageService messageService;
+    private final BinaryContentMapper binaryContentMapper;
 
-    @RequestMapping(path = "/channels/{channelid}/messages", method = RequestMethod.POST)
+    @RequestMapping(path = "/channels/{channelid}/messages", method = RequestMethod.POST,consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<MessageResponseDto> sendMessage(
             @RequestHeader UUID userId,
             @PathVariable UUID channelid,
-            @RequestBody MessageCreateDto dto)
+            @RequestPart(value = "messageCreateDto",required = false) MessageCreateDto dto,
+            @RequestPart(value = "attachment",required = false) List<MultipartFile> multipartFiles)
     {
-        return ResponseEntity.status(HttpStatus.CREATED).body(messageService.create(channelid,userId,dto));
+        List<BinaryContentCreateDto> binaryContentCreateDtos = new ArrayList<>();
+        if(multipartFiles != null){
+            for (MultipartFile multipartFile : multipartFiles) {
+                binaryContentCreateDtos.add(binaryContentMapper.toCreateDto(multipartFile));
+            }
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(messageService.create(channelid,userId,dto,binaryContentCreateDtos));
     }
 
     @RequestMapping(path = "/messages/{messageid}", method = RequestMethod.PATCH)

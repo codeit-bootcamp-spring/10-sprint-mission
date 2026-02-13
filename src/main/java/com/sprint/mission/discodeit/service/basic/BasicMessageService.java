@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.message.MessageCreateDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateDto;
@@ -14,10 +15,8 @@ import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
+
 @Service
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
@@ -32,17 +31,15 @@ public class BasicMessageService implements MessageService {
     private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public MessageResponseDto create(UUID channelId, UUID authorId, MessageCreateDto dto) {
+    public MessageResponseDto create(UUID channelId, UUID authorId, MessageCreateDto dto, List<BinaryContentCreateDto> binaryContentCreateDtos) {
         checkMember(channelId, authorId);
-        checkValidate(dto);
+        checkValidate(dto, binaryContentCreateDtos);
         List<UUID> attachmentIds = new ArrayList<>();
-        if(dto.attachments()!=null && !dto.attachments().isEmpty()){
-            dto.attachments()
-                    .forEach((attachment) -> {
-                        BinaryContent content = binaryContentRepository.save(binaryContentMapper.toEntity(attachment));
-                        attachmentIds.add(content.getId());
-                    });
-        }
+        binaryContentCreateDtos
+                .forEach((attachment) -> {
+                    BinaryContent content = binaryContentRepository.save(binaryContentMapper.toEntity(attachment));
+                    attachmentIds.add(content.getId());
+                });
         Message message = messageMapper.toEntity(dto, attachmentIds, authorId, channelId);
         return messageMapper.toDto(messageRepository.save(message));
     }
@@ -82,9 +79,9 @@ public class BasicMessageService implements MessageService {
         messageRepository.deleteById(messageId);
 
     }
-    private void checkValidate(MessageCreateDto dto) {
+    private void checkValidate(MessageCreateDto dto,List<BinaryContentCreateDto> binaryContentCreateDtos) {
         if((dto.content()==null || dto.content().isEmpty()) //컨텐츠와 첨부파일 두개다 없는 경우
-                && (dto.attachments()==null || dto.attachments().isEmpty()) ){
+                && (binaryContentCreateDtos==null || binaryContentCreateDtos.isEmpty()) ){
             throw new BusinessLogicException(ExceptionCode.INVALID_MESSAGE);
         }
     }
