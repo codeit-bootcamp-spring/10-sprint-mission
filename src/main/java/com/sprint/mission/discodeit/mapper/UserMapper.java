@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.entity.UserStatusType;
@@ -18,7 +18,7 @@ public class UserMapper {
         );
     }
 
-    public static UserResponseDTO toResponse(User user, UserStatus status) {
+    public static UserDto toResponse(User user, UserStatus status) {
         boolean online = false;
 
         if (status.getStatusType().equals(UserStatusType.ONLINE))
@@ -26,7 +26,7 @@ public class UserMapper {
             online = true;
         }
 
-        return new UserResponseDTO(
+        return new UserDto(
                 user.getId(),
                 user.getCreatedAt(),
                 user.getUpdatedAt(),
@@ -45,8 +45,8 @@ public class UserMapper {
         return map;
     }
 
-    public static List<UserResponseDTO> toResponseList(List<User> users, List<UserStatus> statuses) {
-        List<UserResponseDTO> userResponseDTOS = new ArrayList<>();
+    public static List<UserDto> toResponseList(List<User> users, List<UserStatus> statuses) {
+        List<UserDto> userResponseDTOS = new ArrayList<>();
         Map<UUID, UserStatus> userStatusMap = indexStatusByUserId(statuses);
 
         for (User user: users) {

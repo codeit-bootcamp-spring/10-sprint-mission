@@ -10,12 +10,14 @@ import java.util.UUID;
 public class UserStatus extends BaseEntity {
     private final UUID userId;
     private UserStatusType statusType;
+    private boolean isOnline;
     private Instant lastLoginAt;
 
     public UserStatus(UUID userId, Instant lastLoginAt) {
         this.userId = userId;
         this.lastLoginAt = lastLoginAt;
         this.statusType = UserStatusType.ONLINE;
+        this.isOnline = true;
     }
 
     public void updateLastLoginAt() {
@@ -23,8 +25,16 @@ public class UserStatus extends BaseEntity {
         updatedAt = lastLoginAt;
     }
 
-    public void updateStatusType(UserStatusType userStatusType) {
-        this.statusType = userStatusType;
+    public void updateIsOnline(Instant newLastLoginAt) {
+        this.lastLoginAt = newLastLoginAt;
+        this.isOnline = isCurrentlyLoggedIn();
+        this.updatedAt = Instant.now();
+    }
+
+    public void updateStatusType(UserStatusType statusType) {
+        this.statusType = statusType;
+        this.isOnline = (statusType == UserStatusType.ONLINE);
+        this.updatedAt = Instant.now();
     }
 
     // 마지막 로그인 기준으로 온라인인지 계산

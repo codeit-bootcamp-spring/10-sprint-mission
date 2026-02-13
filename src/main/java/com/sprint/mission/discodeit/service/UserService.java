@@ -1,22 +1,25 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.user.UpdateUserStatusRequestDTO;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface UserService {
-    UserResponseDTO createUser(CreateUserRequestDTO dto);
+    UserDto createUser(CreateUserRequestDTO dto);
 
-    List<UserResponseDTO> findAll();
+    List<UserDto> findAll();
 
-    List<UserResponseDTO> findAllByChannel(UUID channelId);
+    List<UserDto> findAllByChannel(UUID channelId);
 
-    UserResponseDTO findByUserId(UUID userId);
+    UserDto findByUserId(UUID userId);
 
-    UserResponseDTO updateUser(UUID userId, UpdateUserRequestDTO dto);
+    UserDto updateUserInfo(UUID userId, UpdateUserRequestDTO dto);
+
+    UserDto updateUserStatus(UUID userId, UpdateUserStatusRequestDTO dto);
 
     void deleteUser(UUID userId);
 }

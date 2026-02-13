@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -26,7 +26,7 @@ public class UserController {
     public ResponseEntity createUser(
             @RequestBody CreateUserRequestDTO dto
             ) {
-        UserResponseDTO created = userService.createUser(dto);
+        UserDto created = userService.createUser(dto);
 
         // 현재 요청 URL(/v1/users)을 기준으로
         // 새로 생성된 사용자 리소스의 주소(/v1/users/{id})를 만들어줌
@@ -45,7 +45,17 @@ public class UserController {
             @PathVariable UUID userId,
             @RequestBody UpdateUserRequestDTO dto
             ) {
-        UserResponseDTO updated = userService.updateUser(userId, dto);
+        UserDto updated = userService.updateUserInfo(userId, dto);
+
+        return ResponseEntity.ok(updated);
+    }
+
+    @RequestMapping(value = "/{userId}/userStatus", method = RequestMethod.PATCH)
+    public ResponseEntity updateUserStatus(
+            @PathVariable UUID userId,
+            @RequestBody UpdateUserStatusRequestDTO dto
+    ) {
+        UserDto updated = userService.updateUserStatus(userId, dto);
 
         return ResponseEntity.ok(updated);
     }
@@ -59,15 +69,15 @@ public class UserController {
         return ResponseEntity.ok(
                 new DeleteUserResponseDTO(
                         Instant.now(),
-                        200,
+                        204,
                         "사용자가 삭제되었습니다."
                 )
         );
     }
 
-    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity findAll() {
-        List<UserResponseDTO> users = userService.findAll();
+        List<UserDto> users = userService.findAll();
 
         return ResponseEntity.ok(users);
     }
@@ -76,7 +86,7 @@ public class UserController {
     public ResponseEntity findByUserId(
             @PathVariable UUID userId
     ) {
-        UserResponseDTO response = userService.findByUserId(userId);
+        UserDto response = userService.findByUserId(userId);
 
         return ResponseEntity.ok(response);
     }

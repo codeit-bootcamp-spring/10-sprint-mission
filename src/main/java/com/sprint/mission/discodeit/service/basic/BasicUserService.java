@@ -2,10 +2,10 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.user.UpdateUserStatusRequestDTO;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -26,7 +26,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public UserResponseDTO createUser(CreateUserRequestDTO dto) {
+    public UserDto createUser(CreateUserRequestDTO dto) {
         if (userRepository.existsByUsername(dto.username())) {
             throw new IllegalArgumentException("이미 사용중인 username입니다.");
         }
@@ -57,7 +57,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserResponseDTO> findAll() {
+    public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
         List<UserStatus> statuses = userStatusRepository.findAll();
 
@@ -65,7 +65,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public List<UserResponseDTO> findAllByChannel(UUID channelId) {
+    public List<UserDto> findAllByChannel(UUID channelId) {
 
         List<User> users = userRepository.findAll().stream()
                 .filter(user -> user.getJoinedChannelIds().stream()
@@ -77,7 +77,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDTO findByUserId(UUID userId) {
+    public UserDto findByUserId(UUID userId) {
         return UserMapper.toResponse(
                 findUserOrThrow(userId),
                 userStatusRepository.findByUserId(userId)
@@ -88,14 +88,17 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUser(UUID userId, UpdateUserRequestDTO dto) {
+    public UserDto updateUserInfo(UUID userId, UpdateUserRequestDTO dto) {
         User user = findUserOrThrow(userId);
 
-        if (dto.username() != null) {
+        if (dto.newUsername() != null) {
             updateUserName(dto, user);
         }
-        if (dto.statusType() != null) {
-            updateUserStatus(userId, dto);
+        if (dto.newEmail() != null) {
+            updateEmail(dto, user);
+        }
+        if (dto.newPassword() != null) {
+            updatePassword(dto, user);
         }
         if (dto.profileImage() != null) {
             updateUserProfileImage(dto, user);
@@ -108,6 +111,20 @@ public class BasicUserService implements UserService {
                                 "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
                         ))
         );
+    }
+
+    @Override
+    public UserDto updateUserStatus(UUID userId, UpdateUserStatusRequestDTO dto) {
+        User user = findUserOrThrow(userId);
+        UserStatus status = userStatusRepository.findByUserId(userId)
+                .orElseThrow(() -> new NoSuchElementException(
+                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
+                ));
+
+        status.updateIsOnline(dto.newLastActiveAt());
+        userStatusRepository.save(status);
+
+        return UserMapper.toResponse(user, status);
     }
 
     @Override
@@ -135,23 +152,34 @@ public class BasicUserService implements UserService {
     }
 
     private void updateUserName(UpdateUserRequestDTO dto, User user) {
-        if (!user.getUsername().equals(dto.username())){
-            if (userRepository.existsByUsername(dto.username())) {
-                throw new IllegalArgumentException("이미 사용중인 username입니다.");
-            }
+        if (user.getUsername().equals(dto.newUsername())){
+            throw new IllegalArgumentException("현재 사용중인 username과 동일합니다.");
         }
 
-        user.updateUsername(dto.username());
+        if (userRepository.existsByUsername(dto.newUsername())) {
+            throw new IllegalArgumentException("이미 사용중인 username입니다.");
+        }
+
+        user.updateUsername(dto.newUsername());
         userRepository.save(user);
     }
 
-    private void updateUserStatus(UUID userId, UpdateUserRequestDTO dto) {
-        UserStatus status = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
-                ));
-        status.updateStatusType(dto.statusType());
-        userStatusRepository.save(status);
+    private void updateEmail(UpdateUserRequestDTO dto, User user) {
+        if (user.getEmail().equals(dto.newEmail())){
+            throw new IllegalArgumentException("현재 사용중인 email과 동일합니다.");
+        }
+
+        if (userRepository.existsByEmail(dto.newEmail())) {
+            throw new IllegalArgumentException("이미 사용중인 email입니다.");
+        }
+
+        user.updateEmail(dto.newEmail());
+        userRepository.save(user);
+    }
+
+    private void updatePassword(UpdateUserRequestDTO dto, User user) {
+        user.updatePassword(dto.newPassword());
+        userRepository.save(user);
     }
 
     private void updateUserProfileImage(UpdateUserRequestDTO dto, User user) {

@@ -10,7 +10,7 @@ import java.util.UUID;
 public class User extends BaseEntity {
     private String username;
     private String email;
-    private final String password;
+    private String password;
     // 채널 참여 내역과 메시지 전송 내역을 기록하는 필드
     private List<UUID> joinedChannelIds;
     private List<UUID> sentMessageIds;
@@ -34,6 +34,16 @@ public class User extends BaseEntity {
     // username 수정 메서드
     public void updateUsername(String username) {
         this.username = username;
+        super.setUpdatedAt();
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
+        super.setUpdatedAt();
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
         super.setUpdatedAt();
     }
 

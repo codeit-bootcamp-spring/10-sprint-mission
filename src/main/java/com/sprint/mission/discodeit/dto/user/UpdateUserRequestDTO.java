@@ -7,8 +7,9 @@ import jakarta.annotation.Nullable;
 import java.util.UUID;
 
 public record UpdateUserRequestDTO(
-        String username,
-        UserStatusType statusType,
+        String newUsername,
+        String newEmail,
+        String newPassword,
         @Nullable
         CreateBinaryContentPayloadDTO profileImage
 ) { }

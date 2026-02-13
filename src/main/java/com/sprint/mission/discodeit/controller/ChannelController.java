@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.channel.*;
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -83,7 +83,7 @@ public class ChannelController {
     public ResponseEntity findAllUsersByChannelId(
             @PathVariable UUID channelId
     ) {
-        List<UserResponseDTO> users = userService.findAllByChannel(channelId);
+        List<UserDto> users = userService.findAllByChannel(channelId);
 
         return ResponseEntity.ok(users);
     }
