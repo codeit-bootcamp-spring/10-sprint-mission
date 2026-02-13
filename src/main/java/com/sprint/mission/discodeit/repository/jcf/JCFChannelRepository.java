@@ -30,7 +30,7 @@ public class JCFChannelRepository implements ChannelRepository {
 
     @Override
     public List<Channel> findAll() {
-        return channelData;
+        return new ArrayList<>(channelData);
     }
 
     @Override

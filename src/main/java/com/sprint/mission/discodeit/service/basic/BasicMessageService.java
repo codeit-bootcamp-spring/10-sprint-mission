@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageResponse;
-import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.message.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -33,8 +33,8 @@ public class BasicMessageService implements MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userID()));
         Channel channel = channelRepository.find(request.channelId());
 
-        // sender가 해당 channel의 member인지 check
-        if (!channel.getMembersList().contains(sender)) {
+        // Channel이 private일 경우 sender가 해당 channel의 member인지 check
+        if (channel.getDescriptions().equals("Private") && (!channel.getMembersList().contains(sender))) {
             throw new IllegalArgumentException("User is not in this channel." + request.channelId());
         }
 
@@ -42,7 +42,7 @@ public class BasicMessageService implements MessageService {
         List<UUID> attachments = new ArrayList<>();
         if(request.attachments() != null){
             for(BinaryContentCreateRequest req : request.attachments()){
-                BinaryContent attachment = new BinaryContent(req.bytes(), req.contentType());
+                BinaryContent attachment = new BinaryContent(req.fileName(), req.content(), req.contentType());
                 BinaryContent newAttachment = binaryContentRepository.save(attachment);
 
                 attachments.add(newAttachment.getId());
@@ -119,10 +119,10 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponse update(MessageUpdateRequest request) {
+    public MessageResponse update(UUID messageID, MessageUpdateRequest request) {
         // [저장]
-        Message msg = messageRepository.find(request.messageID())
-                .orElseThrow(() -> new IllegalArgumentException("Message not found: " + request.messageID()));
+        Message msg = messageRepository.find(messageID)
+                .orElseThrow(() -> new IllegalArgumentException("Message not found: " + messageID));
 
         // content update
         if (request.content() != null) {
@@ -133,9 +133,9 @@ public class BasicMessageService implements MessageService {
         // attachment 업데이트
         if (request.attachments() != null) {
             for (BinaryContentCreateRequest req : request.attachments()) {
-                BinaryContent attachment = new BinaryContent(req.bytes(), req.contentType());
-                binaryContentRepository.save(attachment);
-                msg.addAttachment(attachment.getId());
+                BinaryContent attachment = new BinaryContent(req.fileName(), req.content(), req.contentType());
+                BinaryContent savedAttach = binaryContentRepository.save(attachment);
+                msg.addAttachment(savedAttach.getId());
             }
         }
 
@@ -156,7 +156,7 @@ public class BasicMessageService implements MessageService {
         // channel에서 반영
         Channel channel = channelRepository.find(channelID);
         for(Message m : channel.getMessageList()){
-            if(m.getId().equals(request.messageID())){
+            if(m.getId().equals(messageID)){
                 m.updateContents(request.content());
             }
         }

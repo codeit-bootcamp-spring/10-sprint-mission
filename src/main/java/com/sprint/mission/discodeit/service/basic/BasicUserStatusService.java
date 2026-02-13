@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.userStatus.response.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.userStatus.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -35,14 +35,17 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public List<UserStatusResponse> findAll(){
-
-        return null;
+        return userStatusRepository.findAll().stream()
+                .map(us -> new UserStatusResponse(
+                        us.getId(),
+                        us.isOnline()
+                )).toList();
     }
 
     @Override
     public UserStatusResponse update(UserStatusUpdateRequest request) {
-        UserStatus userStatus = userStatusRepository.find(request.userStatusID())
-                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + request.userStatusID()));
+        UserStatus userStatus = userStatusRepository.find(request.userID())
+                .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + request.userID()));
         userStatus.updateLastLogin();
         UserStatus newUserStatus = userStatusRepository.save(userStatus);
         return new UserStatusResponse(newUserStatus.getUserID(), newUserStatus.isOnline());

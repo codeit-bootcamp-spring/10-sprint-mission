@@ -45,7 +45,7 @@ public class FileBinaryContentRepository implements BinaryContentRepository {
 
     private void loadData() {
         if(!Files.exists(STORE_FILE)) {
-            binaryContentList = List.of();
+            binaryContentList = new ArrayList<>();
             return;
         }
 

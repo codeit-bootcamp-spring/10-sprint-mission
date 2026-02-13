@@ -75,7 +75,7 @@ public class FileChannelRepository implements ChannelRepository {
     @Override
     public List<Channel> findAll() {
         loadData();
-        return channelData;
+        return new ArrayList<>(channelData);
     }
 
     @Override

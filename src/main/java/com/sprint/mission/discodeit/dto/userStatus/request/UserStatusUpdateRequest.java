@@ -1,9 +1,9 @@
-package com.sprint.mission.discodeit.dto.userStatus;
+package com.sprint.mission.discodeit.dto.userStatus.request;
 
 import java.util.UUID;
 
 public record UserStatusUpdateRequest(
-        UUID userStatusID,
+        UUID userID,
         boolean status
 ) {
 }

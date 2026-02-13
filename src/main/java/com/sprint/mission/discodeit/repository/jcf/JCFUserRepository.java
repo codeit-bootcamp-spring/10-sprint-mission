@@ -27,7 +27,7 @@ public class JCFUserRepository implements UserRepository {
 
     @Override
     public List<User> findAll() {
-        return userData;
+        return new ArrayList<>(userData);
     }
 
 

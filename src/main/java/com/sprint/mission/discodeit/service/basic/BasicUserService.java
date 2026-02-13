@@ -1,12 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.response.UserResponse;
 import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.user.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,21 +27,26 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
 
     @Override
-    public UserResponse create(UserCreateRequest request) {
+    public UserResponse create(UserCreateRequest userRequest, Optional<BinaryContentCreateRequest> profileRequest) {
         // 이름, 이메일 유효성 검증
-        validateName(request.name());
-        validateEmail(request.email());
+        validateName(userRequest.name());
+        validateEmail(userRequest.email());
 
         // 선택적으로 프로필 등록
-        UUID profileImageID = null;
-        if (request.profileImage() != null) {
-            BinaryContent profileImage = new BinaryContent(request.profileImage(), request.type());
-            profileImageID = profileImage.getId();
-            binaryContentRepository.save(profileImage);
-        }
+        UUID profileImageID = profileRequest
+                .map(pr -> {
+                    BinaryContent profile = new BinaryContent(
+                            pr.fileName(),
+                            pr.content(),
+                            pr.contentType()
+                    );
+                    return binaryContentRepository.save(profile).getId();
+                })
+                .orElse(null);
+
 
         // user 생성 with DTO
-        User user = userMapper.toEntity(request, profileImageID);
+        User user = userMapper.toEntity(userRequest, profileImageID);
         User savedUser = userRepository.save(user);
 
         // userStatus 생성
@@ -69,7 +74,7 @@ public class BasicUserService implements UserService {
         return users.stream()
                 .map(
                         user -> {
-                            UserStatus status = userStatusRepository.find(user.getId())
+                            UserStatus status = userStatusRepository.findByUserID(user.getId())
                                     .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + user.getId()));
                             return userMapper.toResponse(user, status);
                         })
@@ -79,26 +84,37 @@ public class BasicUserService implements UserService {
     // 이름. 프로필 선택적 업데이트
     // 업데이트 원하지 않는 경우 null을 전달하는게 맞나??
     @Override
-    public UserResponse update(UserUpdateRequest request) {
+    public UserResponse update(UUID userID, UserUpdateRequest request, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
         // user 조회
-        User user = userRepository.find(request.userID())
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userID()));
+        User user = userRepository.find(userID)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userID));
 
         // user 이름 선택적 업데이트
-        Optional.ofNullable(request.name()).ifPresent(name -> {
+        Optional.ofNullable(request.newUserName()).ifPresent(name -> {
             validateName(name);
             user.updateName(name);
         });
 
-        // user의 프로필 선택적 업데이트
-        Optional.ofNullable(request.profileImage()).ifPresent( image -> {
-                BinaryContent newProfile = new BinaryContent(image, request.type());
-                binaryContentRepository.save(newProfile);
-                user.updateProfileImageID(newProfile.getId());
+        // user 이메일 선택적 업데이트
+        Optional.ofNullable(request.newEmail()).ifPresent(email -> {
+            validateEmail(email);
+            user.updateEmail(email);
         });
+
+        // user의 프로필 선택적 업데이트
+        UUID profileID = optionalProfileCreateRequest
+                .map(pr ->{
+                    BinaryContent profile = new BinaryContent(pr.fileName(), pr.content(), pr.contentType());
+                    return binaryContentRepository.save(profile).getId();
+                })
+                .orElse(null);
+
+        user.updateProfileImageID(profileID);
 
         UserStatus userStatus = userStatusRepository.findByUserID(user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("UserStatus not found: " + user.getId()));
+
+        userStatus.updateLastLogin();
 
         User savedUser = userRepository.save(user);
 
@@ -106,8 +122,8 @@ public class BasicUserService implements UserService {
         // user가 가입한 channel의 memberList에서 user이름 및 프로필 업데이트
         for (Channel channel : user.getChannelsList()) {
             for (User u : channel.getMembersList()) {
-                if (u.getId().equals(request.userID())) {
-                    u.updateName(request.name());
+                if (u.getId().equals(userID)) {
+                    u.updateName(request.newUserName());
                     u.updateProfileImageID(savedUser.getProfileImageID());
                     channelIDs.add(channel.getId());
                 }
@@ -119,10 +135,10 @@ public class BasicUserService implements UserService {
             channelRepository.save(channelRepository.find(channelID));
         }
 
-        // message의 sender 이름 변경
+        // message의 sender 이름 변경, Message Entity는 업데이트 필요없지 않나??
         Set<UUID> messageIDs = new HashSet<>();
         for (Message message : user.getMessageList()) {
-            message.getSender().updateName(request.name());
+            message.getSender().updateName(request.newUserName());
             message.getSender().updateProfileImageID(savedUser.getProfileImageID());
             messageIDs.add(message.getId());
         }
