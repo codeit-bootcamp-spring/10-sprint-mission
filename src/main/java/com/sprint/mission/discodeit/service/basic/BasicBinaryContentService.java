@@ -21,9 +21,9 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public BinaryContentResponseDto create(BinaryContentRequestCreateDto request) {
         Validators.requireNonNull(request, "request");
-        validateBinaryContent(request.data(), request.contentType());
+        validateBinaryContent(request.bytes(), request.contentType());
 
-        BinaryContent binaryContent = new BinaryContent(request.data(), request.contentType());
+        BinaryContent binaryContent = new BinaryContent(request.bytes(), request.contentType());
         return toDto(binaryContentRepository.save(binaryContent));
     }
 
@@ -49,8 +49,8 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
 
-    private void validateBinaryContent(byte[] data, String contentType) {
-        if (data == null || data.length == 0) {
+    private void validateBinaryContent(byte[] bytes, String contentType) {
+        if (bytes == null || bytes.length == 0) {
             throw new IllegalArgumentException("첨부파일 데이터가 비어있습니다.");
         }
         if (contentType == null || contentType.isBlank()) {

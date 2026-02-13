@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.common.BinaryContentParam;
 import com.sprint.mission.discodeit.dto.message.MessageRequestCreateDto;
 import com.sprint.mission.discodeit.dto.message.MessageRequestUpdateDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDto;
@@ -13,7 +12,9 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.util.Validators;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageResponseDto create(MessageRequestCreateDto request) {
+    public MessageResponseDto create(MessageRequestCreateDto request, List<MultipartFile> attachments) {
         Validators.validateCreateMessageRequest(request);
         User user = userRepository.findById(request.authorId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
@@ -37,21 +38,14 @@ public class BasicMessageService implements MessageService {
 
         Validators.validationMessage(request.content());
 
-        List<BinaryContentParam> attachments =
-                request.attachments() == null ? List.of() : request.attachments();
-
-        validateAttachments(attachments);
-
-        List<UUID> attachmentIds = new ArrayList<>(attachments.size());
-
-        for(BinaryContentParam a : attachments) {
-            BinaryContent saved = binaryContentRepository.save(new BinaryContent(a.data(), a.contentType()));
-            attachmentIds.add(saved.getId());
-        }
+        List<UUID> attachmentIds = storeAttachments(attachments);
 
         Message message = new Message(request.content(), request.authorId(), request.channelId(), attachmentIds);
+
         channel.getMessageIds().add(message.getId());
         user.getMessageIds().add(message.getId());
+        channelRepository.save(channel);
+        userRepository.save(user);
         return toDto(messageRepository.save(message));
     }
 
@@ -112,19 +106,32 @@ public class BasicMessageService implements MessageService {
                 .orElseThrow(() -> new IllegalArgumentException("메세지 id는 존재하지 않습니다."));
     }
 
-    private void validateAttachments(List<BinaryContentParam> attachments) {
-        for (BinaryContentParam a : attachments) {
-            if (a == null) {
-                throw new IllegalArgumentException("attachments에 null 요소가 포함될 수 없습니다.");
+    private List<UUID> storeAttachments(List<MultipartFile> attachments) {
+        List<UUID> attachmentIds = new ArrayList<>();
+        if (attachments == null || attachments.isEmpty()) {
+            return attachmentIds;
+        }
+
+        for (MultipartFile file : attachments) {
+            if (file.isEmpty()) {
+                continue;
             }
-            if (a.data() == null || a.data().length == 0) {
-                throw new IllegalArgumentException("첨부파일 데이터가 비어있습니다.");
+
+            if (file.getContentType() == null || file.getContentType().isBlank()) {
+                throw new IllegalArgumentException("파일 형식을 알 수 없는 첨부파일이 있습니다.");
             }
-            if (a.contentType() == null || a.contentType().isBlank()) {
-                throw new IllegalArgumentException("contentType은 필수입니다.");
+
+            try {
+                BinaryContent content = new BinaryContent(file.getBytes(), file.getContentType());
+                BinaryContent saved = binaryContentRepository.save(content);
+                attachmentIds.add(saved.getId());
+            } catch (IOException e) {
+                throw new RuntimeException("첨부파일 처리 중 오류가 발생했습니다.", e);
             }
         }
+        return attachmentIds;
     }
+
     public static MessageResponseDto toDto(Message message) {
         return new MessageResponseDto(
                 message.getId(),

@@ -1,6 +1,4 @@
 package com.sprint.mission.discodeit.service.basic;
-
-import com.sprint.mission.discodeit.dto.common.BinaryContentParam;
 import com.sprint.mission.discodeit.dto.user.UserRequestCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserRequestUpdateDto;
 import com.sprint.mission.discodeit.dto.user.UserResponseDto;
@@ -15,7 +13,9 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import com.sprint.mission.discodeit.util.Validators;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -29,21 +29,27 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public UserResponseDto create(UserRequestCreateDto request) {
+    public UserResponseDto create(UserRequestCreateDto request, MultipartFile profileImage) {
             Validators.validationUser(request.userName(), request.userEmail(), request.userPassword());
             validateDuplicationUserName(request.userName());
             validateDuplicationEmail(request.userEmail());
             validateDuplicationUserPassword(request.userPassword());
 
-        BinaryContentParam profile = request.profileImage();
         User user;
-        validateProfileImageParam(profile);
-        if(profile == null) {
-            user = new User(request.userName(), request.userEmail(), request.userPassword() ,null);
+        if (profileImage == null || profileImage.isEmpty()) {
+            user = new User(request.userName(), request.userEmail(), request.userPassword(), null);
         } else {
-            BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
-            binaryContentRepository.save(binaryContent);
-            user = new User(request.userName(), request.userEmail(), request.userPassword(), binaryContent.getId());
+            try {
+                byte[] bytes = profileImage.getBytes();
+                String contentType = profileImage.getContentType();
+
+                BinaryContent binaryContent = new BinaryContent(bytes, contentType);
+                binaryContentRepository.save(binaryContent);
+
+                user = new User(request.userName(), request.userEmail(), request.userPassword(), binaryContent.getId());
+            } catch (IOException e) {
+                throw new RuntimeException("프로필 이미지 처리 중 오류가 발생했습니다.", e);
+            }
         }
 
         User savedUser = userRepository.save(user);
@@ -59,6 +65,8 @@ public class BasicUserService implements UserService {
         return toDto(user, online);
     }
 
+
+
     @Override
     public List<UserResponseDto> findAll() {
         return userRepository.findAll().stream()
@@ -67,7 +75,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDto update(UserRequestUpdateDto request) {
+    public UserResponseDto update(UserRequestUpdateDto request, MultipartFile profileImage) {
         Validators.requireNonNull(request, "request");
         User user = validateExistenceUser(request.id());
 
@@ -87,11 +95,18 @@ public class BasicUserService implements UserService {
                         user.updateUserPassword(password);
                 });
 
-        BinaryContentParam profile = request.profileImage();
-        if(profile != null) {
-            validateProfileImageParam(profile);
-            BinaryContent binaryContent = new BinaryContent(profile.data(), profile.contentType());
-            user.updateProfileImage(binaryContent.getId());
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                byte[] bytes = profileImage.getBytes();
+                String contentType = profileImage.getContentType();
+
+                BinaryContent binaryContent = new BinaryContent(bytes, contentType);
+                binaryContentRepository.save(binaryContent);
+
+                user.updateProfileImage(binaryContent.getId());
+            } catch (IOException e) {
+                throw new RuntimeException("프로필 이미지 업데이트 중 오류가 발생했습니다.", e);
+            }
         }
 
         User savedUser = userRepository.save(user);
@@ -151,14 +166,15 @@ public class BasicUserService implements UserService {
 
     }
 
-    public static UserResponseDto toDto(User user, boolean online) {
+    public static UserResponseDto toDto(User user, Boolean online) {
         return new UserResponseDto(
                 user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUserName(),
                 user.getUserEmail(),
                 user.getProfileId(),
-                online,
-                user.getCreatedAt()
+                online
         );
     }
 
@@ -170,14 +186,4 @@ public class BasicUserService implements UserService {
                 .orElse(false);
     }
 
-    private void validateProfileImageParam(BinaryContentParam profile) {
-        if (profile != null) {
-            if(profile.data() == null || profile.data().length == 0) {
-                throw new IllegalArgumentException("프로필 이미지 데이터가 비어있습니다.");
-            }
-            if(profile.contentType() == null || profile.contentType().isBlank()) {
-                throw new IllegalArgumentException("contentType은 필수입니다.");
-            }
-        }
-    }
 }

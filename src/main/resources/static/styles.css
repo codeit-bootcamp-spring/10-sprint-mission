@@ -1,0 +1,152 @@
+/* 폰트: 가독성 좋은 프리텐다드(없으면 시스템 폰트) */
+@import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    background-color: #f3f4f6; /* 차분한 쿨그레이 배경 */
+    display: flex;
+    justify-content: center;
+    padding-top: 80px;
+    color: #1f2937;
+}
+
+.container {
+    width: 100%;
+    max-width: 640px; /* 너무 넓지 않게 */
+    padding: 0 20px;
+}
+
+/* 헤더: 심플하고 모던하게 */
+header h1 {
+    text-align: left; /* 왼쪽 정렬로 세련미 추가 */
+    margin-bottom: 24px;
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    padding-left: 10px; /* 리스트와 라인 맞춤 */
+}
+
+header h1 i {
+    color: #3b82f6; /* 포인트 컬러 (블루) */
+    font-size: 20px;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+/* 메인 리스트 박스: 하나의 덩어리감 */
+.user-list {
+    background-color: #ffffff;
+    border-radius: 24px; /* 요즘 트렌드: 모서리를 더 둥글게 */
+    /* 부드럽고 깊은 그림자로 고급스러움 표현 */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    list-style: none;
+    border: 1px solid rgba(255,255,255,0.5); /* 미세한 경계선 */
+}
+
+/* 리스트 아이템 (한 줄) */
+.user-item {
+    display: flex;
+    align-items: center;
+    padding: 20px 32px; /* 넉넉한 내부 여백 */
+    background-color: #fff;
+    border-bottom: 1px solid #f3f4f6; /* 아주 연한 구분선 */
+    transition: all 0.2s ease; /* 부드러운 전환 */
+    cursor: default; /* 마우스 커서 기본 */
+}
+
+/* 마지막 줄은 선 없애기 */
+.user-item:last-child {
+    border-bottom: none;
+}
+
+/* 호버 효과: 배경색만 살짝 변하게 (구조 변형 X) */
+.user-item:hover {
+    background-color: #f9fafb;
+}
+
+/* 프로필 이미지 */
+.user-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 18px; /* 원형 대신 부드러운 사각형(Squircle) 추천 */
+    margin-right: 20px;
+    object-fit: cover;
+    background-color: #e5e7eb; /* 이미지 로딩 전 배경색 */
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); /* 미세한 내부 테두리 */
+}
+
+/* 텍스트 정보 */
+.user-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.user-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 3px;
+    letter-spacing: -0.01em;
+}
+
+.user-email {
+    font-size: 14px;
+    color: #6b7280; /* 세련된 회색 */
+    font-weight: 400;
+}
+
+/* 상태 뱃지: 촌스런 원색 대신 '파스텔 톤 + 진한 글씨' 조합 */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 8px; /* 둥근 사각형 */
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px; /* 점과 글자 사이 간격 */
+}
+
+/* 상태 표시 점(Dot) 추가 */
+.status-badge::before {
+    content: '';
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+/* 온라인 상태 디자인 */
+.online {
+    background-color: #ecfdf5; /* 아주 연한 민트 */
+    color: #059669; /* 진한 초록 글씨 */
+}
+.online::before {
+    background-color: #10b981; /* 초록색 점 */
+}
+
+/* 오프라인 상태 디자인 */
+.offline {
+    background-color: #f3f4f6; /* 연한 회색 */
+    color: #6b7280; /* 진한 회색 글씨 */
+}
+.offline::before {
+    background-color: #9ca3af; /* 회색 점 */
+}
+
+/* 로딩/에러 메시지 */
+.status-message {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+    font-size: 15px;
+}
