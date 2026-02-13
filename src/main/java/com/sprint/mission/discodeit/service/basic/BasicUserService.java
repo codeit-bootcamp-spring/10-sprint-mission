@@ -39,7 +39,7 @@ public class BasicUserService implements UserService {
         // 유저 dto 내부 받아온 파일 dto
         MultipartFile file = dto.getProfileImg();
         // 프로필 등록 여부 & binaryContent객체 생성
-        if(dto.getProfileImg() != null){
+        if(file != null){
             try{
                 BinaryContent binaryContent =
                         new BinaryContent(user.getId(),
