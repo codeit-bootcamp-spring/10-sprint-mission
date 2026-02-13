@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discodeit</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+
+    <!-- 로그인 화면 -->
+    <div id="login-view" class="auth-wrapper">
+        <div class="auth-box">
+            <h1>로그인</h1>
+
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+
+            <button id="loginBtn">로그인</button>
+            <button id="goSignupBtn" class="text-btn">회원가입</button>
+
+            <p id="loginError" class="error-message"></p>
+        </div>
+    </div>
+
+    <!-- 회원가입 화면 -->
+    <div id="signup-view" class="auth-wrapper" style="display:none;">
+        <div class="auth-box">
+            <h1>회원가입</h1>
+
+            <input type="text" id="signupUsername" placeholder="Username">
+            <input type="email" id="signupEmail" placeholder="Email">
+            <input type="password" id="signupPassword" placeholder="Password">
+
+            <!-- 프로필 이미지 -->
+            <label class="profile-upload">
+                <span>프로필 사진</span>
+                <input type="file" id="signupProfile" accept="image/*">
+            </label>
+
+            <button id="signupBtn">회원가입</button>
+            <button id="backToLoginBtn" class="text-btn">로그인으로</button>
+
+            <p id="signupError" class="error-message"></p>
+        </div>
+    </div>
+
+    <!-- 로그인 성공 후 -->
+    <div id="app" class="app-layout" style="display:none;">
+
+        <!-- 왼쪽 사이드바 -->
+        <aside class="sidebar">
+
+            <!-- 상단: 사용자 목록 버튼 -->
+            <div class="sidebar-header">
+                <button id="showUsersBtn">👥</button>
+            </div>
+            <!-- 사용자 목록 화면 -->
+            <div id="user-view" class="user-popup" style="display:none;">
+                <h2>사용자 목록</h2>
+                <div id="userList"></div>
+            </div>
+
+            <!-- 채널 목록 -->
+            <div id="channelList" class="channel-list"></div>
+
+            <!-- 하단: 현재 사용자 -->
+            <div class="sidebar-footer">
+                <div class="current-user">
+                    <img id="currentUserAvatar" class="current-user-avatar" src="default-avatar.png" alt="profile">
+                    <span id="currentUsername"></span>
+                    <button id="editProfileBtn">⚙</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 오른쪽 메인 영역 -->
+        <main class="main-content">
+
+            <!-- 채널 헤더 -->
+            <div class="chat-header">
+                <h2 id="currentChannelName">채널을 선택하세요</h2>
+            </div>
+
+            <!-- 메시지 -->
+            <div id="chatArea" style="display:none;">
+                <div id="messageList"></div>
+
+                <div class="message-input-area">
+                    <label class="attach-btn">
+                        ➕
+                        <input type="file" id="fileInput" multiple hidden>
+                    </label>
+                    <textarea id="messageInput" rows="2" placeholder="메시지 입력"></textarea>
+                    <button id="sendMessageBtn">전송</button>
+                </div>
+                <!-- 첨부파일 미리보기 -->
+                <div id="attachmentPreview" class="attachment-preview"></div>
+            </div>
+
+
+        </main>
+
+    </div>
+
+
+
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>

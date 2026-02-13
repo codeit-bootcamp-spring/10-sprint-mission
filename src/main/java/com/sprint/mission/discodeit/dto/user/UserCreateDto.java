@@ -14,7 +14,6 @@ public record UserCreateDto(
         @NotEmpty(message = "이메일 주소를 입력해주세요.")
         String email,
         @NotEmpty(message = "비밀번호를 입력해주세요.")
-        String password,
-        BinaryContentCreateDto profileDto
+        String password
 ) {
 }

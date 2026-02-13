@@ -8,6 +8,8 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -49,8 +51,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelResponseDto find(UUID channelId) {
-        Channel channel = channelRepository.findById(channelId)
-                        .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+        Channel channel = get(channelId);
         return channelToDto(channel);
     }
 
@@ -63,8 +64,7 @@ public class BasicChannelService implements ChannelService {
         readStatusRepository.findAllByUserId(userId)
                 .forEach(r->{
                     UUID channelId = r.getChannelId();
-                    Channel channel = channelRepository.findById(channelId)
-                            .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+                    Channel channel = get(channelId);
                     response.add(channelToDto(channel));
                 });
         return response;
@@ -72,10 +72,9 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelResponseDto update(UUID id,ChannelUpdateDto dto) {
-        Channel channel = channelRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + id + " not found"));
+        Channel channel = get(id);
         if(channel.getType()==ChannelType.PRIVATE){
-            throw new UnsupportedOperationException("Private channels are not supported");
+            throw new BusinessLogicException(ExceptionCode.NOT_ALLOWED_IN_PRIVATE_CHANNEL);
         }
         channel.update(dto.name(), dto.description());
         return channelToDto(channelRepository.save(channel));
@@ -84,7 +83,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void delete(UUID channelId) {
         if (!channelRepository.existsById(channelId)) {
-            throw new NoSuchElementException("Channel with id " + channelId + " not found");
+            throw new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND);
         }
         channelRepository.deleteById(channelId);
         messageRepository.deleteByChannelId(channelId);
@@ -99,5 +98,10 @@ public class BasicChannelService implements ChannelService {
                 .findAllByChannelId(channel.getId())
                 .forEach(s -> memberIds.add(s.getUserId()));
         return channelMapper.toDto(channel, lastMessage, memberIds);
+    }
+
+    private Channel get(UUID channelId) {
+        return channelRepository.findById(channelId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
     }
 }

@@ -1,12 +1,15 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateDto;
 import com.sprint.mission.discodeit.dto.user.UserCreateDto;
-import com.sprint.mission.discodeit.dto.user.UserResponseDto;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
@@ -14,10 +17,8 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
+
 @Service
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
@@ -31,13 +32,13 @@ public class BasicUserService implements UserService {
     private final BinaryContentMapper binaryContentMapper;
 
     @Override
-    public UserResponseDto create(UserCreateDto dto) {
+    public UserDto create(UserCreateDto dto, Optional<BinaryContentCreateDto> binaryContentCreateDto) {
         validateEmail(dto.email());
         validateUsername(dto.username());
-        //프로필 사진 없을때
+        //프로필 사진
         BinaryContent profile = null;
-        if(dto.profileDto() != null) {
-            profile=binaryContentRepository.save(binaryContentMapper.toEntity(dto.profileDto()));
+        if(binaryContentCreateDto.isPresent()) {
+            profile = binaryContentRepository.save(binaryContentMapper.toEntity(binaryContentCreateDto.get()));
         }
         User user =  userMapper.toEntity(dto, profile);
         UserStatus userStatus = new UserStatus(user.getId());
@@ -50,36 +51,38 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDto find(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+    public UserDto find(UUID userId) {
+        User user = get(userId);
         return userMapper.toDto(user,findUserStatusByUserId(userId));
     }
 
     @Override
-    public List<UserResponseDto> findAll() {
+    public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
-        List<UserResponseDto> response = new ArrayList<>();
+        List<UserDto> response = new ArrayList<>();
         users.forEach(u-> response.add(userMapper.toDto(u,findUserStatusByUserId(u.getId()))));
         return response;
     }
 
     @Override
-    public UserResponseDto update(UUID userId,UserUpdateDto dto) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+    public UserDto update(UUID userId, UserUpdateDto dto, Optional<BinaryContentCreateDto> binaryContentCreateDto) {
+        User user = get(userId);
         BinaryContent profile = null;
-        if(dto.profileDto() != null) {
-            profile =binaryContentRepository.save(binaryContentMapper.toEntity(dto.profileDto()));
-            binaryContentRepository.delete(user.getProfileId());//기존 프로필 사진 삭제
+        UUID oldProfileId = null;
+        if(binaryContentCreateDto.isPresent()) {
+            profile = binaryContentRepository.save(binaryContentMapper.toEntity(binaryContentCreateDto.get()));
+            oldProfileId = user.getProfileId();
         }
         user.update(dto.username(), dto.email(), dto.password(),profile==null?null:profile.getId());
+        if(oldProfileId!=null) {//기존 프로필을 가지고 있는경우만
+            binaryContentRepository.delete(oldProfileId);//기존 프로필 사진 삭제
+        }
         return userMapper.toDto(userRepository.save(user),findUserStatusByUserId(userId));
     }
 
     @Override
     public void delete(UUID userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        User user = get(userId);
         if(user.getProfileId()!=null) {//프로필 사진 있는경우 삭제
             binaryContentRepository.delete(user.getProfileId());
         }
@@ -89,18 +92,22 @@ public class BasicUserService implements UserService {
     }
     private void validateEmail(String email) {
         if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("이미 존재하는 이메일: "+email);
+            throw new BusinessLogicException(ExceptionCode.EMAIL_ALREADY_EXIST);
         }
     }
     private void validateUsername(String username) {
         if (userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException("이미 존재하는 사용자 이름: "+username);
+            throw new BusinessLogicException(ExceptionCode.USER_NAME_ALREADY_EXIST);
         }
     }
 
     private UserStatus findUserStatusByUserId(UUID userId) {
       return userStatusRepository.findByUserId(userId)
-           .orElseThrow(() -> new NoSuchElementException("UserStatus with Userid " + userId + " not found"));
+           .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
     }
 
+    private User get(UUID userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+    }
 }
