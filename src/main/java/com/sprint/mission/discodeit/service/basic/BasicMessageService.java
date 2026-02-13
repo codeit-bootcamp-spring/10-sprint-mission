@@ -41,6 +41,8 @@ public class BasicMessageService implements MessageService {
             }
         }
 
+        // todo: 파일이 실제로 업로드 되었는지 개수는 맞는지 검증 필요
+
         Message message = new Message(request.content(), request.channelId(), request.authorId(), request.attachmentIds());
         Message savedMessage = messageRepository.save(message);
 
