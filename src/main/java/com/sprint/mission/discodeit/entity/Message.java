@@ -1,34 +1,41 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-public class Message extends BaseEntity{
+
+@Getter
+@Setter
+public class Message extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String content;
-    private Channel channel;
-    private User user;
+    private UUID channelId;
+    private UUID authorId;
+    private List<UUID> attachmentIds;
 
-    public User getUser() {
-        return user;
-    }
-
-    public Channel getChannel() {
-        return channel;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void updateContent(String newContent){
-        this.content = newContent;
-        super.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public Message(String content, Channel channel, User user) {
+    public Message(String content, UUID channelId, UUID authorId, List<UUID> binaryContents){
         this.content = content;
-        this.channel = channel;
-        this.user = user;
+        this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = binaryContents == null ? new ArrayList<>() : new ArrayList<>(binaryContents);
     }
 
 
+    public void update(String newContent, List<UUID> binaryContents) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.setUpdatedAt(Instant.now());
+        }
+    }
 }

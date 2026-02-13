@@ -1,62 +1,82 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+
+import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public class User extends BaseEntity {
+@Getter
+public class User extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private String username;
-    private String password;
     private String email;
-    private List<Channel> myChannels = new ArrayList<>();
-    private List<Message> myMessages = new ArrayList<>();
+    private String password;
+    private UUID profileID; // BinaryContent??id瑜?媛由ы궡
+    private List<UUID> channelIds;
 
-    public String getUsername() {
-        return username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void updateUsername(String newUsername){
-        this.username = newUsername;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public void updateEmail(String newEmail){
-        this.email = newEmail;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public void updatePassword(String newPassword){
-        this.password = newPassword;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public List<Message> getMyMessages() {
-        return myMessages;
-    }
-
-    public List<Channel> getMyChannels() {
-        return myChannels;
-    }
-
-    public void addMessage(Message message){
-        this.myMessages.add(message);
-    }
-
-    public User(String username, String password, String email) {
+    public User(String username, String email, String password, UUID profileID) {
+        super();
         this.username = username;
-        this.password = password;
         this.email = email;
+        this.password = password;
+        this.profileID = profileID;
+        this.channelIds = new ArrayList<>();
     }
 
-    @Override
-    public String toString() {
-        return "이름: " + username + ", 이메일: " + email + ", 비밀번호: " + password;
+    public void joinChannel(UUID channelId) {
+        if (channelId == null) {
+            throw new IllegalArgumentException("Invalid channel id");
+        }
+        if (channelIds == null) {
+            channelIds = new ArrayList<>();
+        }
+        if (channelIds.stream().anyMatch(channelId::equals)) {
+            throw new IllegalStateException("User already joined channel");
+        }
+        channelIds.add(channelId);
+        this.setUpdatedAt(Instant.now());
+    }
+
+    public void leaveChannel(UUID channelId) {
+        if (channelId == null) {
+            throw new IllegalArgumentException("Invalid channel id");
+        }
+        if (channelIds == null) {
+            channelIds = new ArrayList<>();
+        }
+        if (channelIds.stream().noneMatch(channelId::equals)) {
+            throw new IllegalStateException("User is not in channel");
+        }
+        channelIds.remove(channelId);
+        this.setUpdatedAt(Instant.now());
+    }
+
+    public void update(String newUsername, String newEmail, String newPassword, UUID profileId) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+
+        if (profileId != null && !profileId.equals(this.profileID)) {
+            this.profileID = profileId;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.setUpdatedAt(Instant.now());
+        }
     }
 }
