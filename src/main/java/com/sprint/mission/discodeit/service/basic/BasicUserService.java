@@ -27,16 +27,6 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;// 왜 불가능? -> 구현 클래스에 @Repository 필요한데 아직 구현 클래스 X
     private final UserStatusRepository userStatusRepository;// 왜 불가능?
 
-//    @RequiredArgsConstructor로 대체
-//    public BasicUserService(UserRepository userRepository) {
-//        this.userRepository = userRepository;
-//    }
-
-//    @Override
-//    public User create(String username, String email, String password) {
-//        User user = new User(username, email, password);
-//        return userRepository.save(user);
-//    }
     @Override
     public UserSummaryResponseDTO create(UserCreateRequestDTO userCreateRequestDTO) {
         // DTO에서 @NotBlank와 같은 애너테이션을 이용해 검증함
@@ -73,13 +63,6 @@ public class BasicUserService implements UserService {
         return toUserSummaryResponseDTO(user);
     }
 
-//    @Override
-//    public User find(UUID userId) {
-//        return userRepository.findById(userId)
-//                .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
-//    }
-
-
     @Override
     public UserDetailResponseDTO find(UUID userId) {
         User user = getUserByIdOrThrow(userId);
@@ -88,12 +71,6 @@ public class BasicUserService implements UserService {
 
         return toUserDetailResponseDTO(user,userStatus);
     }
-
-//    @Override
-//    public List<User> findAll() {
-//        return userRepository.findAll();
-//    }
-
 
     @Override
     public List<UserDetailResponseDTO> findAll() {
@@ -148,8 +125,6 @@ public class BasicUserService implements UserService {
     public void delete(UUID userId) {
         User user = getUserByIdOrThrow(userId);
         // UserStatus 삭제
-        // UserStatus를 userId로 찾고 .getId()를 이용해서 deleteById를 해야하는지?
-        // 아니면 UserStatusRepository에 deleteByUserId()를 정의하고 service에서 사용해야하는지?
         UserStatus userStatus = getUserStatusByUserIdOrThrow(userId);
         userStatusRepository.deleteById(userStatus.getId());
 

@@ -51,12 +51,6 @@ public class JCFMessageRepository implements MessageRepository {
 
     @Override
     public void deleteAllByChannelId(UUID channelId) {
-//        data.values().stream()
-//                .filter(m -> m.getChannelId().equals(channelId))
-//                .forEach(m -> data.remove(m.getId()));
-
-        // channelId에 해당하는 메시지를 찾는 로직이 findAllByChannelId와 동일 하므로 재사용?
-        // 삭제 시에 deleteById를 재사용?
         findAllByChannelId(channelId)
                 .forEach(m -> deleteById(m.getId()));
     }

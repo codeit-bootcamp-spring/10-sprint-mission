@@ -8,7 +8,6 @@ import java.time.Instant;
 import java.util.UUID;
 
 // 사용자 별 마지막으로 확인된 접속시간을 표현하는 도메인(사용자의 온라인 상태를 확인하기 위해 활용)
-// -> 유저의 최근 접속 시간을 필드로 가져야 하는지?
 @Getter
 public class UserStatus implements Serializable {
     private static final long serialVersionUID = 1L;

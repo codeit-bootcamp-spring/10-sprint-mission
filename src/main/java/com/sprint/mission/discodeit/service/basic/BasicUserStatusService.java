@@ -62,8 +62,7 @@ public class BasicUserStatusService implements UserStatusService {
                 .orElseThrow(() -> new NoSuchElementException(userId+"를 가진 UserStatus를 찾지 못했습니다"));
         return toUserStatusResponseDTO(processUpdate(userStatus, userStatusUpdateRequestDTO));
     }
-    // update()와 updateByUserId userStatus를 가져온 후 update하는 로직이 겹치는데 따로 메소드화?
-    // 나중에 update에 대한게 추가 되거나 update할게 많아진다면 update,updateByUserId 등등을 다 바꾸지 않아도 되게끔?
+
     private UserStatus processUpdate(UserStatus userStatus, UserStatusUpdateRequestDTO userStatusUpdateRequestDTO) {
         Instant lastAccessTime = userStatusUpdateRequestDTO.lastAccessTime();
         userStatus.updateLastAccessTime(lastAccessTime);

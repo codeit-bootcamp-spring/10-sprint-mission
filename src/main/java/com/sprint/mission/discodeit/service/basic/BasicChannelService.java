@@ -26,11 +26,6 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
 
-//    @RequiredArgsConstructor로 대체
-//    public BasicChannelService(ChannelRepository channelRepository) {
-//        this.channelRepository = channelRepository;
-//    }
-
     @Override
     public ChannelSummaryResponseDTO create(PublicCreateRequestDTO publicCreateRequestDTO) {
         // DTO 에서 NotBlank 애너테이션으로 검증
@@ -57,13 +52,6 @@ public class BasicChannelService implements ChannelService {
         );
         return toChannelSummaryResponseDTO(channelRepository.save(channel));
     }
-
-//    @Override
-//    public Channel find(UUID channelId) {
-//        return channelRepository.findById(channelId)
-//                        .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
-//    }
-
 
     @Override
     public ChannelDetailResponseDTO find(UUID channelId) {
@@ -123,8 +111,6 @@ public class BasicChannelService implements ChannelService {
     // ChannelDetailResponseDTO를 만드는 겹치는 코드를 다로 메소드로
     // find/findAll 반환용 DTO를 만드는 메서드
     private ChannelDetailResponseDTO toChannelDetailResponseDTO(Channel channel) {
-        // findAll()로 전체 메시지 데이터를 가져와서 원하는 조건으로 필터링 하는 것 보다
-        // 그런 작업은 Repository의 책임으로, 가져온 데이터를 어떻게 할지가 Service의 책임
         Message recentMessage = messageRepository.findAllByChannelId(channel.getId())
                 .stream()
                 .max(Comparator.comparing(Message::getCreatedAt))

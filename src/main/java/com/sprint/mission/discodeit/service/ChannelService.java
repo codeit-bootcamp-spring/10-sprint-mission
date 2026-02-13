@@ -12,7 +12,6 @@ import java.util.UUID;
 public interface ChannelService {
     ChannelSummaryResponseDTO create(PublicCreateRequestDTO publicCreateRequestDTO);
     ChannelSummaryResponseDTO create(PrivateCreateRequestDTO privateCreateRequestDTO);
-//    Channel find(UUID channelId);
     ChannelDetailResponseDTO find (UUID channelId);
     List<ChannelDetailResponseDTO> findAllByUserId(UUID userId);
     ChannelSummaryResponseDTO update(UUID channelId, ChannelUpdateRequestDTO channelUpdateRequestDTO);

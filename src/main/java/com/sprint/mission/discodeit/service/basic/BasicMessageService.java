@@ -25,13 +25,6 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
 
-//    @RequiredArgsConstructor로 대체
-//    public BasicMessageService(MessageRepository messageRepository, ChannelRepository channelRepository, UserRepository userRepository) {
-//        this.messageRepository = messageRepository;
-//        this.channelRepository = channelRepository;
-//        this.userRepository = userRepository;
-//    }
-
     @Override
     public MessageResponseDTO create(MessageCreateRequestDTO messageCreateRequestDTO) {
         String content = messageCreateRequestDTO.content();
