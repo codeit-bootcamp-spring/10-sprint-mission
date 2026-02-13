@@ -19,17 +19,19 @@ public class BinaryContent implements Serializable {
     private static final long serialVersionUID = 1L;
     private final UUID id;
     private final Instant createdAt;
-    private final byte[] content;
+    private final String contentType;
+    private final byte[] bytes;
 
     // 생성자
-    public BinaryContent(byte[] content) {
+    public BinaryContent(String contentType, byte[] bytes) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.content = content.clone();
+        this.contentType = contentType;
+        this.bytes = bytes.clone();
     }
 
     // getter
-    public byte[] getContent() {
-        return content.clone();
+    public byte[] getBytes() {
+        return bytes.clone();
     }
 }

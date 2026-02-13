@@ -1,12 +1,12 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.response.UserWithOnlineResponse;
+import com.sprint.mission.discodeit.dto.user.UserUpdateInput;
 import com.sprint.mission.discodeit.entity.User;
+import jakarta.validation.Valid;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface UserService {
@@ -15,14 +15,14 @@ public interface UserService {
     User createUser(UserCreateRequest userCreateRequest);
 
     // R. 읽기
-    UserResponse findUserById(UUID userId);
+    UserWithOnlineResponse findUserById(UUID userId);
 
     // R. 모두 읽기
     // 모든 사용자
-    List<UserResponse> findAllUsers();
+    List<UserWithOnlineResponse> findAllUsers();
 
     // U. 수정
-    User updateUserInfo(UserUpdateRequest userUpdateRequest);
+    User updateUserInfo(@Valid UserUpdateInput input);
 
     // D. 삭제
     void deleteUser(UUID userId);

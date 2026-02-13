@@ -1,17 +1,11 @@
-package com.sprint.mission.discodeit.dto.user;
+package com.sprint.mission.discodeit.dto.user.request;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
-import java.util.UUID;
-
 public record UserUpdateRequest(
-        @NotNull(message = "ID가 null입니다.")
-        UUID userId,
-
         @Pattern(regexp = "^\\S+$", message = "email은 공백이 허용되지 않습니다.")
         @Email(message = "email 형식에 맞지 않습니다.")
         String email,
@@ -19,8 +13,8 @@ public record UserUpdateRequest(
         @Pattern(regexp = "^\\S+$", message = "password는 공백이 허용되지 않습니다.")
         String password,
 
-        @Pattern(regexp = "^\\S+$", message = "userName은 공백이 허용되지 않습니다.")
-        String userName,
+        @Pattern(regexp = "^\\S+$", message = "username 공백이 허용되지 않습니다.")
+        String username,
 
         @Pattern(regexp = "^\\S+$", message = "nickName은 공백이 허용되지 않습니다.")
         String nickName,
@@ -29,6 +23,6 @@ public record UserUpdateRequest(
         String birthday,
 
         @Valid
-        BinaryContentCreateRequest profileImage
+        BinaryContentCreateInput profileImage
 ) {
 }

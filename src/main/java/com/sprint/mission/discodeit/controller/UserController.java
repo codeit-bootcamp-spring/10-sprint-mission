@@ -1,0 +1,95 @@
+package com.sprint.mission.discodeit.controller;
+
+import com.sprint.mission.discodeit.dto.user.*;
+import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.user.response.UserResponse;
+import com.sprint.mission.discodeit.dto.user.response.UserWithOnlineResponse;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
+import com.sprint.mission.discodeit.service.deletion.UserDeleteService;
+import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * 사용자 관리 Controller
+ */
+@RestController
+@RequestMapping("/api/user")
+@AllArgsConstructor
+public class UserController {
+    private final UserService userService;
+    private final UserStatusService userStatusService;
+    private final UserDeleteService userDeleteService;
+
+    /**
+     * 사용자 등록
+     */
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public ResponseEntity createUser(@RequestBody @Valid UserCreateRequest request) {
+        User user = userService.createUser(request);
+
+        UserResponse result = createUserResponse(user);
+
+        return ResponseEntity.status(201).body(result);
+    }
+
+    /**
+     * 사용자 정보 수정
+     */
+//    @RequestMapping(value = "/me", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{userId}", method = RequestMethod.PATCH)
+    public ResponseEntity updateUserInfo(@PathVariable UUID userId,
+                                         @RequestBody @Valid UserUpdateRequest request) {
+        UserUpdateInput input = new UserUpdateInput(userId, request.email(), request.password(),
+                request.username(), request.nickName(), request.birthday(), request.profileImage());
+        User user = userService.updateUserInfo(input);
+
+        UserResponse result = createUserResponse(user);
+
+        return ResponseEntity.status(200).body(result);
+    }
+
+    /**
+     * 모든 사용자 조회
+     */
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
+    public ResponseEntity findAllUsers() {
+        List<UserWithOnlineResponse> result = userService.findAllUsers();
+
+        return ResponseEntity.status(200).body(result);
+    }
+
+    // 인증 추가 후, 본인이면? /me/online ???
+    /**
+     * 사용자의 온라인 상태 업데이트
+     */
+    @RequestMapping(value = "/{userId}/online", method = RequestMethod.PATCH)
+    public ResponseEntity updateUserOnlineTime(@PathVariable UUID userId) {
+        UserStatus userStatus = userStatusService.updateUserStatusByUserId(userId, Instant.now());
+
+        UserStatusResponse result = new UserStatusResponse(userId, userStatus.getLastOnlineTime(), userStatus.isOnlineStatus());
+        return ResponseEntity.status(200).body(result);
+    }
+
+    // 사용자 삭제
+    @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
+    public ResponseEntity deleteUser(@PathVariable UUID userId) {
+        userDeleteService.deleteUser(userId);
+        return ResponseEntity.status(204).build();
+    }
+
+    private UserResponse createUserResponse(User user) {
+        return new UserResponse(user.getId(), user.getEmail()
+                , user.getUsername(), user.getNickName(), user.getBirthday(), user.getProfileId());
+    }
+}

@@ -1,7 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.message.input.MessageCreateInput;
+import com.sprint.mission.discodeit.dto.message.input.MessageUpdateInput;
+import com.sprint.mission.discodeit.dto.message.response.MessageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.UUID;
 public interface MessageService {
     // CRUD(생성, 읽기, 모두 읽기, 수정, 삭제 기능)
     // C. 생성: messageID과 내용 출력
-    Message createMessage(MessageCreateRequest request);
+    Message createMessage(MessageCreateInput request);
 
     // R. 읽기
     // 특정 메시지 정보 읽기
@@ -26,7 +27,7 @@ public interface MessageService {
 
     // U. 수정
     // 메시지 수정
-    Message updateMessageContent(MessageUpdateRequest request);
+    Message updateMessageContent(MessageUpdateInput request);
 
     // D. 삭제
     void deleteMessage(UUID userId, UUID messageId);

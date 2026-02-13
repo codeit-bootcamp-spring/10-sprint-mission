@@ -1,7 +1,5 @@
-package com.sprint.mission.discodeit.dto.channel;
+package com.sprint.mission.discodeit.dto.channel.request;
 
-import com.sprint.mission.discodeit.entity.ChannelType;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;

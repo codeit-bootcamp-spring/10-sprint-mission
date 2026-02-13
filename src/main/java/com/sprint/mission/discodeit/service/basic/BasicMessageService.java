@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.input.BinaryContentCreateInput;
+import com.sprint.mission.discodeit.dto.message.input.MessageCreateInput;
+import com.sprint.mission.discodeit.dto.message.input.MessageUpdateInput;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -29,31 +29,32 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public Message createMessage(MessageCreateRequest request) {
+    public Message createMessage(MessageCreateInput input) {
         // 로그인 되어있는 user ID null / user 객체 존재 확인
-        User author = userRepository.findById(request.authorId())
+        User author = userRepository.findById(input.authorId())
                 .orElseThrow(() -> new NoSuchElementException("해당 사용자가 없습니다."));
 
         // Channel ID null & channel 객체 존재 확인
-        Channel channel = channelRepository.findById(request.channelId())
+        Channel channel = channelRepository.findById(input.channelId())
                 .orElseThrow(() -> new NoSuchElementException("해당 채널이 없습니다."));
 
         // author의 channel 참여 여부 확인
         if (!channel.getChannelMembersList().stream()
-                .anyMatch(user -> user.getId().equals(request.authorId()))) {
+                .anyMatch(user -> user.getId().equals(input.authorId()))) {
             throw new IllegalArgumentException("현재 author은 해당 channel에 참가하지 않았습니다.");
         }
 
-        Message message = new Message(channel, author, request.content());
+        Message message = new Message(channel, author, input.content());
 
-        if (request.attachments() != null) {
-            for (BinaryContentCreateRequest attachment : request.attachments()) {
+        if (input.attachments() != null) {
+            for (BinaryContentCreateInput attachment : input.attachments()) {
                 if (attachment == null) continue;
 
-                byte[] attachmentContent = attachment.binaryContent();
+                byte[] attachmentContent = attachment.bytes();
+                String contentType = attachment.contentType();
 
                 if (attachmentContent == null || attachmentContent.length == 0) continue;
-                BinaryContent binaryContent = new BinaryContent(attachmentContent);
+                BinaryContent binaryContent = new BinaryContent(contentType, attachmentContent);
                 message.addAttachmentId(binaryContent.getId());
                 binaryContentRepository.save(binaryContent);
             }
@@ -96,15 +97,15 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public Message updateMessageContent(MessageUpdateRequest request) {
+    public Message updateMessageContent(MessageUpdateInput input) {
         // Message ID null & Message 객체 존재 확인
-        Message message = messageRepository.findById(request.messageId())
+        Message message = messageRepository.findById(input.messageId())
                 .orElseThrow(() -> new NoSuchElementException("해당 메세지가 없습니다."));
 
         // requestUser가 해당 message를 작성한 게 맞는지 확인
-        verifyMessageAuthor(message, request.requestUserId());
+        verifyMessageAuthor(message, input.requestUserId());
 
-        message.updateContent(request.content());
+        message.updateContent(input.content());
         messageRepository.save(message);
         return message;
     }

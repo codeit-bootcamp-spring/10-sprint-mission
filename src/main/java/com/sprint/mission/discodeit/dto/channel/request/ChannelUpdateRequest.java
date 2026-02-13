@@ -1,7 +1,5 @@
-package com.sprint.mission.discodeit.dto.channel;
+package com.sprint.mission.discodeit.dto.channel.request;
 
-import com.sprint.mission.discodeit.entity.ChannelType;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -11,10 +9,6 @@ import java.util.UUID;
 public record ChannelUpdateRequest(
         @NotNull(message = "ID가 null입니다.")
         UUID ownerId,
-
-        @NotNull(message = "ID가 null입니다.")
-        UUID channelId,
-        ChannelType channelType,
 
         @Size(min = 1, max = 20)
         @Pattern(regexp = "^\\S.*$", message = "channelName은 공백으로 시작할 수 없습니다.")
