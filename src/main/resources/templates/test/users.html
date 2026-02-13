@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>사용자 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+        .preview-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ced4da;
+            background-color: #f8f9fa;
+        }
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+        }
+        .online { background-color: #4CAF50; }
+        .offline { background-color: #9e9e9e; }
+        .table align-middle td { vertical-align: middle; }
+    </style>
+</head>
+<body class="p-4">
+<div class="container">
+    <nav class="mb-4">
+        <a href="/test/users" class="btn btn-primary">사용자 관리</a>
+        <a href="/test/channels" class="btn btn-secondary">채널 관리</a>
+        <a href="/test/messages" class="btn btn-secondary">메시지 관리</a>
+    </nav>
+
+    <h2>1. 사용자 관리</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>회원가입</h5>
+                <form id="signupForm">
+                    <input type="text" class="form-control mb-2" id="signupName" placeholder="Username" required>
+                    <input type="email" class="form-control mb-2" id="signupEmail" placeholder="Email" required>
+                    <input type="password" class="form-control mb-2" id="signupPw" placeholder="Password" required>
+                    <label class="form-label small text-muted">프로필 이미지 (선택)</label>
+                    <input type="file" class="form-control mb-2" id="signupFile" accept="image/*">
+                    <button type="button" class="btn btn-success w-100" onclick="signup()">가입하기</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>로그인</h5>
+                <input type="text" class="form-control mb-2" id="loginName" placeholder="Username">
+                <input type="password" class="form-control mb-2" id="loginPw" placeholder="Password">
+                <button type="button" class="btn btn-primary w-100" onclick="login()">로그인 테스트</button>
+                <div id="loginResult" class="mt-2 text-primary text-center"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5>사용자 목록</h5>
+            <button class="btn btn-sm btn-info" onclick="loadUsers()">목록 새로고침</button>
+        </div>
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+            <tr>
+                <th>프로필</th>
+                <th>사용자 정보</th>
+                <th>ID (UUID)</th>
+                <th>상태</th>
+                <th>관리</th>
+            </tr>
+            </thead>
+            <tbody id="userTableBody">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">사용자 정보 수정</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editUserId">
+
+                <div class="mb-4 text-center">
+                    <label class="form-label d-block fw-bold">프로필 이미지 설정</label>
+                    <div class="mb-2 position-relative d-inline-block">
+                        <img id="editProfilePreview" src="/default-avatar.jpg" class="preview-avatar">
+                        <div id="previewBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary">
+                            기존
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-center gap-2 mt-2">
+                        <input type="file" id="editFile" accept="image/*" style="display:none">
+
+                        <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('editFile').click()">
+                            📷 사진 변경
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="markProfileDeleted()">
+                            🗑️ 삭제
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="resetProfileChange()">
+                            ↺ 되돌리기
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-control" id="editUsername">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" id="editEmail">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Password (변경 시에만 입력)</label>
+                    <input type="password" class="form-control" id="editPassword">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                <button type="button" class="btn btn-primary" onclick="submitEditUser()">수정 완료</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = '/api';
+
+    // ==========================================
+    // 1. 프로필 이미지 상태 관리 로직 (State Machine)
+    // ==========================================
+    let tempProfileState = 'ORIGINAL'; // 'ORIGINAL' | 'DELETE' | 'NEW'
+    let tempFile = null;
+    let originalProfileUrl = ''; // 모달 열었을 때의 기존 이미지 URL 기억
+
+    // 모달 열기
+    function openEditModal(userId, currentUsername, currentEmail) {
+        // 1. 입력 필드 초기화
+        document.getElementById('editUserId').value = userId;
+        document.getElementById('editUsername').value = currentUsername;
+        document.getElementById('editEmail').value = currentEmail;
+        document.getElementById('editPassword').value = '';
+        document.getElementById('editFile').value = '';
+
+        // 2. 상태 초기화
+        tempProfileState = 'ORIGINAL';
+        tempFile = null;
+
+        // 3. 현재 목록에 떠 있는 이미지를 가져와서 '원본'으로 기억 (UX 최적화)
+        const userImg = document.getElementById(`img-${userId}`);
+        originalProfileUrl = userImg ? userImg.src : '/default-avatar.jpg';
+
+        // 4. UI 업데이트 및 모달 표시
+        updatePreviewUI();
+        new bootstrap.Modal(document.getElementById('editUserModal')).show();
+    }
+
+    // [이벤트] 파일 선택 시 -> NEW 상태로 변경
+    document.getElementById('editFile').onchange = function(e) {
+        if (e.target.files.length > 0) {
+            tempProfileState = 'NEW';
+            tempFile = e.target.files[0];
+            // 브라우저 내부 임시 URL로 미리보기
+            const previewUrl = URL.createObjectURL(tempFile);
+            updatePreviewUI(previewUrl);
+        }
+    };
+
+    // [이벤트] 삭제 버튼 클릭 시 -> DELETE 상태로 변경
+    function markProfileDeleted() {
+        tempProfileState = 'DELETE';
+        tempFile = null;
+        document.getElementById('editFile').value = '';
+        updatePreviewUI();
+    }
+
+    // [이벤트] 되돌리기 버튼 클릭 시 -> ORIGINAL 상태로 복구
+    function resetProfileChange() {
+        tempProfileState = 'ORIGINAL';
+        tempFile = null;
+        document.getElementById('editFile').value = '';
+        updatePreviewUI();
+    }
+
+    // [UI] 상태에 따른 미리보기 및 뱃지 업데이트
+    function updatePreviewUI(newUrl) {
+        const img = document.getElementById('editProfilePreview');
+        const badge = document.getElementById('previewBadge');
+
+        if (tempProfileState === 'ORIGINAL') {
+            img.src = originalProfileUrl;
+            badge.innerText = '기존 유지';
+            badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary';
+        } else if (tempProfileState === 'DELETE') {
+            img.src = '/default-avatar.jpg'; // 삭제 시 기본 이미지로 보여줌
+            badge.innerText = '삭제 예정';
+            badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+        } else if (tempProfileState === 'NEW') {
+            img.src = newUrl;
+            badge.innerText = '새 이미지';
+            badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary';
+        }
+    }
+
+    // ==========================================
+    // 2. 서버 통신 로직 (API 호출)
+    // ==========================================
+
+    // 프로필 이미지 전용 업로드 API
+    async function uploadProfileImage(file) {
+        const formData = new FormData();
+        formData.append('file', file); // Controller의 @RequestPart("file") 이름과 일치 필수
+
+        // 경로 확인: BinaryContentController의 @PostMapping("/profile")
+        const res = await fetch(`${API_BASE}/binary-contents/profile`, {
+            method: 'POST',
+            body: formData
+        });
+        if (!res.ok) throw new Error(await res.text());
+        return await res.json(); // UUID 반환 ({id: "..."})
+    }
+
+    // 사용자 정보 수정 (최종 저장)
+    async function submitEditUser() {
+        const userId = document.getElementById('editUserId').value;
+        let finalProfileId = null; // 변경 없으면 null
+        let finalIsDeleted = false; // 삭제 아니면 false
+
+        try {
+            // 현재 상태에 따라 전송할 데이터 결정
+            if (tempProfileState === 'NEW' && tempFile) {
+                // 1. 새 파일이면 먼저 업로드해서 UUID를 받아옴
+                finalProfileId = await uploadProfileImage(tempFile);
+            } else if (tempProfileState === 'DELETE') {
+                // 2. 삭제 상태면 플래그를 true로 설정
+                finalIsDeleted = true;
+            }
+            // ORIGINAL 상태면 둘 다 기본값(null, false)이므로 서버는 아무것도 안 함
+
+            const updateRequest = {
+                newUsername: document.getElementById('editUsername').value || null,
+                newEmail: document.getElementById('editEmail').value || null,
+                newPassword: document.getElementById('editPassword').value || null,
+                profileId: finalProfileId,    // 새 파일 UUID (없으면 null)
+                isProfileDeleted: finalIsDeleted // 삭제 요청 여부
+            };
+
+            const res = await fetch(`${API_BASE}/users/${userId}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(updateRequest)
+            });
+
+            if(res.ok) {
+                alert('수정 완료되었습니다.');
+                location.reload();
+            } else {
+                alert('수정 실패: ' + await res.text());
+            }
+        } catch(e) {
+            alert('오류 발생: ' + e.message);
+        }
+    }
+
+    // ==========================================
+    // 3. 조회 및 기타 기본 로직
+    // ==========================================
+
+    // 이미지 로드 헬퍼 (binary-content API 사용)
+    async function fetchUserProfile(profileId) {
+        if (!profileId) return '/default-avatar.jpg';
+        try {
+            const response = await fetch(`${API_BASE}/binary-contents/find?binary-content-id=${profileId}`);
+            if (!response.ok) throw new Error();
+            const profile = await response.json();
+            // Base64 데이터를 이미지 소스로 변환
+            return `data:${profile.contentType};base64,${profile.content}`;
+        } catch (error) {
+            return '/default-avatar.jpg';
+        }
+    }
+
+    // [추가] ID 복사를 위한 헬퍼 함수
+    function copyToClipboard(text) {
+        const t = document.createElement("textarea");
+        t.value = text;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand('copy');
+        document.body.removeChild(t);
+        alert('ID가 클립보드에 복사되었습니다!');
+    }
+
+    // 사용자 목록 로드
+    async function loadUsers() {
+        try {
+            const res = await fetch(`${API_BASE}/users/findAll`);
+            const users = await res.json();
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+
+            for (const u of users) {
+                // 각 사용자의 프로필 이미지를 비동기로 가져옴
+                const profileUrl = await fetchUserProfile(u.profileId);
+                const statusClass = u.Online ? 'online' : 'offline';
+                const statusText = u.Online ? 'Online' : 'Offline';
+
+                // ID 복사 버튼 추가
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <img src="${profileUrl}" id="img-${u.id}" class="user-avatar" alt="profile">
+                        </td>
+                        <td>
+                            <div class="fw-bold">${u.username}</div>
+                            <div class="text-muted small">${u.email}</div>
+                        </td>
+                        <td>
+                            <code class="small text-muted">${u.id}</code>
+                            <button class="btn btn-sm btn-light p-1" onclick="copyToClipboard('${u.id}')">📋</button>
+                        </td>
+                        <td>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                            <button class="btn btn-sm btn-link text-decoration-none p-0 ms-1" onclick="updateStatus('${u.id}')">🔄</button>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-primary"
+                                    onclick="openEditModal('${u.id}', '${u.username}', '${u.email}')">수정</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${u.id}')">삭제</button>
+                            </div>
+                        </td>
+                    </tr>`;
+            }
+        } catch (e) {
+            console.error('사용자 목록 로드 실패:', e);
+            alert('사용자 목록을 불러오지 못했습니다.');
+        }
+    }
+
+    // 회원가입
+    async function signup() {
+        try {
+            const fileInput = document.getElementById('signupFile');
+            let profileId = null;
+
+            // 1. 파일이 있다면 먼저 업로드
+            if (fileInput.files.length > 0) {
+                profileId = await uploadProfileImage(fileInput.files[0]);
+            }
+
+            // 2. 회원가입 요청
+            const requestDto = {
+                username: document.getElementById('signupName').value,
+                email: document.getElementById('signupEmail').value,
+                password: document.getElementById('signupPw').value,
+                profileId: profileId
+            };
+
+            const res = await fetch(`${API_BASE}/users/signup`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(requestDto)
+            });
+
+            if(res.ok) {
+                alert('가입 성공!');
+                document.getElementById('signupForm').reset();
+                loadUsers();
+            }
+            else alert('가입 실패: ' + await res.text());
+        } catch(e) {
+            alert('오류: ' + e.message);
+        }
+    }
+
+    // 로그인 테스트
+    async function login() {
+        const data = {
+            username: document.getElementById('loginName').value,
+            password: document.getElementById('loginPw').value
+        };
+        try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            if(res.ok) {
+                const result = await res.json();
+                document.getElementById('loginResult').innerText = `로그인 성공 (ID: ${result.id})`;
+                localStorage.setItem('myUserId', result.id); // 다른 페이지에서 사용하기 위해 저장
+            } else {
+                alert('로그인 실패');
+            }
+        } catch(e) { alert('통신 오류'); }
+    }
+
+    // 사용자 삭제
+    async function deleteUser(id) {
+        if(!confirm('정말 삭제하시겠습니까?')) return;
+        try {
+            const res = await fetch(`${API_BASE}/users/${id}`, { method: 'DELETE' });
+            if(res.ok) loadUsers();
+            else alert('삭제 실패: ' + await res.text());
+        } catch(e) { alert('오류 발생'); }
+    }
+
+    // 활동 상태 갱신 (테스트용)
+    async function updateStatus(id) {
+        await fetch(`${API_BASE}/users/${id}/status`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ userid: id, newLastActiveAt: new Date().toISOString() })
+        });
+        loadUsers();
+    }
+
+    // 초기 실행
+    loadUsers();
+</script>
+</body>
+</html>

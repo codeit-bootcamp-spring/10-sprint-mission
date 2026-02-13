@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>메시지 관리</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .msg-img { max-width: 150px; border-radius: 8px; margin-top: 8px; margin-right: 5px; }
+        .msg-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+        .id-label { font-family: monospace; font-size: 0.8rem; background: #f8f9fa; padding: 2px 4px; border-radius: 4px; }
+
+        /* 파일 미리보기 배지 스타일 */
+        .file-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            margin: 2px;
+            background-color: #e9ecef;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+        .file-badge .btn-close {
+            margin-left: 8px;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body class="p-4">
+<div class="container">
+    <nav class="mb-4">
+        <a href="/test/users" class="btn btn-secondary">사용자 관리</a>
+        <a href="/test/channels" class="btn btn-secondary">채널 관리</a>
+        <a href="/test/messages" class="btn btn-primary">메시지 관리</a>
+    </nav>
+
+    <h2>3. 메시지</h2>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label>보내는 사람 (User ID)</label>
+            <input type="text" id="authorId" class="form-control" placeholder="User UUID">
+        </div>
+        <div class="col-md-6">
+            <label>대상 채널 (Channel ID)</label>
+            <div class="input-group">
+                <input type="text" id="targetChannelId" class="form-control" placeholder="Channel UUID">
+                <button class="btn btn-info" onclick="loadMessages()">조회</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-3 mb-4">
+        <h5>메시지 전송</h5>
+
+        <textarea id="msgContent" class="form-control mb-2" placeholder="내용 입력"></textarea>
+
+        <div class="mb-2">
+            <input type="file" id="msgFiles" class="form-control mb-2" multiple>
+
+            <div id="filePreviewContainer" class="d-flex flex-wrap"></div>
+        </div>
+
+        <button class="btn btn-primary w-100" onclick="sendMessage()">전송</button>
+    </div>
+
+    <div class="card p-3">
+        <h5>메시지 목록</h5>
+        <div id="messageList"></div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = '/api';
+
+    document.getElementById('authorId').value = localStorage.getItem('myUserId') || '';
+
+    // ==========================================
+    // 1. 파일 선택 및 관리 로직 (Front-end Only)
+    // ==========================================
+    let pendingFiles = []; // 전송 대기 중인 파일 배열
+
+    // 파일 선택 시 배열에 추가
+    document.getElementById('msgFiles').addEventListener('change', function(e) {
+        // 새로 선택된 파일들을 기존 배열에 합침 (Array.from으로 변환 필요)
+        const newFiles = Array.from(e.target.files);
+        pendingFiles = pendingFiles.concat(newFiles);
+
+        updateFilePreviewUI();
+
+        // input을 비워줘야 같은 파일을 다시 선택했을 때도 change 이벤트가 발생함
+        this.value = '';
+    });
+
+    // 화면 그리기
+    function updateFilePreviewUI() {
+        const container = document.getElementById('filePreviewContainer');
+        container.innerHTML = ''; // 초기화
+
+        pendingFiles.forEach((file, index) => {
+            const badge = document.createElement('div');
+            badge.className = 'file-badge border';
+            badge.innerHTML = `
+                <span>📁 ${file.name} (${(file.size/1024).toFixed(1)} KB)</span>
+                <button type="button" class="btn-close" aria-label="Close" onclick="removeFile(${index})"></button>
+            `;
+            container.appendChild(badge);
+        });
+    }
+
+    // 개별 파일 삭제 함수 (전역 스코프에 등록)
+    window.removeFile = function(index) {
+        pendingFiles.splice(index, 1); // 배열에서 해당 인덱스 요소 제거
+        updateFilePreviewUI(); // 화면 갱신
+    }
+
+
+    // ==========================================
+    // 2. 서버 전송 로직
+    // ==========================================
+
+    // 파일 다중 업로드 API 호출
+    async function uploadMessageFiles(fileList) {
+        const formData = new FormData();
+        // Controller의 @RequestPart("files") List<MultipartFile> files 와 매칭
+        fileList.forEach(file => formData.append('files', file));
+
+        // BinaryContentController의 @PostMapping("/messages")
+        const res = await fetch(`${API_BASE}/binary-contents/messages`, {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!res.ok) throw new Error("파일 업로드 실패");
+        return await res.json(); // List<UUID> 반환
+    }
+
+    async function sendMessage() {
+        const content = document.getElementById('msgContent').value;
+        const authorId = document.getElementById('authorId').value;
+        const channelId = document.getElementById('targetChannelId').value;
+
+        // 유효성 검사: 내용도 없고 파일도 없으면 중단
+        if (!content.trim() && pendingFiles.length === 0) {
+            alert('메시지 내용이나 파일을 입력해주세요.');
+            return;
+        }
+
+        try {
+            let attachmentIds = [];
+
+            // 1. 대기 중인 파일이 있다면 업로드 진행 (pendingFiles 배열 사용)
+            if (pendingFiles.length > 0) {
+                attachmentIds = await uploadMessageFiles(pendingFiles);
+            }
+
+            // 2. 메시지 생성 요청 (Pure JSON)
+            const requestDto = {
+                content: content,
+                authorId: authorId,
+                channelId: channelId,
+                attachmentIds: attachmentIds // 업로드된 UUID 리스트 전송
+            };
+
+            const res = await fetch(`${API_BASE}/messages`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(requestDto)
+            });
+
+            if(res.ok) {
+                // 성공 시 초기화
+                document.getElementById('msgContent').value = '';
+                pendingFiles = []; // 배열 비우기
+                updateFilePreviewUI(); // 미리보기 비우기
+                loadMessages();
+            } else {
+                alert('전송 실패: ' + await res.text());
+            }
+        } catch(e) {
+            alert('오류 발생: ' + e.message);
+        }
+    }
+
+    // ==========================================
+    // 3. 메시지 조회 및 기타 로직 (기존 유지)
+    // ==========================================
+
+    async function loadMessages() {
+        const chId = document.getElementById('targetChannelId').value;
+        if(!chId) return;
+
+        try {
+            const res = await fetch(`${API_BASE}/messages?channel-id=${chId}`);
+            if(!res.ok) throw new Error(await res.text());
+            let messages = await res.json();
+            messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+            const container = document.getElementById('messageList');
+            container.innerHTML = '';
+
+            for (const msg of messages) {
+                let fileHtml = '';
+                if(msg.attachmentIds && msg.attachmentIds.length > 0) {
+                    for(const fid of msg.attachmentIds) {
+                        try {
+                            const fRes = await fetch(`${API_BASE}/binary-contents/find?binary-content-id=${fid}`);
+                            if(fRes.ok) {
+                                const fData = await fRes.json();
+                                if(fData.contentType.startsWith('image/')) {
+                                    fileHtml += `<img src="data:${fData.contentType};base64,${fData.content}" class="msg-img">`;
+                                } else {
+                                    fileHtml += `<div class="mt-1 badge bg-light text-dark border">📁 파일 ID: ${fid}</div>`;
+                                }
+                            }
+                        } catch(e) {}
+                    }
+                }
+
+                container.innerHTML += `
+                    <div class="msg-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="mb-1">
+                                    <span class="text-muted small">User:</span> <span class="id-label">${msg.authorId.substring(0,8)}...</span>
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="editMessage('${msg.id}', '${msg.content || ''}')">수정</button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteMessage('${msg.id}')">삭제</button>
+                            </div>
+                        </div>
+                        ${msg.content ? `<div class="p-2 bg-light rounded my-2"><strong>${msg.content}</strong></div>` : ''}
+                        ${fileHtml}
+                        <div class="text-end"><small class="text-muted" style="font-size:0.7rem">${msg.createdAt}</small></div>
+                    </div>`;
+            }
+        } catch(e) { alert('로드 실패: ' + e.message); }
+    }
+
+    async function editMessage(id, old) {
+        const next = prompt("수정할 내용:", old);
+        if(next === null || next === old) return;
+
+        // 내용이 비면 삭제 확인
+        if (next.trim() === "") {
+            if (confirm("내용을 지우면 메시지가 삭제됩니다. 삭제하시겠습니까?")) {
+                deleteMessage(id);
+            }
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/messages/${id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ content: next })
+            });
+            if(res.ok) loadMessages();
+            else alert('수정 실패: ' + await res.text());
+        } catch(e) { alert('오류 발생'); }
+    }
+
+    async function deleteMessage(id) {
+        if(!confirm('삭제하시겠습니까?')) return;
+        await fetch(`${API_BASE}/messages/${id}`, { method: 'DELETE' });
+        loadMessages();
+    }
+</script>
+</body>
+</html>
