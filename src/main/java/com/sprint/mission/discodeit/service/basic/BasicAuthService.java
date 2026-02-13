@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.AuthServiceDTO.UserLogin;
+import com.sprint.mission.discodeit.dto.AuthServiceDTO.LoginRequest;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +14,8 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
 
     @Override
-    public boolean login(UserLogin model) throws IOException {
-        return userRepository.filter(user -> user.matchUsername(model.username()))
-                .anyMatch(user -> user.matchPassword(model.password()));
+    public boolean login(LoginRequest request) throws IOException {
+        return userRepository.filter(user -> user.matchUsername(request.username()))
+                .anyMatch(user -> user.matchPassword(request.password()));
     }
 }

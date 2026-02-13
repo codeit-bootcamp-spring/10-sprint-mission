@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.AuthServiceDTO.UserLogin;
+import com.sprint.mission.discodeit.dto.AuthServiceDTO.LoginRequest;
 
 import java.io.IOException;
 
 public interface AuthService {
-    boolean login(UserLogin model) throws IOException;
+    boolean login(LoginRequest request) throws IOException;
 }

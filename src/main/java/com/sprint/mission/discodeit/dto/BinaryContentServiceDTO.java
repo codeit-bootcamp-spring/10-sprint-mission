@@ -6,7 +6,7 @@ import lombok.NonNull;
 import java.util.UUID;
 
 public interface BinaryContentServiceDTO {
-    record BinaryContentCreation(@NonNull String fileName, @NonNull String fileType, @NonNull byte[] data) {
+    record BinaryContentCreateRequest(@NonNull String fileName, @NonNull String fileType, @NonNull byte[] data) {
     }
 
     @Builder

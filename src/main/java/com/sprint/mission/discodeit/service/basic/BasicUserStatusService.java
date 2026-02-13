@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserStatusServiceDTO.UserStatusCreation;
+import com.sprint.mission.discodeit.dto.UserStatusServiceDTO.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.UserStatusServiceDTO.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.UserStatusServiceDTO.UserStatusUpdate;
+import com.sprint.mission.discodeit.dto.UserStatusServiceDTO.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -24,12 +24,12 @@ public class BasicUserStatusService extends BasicDomainService<UserStatus> imple
     private final UserRepository userRepository;
 
     @Override
-    public UserStatusResponse create(UserStatusCreation model) throws IOException, ClassNotFoundException {
+    public UserStatusResponse create(UserStatusCreateRequest model) throws IOException, ClassNotFoundException {
         User user = findUser(model.userId());
         if (userStatusRepository.existsByUserId(user.getId())) {
             throw new IllegalArgumentException("UserStatus already exist");
         }
-        UserStatus status = new UserStatus(user.getId(), model.lastActiveAt());
+        UserStatus status = new UserStatus(user.getId());
         userStatusRepository.save(status);
         return status.toResponse();
     }
@@ -46,17 +46,14 @@ public class BasicUserStatusService extends BasicDomainService<UserStatus> imple
     }
 
     @Override
-    public UserStatusResponse update(UserStatusUpdate model) throws IOException, ClassNotFoundException {
-        UserStatus status = findById(Objects.requireNonNull(model.id()));
-        status.update(model.lastActiveAt());
-        userStatusRepository.save(status);
-        return status.toResponse();
-    }
-
-    @Override
-    public UserStatusResponse updateByUserId(UserStatusUpdate model) throws IOException {
-        UserStatus status = findByUserId(Objects.requireNonNull(model.userId()));
-        status.update(model.lastActiveAt());
+    public UserStatusResponse update(UserStatusUpdateRequest model) throws IOException, ClassNotFoundException {
+        UserStatus status;
+        if (model.id() == null) {
+            status = findByUserId(Objects.requireNonNull(model.userId()));
+        } else {
+            status = findById(Objects.requireNonNull(model.id()));
+        }
+        status.update();
         userStatusRepository.save(status);
         return status.toResponse();
     }

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import lombok.Builder;
 import lombok.NonNull;
@@ -9,17 +10,18 @@ import java.util.Objects;
 import java.util.UUID;
 
 public interface ChannelServiceDTO {
-    record ChannelCreation(@NonNull ChannelType type, String channelName, String description,
-                           List<UUID> userIdsInChannel) {
+    record ChannelCreateRequest(@JsonProperty("type") @NonNull ChannelType type,
+                                String channelName, String description,
+                                List<UUID> userIdsInChannel) {
     }
 
-    record PublicChannelCreation(@NonNull String channelName, @NonNull String description) {
+    record PublicChannelCreateRequest(@NonNull String channelName, @NonNull String description) {
     }
 
-    record PrivateChannelCreation(@NonNull List<UUID> userIdsInPrivateChannel) {
+    record PrivateChannelCreateRequest(@NonNull List<UUID> userIdsInPrivateChannel) {
     }
 
-    record PublicChannelUpdate(@NonNull UUID channelId, String newName, String newDescription) {
+    record PublicChannelUpdateRequest(@NonNull UUID channelId, String newName, String newDescription) {
     }
 
     @Builder
