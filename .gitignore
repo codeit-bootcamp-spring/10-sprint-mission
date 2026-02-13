@@ -7,6 +7,7 @@ build/
 .idea
 data/
 *.ser
+api-docs.json
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
