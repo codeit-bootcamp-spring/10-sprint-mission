@@ -143,22 +143,25 @@ public class BasicUserService implements UserService {
             user.updatePassword(dto.getPassword());
         }
         // 프로필 수정(기존에 있던 binaryContent를 삭제하고 업데이트 dto에 있는 binaryContent를 생성
-        if(dto.getBinaryContentCreateDto() != null){
-            BinaryContentCreateDto newBinaryContentCreateDto = dto.getBinaryContentCreateDto();
+        if(dto.getProfileImg() != null){
+            MultipartFile newProfileImg = dto.getProfileImg();
 
             UUID oldProfileImageId = user.getProfileImageId();
             if(oldProfileImageId != null){
                 binaryContentRepository.deleteByUserId(userId);
             }
+            try{
+                BinaryContent newBinaryContent = new BinaryContent(user.getId(),
+                        null,
+                        newProfileImg.getBytes(),
+                        newProfileImg.getOriginalFilename(),
+                        newProfileImg.getContentType());
+                binaryContentRepository.save(newBinaryContent);
 
-            BinaryContent newBinaryContent = new BinaryContent(user.getId(),
-                                null,
-                                    newBinaryContentCreateDto.getFileData(),
-                                    newBinaryContentCreateDto.getName(),
-                                    newBinaryContentCreateDto.getContentType());
-            binaryContentRepository.save(newBinaryContent);
-
-            user.updateProfileImg(newBinaryContent.getId());
+                user.updateProfileImg(newBinaryContent.getId());
+            } catch (Exception e) {
+                throw new RuntimeException("파일 업로드 오류가 발생했습니다",e);
+            }
         }
         user.updateTimeStamp();
         userRepository.save(user);

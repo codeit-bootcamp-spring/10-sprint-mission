@@ -53,8 +53,8 @@ public class ChannelController {
 
     }
     // 유저 참여
-    @RequestMapping(value = "/{id}/join", method = RequestMethod.POST)
-    public ResponseEntity<ChannelResponseDto> joinUsers(@PathVariable UUID id,
+    @RequestMapping(value = "/{channelId}/join", method = RequestMethod.POST)
+    public ResponseEntity<ChannelResponseDto> joinUsers(@PathVariable("channelId") UUID id,
                                           @RequestBody ChannelJoinDto dto){
         ChannelResponseDto response = channelService.joinUsers(id,
                 dto.getUserList().toArray(new UUID[0]));

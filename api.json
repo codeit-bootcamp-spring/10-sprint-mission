@@ -10,8 +10,106 @@
       "description": "Generated server url"
     }
   ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "인증 관련 API"
+    }
+  ],
   "paths": {
-    "/read-status": {
+    "/api/users": {
+      "get": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "getAllUser",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "postUser",
+        "parameters": [
+          {
+            "name": "dto",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/UserCreateDto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/readStatuses": {
+      "get": {
+        "tags": [
+          "read-status-controller"
+        ],
+        "operationId": "getAllReadStatus",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "channelId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReadStatusResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "read-status-controller"
@@ -41,7 +139,47 @@
         }
       }
     },
-    "/messages": {
+    "/api/messages": {
+      "get": {
+        "tags": [
+          "message-controller"
+        ],
+        "operationId": "getAllMessage",
+        "parameters": [
+          {
+            "name": "channeld",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MessageResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "message-controller"
@@ -71,99 +209,7 @@
         }
       }
     },
-    "/login": {
-      "post": {
-        "tags": [
-          "auth-controller"
-        ],
-        "operationId": "login",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserLoginRequestDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/channels": {
-      "get": {
-        "tags": [
-          "channel-controller"
-        ],
-        "operationId": "getAllChannelByUserId",
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ChannelResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "channel-controller"
-        ],
-        "operationId": "postChannel",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ChannelCreateDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChannelResponseDto"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/channels/{id}/join": {
+    "/api/channels/{channelId}/join": {
       "post": {
         "tags": [
           "channel-controller"
@@ -171,7 +217,7 @@
         "operationId": "joinUsers",
         "parameters": [
           {
-            "name": "id",
+            "name": "channelId",
             "in": "path",
             "required": true,
             "schema": {
@@ -204,19 +250,140 @@
         }
       }
     },
-    "/api/user": {
+    "/api/channels/public": {
       "post": {
+        "tags": [
+          "channel-controller"
+        ],
+        "operationId": "postPublicChannel",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChannelCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/channels/private": {
+      "post": {
+        "tags": [
+          "channel-controller"
+        ],
+        "operationId": "postPrivateChannel",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChannelCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLoginRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserLoginResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{userId}": {
+      "delete": {
         "tags": [
           "user-controller"
         ],
-        "operationId": "postUser",
+        "operationId": "deleteUser",
         "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "user-controller"
+        ],
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
           {
             "name": "dto",
             "in": "query",
             "required": true,
             "schema": {
-              "$ref": "#/components/schemas/UserCreateDto"
+              "$ref": "#/components/schemas/UserUpdateDto"
             }
           }
         ],
@@ -234,24 +401,15 @@
         }
       }
     },
-    "/read-status/channel/{channel-id}/user/{user-id}": {
-      "get": {
+    "/api/users/{userId}/status": {
+      "patch": {
         "tags": [
-          "read-status-controller"
+          "user-controller"
         ],
-        "operationId": "getReadStatus_1",
+        "operationId": "updateOnline",
         "parameters": [
           {
-            "name": "channel-id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "user-id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "schema": {
@@ -262,17 +420,12 @@
         ],
         "responses": {
           "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReadStatusResponseDto"
-                }
-              }
-            }
+            "description": "OK"
           }
         }
-      },
+      }
+    },
+    "/api/readStatuses/{readStatusId}": {
       "patch": {
         "tags": [
           "read-status-controller"
@@ -280,7 +433,7 @@
         "operationId": "updateReadStatus",
         "parameters": [
           {
-            "name": "channel-id",
+            "name": "readStatusId",
             "in": "path",
             "required": true,
             "schema": {
@@ -289,8 +442,17 @@
             }
           },
           {
-            "name": "user-id",
-            "in": "path",
+            "name": "channelId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
             "required": true,
             "schema": {
               "type": "string",
@@ -312,7 +474,7 @@
         }
       }
     },
-    "/messages/{id}": {
+    "/api/messages/{id}": {
       "delete": {
         "tags": [
           "message-controller"
@@ -375,36 +537,7 @@
         }
       }
     },
-    "/channels/{id}": {
-      "get": {
-        "tags": [
-          "channel-controller"
-        ],
-        "operationId": "getChannel",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/ChannelResponseDto"
-                }
-              }
-            }
-          }
-        }
-      },
+    "/api/channels/{channelId}": {
       "delete": {
         "tags": [
           "channel-controller"
@@ -412,7 +545,7 @@
         "operationId": "deleteChannel",
         "parameters": [
           {
-            "name": "id",
+            "name": "channelId",
             "in": "path",
             "required": true,
             "schema": {
@@ -434,7 +567,7 @@
         "operationId": "updateChannel",
         "parameters": [
           {
-            "name": "id",
+            "name": "channelId",
             "in": "path",
             "required": true,
             "schema": {
@@ -467,7 +600,7 @@
         }
       }
     },
-    "/api/user/{id}": {
+    "/api/users/{id}": {
       "get": {
         "tags": [
           "user-controller"
@@ -496,136 +629,9 @@
             }
           }
         }
-      },
-      "delete": {
-        "tags": [
-          "user-controller"
-        ],
-        "operationId": "deleteUser",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "patch": {
-        "tags": [
-          "user-controller"
-        ],
-        "operationId": "updateUser",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserUpdateDto"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserResponseDto"
-                }
-              }
-            }
-          }
-        }
       }
     },
-    "/api/user/{id}/online-status": {
-      "patch": {
-        "tags": [
-          "user-controller"
-        ],
-        "operationId": "updateOnline",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/messages/{channel-id}": {
-      "get": {
-        "tags": [
-          "message-controller"
-        ],
-        "operationId": "getAllMessage",
-        "parameters": [
-          {
-            "name": "channel-id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "keyword",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MessageResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/messages/message/{id}": {
+    "/api/messages/message/{id}": {
       "get": {
         "tags": [
           "message-controller"
@@ -656,12 +662,23 @@
         }
       }
     },
-    "/api/user/findAll": {
+    "/api/channels": {
       "get": {
         "tags": [
-          "user-controller"
+          "channel-controller"
         ],
-        "operationId": "getAllUser",
+        "operationId": "getAllChannelByUserId",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -670,7 +687,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/UserResponseDto"
+                    "$ref": "#/components/schemas/ChannelResponseDto"
                   }
                 }
               }
@@ -679,7 +696,38 @@
         }
       }
     },
-    "/api/binaryContent": {
+    "/api/channels/{id}": {
+      "get": {
+        "tags": [
+          "channel-controller"
+        ],
+        "operationId": "getChannel",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelResponseDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/binaryContents": {
       "get": {
         "tags": [
           "binary-content-controller"
@@ -703,7 +751,38 @@
         }
       }
     },
-    "/api/binaryContent/user/{user-id}": {
+    "/api/binaryContents/{binaryContentId}": {
+      "get": {
+        "tags": [
+          "binary-content-controller"
+        ],
+        "operationId": "getBinaryContent",
+        "parameters": [
+          {
+            "name": "binaryContentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/BinaryContent"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/binaryContents/user/{user-id}": {
       "get": {
         "tags": [
           "binary-content-controller"
@@ -734,7 +813,7 @@
         }
       }
     },
-    "/api/binaryContent/message/{message-id}": {
+    "/api/binaryContents/message/{message-id}": {
       "get": {
         "tags": [
           "binary-content-controller"
@@ -767,41 +846,72 @@
           }
         }
       }
-    },
-    "/api/binaryContent/find": {
-      "get": {
-        "tags": [
-          "binary-content-controller"
-        ],
-        "operationId": "getBinaryContent",
-        "parameters": [
-          {
-            "name": "binaryContentId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/BinaryContent"
-                }
-              }
-            }
-          }
-        }
-      }
     }
   },
   "components": {
     "schemas": {
+      "UserCreateDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "profileImg": {
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "profileId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "messageList": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "friendsList": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "online": {
+            "type": "boolean"
+          }
+        }
+      },
       "ReadStatusCreateDto": {
         "type": "object",
         "properties": {
@@ -893,70 +1003,9 @@
           }
         }
       },
-      "UserLoginRequestDto": {
+      "ChannelJoinDto": {
         "type": "object",
         "properties": {
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          }
-        }
-      },
-      "UserResponseDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "username": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "profileId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "messageList": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          "friendsList": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          "online": {
-            "type": "boolean"
-          }
-        }
-      },
-      "ChannelCreateDto": {
-        "type": "object",
-        "properties": {
-          "channelName": {
-            "type": "string"
-          },
           "userList": {
             "type": "array",
             "items": {
@@ -992,9 +1041,12 @@
           }
         }
       },
-      "ChannelJoinDto": {
+      "ChannelCreateDto": {
         "type": "object",
         "properties": {
+          "channelName": {
+            "type": "string"
+          },
           "userList": {
             "type": "array",
             "items": {
@@ -1004,7 +1056,21 @@
           }
         }
       },
-      "UserCreateDto": {
+      "UserLoginRequestDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "UserLoginResponseDto": {
+
+      },
+      "UserUpdateDto": {
         "type": "object",
         "properties": {
           "name": {
@@ -1013,12 +1079,12 @@
           "email": {
             "type": "string"
           },
-          "password": {
-            "type": "string"
-          },
           "profileImg": {
             "type": "string",
             "format": "binary"
+          },
+          "password": {
+            "type": "string"
           }
         }
       },
@@ -1038,23 +1104,6 @@
         "type": "object",
         "properties": {
           "channelName": {
-            "type": "string"
-          }
-        }
-      },
-      "UserUpdateDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "binaryContentCreateDto": {
-            "$ref": "#/components/schemas/BinaryContentCreateDto"
-          },
-          "password": {
             "type": "string"
           }
         }

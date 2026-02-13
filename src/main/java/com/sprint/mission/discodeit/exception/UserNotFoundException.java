@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.exception;
 
 public class UserNotFoundException extends  RuntimeException{
-    public UserNotFoundException() {
-        super("사용자를 찾을 수 없습니");
+    public UserNotFoundException(String username) {
+        super("User with username " + username + " not found");
     }
 }

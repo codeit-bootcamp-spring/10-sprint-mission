@@ -43,7 +43,7 @@ public class UserController {
     // 유저 업데이트
     @RequestMapping(value = "/{userId}", method = RequestMethod.PATCH)
     public ResponseEntity<UserResponseDto> updateUser(@PathVariable("userId") UUID id,
-                                                      @RequestBody UserUpdateDto dto){
+                                                      @ModelAttribute UserUpdateDto dto){
         UserResponseDto response = userService.update(id,dto);
         return ResponseEntity.ok(response);
     }
