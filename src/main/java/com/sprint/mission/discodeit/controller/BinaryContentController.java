@@ -11,14 +11,14 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/binaryContent")
+@RequestMapping("/api/binaryContents")
 @RequiredArgsConstructor
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
 
     // 단건 조회
-    @RequestMapping(value = "/find", method = RequestMethod.GET)
-    public ResponseEntity<BinaryContent> getBinaryContent(@RequestParam("binaryContentId") UUID id){
+    @RequestMapping(value = "/{binaryContentId}", method = RequestMethod.GET)
+    public ResponseEntity<BinaryContent> getBinaryContent(@PathVariable("binaryContentId") UUID id){
         BinaryContent response = binaryContentService.findId(id);
         return ResponseEntity.ok(response);
     }

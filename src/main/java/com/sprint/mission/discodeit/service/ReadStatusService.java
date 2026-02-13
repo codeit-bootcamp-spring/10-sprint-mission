@@ -9,8 +9,8 @@ import java.util.UUID;
 
 public interface ReadStatusService {
     ReadStatusResponseDto create(ReadStatusCreateDto dto);
-    ReadStatusResponseDto findReadStatus(UUID channelId, UUID userId);
-    List<ReadStatusResponseDto> findAll();
-    ReadStatusResponseDto update(UUID channelId, UUID userId);
+    ReadStatusResponseDto findReadStatus(UUID id);
+    List<ReadStatusResponseDto> findAllByUserIdChannelId(UUID userId, UUID channelId);
+    ReadStatusResponseDto update(UUID id);
     void delete(UUID id);
 }

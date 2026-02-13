@@ -9,11 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/read-status")
+@RequestMapping("/api/readStatuses")
 @RequiredArgsConstructor
 public class readStatusController {
     private final ReadStatusService readStatusService;
@@ -23,19 +24,20 @@ public class readStatusController {
         ReadStatusResponseDto response = readStatusService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    // 메시지 수신 상태 조회
-    @RequestMapping(value = "/channel/{channel-id}/user/{user-id}", method = RequestMethod.GET)
-    public ResponseEntity<ReadStatusResponseDto> getReadStatus(@PathVariable("channel-id") UUID channelId,
-                                                               @PathVariable("user-id") UUID userId){
-        ReadStatusResponseDto response = readStatusService.findReadStatus(channelId, userId);
+    // 특정 유저의 모든 메시지 수신 상태 조회
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<List<ReadStatusResponseDto>> getAllReadStatus(@RequestParam UUID userId,
+                                                                        @RequestParam UUID channelId){
+        List<ReadStatusResponseDto> response = readStatusService.findAllByUserIdChannelId(userId, channelId);
         return ResponseEntity.ok(response);
     }
 
     // 메시지 수신 상태 수정
-    @RequestMapping(value = "/channel/{channel-id}/user/{user-id}", method = RequestMethod.PATCH)
-    public ResponseEntity<ReadStatusResponseDto> updateReadStatus(@PathVariable("channel-id") UUID channelId,
-                                                               @PathVariable("user-id") UUID userId){
-        ReadStatusResponseDto response = readStatusService.update(channelId, userId);
+    @RequestMapping(value = "/{readStatusId}", method = RequestMethod.PATCH)
+    public ResponseEntity<ReadStatusResponseDto> updateReadStatus(@PathVariable("readStatusId") UUID id,
+                                                                  @RequestParam UUID channelId,
+                                                                  @RequestParam UUID userId){
+        ReadStatusResponseDto response = readStatusService.update(id);
         return ResponseEntity.ok(response);
     }
 }

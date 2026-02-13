@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/messages")
+@RequestMapping("/api/messages")
 @RequiredArgsConstructor
 public class MessageController {
     private final MessageService messageService;
@@ -25,7 +25,7 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 메시지 조회
+    // 메시지 단건 조회
     @RequestMapping(value = "/message/{id}", method = RequestMethod.GET)
     public ResponseEntity<MessageResponseDto> getMessage(@PathVariable UUID id){
         MessageResponseDto response = messageService.findMessage(id);
@@ -33,13 +33,13 @@ public class MessageController {
     }
 
     // 채널 내 메시지 조회(키워드 따라 조회 가능)
-    @RequestMapping(value= "/{channel-id}", method = RequestMethod.GET)
-    public ResponseEntity<List<MessageResponseDto>> getAllMessage(@PathVariable("channel-id") UUID id,
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<List<MessageResponseDto>> getAllMessage(@RequestParam(required = true) UUID channeld,
                                                                   @RequestParam(required = false) String keyword){
         if(keyword == null){
-            return ResponseEntity.ok(messageService.findAllMessagesByChannelId(id));
+            return ResponseEntity.ok(messageService.findAllMessagesByChannelId(channeld));
         } else{
-            return ResponseEntity.ok(messageService.findMessageByKeyword(id,keyword));
+            return ResponseEntity.ok(messageService.findMessageByKeyword(channeld,keyword));
         }
 
     }

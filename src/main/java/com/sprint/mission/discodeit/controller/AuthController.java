@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.lang.invoke.MethodType;
 
 @RestController
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;

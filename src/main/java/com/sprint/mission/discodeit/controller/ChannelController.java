@@ -14,18 +14,26 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/channels")
+@RequestMapping("/api/channels")
 @RequiredArgsConstructor
 public class ChannelController {
     private final ChannelService channelService;
 
-    // 채널 생성
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<ChannelResponseDto> postChannel(@RequestBody ChannelCreateDto dto){
+    // 공용 채널 생성
+    @RequestMapping(value = "/public",method = RequestMethod.POST)
+    public ResponseEntity<ChannelResponseDto> postPublicChannel(@RequestBody ChannelCreateDto dto){
         ChannelResponseDto response = channelService.create(dto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    // 사설 채널 생성
+    @RequestMapping(value = "/private",method = RequestMethod.POST)
+    public ResponseEntity<ChannelResponseDto> postPrivateChannel(@RequestBody ChannelCreateDto dto){
+        ChannelResponseDto response = channelService.create(dto);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
     // 채널조회
     @RequestMapping(value ="/{id}", method = RequestMethod.GET)
     public ResponseEntity<ChannelResponseDto> getChannel(@PathVariable UUID id){
@@ -53,16 +61,16 @@ public class ChannelController {
         return ResponseEntity.ok(response);
     }
     // 채널 업데이트
-    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
-    public ResponseEntity<ChannelResponseDto> updateChannel(@PathVariable UUID id,
+    @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH)
+    public ResponseEntity<ChannelResponseDto> updateChannel(@PathVariable("channelId") UUID id,
                                                       @RequestBody ChannelUpdateDto dto){
         ChannelResponseDto response = channelService.update(id,dto);
         return ResponseEntity.ok(response);
     }
 
     // 채널 삭제
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteChannel(@PathVariable UUID id){
+    @RequestMapping(value = "/{channelId}", method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deleteChannel(@PathVariable("channelId") UUID id){
         channelService.delete(id);
         return ResponseEntity.noContent().build(); // noContent는 객체를 만든다는 뜻, build를 붙혀서 객체 만듬
 

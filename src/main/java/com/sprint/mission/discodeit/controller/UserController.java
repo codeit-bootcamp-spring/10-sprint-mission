@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
@@ -34,30 +34,30 @@ public class UserController {
     }
 
     // 유저 전체 조회
-    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<UserResponseDto>> getAllUser(){
         List<UserResponseDto> userList = userService.findAllUsers();
         return ResponseEntity.ok(userList);
     }
 
     // 유저 업데이트
-    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable UUID id,
+    @RequestMapping(value = "/{userId}", method = RequestMethod.PATCH)
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable("userId") UUID id,
                                                       @RequestBody UserUpdateDto dto){
         UserResponseDto response = userService.update(id,dto);
         return ResponseEntity.ok(response);
     }
 
     // 유저 온라인상태 업데이트
-    @RequestMapping(value = "/{id}/online-status" , method = RequestMethod.PATCH)
-    public ResponseEntity<Void> updateOnline(@PathVariable UUID id){
+    @RequestMapping(value = "/{userId}/status" , method = RequestMethod.PATCH)
+    public ResponseEntity<Void> updateOnline(@PathVariable("userId") UUID id){
         userService.updateOnlineStatus(id);
         return ResponseEntity.ok().build();
     }
 
     // 유저 삭제
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID id){
+    @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
+    public ResponseEntity<Void> deleteUser(@PathVariable("userId") UUID id){
         userService.delete(id);
         return ResponseEntity.noContent().build(); // noContent는 객체를 만든다는 뜻, build를 붙혀서 객체 만듬
 
