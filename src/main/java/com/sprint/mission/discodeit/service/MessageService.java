@@ -1,35 +1,35 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.MessageCreateDto;
-import com.sprint.mission.discodeit.dto.MessageInfoDto;
+import com.sprint.mission.discodeit.dto.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.MessageUpdateDto;
-import com.sprint.mission.discodeit.entity.*;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface MessageService {
-    // Create
-    MessageInfoDto create(MessageCreateDto messageCreateDto);
 
-    // Read
-    MessageInfoDto findById(UUID id);
+  // Create
+  MessageResponseDto create(MessageCreateDto messageCreateDto);
 
-    // ReadAll
-    List<MessageInfoDto> findAllByChannelId(UUID channelId);
+  // Read
+  MessageResponseDto findById(UUID id);
 
-    // Update
-    MessageInfoDto update(MessageUpdateDto messageUpdateDto);
+  // ReadAll
+  List<MessageResponseDto> findAllByChannelId(UUID channelId);
 
-    List<MessageInfoDto> searchMessage(UUID channelId, String keyword);
+  // Update
+  MessageResponseDto update(UUID id, MessageUpdateDto messageUpdateDto);
 
-    List<MessageInfoDto> getUserMessages(UUID id);
+  List<MessageResponseDto> searchMessage(UUID channelId, String keyword);
 
-    List<MessageInfoDto> getChannelMessages(UUID channelId);
+  List<MessageResponseDto> getUserMessages(UUID id);
 
-//    UUID sendDirectMessage(UUID senderId, UUID receiverId, String content);
+//    List<MessageResponseDto> getChannelMessages(UUID channelId);
 
-    // Delete
-    void delete(UUID id);
+//    UUID sendDirectMessage(UUID senderId, UUID receiverId, String bytes);
+
+  // Delete
+  void delete(UUID id);
 
 }

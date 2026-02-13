@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserInfoDto;
+import com.sprint.mission.discodeit.dto.UserResponseDto;
 import com.sprint.mission.discodeit.dto.UserLoginDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -19,14 +19,15 @@ public class BasicAuthService implements AuthService {
     private final UserMapper userMapper;
 
     @Override
-    public UserInfoDto login(UserLoginDto request) {
+    public UserResponseDto login(UserLoginDto request) {
         User user = userRepository.findByName(request.userName())
                 .filter(u -> u.getPassword().equals(request.password()))
                 .orElseThrow(() -> new IllegalArgumentException("해당 정보와 일치하는 사용자가 없습니다."));
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
                 .orElseGet(() -> new UserStatus(user.getId()));
         userStatus.updateLastActiveTime();
+        userStatus.updateStatusType();
         userStatusRepository.save(userStatus);
-        return userMapper.toUserInfoDto(user, userStatus.getStatusType());
+        return userMapper.toUserInfoDto(user, userStatus.updateStatusType());
     }
 }

@@ -11,6 +11,6 @@ public interface ReadStatusService {
     ReadStatusInfoDto create(ReadStatusCreateDto readStatusCreateDto);
     ReadStatusInfoDto findById(UUID uuid);
     List<ReadStatusInfoDto> findAllByUserId(UUID userId);
-    ReadStatusInfoDto update(ReadStatusUpdateDto readStatusUpdateDto);
+    ReadStatusInfoDto update(UUID id, ReadStatusUpdateDto readStatusUpdateDto);
     void delete(UUID id);
 }

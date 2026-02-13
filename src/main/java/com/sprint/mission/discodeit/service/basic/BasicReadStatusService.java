@@ -63,8 +63,8 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatusInfoDto update(ReadStatusUpdateDto readStatusUpdateDto) {
-        ReadStatus readStatus = readStatusRepository.findById(readStatusUpdateDto.id()).orElseThrow(() -> new IllegalArgumentException("해당 ReadStatus가 없습니다."));
+    public ReadStatusInfoDto update(UUID id, ReadStatusUpdateDto readStatusUpdateDto) {
+        ReadStatus readStatus = readStatusRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 ReadStatus가 없습니다."));
         readStatus.updateLastReadAt(readStatusUpdateDto.lastReadAt());
         readStatusRepository.save(readStatus);
         return readStatusMapper.toReadStatusInfoDto(readStatus);

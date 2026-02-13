@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.UserInfoDto;
+import com.sprint.mission.discodeit.dto.UserResponseDto;
 import com.sprint.mission.discodeit.entity.StatusType;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
@@ -12,20 +11,24 @@ public class UserMapper {
 
 
     //  User -> UserInfoDto
-    public UserInfoDto toUserInfoDto(User user, StatusType status){
-        return new UserInfoDto(user.getName(),
-                user.getId(),
+    public UserResponseDto toUserInfoDto(User user, StatusType status){
+        Boolean isOnline = status == StatusType.ONLINE;
+        return new UserResponseDto(user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getName(),
                 status,
                 user.getEmail(),
-                user.getProfileId());
+                user.getProfileId(),
+                isOnline);
     }
 
     // UserInfoDto -> User
-    public User toUser(UserInfoDto userInfoDto, UserRepository userRepository)
+    public User toUser(UserResponseDto userResponseDto, UserRepository userRepository)
     {
-        String password = userRepository.findById(userInfoDto.userId())
+        String password = userRepository.findById(userResponseDto.userId())
                 .map(User::getPassword)
                 .orElseThrow(() -> new IllegalArgumentException("일치하는 사용자 정보가 없습니다."));
-        return new User(userInfoDto.userName(), userInfoDto.email(), password, userInfoDto.profileId());
+        return new User(userResponseDto.userName(), userResponseDto.email(), password, userResponseDto.profileId());
     }
 }

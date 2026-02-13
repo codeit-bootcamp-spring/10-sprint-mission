@@ -71,6 +71,10 @@ public class Channel extends BaseEntity implements Serializable {
         this.onUpdate();
     }
 
+    public void updateDescription(String description) {
+        this.description = description;
+        this.onUpdate();
+    }
     @Override
     public String toString() {
         return "채널명 : " + name + ", 공개여부 : " + isPrivate;

@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.ChannelInfoDto;
+import com.sprint.mission.discodeit.dto.ChannelResponseDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.IsPrivate;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +14,7 @@ import java.util.UUID;
 public class ChannelMapper {
 
     // Channel -> ChannelInfoDto
-    public ChannelInfoDto toChannelInfoDto(Channel channel, MessageRepository messageRepository) {
+    public ChannelResponseDto toChannelInfoDto(Channel channel, MessageRepository messageRepository) {
         Instant lastMessageAt = messageRepository.findById(channel.getLastMessageId())
                 .map(m -> m.getCreatedAt())
                 .orElse(channel.getCreatedAt());
@@ -28,7 +27,7 @@ public class ChannelMapper {
             name = null;
         }
 
-        return new ChannelInfoDto(
+        return new ChannelResponseDto(
                 channel.getId(),
                 name,
                 channel.getIsPrivate(),

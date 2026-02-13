@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.MessageCreateDto;
-import com.sprint.mission.discodeit.dto.MessageInfoDto;
+import com.sprint.mission.discodeit.dto.MessageResponseDto;
 import com.sprint.mission.discodeit.dto.MessageUpdateDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
@@ -13,128 +13,135 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
 public class BasicMessageService implements MessageService, ClearMemory {
-    private final MessageRepository messageRepository;
-    private final ChannelRepository channelRepository;
-    private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
-    private final MessageMapper messageMapper;
-    private final BinaryContentRepository binaryContentRepository;
 
-    @Override
-    public MessageInfoDto create(MessageCreateDto messageCreateDto) {
-        userRepository.findById(messageCreateDto.senderId())
-                .orElseThrow(() -> new IllegalArgumentException("일치하는 사용자가 없습니다."));
-        Channel channel = channelRepository.findById(messageCreateDto.channelId())
-                .orElseThrow(() -> new IllegalArgumentException("일치하는 채널이 없습니다."));
-        validateAttachments(messageCreateDto.attachmentIds());
+  private final MessageRepository messageRepository;
+  private final ChannelRepository channelRepository;
+  private final UserRepository userRepository;
+  private final UserStatusRepository userStatusRepository;
+  private final MessageMapper messageMapper;
+  private final BinaryContentRepository binaryContentRepository;
 
-        Message message = new Message(messageCreateDto.senderId(), messageCreateDto.channelId(), messageCreateDto.content(), messageCreateDto.attachmentIds());
+  @Override
+  public MessageResponseDto create(MessageCreateDto messageCreateDto) {
+    userRepository.findById(messageCreateDto.senderId())
+        .orElseThrow(() -> new IllegalArgumentException("일치하는 사용자가 없습니다."));
+    Channel channel = channelRepository.findById(messageCreateDto.channelId())
+        .orElseThrow(() -> new IllegalArgumentException("일치하는 채널이 없습니다."));
+    validateAttachments(messageCreateDto.attachmentIds());
 
-        // 채널에 메시지 추가
-        channel.addMessage(message.getId());
-        channelRepository.save(channel);
+    Message message = new Message(messageCreateDto.senderId(), messageCreateDto.channelId(),
+        messageCreateDto.content(), messageCreateDto.attachmentIds());
 
-        // 사용자 활동 시간 갱신
-        userStatusRepository.findByUserId(messageCreateDto.senderId())
-                .ifPresent(UserStatus::updateLastActiveTime);
+    // 채널에 메시지 추가
+    channel.addMessage(message.getId());
+    channelRepository.save(channel);
 
-        messageRepository.save(message);
-        return messageMapper.toMessageInfoDto(message);
+    // 사용자 활동 시간 갱신
+    userStatusRepository.findByUserId(messageCreateDto.senderId())
+        .ifPresent(us -> {
+          us.updateLastActiveTime();
+          us.updateStatusType();
+          userStatusRepository.save(us);
+        });
+
+    messageRepository.save(message);
+    return messageMapper.toMessageInfoDto(message);
+  }
+
+  private void validateAttachments(List<UUID> attachmentIds) {
+      if (attachmentIds == null) {
+          return;   // 첨부파일 없을 때
+      }
+
+    boolean allMatch = attachmentIds.stream()   // 첨부파일이 유효할 때
+        .allMatch(id -> binaryContentRepository.findById(id).isPresent());
+
+    if (!allMatch) {   // 첨부파일 유효 X
+      throw new IllegalArgumentException("해당 파일이 없습니다.");
+    }
+  }
+
+  @Override
+  public MessageResponseDto findById(UUID id) {
+    Message message = messageRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지 ID입니다."));
+
+    return messageMapper.toMessageInfoDto(message);
+  }
+
+  @Override
+  public List<MessageResponseDto> findAllByChannelId(UUID channelId) {
+    return messageRepository.findAllByChannelId(channelId)
+        .stream()
+        .map(messageMapper::toMessageInfoDto)
+        .toList();
+  }
+
+  @Override
+  public MessageResponseDto update(UUID id, MessageUpdateDto messageUpdateDto) {
+    Message message = messageRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 없습니다."));
+    validateAttachments(messageUpdateDto.attachmentIds());
+
+    // 새 리스트에 포함되지 않은 것들 삭제
+    List<UUID> newIds = messageUpdateDto.attachmentIds(); // 1 2 3
+    List<UUID> oldIds = message.getAttachmentIds();       // 1 2 3
+
+    List<UUID> idsToDelete = oldIds.stream()
+        .filter(oId -> !newIds.contains(oId))
+        .toList();
+    if (!idsToDelete.isEmpty()) {
+      binaryContentRepository.deleteByIds(idsToDelete);
     }
 
-    private void validateAttachments(List<UUID> attachmentIds) {
-        if (attachmentIds == null) return;   // 첨부파일 없을 때
+    message.updateAttachmentIds(messageUpdateDto.attachmentIds());
+    message.updateContent(messageUpdateDto.newContent());
 
-        boolean allMatch = attachmentIds.stream()   // 첨부파일이 유효할 때
-                .allMatch(id -> binaryContentRepository.findById(id).isPresent());
+    messageRepository.save(message);
+    return messageMapper.toMessageInfoDto(message);
+  }
 
-        if (!allMatch) {   // 첨부파일 유효 X
-            throw new IllegalArgumentException("해당 파일이 없습니다.");
-        }
-    }
+  @Override
+  public List<MessageResponseDto> searchMessage(UUID channelId, String keyword) {
+    channelRepository.findById(channelId)
+        .orElseThrow(() -> new IllegalArgumentException("해당 채널이 없습니다."));
 
-    @Override
-    public MessageInfoDto findById(UUID id) {
-        Message message = messageRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("존재하지 않는 메시지 ID입니다."));
+    return findAllByChannelId(channelId).stream()
+        .filter(msg -> msg.content().contains(keyword))
+        .toList();
+  }
 
-        return messageMapper.toMessageInfoDto(message);
-    }
+  @Override
+  public List<MessageResponseDto> getUserMessages(UUID id) {
+    findById(id);
+    return messageRepository.findAllByUserId(id).stream()
+        .sorted(Comparator.comparing(Message::getCreatedAt))
+        .map(messageMapper::toMessageInfoDto)
+        .toList();
+  }
 
-    @Override
-    public List<MessageInfoDto> findAllByChannelId(UUID channelId) {
-        return messageRepository.findAllByChannelId(channelId)
-                .stream()
-                .map(messageMapper::toMessageInfoDto)
-                .toList();
-    }
+//    @Override
+//    public List<MessageResponseDto> getChannelMessages(UUID channelId) {
+//        findById(channelId);
+//        return messageRepository.findAllByChannelId(channelId).stream()
+//                .sorted(Comparator.comparing(Message::getCreatedAt))
+//                .map(messageMapper::toMessageInfoDto)
+//                .toList();
+//    }
 
-    @Override
-    public MessageInfoDto update(MessageUpdateDto messageUpdateDto) {
-        Message message = messageRepository.findById(messageUpdateDto.id())
-                .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 없습니다."));
-        validateAttachments(messageUpdateDto.attachmentIds());
-
-        // 새 리스트에 포함되지 않은 것들 삭제
-        List<UUID> newIds = messageUpdateDto.attachmentIds(); // 1 2 3
-        List<UUID> oldIds = message.getAttachmentIds();       // 1 2 3
-
-        List<UUID> idsToDelete = oldIds.stream()
-                .filter(id -> !newIds.contains(id))
-                .toList();
-        if (!idsToDelete.isEmpty()) {
-            binaryContentRepository.deleteByIds(idsToDelete);
-        }
-
-        message.updateAttachmentIds(messageUpdateDto.attachmentIds());
-        message.updateContent(messageUpdateDto.newContent());
-
-        messageRepository.save(message);
-        return messageMapper.toMessageInfoDto(message);
-    }
-
-    @Override
-    public List<MessageInfoDto> searchMessage(UUID channelId, String keyword) {
-        channelRepository.findById(channelId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 없습니다."));
-
-        return findAllByChannelId(channelId).stream()
-                .filter(msg -> msg.content().contains(keyword))
-                .toList();
-    }
-
-    @Override
-    public List<MessageInfoDto> getUserMessages(UUID id) {
-        findById(id);
-        return messageRepository.findAllByUserId(id).stream()
-                .sorted(Comparator.comparing(Message::getCreatedAt))
-                .map(messageMapper::toMessageInfoDto)
-                .toList();
-    }
-
-    @Override
-    public List<MessageInfoDto> getChannelMessages(UUID channelId) {
-        findById(channelId);
-        return messageRepository.findAllByChannelId(channelId).stream()
-                .sorted(Comparator.comparing(Message::getCreatedAt))
-                .map(messageMapper::toMessageInfoDto)
-                .toList();
-    }
-
-    //    @Override
-//    public UUID sendDirectMessage(UUID senderId, UUID receiverId, String content) {
+  //    @Override
+//    public UUID sendDirectMessage(UUID senderId, UUID receiverId, String bytes) {
 //        Channel dmChannel = getOrCreateDMChannel(senderId, receiverId);
 //
 //        User sender = userRepository.findById(senderId)
 //                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
 //
-//        Message message = new Message(sender.getId(), dmChannel.getId(), content);
+//        Message message = new Message(sender.getId(), dmChannel.getId(), bytes);
 //
 //        dmChannel.addMessage(message.getId());
 //        messageRepository.save(message);
@@ -156,20 +163,23 @@ public class BasicMessageService implements MessageService, ClearMemory {
 //                    return newDmChannel;
 //                });
 //    }
-    @Override
-    public void delete(UUID id) {
-        Message message = messageRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("해당 메시지가 없습니다."));
-        // 첨부파일 삭제
-        binaryContentRepository.deleteByIds(message.getAttachmentIds());
-        // 채널에 등록된 메시지 삭제
-        channelRepository.deleteMessageByMessageId(message.getChannelId(), id);
-        // 메시지 자체 삭제
-        messageRepository.delete(id);
+  @Override
+  public void delete(UUID id) {
+    Message message = messageRepository.findById(id)
+        .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 없습니다."));
+    // 첨부파일 삭제
+    if (message.getAttachmentIds() != null) {
+      binaryContentRepository.deleteByIds(message.getAttachmentIds());
     }
+    // 채널에 등록된 메시지 삭제
+    channelRepository.deleteMessageByMessageId(message.getChannelId(), id);
+    // 메시지 자체 삭제
+    messageRepository.delete(id);
+  }
 
-    @Override
-    public void clear() {
-        messageRepository.clear();
-    }
+  @Override
+  public void clear() {
+    messageRepository.clear();
+  }
 
 }
