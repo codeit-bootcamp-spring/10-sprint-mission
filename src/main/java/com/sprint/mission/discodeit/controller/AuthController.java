@@ -8,15 +8,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("/auths")
+@RestController
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
 
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
-    @ResponseBody
+    @PostMapping("/login")
     public User login(@RequestBody LoginRequest loginRequest) {
         return authService.login(loginRequest);
     }
