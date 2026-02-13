@@ -1,0 +1,813 @@
+{
+  "info": {
+    "_postman_id": "bb1a8307-c8f7-482d-887d-45be4e19f4ff",
+    "name": "sprint4",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "52122053",
+    "_collection_link": "https://go.postman.co/collection/52122053-bb1a8307-c8f7-482d-887d-45be4e19f4ff?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "사용자 등록 달선",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"userName\" : \"달선\",\r\n    \"email\" : \"dalsun@naver.com\",\r\n    \"password\" : \"dal123\",\r\n    \"profileId\" : null\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/users",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "사용자 등록 달룡",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"userName\" : \"달룡\",\r\n    \"email\" : \"dalyong@naver.com\",\r\n    \"password\" : \"dal456\",\r\n    \"profileId\" : null\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/users",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "사용자 등록 달례",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"userName\" : \"달례\",\r\n    \"email\" : \"dalye@naver.com\",\r\n    \"password\" : \"dal789\",\r\n    \"profileId\" : \"f274d7e8-57e3-4c55-955c-0be057caca97\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/user",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "user"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "사용자 정보 수정",
+      "request": {
+        "method": "GET",
+        "header": []
+      },
+      "response": []
+    },
+    {
+      "name": "사용자 전체 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/users",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"userName\" : \"달선\",\r\n    \"email\" : \"dalsun@naver.com\",\r\n    \"password\" : \"dal123\",\r\n    \"profileId\" : null\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/users/e2dfe898-0b2d-4f54-b7d3-4bd3972bfc0f",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users",
+            "e2dfe898-0b2d-4f54-b7d3-4bd3972bfc0f"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "사용자 온라인 상태 업데이트",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"statusType\" : \"DONOTDISTURB\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/users/24c8a2d6-c5e6-4df5-a2a1-1996f61fc03d/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users",
+            "24c8a2d6-c5e6-4df5-a2a1-1996f61fc03d",
+            "status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "로그인",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"userName\" : \"달선\",\r\n    \"password\" : \"dal123\",\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "공개 채널 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\" : \"공지방\",\r\n    \"ownerId\" : \"\",\r\n    \"description\" : \"공지를 잘 확인해 주시오!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/channels/public",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels",
+            "public"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "비공개 채널 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"ownerId\" : \"\",\r\n    \"users\" : [\r\n        \"\",\r\n        \"\",\r\n        \"\"\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/channels/private",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels",
+            "private"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "공개 채널 정보 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\" : \"멍멍이들의 놀이방\",\r\n    \"isPrivate\" : \"PUBLIC\",\r\n    \"ownerId\" : \"\",\r\n    \"description\" : \"인간은 못 들어옵니다!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/channels/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/channels/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "모든 채널 목록 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/channels/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "메시지 보내기 달선",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"senderId\" : \"62cee727-87a5-42b7-9430-660a9e49adc1\",\r\n    \"channelId\" : \"328cc475-c3b6-480b-8469-fae5ebe63db4\",\r\n    \"content\" : \"달선이라개\",\r\n    \"attachmentIds\" : null\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/messages",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "messages"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "메시지 보내기 달룡",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"senderId\" : \"a4e28eea-bd76-4b3a-96a4-bd63d9608ce5\",\r\n    \"channelId\" : \"328cc475-c3b6-480b-8469-fae5ebe63db4\",\r\n    \"content\" : \"달룡이라느뇨\",\r\n    \"attachmentIds\" : null\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/messages",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "messages"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "메시지 보내기 달례",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"senderId\" : \"52cfe866-c37b-4a2e-8768-871193fdfb6b\",\r\n    \"channelId\" : \"328cc475-c3b6-480b-8469-fae5ebe63db4\",\r\n    \"content\" : \"달례에옹\",\r\n    \"attachmentIds\" : null\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/messages",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "messages"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "메시지 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"newContent\" : \"치와와 만세\",\r\n    \"attachmentIds\" : \"\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/messages/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "messages",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "메시지 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/messages/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "messages",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "특정 채널의 메시지 목록 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/messages/channel/328cc475-c3b6-480b-8469-fae5ebe63db4",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "messages",
+            "channel",
+            "328cc475-c3b6-480b-8469-fae5ebe63db4"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "특정 채널의 메시지 수신 정보 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"userId\" : \"\",\r\n    \"channelId\" : \"\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/read-status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "read-status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "특정 채널의 메시지 수신 정보 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"senderId\" : \"62cee727-87a5-42b7-9430-660a9e49adc1\",\r\n    \"channelId\" : \"328cc475-c3b6-480b-8469-fae5ebe63db4\",\r\n    \"content\" : \"달선이라개\",\r\n    \"attachmentIds\" : null\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/read-status/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "read-status",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "특정 사용자의 메시지 수신 정보 조회",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"senderId\" : \"62cee727-87a5-42b7-9430-660a9e49adc1\",\r\n    \"channelId\" : \"328cc475-c3b6-480b-8469-fae5ebe63db4\",\r\n    \"content\" : \"달선이라개\",\r\n    \"attachmentIds\" : null\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/user/592d94cb-57d9-4361-a0a0-0dbc6d658313/read-status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "user",
+            "592d94cb-57d9-4361-a0a0-0dbc6d658313",
+            "read-status"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 생성 달선",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "image/jpeg",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "file",
+          "file": {
+            "src": "/C:/Users/user/Downloads/dalsun.jpg"
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/binary-content",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "binary-content"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 생성 달룡",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "image/jpeg",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "file",
+          "file": {
+            "src": "/C:/Users/user/Downloads/dalyong.jpg"
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/binary-content",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "binary-content"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 생성 달례",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "image/jpeg",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "file",
+          "file": {
+            "src": "/C:/Users/user/Downloads/dalye.jpg"
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/binaryContent",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "binaryContent"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 생성 가을달선",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "image/jpeg",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "file",
+          "file": {
+            "src": "/C:/Users/user/Downloads/automnDalsun.jpg"
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/binary-content",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "binary-content"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 생성 웃긴달선",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "image/jpeg",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "file",
+          "file": {
+            "src": "/C:/Users/user/Downloads/kkDalsun.jpg"
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/binary-content",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "binary-content"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 1개 조회",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"senderId\" : \"62cee727-87a5-42b7-9430-660a9e49adc1\",\r\n    \"channelId\" : \"328cc475-c3b6-480b-8469-fae5ebe63db4\",\r\n    \"content\" : \"달선이라개\",\r\n    \"attachmentIds\" : null\r\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/binaryContent/find/?id=4b3aa7d8-2734-48da-8395-66d8dea327eb",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "binaryContent",
+            "find",
+            ""
+          ],
+          "query": [
+            {
+              "key": "id",
+              "value": "4b3aa7d8-2734-48da-8395-66d8dea327eb"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 여러 개 조회",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/binary-content?ids=d8590f03-0f7b-4c9c-8e1e-7d25eaa21423&ids=ec08646f-0345-40c9-bdd2-a79abbc0e868&ids=10c65fb2-dce8-4b1b-9b64-e8d907ec0e02&ids=88612a3e-4a10-4597-b151-a79e421e5a14",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "binary-content"
+          ],
+          "query": [
+            {
+              "key": "ids",
+              "value": "d8590f03-0f7b-4c9c-8e1e-7d25eaa21423"
+            },
+            {
+              "key": "ids",
+              "value": "ec08646f-0345-40c9-bdd2-a79abbc0e868"
+            },
+            {
+              "key": "ids",
+              "value": "10c65fb2-dce8-4b1b-9b64-e8d907ec0e02",
+              "type": "text"
+            },
+            {
+              "key": "ids",
+              "value": "88612a3e-4a10-4597-b151-a79e421e5a14",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 가입",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/channels//join?userId",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels",
+            "",
+            "join"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": null,
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}
