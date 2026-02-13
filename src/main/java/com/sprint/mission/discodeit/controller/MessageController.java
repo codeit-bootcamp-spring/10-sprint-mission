@@ -16,36 +16,34 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("api/messages")
 public class MessageController {
-    private final MessageService messageService;
+
+  private final MessageService messageService;
 
 
-    @RequestMapping(method = RequestMethod.POST)
-    @ResponseBody
-    public MessageResponseDTO sendMessage(@RequestBody MessageCreateRequestDTO req){
-        return messageService.create(req);
-    }
+  @RequestMapping(method = RequestMethod.POST)
+  @ResponseBody
+  public MessageResponseDTO sendMessage(@RequestBody MessageCreateRequestDTO req) {
+    return messageService.create(req);
+  }
 
-    @RequestMapping(method = RequestMethod.PATCH)
-    @ResponseBody
-    public MessageResponseDTO editMessage(@RequestBody MessageUpdateRequestDto req){
-        return messageService.update(req);
-    }
+  @RequestMapping(method = RequestMethod.PATCH)
+  @ResponseBody
+  public MessageResponseDTO editMessage(@RequestBody MessageUpdateRequestDto req) {
+    return messageService.update(req);
+  }
 
-    @RequestMapping(value = "/{messageId}",method = RequestMethod.DELETE)
-    @ResponseBody
-    public void deleteMessage(@PathVariable UUID messageId){
-        messageService.delete(messageId);
-    }
-
-
-    @RequestMapping(value = "/{channelId}", method = RequestMethod.GET)
-    @ResponseBody
-    public List<MessageResponseDTO> viewChannelMessage(@PathVariable UUID channelId){
-        return messageService.findallByChannelId(channelId);
-    }
+  @RequestMapping(value = "/{messageId}", method = RequestMethod.DELETE)
+  @ResponseBody
+  public void deleteMessage(@PathVariable UUID messageId) {
+    messageService.delete(messageId);
+  }
 
 
+  @RequestMapping(value = "/{channelId}", method = RequestMethod.GET)
+  @ResponseBody
+  public List<MessageResponseDTO> viewChannelMessage(@PathVariable UUID channelId) {
+    return messageService.findAllByChannelId(channelId);
 
 
-
+  }
 }
