@@ -9,7 +9,7 @@ import java.io.*;
 import java.util.*;
 
 @Repository
-@Primary
+
 public class FileBinaryContentRepository implements BinaryContentRepository {
     private static final String FILE_PATH = "binaryContent.dat";
     private Map<UUID, BinaryContent> data;

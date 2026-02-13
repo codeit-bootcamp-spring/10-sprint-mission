@@ -10,7 +10,7 @@ import java.io.*;
 import java.util.*;
 
 @Repository
-@Primary
+
 public class FileUserStatusRepository implements UserStatusRepository {
     private static final String FILE_PATH = "userStatus.dat";
     private Map<UUID, UserStatus> data;

@@ -10,7 +10,7 @@ import java.util.*;
 
 
 @Repository
-@Primary
+
 public class FileUserRepository implements UserRepository {
 
     private static final String FILE_PATH = "users.dat";

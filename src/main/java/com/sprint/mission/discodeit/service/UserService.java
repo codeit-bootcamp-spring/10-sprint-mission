@@ -21,7 +21,7 @@ public interface UserService {
 
     //User updateUser(UUID uuid, String newName, String newAlias);
 
-    UserResponse updateUser(UserUpdateRequest userUpdateRequest);
+    UserResponse updateUser( UserUpdateRequest userUpdateRequest);
     // 유저 정보 갱신 -> id로 받으면 수정할 멤버변수 못받음. -> 전체 객체로 받아야../
 
     void deleteUser(UUID uuid);
