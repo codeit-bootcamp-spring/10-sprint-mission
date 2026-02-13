@@ -1,11 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -14,116 +12,88 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
 
-    public ReadStatusResponse create(ReadStatusCreateRequest request) {
-        // 읽음 상태 생성을 위한 필수 검증
-        validateCreateReadStatus(request);
+    @Override
+    public ReadStatusDto create(UUID channelId, UUID userId) {
+        validateUserAndChannel(userId, channelId);
 
-        // 읽음 상태 생성 및 저장
-        ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
-        readStatusRepository.save(readStatus);
-
-        return ReadStatusResponse.from(readStatus);
-    }
-
-    public ReadStatusResponse findById(UUID readStatusId) {
-        if (readStatusId == null) {
-            throw new RuntimeException("읽음 상태가 존재하지 않습니다.");
+        if (readStatusRepository.findByChannelIdAndUserId(channelId, userId).isPresent()) {
+            throw new BusinessException(ErrorCode.READ_STATUS_ALREADY_EXISTS);
         }
 
-        // 읽음 상태가 존재하는지 검색 및 검증
+        ReadStatus readStatus = new ReadStatus(userId, channelId, Instant.now());
+        readStatusRepository.save(readStatus);
+
+        return toDto(readStatus);
+    }
+
+    @Override
+    public ReadStatusDto find(UUID readStatusId) {
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new RuntimeException("읽음 상태가 존재하지 않습니다."));
-
-        return ReadStatusResponse.from(readStatus);
+                .orElseThrow(() -> new BusinessException(ErrorCode.READ_STATUS_NOT_FOUND));
+        return toDto(readStatus);
     }
 
-    public List<ReadStatusResponse> findAllByUserId(UUID userId) {
-        if (userId == null) {
-            throw new RuntimeException("요청이 올바르지 않습니다.");
+    @Override
+    public List<ReadStatusDto> findAllByUserId(UUID userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
 
-        List<ReadStatusResponse> responses = new ArrayList<>();
-        // 유저의 읽음 상태 목록 조회 및 순회
-        for (ReadStatus readStatus : readStatusRepository.findAllByUserId(userId)) {
-            // 응답 DTO 생성 후 반환 리스트에 추가
-            responses.add(ReadStatusResponse.from(readStatus));
-        }
-
-        return responses;
+        return readStatusRepository.findAllByUserId(userId)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
-    public ReadStatusResponse update(ReadStatusUpdateRequest request) {
-        if (request == null || request.id() == null) {
-            throw new RuntimeException("요청이 올바르지 않습니다.");
-        }
+    @Override
+    public ReadStatusDto update(UUID channelId, UUID userId) {
+        validateUserAndChannel(userId, channelId);
 
-        // 읽음 상태가 존재하는지 검색 및 검증
-        ReadStatus readStatus = readStatusRepository.findById(request.id())
-                .orElseThrow(() -> new RuntimeException("읽음 상태가 존재하지 않습니다."));
+        ReadStatus readStatus = readStatusRepository.findByChannelIdAndUserId(channelId, userId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.READ_STATUS_NOT_FOUND));
 
-        // 읽음 상태 업데이트
-        Instant newLastReadAt = request.lastReadAt();
-        if (newLastReadAt == null) {
-            newLastReadAt = Instant.now();
-        }
-        readStatus.markReadAt(newLastReadAt);
-
+        readStatus.update(Instant.now());
         readStatusRepository.save(readStatus);
 
-        return ReadStatusResponse.from(readStatus);
+        return toDto(readStatus);
     }
 
+    @Override
     public void delete(UUID readStatusId) {
-        if (readStatusId == null) {
-            throw new RuntimeException("읽음 상태가 존재하지 않습니다.");
+        if (!readStatusRepository.existsById(readStatusId)) {
+            throw new BusinessException(ErrorCode.READ_STATUS_NOT_FOUND);
         }
 
-        // 읽음 상태가 존재하는지 검색 및 검증
-        ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new RuntimeException("읽음 상태가 존재하지 않습니다."));
-
-        readStatusRepository.delete(readStatusId);
+        readStatusRepository.deleteById(readStatusId);
     }
 
-    public void deleteAllByChannelId(UUID channelId) {
-        if (channelId == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
-
-        // 채널이 존재하는지 검색 및 검증
-        channelRepository.findById(channelId)
-                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
-
-        // 채널의 읽음 상태 모두 삭제
-        readStatusRepository.deleteAllByChannelId(channelId);
+    private ReadStatusDto toDto(ReadStatus userStatus) {
+        return new ReadStatusDto(
+                userStatus.getId(),
+                userStatus.getCreatedAt(),
+                userStatus.getUpdatedAt(),
+                userStatus.getUserId(),
+                userStatus.getChannelId(),
+                userStatus.getLastReadAt()
+        );
     }
 
-    private void validateCreateReadStatus(ReadStatusCreateRequest request) {
-        if (request == null || request.userId() == null || request.channelId() == null) {
-            throw new RuntimeException("요청이 올바르지 않습니다.");
+    private void validateUserAndChannel(UUID userId, UUID channelId) {
+        if (!userRepository.existsById(userId)) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
         }
-
-        User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
-
-        Channel channel = channelRepository.findById(request.channelId())
-                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
-
-        for (ReadStatus readStatus : readStatusRepository.findAllByUserId(user.getId())) {
-            if (readStatus.getChannelId().equals(request.channelId())) {
-                throw new RuntimeException("읽음 상태가 이미 존재합니다.");
-            }
+        if (!channelRepository.existsById(channelId)) {
+            throw new BusinessException(ErrorCode.CHANNEL_NOT_FOUND);
         }
     }
 }

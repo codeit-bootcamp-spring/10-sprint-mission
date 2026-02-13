@@ -1,131 +1,178 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.util.SerializedFileUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+@Repository
 public class FileReadStatusRepository implements ReadStatusRepository {
-    private static final String FILE_PREFIX = "readStatus";
-    private static final String ENTITY_NAME = "읽음 상태";
+    private final Path DIRECTORY;
+    private final String FILE_PREFIX = "readStatus-";
+    private final String EXTENSION = ".ser";
 
-    private final Map<UUID, ReadStatus> data; // 빠른 조회를 위한 컬렉션
-    private final Path readStatusDir;
-
-    public FileReadStatusRepository(Path baseDir) {
-        this.data = new HashMap<>();
-        this.readStatusDir = baseDir.resolve(FILE_PREFIX);
-        try {
-            // 파일이 저장될 디렉토리가 존재하지 않을 경우 폴더 생성
-            Files.createDirectories(readStatusDir);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public FileReadStatusRepository(
+            @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+    ) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory, ReadStatus.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 저장소 초기화에 실패했습니다.");
+            }
         }
-        // 생성 시 디렉토리와 컬렉션 동기화
-        loadAllFromDirectory();
     }
 
-    private Path readStatusFilePath(UUID readStatusId) {
-        // 읽음 상태를 구분하기 위한 파일 경로 생성
-        return readStatusDir.resolve(FILE_PREFIX + "-" + readStatusId + ".ser");
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(FILE_PREFIX + id + EXTENSION);
     }
 
     @Override
     public ReadStatus save(ReadStatus readStatus) {
-        // 경로 생성 (readStatus-id.ser)
-        Path filePath = readStatusFilePath(readStatus.getId());
-
-        try (FileOutputStream fos = new FileOutputStream(filePath.toFile());
-             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
-            // 파일 저장
+        Path path = resolvePath(readStatus.getId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
             oos.writeObject(readStatus);
-            data.put(readStatus.getId(), readStatus);
-            return readStatus;
         } catch (IOException e) {
-            throw new RuntimeException("읽음 상태 파일 저장을 실패했습니다.");
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 저장에 실패했습니다.");
         }
+        return readStatus;
     }
 
     @Override
-    public Optional<ReadStatus> findById(UUID readStatusId) {
-        return Optional.ofNullable(data.get(readStatusId));
-    }
-
-    @Override
-    public List<ReadStatus> findAllByChannelId(UUID channelId) {
-        return data.values().stream()
-                .filter(readStatus -> readStatus.getChannelId().equals(channelId))
-                .toList();
+    public Optional<ReadStatus> findById(UUID id) {
+        ReadStatus readStatusNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                readStatusNullable = (ReadStatus) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일을 읽는 중 오류가 발생했습니다.");
+            }
+        }
+        return Optional.ofNullable(readStatusNullable);
     }
 
     @Override
     public List<ReadStatus> findAllByUserId(UUID userId) {
-        return data.values().stream()
-                .filter(readStatus -> readStatus.getUserId().equals(userId))
-                .toList();
-    }
-
-    @Override
-    public List<UUID> findParticipantUserIdsByChannelId(UUID channelId) {
-        return data.values().stream()
-                .filter(readStatus -> readStatus.getChannelId().equals(channelId))
-                .map(ReadStatus::getUserId)
-                .toList();
-    }
-
-    @Override
-    public void delete(UUID readStatusId) {
-        if (!data.containsKey(readStatusId)) {
-            throw new RuntimeException("읽음 상태가 존재하지 않습니다.");
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
+                    .filter(path -> {
+                        String fileName = path.getFileName().toString();
+                        return fileName.startsWith(FILE_PREFIX) && fileName.endsWith(EXTENSION);
+                    })
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (ReadStatus) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일을 읽는 중 오류가 발생했습니다.");
+                        }
+                    })
+                    .filter(readStatus -> readStatus.getUserId().equals(userId))
+                    .toList();
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 목록 조회에 실패했습니다.");
         }
+    }
 
-        Path filePath = readStatusFilePath(readStatusId);
-        SerializedFileUtils.deleteFileOrThrow(filePath, ENTITY_NAME);
-        data.remove(readStatusId);
+    @Override
+    public List<ReadStatus> findAllByChannelId(UUID channelId) {
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
+                    .filter(path -> {
+                        String fileName = path.getFileName().toString();
+                        return fileName.startsWith(FILE_PREFIX) && fileName.endsWith(EXTENSION);
+                    })
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (ReadStatus) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일을 읽는 중 오류가 발생했습니다.");
+                        }
+                    })
+                    .filter(readStatus -> readStatus.getChannelId().equals(channelId))
+                    .toList();
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 목록 조회에 실패했습니다.");
+        }
+    }
+
+    @Override
+    public Optional<ReadStatus> findByChannelIdAndUserId(UUID channelId, UUID userId) {
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
+                    .filter(path -> {
+                        String fileName = path.getFileName().toString();
+                        return fileName.startsWith(FILE_PREFIX) && fileName.endsWith(EXTENSION);
+                    })
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (ReadStatus) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일을 읽는 중 오류가 발생했습니다.");
+                        }
+                    })
+                    .filter(readStatus ->
+                            readStatus.getChannelId().equals(channelId) && readStatus.getUserId().equals(userId)
+                    )
+                    .findFirst();
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 목록 조회에 실패했습니다.");
+        }
+    }
+
+
+    @Override
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 삭제에 실패했습니다.");
+        }
     }
 
     @Override
     public void deleteAllByChannelId(UUID channelId) {
-        List<UUID> readStatusIdsToDelete = data.values().stream()
-                .filter(readStatus -> readStatus.getChannelId().equals(channelId))
-                .map(ReadStatus::getId)
-                .toList();
-
-        for (UUID readStatusId : readStatusIdsToDelete) {
-            Path filePath = readStatusFilePath(readStatusId);
-            SerializedFileUtils.deleteFileOrThrow(filePath, ENTITY_NAME);
-            data.remove(readStatusId);
-        }
-    }
-
-
-    public ReadStatus loadByIdFromFile(UUID readStatusId) {
-        // 경로 생성 (readStatus-id.ser)
-        Path filePath = readStatusFilePath(readStatusId);
-        // 파일 역직렬화
-        ReadStatus readStatus = (ReadStatus) SerializedFileUtils.deserialize(filePath, ENTITY_NAME);
-        // 컬렉션과 동기화
-        data.put(readStatus.getId(), readStatus);
-        return readStatus;
-    }
-
-    private void loadAllFromDirectory() {
-        data.clear();
-
-        for (Object object : SerializedFileUtils.deserializeAll(readStatusDir, FILE_PREFIX, ENTITY_NAME)) {
-            ReadStatus readStatus = (ReadStatus) object;
-            data.put(readStatus.getId(), readStatus);
-        }
+        this.findAllByChannelId(channelId)
+                .forEach(readStatus -> this.deleteById(readStatus.getId()));
     }
 }
