@@ -1,90 +1,85 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import lombok.Getter;
 
+import java.util.UUID;
+
+@Getter
 public class User extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
-    // 개인정보보호를 생각하여서 이름 -> 닉네임으로 변경
-    // 또한 업데이트 로직 적용 대상을 닉네임으로 적용하고 싶어서 변경
-    private String userNickname;
+    // 베이스 코드를 참고하여, 필드 이름 변경(접두어 제거)
+    // userNickname -> username, userEmail -> email
+    private String username;
+    private String email;
+    private String password; // 추가
+    private UUID profileId; // 추가 - BinaryContent 참조용
 
-    // 이메일 같은 경우는 UUID 처럼 개인의 "아이디" 라고 생각하면 됨
-    // 업데이트 시 수정 불가를 위하여 final로 선언
-    private final String userEmail;
-
-    private final List<Channel> myChannels = new ArrayList<>();
-    private final List<Message> myMessages = new ArrayList<>();
-
-    public User(String userNickname, String userEmail) {
-        validateUser(userNickname, userEmail);
-        this.userNickname = userNickname;
-        this.userEmail = userEmail;
+    public User(String username, String email, String password, UUID profileId) {
+        validateUser(username, email, password);
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.profileId = profileId;
     }
 
-    public void updateNickname(String userNickname) {
-        validateUser(userNickname, this.userEmail);
-        this.userNickname = userNickname;
-        super.update();
-    }
+    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+        boolean anyValueUpdated = false;
 
-    // 유저의 채널 목록에 새 채널을 추가
-    public void addMyChannel(Channel channel) {
-        if (channel != null && !this.myChannels.contains(channel)) this.myChannels.add(channel);
-    }
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            validateUsername(newUsername);
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
 
-    // 유저의 채널 목록에서 특정 채널을 삭제
-    public void removeMyChannel(Channel channel) {
-        this.myChannels.remove(channel);
-    }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            validateEmail(newEmail);
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
 
-    // 유저가 작성한 메세지를 리스트에 추가
-    public void addMyMessages(Message message) {
-        if (message != null) this.myMessages.add(message);
-    }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            validatePassword(newPassword);
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
 
-    public void removeMyMessages(Message message) {
-        if (message != null) this.myMessages.remove(message);
+        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+            this.profileId = newProfileId;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) super.update();
     }
 
     // 유저 생성 및 수정 시 준수해야 할 비즈니스 정책 (Fail-Fast)
-    // 나중에 필드가 늘어난다면 헬퍼 메서드나 정규 표현식으로 변환 예정
-    private void validateUser(String userNickname, String userEmail) {
+    // 각 필드 별로 검증 로직 분리
+    private void validateUser(String username, String email, String password) {
+        validateUsername(username);
+        validateEmail(email);
+        validatePassword(password);
+    }
 
-        // null, Blank 체크
-        if (userNickname == null || userNickname.isBlank())
-            throw new IllegalArgumentException("닉네임은 필수이며, 비어있을 수 없습니다.");
-        if (userEmail == null || userEmail.isBlank()) throw new IllegalArgumentException("이메일은 필수이며, 비어있을 수 없습니다.");
+    private void validateUsername(String username) {
+        if (username == null || username.isBlank() || username.contains(" ") ||
+                username.length() < 2 || username.length() > 10)
+            throw new BusinessException(ErrorCode.INVALID_USERNAME);
+    }
 
-        // 공백(" ") 체크
-        if (userNickname.contains(" ")) throw new IllegalArgumentException("닉네임은 공백을 포함할 수 없습니다.");
-        if (userEmail.contains(" ")) throw new IllegalArgumentException("이메일은 공백을 포함할 수 없습니다.");
+    private void validateEmail(String email) {
+        if (email == null || email.isBlank() || email.contains(" "))
+            throw new BusinessException(ErrorCode.INVALID_EMAIL);
+    }
 
-        // 유저 이름 길이 체크 (2자 이상, 10자 이하)
-        if (userNickname.length() < 2 || userNickname.length() > 10)
-            throw new IllegalArgumentException("닉네임은 2자 이상, 10자 이하로 설정하세요.");
+    private void validatePassword(String password) {
+        if (password == null || password.length() < 8 || password.contains(" "))
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
     }
 
     @Override
     public String toString() {
-        return String.format("User[닉네임: %s, 이메일: %s, User ID: %s]", userNickname, userEmail, getId());
-    }
-
-    public String getUserNickname() {
-        return userNickname;
-    }
-
-    public String getUserEmail() {
-        return userEmail;
-    }
-
-    public List<Message> getMyMessages() {
-        return new ArrayList<>(myMessages);
-    }
-
-    public List<Channel> getMyChannels() {
-        return new ArrayList<>(myChannels);
+        return String.format("User[닉네임: %s, 이메일: %s, User ID: %s]", username, email, getId());
     }
 }

@@ -1,93 +1,166 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
+    private final MessageRepository messageRepository;
+    private final ReadStatusRepository readStatusRepository;
 
-    private final UserService userService;
-    private MessageService messageService;
-
-    public BasicChannelService(ChannelRepository channelRepository, UserService userService) {
-        this.channelRepository = channelRepository;
-        this.userService = userService;
-    }
-
-    public void setMessageService(MessageService messageService) {
-        this.messageService = messageService;
+    @Override
+    public ChannelDto.Response createPublicChannel(ChannelDto.CreatePublicRequest request) {
+        Channel newChannel = new Channel(
+                request.name(),
+                request.description(),
+                ChannelType.PUBLIC
+        );
+        return convertToResponse(channelRepository.save(newChannel));
     }
 
     @Override
-    public void save(Channel channel) {
-        channelRepository.save(channel);
+    public ChannelDto.Response createPrivateChannel(ChannelDto.CreatePrivateRequest request) {
+        Channel newChannel = new Channel(
+                null,
+                null,
+                ChannelType.PRIVATE
+        );
+        Channel saved = channelRepository.save(newChannel);
+
+        request.memberIds().forEach(userId -> {
+            readStatusRepository.save(new ReadStatus(userId, saved.getId(), Instant.now()));
+            saved.addMember(userId);
+            });
+        channelRepository.save(saved);
+        return convertToResponse(saved);
     }
 
     @Override
-    public Channel create(String channelName) {
-        Channel newChannel = new Channel(channelName);
-        return channelRepository.save(newChannel);
+    public ChannelDto.Response findById(UUID id) {
+        Channel channel = findChannelEntityById(id);
+        return convertToResponse(channel);
     }
 
     @Override
-    public Channel findById(UUID id) {
-        return channelRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다. ID: "  + id));
+    public List<ChannelDto.Response> findAllByUserId(UUID userId) {
+        return channelRepository.findAll().stream()
+                .filter(c -> c.getType() == ChannelType.PUBLIC ||
+                        isMember(userId, c.getId()))
+                .map(this::convertToResponse)
+                .toList();
     }
 
     @Override
-    public List<Channel> findAll() {
-        return channelRepository.findAll();
+    public ChannelDto.Response update(ChannelDto.UpdateRequest request) {
+        Channel channel = findChannelEntityById(request.id());
+
+        if (channel.getType() == ChannelType.PRIVATE) {
+            throw new BusinessException(ErrorCode.PRIVATE_CHANNEL_NOT_UPDATABLE);
+        }
+
+        channel.update(
+                request.name(),
+                request.description()
+        );
+        return convertToResponse(channelRepository.save(channel));
     }
 
     @Override
-    public List<Channel> findChannelsByUserId(UUID userId) {
-        User user = userService.findById(userId);
-        return user.getMyChannels();
+    public void delete(UUID channelId) {
+        Channel channel = findChannelEntityById(channelId);
+
+        messageRepository.findAll().stream()
+                .filter(m -> channel.getId().equals(m.getChannelId()))
+                .forEach(m -> messageRepository.deleteById(m.getId()));
+
+        readStatusRepository.findAll().stream()
+                .filter(rs -> rs.getChannelId().equals(channelId))
+                .forEach(rs -> readStatusRepository.deleteById(rs.getId()));
+
+        channelRepository.deleteById(channelId);
     }
 
     @Override
-    public Channel update(UUID id, String updateChannelName) {
-        Channel updateChannel = findById(id);
-        updateChannel.updateChannel(updateChannelName);
-        return channelRepository.save(updateChannel);
-    }
-
     public void addChannelByUserId(UUID channelId, UUID userId) {
-        Channel channel = findById(channelId);
-        User user = userService.findById(userId);
-        channel.addMember(user);
-        user.addMyChannel(channel);
+        Channel channel = findChannelEntityById(channelId);
+
+        if (isMember(userId, channelId)) {
+            throw new BusinessException(ErrorCode.ALREADY_IN_CHANNEL);
+        }
+
+        if (readStatusRepository != null) {
+            readStatusRepository.save(new ReadStatus(userId, channelId, Instant.now()));
+        }
+
+        channel.addMember(userId);
         channelRepository.save(channel);
-        userService.save(user);
     }
 
     @Override
     public void removeChannelByUserId(UUID channelId, UUID userId) {
-        Channel channel = findById(channelId);
-        User user = userService.findById(userId);
-        channel.removeMember(user);
-        user.removeMyChannel(channel);
+        Channel channel = findChannelEntityById(channelId);
+
+        if (readStatusRepository != null) {
+            readStatusRepository.findAll().stream()
+                    .filter(rs -> rs.getUserId().equals(userId) && rs.getChannelId().equals(channelId))
+                    .findFirst()
+                    .ifPresent(rs -> readStatusRepository.deleteById(rs.getId()));
+        }
+        channel.removeMember(userId);
         channelRepository.save(channel);
-        userService.save(user);
     }
 
-    @Override
-    public void deleteChannelByChannelId(UUID channelId) {
-        Channel channel = findById(channelId);
-        messageService.deleteMessagesByChannelId(channelId);
-        new ArrayList<>(channel.getMembers()).forEach(user -> {
-            user.removeMyChannel(channel);
-            userService.save(user);
-        });
-        channelRepository.deleteById(channelId);
+
+    // [헬퍼 메서드]: 특정 유저의 채널 가입 여부를 확인
+    private boolean isMember(UUID userId, UUID channelId) {
+        return readStatusRepository.findAll().stream()
+                .anyMatch(rs -> rs.getUserId().equals(userId) && rs.getChannelId().equals(channelId));
+    }
+
+    // [헬퍼 메서드]: 반복되는 조회 및 예외 처리 공통화
+    private Channel findChannelEntityById(UUID id) {
+        return  channelRepository.findById(id)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHANNEL_NOT_FOUND));
+    }
+
+    // [헬퍼 메서드]: 엔티티를 Response DTO로 변환 (가장 최신 메시지 시간 포함)
+    private ChannelDto.Response convertToResponse(Channel channel) {
+        // [추가] 요구사항: 해당 채널의 가장 최근 메시지 시간 정보 포함
+        Instant lastMessageAt = messageRepository.findLatestMessageTimeByChannelId(channel.getId())
+                .orElse(null);
+
+        // [추가] 요구사항: PRIVATE인 경우 참여한 User ID 정보 포함
+        List<UUID> memberIds = null;
+        if (channel.getType() == ChannelType.PRIVATE) {
+            memberIds = readStatusRepository.findAll().stream()
+                    .filter(rs -> rs.getChannelId().equals(channel.getId()))
+                    .map(ReadStatus::getUserId)
+                    .toList();
+        }
+
+        return new ChannelDto.Response(
+                channel.getId(),
+                channel.getName(),
+                channel.getDescription(),
+                channel.getType(),
+                lastMessageAt,
+                memberIds
+        );
     }
 }

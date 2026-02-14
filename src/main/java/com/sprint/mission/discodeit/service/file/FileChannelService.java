@@ -33,7 +33,7 @@
 //    }
 //
 //    @Override
-//    public Channel create(String channelName) {
+//    public Channel createPublicChannel(String channelName) {
 //        Channel newChannel = new Channel(channelName);
 //        channels.add(newChannel);
 //        saveToFile();
@@ -54,43 +54,43 @@
 //    }
 //
 //    @Override
-//    public List<Channel> findChannelsByUserId(UUID userId) {
-//        User user = userService.findById(userId);
+//    public List<Channel> findChannelsByUserId(UUID authorId) {
+//        User user = userService.findById(authorId);
 //
-//        return user.getMyChannels();
+//        return user.getChannels();
 //    }
 //
 //    @Override
 //    public Channel update(UUID id, String updateChannelName) {
-//        Channel updateChannel = findById(id);
-//        updateChannel.updateChannel(updateChannelName);
+//        Channel update = findById(id);
+//        update.update(updateChannelName);
 //        saveToFile();
-//        return updateChannel;
+//        return update;
 //    }
 //
-//    public void addChannelByUserId(UUID channelId, UUID userId) {
+//    public void addChannelByUserId(UUID channelId, UUID authorId) {
 //        Channel channel = findById(channelId);
-//        User user = userService.findById(userId);
+//        User user = userService.findById(authorId);
 //        channel.addMember(user);
-//        user.addMyChannel(channel);
+//        user.addChannel(channel);
 //        saveToFile();
 //    }
 //
 //    @Override
-//    public void removeChannelByUserId(UUID channelId, UUID userId) {
+//    public void removeChannelByUserId(UUID channelId, UUID authorId) {
 //        Channel channel = findById(channelId);
-//        User user = userService.findById(userId);
+//        User user = userService.findById(authorId);
 //        channel.removeMember(user);
-//        user.removeMyChannel(channel);
+//        user.removeChannel(channel);
 //        saveToFile();
 //    }
 //
 //    @Override
-//    public void deleteChannelByChannelId(UUID channelId) {
+//    public void delete(UUID channelId) {
 //        Channel channel = findById(channelId);
 //        messageService.deleteMessagesByChannelId(channelId);
-//        new ArrayList<>(channel.getMembers()).forEach(user -> {
-//            user.removeMyChannel(channel);
+//        new ArrayList<>(channel.getMemberIds()).forEach(user -> {
+//            user.removeChannel(channel);
 //        });
 //        channels.remove(channel);
 //        saveToFile();
