@@ -1,105 +1,105 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.MessageDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import com.sprint.mission.discodeit.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
-
-    private final UserService userService;
-    private final ChannelService channelService;
-
-    public BasicMessageService(MessageRepository messageRepository, UserService userService, ChannelService channelService) {
-        this.messageRepository = messageRepository;
-        this.userService = userService;
-        this.channelService = channelService;
-    }
+    private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
+    private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public void save(Message message) {
-        messageRepository.save(message);
-    }
+    public MessageDto.Response create(MessageDto.CreateRequest request) {
+        if (!userRepository.existsById(request.authorId())) throw new IllegalArgumentException("존재하지 않은 사용자 입니다.");
+        if (!channelRepository.existsById(request.channelId())) throw new IllegalArgumentException("존재하지 않는 채널입니다.");
 
-    @Override
-    public Message create(UUID userId, UUID channelId, String content) {
-        User user = userService.findById(userId);
-        Channel channel = channelService.findById(channelId);
-
-        if (!channel.getMembers().contains(user)) {
-            throw new IllegalStateException("해당 채널에 속해 있지 않으므로 메세지를 보낼 수 없습니다.");
+        List<UUID> attachmentIds = new ArrayList<>();
+        if (request.attachments() != null && binaryContentRepository != null) {
+            request.attachments().forEach(att -> {
+                BinaryContent content = new BinaryContent(
+                        UUID.randomUUID(),
+                        att.fileName(),
+                        att.data(),
+                        Instant.now()
+                );
+                binaryContentRepository.save(content);
+                attachmentIds.add(content.getId());
+            });
         }
 
-        Message message = new Message(user, channel, content);
-        Message savedMessage = messageRepository.save(message);
-
-        userService.save(user);
-        channelService.save(channel);
-
-        return savedMessage;
+        Message message = new Message(
+                request.authorId(),
+                request.channelId(),
+                request.content(),
+                attachmentIds
+        );
+        return convertToResponse(messageRepository.save(message));
     }
 
     @Override
-    public Message findById(UUID id) {
-        return messageRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메세지 입니다. ID: " + id));
+    public MessageDto.Response findById(UUID id) {
+        Message message = findMessageEntityById(id);
+        return convertToResponse(message);
     }
 
     @Override
-    public List<Message> findAll() {
-        return messageRepository.findAll();
+    public List<MessageDto.Response> findAllByChannelId(UUID channelId) {
+        return messageRepository.findAll().stream()
+                .filter(m -> m.getChannelId().equals(channelId))
+                .map(this::convertToResponse)
+                .toList();
     }
 
     @Override
-    public List<Message> findMessagesByChannelId(UUID channelId) {
-        return channelService.findById(channelId).getMessages();
+    public MessageDto.Response update(MessageDto.UpdateRequest request) {
+        Message message = findMessageEntityById(request.id());
+
+        message.update(request.content());
+        return convertToResponse(messageRepository.save(message));
     }
 
     @Override
-    public List<Message> findMessagesByUserId(UUID userId) {
-        return userService.findById(userId).getMyMessages();
-    }
+    public void delete(UUID messageId) {
+        Message message = findMessageEntityById(messageId);
 
-    @Override
-    public Message update(UUID id, String content) {
-        Message updateContent = findById(id);
-        updateContent.updateMessage(content);
-        return messageRepository.save(updateContent);
-    }
-
-    @Override
-    public void deleteMessageByMessageId(UUID messageId) {
-        Message message = findById(messageId);
-        User user = message.getUser();
-        Channel channel = message.getChannel();
-        if (message.getUser() != null) {
-            message.getUser().removeMyMessages(message);
-            userService.save(user);
+        if (binaryContentRepository != null && message.getAttachmentIds() != null) {
+            message.getAttachmentIds().forEach(binaryContentRepository::deleteById);
         }
-        if (message.getChannel() != null) {
-            message.getChannel().removeMessages(message);
-            channelService.save(channel);
-        }
-
-        // 실제 데이터 파기
         messageRepository.deleteById(messageId);
     }
 
-    @Override
-    public void deleteMessagesByUserId(UUID userId) {
-        new ArrayList<> (findMessagesByUserId(userId)).forEach(m-> deleteMessageByMessageId(m.getId()));
+    // [헬퍼 메서드]: 반복되는 조회 및 예외 처리 공통화
+    private Message findMessageEntityById(UUID id) {
+        return messageRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메세지 입니다."));
     }
 
-    @Override
-    public void deleteMessagesByChannelId(UUID channelId) {
-        new ArrayList<> (findMessagesByChannelId(channelId)).forEach(m-> deleteMessageByMessageId(m.getId()));
+    // [헬퍼 메서드]: 요구사항에 맞는 Response DTO 변환
+    private MessageDto.Response convertToResponse(Message message) {
+        return new MessageDto.Response(
+                message.getId(),
+                message.getContent(),
+                message.getAuthorId(),
+                message.getChannelId(),
+                message.getCreatedAt(),
+                message.getUpdatedAt(),
+                message.getAttachmentIds()
+        );
     }
 }

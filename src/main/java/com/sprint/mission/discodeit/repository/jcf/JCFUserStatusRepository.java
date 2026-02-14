@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
@@ -14,28 +14,23 @@ import java.util.concurrent.ConcurrentHashMap;
         havingValue = "jcf",
         matchIfMissing = true
 )
-public class JCFChannelRepository implements ChannelRepository {
-    private final Map<UUID, Channel> storage = new ConcurrentHashMap<>();
+public class JCFUserStatusRepository implements UserStatusRepository {
+    private final Map<UUID, UserStatus> storage = new ConcurrentHashMap<>();
 
     @Override
-    public Channel save(Channel channel) {
-        storage.put(channel.getId(), channel);
-        return channel;
+    public UserStatus save(UserStatus userStatus) {
+        storage.put(userStatus.getId(), userStatus);
+        return userStatus;
     }
 
     @Override
-    public Optional<Channel> findById(UUID id) {
+    public Optional<UserStatus> findById(UUID id) {
         return Optional.ofNullable(storage.get(id));
     }
 
     @Override
-    public List<Channel> findAll() {
+    public List<UserStatus> findAll() {
         return new ArrayList<>(storage.values());
-    }
-
-    @Override
-    public boolean existsById(UUID id) {
-        return storage.containsKey(id);
     }
 
     @Override

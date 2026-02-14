@@ -2,54 +2,57 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
+@Repository
+@ConditionalOnProperty(
+        name = "discodeit.repository.type",
+        havingValue = "jcf",
+        matchIfMissing = true
+)
 public class JCFUserRepository implements UserRepository {
-    private final List<User> users = new ArrayList<>();
+    private final Map<UUID, User> storage = new HashMap<>();
 
     @Override
     public User save(User user) {
-        int index = -1;
-        for (int i = 0; i <= users.size(); i++) {
-            if (users.get(i).getId().equals(user.getId())) {
-                index = i;
-                break;
-            }
-        }
-
-        if (index != -1) {
-            users.set(index, user);
-        } else {
-            users.add(user);
-        }
+        storage.put(user.getId(), user);
         return user;
     }
 
     @Override
     public Optional<User> findById(UUID id) {
-        return users.stream()
-                .filter(u -> u.getId().equals(id))
-                .findFirst();
+        return Optional.ofNullable(storage.get(id));
     }
 
     @Override
     public Optional<User> findByEmail(String email) {
-        return users.stream()
-                .filter(u -> u.getUserEmail().equals(email))
+        return storage.values().stream()
+                .filter(u -> u.getEmail().equals(email))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return storage.values().stream()
+                .filter(u -> u.getUsername().equals(username))
                 .findFirst();
     }
 
     @Override
     public List<User> findAll() {
-        return new ArrayList<>(users);
+        return new ArrayList<>(storage.values());
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return storage.containsKey(id);
     }
 
     @Override
     public void deleteById(UUID id) {
-        users.removeIf(u -> u.getId().equals(id));
+        storage.remove(id);
     }
 }

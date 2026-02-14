@@ -35,7 +35,7 @@
 //    }
 //
 //    @Override
-//    public User create(String userName, String userEmail) {
+//    public User createPublicChannel(String userName, String userEmail) {
 //        validateDuplicateEmail(userEmail);
 //        User newUser = new User(userName, userEmail);
 //        users.add(newUser);
@@ -58,7 +58,7 @@
 //
 //    @Override
 //    public List<User> findMembers(UUID channelId) {
-//        return channelService.findById(channelId).getMembers();
+//        return channelService.findById(channelId).getMemberIds();
 //    }
 //
 //    @Override
@@ -70,10 +70,10 @@
 //    }
 //
 //    @Override
-//    public void deleteUserByUserId(UUID userId) {
-//        User user = findById(userId);
-//        messageService.deleteMessagesByUserId(userId);
-//        new ArrayList<>(user.getMyChannels()).forEach(channel -> {
+//    public void delete(UUID authorId) {
+//        User user = findById(authorId);
+//        messageService.deleteMessagesByUserId(authorId);
+//        new ArrayList<>(user.getChannels()).forEach(channel -> {
 //            channel.removeMember(user);
 //        });
 //        users.remove(user);

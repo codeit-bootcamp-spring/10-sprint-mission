@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -20,49 +20,49 @@ import java.util.stream.Stream;
         name = "discodeit.repository.type",
         havingValue = "file"
 )
-public class FileChannelRepository implements ChannelRepository {
+public class FileUserStatusRepository implements UserStatusRepository {
     private final Path DIRECTORY;
     private final String EXTENSION = ".ser";
 
-    public FileChannelRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
+    public FileUserStatusRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
         this.DIRECTORY = Paths.get(System.getProperty("user.dir"),
-                fileDirectory, Channel.class.getSimpleName());
+                fileDirectory, UserStatus.class.getSimpleName());
         if (Files.notExists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);
             } catch (IOException e) {
-                throw new RuntimeException("채널 디렉토리 생성 실패", e);
+                throw new RuntimeException("UserStatus 디렉토리 생성 실패", e);
             }
         }
     }
 
-    private Path resolvePath(UUID id) {
-        return DIRECTORY.resolve(id +  EXTENSION);
+    private Path resolve(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     @Override
-    public Channel save(Channel channel) {
-        Path path = resolvePath(channel.getId());
-        try (ObjectOutputStream oos =
-                new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
-            oos.writeObject(channel);
+    public UserStatus save(UserStatus userStatus) {
+        Path path = resolve(userStatus.getId());
+        try (ObjectOutputStream oos = new ObjectOutputStream(
+                new FileOutputStream(path.toFile()))) {
+            oos.writeObject(userStatus);
         } catch (IOException e) {
-            throw new RuntimeException("채널 저장 실패", e);
+            throw new RuntimeException("UserStatus 저장 실패", e);
         }
-        return channel;
+        return userStatus;
     }
 
     @Override
-    public Optional<Channel> findById(UUID id) {
-        return readChannelFromFile(resolvePath(id));
+    public Optional<UserStatus> findById(UUID id) {
+        return readFromFile(resolve(id));
     }
 
     @Override
-    public List<Channel> findAll() {
-        try (Stream<Path> stream = Files.list(DIRECTORY)) {
+    public List<UserStatus> findAll() {
+        try(Stream<Path> stream = Files.list(DIRECTORY)) {
             return stream
                     .filter(path -> path.toString().endsWith(EXTENSION))
-                    .map(this::readChannelFromFile)
+                    .map(this::readFromFile)
                     .flatMap(Optional::stream)
                     .toList();
         } catch (IOException e) {
@@ -71,27 +71,22 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        return Files.exists(resolvePath(id));
-    }
-
-    @Override
     public void deleteById(UUID id) {
         try {
-            Files.deleteIfExists(resolvePath(id));
+            Files.deleteIfExists(resolve(id));
         } catch (IOException e) {
-            throw new RuntimeException("채널 삭제 실패", e);
+            throw new RuntimeException("UserStatus 삭제 실패", e);
         }
     }
 
-    // [헬퍼 메서드] findId, findAll: 중복되는 역직렬화 로직 통합
-    private Optional<Channel> readChannelFromFile(Path path) {
+    private Optional<UserStatus> readFromFile(Path path) {
         if (Files.notExists(path)) return Optional.empty();
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-            return Optional.ofNullable((Channel) ois.readObject());
+            return Optional.ofNullable((UserStatus) ois.readObject());
         } catch (IOException | ClassNotFoundException e) {
             return Optional.empty();
         }
     }
 }
+

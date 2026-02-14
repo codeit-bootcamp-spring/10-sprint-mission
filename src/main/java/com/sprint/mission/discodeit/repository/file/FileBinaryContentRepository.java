@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -20,49 +20,49 @@ import java.util.stream.Stream;
         name = "discodeit.repository.type",
         havingValue = "file"
 )
-public class FileChannelRepository implements ChannelRepository {
+public class FileBinaryContentRepository implements BinaryContentRepository {
     private final Path DIRECTORY;
     private final String EXTENSION = ".ser";
 
-    public FileChannelRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
+    public FileBinaryContentRepository(@Value("${discodeit.repository.file-directory}") String fileDirectory) {
         this.DIRECTORY = Paths.get(System.getProperty("user.dir"),
-                fileDirectory, Channel.class.getSimpleName());
+                fileDirectory, BinaryContent.class.getSimpleName());
         if (Files.notExists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);
             } catch (IOException e) {
-                throw new RuntimeException("채널 디렉토리 생성 실패", e);
+                throw new RuntimeException("BinaryContent 디렉토리 생성 실패", e);
             }
         }
     }
 
-    private Path resolvePath(UUID id) {
-        return DIRECTORY.resolve(id +  EXTENSION);
+    private Path resolve(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     @Override
-    public Channel save(Channel channel) {
-        Path path = resolvePath(channel.getId());
-        try (ObjectOutputStream oos =
-                new ObjectOutputStream(new FileOutputStream(path.toFile()))) {
-            oos.writeObject(channel);
+    public BinaryContent save(BinaryContent content) {
+        Path path = resolve(content.getId());
+        try (ObjectOutputStream oos = new ObjectOutputStream(
+                new FileOutputStream(path.toFile()))) {
+            oos.writeObject(content);
         } catch (IOException e) {
-            throw new RuntimeException("채널 저장 실패", e);
+            throw new RuntimeException("BinaryContent 저장 실패", e);
         }
-        return channel;
+        return content;
     }
 
     @Override
-    public Optional<Channel> findById(UUID id) {
-        return readChannelFromFile(resolvePath(id));
+    public Optional<BinaryContent> findById(UUID id) {
+        return readFromFile(resolve(id));
     }
 
     @Override
-    public List<Channel> findAll() {
+    public List<BinaryContent> findAll() {
         try (Stream<Path> stream = Files.list(DIRECTORY)) {
             return stream
                     .filter(path -> path.toString().endsWith(EXTENSION))
-                    .map(this::readChannelFromFile)
+                    .map(this::readFromFile)
                     .flatMap(Optional::stream)
                     .toList();
         } catch (IOException e) {
@@ -71,25 +71,19 @@ public class FileChannelRepository implements ChannelRepository {
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        return Files.exists(resolvePath(id));
-    }
-
-    @Override
     public void deleteById(UUID id) {
         try {
-            Files.deleteIfExists(resolvePath(id));
+            Files.deleteIfExists(resolve(id));
         } catch (IOException e) {
-            throw new RuntimeException("채널 삭제 실패", e);
+            throw new RuntimeException("BinaryContent 삭제 실패", e);
         }
     }
 
-    // [헬퍼 메서드] findId, findAll: 중복되는 역직렬화 로직 통합
-    private Optional<Channel> readChannelFromFile(Path path) {
+    private Optional<BinaryContent> readFromFile(Path path) {
         if (Files.notExists(path)) return Optional.empty();
 
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
-            return Optional.ofNullable((Channel) ois.readObject());
+            return Optional.ofNullable((BinaryContent) ois.readObject());
         } catch (IOException | ClassNotFoundException e) {
             return Optional.empty();
         }
