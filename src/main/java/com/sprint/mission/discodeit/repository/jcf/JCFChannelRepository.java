@@ -2,12 +2,20 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
+@ConditionalOnProperty(
+        name = "discodeit.repository.type" ,
+        havingValue = "jcf" ,
+        matchIfMissing = true
+)
 public class JCFChannelRepository implements ChannelRepository {
     private final List<Channel> data;
 
@@ -18,7 +26,7 @@ public class JCFChannelRepository implements ChannelRepository {
     // 채널 저장
     @Override
     public void save(Channel channel) {
-        data.removeIf(eexistChannel -> eexistChannel.getId().equals(channel.getId()));
+        data.removeIf(existChannel -> existChannel.getId().equals(channel.getId()));
 
         data.add(channel);
     }

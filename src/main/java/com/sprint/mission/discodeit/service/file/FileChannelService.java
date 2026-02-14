@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.service.file;
+/* package com.sprint.mission.discodeit.service.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -33,12 +33,9 @@ public class FileChannelService implements ChannelService {
     public Channel createChannel(String channelName, UUID userId, ChannelType channelType) {
         User owner = fileUserService.searchUser(userId);
 
-        Channel newChannel = new Channel(channelName, owner, channelType);
+        Channel newChannel = new Channel(channelName, owner.getId(), channelType);
         Path filePath = directory.resolve(newChannel.getId() + ".ser");
         FileUtil.save(filePath, newChannel);
-
-        owner.addChannel(newChannel);
-        fileUserService.updateUser(owner.getId(), owner);
 
         return newChannel;
     }
@@ -63,7 +60,7 @@ public class FileChannelService implements ChannelService {
 
         return channels.stream()
                 .filter(channel -> channel.getMembers().stream()
-                        .anyMatch(member -> member.getId().equals(userId)))
+                        .anyMatch(memberId -> memberId.equals(userId)))
                 .toList();
     }
 
@@ -92,14 +89,7 @@ public class FileChannelService implements ChannelService {
     // 채널 삭제
     @Override
     public void deleteChannel(UUID targetChannelId) {
-        Channel targetChannel = searchChannel(targetChannelId);
-
-        // 모든 채널 멤버에서 채널 목록 삭제
-        targetChannel.getMembers().forEach(member -> {
-            User targetUser = fileUserService.searchUser(member.getId());
-            targetUser.getChannels().removeIf(channel -> channel.getId().equals(targetChannelId));
-            fileUserService.updateUser(targetUser.getId(), targetUser);
-        });
+        searchChannel(targetChannelId);
 
         try {
             Files.deleteIfExists(directory.resolve(targetChannelId + ".ser"));
@@ -115,10 +105,7 @@ public class FileChannelService implements ChannelService {
 
         validateMemberExists(targetUserId, targetChannelId);
 
-        newUser.addChannel(targetChannel);
-        fileUserService.updateUser(newUser.getId(), newUser);
-
-        targetChannel.getMembers().add(newUser);
+        targetChannel.getMembers().add(newUser.getId());
         FileUtil.save(directory.resolve(targetChannelId + ".ser"), targetChannel);
     }
 
@@ -129,19 +116,16 @@ public class FileChannelService implements ChannelService {
 
         validateUserNotInChannel(targetUserId, targetChannelId);
 
-        targetChannel.getMembers().removeIf(member -> member.getId().equals(targetUser.getId()));
+        targetChannel.getMembers().removeIf(memberId -> memberId.equals(targetUser.getId()));
         FileUtil.save(directory.resolve(targetChannelId + ".ser"), targetChannel);
-
-        targetUser.getChannels().removeIf(channel -> channel.getId().equals(targetUser.getId()));
-        fileUserService.updateUser(targetUser.getId(), targetUser);
     }
 
     // 유효성 검증 (초대)
     public void validateMemberExists(UUID userId, UUID channelId) {
-        List<User> currentMembers = fileUserService.searchMembersByChannelId(channelId);
+        List<UUID> currentMembers = fileUserService.searchMembersByChannelId(channelId);
 
         boolean isExist = currentMembers.stream()
-                .anyMatch(member -> member.getId().equals(userId));
+                .anyMatch(memberId -> memberId.equals(userId));
 
         if (isExist) {
             throw new IllegalArgumentException("이미 채널에 존재하는 사용자입니다.");
@@ -150,13 +134,14 @@ public class FileChannelService implements ChannelService {
 
     // 유효성 검증 (퇴장)
     public void validateUserNotInChannel(UUID userId, UUID channelId) {
-        List<User> currentMembers = fileUserService.searchMembersByChannelId(channelId);
+        List<UUID> currentMembers = fileUserService.searchMembersByChannelId(channelId);
 
         boolean notInChannel = currentMembers.stream()
-                .noneMatch(member -> member.getId().equals(userId));
+                .noneMatch(memberId -> memberId.equals(userId));
 
         if (notInChannel) {
             throw new IllegalArgumentException("해당 채널에 존재하는 사용자가 아닙니다.");
         }
     }
 }
+ */

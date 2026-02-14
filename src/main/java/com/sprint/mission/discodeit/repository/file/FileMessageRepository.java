@@ -3,19 +3,30 @@ package com.sprint.mission.discodeit.repository.file;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.util.FileUtil;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Repository
+@ConditionalOnProperty(
+        name = "discodeit.repository.type" ,
+        havingValue = "file"
+)
 public class FileMessageRepository implements MessageRepository {
-    private final Path directory = Paths.get(System.getProperty("user.dir"), "data", "messages");              // 경로 설정
+    private final Path directory;
 
-    public FileMessageRepository() {
+    public FileMessageRepository(@Value("${discodeit.repository.file-directory}") String baseDirectory) {
+        this.directory = Paths.get(System.getProperty("user.dir"), baseDirectory, "message");
         FileUtil.init(directory);
     }
 
@@ -40,6 +51,7 @@ public class FileMessageRepository implements MessageRepository {
         return FileUtil.load(directory);
     }
 
+    // 메시지 삭제
     @Override
     public void delete(Message message) {
         try {
@@ -47,5 +59,14 @@ public class FileMessageRepository implements MessageRepository {
         } catch (IOException e) {
             throw new RuntimeException("[삭제 실패] 시스템 오류가 발생했습니다." + e);
         }
+    }
+
+    @Override
+    public Instant getLastMessageAt(UUID channelId) {
+        return findAll().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .max(Comparator.comparing(Message::getCreatedAt))
+                .map(Message::getCreatedAt)
+                .orElse(null);
     }
 }

@@ -2,12 +2,18 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
 
+@Repository
+@ConditionalOnProperty(
+        name = "discodeit.repository.type" ,
+        havingValue = "jcf" ,
+        matchIfMissing = true
+)
 public class JCFMessageRepository implements MessageRepository {
     private final List<Message> data;       // 모든 메시지
 
@@ -18,7 +24,7 @@ public class JCFMessageRepository implements MessageRepository {
     // 메시지 저장
     @Override
     public void save(Message message) {
-        data.removeIf(eexistMessage -> eexistMessage.getId().equals(message.getId()));
+        data.removeIf(existMessage -> existMessage.getId().equals(message.getId()));
 
         data.add(message);
     }
@@ -42,4 +48,14 @@ public class JCFMessageRepository implements MessageRepository {
     public void delete(Message message) {
         data.remove(message);
     }
+
+    @Override
+    public Instant getLastMessageAt(UUID channelId) {
+        return findAll().stream()
+                .filter(message -> message.getChannelId().equals(channelId))
+                .max(Comparator.comparing(Message::getCreatedAt))
+                .map(Message::getCreatedAt)
+                .orElse(null);
+    }
+
 }

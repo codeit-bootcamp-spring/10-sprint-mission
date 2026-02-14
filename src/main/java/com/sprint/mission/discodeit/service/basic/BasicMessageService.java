@@ -1,13 +1,19 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.request.message.MessageCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.message.MessageUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.response.MessageResponseDTO;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.MessageType;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,107 +22,145 @@ import java.util.UUID;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateDuplicateValue;
 import static com.sprint.mission.discodeit.service.util.ValidationUtil.validateString;
 
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
-
-    public BasicMessageService(UserRepository userRepository, ChannelRepository channelRepository, MessageRepository messageRepository) {
-        this.userRepository = userRepository;
-        this.channelRepository = channelRepository;
-        this.messageRepository = messageRepository;
-    }
+    private final BinaryContentRepository binaryContentRepository;
 
     // 메시지 생성
     @Override
-    public Message createMessage(String message, UUID userId, UUID channelId, MessageType type) {
-        User sender = userRepository.findById(userId)
+    public MessageResponseDTO create(MessageCreateRequestDTO messageCreateRequestDTO) {
+        // 1, 사용자 및 채널 존재 여부 확인
+        userRepository.findById(messageCreateRequestDTO.getAuthorId())
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
-        Channel targetChannel = channelRepository.findById(channelId)
+        channelRepository.findById(messageCreateRequestDTO.getChannelId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
-        Message newMessage = new Message(message, sender, targetChannel, type);
+        // 2. 메시지 생성 및 저장
+        Message newMessage = new Message(messageCreateRequestDTO);
         messageRepository.save(newMessage);
 
-        sender.addMessage(newMessage);              // 발행자 메시지 목록에 메시지 추가
-        userRepository.save(sender);
+        // 3. 첨부파일 선택적 생성 및 저장
+        Optional.ofNullable(messageCreateRequestDTO.getBinaryContentCreateRequestDTOList())
+                .map(binaryContentCreateRequestDTOS -> binaryContentCreateRequestDTOS.stream()
+                        // 첨부파일 하나씩 생성 및 저장
+                        .map(binaryContentCreateRequestDTO -> {
+                            BinaryContent binaryContent = new BinaryContent(binaryContentCreateRequestDTO);
+                            binaryContentRepository.save(binaryContent);
+                            return binaryContent.getId();
+                        })
+                        // 첨부파일 식별자 목록 반환
+                        .toList())
+                // 생성한 메시지의 첨부파일 목록에 생성한 첨부파일 추가
+                .ifPresent(attachmentIds -> attachmentIds
+                        .forEach(newMessage::addAttachment));
 
-        targetChannel.addMessage(newMessage);       // 발행된 채널의 메시지 목록에 메시지 추가
-        channelRepository.save(targetChannel);
-
-        return newMessage;
+        // 4. 응답 DTO 생성 및 반환
+        return toResponseDTO(newMessage);
     }
 
     // 메시지 단건 조회
     @Override
-    public Message searchMessage(UUID targetMessageId) {
-        return messageRepository.findById(targetMessageId)
+    public MessageResponseDTO findById(UUID targetMessageId) {
+        // 1. 메시지 존재 여부 확인
+        Message targetMessage = messageRepository.findById(targetMessageId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
+
+        // 2. 응답 DTO 생성 및 반환
+        return toResponseDTO(targetMessage);
     }
 
     // 메시지 전체 조회
     @Override
-    public List<Message> searchMessageAll() {
-        return messageRepository.findAll();
-    }
-
-    // 특정 유저가 발행한 메시지 다건 조회
-    public List<Message> searchMessagesByUserId(UUID targetUserId) {
-        userRepository.findById(targetUserId).orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
-
-        List<Message> messages = searchMessageAll();               // 함수가 실행된 시점에서 가장 최신 메시지 목록
-
-        return messages.stream()
-                .filter(message -> message.getUser().getId().equals(targetUserId))
+    public List<MessageResponseDTO> findAll() {
+        return messageRepository.findAll().stream()
+                .map(this::toResponseDTO)
                 .toList();
     }
 
-    // 특정 채널의 메시지 발행 리스트 조회
-    public List<Message> searchMessagesByChannelId(UUID targetChannelId) {
-        channelRepository.findById(targetChannelId).orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+    // 특정 채널의 전체 메시지 목록 조회
+    @Override
+    public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
+        // 1. 채널 존재 여부 확인
+        Channel taregetChannel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
 
-        List<Message> messages = searchMessageAll();
+        // 2. 특정 채널의 전체 메시지 응답 DTO 변환 및 반환
+        return messageRepository.findAll().stream()
+                .filter(message -> message.getChannelId().equals(taregetChannel.getId()))
+                // 메시지 -> 메시지 응답 반환
+                .map(this::toResponseDTO)
+                .toList();
+    }
 
-        return messages.stream()
-                .filter(message -> message.getChannel().getId().equals(targetChannelId))
+    // 특정 사욪자가 발행한 전체 메시지 목록 조회
+    @Override
+    public List<MessageResponseDTO> findAllByUserId(UUID targetUserId) {
+        // 1. 사용자 존재 여부 확인
+        User targetUser = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
+
+        // 2. 특정 사용자가 발행한 전체 메시지 응답 DTO 변환 및 반환
+        return messageRepository.findAll().stream()
+                .filter(message -> message.getAuthorId().equals(targetUser.getId()))
+                .map(this::toResponseDTO)
                 .toList();
     }
 
     // 메시지 수정
     @Override
-    public Message updateMessage(UUID targetMessageId, String newMessage) {
-        Message targetMessage = searchMessage(targetMessageId);
+    public MessageResponseDTO update(MessageUpdateRequestDTO messageUpdateRequestDTO) {
+        // 1. 메시지 존재 여부 확인
+        Message targetMessage = findMessageEntityById(messageUpdateRequestDTO.getId());
 
-        // 메시지 내용 수정
-        Optional.ofNullable(newMessage)
+        // 2. 메시지 내용 수정
+        Optional.ofNullable(messageUpdateRequestDTO.getMessage())
                 .ifPresent(message -> {
                     validateString(message, "[메시지 변경 실패] 올바른 메시지 형식이 아닙니다.");
                     validateDuplicateValue(targetMessage.getMessage(), message, "[메시지 변경 실패] 이전 메시지와 동일합니다.");
-                    targetMessage.updateMessage(newMessage);
+                    targetMessage.updateMessage(messageUpdateRequestDTO.getMessage());
                 });
 
+        // 3. 메시지 수정 내용 저장 및 응답 DTO 반환
         messageRepository.save(targetMessage);
-        return targetMessage;
+        return toResponseDTO(targetMessage);
     }
-
-    @Override
-    public void updateMessage(UUID channelId, Channel channel) {}
 
     // 메시지 삭제
     @Override
-    public void deleteMessage(UUID targetMessageId) {
-        Message targetMessage = searchMessage(targetMessageId);
+    public void delete(UUID targetMessageId) {
+        Message targetMessage = findMessageEntityById(targetMessageId);
 
-        User targetUser = userRepository.findById(targetMessage.getUser().getId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));                     // 사용자 내 메시지 목록 연쇄 삭제
-        targetUser.getMessages().removeIf(message -> message.getId().equals(targetMessage.getId()));
-        userRepository.save(targetUser);
-
-        Channel targetChannel = channelRepository.findById(targetMessage.getChannel().getId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));                      // 채널 내 메시지 목록 연쇄 삭제
-        targetChannel.getMessages().removeIf(message -> message.getId().equals(targetMessage.getId()));
-        channelRepository.save(targetChannel);
+        targetMessage.getAttachmentIds()
+                .forEach(binaryContentId -> {
+                    BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+                            .orElseThrow(() -> new IllegalArgumentException("해당 첨부 파일이 존재하지 않습니다."));
+                    binaryContentRepository.delete(binaryContent);
+                });
 
         messageRepository.delete(targetMessage);
+    }
+
+    // 메시지 엔티티 반환
+    public Message findMessageEntityById(UUID messageId) {
+        return messageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 메시지가 존재하지 않습니다."));
+    }
+
+    // 응답 DTO 변환
+    public MessageResponseDTO toResponseDTO(Message message) {
+        return MessageResponseDTO.builder()
+                .id(message.getId())
+                .authorId(message.getAuthorId())
+                .channelId(message.getChannelId())
+                .message(message.getMessage())
+                .createdAt(message.getCreatedAt())
+                .updatedAt(message.getUpdatedAt())
+                .messageType(message.getMessageType())
+                .attachmentIds(message.getAttachmentIds())
+                .build();
     }
 }
