@@ -1,1 +1,6 @@
-rootProject.name = '10-sprint-mession'
+pluginManagement {
+    plugins {
+        id 'org.jetbrains.kotlin.jvm' version '2.3.0'
+    }
+}
+rootProject.name = 'discodeit'

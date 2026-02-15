@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
 public enum ChannelType {
-    CHAT,
-    VOICE
+    PUBLIC,
+    PRIVATE
 }
