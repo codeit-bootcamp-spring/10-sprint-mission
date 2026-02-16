@@ -7,23 +7,30 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class UserStatus extends BaseEntity{
+public class UserStatus extends BaseEntity {
 
-    private final UUID userId;
-    private Instant lastActiveAt;
+  private final UUID userId;
+  private Instant lastActiveAt;
 
-    public UserStatus(UUID userId) {
-        this.userId = userId;
-        this.lastActiveAt = Instant.now();
+  public UserStatus(UUID userId) {
+    this.userId = userId;
+    this.lastActiveAt = Instant.now();
+  }
+
+  public void updateOnline(Instant lastActiveAt) {
+    boolean anyValueUpdated = false;
+    if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+      this.lastActiveAt = lastActiveAt;
+      anyValueUpdated = true;
     }
 
-    public void updateOnline() {
-        this.lastActiveAt = Instant.now();
-        setUpdatedAt();
+    if (anyValueUpdated) {
+      setUpdatedAt();
     }
+  }
 
-    public boolean isOnline() {
-        Duration between = Duration.between(lastActiveAt, Instant.now());
-        return between.toMinutes() <= 5;
-    }
+  public boolean isOnline() {
+    Duration between = Duration.between(lastActiveAt, Instant.now());
+    return between.toMinutes() <= 5;
+  }
 }
