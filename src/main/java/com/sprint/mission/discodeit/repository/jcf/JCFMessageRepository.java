@@ -2,43 +2,55 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.utils.CheckValidation;
-import com.sprint.mission.discodeit.utils.SaveLoadUtil;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
+@Repository
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "jcf"
+)
 public class JCFMessageRepository implements MessageRepository {
+    private final Map<UUID, Message> data;
 
-    private List<Message> data = new ArrayList<>();
-
-    @Override
-    public void save(Message message) {
-        data.add(message);
+    public JCFMessageRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
-    public Message findByID(UUID uuid) {
-        Objects.requireNonNull(uuid,"유효하지 않은 매개변수입니다.");
+    public Message save(Message message) {
+        this.data.put(message.getId(), message);
+        return message;
+    }
 
-        return CheckValidation.readEntity(data,uuid,()->new IllegalStateException("존재하지 않는 메시지입니다."));
+    @Override
+    public Optional<Message> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
+    }
+
+    @Override
+    public List<Message> findByChannelId(UUID channelId) {
+        return this.data.values()
+                .stream()
+                .filter(m -> m.getChannelId().equals(channelId))
+                .toList();
     }
 
     @Override
     public List<Message> findAll() {
-        return this.data;
-    }
-
-
-    public List<Message> load() {
-        return this.data;
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public Message delete(Message message) {
-        data.remove(message);
-        return message;
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
 }

@@ -1,52 +1,48 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.service.jcf.UserService;
-import com.sprint.mission.discodeit.utils.CheckValidation;
-import com.sprint.mission.discodeit.utils.SaveLoadUtil;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
 import java.util.*;
 
+@Repository
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "jcf"
+)
 public class JCFChannelRepository implements ChannelRepository {
+    private final Map<UUID, Channel> data;
 
-    List<Channel> data = new ArrayList<>();
-
-    @Override
-    public void save(Channel channel) {
-        Objects.requireNonNull(channel, "채널이 유효하지 않습니다.");
-        data.add(channel);
+    public JCFChannelRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
-    public Channel findByID(UUID uuid) {
-        Objects.requireNonNull(uuid, "유효하지 않은 uuid 입니다.");
+    public Channel save(Channel channel) {
+        this.data.put(channel.getId(), channel);
+        return channel;
+    }
 
-        return data
-                .stream()
-                .filter(c -> uuid.equals(c.getId()))
-                .findFirst()
-                .orElseThrow(()->new IllegalStateException("존재하지 않음"));
+    @Override
+    public Optional<Channel> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
     public List<Channel> findAll() {
-        return this.data;
-    }
-
-
-    public List<Channel> load() {
-        return this.data;
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public Channel delete(Channel channel) {
-        data.remove(channel);
-        return channel;
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
 }

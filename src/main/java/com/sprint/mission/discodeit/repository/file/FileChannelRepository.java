@@ -2,82 +2,107 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.utils.SaveLoadUtil;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
+@Repository
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "file"
+)
 public class FileChannelRepository implements ChannelRepository {
-    private static final String path = "channel.dat";
-    private final List<Channel> data;
+    private final Path DIRECTORY;
+    private final String EXTENSION = ".ser";
 
     public FileChannelRepository() {
-        this.data = new ArrayList<>();
-        load();
-    }
-
-    private void persist(){
-        SaveLoadUtil.save(data,path);
-    }
-
-    @Override
-    public void save(Channel channel) {
-        Objects.requireNonNull(channel, "유효하지 않은 채널입력.");
-
-        for (int i = 0; i < data.size(); i++) {
-            if (channel.getId().equals(data.get(i).getId())) {
-                data.set(i, channel); // 덮어쓰기
-                persist();
-                return;
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", Channel.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
+    }
 
-        data.add(channel); // 신규 추가
-        persist();
-
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(id + EXTENSION);
     }
 
     @Override
-    public Channel findByID(UUID uuid) {
-        Objects.requireNonNull(uuid, "유효하지 않은 식별자.");
+    public Channel save(Channel channel) {
+        Path path = resolvePath(channel.getId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
+            oos.writeObject(channel);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return channel;
+    }
 
-        return data
-                .stream()
-                .filter(c -> uuid.equals(c.getId()))
-                .findFirst()
-                .orElseThrow(
-                        () -> new IllegalStateException("존재하지 않는 채널입니다.")
-                );
+    @Override
+    public Optional<Channel> findById(UUID id) {
+        Channel channelNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                channelNullable = (Channel) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Optional.ofNullable(channelNullable);
     }
 
     @Override
     public List<Channel> findAll() {
-        return List.copyOf(this.data);
-    }
-
-    public List<Channel> load() {
-        List<Channel> loaded = SaveLoadUtil.load(path);
-        if(loaded != null){
-            this.data.addAll(loaded);
+        try {
+            return Files.list(DIRECTORY)
+                    .filter(path -> path.toString().endsWith(EXTENSION))
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (Channel) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    })
+                    .toList();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        return this.data;
     }
 
     @Override
-    public Channel delete(Channel channel) {
-        Objects.requireNonNull(channel, "유효하지 않은 채널");
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
+    }
 
-        if(data
-                .stream()
-                .noneMatch(c -> channel.getId().equals(c.getId()))){
-            throw new IllegalStateException("해당 채널은 존재하지 않습니다.");
+    @Override
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-
-        data.remove(channel);
-        persist();
-
-        return channel;
     }
 }

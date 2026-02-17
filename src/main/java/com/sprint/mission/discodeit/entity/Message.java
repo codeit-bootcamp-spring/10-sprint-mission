@@ -1,53 +1,41 @@
 package com.sprint.mission.discodeit.entity;
 
-public class Message extends DiscordEntity {
+import lombok.Getter;
+import lombok.Setter;
 
-    private String msgContext;
-    private Channel channel;
-    private User user;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 
-    public Message(String context, Channel channel, User user){
-        this.msgContext = context;
-        this.channel = channel;
-        this.addAuthor(user);
-        updateTime();
-    }
+@Getter
+@Setter
+public class Message extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String content;
+    private UUID channelId;
+    private UUID authorId;
+    private List<UUID> attachmentIds;
 
-    public String getContext(){
-        return this.msgContext;
-    }
-
-    public Channel getChannel(){
-        return this.channel;
-    }
-
-    public User getUser(){
-        //System.out.printf("%s 메시지의 작성자: %s %n",this.msgContext, this.user);
-        return this.user;
-    }
-
-    public void updateContext(String context){
-        this.msgContext = context;
-        updateTime();
-    }
-
-    public void updateChannel(Channel channel){
-        this.channel = channel;
-        updateTime();
-    }
-
-    public void addAuthor(User user){
-        this.user = user;
-        user.addMsg(this);
-        updateTime();
+    public Message(String content, UUID channelId, UUID authorId, List<UUID> binaryContents){
+        this.content = content;
+        this.channelId = channelId;
+        this.authorId = authorId;
+        this.attachmentIds = binaryContents == null ? new ArrayList<>() : new ArrayList<>(binaryContents);
     }
 
 
+    public void update(String newContent, List<UUID> binaryContents) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
 
-
-    public String toString(){
-        return String.format("[Message] context: %s | channel: %s | author: %s %n", this.msgContext, this.channel.getName(), this.user.getUserId());
+        if (anyValueUpdated) {
+            this.setUpdatedAt(Instant.now());
+        }
     }
-
 }

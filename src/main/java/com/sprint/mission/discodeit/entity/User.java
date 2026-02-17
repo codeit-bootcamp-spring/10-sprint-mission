@@ -1,69 +1,82 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
 
-import java.util.*;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
-public class User extends DiscordEntity {
+@Getter
+public class User extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-    private String userName;
+    private String username;
     private String email;
-    private String userId;
-    private List<Channel> channelList; // 유저가 현재 가입되어 있는 채널의 목록
-    private List<Message> messageList;
+    private String password;
+    private UUID profileID; // BinaryContent??id瑜?媛由ы궡
+    private List<UUID> channelIds;
 
-    public User(String userName, String email, String userId){
-        this.userName = userName;
+    public User(String username, String email, String password, UUID profileID) {
+        super();
+        this.username = username;
         this.email = email;
-        this.userId = userId;
-        this.channelList = new ArrayList<>();
-        this.messageList = new ArrayList<>();
-        updateTime();
+        this.password = password;
+        this.profileID = profileID;
+        this.channelIds = new ArrayList<>();
     }
 
-    public String getUserName(){
-        return this.userName;
+    public void joinChannel(UUID channelId) {
+        if (channelId == null) {
+            throw new IllegalArgumentException("Invalid channel id");
+        }
+        if (channelIds == null) {
+            channelIds = new ArrayList<>();
+        }
+        if (channelIds.stream().anyMatch(channelId::equals)) {
+            throw new IllegalStateException("User already joined channel");
+        }
+        channelIds.add(channelId);
+        this.setUpdatedAt(Instant.now());
     }
 
-    public String getUserEmail(){
-        return this.email;
+    public void leaveChannel(UUID channelId) {
+        if (channelId == null) {
+            throw new IllegalArgumentException("Invalid channel id");
+        }
+        if (channelIds == null) {
+            channelIds = new ArrayList<>();
+        }
+        if (channelIds.stream().noneMatch(channelId::equals)) {
+            throw new IllegalStateException("User is not in channel");
+        }
+        channelIds.remove(channelId);
+        this.setUpdatedAt(Instant.now());
     }
 
-    public String getUserId(){
-        return this.userId;
-    }
-
-    public List<Channel> getChannelList(){
-        return this.channelList;
-    }
-
-    public void updateName(String name){
-        this.userName = name;
-        updateTime();
-    }
-
-
-    public void updateEmail(String email){
-        this.email = email;
-        updateTime();
-    }
-
-    public List<Message> getMessageList(){
-        System.out.printf("%s 이 작성하신 메세지 목록입니다.%n %s %n", this.userId, this.messageList);
-        return this.messageList;
-    }
-
-    public void addMsg(Message msg){
-            this.messageList.add(msg);
-            updateTime();
+    public void update(String newUsername, String newEmail, String newPassword, UUID profileId) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
         }
 
-    public void deleteMsg(Message msg){
-           this.messageList.remove(msg);
-           updateTime();
+        if (profileId != null && !profileId.equals(this.profileID)) {
+            this.profileID = profileId;
+            anyValueUpdated = true;
         }
 
-    public String toString(){
-        return String.format("[User] userId: %s | username: %s | email: %s", this.userId, this.userName, this.email);
+        if (anyValueUpdated) {
+            this.setUpdatedAt(Instant.now());
+        }
     }
-
 }

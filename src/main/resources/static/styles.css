@@ -1,0 +1,101 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap");
+
+:root {
+    --bg: #f4f3f0;
+    --card: #ffffff;
+    --text: #1f1f1f;
+    --muted: #6f6f6f;
+    --line: #ececec;
+    --online: #35a84a;
+    --online-bg: #e7f6ea;
+    --offline: #7a7a7a;
+    --offline-bg: #f2f2f2;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: "Nunito", system-ui, -apple-system, sans-serif;
+    background: radial-gradient(1200px 500px at 50% -100px, #ffffff 0%, var(--bg) 55%);
+    color: var(--text);
+}
+
+.page {
+    max-width: 980px;
+    margin: 48px auto 80px;
+    padding: 0 20px;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+}
+
+.card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.user-list { display: block; }
+
+.user-item {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--line);
+}
+
+.user-item:last-child { border-bottom: none; }
+
+.user-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    background: #ddd;
+}
+
+.user-info { display: flex; flex-direction: column; }
+
+.user-name {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.user-email {
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.status-badge {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    min-width: 64px;
+    text-align: center;
+}
+
+.online { background: var(--online-bg); color: var(--online); }
+.offline { background: var(--offline-bg); color: var(--offline); }
+
+@media (max-width: 640px) {
+    .user-item {
+        grid-template-columns: 52px 1fr;
+        grid-template-rows: auto auto;
+        row-gap: 6px;
+    }
+    .status-badge { justify-self: start; }
+}

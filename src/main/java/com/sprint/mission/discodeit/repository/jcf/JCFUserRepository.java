@@ -2,52 +2,47 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.utils.CheckValidation;
-import com.sprint.mission.discodeit.utils.SaveLoadUtil;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
-
+@Repository
+@ConditionalOnProperty(
+        prefix = "discodeit.repository",
+        name = "type",
+        havingValue = "jcf"
+)
 public class JCFUserRepository implements UserRepository {
+    private final Map<UUID, User> data;
 
-    private List<User> data = new ArrayList<>();
-    private static final String path = "user.dat";
-
-    @Override
-    public void save(User user) {
-        data.add(user);
+    public JCFUserRepository() {
+        this.data = new HashMap<>();
     }
 
     @Override
-    public User findByID(String userID) {
-        Objects.requireNonNull(userID, "유효하지 않은 매개변수입니다.");
+    public User save(User user) {
+        this.data.put(user.getId(), user);
+        return user;
+    }
 
-        return data.stream()
-                .filter(u -> userID.equals(u.getUserId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다."));
-
+    @Override
+    public Optional<User> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
     public List<User> findAll() {
-        return data;
-    }
-
-
-    public List<User> load() {
-        this.data = SaveLoadUtil.load(path);
-        return SaveLoadUtil.load(path);
+        return this.data.values().stream().toList();
     }
 
     @Override
-    public User delete(User user) {
-        data.remove(user);
-        return user;
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
     }
 
-
+    @Override
+    public void deleteById(UUID id) {
+        this.data.remove(id);
+    }
 }

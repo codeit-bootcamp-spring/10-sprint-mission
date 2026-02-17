@@ -1,94 +1,61 @@
 package com.sprint.mission.discodeit.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
+import java.util.UUID;
 
+@Getter
+@Setter
+public class Channel extends BaseEntity implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-public class Channel extends DiscordEntity {
+    private ChannelType type;
+    private String name;
+    private String description;
+    private List<UUID> userList;
 
-    public enum CHANNEL_TYPE{
-        PUBLIC,
-        PRIVATE
-    }
-    private CHANNEL_TYPE channelType;
-    private String channelName;
-    private String content;
-    private final List<Message> messageList;
-    private final List<User> userList;
-
-    // 생성자
-    public Channel(CHANNEL_TYPE channelType, String name, String content){
-        this.channelType = channelType;
-        this.channelName = name;
-        this.content = content;
+    public Channel(ChannelType type, String name, String description) {
+        this.type = type;
+        this.name = name;
+        this.description = description;
         this.userList = new ArrayList<>();
-        this.messageList = new ArrayList<>();
-        updateTime();
     }
 
-
-
-    public String getName(){
-        return this.channelName;
+    public void userJoin(UUID userID){
+        Objects.requireNonNull(userID, "유효하지 않은 User 입니다.");
+        if(userList.stream().anyMatch(userID::equals)){
+            throw new IllegalStateException("이미 유저가 채널에 가입되어 있습니다.");
+        }
+        userList.add(userID);
     }
 
-    public List<Message> getMessageList() {
-        return this.messageList;
+    public void userLeave(UUID userID){
+        Objects.requireNonNull(userID, "유효하지 않은 User 입니다.");
+        if(userList.stream().noneMatch(userID::equals)){
+            throw new IllegalStateException("해당 채널에 유저가 존재하지 않습니다.");
+        }
+        userList.remove(userID);
     }
 
-    public CHANNEL_TYPE getType(){
-        return this.channelType;
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.setUpdatedAt(Instant.now());
+        }
     }
-
-    public String getDesc(){
-        return this.content;
-    }
-
-    public List<User> getUsers(){
-        //System.out.printf("%s 채널의 유저 리스트입니다.%n",this.channelName);
-
-        updateTime();
-        return this.userList;
-    }
-
-
-
-    public void updateType(CHANNEL_TYPE channelType){
-       this.channelType = channelType;
-       updateTime();
-    }
-
-    public void updateContent(String content){
-        this.content = content;
-        updateTime();
-    }
-
-
-    public void updateName(String name){
-        updateTime();
-        this.channelName = name;
-    }
-
-    public void addUser(User user) {
-        this.userList.add(user);
-        updateTime();
-    }
-
-    public void kickUser(User user){
-        this.userList.remove(user);
-        updateTime();
-    }
-
-    public String toString(){
-        return
-                String.format("[Channel] name: %s | type: %s | description: %s", this.channelName, this.channelType, this.content);
-    }
-
-
-
-
-
 }

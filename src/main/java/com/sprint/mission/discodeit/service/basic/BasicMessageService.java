@@ -1,120 +1,132 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.messagedto.MessageCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.messagedto.MessageResponseDTO;
+import com.sprint.mission.discodeit.dto.messagedto.MessageUpdateRequestDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.mapper.MessageDTOMapper;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.MessageService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import com.sprint.mission.discodeit.service.jcf.ChannelService;
-import com.sprint.mission.discodeit.service.jcf.MessageService;
-import com.sprint.mission.discodeit.service.jcf.UserService;
+import java.util.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
+@Service
+@RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
-    private UserService userService;
-    private ChannelService channelService;
+    private final BinaryContentRepository binaryContentRepository;
+    private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
+    private final MessageDTOMapper messageDTOMapper;
 
-    public BasicMessageService(MessageRepository messageRepository, UserService userService, ChannelService channelService){
-        this.messageRepository = Objects.requireNonNull(messageRepository, "메세지 저장소가 유효하지 않음.");
-        this.userService = Objects.requireNonNull(userService, "유저 서비스 유효하지 않음.");
-        this.channelService = Objects.requireNonNull(channelService, "채널 서비스 유효하지 않음");
-    }
-
-    public void setChannelService(ChannelService channelService){
-        this.channelService = channelService;
-    }
-
-    public void setUserService(UserService userService){
-        this.userService = userService;
-    }
-
-
+    // 메세지 생성 메소드
+    // 선택적으로 첨부 파일(BinaryContent)를 여러 개 등록할 수 있다.
     @Override
-    public Message createMessage(String context, UUID channelID, String userID) {
-        Objects.requireNonNull(context, "유효하지 않은 매개변수입니다.");
-        Objects.requireNonNull(channelID, "유효하지 않은 채널입니다.");
-        Objects.requireNonNull(userID, "유효하지 않은 유저입니다.");
+    public MessageResponseDTO create(MessageCreateRequestDTO req) {
+        Objects.requireNonNull(req, "유효하지 않은 요청입니다!");
+        Objects.requireNonNull(req.channelID(), "유효하지 않은 채널ID 입니다!");
+        Objects.requireNonNull(req.authorID(), "유효하지 않은 사용자ID 입니다!");
 
-        // 채널/유저가 각 서비스 data 리스트에 있는지 검증합니다.
-        // 존재하지 않으면 IllegalStateException을 MessageHelper(호출자)로 던집니다.
-        Channel channel = channelService.readChannel(channelID);
-        User user = userService.readUser(userID);
 
-//        // 매개변수로 받은 채널과 유저가 종속관계인지 확인합니다. (유저가 해당 채널에 가입되어 있는지?)
-//        if(!channel.getUsers().contains(user)){
-//            throw new IllegalStateException("채널에 해당 유저가 존재하지 않습니다.");
-//        }
+        if (!channelRepository.existsById(req.channelID())) {
+            throw new NoSuchElementException("Channel not found with id " + req.channelID());
+        }
 
-        Message message = new Message(context, channel, user); // 검증이 마치게 되면 도메인 모델 생성.
+        if (!userRepository.existsById(req.authorID())) {
+            throw new NoSuchElementException("Author not found with id " + req.authorID());
+        }
 
-        channel.getMessageList().add(message); // 채널의 메시지 리스트에 해당 메시지를 add
-        user.getMessageList().add(message); // 유저의 메시지 리스트에 해당 메시지를 add
-
-        channelService.save(channel); // 메시지 리스트가 업데이트된 채널을 영속화
-        userService.save(user); // 메시지 리스트가 업데이트된 유저를 영속화
-
-        messageRepository.save(message); // 메시지 레포를 통해 해당 메시지를 영속화
-        return message;
-    }
-
-    @Override
-    public Message readMessage(UUID uuid) {
-        Objects.requireNonNull(uuid, "유효하지 않은 식별자");
-        return messageRepository.findByID(uuid);
-    }
-
-    @Override
-    public List<Message> readMessagebyUser(String userID) {
-        Objects.requireNonNull(userID, "유효하지 않은 유저ID");
-
-        return messageRepository.findAll()
+        // 입력받은 DTO에서 binaryContents를 뽑아오는데... 선택적이라 null일수도 있음 -> null 허용을 위해 Optional
+        List<UUID> attachmentIds = Optional.ofNullable(req.binaryContents())
+                .orElse(List.of()) // 뽑았는데 null이 들어가있으면 빈 리스트를 반환?
                 .stream()
-                .filter(m -> userID.equals(m.getUser().getUserId()))
-                .collect(Collectors.toList());
+                .map(bcdto -> {
+                    // DTO에서 BinaryContent를 만들기 위한 bcdto에서 필드 값 뽑기 ->
+                    // BinaryContent 생성자 호출 -> 생성된 인스턴스 아이디를 반환 & 영속화도 같이 진행
+                    BinaryContent saved = binaryContentRepository.save(
+                            new BinaryContent(bcdto.contentType(), bcdto.file()));
+                    return saved.getId();
+                })
+                .toList(); // 리스트화해서 attachmentIds에 대입
+
+        Message message = new Message(req.content(), req.channelID(), req.authorID(), attachmentIds);
+        Message saved = messageRepository.save(message);
+
+
+        return messageDTOMapper.messageToResponseDTO(saved);
     }
 
     @Override
-    public List<Message> readMessagebyChannel(UUID channelID) {
-        Objects.requireNonNull(channelID, "유효하지 않은 채널ID");
+    public MessageResponseDTO find(UUID messageId) {
+        Objects.requireNonNull(messageId, "유효하지 않은 메시지ID 입니다.");
+
+        Message message = messageRepository.findById(messageId)
+               .orElseThrow(
+                       () -> new IllegalStateException("존재하지 않는 메시지입니다.")
+               );
+
+        return messageDTOMapper.messageToResponseDTO(message);
 
 
-        return messageRepository.findAll()
+    }
+
+    @Override
+    public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
+        Objects.requireNonNull(channelId, "유효하지 않은 채널id 입니다.");
+
+        return messageRepository.findByChannelId(channelId)
                 .stream()
-                .filter(m -> channelID.equals(m.getChannel().getId()))
-                .collect(Collectors.toList());
+                .map(messageDTOMapper::messageToResponseDTO)
+                .toList();
     }
 
     @Override
-    public Message updateMessage(UUID uuid, String context) {
-        Objects.requireNonNull(uuid, "유효하지 않은 식별자");
-        Objects.requireNonNull(context, "유효하지 않은 내용");
+    public MessageResponseDTO update(MessageUpdateRequestDto req) {
+        Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
+        Objects.requireNonNull(req.messageId(), "유효하지 않은 메시지ID 입니다.");
 
-        Message message = readMessage(uuid);
-        message.updateContext(context);
-        messageRepository.save(message);
-        return message;
+        Message message = messageRepository.findById(req.messageId())
+                .orElseThrow(() -> new NoSuchElementException("Message with id " + req.messageId() + " not found"));
+
+
+        if(req.newContent() != null){
+            message.setContent(req.newContent());
+        }
+
+        if(req.attachmentIdsToRemove() != null && !req.attachmentIdsToRemove().isEmpty()){
+            message.getAttachmentIds().removeAll(req.attachmentIdsToRemove());
+        }
+
+        if(req.attachmentsToAdd() != null && !req.attachmentsToAdd().isEmpty()){
+            message.getAttachmentIds().addAll(
+                    req.attachmentsToAdd().stream()
+                            .map(b -> {
+                                BinaryContent binaryContent = new BinaryContent(b.contentType(), b.file());
+                                return binaryContentRepository.save(binaryContent).getId();
+                            })
+                            .toList());
+        }
+
+        Message saved = messageRepository.save(message);
+        return messageDTOMapper.messageToResponseDTO(saved);
     }
 
     @Override
-    public void deleteMessage(UUID uuid) {
-        Objects.requireNonNull(uuid,"유효하지 않은 식별자");
+    public void delete(UUID messageId) {
+        if (!messageRepository.existsById(messageId)) {
+            throw new NoSuchElementException("Message with id " + messageId + " not found");
+        }
 
-        messageRepository.delete(messageRepository.findByID(uuid));
-    }
+        messageRepository.findById(messageId).orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지에요"))
+                        .getAttachmentIds()
+                .forEach(binaryContentRepository::deleteByID);
 
-    @Override
-    public ArrayList<Message> readAllMessage() {
-        return (ArrayList<Message>) List.copyOf(messageRepository.findAll());
-    }
-
-    @Override
-    public void save(Message message) {
-        messageRepository.save(message);
+        messageRepository.deleteById(messageId);
     }
 }
