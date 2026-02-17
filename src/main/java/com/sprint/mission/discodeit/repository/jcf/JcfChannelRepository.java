@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -36,9 +35,8 @@ public class JcfChannelRepository implements ChannelRepository {
 
     @Override
     public synchronized Channel findChannel(UUID channelId) {
-        Channel channel = channels.get(channelId);
-        if (channel == null) throw new ChannelNotFoundException();
-        return channel;
+        if (channelId == null) return null;
+        return channels.get(channelId);
     }
 
     @Override
@@ -48,6 +46,7 @@ public class JcfChannelRepository implements ChannelRepository {
 
     @Override
     public synchronized void deleteChannel(UUID channelId) {
-        if (channels.remove(channelId) == null) throw new ChannelNotFoundException();
+        if (channelId == null) return;
+        channels.remove(channelId); // 없으면 그냥 무시
     }
 }

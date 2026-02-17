@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -76,11 +75,8 @@ public class FileChannelRepository implements ChannelRepository {
 
     @Override
     public Channel findChannel(UUID channelId) {
-        if (channelId == null) throw new IllegalArgumentException("channelId null이 될 수 없습니다.");
-
-        Channel channel = loadChannelFile().get(channelId);
-        if (channel == null) throw new ChannelNotFoundException();
-        return channel;
+        if (channelId == null) return null;
+        return loadChannelFile().get(channelId);
     }
 
     @Override
@@ -90,8 +86,10 @@ public class FileChannelRepository implements ChannelRepository {
 
     @Override
     public void deleteChannel(UUID channelId) {
+        if (channelId == null) return;
+
         Map<UUID, Channel> channels = loadChannelFile();
-        if (channels.remove(channelId) == null) throw new ChannelNotFoundException();
+        channels.remove(channelId);
         saveChannelFile(channels);
     }
 }

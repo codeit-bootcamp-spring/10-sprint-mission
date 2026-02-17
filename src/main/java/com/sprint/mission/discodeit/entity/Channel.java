@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +14,6 @@ public class Channel extends BaseEntity {
     private boolean isPrivate;
     private List<User> participants;
 
-    // PUBLIC 채널
     public Channel(String name, String description) {
         super();
         this.channelName = name;
@@ -24,7 +22,6 @@ public class Channel extends BaseEntity {
         this.participants = new ArrayList<>();
     }
 
-    // PRIVATE 채널
     public Channel(List<User> participants) {
         super();
         this.isPrivate = true;
@@ -37,19 +34,19 @@ public class Channel extends BaseEntity {
         }
         if (name != null) this.channelName = name;
         if (description != null) this.description = description;
-        // touch();
+        touch();
     }
 
     public void addParticipant(User user) {
         if (!participants.contains(user)) {
             participants.add(user);
-            // touch();
+            touch();
         }
     }
 
     public void removeParticipant(User user) {
         if (participants.remove(user)) {
-            // touch();
+            touch();
         }
     }
 }
