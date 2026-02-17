@@ -6,12 +6,12 @@ import lombok.Getter;
 public class BinaryContent extends ImmutableEntity {
     private final BinaryContentType contentType;
     private final String fileName;
-    private final Byte[] contentBytes;
+    private final String url;
 
-    public BinaryContent(BinaryContentType contentType, String fileName, Byte[] contentBytes) {
+    public BinaryContent(BinaryContentType contentType, String fileName, String url) {
         super();
         this.contentType = contentType;
         this.fileName = fileName;
-        this.contentBytes = contentBytes;
+        this.url = url;
     }
 }

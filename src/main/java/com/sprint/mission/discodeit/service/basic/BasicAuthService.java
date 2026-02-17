@@ -26,7 +26,7 @@ public class BasicAuthService implements AuthService {
         }
 
         return new UserDto.response(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
-                user.getAccountId(), user.getName(), user.getMail(),
+                user.getAccountId(), user.getUsername(), user.getEmail(),
                 user.getProfileId(), true,
                 user.getJoinedChannels().stream().toList(),
                 user.getMessageHistory());

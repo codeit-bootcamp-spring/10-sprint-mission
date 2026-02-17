@@ -6,3 +6,6 @@ discodeit:
   repository:
     type: file
     file-directory: .discodeit
+  upload:
+    profile: ${discodeit.repository.file-directory}/upload/profile
+    attachment: ${discodeit.repository.file-directory}/upload/attachment

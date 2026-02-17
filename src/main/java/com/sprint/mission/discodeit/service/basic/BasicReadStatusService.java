@@ -64,6 +64,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
         readStatus.updateLastReadAt(updateReq.lastReadAt());
         readStatus.updateUpdatedAt();
+        readStatusRepository.save(readStatus);
 
         return toResponse(readStatus);
     }
