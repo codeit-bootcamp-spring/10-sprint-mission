@@ -41,5 +41,5 @@ mission-3 start!
     - `UserStatusServiceDTO`
 
 - Todo
-  - toJson
-  - encryption, decryption
+    - toJson
+    - encryption, decryption

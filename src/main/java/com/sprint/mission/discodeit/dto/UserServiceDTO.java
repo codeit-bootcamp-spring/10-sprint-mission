@@ -1,21 +1,18 @@
 package com.sprint.mission.discodeit.dto;
 
-import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentCreation;
+import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentCreateRequest;
 import lombok.Builder;
 import lombok.NonNull;
 
 import java.util.UUID;
 
 public interface UserServiceDTO {
-    record UserCreation(@NonNull String username, @NonNull String email, @NonNull String password,
-                        BinaryContentCreation profileImage, long lastActiveAt) {
+    record UserCreateRequest(@NonNull String username, @NonNull String email, @NonNull String password,
+                             BinaryContentCreateRequest profileImage) {
     }
 
-    record UsernamePassword(@NonNull String username, @NonNull String password) {
-    }
-
-    record UserInfoUpdate(@NonNull UUID userId, String newUsername, String newEmail, String newPassword,
-                          UUID newProfileId) {
+    record UserUpdateRequest(@NonNull UUID userId, String newUsername, String newEmail, String newPassword,
+                             UUID newProfileId) {
     }
 
     @Builder

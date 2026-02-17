@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Repository
@@ -16,7 +15,7 @@ import java.nio.file.Paths;
         havingValue = "file"
 )
 public class FileBinaryContentRepository extends FileDomainRepository<BinaryContent> implements BinaryContentRepository {
-    public FileBinaryContentRepository(Path DIRECTORY, String EXTENSION) throws IOException {
+    public FileBinaryContentRepository() throws IOException {
         super(Paths.get(System.getProperty("user.dir"), "file-data-map", "BinaryContent"),
                 ".bc");
     }

@@ -1,0 +1,870 @@
+{
+  "info": {
+    "_postman_id": "2087b970-d991-4353-ba56-01574aec50dc",
+    "name": "missoin-4",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "UserController",
+      "item": [
+        {
+          "name": "01-유저등록-1",
+          "id": "6d9f9402-eee1-4c36-a938-c8eb530edf74",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"lee\",\r\n  \"email\": \"lee@gmail.com\",\r\n  \"password\": \"123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/users",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "02-유저등록-2",
+          "id": "001c32c6-b7cc-4d53-8422-2b29281859ee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"kim\",\r\n  \"email\": \"kim@naver.com\",\r\n  \"password\": \"qwer\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/users",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "03-유저등록-3",
+          "id": "4d24c925-8807-46b1-a5d4-457ed97075b9",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"park\",\r\n  \"email\": \"park@codeit.com\",\r\n  \"password\": \"123qwe\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/users",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "04-유저등록-4",
+          "id": "4d51b743-2195-4bb7-9996-dd46ca38b512",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"johnson\",\r\n  \"email\": \"johnson@daum.net\",\r\n  \"password\": \"1q2w3e\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/users",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "05-모든유저조회-1",
+          "id": "2bb00d0f-a9a9-4c74-b155-d030954be247",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/all",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "all"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "06-유저조회-1",
+          "id": "a12e7d10-84b6-44e7-be2e-7f3e15e2c564",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{baseURL}}/users/00000000-0000-0000-0000-000000000001",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "00000000-0000-0000-0000-000000000001"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "07-유저조회-2",
+          "id": "718659fc-61d0-49a8-88d0-9fa4d6675301",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{baseURL}}/users/00000000-0000-0000-0000-000000000002",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "00000000-0000-0000-0000-000000000002"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "08-유저삭제-1",
+          "id": "0583d7a6-d699-4c32-9f72-a123e4c6f1a5",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/00000000-0000-0000-0000-000000000001",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "00000000-0000-0000-0000-000000000001"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "09-유저삭제-2",
+          "id": "e24d0424-6c38-47c7-b7a4-8abcaba3138f",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/00000000-0000-0000-0000-000000000002",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "00000000-0000-0000-0000-000000000002"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "10-모든유저조회-2",
+          "id": "e6d12998-cc54-47e0-8792-cee9b1fc9825",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/all",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "all"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11-유저업데이트-1",
+          "id": "946c0e8b-5d68-432f-baee-737a45128756",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"userId\": \"00000000-0000-0000-0000-000000000003\",\r\n    \"newUsername\": \"kkkkkiiiimmmm\",\r\n    \"newEmail\": \"kkkkkiiiimmmm@gmail.com\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/users",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "12-유저온라인업데이트-1",
+          "id": "059d1b75-1e62-4df6-850a-3410088bd2f1",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/users/00000000-0000-0000-0000-000000000004",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "00000000-0000-0000-0000-000000000004"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "13-삭제된유저조회-1",
+          "id": "887cf614-7f32-407b-b265-4a76eb4c6f67",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{baseURL}}/users/00000000-0000-0000-0000-000000000001",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "00000000-0000-0000-0000-000000000001"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "14-유저등록-5",
+          "id": "8909a6a1-159a-463c-b895-4ec90b437199",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"bob\",\r\n  \"email\": \"bob@naver.com\",\r\n  \"password\": \"1q2w3e4r\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/users",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "15-유저등록-6",
+          "id": "6339b183-7c90-4fdb-a677-ac431e2218a6",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"jonas\",\r\n  \"email\": \"jonas@dark.ge\",\r\n  \"password\": \"jonas\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/users",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "16-유저등록-7",
+          "id": "a75c1810-ff23-439f-b00a-b689d3ede3d3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"marta\",\r\n  \"email\": \"marta@dark.ge\",\r\n  \"password\": \"marta\"\r\n}"
+            },
+            "url": {
+              "raw": "{{baseURL}}/users",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "5cce05b6-9dbd-449d-b56a-ad793aad5f9f"
+    },
+    {
+      "name": "AuthController",
+      "item": [
+        {
+          "name": "01-로그인-1",
+          "id": "b212f6f6-403f-459c-83f5-7757fc85e0b7",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"johnson\",\r\n  \"password\": \"1q2w3e\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/login",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "282047a9-7d83-4de1-9869-7fc9cf6dd1f2"
+    },
+    {
+      "name": "ChannelController",
+      "item": [
+        {
+          "name": "01-공개채널생성-1",
+          "id": "847046ee-6509-400b-9640-d0b5b933f877",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"type\": \"PUBLIC\",\r\n    \"channelName\": \"codeit\",\r\n    \"description\": \"sprint-dev-10\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/channels",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "channels"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "02-공개채널생성-2",
+          "id": "e25317f2-d5d3-487d-8500-614d8f13002b",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"type\": \"PUBLIC\",\r\n    \"channelName\": \"codeit-team03\",\r\n    \"description\": \"with 6 develpers\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/channels",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "channels"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "03-채널조회-1",
+          "id": "e46b9242-e605-4e70-bcc4-e3baef56138b",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/channels/00000000-0000-0000-0000-000000000008",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "channels",
+                "00000000-0000-0000-0000-000000000008"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "05-비공개채널생성-1",
+          "id": "72490893-92ae-4b86-a9e9-05c1520ea508",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"type\": \"PRIVATE\",\r\n    \"userIdsInChannel\": [\"00000000-0000-0000-0000-000000000005\", \"00000000-0000-0000-0000-000000000006\"]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/channels",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "channels"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "04-비공개채널생성-2",
+          "id": "00819ef9-3c30-4909-b567-b05c9c82de4b",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"type\": \"PRIVATE\",\r\n    \"userIdsInChannel\": [\"00000000-0000-0000-0000-000000000006\", \"00000000-0000-0000-0000-000000000007\", \"00000000-0000-0000-0000-000000000005\"]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/channels",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "channels"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "06-공개채널업데이트-1",
+          "id": "9aa62997-ae08-43aa-87fb-fd951611ec51",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"channelId\": \"00000000-0000-0000-0000-000000000008\",\r\n    \"newName\": \"bootcamp with code-it\",\r\n    \"newDescription\": \"10th dev bootcamp\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/channels",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "channels"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "07-채널삭제-1",
+          "id": "f2609229-6bd0-4c2a-8141-3dd19eb86d20",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/channels/00000000-0000-0000-0000-000000000009",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "channels",
+                "00000000-0000-0000-0000-000000000009"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "08-유저가볼수있는채널조회-1",
+          "id": "8640f433-7088-4a42-a91d-ca48ac7e9006",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/channels?userId=00000000-0000-0000-0000-000000000006",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "channels"
+              ],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "00000000-0000-0000-0000-000000000006"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "09-메세지생성-1",
+          "id": "ee995815-f34e-447e-b53f-6fdc5406308f",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"authorId\": \"00000000-0000-0000-0000-000000000003\",\r\n    \"channelId\": \"00000000-0000-0000-0000-000000000008\",\r\n    \"content\": \"test message!\",\r\n    \"attachments\": [\r\n        {\r\n            \"fileName\": \"no_image.jpg\",\r\n            \"fileType\": \"jpg\",\r\n            \"data\": [0, 0, 0]\r\n        }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/channels/00000000-0000-0000-0000-000000000008/messages",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "channels",
+                "00000000-0000-0000-0000-000000000008",
+                "messages"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "10-메세지생성-2",
+          "id": "02e7b827-abeb-4834-bf19-cdc9c0efe0c8",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"authorId\": \"00000000-0000-0000-0000-000000000003\",\r\n    \"channelId\": \"00000000-0000-0000-0000-000000000008\",\r\n    \"content\": \"lorem ipsum\",\r\n    \"attachments\": [\r\n        {\r\n            \"fileName\": \"lorem.jpg\",\r\n            \"fileType\": \"jpg\",\r\n            \"data\": [0, 0, 0, 0, 0]\r\n        }\r\n    ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/channels/00000000-0000-0000-0000-000000000008/messages",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "channels",
+                "00000000-0000-0000-0000-000000000008",
+                "messages"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "11-채널내메세지조회-1",
+          "id": "b0813863-6a84-43be-80a7-0c90bb0e92e8",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/channels/00000000-0000-0000-0000-000000000008/messages",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "channels",
+                "00000000-0000-0000-0000-000000000008",
+                "messages"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "12-채널메세지읽음상태생성-1",
+          "id": "87b93465-ca49-4fc1-a64e-c73785ffdcb2",
+          "request": {
+            "method": "GET",
+            "header": []
+          },
+          "response": []
+        }
+      ],
+      "id": "51615730-657f-4bd3-bd3a-30c2e6ef3329"
+    },
+    {
+      "name": "MessageController",
+      "item": [
+        {
+          "name": "01-메세지수정-1",
+          "id": "3a4dc2fd-0dd7-46a7-9bda-9ae5e6b1b0be",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"messageId\": \"00000000-0000-0000-0000-000000000010\",\r\n    \"newContent\": \"new test message!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseURL}}/messages/00000000-0000-0000-0000-000000000010",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "messages",
+                "00000000-0000-0000-0000-000000000010"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "02-메세지삭제-1",
+          "id": "31a2a74e-4661-4f17-9515-ce2321ace5dc",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/messages/00000000-0000-0000-0000-000000000010",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "messages",
+                "00000000-0000-0000-0000-000000000010"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "f645075d-adc5-4ef2-a75e-6a0c95ce8345"
+    }
+  ],
+  "variable": [
+    {
+      "id": "cbd4033d-e733-4a5a-b994-068a8db638e0",
+      "key": "baseURL",
+      "value": "",
+      "type": "default"
+    }
+  ]
+}

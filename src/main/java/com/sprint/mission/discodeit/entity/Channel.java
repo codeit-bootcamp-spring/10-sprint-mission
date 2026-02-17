@@ -27,23 +27,23 @@ public class Channel implements Serializable {
     private String description;
     private Set<UUID> userIdsInPrivateChannel;
 
-    private Channel() {
-        this.id = UUID.randomUUID();
+    private Channel(UUID id) {
+        this.id = id;
         this.createdAt = Instant.now().getEpochSecond();
         this.updatedAt = createdAt;
         this.userIdsInPrivateChannel = new HashSet<>();
     }
 
-    public Channel(List<UUID> userIdsInPrivateChannel) {
-        this();
+    public Channel(UUID id, List<UUID> userIdsInPrivateChannel) {
+        this(id);
         this.type = ChannelType.PRIVATE;
         this.channelName = null;
         this.description = null;
         this.userIdsInPrivateChannel = Set.copyOf(userIdsInPrivateChannel);
     }
 
-    public Channel(String channelName, String description) {
-        this();
+    public Channel(UUID id, String channelName, String description) {
+        this(id);
         this.type = ChannelType.PUBLIC;
         this.channelName = channelName;
         this.description = description;
@@ -70,6 +70,7 @@ public class Channel implements Serializable {
                 .channelId(id)
                 .channelName(channelName)
                 .description(description)
+                .type(type)
                 .lastMessageTimestamp(lastMessageTimestamp)
                 .userIdsInPrivateChannel(List.copyOf(userIdsInPrivateChannel))
                 .build();

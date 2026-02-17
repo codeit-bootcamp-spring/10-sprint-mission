@@ -9,9 +9,9 @@ import java.util.UUID;
 public interface MessageService {
     List<MessageResponse> findAllByChannelId(UUID channelId) throws IOException;
 
-    MessageResponse create(MessageCreation model) throws IOException;
+    MessageResponse create(MessageCreateRequest model) throws IOException;
 
-    MessageResponse update(MessageContentUpdate model) throws IOException, ClassNotFoundException;
+    MessageResponse update(MessageUpdateRequest model) throws IOException, ClassNotFoundException;
 
     void delete(UUID id) throws IOException, ClassNotFoundException;
 }

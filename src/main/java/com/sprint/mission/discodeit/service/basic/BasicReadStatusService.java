@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusCreation;
+import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusResponse;
-import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusUpdate;
+import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -31,7 +31,7 @@ public class BasicReadStatusService extends BasicDomainService<ReadStatus> imple
     }
 
     @Override
-    public ReadStatusResponse create(ReadStatusCreation model) throws IOException {
+    public ReadStatusResponse create(ReadStatusCreateRequest model) throws IOException {
         // todo: refactoring
         if (!userRepository.existsById(model.userId())) {
             throw new NoSuchElementException(ID_NOT_FOUND.formatted("User", model.userId()));
@@ -54,7 +54,7 @@ public class BasicReadStatusService extends BasicDomainService<ReadStatus> imple
     }
 
     @Override
-    public ReadStatusResponse update(ReadStatusUpdate model) throws IOException, ClassNotFoundException {
+    public ReadStatusResponse update(ReadStatusUpdateRequest model) throws IOException, ClassNotFoundException {
         ReadStatus status = findById(model.id());
         status.update(model.type());
         readStatusRepository.save(status);
