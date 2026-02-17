@@ -10,70 +10,34 @@ import java.util.UUID;
 @Getter
 public class UserStatus implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final UUID id;
-    private final Instant createdAt;
+    private UUID id;
+    private Instant createdAt;
     private Instant updatedAt;
+    private UUID userId;
+    private Instant lastActiveAt;
 
-    private final UUID userId;
-    private Status status;
-
-    public UserStatus(UUID userId, Status status) {
+    public UserStatus(UUID userId, Instant lastActiveAt) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.updatedAt = createdAt;
         this.userId = userId;
-        this.status = status;
+        this.lastActiveAt = lastActiveAt;
     }
 
-    public Instant getAccessTime() {
-        return updatedAt;
-    }
-
-    public void changeStatus(Status status) {
-        if (status == null) {
-            throw new RuntimeException();
+    public void update(Instant lastActiveAt) {
+        boolean anyValueUpdated = false;
+        if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+            this.lastActiveAt = lastActiveAt;
+            anyValueUpdated = true;
         }
-        this.status = status;
-        update();
-    }
 
-    public boolean isCurrentlyLoggedIn() {
-        Instant now = Instant.now();
-        Duration sinceLastAccess = Duration.between(updatedAt, now);
-        if (sinceLastAccess.isNegative()) {
-            return true;
-        }
-        return sinceLastAccess.compareTo(Duration.ofMinutes(5)) <= 0;
-    }
-
-    public void refreshAutoPresence() {
-        if (!isCurrentlyLoggedIn()) {
-            if (status != Status.OFFLINE) {
-                status = Status.OFFLINE;
-                update();
-            }
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
         }
     }
 
-    public void update() {
-        // 업데이트 시간 갱신
-        this.updatedAt = Instant.now();
-    }
+    public Boolean isOnline() {
+        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
 
-    @Getter
-    public enum Status {
-        ONLINE("online", "온라인"),
-        OFFLINE("offline", "오프라인"),
-        INVISIBLE("invisible", "오프라인"),
-        IDLE("idle", "자리 비움"),
-        DO_NOT_DISTURB("dnd", "방해 금지");
-
-        private final String userStatus;
-        private final String displayName;
-
-        Status(String userStatus, String displayName) {
-            this.userStatus = userStatus;
-            this.displayName = displayName;
-        }
+        return lastActiveAt.isAfter(instantFiveMinutesAgo);
     }
 }

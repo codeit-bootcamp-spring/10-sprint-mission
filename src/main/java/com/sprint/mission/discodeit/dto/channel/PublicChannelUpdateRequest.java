@@ -1,12 +1,12 @@
 package com.sprint.mission.discodeit.dto.channel;
 
-import com.sprint.mission.discodeit.entity.ChannelType;
-
-import java.util.UUID;
+import jakarta.validation.constraints.NotBlank;
 
 public record PublicChannelUpdateRequest(
-        UUID id,
+        @NotBlank(message = "채널 이름을 입력해주세요.")
         String newName,
+
+        @NotBlank(message = "채널 설명을 입력해주세요.")
         String newDescription
 ) {
 }

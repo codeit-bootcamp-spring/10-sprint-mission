@@ -1,165 +1,155 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class BasicMessageService implements MessageService {
-    private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
+    private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public MessageResponse create(MessageCreateRequest request) {
-        // 메시지 생성을 위한 필수 검증
-        validateCreateRequest(request);
+    public MessageDto create(UUID channelId,
+                             UUID authorId,
+                             MessageCreateRequest messageCreateRequest) {
+        validateMember(channelId, authorId);
 
-        // 채널이 존재하는지 검증
-        channelRepository.findById(request.channelId())
-                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
-
-        // 유저가 존재하는지 검증
-        userRepository.findById(request.authorId())
-                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
-
-        List<UUID> attachmentIds = new ArrayList<>();
-        // 첨부파일 존재 여부 확인
-        if (request.attachments() != null) {
-            for (BinaryContentCreateRequest attachment : request.attachments()) {
-                if (attachment == null) {
-                    throw new RuntimeException("첨부파일이 올바르지 않습니다.");
-                }
-
-                // 첨부파일 저장
-                BinaryContent saved = saveAttachment(attachment);
-                attachmentIds.add(saved.getId());
-            }
+        List<BinaryContentCreateRequest> attachmentRequests = messageCreateRequest.binaryContentCreateRequests();
+        if (attachmentRequests == null) {
+            attachmentRequests = List.of();
         }
 
-        // 메시지 생성
-        Message message = new Message(
-                request.channelId(),
-                request.authorId(),
-                request.content(),
-                List.copyOf(attachmentIds)
-        );
+        List<UUID> attachmentIds = attachmentRequests.stream()
+                .filter(Objects::nonNull)
+                .map(attachmentRequest -> {
+                    String fileName = attachmentRequest.fileName();
+                    String contentType = attachmentRequest.contentType();
+                    byte[] bytes = attachmentRequest.bytes();
+                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType, bytes);
+                    BinaryContent createdBinaryContent = binaryContentRepository.save(binaryContent);
+                    return createdBinaryContent.getId();
+                })
+                .toList();
 
-        // 메시지 저장
+        String content = messageCreateRequest.content();
+        Message message = new Message(content, channelId, authorId, attachmentIds);
         messageRepository.save(message);
 
-        return MessageResponse.from(message);
+        return toDto(message);
     }
 
     @Override
-    public List<MessageResponse> findAllByChannelId(UUID channelId) {
-        if (channelId == null) {
-            throw new RuntimeException("채널이 존재하지 않습니다.");
-        }
-
-        // 메시지를 조회하려는 채널이 존재하는지 검증
-        Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new RuntimeException("채널이 존재하지 않습니다."));
-
-        // 채널의 전체 메시지 목록 조회
-        List<Message> messages = messageRepository.findAllByChannelId(channelId);
-        List<MessageResponse> responses = new ArrayList<>();
-        for (Message message : messages) {
-            responses.add(MessageResponse.from(message));
-        }
-
-        return responses;
-    }
-
-    @Override
-    public MessageResponse update(MessageUpdateRequest request) {
-        // 메시지 수정을 위한 필수 검증
-        validateUpdateRequest(request);
-
-        // 수정 대상 메시지가 존재하는지 검증
-        Message message = messageRepository.findById(request.messageId())
-                .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
-
-        // 메시지 수정 및 저장
-        message.update(request.newContent());
-        messageRepository.save(message);
-
-        return MessageResponse.from(message);
-    }
-
-    @Override
-    public void delete(UUID messageId) {
-        if (messageId == null) {
-            throw new RuntimeException("메시지가 존재하지 않습니다.");
-        }
-
-        // 삭제 대상 메시지가 존재하는지 검증
+    public MessageDto find(UUID messageId) {
         Message message = messageRepository.findById(messageId)
-                .orElseThrow(() -> new RuntimeException("메시지가 존재하지 않습니다."));
-
-        // 메시지의 첨부파일이 존재하면 함께 삭제
-        if (message.getAttachmentIds() != null) {
-            for (UUID attachmentId : message.getAttachmentIds()) {
-                if (attachmentId != null) {
-                    binaryContentRepository.delete(attachmentId);
-                }
-            }
-        }
-
-        // 메시지 삭제
-        messageRepository.delete(messageId);
+                .orElseThrow(() -> new BusinessException(ErrorCode.MESSAGE_NOT_FOUND));
+        return toDto(message);
     }
 
-    private void validateCreateRequest(MessageCreateRequest request) {
-        if (request == null) {
-            throw new RuntimeException("요청이 필요합니다.");
-        }
-        if (request.channelId() == null) {
-            throw new RuntimeException("채널이 필요합니다.");
-        }
-        if (request.authorId() == null) {
-            throw new RuntimeException("작성자가 필요합니다.");
-        }
-        if (request.content() == null || request.content().isBlank()) {
-            throw new RuntimeException("내용이 필요합니다.");
-        }
+    @Override
+    public List<MessageDto> findAllByChannelId(UUID channelId, UUID userId) {
+        validateMember(channelId, userId);
+
+        return messageRepository.findAllByChannelId(channelId)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
-    private void validateUpdateRequest(MessageUpdateRequest request) {
-        if (request == null || request.messageId() == null) {
-            throw new RuntimeException("메시지가 존재하지 않습니다.");
-        }
-        if (request.newContent() == null || request.newContent().isBlank()) {
-            throw new RuntimeException("내용이 필요합니다.");
-        }
+    @Override
+    public MessageDto update(UUID channelId,
+                             UUID authorId,
+                             UUID messageId,
+                             MessageUpdateRequest messageUpdateRequest) {
+        Message message = validateMessage(channelId, authorId, messageId);
+
+        message.update(messageUpdateRequest.newContent());
+        messageRepository.save(message);
+
+        return toDto(message);
     }
 
-    private BinaryContent saveAttachment(BinaryContentCreateRequest request) {
-        if (request.bytes() == null || request.bytes().length == 0) {
-            throw new RuntimeException("파일이 없습니다.");
-        }
-        BinaryContent binaryContent = new BinaryContent(
-                request.fileName(),
-                request.contentType(),
-                request.bytes()
+    @Override
+    public void delete(UUID channelId, UUID authorId, UUID messageId) {
+        Message message = validateMessage(channelId, authorId, messageId);
+
+        message.getAttachmentIds()
+                .forEach(binaryContentRepository::deleteById);
+
+        messageRepository.deleteById(messageId);
+    }
+
+    private MessageDto toDto(Message message) {
+        return new MessageDto(
+                message.getId(),
+                message.getCreatedAt(),
+                message.getUpdatedAt(),
+                message.getContent(),
+                message.getChannelId(),
+                message.getAuthorId(),
+                message.getAttachmentIds()
         );
-        return binaryContentRepository.save(binaryContent);
     }
+
+    private Message validateMessage(UUID channelId, UUID authorId, UUID messageId) {
+        if (!channelRepository.existsById(channelId)) {
+            throw new BusinessException(ErrorCode.CHANNEL_NOT_FOUND);
+        }
+        if (!userRepository.existsById(authorId)) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        Message message = messageRepository.findById(messageId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.MESSAGE_NOT_FOUND));
+
+        if (!message.getChannelId().equals(channelId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+        if (!message.getAuthorId().equals(authorId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+
+        return message;
+    }
+
+    private void validateMember(UUID channelId, UUID userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
+        }
+
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHANNEL_NOT_FOUND));
+
+        if (channel.getType() == ChannelType.PUBLIC) {
+            return;
+        }
+
+        if (readStatusRepository.findByChannelIdAndUserId(channelId, userId).isEmpty()) {
+            throw new BusinessException(ErrorCode.FORBIDDEN);
+        }
+    }
+
 }

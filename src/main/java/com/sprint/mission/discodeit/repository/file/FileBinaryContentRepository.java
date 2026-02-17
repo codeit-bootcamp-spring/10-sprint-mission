@@ -1,103 +1,119 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.util.SerializedFileUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+@Repository
 public class FileBinaryContentRepository implements BinaryContentRepository {
-    private static final String FILE_PREFIX = "binaryContent";
-    private static final String ENTITY_NAME = "바이너리 컨텐츠";
+    private final Path DIRECTORY;
+    private final String FILE_PREFIX = "binaryContent-";
+    private final String EXTENSION = ".ser";
 
-    private final Map<UUID, BinaryContent> data; // 빠른 조회를 위한 컬렉션
-    private final Path binaryContentDir;
-
-    public FileBinaryContentRepository(Path baseDir) {
-        this.data = new HashMap<>();
-        this.binaryContentDir = baseDir.resolve(FILE_PREFIX);
-        try {
-            // 파일이 저장될 디렉토리가 존재하지 않을 경우 폴더 생성
-            Files.createDirectories(binaryContentDir);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public FileBinaryContentRepository(
+            @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+    ) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory, BinaryContent.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 저장소 초기화에 실패했습니다.");
+            }
         }
-        // 생성 시 디렉토리와 컬렉션 동기화
-        loadAllFromDirectory();
     }
 
-    private Path binaryContentFilePath(UUID binaryContentId) {
-        // 바이너리 컨텐츠를 구분하기 위한 파일 경로 생성
-        return binaryContentDir.resolve(FILE_PREFIX + "-" + binaryContentId + ".ser");
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(FILE_PREFIX + id + EXTENSION);
     }
 
     @Override
     public BinaryContent save(BinaryContent binaryContent) {
-        // 경로 생성 (binaryContent-id.ser)
-        Path filePath = binaryContentFilePath(binaryContent.getId());
-
-        try (FileOutputStream fos = new FileOutputStream(filePath.toFile());
-             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
-            // 파일 저장
+        Path path = resolvePath(binaryContent.getId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
             oos.writeObject(binaryContent);
-            data.put(binaryContent.getId(), binaryContent);
-            return binaryContent;
         } catch (IOException e) {
-            throw new RuntimeException("바이너리 컨텐츠 파일 저장을 실패했습니다.");
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 저장에 실패했습니다.");
         }
-    }
-
-    @Override
-    public Optional<BinaryContent> findById(UUID binaryContentId) {
-        return Optional.ofNullable(data.get(binaryContentId));
-    }
-
-    @Override
-    public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
-        return binaryContentIds.stream()
-                .map(data::get)
-                .filter(Objects::nonNull)
-                .toList();
-    }
-
-    @Override
-    public void delete(UUID binaryContentId) {
-        if (!data.containsKey(binaryContentId)) {
-            throw new RuntimeException("바이너리 컨텐츠가 존재하지 않습니다.");
-        }
-
-        Path filePath = binaryContentFilePath(binaryContentId);
-        SerializedFileUtils.deleteFileOrThrow(filePath, ENTITY_NAME);
-        data.remove(binaryContentId);
-    }
-
-    public BinaryContent loadByIdFromFile(UUID binaryContentId) {
-        // 경로 생성 (binaryContent-id.ser)
-        Path filePath = binaryContentFilePath(binaryContentId);
-        // 파일 역직렬화
-        BinaryContent binaryContent = (BinaryContent) SerializedFileUtils.deserialize(filePath, ENTITY_NAME);
-        // 컬렉션과 동기화
-        data.put(binaryContent.getId(), binaryContent);
         return binaryContent;
     }
 
-    private void loadAllFromDirectory() {
-        data.clear();
+    @Override
+    public Optional<BinaryContent> findById(UUID id) {
+        BinaryContent binaryContentNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                binaryContentNullable = (BinaryContent) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일을 읽는 중 오류가 발생했습니다.");
+            }
+        }
+        return Optional.ofNullable(binaryContentNullable);
+    }
 
-        for (Object object : SerializedFileUtils.deserializeAll(binaryContentDir, FILE_PREFIX, ENTITY_NAME)) {
-            BinaryContent binaryContent = (BinaryContent) object;
-            data.put(binaryContent.getId(), binaryContent);
+    @Override
+    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
+                    .filter(path -> {
+                        String fileName = path.getFileName().toString();
+                        return fileName.startsWith(FILE_PREFIX) && fileName.endsWith(EXTENSION);
+                    })
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (BinaryContent) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일을 읽는 중 오류가 발생했습니다.");
+                        }
+                    })
+                    .filter(content -> ids.contains(content.getId()))
+                    .toList();
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 목록 조회에 실패했습니다.");
+        }
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 삭제에 실패했습니다.");
         }
     }
 }

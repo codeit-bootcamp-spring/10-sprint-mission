@@ -1,130 +1,125 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.exception.BusinessException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.util.SerializedFileUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
+@Repository
 public class FileMessageRepository implements MessageRepository {
-    private static final String FILE_PREFIX = "message";
-    private static final String ENTITY_NAME = "메시지";
+    private final Path DIRECTORY;
+    private final String FILE_PREFIX = "message-";
+    private final String EXTENSION = ".ser";
 
-    private final Map<UUID, Message> data; // 빠른 조회를 위한 컬렉션
-    private final Path messageDir;
-
-    public FileMessageRepository(Path baseDir) {
-        this.data = new HashMap<>();
-        this.messageDir = baseDir.resolve(FILE_PREFIX);
-        try {
-            // 파일이 저장될 디렉토리가 존재하지 않을 경우 폴더 생성
-            Files.createDirectories(messageDir);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public FileMessageRepository(
+            @Value("${discodeit.repository.file-directory:data}") String fileDirectory
+    ) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory, Message.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
+            try {
+                Files.createDirectories(DIRECTORY);
+            } catch (IOException e) {
+                throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 저장소 초기화에 실패했습니다.");
+            }
         }
-        // 생성 시 디렉토리와 컬렉션 동기화
-        loadAllFromDirectory();
     }
 
-    private Path messageFilePath(UUID messageId) {
-        // 메시지를 구분하기 위한 파일 경로 생성
-        return messageDir.resolve(FILE_PREFIX + "-" + messageId + ".ser");
+    private Path resolvePath(UUID id) {
+        return DIRECTORY.resolve(FILE_PREFIX + id + EXTENSION);
     }
 
     @Override
     public Message save(Message message) {
-        // 경로 생성 (message-id.ser)
-        Path filePath = messageFilePath(message.getId());
-
-        try (FileOutputStream fos = new FileOutputStream(filePath.toFile());
-             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
-            // 파일 저장
+        Path path = resolvePath(message.getId());
+        try (
+                FileOutputStream fos = new FileOutputStream(path.toFile());
+                ObjectOutputStream oos = new ObjectOutputStream(fos)
+        ) {
             oos.writeObject(message);
-            data.put(message.getId(), message);
-            return message;
         } catch (IOException e) {
-            throw new RuntimeException("메시지 파일 저장을 실패했습니다.");
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 저장에 실패했습니다.");
         }
+        return message;
     }
 
     @Override
-    public Optional<Message> findById(UUID messageId) {
-        return Optional.ofNullable(data.get(messageId));
+    public Optional<Message> findById(UUID id) {
+        Message messageNullable = null;
+        Path path = resolvePath(id);
+        if (Files.exists(path)) {
+            try (
+                    FileInputStream fis = new FileInputStream(path.toFile());
+                    ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+                messageNullable = (Message) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일을 읽는 중 오류가 발생했습니다.");
+            }
+        }
+        return Optional.ofNullable(messageNullable);
     }
 
     @Override
     public List<Message> findAllByChannelId(UUID channelId) {
-        return data.values().stream()
-                .filter(message -> channelId.equals(message.getChannelId()))
-                .toList();
-    }
-
-    @Override
-    public Optional<Instant> findLatestMessageTimeByChannelId(UUID channelId) {
-        return data.values().stream()
-                .filter(message -> channelId.equals(message.getChannelId()))
-                .map(Message::getCreatedAt)
-                .max(Instant::compareTo);
-    }
-
-    @Override
-    public List<Message> findAll() {
-        return new ArrayList<>(data.values());
-    }
-
-    @Override
-    public void delete(UUID messageId) {
-        if (!data.containsKey(messageId)) {
-            throw new RuntimeException("메시지가 존재하지 않습니다.");
+        try (Stream<Path> paths = Files.list(DIRECTORY)) {
+            return paths
+                    .filter(path -> {
+                        String fileName = path.getFileName().toString();
+                        return fileName.startsWith(FILE_PREFIX) && fileName.endsWith(EXTENSION);
+                    })
+                    .map(path -> {
+                        try (
+                                FileInputStream fis = new FileInputStream(path.toFile());
+                                ObjectInputStream ois = new ObjectInputStream(fis)
+                        ) {
+                            return (Message) ois.readObject();
+                        } catch (IOException | ClassNotFoundException e) {
+                            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일을 읽는 중 오류가 발생했습니다.");
+                        }
+                    })
+                    .filter(message -> message.getChannelId().equals(channelId))
+                    .toList();
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 목록 조회에 실패했습니다.");
         }
+    }
 
-        Path filePath = messageFilePath(messageId);
-        SerializedFileUtils.deleteFileOrThrow(filePath, ENTITY_NAME);
-        data.remove(messageId);
+    @Override
+    public boolean existsById(UUID id) {
+        Path path = resolvePath(id);
+        return Files.exists(path);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        Path path = resolvePath(id);
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.INTERNAL_ERROR, "파일 삭제에 실패했습니다.");
+        }
     }
 
     @Override
     public void deleteAllByChannelId(UUID channelId) {
-        List<UUID> messageIdsToDelete = data.values().stream()
-                        .filter(message -> channelId.equals(message.getChannelId()))
-                        .map(Message::getId)
-                        .toList();
-
-        for (UUID messageId : messageIdsToDelete) {
-            Path filePath = messageFilePath(messageId);
-            SerializedFileUtils.deleteFileOrThrow(filePath, ENTITY_NAME);
-            data.remove(messageId);
-        }
-    }
-
-    public Message loadByIdFromFile(UUID messageId) {
-        // 경로 생성 (message-id.ser)
-        Path filePath = messageFilePath(messageId);
-        // 파일 역직렬화
-        Message message = (Message) SerializedFileUtils.deserialize(filePath, ENTITY_NAME);
-        // 컬렉션과 동기화
-        data.put(message.getId(), message);
-        return message;
-    }
-
-    private void loadAllFromDirectory() {
-        data.clear();
-
-        for (Object object : SerializedFileUtils.deserializeAll(messageDir, FILE_PREFIX, ENTITY_NAME)) {
-            Message message = (Message) object;
-            data.put(message.getId(), message);
-        }
+        this.findAllByChannelId(channelId)
+                .forEach(message -> this.deleteById(message.getId()));
     }
 }

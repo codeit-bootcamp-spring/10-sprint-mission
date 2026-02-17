@@ -9,33 +9,30 @@ import java.util.UUID;
 @Getter
 public class ReadStatus implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final UUID id;
-    private final Instant createdAt;
+    private UUID id;
+    private Instant createdAt;
     private Instant updatedAt;
-
-    private final UUID userId;
-    private final UUID channelId;
+    private UUID userId;
+    private UUID channelId;
     private Instant lastReadAt;
 
-    public ReadStatus(UUID userId, UUID channelId) {
+    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.updatedAt = createdAt;
         this.userId = userId;
         this.channelId = channelId;
-        this.lastReadAt = Instant.EPOCH;
-    }
-
-    public void markReadAt(Instant lastReadAt) {
-        if (lastReadAt == null) {
-            throw new RuntimeException("요청이 올바르지 않습니다.");
-        }
         this.lastReadAt = lastReadAt;
-        update();
     }
 
-    public void update() {
-        // 업데이트 시간 갱신
-        this.updatedAt = Instant.now();
+    public void update(Instant newLastReadAt) {
+        boolean anyValueUpdated = false;
+        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+            this.lastReadAt = newLastReadAt;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }
