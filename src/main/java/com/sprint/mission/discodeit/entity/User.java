@@ -90,7 +90,7 @@ public class User extends Basic implements Serializable {
         this.email = newEmail;
         super.update();
     }
-    public void changerPassword(String newPassword) {
+    public void changePassword(String newPassword) {
         this.password = newPassword;
         super.update();
     }

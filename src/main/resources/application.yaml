@@ -2,8 +2,8 @@ spring:
   application:
     name: discodeit
 server:
-  port: 8081
+  port: 8080
 
 discodeit:
   repository:
-    type: file  #jcf | File
+    type: jcf  #jcf | file

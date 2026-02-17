@@ -20,11 +20,13 @@ public class UserMapper {
     public UserResponse toResponse(User user, boolean online){
         return new UserResponse(
                 user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUserName(),
                 user.getAlias(),
                 user.getEmail(),
-                online,
-                user.getProfileId()
+                user.getProfileId(),
+                online
         );
     }
 }

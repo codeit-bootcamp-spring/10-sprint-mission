@@ -155,15 +155,15 @@ public class BasicUserService implements UserService {
         // 비밀번호 변경...?
         if (request.password() != null) {
             Validation.notBlank(request.password(), "비밀번호");
-            user.changerPassword(request.password());
+            user.changePassword(request.password());
         }
         // 프로필 이미지 변경
-        if(request.ProfileImage() != null){
+        if(request.profileImage() != null){
             // 기존 이미지 삭제
             if(user.getProfileId() != null) {
                 binaryContentRepository.delete(user.getProfileId());
             }
-            BinaryContent newProfile = userMapper.toBinaryContent(request.ProfileImage());
+            BinaryContent newProfile = userMapper.toBinaryContent(request.profileImage());
             binaryContentRepository.save(newProfile);
 
             // 유저한테 새로운 profileID 반영

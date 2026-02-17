@@ -13,6 +13,7 @@ public class ReadStatus extends Basic implements Serializable {
     private final UUID userId;
     private final UUID channelId;
 
+
     // 유저가 해당 채널에서 "마지막으로 읽은 시각"
     private Instant lastReadAt;
 

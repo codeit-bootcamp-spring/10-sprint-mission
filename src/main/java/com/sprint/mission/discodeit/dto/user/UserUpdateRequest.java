@@ -12,6 +12,6 @@ public record UserUpdateRequest(
         String alias,
         String email,
         String password,
-        BinaryContentCreateRequest ProfileImage
+        BinaryContentCreateRequest profileImage
 ) {
 }

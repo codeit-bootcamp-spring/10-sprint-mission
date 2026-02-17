@@ -9,7 +9,7 @@ import java.io.*;
 import java.util.*;
 
 @Repository
-@Primary
+
 public class FileReadStatusRepository implements ReadStatusRepository {
     private static final String FILE_PATH = "readStatus.dat";
     private Map<UUID, ReadStatus> data;
