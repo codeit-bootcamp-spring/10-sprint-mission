@@ -45,6 +45,16 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContentRepository.deleteById(id);
     }
 
+    // BinaryContentController에서 파일 조회할 때 엔티티를 반환하기 위해 만든 메서드
+    @Override
+    public BinaryContent findEntity(UUID id){
+        return getOrThrowBinaryContent(id);
+    }
+    @Override
+    public List<BinaryContent> findEntities(List<UUID> ids){
+        return binaryContentRepository.findAllById(ids);
+    }
+
 
     // 바이너리 컨텐츠 검증
     private BinaryContent getOrThrowBinaryContent(UUID id) {

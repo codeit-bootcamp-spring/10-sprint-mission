@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -24,7 +24,7 @@ public class BasicUserService implements UserService {
     private final ReadStatusRepository readStatusRepository;
 
     @Override
-    public UserResponse create(UserCreateRequest request){
+    public UserDto create(UserCreateRequest request){
         // username, email 중복 체크
         validateDuplicateName(request.name());
         validateDuplicateEmail(request.email());
@@ -58,21 +58,21 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponse findById(UUID id) {
+    public UserDto findById(UUID id) {
         User user = validateUserExists(id);
         UserStatus status = getUserStatus(id);
         return convertToResponse(user, status);
     }
 
     @Override
-    public List<UserResponse> findAll() {
+    public List<UserDto> findAll() {
         return userRepository.findAll().stream()
                 .map(user -> convertToResponse(user, getUserStatus(user.getId())))
                 .toList();
     }
 
     @Override
-    public UserResponse update(UUID id, UserUpdateRequest request){
+    public UserDto update(UUID id, UserUpdateRequest request){
         User user = validateUserExists(id);
 
         // 이름 수정 + 중복 체크
@@ -159,10 +159,10 @@ public class BasicUserService implements UserService {
     }
 
     // 엔티티 -> DTO 변환
-    private UserResponse convertToResponse(User user, UserStatus status) {
+    private UserDto convertToResponse(User user, UserStatus status) {
         boolean isOnline = (status != null) && status.isOnline();
 
-        return new UserResponse(
+        return new UserDto(
                 user.getId(),
                 user.getName(),
                 user.getNickname(),
