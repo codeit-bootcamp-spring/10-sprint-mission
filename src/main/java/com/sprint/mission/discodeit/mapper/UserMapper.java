@@ -16,11 +16,18 @@ public class UserMapper {
         boolean isOnline = userStatusRepository.findByUserId(user.getId())
                 .map(UserStatus::isOnline)
                 .orElse(false);
-        return new UserDto(user, isOnline);
+        return toDto(user, isOnline);
     }
 
-    // 이미 상태를 알고 있을 때 사용
     public UserDto toDto(User user, boolean isOnline) {
-        return new UserDto(user, isOnline);
+        return new UserDto(
+                user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getProfileImageId(),
+                isOnline
+        );
     }
 }

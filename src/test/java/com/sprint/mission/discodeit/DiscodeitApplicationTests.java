@@ -38,8 +38,8 @@ class DiscodeitApplicationTests {
         // ---------------------------------------------------------
         System.out.println("--- [Step 1] 유저 생성 및 상태 확인 ---");
         BinaryContentDto profileImg = new BinaryContentDto("avatar.png", "image/png", 512, "image_data".getBytes());
-        CreateUserRequest userReqA = new CreateUserRequest("woody", "woody@test.com", "1234", profileImg);
-        CreateUserRequest userReqB = new CreateUserRequest("buzz", "buzz@test.com", "1234", null);
+        CreateUserRequestDto userReqA = new CreateUserRequestDto("woody", "woody@test.com", "1234", profileImg);
+        CreateUserRequestDto userReqB = new CreateUserRequestDto("buzz", "buzz@test.com", "1234", null);
 
         UserDto userA = userService.create(userReqA);
         UserDto userB = userService.create(userReqB);
@@ -81,7 +81,7 @@ class DiscodeitApplicationTests {
         BinaryContentDto fileDto = new BinaryContentDto("homework.doc", "application/msword", 1024, "doc_data".getBytes());
         CreateMessageRequestDto msgReq = new CreateMessageRequestDto("숙제 제출합니다.", privateChannel.getId(), userA.getId(), List.of(fileDto));
 
-        MessageDto sentMsg = messageService.create(msgReq);
+        MessageDto sentMsg = messageService.create(msgReq, msgReq.getAttachments());
 
         // 검증
         MessageDto foundMsg = messageService.find(sentMsg.getId());
@@ -121,7 +121,7 @@ class DiscodeitApplicationTests {
         System.out.println("\n--- [Step 5] 데이터 수정 테스트 ---");
 
         // 1. 유저 이름 수정
-        UpdateUserRequest updateUserReq = new UpdateUserRequest("woody_modified", null, null, null);
+        UpdateUserRequestDto updateUserReq = new UpdateUserRequestDto("woody_modified", null, null, null);
         UserDto updatedUser = userService.update(userA.getId(), updateUserReq);
         assertThat(updatedUser.getUsername()).isEqualTo("woody_modified");
 
@@ -165,19 +165,19 @@ class DiscodeitApplicationTests {
 
         // 1. 없는 채널에 메시지 보내기
         System.out.println("1. 존재하지 않는 채널 ID로 메시지 전송 시도...");
-        CreateUserRequest userReq = new CreateUserRequest("ex_user", "ex@test.com", "1234", null);
+        CreateUserRequestDto userReq = new CreateUserRequestDto("ex_user", "ex@test.com", "1234", null);
         UserDto user = userService.create(userReq);
 
         CreateMessageRequestDto badMsgReq = new CreateMessageRequestDto("Fail", UUID.randomUUID(), user.getId(), null);
 
-        assertThatThrownBy(() -> messageService.create(badMsgReq))
+        assertThatThrownBy(() -> messageService.create(badMsgReq, null))
                 .isInstanceOf(java.util.NoSuchElementException.class)
                 .hasMessageContaining("Channel not found");
         System.out.println("   -> 예외 발생 확인 OK (Channel not found)");
 
         // 2. 중복 이메일 가입 시도
         System.out.println("2. 중복 이메일 가입 시도...");
-        CreateUserRequest dupReq = new CreateUserRequest("dup", "ex@test.com", "1234", null); // 위와 동일 이메일
+        CreateUserRequestDto dupReq = new CreateUserRequestDto("dup", "ex@test.com", "1234", null); // 위와 동일 이메일
 
         assertThatThrownBy(() -> userService.create(dupReq))
                 .isInstanceOf(IllegalArgumentException.class);

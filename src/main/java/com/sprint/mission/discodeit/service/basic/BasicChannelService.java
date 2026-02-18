@@ -37,7 +37,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelDto createPrivate(CreatePrivateChannelRequestDto dto) {
-        Channel channel = new Channel(ChannelType.PRIVATE, null, null);
+        Channel channel = new Channel(ChannelType.PRIVATE, dto.getName(), null);
         channelRepository.save(channel);
 
         if (dto.getParticipantIds() != null) {
