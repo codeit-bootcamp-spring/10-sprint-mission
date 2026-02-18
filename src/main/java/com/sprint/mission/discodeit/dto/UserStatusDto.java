@@ -15,13 +15,19 @@ public class UserStatusDto {
 
   public record Response(
       UUID id,
-      UUID userId
+      Instant createdAt,
+      Instant updatedAt,
+      UUID userId,
+      Instant lastActiveAt
   ) {
 
     public static Response of(UserStatus status) {
       return new Response(
           status.getId(),
-          status.getUserId()
+          status.getCreatedAt(),
+          status.getUpdatedAt(),
+          status.getUserId(),
+          status.getLastActiveAt()
       );
     }
   }

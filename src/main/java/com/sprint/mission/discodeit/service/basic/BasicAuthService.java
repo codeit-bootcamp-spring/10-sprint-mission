@@ -22,7 +22,7 @@ public class BasicAuthService implements AuthService {
     User user = userRepository.findAll().stream()
         .filter(u -> u.getUsername().equals(request.username()))
         .findFirst()
-        .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
+        .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
 
     if (!user.getPassword().equals(request.password())) {
       throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");

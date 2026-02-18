@@ -8,11 +8,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,21 +26,25 @@ public class UserController {
   private final UserStatusService userStatusService;
 
   //사용자를 등록할 수 있다.
-  @PostMapping
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "User 등록")
-  public ResponseEntity<?> create(@RequestBody UserDto.Create request) {
-    UserDto.Response response = userService.create(request);
+  public ResponseEntity<?> create(
+      @RequestPart("userCreateRequest") UserDto.Create request,
+      @RequestPart(value = "profile", required = false) MultipartFile profile
+  ) {
+    UserDto.Response response = userService.create(request, profile);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   //사용자 정보를 수정할 수 있다.
-  @PatchMapping("/{userId}")
+  @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "User 정보 수정")
   public ResponseEntity<?> update(
       @PathVariable UUID userId,
-      @RequestBody UserDto.Update request
+      @RequestPart("userUpdateRequest") UserDto.Update request,
+      @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    UserDto.Response response = userService.update(userId, request);
+    UserDto.Response response = userService.update(userId, request, profile);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -48,14 +54,6 @@ public class UserController {
   public ResponseEntity<?> delete(@PathVariable UUID userId) {
     userService.delete(userId);
     return ResponseEntity.noContent().build();
-  }
-
-  //특정 사용자를 조회할 수 있다.
-  @GetMapping("/{userId}")
-  @Operation(summary = "특정 User 조회")
-  public ResponseEntity<?> findById(@PathVariable UUID userId) {
-    UserDto.Response response = userService.findById(userId);
-    return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
   //모든 사용자를 조회할 수 있다.

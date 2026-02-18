@@ -15,16 +15,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/auth/login")
+@RequestMapping("/api/auth")
 @Tag(name = "Auth")
 public class AuthController {
 
   private final AuthService authService;
 
   //사용자는 로그인할 수 있다.
-  @PostMapping
+  @PostMapping("/login")
   @Operation(summary = "로그인")
-  public ResponseEntity<User> login(@RequestBody UserDto.Login request) {
+  public ResponseEntity<?> login(@RequestBody UserDto.Login request) {
     User user = authService.login(request);
     return ResponseEntity.status(HttpStatus.OK).body(user);
   }
