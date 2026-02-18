@@ -22,7 +22,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
     private final Path dirPath;
 
     public FileUserStatusRepository(@Value("${discodeit.repository.file-directory}") String dir) {
-        this.dirPath = Paths.get(dir + "/userstatuses");
+        this.dirPath = Paths.get(dir, "userstatuses");
         init();
     }
 
@@ -48,7 +48,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
         if (!Files.exists(path)) {
             return Optional.empty();
         }
-        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))){
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
             return Optional.ofNullable((UserStatus) ois.readObject());
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("UserStatus 데이터 조회 실패", e);
@@ -67,7 +67,7 @@ public class FileUserStatusRepository implements UserStatusRepository {
         if (!Files.exists(dirPath)) {
             return List.of();
         }
-        try (Stream<Path> stream= Files.list(dirPath)){
+        try (Stream<Path> stream = Files.list(dirPath)) {
             return stream
                     .map(path -> {
                         try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {

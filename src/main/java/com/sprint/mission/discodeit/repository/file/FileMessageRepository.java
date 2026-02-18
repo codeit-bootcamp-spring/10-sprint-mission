@@ -24,7 +24,7 @@ public class FileMessageRepository implements MessageRepository {
     private final Path dirPath;
 
     public FileMessageRepository(@Value("${discodeit.repository.file-directory}") String dir) {
-        this.dirPath = Paths.get(dir + "/messages");
+        this.dirPath = Paths.get(dir, "messages");
         init();
     }
 
@@ -50,7 +50,7 @@ public class FileMessageRepository implements MessageRepository {
         if (!Files.exists(path)) {
             return Optional.empty();
         }
-        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))){
+        try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {
             return Optional.ofNullable((Message) ois.readObject());
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("Message 데이터 조회 실패", e);
@@ -59,10 +59,10 @@ public class FileMessageRepository implements MessageRepository {
 
     @Override
     public List<Message> findAll() {
-        if(!Files.exists(dirPath)) {
+        if (!Files.exists(dirPath)) {
             return List.of();
         }
-        try (Stream<Path> stream = Files.list(dirPath)){
+        try (Stream<Path> stream = Files.list(dirPath)) {
             return stream
                     .map(path -> {
                         try (ObjectInputStream ois = new ObjectInputStream(Files.newInputStream(path))) {

@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+
 @Service
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
@@ -21,14 +23,14 @@ public class BasicAuthService implements AuthService {
         User user = userRepository.findAll().stream()
                 .filter(u -> u.getUsername().equals(request.username()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 이름입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
 
         if (!user.getPassword().equals(request.password())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
         UserStatus status = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저 상태입니다."));
+                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
 
         status.updateOnline();
         userStatusRepository.save(status);

@@ -24,7 +24,7 @@ public class FileUserRepository implements UserRepository {
     private final Path dirPath;
 
     public FileUserRepository(@Value("${discodeit.repository.file-directory}") String dir) {
-        this.dirPath = Paths.get(dir + "/users");
+        this.dirPath = Paths.get(dir , "users");
         init();
     }
 

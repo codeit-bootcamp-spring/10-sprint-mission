@@ -4,14 +4,12 @@ import lombok.Getter;
 
 import java.util.*;
 
+@Getter
 public class User extends BaseEntity {
-    @Getter
+
     private String username;
-    @Getter
     private String email;
-    @Getter
     private String password;
-    @Getter
     private UUID profileId;
 
     public User(String username, String email, String password, UUID profileId) {
@@ -23,21 +21,21 @@ public class User extends BaseEntity {
 
     public void updateUsername(String username) {
         this.username = username;
-        setUpdateAt();
+        setUpdatedAt();
     }
 
     public void updateEmail(String email) {
         this.email = email;
-        setUpdateAt();
+        setUpdatedAt();
     }
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
-        setUpdateAt();
+        setUpdatedAt();
     }
 
     public void updateProfileId(UUID profileId) {
         this.profileId = profileId;
-        setUpdateAt();
+        setUpdatedAt();
     }
 }
