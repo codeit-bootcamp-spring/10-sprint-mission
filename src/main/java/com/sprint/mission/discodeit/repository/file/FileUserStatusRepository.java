@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,8 +21,8 @@ public class FileUserStatusRepository implements UserStatusRepository {
     private final String EXTENSION = ".ser";
 
     public FileUserStatusRepository(@Value("${discodeit.repository.file-directory}") String dir) {
-        this.DIRECTORY = Paths.get(System.getProperty("user.dir"),dir, ReadStatus.class.getSimpleName());
-        if (!Files.notExists(DIRECTORY)) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"),dir, UserStatus.class.getSimpleName());
+        if (Files.notExists(DIRECTORY)) {
             try {
                 Files.createDirectories(DIRECTORY);
             } catch (IOException e) {

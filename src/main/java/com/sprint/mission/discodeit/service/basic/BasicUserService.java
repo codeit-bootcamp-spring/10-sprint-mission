@@ -118,15 +118,11 @@ public class BasicUserService implements UserService {
         String newPassword = userUpdateRequestDTO.newPassword();
 
         // 수정하려는 newUsername, newEmail이 기존의 다른 유저와 겹치면 안되기 때문에 검증 해야함
-        // username, email이 같은지 확인하기 위해 findAll()?
-        // 아니면 repository에 findByUsername, findByEmail 같은 메서드를 정의 후 여기서 사용?
-        // repository에 구체적인 메서드를 정의 후 service 에서 사용???
-        boolean canUpdate = userRepository.findAll()
+        boolean isDuplicated = userRepository.findAll()
                 .stream()
-                .anyMatch(u -> !u.getUsername().equals(newUsername) &&
-                        !u.getEmail().equals(newEmail) &&
-                        !u.getId().equals(userId));
-        if (!canUpdate) {
+                .anyMatch(u -> !u.getId().equals(userId) &&
+                        (u.getUsername().equals(newUsername) || u.getEmail().equals(newEmail)));
+        if (isDuplicated) {
             throw new IllegalStateException("수정하려는 새로운 username 또는 email를 사용중인 유저가 이미 있습니다");
         }
 
@@ -172,6 +168,8 @@ public class BasicUserService implements UserService {
     private UserDetailResponseDTO toUserDetailResponseDTO(User user, UserStatus userStatus) {
         return new UserDetailResponseDTO(
                 user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
                 userStatus.isOnline(),
