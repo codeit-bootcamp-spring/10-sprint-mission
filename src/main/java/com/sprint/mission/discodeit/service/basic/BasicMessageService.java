@@ -44,7 +44,6 @@ public class BasicMessageService implements MessageService {
                 attachments.add(bc.getId());
             }
         }
-        messageRepository.save(message);
         // 영속화
         messageRepository.save(message);
 
@@ -74,8 +73,8 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponseDTO updateMessage(UpdateMessageRequestDTO dto) {
-        Message message = findMessageOrThrow(dto.messageId());
+    public MessageResponseDTO updateMessage(UUID messageId, UpdateMessageRequestDTO dto) {
+        Message message = findMessageOrThrow(messageId);
 
         if (dto.content() == null) {
             throw new IllegalArgumentException("content는 null값일 수 없습니다.");

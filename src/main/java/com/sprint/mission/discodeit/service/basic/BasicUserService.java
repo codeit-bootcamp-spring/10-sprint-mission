@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
@@ -78,7 +79,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserResponseDTO findByUserId(UUID userId) {
         return UserMapper.toResponse(
-                findUserInfoById(userId),
+                findUserOrThrow(userId),
                 userStatusRepository.findByUserId(userId)
                         .orElseThrow(() -> new NoSuchElementException(
                                 "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
@@ -87,14 +88,14 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUser(UpdateUserRequestDTO dto) {
-        User user = findUserInfoById(dto.userId());
+    public UserResponseDTO updateUser(UUID userId, UpdateUserRequestDTO dto) {
+        User user = findUserOrThrow(userId);
 
         if (dto.username() != null) {
             updateUserName(dto, user);
         }
         if (dto.statusType() != null) {
-            updateUserStatus(dto);
+            updateUserStatus(userId, dto);
         }
         if (dto.profileImage() != null) {
             updateUserProfileImage(dto, user);
@@ -102,16 +103,16 @@ public class BasicUserService implements UserService {
 
         return UserMapper.toResponse(
                 user,
-                userStatusRepository.findByUserId(dto.userId())
+                userStatusRepository.findByUserId(userId)
                         .orElseThrow(() -> new NoSuchElementException(
-                                "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + dto.userId()
+                                "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
                         ))
         );
     }
 
     @Override
     public void deleteUser(UUID userId) {
-        User user = findUserInfoById(userId);
+        User user = findUserOrThrow(userId);
         UUID binaryContentId = user.getProfileImageId();
 
         userStatusRepository.deleteById(userStatusRepository.findByUserId(userId)
@@ -126,7 +127,7 @@ public class BasicUserService implements UserService {
 
     // === 여기부터 내부 메서드 ===
 
-    private User findUserInfoById(UUID userId) {
+    private User findUserOrThrow(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null 값일 수 없습니다.");
 
         return userRepository.findById(userId)
@@ -144,10 +145,10 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
     }
 
-    private void updateUserStatus(UpdateUserRequestDTO dto) {
-        UserStatus status = userStatusRepository.findByUserId(dto.userId())
+    private void updateUserStatus(UUID userId, UpdateUserRequestDTO dto) {
+        UserStatus status = userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException(
-                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + dto.userId()
+                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
                 ));
         status.updateStatusType(dto.statusType());
         userStatusRepository.save(status);

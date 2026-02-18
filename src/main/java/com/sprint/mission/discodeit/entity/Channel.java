@@ -37,14 +37,16 @@ public class Channel extends BaseEntity {
         setUpdatedAt();
     }
 
-    public void addUser(UUID userId) {
-        if (joinedUserIds.stream().noneMatch(id -> id.equals(userId))) {
+    public void updateUser(UUID userId) {
+        if (!joinedUserIds.contains(userId)) {
             joinedUserIds.add(userId);
+            setUpdatedAt();
         }
     }
 
     public void removeUser(UUID userId) {
-        joinedUserIds.removeIf(user -> user.equals(userId));
+        joinedUserIds.remove(userId);
+        setUpdatedAt();
     }
 
     @Override

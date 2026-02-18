@@ -16,7 +16,7 @@ public interface MessageService {
 
     MessageResponseDTO findByMessageId(UUID messageId);
 
-    MessageResponseDTO updateMessage(UpdateMessageRequestDTO dto);
+    MessageResponseDTO updateMessage(UUID messageId, UpdateMessageRequestDTO dto);
 
     void deleteMessage(UUID messageId);
 }

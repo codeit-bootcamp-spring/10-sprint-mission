@@ -7,7 +7,6 @@ import jakarta.annotation.Nullable;
 import java.util.UUID;
 
 public record UpdateUserRequestDTO(
-        UUID userId,
         String username,
         UserStatusType statusType,
         @Nullable

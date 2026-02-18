@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
+    private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
     private final ReadStatusRepository readStatusRepository;
@@ -43,7 +45,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = ChannelMapper.toPrivateChannelEntity(null, null);
 
         for (UUID ids : dto.joinedUserIds()) {
-            channel.addUser(ids);
+            channel.updateUser(ids);
         }
 
         channelRepository.save(channel);
@@ -77,24 +79,22 @@ public class BasicChannelService implements ChannelService {
         Channel channel = findChannelOrThrow(channelId);
         Instant lastMessageAt = findLatestMessageAt(channelId);
 
-        List<UUID> joinUserIds = channel.getChannelType() == ChannelType.PRIVATE
-                ? channel.getJoinedUserIds()
-                : List.of();
-
         return new ChannelWithLastMessageDTO(
                 channel.getId(),
                 channel.getChannelName(),
+                channel.getDescription(),
                 channel.getChannelType(),
-                joinUserIds,
+                channel.getJoinedUserIds(),
                 lastMessageAt
         );
     }
 
     @Override
     public ChannelWithLastMessageDTO updateChannel(
+            UUID channelId,
             UpdateChannelRequestDTO dto
     ) {
-        Channel channel = findChannelOrThrow(dto.channelId());
+        Channel channel = findChannelOrThrow(channelId);
 
         if (channel.getChannelType() == ChannelType.PRIVATE) {
             throw new IllegalArgumentException("비공개 채널은 수정할 수 없습니다.");
@@ -108,12 +108,13 @@ public class BasicChannelService implements ChannelService {
         }
 
         channelRepository.save(channel);
-        return ChannelMapper.toWithLastMessage(channel, findLatestMessageAt(dto.channelId()));
+        return ChannelMapper.toWithLastMessage(channel, findLatestMessageAt(channelId));
     }
 
     @Override
     public void joinChannel(UUID channelId, UUID userId) {
         Channel channel = findChannelOrThrow(channelId);
+        User user = findUserOrThrow(userId);
 
         if (channel.getJoinedUserIds().stream()
                 .anyMatch(id -> id.equals(userId))) {
@@ -121,7 +122,8 @@ public class BasicChannelService implements ChannelService {
         }
 
         // 메모리 갱신
-        channel.addUser(userId);
+        channel.updateUser(userId);
+        user.updateJoinedChannels(channelId);
 
         if (!readStatusRepository.existsByUserIdAndChannelId(userId, channelId)) {
             // 채널에 참여했을 때 읽음 상태 저장
@@ -130,11 +132,13 @@ public class BasicChannelService implements ChannelService {
 
         // file 갱신
         channelRepository.save(channel);
+        userRepository.save(user);
     }
 
     @Override
     public void leaveChannel(UUID channelId, UUID userId) {
         Channel channel = findChannelOrThrow(channelId);
+        User user = findUserOrThrow(userId);
 
         if (channel.getJoinedUserIds().stream()
                 .noneMatch(id -> id.equals(userId))) {
@@ -147,8 +151,10 @@ public class BasicChannelService implements ChannelService {
         }
 
         channel.removeUser(userId);
+        user.removeChannel(channelId);
 
         channelRepository.save(channel);
+        userRepository.save(user);
     }
 
     @Override
@@ -165,6 +171,13 @@ public class BasicChannelService implements ChannelService {
         return channelRepository.findById(channelId)
                 .orElseThrow(() ->
                         new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다."));
+    }
+
+    private User findUserOrThrow(UUID userId) {
+        Objects.requireNonNull(userId, "userId는 null 값일 수 없습니다.");
+
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다."));
     }
 
     private Instant findLatestMessageAt(UUID channelId) {
@@ -192,20 +205,13 @@ public class BasicChannelService implements ChannelService {
                     // 각 채널마다 가장 최근 메시지 시간 계산
                     Instant lastMessageAt = findLatestMessageAt(channel.getId());
 
-                    // 채널 타입에 따라 joinedUserIds를 다르게 내려줌
-                    // PRIVATE → 참여자 목록
-                    // PUBLIC  → 빈 리스트
-                    List<UUID> joinedUserIdsToReturn =
-                            channel.getChannelType() == ChannelType.PRIVATE
-                                    ? channel.getJoinedUserIds()
-                                    : List.of();
-
                     // 최종적으로 조회용 DTO 생성해서 반환
                     return new ChannelWithLastMessageDTO(
                             channel.getId(),
                             channel.getChannelName(),
+                            channel.getDescription(),
                             channel.getChannelType(),
-                            joinedUserIdsToReturn,
+                            channel.getJoinedUserIds(),
                             lastMessageAt
                     );
                 })
@@ -222,6 +228,7 @@ public class BasicChannelService implements ChannelService {
         }
 
         channel.updateChannelName(dto.newChannelName());
+        channelRepository.save(channel);
     }
 
     private void updateChannelDescription(UpdateChannelRequestDTO dto, Channel channel) {
@@ -230,5 +237,6 @@ public class BasicChannelService implements ChannelService {
         }
 
         channel.updateDescription(dto.newChannelDescription());
+        channelRepository.save(channel);
     }
 }

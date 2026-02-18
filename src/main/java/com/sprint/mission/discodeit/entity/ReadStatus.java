@@ -17,9 +17,17 @@ public class ReadStatus extends BaseEntity{
         this.channelId = channelId;
         this.lastReadAt = Instant.now();
     }
-    public void updateLastReadAt(Instant lastReadAt) {
-        this.lastReadAt = lastReadAt;
-        updatedAt = Instant.now();
+
+    public void updateLastReadAt(Instant newLastReadAt) {
+        boolean anyValueUpdated = false;
+        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+            this.lastReadAt = newLastReadAt;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
     @Override

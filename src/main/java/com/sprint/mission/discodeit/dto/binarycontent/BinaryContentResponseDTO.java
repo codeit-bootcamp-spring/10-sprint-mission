@@ -8,6 +8,7 @@ public record BinaryContentResponseDTO(
         UUID userId,
         UUID messageId,
         long size,
+        byte[] bytes,
         String contentType,
         String filename,
         Instant createdAt
