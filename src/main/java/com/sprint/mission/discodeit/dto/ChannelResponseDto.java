@@ -6,7 +6,8 @@ import java.util.UUID;
 
 import com.sprint.mission.discodeit.entity.ChannelType;
 
-public record ChannelResponseDTO(
+public record ChannelResponseDto(
+	UUID id,
 	ChannelType channelType,
 	String name,
 	String description,

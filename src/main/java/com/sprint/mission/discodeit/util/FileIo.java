@@ -60,7 +60,6 @@ public class FileIo<T> {
 				throw new RuntimeException(e);
 			}
 		} else {
-			System.out.println("test");
 			return new ArrayList<>();
 		}
 	}

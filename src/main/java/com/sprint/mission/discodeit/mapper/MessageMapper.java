@@ -2,7 +2,8 @@ package com.sprint.mission.discodeit.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.sprint.mission.discodeit.dto.MessagePostDTO;
+import com.sprint.mission.discodeit.dto.MessagePostDto;
+import com.sprint.mission.discodeit.dto.MessageResponseDto;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 
@@ -13,12 +14,22 @@ import lombok.RequiredArgsConstructor;
 public class MessageMapper {
 	private final BinaryContentRepository binaryContentRepository;
 
-	public Message toMessage(MessagePostDTO messagePostDTO) {
+	public Message toMessage(MessagePostDto messagePostDto) {
 		return new Message(
-			messagePostDTO.userId(),
-			messagePostDTO.channelId(),
-			messagePostDTO.text(),
+			messagePostDto.authorId(),
+			messagePostDto.channelId(),
+			messagePostDto.text(),
 			null
 		);
 	}
+
+	public MessageResponseDto toResponse(Message message) {
+		return new MessageResponseDto(
+			message.getId(),
+			message.getText(),
+			message.getAuthorId(),
+			message.getChannelId()
+		);
+	}
+
 }

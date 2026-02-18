@@ -4,21 +4,22 @@ import java.time.Instant;
 
 import org.springframework.stereotype.Component;
 
-import com.sprint.mission.discodeit.dto.ReadStatusPostDTO;
-import com.sprint.mission.discodeit.dto.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.ReadStatusPostDto;
+import com.sprint.mission.discodeit.dto.ReadStatusResponseDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 
 @Component
 public class ReadStatusMapper {
-	public ReadStatusResponseDTO toResponseDto(ReadStatus readStatus) {
-		return new ReadStatusResponseDTO(
+	public ReadStatusResponseDto toResponseDto(ReadStatus readStatus) {
+		return new ReadStatusResponseDto(
+			readStatus.getId(),
 			readStatus.getUserId(),
 			readStatus.getChannelId(),
 			readStatus.getLastReadTime()
 		);
 	}
 
-	public ReadStatus fromDto(ReadStatusPostDTO readStatusPostDTO) {
+	public ReadStatus fromDto(ReadStatusPostDto readStatusPostDTO) {
 		return new ReadStatus(
 			readStatusPostDTO.userId(),
 			readStatusPostDTO.channelId(),

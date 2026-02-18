@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
-import com.sprint.mission.discodeit.dto.MessagePatchDTO;
-import com.sprint.mission.discodeit.dto.MessagePostDTO;
+import com.sprint.mission.discodeit.dto.MessagePatchDto;
+import com.sprint.mission.discodeit.dto.MessagePostDto;
+import com.sprint.mission.discodeit.dto.MessageResponseDto;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -33,10 +34,10 @@ public class JCFMessageService implements MessageService {
 
 	// data 필드를 활용해 생성, 조회, 수정, 삭제하는 메소드를 구현하세요.
 	@Override
-	public Message create(MessagePostDTO messagePostDTO) {
+	public MessageResponseDto create(MessagePostDto messagePostDTO) {
 		// // 메시지를 생성 전, 유저가 해당 채널에 속해있는지 확인한다.
 		// Channel channel = channelService.findById(channelId);
-		// User user = userService.findById(userId);
+		// User user = userService.findById(authorId);
 		//
 		// if (user.getChannelIds().stream()
 		// 	.noneMatch(ch -> ch.getId().equals(channelId))) {
@@ -57,31 +58,32 @@ public class JCFMessageService implements MessageService {
 	}
 
 	@Override
-	public Message findById(UUID id) {
-		return data.stream()
-			.filter(message -> message.getId().equals(id))
-			.findFirst()
-			.orElseThrow(
-				() -> new NoSuchElementException("id가 " + id + "인 메시지는 존재하지 않습니다.")
-			);
-	}
-
-	@Override
-	public List<Message> findByUser(UUID userId) {
-		// 해당 id를 갖는 user 객체의 메시지 리스트를 반환하도록 변경
-		// return userService.findById(userId).getMessageList();
+	public MessageResponseDto findById(UUID id) {
+		// return data.stream()
+		// 	.filter(message -> message.getId().equals(id))
+		// 	.findFirst()
+		// 	.orElseThrow(
+		// 		() -> new NoSuchElementException("id가 " + id + "인 메시지는 존재하지 않습니다.")
+		// 	);
 		return null;
 	}
 
 	@Override
-	public List<Message> findByChannelId(UUID channelId) {
+	public List<MessageResponseDto> findByUser(UUID userId) {
+		// 해당 id를 갖는 user 객체의 메시지 리스트를 반환하도록 변경
+		// return userService.findById(authorId).getMessageList();
+		return null;
+	}
+
+	@Override
+	public List<MessageResponseDto> findByChannelId(UUID channelId) {
 		// 해당 id를 갖는 channel 객체의 메시지 리스트를 반환하도록 변경
 		// return channelService.findById(channelId).getMessageIds();
 		return null;
 	}
 
 	@Override
-	public Message updateById(MessagePatchDTO messagePatchDTO) {
+	public MessageResponseDto updateById(UUID messageId, MessagePatchDto messagePatchDTO) {
 		// Message message = data.stream()
 		// 	.filter(msg -> msg.getId().equals(messageId))
 		// 	.findFirst()

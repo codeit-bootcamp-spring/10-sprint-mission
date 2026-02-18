@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.sprint.mission.discodeit.dto.UserStatusPatchDTO;
 import com.sprint.mission.discodeit.dto.UserStatusPostDTO;
 import com.sprint.mission.discodeit.dto.UserStatusResponseDTO;
 import com.sprint.mission.discodeit.entity.User;
@@ -56,10 +55,10 @@ public class UserStatusService {
 			.collect(Collectors.toList());
 	}
 
-	public UserStatusResponseDTO update(UserStatusPatchDTO userStatusPatchDTO) {
-		UserStatus userStatus = userStatusRepository.findById(userStatusPatchDTO.userStatusId())
+	public UserStatusResponseDTO updateByUserId(UUID userId) {
+		UserStatus userStatus = userStatusRepository.findByUserId(userId)
 			.orElseThrow(() ->
-				new NoSuchElementException("id가 " + userStatusPatchDTO.userStatusId() + "인 유저는 존재하지 않습니다.")
+				new NoSuchElementException("id가 " + userId + "인 유저는 존재하지 않습니다.")
 			);
 
 		userStatus.updateLastAccessedTime();

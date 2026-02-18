@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
-public record PublicChannelPostDTO(
+public record PublicChannelPostDto(
 	String name,
 	String description
 ) {
