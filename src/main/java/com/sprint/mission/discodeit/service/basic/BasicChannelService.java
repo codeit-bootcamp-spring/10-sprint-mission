@@ -66,17 +66,10 @@ public class BasicChannelService implements ChannelService {
     //채널Id로 채널 객체 조회
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
-    //채널Id로 ReadStatus를 조회해서 userId를 찾아옴
-    List<UUID> allUserIds = readStatusRepository.findAllByChannelId(channelId).stream()
-        .map(ReadStatus::getUserId)
-        .toList();
-    //채널Id로 메시지 찾아서 가장 최근 메시지 시간 찾기
-    Instant lastMessageAt = messageRepository.findAll().stream()
-        .filter(message -> message.getChannelId().equals(channelId))
-        .map(BaseEntity::getCreatedAt)
-        .max(Instant::compareTo)
-        .orElse(null); //메시지 없으면 null반환
-    return ChannelDto.Response.of(channel, allUserIds, lastMessageAt);
+    return ChannelDto.Response.of(
+        channel,
+        getParticipantIds(channelId),
+        getLastMessageAt(channelId));
   }
 
   @Override
@@ -84,7 +77,8 @@ public class BasicChannelService implements ChannelService {
     //public 채널 리스트
     List<ChannelDto.Response> publicChannels = channelRepository.findAll().stream()
         .filter(channel -> channel.getType() == ChannelType.PUBLIC)
-        .map(channel -> ChannelDto.Response.of(channel, List.of(), null))
+        .map(channel -> ChannelDto.Response.of(channel, List.of(),
+            getLastMessageAt(channel.getId())))
         .toList();
     //private 채널 리스트(내가 참여하고 있어야함)
     List<ChannelDto.Response> privateChannels = readStatusRepository.findAllByUserId(userId)
@@ -93,12 +87,11 @@ public class BasicChannelService implements ChannelService {
         .map(channelRepository::findById)
         .flatMap(Optional::stream)
         .filter(channel -> channel.getType() == ChannelType.PRIVATE)
-        .map(channel -> {
-          List<UUID> allUserIds = readStatusRepository.findAllByChannelId(channel.getId()).stream()
-              .map(ReadStatus::getUserId)
-              .toList();
-          return ChannelDto.Response.of(channel, allUserIds, null);
-        })
+        .map(channel -> ChannelDto.Response.of(
+            channel,
+            getParticipantIds(channel.getId()),
+            getLastMessageAt(channel.getId()))
+        )
         .toList();
     List<ChannelDto.Response> allChannels = new ArrayList<>();
     allChannels.addAll(publicChannels);
@@ -144,5 +137,19 @@ public class BasicChannelService implements ChannelService {
         .forEach(readStatusRepository::delete);
 
     channelRepository.delete(channel);
+  }
+
+  private Instant getLastMessageAt(UUID channelId) {
+    return messageRepository.findAll().stream()
+        .filter(message -> message.getChannelId().equals(channelId))
+        .map(BaseEntity::getCreatedAt)
+        .max(Instant::compareTo)
+        .orElse(null);
+  }
+
+  private List<UUID> getParticipantIds(UUID channelId) {
+    return readStatusRepository.findAllByChannelId(channelId).stream()
+        .map(ReadStatus::getUserId)
+        .toList();
   }
 }
