@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.UUID;
 
 public record ChannelWithLastMessageDTO(
-        UUID channelId,
-        String channelName,
+        UUID id,
+        ChannelType type,
+        String name,
         String description,
-        ChannelType channelType,
-        List<UUID> joinedUserIds,
+        List<UUID> participantIds,
         Instant lastMessageAt
 ) { }

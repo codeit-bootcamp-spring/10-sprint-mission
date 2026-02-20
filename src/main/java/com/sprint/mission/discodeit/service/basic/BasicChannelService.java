@@ -82,9 +82,9 @@ public class BasicChannelService implements ChannelService {
 
         return new ChannelWithLastMessageDTO(
                 channel.getId(),
+                channel.getChannelType(),
                 channel.getChannelName(),
                 channel.getDescription(),
-                channel.getChannelType(),
                 channel.getJoinedUserIds(),
                 lastMessageAt
         );
@@ -209,9 +209,9 @@ public class BasicChannelService implements ChannelService {
                     // 최종적으로 조회용 DTO 생성해서 반환
                     return new ChannelWithLastMessageDTO(
                             channel.getId(),
+                            channel.getChannelType(),
                             channel.getChannelName(),
                             channel.getDescription(),
-                            channel.getChannelType(),
                             channel.getJoinedUserIds(),
                             lastMessageAt
                     );

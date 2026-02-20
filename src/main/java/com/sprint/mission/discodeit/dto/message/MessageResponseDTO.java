@@ -10,6 +10,6 @@ public record MessageResponseDTO(
         Instant updatedAt,
         String content,
         UUID channelId,
-        UUID userId,
+        UUID authorId,
         List<UUID> attachmentIds
 ) { }

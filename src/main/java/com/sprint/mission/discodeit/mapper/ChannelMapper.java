@@ -45,9 +45,9 @@ public class ChannelMapper {
     ) {
         return new ChannelWithLastMessageDTO(
                 channel.getId(),
+                channel.getChannelType(),
                 channel.getChannelName(),
                 channel.getDescription(),
-                channel.getChannelType(),
                 channel.getJoinedUserIds(),
                 lastMessageAt
         );
