@@ -79,7 +79,6 @@ public class ChannelController {
         );
     }
 
-    // TODO: 유저가 참여중인 채널 목록 조회 API 추가
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity findChannelsByUserId(
             @RequestParam("userId") UUID userId
