@@ -75,7 +75,8 @@ public class BasicChannelService implements ChannelService {
         String newName = request.newName();
         String newDescription = request.newDescription();
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new ChannelNotFoundException(channelId + " 에 해당하는 채널이 없습니다."));
+                .orElseThrow(() -> new ChannelNotFoundException("Channel with" + channelId + " not found."));
+
         if (channel.getType().equals(ChannelType.PRIVATE)) {
             throw new IllegalArgumentException("Private channel cannot be updated");
         }
@@ -86,11 +87,10 @@ public class BasicChannelService implements ChannelService {
     @Override
     public void delete(UUID channelId) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new ChannelNotFoundException(channelId + " 에 해당하는 채널이 없습니다."));
+                .orElseThrow(() -> new ChannelNotFoundException("Channel with" + channelId + " not found."));
 
         messageRepository.deleteAllByChannelId(channel.getId());
         readStatusRepository.deleteAllByChannelId(channel.getId());
-
         channelRepository.deleteById(channelId);
     }
 
