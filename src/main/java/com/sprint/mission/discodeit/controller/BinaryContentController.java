@@ -10,23 +10,23 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Controller
-@RequestMapping("/api/binaryContent")
+@RestController
+@RequestMapping("/api/binaryContents")
 @RequiredArgsConstructor
 public class BinaryContentController {
 
     private final BinaryContentService binaryContentService;
 
-    @RequestMapping(value = "/find", method = RequestMethod.GET)
-    @ResponseBody
+    @GetMapping("/{binaryContentId}")
     public ResponseEntity<BinaryContent> find(@RequestParam UUID binaryContentId){
-        return ResponseEntity.ok(binaryContentService.find(binaryContentId));
+        BinaryContent binaryContent = binaryContentService.find(binaryContentId);
+        return ResponseEntity.ok(binaryContent);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
-    public List<BinaryContent> findAll(@RequestParam List<UUID> Ids){
-        return binaryContentService.findAllByIdIn(Ids);
+    @GetMapping
+    public ResponseEntity<List<BinaryContent>> findAll(@RequestParam List<UUID> binaryContentIds){
+        List<BinaryContent> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
+        return ResponseEntity.ok(binaryContents);
 
     }
 }

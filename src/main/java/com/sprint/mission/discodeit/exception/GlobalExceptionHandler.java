@@ -45,6 +45,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(BinaryContentNotFoundException.class)
+    @ResponseBody
+    public ResponseEntity<ErrorResponseDto> handleBinaryContentNotFound(BinaryContentNotFoundException e) {
+        ErrorResponseDto error = new ErrorResponseDto("BINARY_CONTENT_NOT_FOUND", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseBody
     public ResponseEntity<ErrorResponseDto> handleIllegalArgumentException(IllegalArgumentException e) {
