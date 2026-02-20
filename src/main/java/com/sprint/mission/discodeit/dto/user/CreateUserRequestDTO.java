@@ -6,7 +6,5 @@ import jakarta.annotation.Nullable;
 public record CreateUserRequestDTO(
         String email,
         String username,
-        String password,
-        @Nullable
-        CreateBinaryContentPayloadDTO profileImage
+        String password
 ) {}

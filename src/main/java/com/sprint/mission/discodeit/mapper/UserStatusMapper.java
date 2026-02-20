@@ -17,10 +17,12 @@ public class UserStatusMapper {
 
     public static UserStatusResponseDTO toResponse(UserStatus userStatus) {
         return new UserStatusResponseDTO(
-                userStatus.getUserId(),
                 userStatus.getId(),
-                userStatus.getStatusType(),
-                userStatus.getLastLoginAt()
+                userStatus.getCreatedAt(),
+                userStatus.getUpdatedAt(),
+                userStatus.getUserId(),
+                userStatus.getLastLoginAt(),
+                userStatus.isOnline()
         );
     }
 

@@ -26,7 +26,7 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public UserDto createUser(CreateUserRequestDTO dto) {
+    public UserDto createUser(CreateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
         if (userRepository.existsByUsername(dto.username())) {
             throw new IllegalArgumentException("이미 사용중인 username입니다.");
         }
@@ -38,9 +38,8 @@ public class BasicUserService implements UserService {
         // userId를 받아오기 위해 우선 객체 생성
         User user = UserMapper.toEntity(dto, null);
 
-        if (dto.profileImage() != null) {
-            var payload = dto.profileImage();
-            BinaryContent bc = BinaryContentMapper.toEntity(user.getId(), null, payload);
+        if (profileImage != null) {
+            BinaryContent bc = BinaryContentMapper.toEntity(user.getId(), null, profileImage);
 
             binaryContentRepository.save(bc);
 
@@ -88,7 +87,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserDto updateUserInfo(UUID userId, UpdateUserRequestDTO dto) {
+    public UserDto updateUserInfo(UUID userId, UpdateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
         User user = findUserOrThrow(userId);
 
         if (dto.newUsername() != null) {
@@ -100,8 +99,8 @@ public class BasicUserService implements UserService {
         if (dto.newPassword() != null) {
             updatePassword(dto, user);
         }
-        if (dto.profileImage() != null) {
-            updateUserProfileImage(dto, user);
+        if (profileImage != null) {
+            updateUserProfileImage(profileImage, user);
         }
 
         return UserMapper.toResponse(
@@ -182,14 +181,12 @@ public class BasicUserService implements UserService {
         userRepository.save(user);
     }
 
-    private void updateUserProfileImage(UpdateUserRequestDTO dto, User user) {
-        if (dto.profileImage() == null) {
+    private void updateUserProfileImage(CreateBinaryContentPayloadDTO profileImage, User user) {
+        if (profileImage == null) {
             throw new IllegalArgumentException("profile 값이 존재하지 않습니다.");
         }
 
-        CreateBinaryContentPayloadDTO payload = dto.profileImage();
-
-        BinaryContent binaryContent = BinaryContentMapper.toEntity(user.getId(), null, payload);
+        BinaryContent binaryContent = BinaryContentMapper.toEntity(user.getId(), null, profileImage);
 
         binaryContentRepository.save(binaryContent);
 

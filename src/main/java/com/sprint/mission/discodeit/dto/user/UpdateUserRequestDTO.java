@@ -9,7 +9,5 @@ import java.util.UUID;
 public record UpdateUserRequestDTO(
         String newUsername,
         String newEmail,
-        String newPassword,
-        @Nullable
-        CreateBinaryContentPayloadDTO profileImage
+        String newPassword
 ) { }

@@ -1,14 +1,16 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelWithLastMessageDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.user.*;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
@@ -20,13 +22,29 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
-    private final ChannelService channelService;
 
-    @RequestMapping(method = RequestMethod.POST)
+    @RequestMapping(
+            method = RequestMethod.POST,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity createUser(
-            @RequestBody CreateUserRequestDTO dto
+            @RequestPart("userCreateRequest") CreateUserRequestDTO dto,
+            @RequestPart(value = "profile", required = false) MultipartFile profile
             ) {
-        UserDto created = userService.createUser(dto);
+        CreateBinaryContentPayloadDTO payload = null;
+
+        if (profile != null && !profile.isEmpty()) {
+            try {
+                payload = new CreateBinaryContentPayloadDTO(
+                        profile.getBytes(),
+                        profile.getContentType(),
+                        profile.getOriginalFilename()
+                );
+            } catch (IOException e) {
+                throw new IllegalArgumentException("프로필 파일을 읽을 수 없습니다.", e);
+            }
+        }
+
+        UserDto created = userService.createUser(dto, payload);
 
         // 현재 요청 URL(/v1/users)을 기준으로
         // 새로 생성된 사용자 리소스의 주소(/v1/users/{id})를 만들어줌
@@ -40,12 +58,30 @@ public class UserController {
                 .body(created);
     }
 
-    @RequestMapping(value = "/{userId}", method = RequestMethod.PATCH)
+    @RequestMapping(
+            value = "/{userId}",
+            method = RequestMethod.PATCH,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity updateUser(
             @PathVariable UUID userId,
-            @RequestBody UpdateUserRequestDTO dto
+            @RequestPart("userUpdateRequest") UpdateUserRequestDTO dto,
+            @RequestPart(value = "profile", required = false) MultipartFile profile
             ) {
-        UserDto updated = userService.updateUserInfo(userId, dto);
+        CreateBinaryContentPayloadDTO payload = null;
+
+        if (profile != null && !profile.isEmpty()) {
+            try {
+                payload = new CreateBinaryContentPayloadDTO(
+                        profile.getBytes(),
+                        profile.getContentType(),
+                        profile.getOriginalFilename()
+                );
+            } catch (IOException e) {
+                throw new IllegalArgumentException("프로필 파일을 읽을 수 없습니다.", e);
+            }
+        }
+
+        UserDto updated = userService.updateUserInfo(userId, dto, payload);
 
         return ResponseEntity.ok(updated);
     }
