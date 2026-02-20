@@ -2,16 +2,16 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -25,14 +25,14 @@ public class BasicReadStatusService implements ReadStatusService {
   public ReadStatusDto.Response create(ReadStatusDto.Create request) {
 
     userRepository.findById(request.userId())
-        .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
     channelRepository.findById(request.channelId())
-        .orElseThrow(() -> new NoSuchElementException("채널이 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
 
     readStatusRepository.findByUserIdAndChannelId(request.userId(), request.channelId())
         .ifPresent(status -> {
-          throw new IllegalArgumentException("이미 수신 정보가 존재합니다.");
+          throw new BusinessLogicException(ExceptionCode.READ_STATUS_ALREADY_EXISTS);
         });
 
     ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
@@ -43,7 +43,7 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public ReadStatusDto.Response findById(UUID statusId) {
     ReadStatus status = readStatusRepository.findById(statusId)
-        .orElseThrow(() -> new NoSuchElementException("수신 정보가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
     return ReadStatusDto.Response.of(status);
   }
 
@@ -57,7 +57,7 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public ReadStatusDto.Response update(UUID readStatusId, ReadStatusDto.Update request) {
     ReadStatus status = readStatusRepository.findById(readStatusId)
-        .orElseThrow(() -> new NoSuchElementException("수신 정보가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
     status.updateLastReadAt(request.newLastReadAt());
     readStatusRepository.save(status);
     return ReadStatusDto.Response.of(status);
@@ -66,7 +66,7 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public void delete(UUID statusId) {
     ReadStatus status = readStatusRepository.findById(statusId)
-        .orElseThrow(() -> new NoSuchElementException("수신 정보가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
     readStatusRepository.delete(status);
   }
 }

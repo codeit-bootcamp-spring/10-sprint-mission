@@ -1,19 +1,25 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.UserDto;
-import com.sprint.mission.discodeit.entity.*;
-import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ExceptionCode;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -67,9 +73,9 @@ public class BasicUserService implements UserService {
   @Override
   public UserDto.Response findById(UUID userId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     UserStatus status = userStatusRepository.findByUserId(userId)
-        .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
     return UserDto.Response.of(user, status);
   }
 
@@ -78,7 +84,7 @@ public class BasicUserService implements UserService {
     return userRepository.findAll().stream()
         .map(user -> {
           UserStatus status = userStatusRepository.findByUserId(user.getId())
-              .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
+              .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
           return UserDto.Response.of(user, status);
         })
         .toList();
@@ -87,7 +93,7 @@ public class BasicUserService implements UserService {
   @Override
   public UserDto.Response update(UUID userId, UserDto.Update request, MultipartFile file) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
     Optional.ofNullable(request.newUsername()).ifPresent(user::updateUsername);
     Optional.ofNullable(request.newEmail()).ifPresent(user::updateEmail);
@@ -118,7 +124,7 @@ public class BasicUserService implements UserService {
 
     //유저 상태 객체 획인
     UserStatus status = userStatusRepository.findByUserId(userId)
-        .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
 
     userStatusRepository.save(status);
     return UserDto.Response.of(user, status);
@@ -127,7 +133,7 @@ public class BasicUserService implements UserService {
   @Override
   public void delete(UUID userId) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
     //유저가 작성한 메시지 목록
     List<Message> messages = messageRepository.findAll().stream()
@@ -148,7 +154,7 @@ public class BasicUserService implements UserService {
 
     //유저 상태 삭제
     UserStatus status = userStatusRepository.findByUserId(userId)
-        .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
     userStatusRepository.delete(status);
 
     //유저 프로필 삭제
@@ -164,7 +170,7 @@ public class BasicUserService implements UserService {
     boolean exist = userRepository.findAll().stream()
         .anyMatch(user -> user.getUsername().equals(username));
     if (exist) {
-      throw new IllegalArgumentException("이미 사용중인 유저 이름입니다: " + username);
+      throw new BusinessLogicException(ExceptionCode.DUPLICATE_USERNAME);
     }
   }
 
@@ -173,7 +179,7 @@ public class BasicUserService implements UserService {
     boolean exist = userRepository.findAll().stream()
         .anyMatch(user -> user.getEmail().equals(email));
     if (exist) {
-      throw new IllegalArgumentException("이미 사용중인 이메일입니다: " + email);
+      throw new BusinessLogicException(ExceptionCode.DUPLICATE_EMAIL);
     }
   }
 }

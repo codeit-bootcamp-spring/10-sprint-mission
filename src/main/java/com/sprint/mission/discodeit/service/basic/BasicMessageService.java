@@ -5,17 +5,21 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.repository.*;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ExceptionCode;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -31,14 +35,14 @@ public class BasicMessageService implements MessageService {
   public MessageDto.Response create(MessageDto.Create request, List<MultipartFile> attachments) {
 
     userRepository.findById(request.authorId())
-        .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
     Channel channel = channelRepository.findById(request.channelId())
-        .orElseThrow(() -> new NoSuchElementException("채널이 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
 
     if (channel.getType() == ChannelType.PRIVATE) {
       readStatusRepository.findByUserIdAndChannelId(request.authorId(), request.channelId())
-          .orElseThrow(() -> new IllegalArgumentException("비공개 채널은 참여자만 메시지를 작성할 수 있습니다."));
+          .orElseThrow(() -> new BusinessLogicException(ExceptionCode.NOT_A_CHANNEL_PARTICIPANT));
     }
     //메시지 객체 내부의 첨부파일Id 리스트 저장용
     List<UUID> attachmentIds = new ArrayList<>();
@@ -76,7 +80,7 @@ public class BasicMessageService implements MessageService {
   @Override
   public MessageDto.Response findById(UUID messageId) {
     Message message = messageRepository.findById(messageId)
-        .orElseThrow(() -> new NoSuchElementException("메시지가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
     return MessageDto.Response.of(message);
   }
 
@@ -91,7 +95,7 @@ public class BasicMessageService implements MessageService {
   @Override
   public MessageDto.Response update(UUID messageId, MessageDto.Update request) {
     Message message = messageRepository.findById(messageId)
-        .orElseThrow(() -> new NoSuchElementException("메시지가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
 
     message.update(request.newContent());
     messageRepository.save(message);
@@ -101,7 +105,7 @@ public class BasicMessageService implements MessageService {
   @Override
   public void delete(UUID messageId) {
     Message message = messageRepository.findById(messageId)
-        .orElseThrow(() -> new NoSuchElementException("메시지가 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
 
     for (UUID attachmentId : message.getAttachmentIds()) {
       binaryContentRepository.findById(attachmentId)

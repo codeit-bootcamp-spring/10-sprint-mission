@@ -1,17 +1,25 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ChannelDto;
-import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.entity.BaseEntity;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -50,14 +58,14 @@ public class BasicChannelService implements ChannelService {
       ReadStatus status = new ReadStatus(memberId, channel.getId());
       readStatusRepository.save(status);
     }
-    return ChannelDto.Response.of(channel, memberIds, Instant.now());
+    return ChannelDto.Response.of(channel, memberIds, null);
   }
 
   @Override
   public ChannelDto.Response findById(UUID channelId) {
     //채널Id로 채널 객체 조회
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new NoSuchElementException("채널이 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
     //채널Id로 ReadStatus를 조회해서 userId를 찾아옴
     List<UUID> allUserIds = readStatusRepository.findAllByChannelId(channelId).stream()
         .map(ReadStatus::getUserId)
@@ -85,7 +93,12 @@ public class BasicChannelService implements ChannelService {
         .map(channelRepository::findById)
         .flatMap(Optional::stream)
         .filter(channel -> channel.getType() == ChannelType.PRIVATE)
-        .map(channel -> ChannelDto.Response.of(channel, List.of(), null))
+        .map(channel -> {
+          List<UUID> allUserIds = readStatusRepository.findAllByChannelId(channel.getId()).stream()
+              .map(ReadStatus::getUserId)
+              .toList();
+          return ChannelDto.Response.of(channel, allUserIds, null);
+        })
         .toList();
     List<ChannelDto.Response> allChannels = new ArrayList<>();
     allChannels.addAll(publicChannels);
@@ -96,10 +109,10 @@ public class BasicChannelService implements ChannelService {
   @Override
   public ChannelDto.Response update(UUID channelId, ChannelDto.Update request) {
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new NoSuchElementException("채널이 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
 
     if (channel.getType() == ChannelType.PRIVATE) {
-      throw new IllegalArgumentException("PRIVATE 채널은 수정할 수 없습니다.");
+      throw new BusinessLogicException(ExceptionCode.CANNOT_UPDATE_PRIVATE_CHANNEL);
     }
     Optional.ofNullable(request.newName()).ifPresent(channel::updateChannelName);
     Optional.ofNullable(request.newDescription()).ifPresent(channel::updateDescription);
@@ -111,7 +124,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   public void delete(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
-        .orElseThrow(() -> new NoSuchElementException("채널이 존재하지 않습니다."));
+        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
 
     //채널에 있는 메시지 목록
     List<Message> messages = messageRepository.findAll().stream()
