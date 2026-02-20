@@ -15,10 +15,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +25,8 @@ public class BasicUserService implements UserService {
     private final UserStatusRepository userStatusRepository;// 왜 불가능?
 
     @Override
-    public UserSummaryResponseDTO create(UserCreateRequestDTO userCreateRequestDTO) {
+    public UserSummaryResponseDTO create(UserCreateRequestDTO userCreateRequestDTO,
+                                         Optional<BinaryContentCreateRequestDTO> binaryContentCreateRequestDTO) {
         // DTO에서 @NotBlank와 같은 애너테이션을 이용해 검증함
         String username = userCreateRequestDTO.username();
         if (userRepository.findAll()
@@ -47,15 +45,16 @@ public class BasicUserService implements UserService {
         String password = userCreateRequestDTO.password();
 
         User user;
-        BinaryContentCreateRequestDTO profileImage = userCreateRequestDTO.profileImage();
-        if (profileImage == null) {// 프로필 이미지 등록을 안했다면
-            user = new User(username,email,password, null);
-        } else { // 프로필 등록을 했다면
-            byte[] content = profileImage.content();
-            String contentType = profileImage.contentType();
-            BinaryContent binaryContent = new BinaryContent(contentType,content);
+        if (binaryContentCreateRequestDTO.isPresent()) { // 프로필 이미지 등록을 했다면
+            BinaryContent binaryContent = new BinaryContent(
+                    binaryContentCreateRequestDTO.get().fileName(),
+                    binaryContentCreateRequestDTO.get().contentType(),
+                    binaryContentCreateRequestDTO.get().content()
+            );
             binaryContentRepository.save(binaryContent);
             user = new User(username, email, password, binaryContent.getId());
+        }else {// 프로필 이미지 등록을 안했다면
+            user = new User(username,email,password,null);
         }
         UserStatus userStatus = new UserStatus(user.getId(),user.getCreatedAt());
         userStatusRepository.save(userStatus);
@@ -86,7 +85,8 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public UserSummaryResponseDTO update(UUID userId, UserUpdateRequestDTO userUpdateRequestDTO) {
+    public UserSummaryResponseDTO update(UUID userId, UserUpdateRequestDTO userUpdateRequestDTO,
+                                         Optional<BinaryContentCreateRequestDTO> binaryContentCreateRequestDTO) {
         // DTO에서 email을 애너테이션으로 검증
         // 수정하려는 newName같은 것들은 null을 허용 -> 원하는 유저의 필드를 선택적으로 수정핧 수 있게 하게끔
         User user = getUserByIdOrThrow(userId);
@@ -103,18 +103,17 @@ public class BasicUserService implements UserService {
             throw new IllegalStateException("수정하려는 새로운 username 또는 email를 사용중인 유저가 이미 있습니다");
         }
 
-        // 프로필 이미지를 선택적으로 수정할 수 있어야함 -> null 확인
-        BinaryContentCreateRequestDTO profileImage = userUpdateRequestDTO.profileImage();
-        if (profileImage == null) {// 프로필 수정 안했다면
-            // User class update() 입력 파라미터에 profileId를 추가해야함
-            // user.getProfileId()를 사용해 기존 프로필 이미지의 id를 입력값으로
-            user.update(newUsername, newEmail, newPassword, user.getProfileId());
-        }else {// 프로필 이미지를 수정한다면
-            String contentType = profileImage.contentType();
-            byte[] content = profileImage.content();
-            BinaryContent binaryContent = new BinaryContent(contentType,content);
+        if (binaryContentCreateRequestDTO.isPresent()) { // 프로필 이미지를 수정한다면
+            BinaryContent binaryContent = new BinaryContent(
+                    binaryContentCreateRequestDTO.get().fileName(),
+                    binaryContentCreateRequestDTO.get().contentType(),
+                    binaryContentCreateRequestDTO.get().content()
+            );
             binaryContentRepository.save(binaryContent);
             user.update(newUsername, newEmail, newPassword, binaryContent.getId());
+        } else { // 프로필 이미지를 수정하지 않는다면
+            // 기존 프로필 이미지 id를 사용
+            user.update(newUsername, newEmail, newPassword, user.getProfileId());
         }
         userRepository.save(user);
         return toUserSummaryResponseDTO(user);

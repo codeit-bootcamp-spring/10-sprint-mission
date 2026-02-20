@@ -11,11 +11,13 @@ import java.util.UUID;
 public class BinaryContent implements Serializable {
     private UUID id;
     private Instant createdAt;
+    private String fileName;
     private byte[] content;
     private String contentType;
 
-    public BinaryContent(String contentType, byte[] content) {
+    public BinaryContent(String fileName, String contentType, byte[] content) {
         this.id = UUID.randomUUID();
+        this.fileName = fileName;
         this.contentType = contentType;
         this.content = content;
         this.createdAt = Instant.now();

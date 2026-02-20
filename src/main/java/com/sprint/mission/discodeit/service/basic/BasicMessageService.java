@@ -26,11 +26,12 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageResponseDTO create(MessageCreateRequestDTO messageCreateRequestDTO) {
+    public MessageResponseDTO create(MessageCreateRequestDTO messageCreateRequestDTO,
+                                     Optional<List<BinaryContentCreateRequestDTO>> binaryContentCreateRequestDTO) {
         String content = messageCreateRequestDTO.content();
         UUID channelId= messageCreateRequestDTO.channelId();
         UUID authorId= messageCreateRequestDTO.authorId();
-        List<BinaryContentCreateRequestDTO> attachments = messageCreateRequestDTO.attachments();
+        List<BinaryContentCreateRequestDTO> attachments = binaryContentCreateRequestDTO.orElse(new ArrayList<>());
         if (!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException(channelId+"를 가진 채널이 없습니다");
         }
@@ -56,9 +57,10 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponseDTO update(UUID messageId, MessageUpdateRequestDTO messageUpdateRequestDTO) {
+    public MessageResponseDTO update(UUID messageId, MessageUpdateRequestDTO messageUpdateRequestDTO,
+                                     Optional<List<BinaryContentCreateRequestDTO>> binaryContentCreateRequestDTO) {
         Message message = getMessageByIdOrThrow(messageId);
-        List<UUID> newAttachmentIds = toAttachmentIds(messageUpdateRequestDTO.attachments());
+        List<UUID> newAttachmentIds = toAttachmentIds(binaryContentCreateRequestDTO.orElse(new ArrayList<>()));
         message.update(messageUpdateRequestDTO.newContent(), newAttachmentIds);
         return toMessageResponseDTO(messageRepository.save(message));
     }
@@ -90,10 +92,11 @@ public class BasicMessageService implements MessageService {
     private List<UUID> toAttachmentIds(List<BinaryContentCreateRequestDTO> attachments) {
         List<UUID> attachmentIds = new ArrayList<>();
         if (!attachments.isEmpty()) {
-            for (BinaryContentCreateRequestDTO BinaryContentCreateRequestDTO : attachments) {
-                byte[] bytes = BinaryContentCreateRequestDTO.content();
-                String contentType = BinaryContentCreateRequestDTO.contentType();
-                BinaryContent attachment = binaryContentRepository.save(new BinaryContent(contentType, bytes));
+            for (BinaryContentCreateRequestDTO binaryContentCreateRequestDTO : attachments) {
+                String fileName = binaryContentCreateRequestDTO.fileName();
+                byte[] bytes = binaryContentCreateRequestDTO.content();
+                String contentType = binaryContentCreateRequestDTO.contentType();
+                BinaryContent attachment = binaryContentRepository.save(new BinaryContent(fileName, contentType, bytes));
                 attachmentIds.add(attachment.getId());
             }
         }

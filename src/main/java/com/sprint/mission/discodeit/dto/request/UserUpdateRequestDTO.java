@@ -8,7 +8,5 @@ public record UserUpdateRequestDTO(
    @Email(message = "email 형식이 맞지 않습니다")
    String newEmail,
 
-   String newPassword,
-
-   BinaryContentCreateRequestDTO profileImage
+   String newPassword
 ) {}
