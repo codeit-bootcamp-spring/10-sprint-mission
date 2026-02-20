@@ -1,15 +1,19 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.DeleteMessageResponseDTO;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
@@ -22,21 +26,44 @@ public class MessageController {
 
     private final MessageService messageService;
 
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity createMessage(
-            @RequestBody CreateMessageRequestDTO dto
+    @RequestMapping(
+            method = RequestMethod.POST,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<MessageResponseDTO> createMessage(
+            @RequestPart("messageCreateRequest") CreateMessageRequestDTO dto,
+            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
-        MessageResponseDTO created = messageService.createMessage(dto);
+        List<CreateBinaryContentPayloadDTO> payloads = List.of();
+
+        if (attachments != null && !attachments.isEmpty()) {
+            payloads = attachments.stream()
+                    .filter(file -> file != null && !file.isEmpty())
+                    .map(file -> {
+                        try {
+                            return new CreateBinaryContentPayloadDTO(
+                                    file.getBytes(),
+                                    file.getContentType(),
+                                    file.getOriginalFilename()
+                            );
+                        } catch (IOException e) {
+                            throw new IllegalArgumentException("첨부 파일을 읽을 수 없습니다.", e);
+                        }
+                    })
+                    .toList();
+        }
+
+        MessageResponseDTO created = messageService.createMessage(dto, payloads);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(created.messageId())
+                .buildAndExpand(created.id())
                 .toUri();
 
-        return ResponseEntity.created(location)
-                .body(created);
+        return ResponseEntity.created(location).body(created);
     }
+
 
     @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
     public ResponseEntity updateMessage(

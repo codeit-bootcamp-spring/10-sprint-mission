@@ -9,7 +9,5 @@ import java.util.UUID;
 public record CreateMessageRequestDTO(
         String content,
         UUID channelId,
-        UUID authorId,
-        @Nullable
-        List<CreateBinaryContentPayloadDTO> attachments
+        UUID authorId
 ) { }

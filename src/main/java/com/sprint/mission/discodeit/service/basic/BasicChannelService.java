@@ -28,7 +28,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelResponseDTO createPublicChannel(CreatePublicChannelRequestDTO dto) {
-        Objects.requireNonNull(dto.channelName(), "공개 채널의 이름은 null일 수 없습니다.");
+        Objects.requireNonNull(dto.name(), "공개 채널의 이름은 null일 수 없습니다.");
 
         Channel channel = ChannelMapper.toPublicChannelEntity(dto);
         channelRepository.save(channel);
@@ -37,14 +37,14 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelResponseDTO createPrivateChannel(CreatePrivateChannelRequestDTO dto) {
-        Objects.requireNonNull(dto.joinedUserIds(), "joinedUserIds는 null값일 수 없습니다.");
-        if (dto.joinedUserIds().isEmpty()) {
+        Objects.requireNonNull(dto.participantIds(), "participantIds는 null값일 수 없습니다.");
+        if (dto.participantIds().isEmpty()) {
             throw new IllegalArgumentException("비공개 채널엔 최소 1명 이상 입장하여야 합니다.");
         }
 
         Channel channel = ChannelMapper.toPrivateChannelEntity(null, null);
 
-        for (UUID ids : dto.joinedUserIds()) {
+        for (UUID ids : dto.participantIds()) {
             channel.updateUser(ids);
         }
 
@@ -64,7 +64,7 @@ public class BasicChannelService implements ChannelService {
         List<Channel> publicChannels
                 = allChannels.stream()
                 .filter(channel -> channel.getChannelType().equals(ChannelType.PUBLIC))
-                .filter(channel -> channel.getJoinedUserIds().contains(userId))     // 유저가 참여한 채널로 필터링
+//                .filter(channel -> channel.getJoinedUserIds().contains(userId))     // 유저가 참여한 채널로 필터링
                 .toList();
         List<Channel> privateChannels
                 = allChannels.stream()

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
 import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
@@ -29,19 +30,18 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageResponseDTO createMessage(CreateMessageRequestDTO dto) {
+    public MessageResponseDTO createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments) {
         findUserOrThrow(dto.authorId());
         findChannelOrThrow(dto.channelId());
-        List<UUID> attachments = new ArrayList<>();
+        List<UUID> attachment = new ArrayList<>();
         // 껍데기 생성
-        Message message = MessageMapper.toEntity(dto, attachments);
+        Message message = MessageMapper.toEntity(dto, attachment);
 
-        var payloads = dto.attachments();
-        if (payloads != null && !payloads.isEmpty()) {
-            for (var payload : payloads) {
+        if (attachments != null && !attachments.isEmpty()) {
+            for (var payload : attachments) {
                 BinaryContent bc = BinaryContentMapper.toEntity(dto.authorId(), message.getId(), payload);
                 binaryContentRepository.save(bc);
-                attachments.add(bc.getId());
+                attachment.add(bc.getId());
             }
         }
         // 영속화

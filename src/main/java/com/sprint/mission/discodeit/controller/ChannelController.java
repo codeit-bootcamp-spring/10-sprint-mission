@@ -31,7 +31,7 @@ public class ChannelController {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(created.channelId())
+                .buildAndExpand(created.id())
                 .toUri();
 
         return ResponseEntity.created(location)
@@ -47,7 +47,7 @@ public class ChannelController {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(created.channelId())
+                .buildAndExpand(created.id())
                 .toUri();
 
         return ResponseEntity.created(location)

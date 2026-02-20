@@ -15,7 +15,7 @@ import java.util.UUID;
 public class ChannelMapper {
     public static Channel toPublicChannelEntity(CreatePublicChannelRequestDTO dto) {
         return new Channel(
-                dto.channelName(),
+                dto.name(),
                 dto.description(),
                 ChannelType.PUBLIC
         );
@@ -32,10 +32,11 @@ public class ChannelMapper {
     public static ChannelResponseDTO toResponse(Channel channel) {
         return new ChannelResponseDTO(
                 channel.getId(),
+                channel.getChannelType(),
                 channel.getChannelName(),
                 channel.getDescription(),
-                channel.getChannelType(),
-                channel.getJoinedUserIds()
+                channel.getJoinedUserIds(),
+                channel.getCreatedAt()
         );
     }
 

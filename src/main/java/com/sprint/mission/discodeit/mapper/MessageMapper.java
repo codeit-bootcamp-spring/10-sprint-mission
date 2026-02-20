@@ -22,9 +22,10 @@ public class MessageMapper {
         return new MessageResponseDTO(
                 message.getId(),
                 message.getCreatedAt(),
-                message.getSentUserId(),
-                message.getSentChannelId(),
+                message.getUpdatedAt(),
                 message.getContent(),
+                message.getSentChannelId(),
+                message.getSentUserId(),
                 message.getAttachmentIds()
         );
     }

@@ -30,7 +30,7 @@ public class ReadStatusController {
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(created.statusId())
+                .buildAndExpand(created.id())
                 .toUri();
 
         return ResponseEntity.created(location)
