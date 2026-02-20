@@ -6,6 +6,5 @@ import java.util.UUID;
 
 public record UpdateChannelRequestDTO(
         String newChannelName,
-        String newChannelDescription,
-        ChannelType channelType
+        String newChannelDescription
 ) { }

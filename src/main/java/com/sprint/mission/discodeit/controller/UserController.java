@@ -90,13 +90,4 @@ public class UserController {
 
         return ResponseEntity.ok(response);
     }
-
-    @RequestMapping(value = "/{userId}/channels", method = RequestMethod.GET)
-    public ResponseEntity findAllChannelsByUserId(
-            @PathVariable UUID userId
-    ) {
-        List<ChannelWithLastMessageDTO> channels = channelService.findAllByUserId(userId);
-
-        return ResponseEntity.ok(channels);
-    }
 }

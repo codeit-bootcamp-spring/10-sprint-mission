@@ -15,14 +15,14 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/channel")
+@RequestMapping("/api/channels")
 @RequiredArgsConstructor
 public class ChannelController {
 
     private final UserService userService;
     private final ChannelService channelService;
 
-    @RequestMapping(value = "/create/public", method = RequestMethod.POST)
+    @RequestMapping(value = "/public", method = RequestMethod.POST)
     public ResponseEntity createPublicChannel(
             @RequestBody CreatePublicChannelRequestDTO dto
     ) {
@@ -38,7 +38,7 @@ public class ChannelController {
                 .body(created);
     }
 
-    @RequestMapping(value = "/create/private", method = RequestMethod.POST)
+    @RequestMapping(value = "/private", method = RequestMethod.POST)
     public ResponseEntity createPrivateChannel(
             @RequestBody CreatePrivateChannelRequestDTO dto
             ) {
@@ -54,7 +54,7 @@ public class ChannelController {
                 .body(created);
     }
 
-    @RequestMapping(value = "/update/{channelId}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH)
     public ResponseEntity updateChannel(
             @PathVariable UUID channelId,
             @RequestBody UpdateChannelRequestDTO dto
@@ -73,10 +73,20 @@ public class ChannelController {
         return ResponseEntity.ok(
                 new DeleteOrLeaveChannelResponseDTO(
                         Instant.now(),
-                        200,
+                        204,
                         "채널이 삭제되었습니다."
                 )
         );
+    }
+
+    // TODO: 유저가 참여중인 채널 목록 조회 API 추가
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity findChannelsByUserId(
+            @RequestParam("userId") UUID userId
+    ) {
+        List<ChannelWithLastMessageDTO> channels = channelService.findAllByUserId(userId);
+
+        return ResponseEntity.ok(channels);
     }
 
     @RequestMapping(value = "/{channelId}/users", method = RequestMethod.GET)

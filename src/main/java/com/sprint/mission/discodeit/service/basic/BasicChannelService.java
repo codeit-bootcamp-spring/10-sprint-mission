@@ -64,6 +64,7 @@ public class BasicChannelService implements ChannelService {
         List<Channel> publicChannels
                 = allChannels.stream()
                 .filter(channel -> channel.getChannelType().equals(ChannelType.PUBLIC))
+                .filter(channel -> channel.getJoinedUserIds().contains(userId))     // 유저가 참여한 채널로 필터링
                 .toList();
         List<Channel> privateChannels
                 = allChannels.stream()
