@@ -53,7 +53,7 @@ public class ChannelController {
 
   @GetMapping
   @Operation(summary = "User가 참여 중인 Channel 목록 조회")
-  public ResponseEntity<?> findAll(@RequestParam UUID userId) {
+  public ResponseEntity<?> findAll(@RequestParam("userId") UUID userId) {
     List<ChannelDto.Response> responses = channelService.findAllByUserId(userId);
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }

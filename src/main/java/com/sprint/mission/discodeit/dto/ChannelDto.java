@@ -17,7 +17,7 @@ public class ChannelDto {
   }
 
   public record CreatePrivate(
-      List<UUID> userIds
+      List<UUID> participantIds
   ) {
 
   }
@@ -44,8 +44,8 @@ public class ChannelDto {
   }
 
   public record Update(
-      String name,
-      String description
+      String newName,
+      String newDescription
   ) {
 
   }

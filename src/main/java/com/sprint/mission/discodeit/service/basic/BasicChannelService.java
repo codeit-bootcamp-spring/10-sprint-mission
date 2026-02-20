@@ -40,7 +40,7 @@ public class BasicChannelService implements ChannelService {
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
     channelRepository.save(channel);
     //채널 참여자 아이디 목록
-    List<UUID> memberIds = createRequest.userIds();
+    List<UUID> memberIds = createRequest.participantIds();
     //null 체크
     if (memberIds == null) {
       memberIds = List.of();
@@ -101,8 +101,8 @@ public class BasicChannelService implements ChannelService {
     if (channel.getType() == ChannelType.PRIVATE) {
       throw new IllegalArgumentException("PRIVATE 채널은 수정할 수 없습니다.");
     }
-    Optional.ofNullable(request.name()).ifPresent(channel::updateChannelName);
-    Optional.ofNullable(request.description()).ifPresent(channel::updateDescription);
+    Optional.ofNullable(request.newName()).ifPresent(channel::updateChannelName);
+    Optional.ofNullable(request.newDescription()).ifPresent(channel::updateDescription);
 
     channelRepository.save(channel);
     return findById(channel.getId());

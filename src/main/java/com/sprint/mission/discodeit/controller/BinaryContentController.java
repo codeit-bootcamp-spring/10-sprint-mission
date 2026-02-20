@@ -33,7 +33,7 @@ public class BinaryContentController {
 
   @GetMapping
   @Operation(summary = "여러 첨부 파일 조회")
-  public ResponseEntity<?> findAll(@RequestParam List<UUID> binaryContentIds) {
+  public ResponseEntity<?> findAll(@RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
     List<BinaryContentDto.Response> response = binaryContentService.findAllByIdIn(binaryContentIds);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }

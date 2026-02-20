@@ -89,9 +89,9 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("유저가 존재하지 않습니다."));
 
-    Optional.ofNullable(request.username()).ifPresent(user::updateUsername);
-    Optional.ofNullable(request.email()).ifPresent(user::updateEmail);
-    Optional.ofNullable(request.password()).ifPresent(user::updatePassword);
+    Optional.ofNullable(request.newUsername()).ifPresent(user::updateUsername);
+    Optional.ofNullable(request.newEmail()).ifPresent(user::updateEmail);
+    Optional.ofNullable(request.newPassword()).ifPresent(user::updatePassword);
 
     if (file != null && !file.isEmpty()) { //요청에 프로필 파일이 있는지 확인
       if (user.getProfileId() != null) { //기존 유저에게 프로필이 있는지 확인, 프로필이 있으면 지움
