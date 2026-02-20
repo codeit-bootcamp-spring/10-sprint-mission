@@ -14,5 +14,5 @@ public record UserCreateRequestDTO(
     @NotBlank(message = "password가 비어있습니다")
     String password,
 
-    ProfileCreateRequestDTO profileImage
+    BinaryContentCreateRequestDTO profileImage
 ) {}

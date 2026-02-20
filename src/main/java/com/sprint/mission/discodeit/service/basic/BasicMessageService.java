@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.AttachmentCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.MessageResponseDTO;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequestDTO;
@@ -30,7 +30,7 @@ public class BasicMessageService implements MessageService {
         String content = messageCreateRequestDTO.content();
         UUID channelId= messageCreateRequestDTO.channelId();
         UUID authorId= messageCreateRequestDTO.authorId();
-        List<AttachmentCreateRequestDTO> attachments = messageCreateRequestDTO.attachments();
+        List<BinaryContentCreateRequestDTO> attachments = messageCreateRequestDTO.attachments();
         if (!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException(channelId+"를 가진 채널이 없습니다");
         }
@@ -85,14 +85,14 @@ public class BasicMessageService implements MessageService {
         );
     }
     
-    // Message create,update요청시 List<AttachmentCreateRequestDTO> attachments를 통해 BinaryContent를 생성하고
+    // Message create,update요청시 List<BinaryContentCreateRequestDTO> attachments를 통해 BinaryContent를 생성하고
     // Message의 필드로 들어갈 List<UUID> attachmentIds를 반환하는 메서드
-    private List<UUID> toAttachmentIds(List<AttachmentCreateRequestDTO> attachments) {
+    private List<UUID> toAttachmentIds(List<BinaryContentCreateRequestDTO> attachments) {
         List<UUID> attachmentIds = new ArrayList<>();
         if (!attachments.isEmpty()) {
-            for (AttachmentCreateRequestDTO attachmentCreateRequestDTO : attachments) {
-                byte[] bytes = attachmentCreateRequestDTO.bytes();
-                String contentType = attachmentCreateRequestDTO.contentType();
+            for (BinaryContentCreateRequestDTO BinaryContentCreateRequestDTO : attachments) {
+                byte[] bytes = BinaryContentCreateRequestDTO.content();
+                String contentType = BinaryContentCreateRequestDTO.contentType();
                 BinaryContent attachment = binaryContentRepository.save(new BinaryContent(contentType, bytes));
                 attachmentIds.add(attachment.getId());
             }

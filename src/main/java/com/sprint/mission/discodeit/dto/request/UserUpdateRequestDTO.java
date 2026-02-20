@@ -10,5 +10,5 @@ public record UserUpdateRequestDTO(
 
    String newPassword,
 
-   ProfileCreateRequestDTO profileImage
+   BinaryContentCreateRequestDTO profileImage
 ) {}

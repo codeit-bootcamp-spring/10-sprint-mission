@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.dto.request.AttachmentCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.PublicCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
@@ -35,7 +35,7 @@ public class DiscodeitApplication {
     }
 
     static void messageCreateTest(MessageService messageService, UUID channelId, UUID authorId) {
-        List<AttachmentCreateRequestDTO> attachments = new ArrayList<>();
+        List<BinaryContentCreateRequestDTO> attachments = new ArrayList<>();
         MessageCreateRequestDTO messageCreateRequestDTO = new MessageCreateRequestDTO(
                 "안녕하세요.",
                 channelId,

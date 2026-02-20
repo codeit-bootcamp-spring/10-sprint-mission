@@ -14,5 +14,6 @@ public record MessageCreateRequestDTO(
    @NotBlank(message = "authorId가 blank일 수 없습니다")
    UUID authorId,
    @NotNull(message = "attachments가 empty일 수 있으나 null일 수 없습니다")
-   List<AttachmentCreateRequestDTO> attachments
+//   List<AttachmentCreateRequestDTO> attachments
+   List<BinaryContentCreateRequestDTO> attachments
 ) {}

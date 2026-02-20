@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.ProfileCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.UserDetailResponseDTO;
@@ -47,7 +47,7 @@ public class BasicUserService implements UserService {
         String password = userCreateRequestDTO.password();
 
         User user;
-        ProfileCreateRequestDTO profileImage = userCreateRequestDTO.profileImage();
+        BinaryContentCreateRequestDTO profileImage = userCreateRequestDTO.profileImage();
         if (profileImage == null) {// 프로필 이미지 등록을 안했다면
             user = new User(username,email,password, null);
         } else { // 프로필 등록을 했다면
@@ -104,7 +104,7 @@ public class BasicUserService implements UserService {
         }
 
         // 프로필 이미지를 선택적으로 수정할 수 있어야함 -> null 확인
-        ProfileCreateRequestDTO profileImage = userUpdateRequestDTO.profileImage();
+        BinaryContentCreateRequestDTO profileImage = userUpdateRequestDTO.profileImage();
         if (profileImage == null) {// 프로필 수정 안했다면
             // User class update() 입력 파라미터에 profileId를 추가해야함
             // user.getProfileId()를 사용해 기존 프로필 이미지의 id를 입력값으로
