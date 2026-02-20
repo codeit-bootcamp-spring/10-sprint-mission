@@ -18,6 +18,8 @@ public class ReadStatusMapper {
     public static ReadStatusResponseDTO toResponse(ReadStatus status) {
         return new ReadStatusResponseDTO(
                 status.getId(),
+                status.getCreatedAt(),
+                status.getUpdatedAt(),
                 status.getUserId(),
                 status.getChannelId(),
                 status.getLastReadAt()

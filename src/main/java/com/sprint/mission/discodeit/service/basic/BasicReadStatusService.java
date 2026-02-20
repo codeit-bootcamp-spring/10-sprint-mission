@@ -59,15 +59,15 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatusResponseDTO updateReadStatus(UpdateReadStatusRequestDTO dto) {
+    public ReadStatusResponseDTO updateReadStatus(UUID statusId, UpdateReadStatusRequestDTO dto) {
         Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
 
-        if (dto.lastReadAt() == null) {
+        if (dto.newLastReadAt() == null) {
             throw new IllegalArgumentException("lastReadAt은 null값일 수 없습니다.");
         }
 
-        ReadStatus status = findReadStatusOrThrow(dto.statusId());
-        status.updateLastReadAt(dto.lastReadAt());
+        ReadStatus status = findReadStatusOrThrow(statusId);
+        status.updateLastReadAt(dto.newLastReadAt());
 
         readStatusRepository.save(status);
 

@@ -5,6 +5,8 @@ import java.util.UUID;
 
 public record ReadStatusResponseDTO(
         UUID statusId,
+        Instant createdAt,
+        Instant updatedAt,
         UUID userId,
         UUID channelId,
         Instant lastReadAt

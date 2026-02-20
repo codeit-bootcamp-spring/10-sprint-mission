@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/readStatus")
+@RequestMapping("/api/readStatuses")
 @RequiredArgsConstructor
 public class ReadStatusController {
 
@@ -37,11 +37,12 @@ public class ReadStatusController {
                 .body(created);
     }
 
-    @RequestMapping(method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{readStatusId}", method = RequestMethod.PATCH)
     public ResponseEntity updateReadStatus(
+            @PathVariable UUID readStatusId,
             @RequestBody UpdateReadStatusRequestDTO dto
     ) {
-        ReadStatusResponseDTO updated = readStatusService.updateReadStatus(dto);
+        ReadStatusResponseDTO updated = readStatusService.updateReadStatus(readStatusId, dto);
 
         return ResponseEntity.ok(updated);
     }
