@@ -31,4 +31,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(UserStatusNotFoundException.class)
+    @ResponseBody
+    public ResponseEntity<ErrorResponseDto> handleUserStatusNotFound(UserStatusNotFoundException e) {
+        ErrorResponseDto error = new ErrorResponseDto("USER_STATUS_NOT_FOUND", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseBody
+    public ResponseEntity<ErrorResponseDto> handleIllegalArgumentException(IllegalArgumentException e) {
+        ErrorResponseDto error = new ErrorResponseDto("BAD_REQUEST", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
 }

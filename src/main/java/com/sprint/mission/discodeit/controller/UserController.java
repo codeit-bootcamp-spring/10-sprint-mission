@@ -63,16 +63,8 @@ public class UserController {
         return ResponseEntity.ok(userService.findAll());
     }
 
-    @Operation(summary = "User 삭제")
-    @ApiResponse(responseCode = "204", description = "User가 성공적으로 삭제됨")
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
-        userService.delete(userId);
-        return ResponseEntity.noContent().build();//삭제후 돌려줄 body가 없다.
-    }
-
     @PatchMapping("/{userId}")
-    public User updateUser(@PathVariable("userId") UUID userId,
+    public ResponseEntity<User> updateUser(@PathVariable("userId") UUID userId,
                            @RequestPart UserUpdateRequest dto,
                            @RequestPart MultipartFile profileImage) throws IOException {
 
@@ -88,17 +80,31 @@ public class UserController {
                 dto.newPassword(),
                 Optional.of(profile)
         );
-
-        return userService.update(userId,dto);
+        User user = userService.update(userId,dto);
+        return ResponseEntity.ok(user);
     }
+
     @PatchMapping("/{userId}/userStatus")
-    public UserStatus updateOnline(@PathVariable UUID userId,
+    public ResponseEntity<UserStatus> updateOnline(@PathVariable UUID userId,
                                    @RequestBody UserStatusUpdateRequest userStatusUpdateRequest){
 
         userStatusService.update(userId, userStatusUpdateRequest);
-        return userStatusService.findByUserId(userId);
+        UserStatus userStatus = userStatusService.findByUserId(userId);
+        return ResponseEntity.ok(userStatus);
 
     }
+
+    @Operation(summary = "User 삭제")
+    @ApiResponse(responseCode = "204", description = "User가 성공적으로 삭제됨")
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+        userService.delete(userId);
+        return ResponseEntity.noContent().build();//204
+    }
+
+
+
+
 
 
 }
