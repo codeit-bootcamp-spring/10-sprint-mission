@@ -10,6 +10,7 @@ import java.util.UUID;
 public interface UserStatusService {
     UserStatus create(UserStatusCreateRequest request);
     UserStatus find(UUID userStatusId);
+    UserStatus findByUserId(UUID userId);
     List<UserStatus> findAll();
     UserStatus update(UUID userStatusId, UserStatusUpdateRequest request);
     UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request);
