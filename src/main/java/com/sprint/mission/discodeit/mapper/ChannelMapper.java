@@ -32,11 +32,13 @@ public class ChannelMapper {
     public static ChannelResponseDTO toResponse(Channel channel) {
         return new ChannelResponseDTO(
                 channel.getId(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
                 channel.getChannelType(),
                 channel.getChannelName(),
                 channel.getDescription(),
                 channel.getJoinedUserIds(),
-                channel.getCreatedAt()
+                channel.getCreatedAt()   // 채널 생성 시점이 마지막 메시지 시점이므로 createdAt으로 설정
         );
     }
 
@@ -45,6 +47,8 @@ public class ChannelMapper {
     ) {
         return new ChannelWithLastMessageDTO(
                 channel.getId(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
                 channel.getChannelType(),
                 channel.getChannelName(),
                 channel.getDescription(),

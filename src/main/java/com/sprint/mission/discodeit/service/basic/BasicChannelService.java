@@ -82,6 +82,8 @@ public class BasicChannelService implements ChannelService {
 
         return new ChannelWithLastMessageDTO(
                 channel.getId(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
                 channel.getChannelType(),
                 channel.getChannelName(),
                 channel.getDescription(),
@@ -101,10 +103,10 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalArgumentException("비공개 채널은 수정할 수 없습니다.");
         }
 
-        if (dto.newChannelName() != null) {
+        if (dto.newName() != null) {
             updateChannelName(dto, channel);
         }
-        if (dto.newChannelDescription() != null) {
+        if (dto.newDescription() != null) {
             updateChannelDescription(dto, channel);
         }
 
@@ -209,6 +211,8 @@ public class BasicChannelService implements ChannelService {
                     // 최종적으로 조회용 DTO 생성해서 반환
                     return new ChannelWithLastMessageDTO(
                             channel.getId(),
+                            channel.getCreatedAt(),
+                            channel.getUpdatedAt(),
                             channel.getChannelType(),
                             channel.getChannelName(),
                             channel.getDescription(),
@@ -222,22 +226,22 @@ public class BasicChannelService implements ChannelService {
     }
 
     private void updateChannelName(UpdateChannelRequestDTO dto, Channel channel) {
-        if (!dto.newChannelName().equals(channel.getChannelName())) {
-            if (channelRepository.existsByChannelName(dto.newChannelName())) {
+        if (!dto.newName().equals(channel.getChannelName())) {
+            if (channelRepository.existsByChannelName(dto.newName())) {
                 throw new IllegalArgumentException("이미 사용중인 channelName입니다.");
             }
         }
 
-        channel.updateChannelName(dto.newChannelName());
+        channel.updateChannelName(dto.newName());
         channelRepository.save(channel);
     }
 
     private void updateChannelDescription(UpdateChannelRequestDTO dto, Channel channel) {
-        if (dto.newChannelDescription().equals(channel.getDescription())) {
+        if (dto.newDescription().equals(channel.getDescription())) {
             throw new IllegalArgumentException("같은 description으로 바꿀 수 없습니다.");
         }
 
-        channel.updateDescription(dto.newChannelDescription());
+        channel.updateDescription(dto.newDescription());
         channelRepository.save(channel);
     }
 }

@@ -8,6 +8,8 @@ import java.util.UUID;
 
 public record ChannelWithLastMessageDTO(
         UUID id,
+        Instant createdAt,
+        Instant updatedAt,
         ChannelType type,
         String name,
         String description,

@@ -76,11 +76,11 @@ public class BasicMessageService implements MessageService {
     public MessageResponseDTO updateMessage(UUID messageId, UpdateMessageRequestDTO dto) {
         Message message = findMessageOrThrow(messageId);
 
-        if (dto.content() == null) {
+        if (dto.newContent() == null) {
             throw new IllegalArgumentException("content는 null값일 수 없습니다.");
         }
 
-        message.updateContent(dto.content());
+        message.updateContent(dto.newContent());
         messageRepository.save(message);
 
         return MessageMapper.toResponse(message);
