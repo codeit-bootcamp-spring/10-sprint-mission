@@ -38,7 +38,7 @@ public class UserController {
     @ApiResponse(responseCode = "201", description = "User가 성공적으로 생성됨")
     @PostMapping
     public ResponseEntity createUser(@RequestPart UserCreateRequest dto,
-                                     @RequestPart MultipartFile profile) throws IOException {
+                                     @RequestPart(required = false) MultipartFile profile) throws IOException {
         BinaryContentCreateRequest profileImage = new BinaryContentCreateRequest(
                 profile.getOriginalFilename(),
                 profile.getContentType(),
