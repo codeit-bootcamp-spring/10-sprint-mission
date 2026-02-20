@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +27,9 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "비밀번호가 일치하지 않음")
     })
     @PostMapping("/login")
-    public User login(@RequestBody LoginRequest loginRequest) {
-        return authService.login(loginRequest);
+    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
+        User user = authService.login(loginRequest);
+        return ResponseEntity.ok(user);
     }
 
 
