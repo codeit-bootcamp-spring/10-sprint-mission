@@ -38,12 +38,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    @ExceptionHandler(ReadStatusNotFoundException.class)
+    @ResponseBody
+    public ResponseEntity<ErrorResponseDto> handleReadStatusNotFound(ReadStatusNotFoundException e) {
+        ErrorResponseDto error = new ErrorResponseDto("READ_STATUS_NOT_FOUND", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseBody
     public ResponseEntity<ErrorResponseDto> handleIllegalArgumentException(IllegalArgumentException e) {
         ErrorResponseDto error = new ErrorResponseDto("BAD_REQUEST", e.getMessage());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);//400
     }
 
 }
