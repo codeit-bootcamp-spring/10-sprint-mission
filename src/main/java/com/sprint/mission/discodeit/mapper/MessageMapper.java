@@ -11,8 +11,8 @@ import java.util.UUID;
 public class MessageMapper {
     public static Message toEntity(CreateMessageRequestDTO dto, List<UUID> attachments) {
         return new Message(
-                dto.sentUserId(),
-                dto.sentChannelId(),
+                dto.authorId(),
+                dto.channelId(),
                 dto.content(),
                 attachments
         );

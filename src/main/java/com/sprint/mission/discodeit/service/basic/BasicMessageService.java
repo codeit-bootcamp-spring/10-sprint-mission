@@ -30,16 +30,16 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public MessageResponseDTO createMessage(CreateMessageRequestDTO dto) {
-        findUserOrThrow(dto.sentUserId());
-        findChannelOrThrow(dto.sentChannelId());
+        findUserOrThrow(dto.authorId());
+        findChannelOrThrow(dto.channelId());
         List<UUID> attachments = new ArrayList<>();
         // 껍데기 생성
         Message message = MessageMapper.toEntity(dto, attachments);
 
-        var payloads = dto.attachmentDTOs();
+        var payloads = dto.attachments();
         if (payloads != null && !payloads.isEmpty()) {
             for (var payload : payloads) {
-                BinaryContent bc = BinaryContentMapper.toEntity(dto.sentUserId(), message.getId(), payload);
+                BinaryContent bc = BinaryContentMapper.toEntity(dto.authorId(), message.getId(), payload);
                 binaryContentRepository.save(bc);
                 attachments.add(bc.getId());
             }

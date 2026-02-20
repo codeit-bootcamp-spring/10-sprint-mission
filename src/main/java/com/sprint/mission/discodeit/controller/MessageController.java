@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/message")
+@RequestMapping("/api/messages")
 @RequiredArgsConstructor
 public class MessageController {
 
@@ -38,7 +38,7 @@ public class MessageController {
                 .body(created);
     }
 
-    @RequestMapping(value = "/update/{messageId}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
     public ResponseEntity updateMessage(
             @PathVariable UUID messageId,
             @RequestBody UpdateMessageRequestDTO dto
@@ -57,13 +57,13 @@ public class MessageController {
         return ResponseEntity.ok(
                 new DeleteMessageResponseDTO(
                         Instant.now(),
-                        200,
+                        204,
                         "메시지가 성공적으로 삭제되었습니다."
                 )
         );
     }
 
-    @RequestMapping(value = "/by-channel", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity findAllByChannelId(
             @RequestParam UUID channelId
     ) {
