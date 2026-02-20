@@ -41,9 +41,9 @@ public class UserDto {
   }
 
   public record Update(
-      String username,
-      String email,
-      String password
+      String newUsername,
+      String newEmail,
+      String newPassword
   ) {
 
   }

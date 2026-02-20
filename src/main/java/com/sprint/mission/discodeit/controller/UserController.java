@@ -25,7 +25,6 @@ public class UserController {
   private final UserService userService;
   private final UserStatusService userStatusService;
 
-  //사용자를 등록할 수 있다.
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "User 등록")
   public ResponseEntity<?> create(
@@ -36,7 +35,6 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  //사용자 정보를 수정할 수 있다.
   @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "User 정보 수정")
   public ResponseEntity<?> update(
@@ -48,7 +46,6 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
-  //사용자를 삭제할 수 있다.
   @DeleteMapping("/{userId}")
   @Operation(summary = "User 삭제")
   public ResponseEntity<?> delete(@PathVariable UUID userId) {
@@ -56,7 +53,6 @@ public class UserController {
     return ResponseEntity.noContent().build();
   }
 
-  //모든 사용자를 조회할 수 있다.
   @GetMapping
   @Operation(summary = "전체 User 목록 조회")
   public ResponseEntity<?> findAll() {
@@ -64,7 +60,6 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 
-  //사용자의 온라인 상태를 업데이트할 수 있다.
   @PatchMapping("/{userId}/userStatus")
   @Operation(summary = "User 온라인 상태 업데이트")
   public ResponseEntity<?> updateOnline(

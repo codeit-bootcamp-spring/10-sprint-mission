@@ -21,7 +21,6 @@ public class AuthController {
 
   private final AuthService authService;
 
-  //사용자는 로그인할 수 있다.
   @PostMapping("/login")
   @Operation(summary = "로그인")
   public ResponseEntity<?> login(@RequestBody UserDto.Login request) {

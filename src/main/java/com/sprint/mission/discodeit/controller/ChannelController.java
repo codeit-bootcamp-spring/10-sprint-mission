@@ -20,7 +20,6 @@ public class ChannelController {
 
   private final ChannelService channelService;
 
-  //공개 채널을 생성할 수 있다.
   @PostMapping("/public")
   @Operation(summary = "Public Channel 생성")
   public ResponseEntity<?> createPublic(@RequestBody ChannelDto.CreatePublic request) {
@@ -28,7 +27,6 @@ public class ChannelController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  //비공개 채널을 생성할 수 있다.
   @PostMapping("/private")
   @Operation(summary = "Private Channel 생성")
   public ResponseEntity<?> createPrivate(@RequestBody ChannelDto.CreatePrivate request) {
@@ -36,18 +34,16 @@ public class ChannelController {
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
-  //공개 채널의 정보를 수정할 수 있다.
   @PatchMapping("/{channelId}")
   @Operation(summary = "Channel 정보 수정")
   public ResponseEntity<?> update(
       @PathVariable UUID channelId,
-      @ModelAttribute ChannelDto.Update request
+      @RequestBody ChannelDto.Update request
   ) {
     ChannelDto.Response response = channelService.update(channelId, request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
-  //채널을 삭제할 수 있다.
   @DeleteMapping("/{channelId}")
   @Operation(summary = "Channel 삭제")
   public ResponseEntity<?> delete(@PathVariable UUID channelId) {
@@ -55,7 +51,6 @@ public class ChannelController {
     return ResponseEntity.noContent().build();
   }
 
-  //특정 사용자가 볼 수 있는 모든 채널 목록을 조회할 수 있다.
   @GetMapping
   @Operation(summary = "User가 참여 중인 Channel 목록 조회")
   public ResponseEntity<?> findAll(@RequestParam UUID userId) {
