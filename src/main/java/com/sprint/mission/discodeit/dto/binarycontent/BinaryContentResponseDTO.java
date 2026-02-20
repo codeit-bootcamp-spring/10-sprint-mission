@@ -5,11 +5,9 @@ import java.util.UUID;
 
 public record BinaryContentResponseDTO(
         UUID id,
-        UUID userId,
-        UUID messageId,
-        long size,
-        byte[] bytes,
-        String contentType,
+        Instant createdAt,
         String filename,
-        Instant createdAt
+        long size,
+        String contentType,
+        byte[] bytes
 ) { }

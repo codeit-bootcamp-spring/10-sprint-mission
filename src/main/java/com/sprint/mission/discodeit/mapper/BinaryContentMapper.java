@@ -31,13 +31,11 @@ public class BinaryContentMapper {
     public static BinaryContentResponseDTO toResponse(BinaryContent binaryContent) {
         return new BinaryContentResponseDTO(
                 binaryContent.getId(),
-                binaryContent.getUserId(),
-                binaryContent.getMessageId(),
-                binaryContent.getSize(),
-                binaryContent.getData(),
-                binaryContent.getContentType(),
+                binaryContent.getCreatedAt(),
                 binaryContent.getFilename(),
-                binaryContent.getCreatedAt()
+                binaryContent.getSize(),
+                binaryContent.getContentType(),
+                binaryContent.getData()
         );
     }
 
