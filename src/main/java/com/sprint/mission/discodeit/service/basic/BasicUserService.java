@@ -26,7 +26,7 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto create(UserCreateRequest request){
         // username, email 중복 체크
-        validateDuplicateName(request.name());
+        validateDuplicateName(request.username());
         validateDuplicateEmail(request.email());
 
         // 프로필 사진 설정
@@ -34,7 +34,8 @@ public class BasicUserService implements UserService {
         if (request.profileImage() != null) {
             BinaryContent profileImage = new BinaryContent(
                     request.profileImage().fileName(),
-                    request.profileImage().data()
+                    request.profileImage().contentType(),
+                    request.profileImage().bytes()
             );
             binaryContentRepository.save(profileImage);
             profileId = profileImage.getId();
@@ -42,7 +43,7 @@ public class BasicUserService implements UserService {
 
         // 유저 생성
         User user = new User(
-                request.name(),
+                request.username(),
                 request.nickname(),
                 request.email(),
                 request.password(),
@@ -76,11 +77,11 @@ public class BasicUserService implements UserService {
         User user = validateUserExists(id);
 
         // 이름 수정 + 중복 체크
-        Optional.ofNullable(request.name())
-                .filter(name -> !name.equals(user.getName()))
-                .ifPresent(name -> {
-                    validateDuplicateName(name);
-                    user.updateName(name);
+        Optional.ofNullable(request.username())
+                .filter(username -> !username.equals(user.getUsername()))
+                .ifPresent(username -> {
+                    validateDuplicateName(username);
+                    user.updateName(username);
                 });
 
         // 닉네임 수정
@@ -101,7 +102,8 @@ public class BasicUserService implements UserService {
             }
             BinaryContent newImage = new BinaryContent(
                     request.profileImage().fileName(),
-                    request.profileImage().data()
+                    request.profileImage().contentType(),
+                    request.profileImage().bytes()
             );
             binaryContentRepository.save(newImage);
             user.updateProfileImage(newImage.getId());
@@ -146,7 +148,7 @@ public class BasicUserService implements UserService {
 
     // 사용자명 중복 체크
     private void validateDuplicateName(String name) {
-        if (userRepository.findByName(name).isPresent()) {
+        if (userRepository.findByUserName(name).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
         }
     }
@@ -160,15 +162,15 @@ public class BasicUserService implements UserService {
 
     // 엔티티 -> DTO 변환
     private UserDto convertToResponse(User user, UserStatus status) {
-        boolean isOnline = (status != null) && status.isOnline();
+        boolean online = (status != null) && status.isOnline();
 
         return new UserDto(
                 user.getId(),
-                user.getName(),
+                user.getUsername(),
                 user.getNickname(),
                 user.getEmail(),
                 user.getProfileId(),
-                isOnline,
+                online,
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );

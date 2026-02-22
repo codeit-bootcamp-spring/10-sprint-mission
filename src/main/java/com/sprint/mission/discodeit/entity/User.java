@@ -8,7 +8,6 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.UUID;
 
 @Getter
@@ -17,7 +16,7 @@ public class User extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private String name;
+    private String username;
     private String nickname;
     private String email;
     private String password;
@@ -32,7 +31,7 @@ public class User extends BaseEntity implements Serializable {
 
     public User(String name, String nickname, String email, String password, UUID profileId) {
         super();
-        this.name = name;
+        this.username = name;
         this.nickname = nickname;
         this.email = email;
         this.password = password;
@@ -41,7 +40,7 @@ public class User extends BaseEntity implements Serializable {
 
     // 유저 이름 수정
     public void updateName(String name) {
-        this.name = name;
+        this.username = name;
         this.updated();
     }
 

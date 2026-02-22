@@ -39,9 +39,9 @@ public class FileUserRepository extends BaseFileRepository<User> implements User
     }
 
     @Override
-    public Optional<User> findByName(String name) {
+    public Optional<User> findByUserName(String username) {
         return loadData().values().stream()
-                .filter(user -> name.equals(user.getName()))
+                .filter(user -> username.equals(user.getUsername()))
                 .findFirst();
     }
 

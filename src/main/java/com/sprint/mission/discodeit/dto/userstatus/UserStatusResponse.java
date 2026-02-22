@@ -8,7 +8,7 @@ public record UserStatusResponse(
         UUID userId,
         boolean isActive,
         Instant lastActiveAt,
-        boolean isOnline,
+        boolean online,
         Instant createdAt,
         Instant updatedAt
 ) {

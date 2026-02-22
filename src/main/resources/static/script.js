@@ -29,12 +29,8 @@ async function fetchUserProfile(profileId) {
         if (!response.ok) throw new Error('Failed to fetch profile');
         const profile = await response.json();
 
-        // 파일 이름에서 타입 추출
-        const isJpg = profile.fileName && profile.fileName.toLowerCase().endsWith('.jpg');
-        const contentType = isJpg ? 'image/jpeg' : 'image/png';
-
         // Convert base64 encoded bytes to data URL
-        return `data:${contentType};base64,${profile.data}`;
+        return `data:${profile.contentType};base64,${profile.bytes}`;
     } catch (error) {
         console.error('Error fetching profile:', error);
         return '/default-avatar.png'; // Fallback to default avatar
@@ -56,13 +52,13 @@ async function renderUserList(users) {
             '/default-avatar.png';
 
         userElement.innerHTML = `
-            <img src="${profileUrl}" alt="${user.nickname}" class="user-avatar">
+            <img src="${profileUrl}" alt="${user.username}" class="user-avatar">
             <div class="user-info">
-                <div class="user-name">${user.nickname}</div>
+                <div class="user-name">${user.username}</div>
                 <div class="user-email">${user.email}</div>
             </div>
-            <div class="status-badge ${user.isOnline ? 'online' : 'offline'}">
-                ${user.isOnline ? '온라인' : '오프라인'}
+            <div class="status-badge ${user.online ? 'online' : 'offline'}">
+                ${user.online ? '온라인' : '오프라인'}
             </div>
         `;
 

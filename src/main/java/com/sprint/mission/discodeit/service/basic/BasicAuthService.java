@@ -20,7 +20,7 @@ public class BasicAuthService implements AuthService {
 
     public UserDto login(LoginRequest request) {
         // 유저 확인
-        User user = userRepository.findByName(request.name())
+        User user = userRepository.findByUserName(request.username())
                 .orElseThrow(() -> new NoSuchElementException("일치하는 유저가 없습니다."));
 
         // 비밀번호 확인
@@ -40,14 +40,14 @@ public class BasicAuthService implements AuthService {
 
     // 엔티티 -> DTO 변환
     private UserDto convertToResponse(User user, UserStatus status) {
-        boolean isOnline = (status != null) && status.isOnline();
+        boolean online = (status != null) && status.isOnline();
         return new UserDto(
                 user.getId(),
-                user.getName(),
+                user.getUsername(),
                 user.getNickname(),
                 user.getEmail(),
                 user.getProfileId(),
-                isOnline,
+                online,
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );
