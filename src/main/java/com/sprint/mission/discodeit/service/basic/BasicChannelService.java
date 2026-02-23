@@ -32,6 +32,8 @@ public class BasicChannelService implements ChannelService {
         String name = request.name();
         String description = request.description();
         Channel channel = new Channel(ChannelType.PUBLIC, name, description);
+        ReadStatus readStatus = new ReadStatus(request.creatorId(),channel.getId(), Instant.now());
+        readStatusRepository.save(readStatus);
 
         return channelRepository.save(channel);
     }
