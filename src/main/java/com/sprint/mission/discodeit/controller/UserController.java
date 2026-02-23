@@ -1,23 +1,28 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Controller
-@RequestMapping("/api/user")
+@RestController
+@RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
@@ -28,10 +33,26 @@ public class UserController {
     }
 
     // 사용자 등록
-    @PostMapping
-    public ResponseEntity<UserDto> postUser(@RequestBody UserCreateRequest request) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserDto> postUser(@ModelAttribute UserCreateRequest request,
+                                            @RequestPart(value = "file", required = false)MultipartFile file) {
         System.out.println(request);
-        User user = userService.create(request, Optional.empty());
+        BinaryContentCreateRequest binaryContentCreateRequest = null;
+
+        if (file != null && !file.isEmpty()) {
+            try {
+                binaryContentCreateRequest = new BinaryContentCreateRequest(
+                        file.getOriginalFilename(),
+                        file.getContentType(),
+                        file.getBytes()
+                );
+            } catch (IOException e) {
+                throw new RuntimeException("파일 변환 실패", e);
+            }
+        }
+
+        Optional<BinaryContentCreateRequest> fileRequest = Optional.ofNullable(binaryContentCreateRequest);
+        User user = userService.create(request, fileRequest);
         UserDto userDto = userService.find(user.getId());
         return new ResponseEntity<>(userDto, HttpStatus.CREATED);
     }

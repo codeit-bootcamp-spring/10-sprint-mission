@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@Controller
+@RestController
 @RequestMapping("/api/binaryContents")
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;

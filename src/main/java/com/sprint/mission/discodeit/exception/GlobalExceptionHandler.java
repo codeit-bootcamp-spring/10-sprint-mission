@@ -16,5 +16,4 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse("NO_SUCH_ELEMENT", e.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.NO_CONTENT);
     }
-
 }
