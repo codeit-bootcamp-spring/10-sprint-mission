@@ -2,55 +2,57 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import org.springframework.context.annotation.Primary;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
+
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
-@Primary
 public class JCFUserStatusRepository implements UserStatusRepository {
 
-    private final Map<UUID, UserStatus> data = new HashMap<>();
+  private final Map<UUID, UserStatus> data;
 
-    @Override
-    public void save(UserStatus userStatus) {
-        if (userStatus == null) {
-            throw new IllegalArgumentException("userStatus는 null일 수 없습니다.");
-        }
-        if (userStatus.getId() == null) {
-            throw new IllegalArgumentException("userStatus.id는 null일 수 없습니다.");
-        }
-        data.put(userStatus.getId(), userStatus);
-    }
+  public JCFUserStatusRepository() {
+    this.data = new HashMap<>();
+  }
 
-    @Override
-    public Optional<UserStatus> findById(UUID id) {
-        if (id == null) {
-            throw new IllegalArgumentException("id는 null일 수 없습니다.");
-        }
-        return Optional.ofNullable(data.get(id));
-    }
+  @Override
+  public UserStatus save(UserStatus userStatus) {
+    this.data.put(userStatus.getId(), userStatus);
+    return userStatus;
+  }
 
-    @Override
-    public List<UserStatus> findAll() {
-        return new ArrayList<>(data.values());
-    }
+  @Override
+  public Optional<UserStatus> findById(UUID id) {
+    return Optional.ofNullable(this.data.get(id));
+  }
 
-    @Override
-    public void delete(UUID id) {
-        data.remove(id);
-    }
+  @Override
+  public Optional<UserStatus> findByUserId(UUID userId) {
+    return this.findAll().stream()
+        .filter(userStatus -> userStatus.getUserId().equals(userId))
+        .findFirst();
+  }
 
-    // 우리가 아까 추가한 메서드
-    @Override
-    public Optional<UserStatus> findByUserId(UUID userId) {
-        if (userId == null) throw new IllegalArgumentException("userId는 null일 수 없습니다.");
+  @Override
+  public List<UserStatus> findAll() {
+    return this.data.values().stream().toList();
+  }
 
-        for (UserStatus us : data.values()) {
-            if (userId.equals(us.getUserId())) {
-                return Optional.of(us);
-            }
-        }
-        return Optional.empty();
-    }
+  @Override
+  public boolean existsById(UUID id) {
+    return this.data.containsKey(id);
+  }
+
+  @Override
+  public void deleteById(UUID id) {
+    this.data.remove(id);
+  }
+
+  @Override
+  public void deleteByUserId(UUID userId) {
+    this.findByUserId(userId)
+        .ifPresent(userStatus -> this.deleteByUserId(userStatus.getId()));
+  }
 }

@@ -1,81 +1,104 @@
 package com.sprint.mission.discodeit.controller;
 
-
-import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateByUserIdRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/user")
 @RequiredArgsConstructor
+@RequestMapping("/api/users")
 public class UserController {
 
-    private final UserService userService;
-    private final UserStatusService userStatusService;
+  private final UserService userService;
+  private final UserStatusService userStatusService;
+  private final ObjectMapper objectMapper;
+
+  // POST /api/users -> 201
+  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<User> create(
+          @RequestPart("userCreateRequest") String userCreateRequestJson,
+          @RequestPart(value = "profile", required = false) MultipartFile profile
+  ) throws Exception {
+    // Postman octet error로 이 부분 수정.
+    UserCreateRequest userCreateRequest =
+            objectMapper.readValue(userCreateRequestJson, UserCreateRequest.class);
+    // resolveProfile -> 없으면 empty 있으면 변환 시도
+    Optional<BinaryContentCreateRequest> profileRequest =
+            Optional.ofNullable(profile).flatMap(this::resolveProfileRequest);
+
+    User createdUser = userService.create(userCreateRequest, profileRequest);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+  }
 
 
-    //  유저 생성
-    //  name, alias, email, password, binaryContent
-    @RequestMapping( method = RequestMethod.POST)
-    public ResponseEntity<UserResponse> create(@RequestBody UserCreateRequest request){
+  // PATCH /api/users/{userId}
+  @RequestMapping(value = "/{userId}", method = RequestMethod.PATCH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<User> update(
+          @PathVariable UUID userId,
+          @RequestPart("userUpdateRequest") String userUpdateRequestJson,
+          @RequestPart(value = "profile", required = false) MultipartFile profile
+  ) throws Exception {
+    UserUpdateRequest userUpdateRequest =
+            objectMapper.readValue(userUpdateRequestJson, UserUpdateRequest.class);
+    Optional<BinaryContentCreateRequest> profileRequest =
+            Optional.ofNullable(profile).flatMap(this::resolveProfileRequest);
 
-        UserResponse userResponse = userService.createUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(userResponse);
+    User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+    return ResponseEntity.ok(updatedUser);
+  }
+
+  // DELETE /api/users/{userId} -> 204
+  @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
+  public ResponseEntity<Void> delete(@PathVariable UUID userId) {
+    userService.delete(userId);
+    return ResponseEntity.noContent().build();
+  }
+
+  // GET /api/users
+  @RequestMapping(method = RequestMethod.GET)
+  public ResponseEntity<List<UserDto>> findAll() {
+    return ResponseEntity.ok(userService.findAll());
+  }
+
+  // PATCH /api/users/{userId}/userStatus
+  @RequestMapping(value = "/{userId}/userStatus", method = RequestMethod.PATCH)
+  public ResponseEntity<UserStatus> updateUserStatusByUserId(
+          @PathVariable UUID userId,
+          @RequestBody UserStatusUpdateRequest request
+  ) {
+    UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
+    return ResponseEntity.ok(updatedUserStatus);
+  }
+
+  private Optional<BinaryContentCreateRequest> resolveProfileRequest(MultipartFile profileFile) {
+    if (profileFile == null || profileFile.isEmpty()) return Optional.empty();
+    try {
+      return Optional.of(new BinaryContentCreateRequest(
+              profileFile.getOriginalFilename(),
+              profileFile.getContentType(),
+              profileFile.getBytes()
+      ));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-
-    @RequestMapping(value = "/{userId}", method = RequestMethod.PATCH)
-    public ResponseEntity<UserResponse> update(
-            @PathVariable UUID userId,
-            @RequestBody UserUpdateRequest body
-    ){
-        UserUpdateRequest request = new UserUpdateRequest(
-                userId,
-                body.userName(),
-                body.alias(),
-                body.email(),
-                body.password(),
-                body.profileImage()
-        );
-        UserResponse response = userService.updateUser(request);
-        return ResponseEntity.ok(response);
-    }
-
-    @RequestMapping(value= "/{userId}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> delete(@PathVariable UUID userId){
-        userService.deleteUser(userId);
-        return ResponseEntity.noContent().build();
-    } //responseEntity.ok -> 바디값 반환. 삭제시에는 바디값 반환 필요 x
-
-
-    // 심화 기능 추가
-    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
-    public ResponseEntity<List<UserResponse>> findAll(){
-        return ResponseEntity.ok(userService.getUserAll());
-    }
-
-
-
-    @RequestMapping(value = "/{userId}/status", method = RequestMethod.PATCH)
-    public ResponseEntity<UserStatusResponse> updateOnlineStatus(@PathVariable UUID userId,
-                                                                 @RequestBody UserStatusUpdateByUserIdRequest body){
-        UserStatusUpdateByUserIdRequest request =
-                new UserStatusUpdateByUserIdRequest(userId, body.refreshLogin());
-        return ResponseEntity.ok(userStatusService.updateByUserId(request));
-    }
-
-
-
-
+  }
 }

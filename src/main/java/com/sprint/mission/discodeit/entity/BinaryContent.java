@@ -3,28 +3,28 @@ package com.sprint.mission.discodeit.entity;
 import lombok.Getter;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.UUID;
 
 @Getter
-public class BinaryContent extends Basic implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class BinaryContent implements Serializable {
 
-    private final String fileName;
-    private final String contentTYpe;
-    private final byte[] bytes;
+  private static final long serialVersionUID = 1L;
+  private UUID id;
+  private Instant createdAt;
+  //
+  private String fileName;
+  private Long size;
+  private String contentType;
+  private byte[] bytes;
 
-    public BinaryContent(String fileName, String contentTYpe, byte[] bytes) {
-        super();
-        if (bytes == null) {
-            throw new IllegalArgumentException("bytes는 null이 될 수 없습니다.");
-        }
-        this.fileName = fileName;
-        this.contentTYpe = contentTYpe;
-        this.bytes = bytes.clone();
-    }
-    public byte[] getBytes() {
-        return bytes.clone();
-    }
-    public long getSize(){
-        return bytes.length;
-    }
+  public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+    this.id = UUID.randomUUID();
+    this.createdAt = Instant.now();
+    //
+    this.fileName = fileName;
+    this.size = size;
+    this.contentType = contentType;
+    this.bytes = bytes;
+  }
 }

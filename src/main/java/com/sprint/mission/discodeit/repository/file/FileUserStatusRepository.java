@@ -1,82 +1,140 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import org.springframework.context.annotation.Primary;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.io.*;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "file")
 @Repository
-
 public class FileUserStatusRepository implements UserStatusRepository {
-    private static final String FILE_PATH = "userStatus.dat";
-    private Map<UUID, UserStatus> data;
 
-    public FileUserStatusRepository() {
-        this.data = loadFromFile();
-    }
+  private final Path DIRECTORY;
+  private final String EXTENSION = ".ser";
+  private final FileLockProvider fileLockProvider;
 
-    @Override
-    public void save(UserStatus userStatus){
-        if (userStatus == null) throw new IllegalArgumentException("userStatus 는 null일 수 없습니다.");
-        if(userStatus.getId() == null) throw new IllegalArgumentException("userStatusId는 null일 수 없습니다.");
-        data.put(userStatus.getId(), userStatus);
-        saveToFile();
+  public FileUserStatusRepository(
+      @Value("${discodeit.repository.file-directory:data}") String fileDirectory,
+      FileLockProvider fileLockProvider
+  ) {
+    this.DIRECTORY = Paths.get(System.getProperty("user.dir"), fileDirectory,
+        UserStatus.class.getSimpleName());
+    if (Files.notExists(DIRECTORY)) {
+      try {
+        Files.createDirectories(DIRECTORY);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
+    this.fileLockProvider = fileLockProvider;
+  }
 
-    @Override
-    public void delete(UUID userStatusId) {
-        if(userStatusId == null) throw new IllegalArgumentException("userStatusId는 null일 수 없습니다.");
-        data.remove(userStatusId);
-        saveToFile();
-    }
-    @Override
-    public Optional<UserStatus> findById(UUID userStatusId) {
-        if(userStatusId == null) throw new IllegalArgumentException("userStatusId는 null일 수 없습니다.");
-        return Optional.ofNullable(data.get(userStatusId));
-    }
-    @Override
-    public List<UserStatus> findAll() {
-        return new ArrayList<>(data.values());
-    }
+  private Path resolvePath(UUID id) {
+    return DIRECTORY.resolve(id + EXTENSION);
+  }
 
-    @Override
-    public Optional<UserStatus> findByUserId(UUID userId) {
-        if(userId==null) throw new IllegalArgumentException("userId는 null일 수 없습니다.");
-        for(UserStatus us : data.values()){
-            if(userId.equals(us.getId())) {
-                return Optional.of(us);
+  @Override
+  public UserStatus save(UserStatus userStatus) {
+    Path path = resolvePath(userStatus.getId());
+    ReentrantLock lock = fileLockProvider.getLock(path);
+    lock.lock();
+
+    try (
+        FileOutputStream fos = new FileOutputStream(path.toFile());
+        ObjectOutputStream oos = new ObjectOutputStream(fos)
+    ) {
+      oos.writeObject(userStatus);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } finally {
+      lock.unlock();
+    }
+    return userStatus;
+  }
+
+  @Override
+  public Optional<UserStatus> findById(UUID id) {
+    UserStatus userStatusNullable = null;
+    Path path = resolvePath(id);
+    ReentrantLock lock = fileLockProvider.getLock(path);
+    lock.lock();
+    if (Files.exists(path)) {
+      try (
+          FileInputStream fis = new FileInputStream(path.toFile());
+          ObjectInputStream ois = new ObjectInputStream(fis)
+      ) {
+        userStatusNullable = (UserStatus) ois.readObject();
+      } catch (IOException | ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      } finally {
+        lock.unlock();
+      }
+    }
+    return Optional.ofNullable(userStatusNullable);
+  }
+
+  @Override
+  public Optional<UserStatus> findByUserId(UUID userId) {
+    return findAll().stream()
+        .filter(userStatus -> userStatus.getUserId().equals(userId))
+        .findFirst();
+  }
+
+  @Override
+  public List<UserStatus> findAll() {
+    try (Stream<Path> paths = Files.list(DIRECTORY)) {
+      return paths
+          .filter(path -> path.toString().endsWith(EXTENSION))
+          .map(path -> {
+            ReentrantLock lock = fileLockProvider.getLock(path);
+            lock.lock();
+            try (
+                FileInputStream fis = new FileInputStream(path.toFile());
+                ObjectInputStream ois = new ObjectInputStream(fis)
+            ) {
+              return (UserStatus) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+              throw new RuntimeException(e);
+            } finally {
+              lock.unlock();
             }
-        }
-        return Optional.empty();
+          })
+          .toList();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
+  @Override
+  public boolean existsById(UUID id) {
+    Path path = resolvePath(id);
+    return Files.exists(path);
+  }
 
-
-    // 파일 I/O
-    // --------------------
-
-    private void saveToFile() {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(FILE_PATH))) {
-            oos.writeObject(data);
-        } catch (IOException e) {
-            throw new RuntimeException("UserStatus 데이터 저장 중 오류 발생", e);
-        }
+  @Override
+  public void deleteById(UUID id) {
+    Path path = resolvePath(id);
+    try {
+      Files.delete(path);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    @SuppressWarnings("unchecked")
-    private Map<UUID, UserStatus> loadFromFile() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) return new HashMap<>();
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, UserStatus>) ois.readObject();
-        } catch (Exception e) {
-            return new HashMap<>();
-        }
-    }
+  @Override
+  public void deleteByUserId(UUID userId) {
+    this.findByUserId(userId)
+        .ifPresent(userStatus -> this.deleteById(userStatus.getId()));
+  }
 }
-
