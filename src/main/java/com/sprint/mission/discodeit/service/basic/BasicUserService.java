@@ -95,8 +95,14 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
-    Optional.ofNullable(request.newUsername()).ifPresent(user::updateUsername);
-    Optional.ofNullable(request.newEmail()).ifPresent(user::updateEmail);
+    if (request.newUsername() != null && !request.newUsername().equals(user.getUsername())) {
+      existsByUsername(request.newUsername());
+      user.updateUsername(request.newUsername());
+    }
+    if (request.newEmail() != null && !request.newEmail().equals(user.getEmail())) {
+      existsByEmail(request.newEmail());
+      user.updateEmail(request.newEmail());
+    }
     Optional.ofNullable(request.newPassword()).ifPresent(user::updatePassword);
 
     if (file != null && !file.isEmpty()) { //요청에 프로필 파일이 있는지 확인
