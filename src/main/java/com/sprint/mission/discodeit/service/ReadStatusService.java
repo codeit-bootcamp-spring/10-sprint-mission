@@ -4,13 +4,14 @@ import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusCreateRequestDTO
 import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusResponseDTO;
 import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusUpdateRequestDTO;
 
+import com.sprint.mission.discodeit.dto.userdto.UserCreateRequestDTO;
 import java.util.List;
 import java.util.UUID;
 
 public interface ReadStatusService {
 
     //ReadStatusResponseDTO create(ReadStatusCreateRequestDTO req);
-    List<ReadStatusResponseDTO> create(UUID channelId);
+    List<ReadStatusResponseDTO> create(ReadStatusCreateRequestDTO req);
 
     ReadStatusResponseDTO find(UUID rsId);
 

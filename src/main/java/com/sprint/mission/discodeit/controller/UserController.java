@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.entity.mapper.BinaryContentDTOMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -43,6 +44,19 @@ public class UserController {
 
     //전체 사용자 조회
     @RequestMapping(method = RequestMethod.GET)
+    @ApiResponses({
+        @ApiResponse(
+            responseCode = "200",
+            description = "User 목록 조회 성공",
+            content = @Content(
+                array = @ArraySchema(
+                    schema = @Schema(
+                        implementation = UserResponseDTO.class
+                    )
+                )
+            )
+        )
+    })
     public ResponseEntity<List<UserResponseDTO>> getUsers() {
         return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }

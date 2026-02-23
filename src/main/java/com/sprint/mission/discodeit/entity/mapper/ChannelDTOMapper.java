@@ -14,14 +14,15 @@ import java.time.Instant;
 @Component
 public class ChannelDTOMapper {
 
-    public ChannelResponseDTO channelToResponseDTO(Channel channel, Message latestMessage) {
+    public ChannelResponseDTO channelToResponseDTO(Channel channel, Instant lastMessageAt) {
         return new ChannelResponseDTO(
             channel.getId(),
             channel.getType(),
             channel.getName(),
             channel.getDescription(),
             channel.getUserList(),
-            latestMessage.getUpdatedAt());
+            lastMessageAt
+        );
     }
 
     public Channel privateReqToChannel(PrivateChannelCreateDTO req) {

@@ -6,10 +6,11 @@ import com.sprint.mission.discodeit.dto.messagedto.MessageUpdateRequestDto;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface MessageService {
 
-    MessageResponseDTO create(List<byte[]> attachments, MessageCreateRequestDTO req);
+    MessageResponseDTO create(List<MultipartFile> profile, MessageCreateRequestDTO req);
 
     MessageResponseDTO find(UUID messageId);
 

@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,10 @@ public class BasicChannelService implements ChannelService {
             .stream()
             .max(Comparator.comparing(Message::getUpdatedAt))
             .orElse(null);
+    }
+
+    private Instant getLastMessageAt(Message last) {
+        return last == null ? null : last.getUpdatedAt();
     }
 
     // Public 채널을 만드는 메소드
@@ -60,7 +65,7 @@ public class BasicChannelService implements ChannelService {
 
         // 최종적으로 만들어진 채널을 사용하여 채널 응답 DTO를 리턴
         // 새로 만들어진 채널 -> 메시지 존재하지 않음 -> 메시지 시간 정보 null 처리
-        return channelDTOMapper.channelToResponseDTO(saved, getLatestMessage(saved.getId()));
+        return channelDTOMapper.channelToResponseDTO(saved, null);
     }
 
 
@@ -86,7 +91,7 @@ public class BasicChannelService implements ChannelService {
 
         // 최종적으로 만들어진 channel을 사용하여 채널 응답 DTO를 리턴
         // 새로 만든 채널 -> 메시지가 없음 -> 메시지 시간 정보들을 null 처리
-        return channelDTOMapper.channelToResponseDTO(saved, getLatestMessage(saved.getId()));
+        return channelDTOMapper.channelToResponseDTO(saved, null);
     }
 
 
@@ -105,14 +110,11 @@ public class BasicChannelService implements ChannelService {
         // max를 사용하여 가장 큰(최근) createdAt을 가진 메시지를 뽑고
         // 메시지가 존재하지 않으면 null 리턴? <- 추후 바꿔야할듯
 
-        // 만약 채널 타입이 PRIVATE이면...
-        if (channel.getType() == ChannelType.PRIVATE) {
-            // ChannelResponseDTO 생성 및 반환
-            return channelDTOMapper.channelToResponseDTO(channel, getLatestMessage(channelId));
-        }
+        Message last = getLatestMessage(channelId);
+        Instant lastMessageAt = last == null ? null : last.getUpdatedAt();
 
         // 채널 타입이 Public이라면...
-        return channelDTOMapper.channelToResponseDTO(channel, getLatestMessage(channelId));
+        return channelDTOMapper.channelToResponseDTO(channel, lastMessageAt);
 
     }
 
@@ -137,7 +139,8 @@ public class BasicChannelService implements ChannelService {
                 c -> {
                     // 메시지가 없으면 시간 정보들은 다 null 처리,
                     // 채널 타입이 Private이면 유저 정보를 DTO에 주입, Public이면 빈 리스트를 DTO에 주입
-                    return channelDTOMapper.channelToResponseDTO(c, getLatestMessage(c.getId()));
+                    return channelDTOMapper.channelToResponseDTO(c,
+                        getLastMessageAt(getLatestMessage(c.getId())));
                 }
             ).toList(); // 리스트화 하여 반환함.
     }
@@ -154,7 +157,8 @@ public class BasicChannelService implements ChannelService {
         channelRepository.save(channel);
         Message latestMessage = getLatestMessage(channelId);
 
-        return channelDTOMapper.channelToResponseDTO(channel, latestMessage);
+        return channelDTOMapper.channelToResponseDTO(channel,
+            getLastMessageAt(getLatestMessage(channelId)));
     }
 
     @Override
@@ -166,7 +170,8 @@ public class BasicChannelService implements ChannelService {
         channel.userLeave(userId);
         Channel saved = channelRepository.save(channel);
 
-        return channelDTOMapper.channelToResponseDTO(saved, getLatestMessage(saved.getId()));
+        return channelDTOMapper.channelToResponseDTO(saved,
+            getLastMessageAt(getLatestMessage(saved.getId())));
     }
 
     // 업데이트 요청 DTO를 매개변수로 받아 채널을 업데이트하는 서비스 메소드
@@ -191,13 +196,14 @@ public class BasicChannelService implements ChannelService {
         Channel saved = channelRepository.save(channel);
 
         // 영속화된 채널 객체를 응답 DTO로 변환 및 리턴
-        return channelDTOMapper.channelToResponseDTO(saved, getLatestMessage(saved.getId()));
+        return channelDTOMapper.channelToResponseDTO(saved,
+            getLastMessageAt(getLatestMessage(channelId)));
     }
 
     // 채널 ID를 매개변수로 받아 해당 채널을 삭제하는 메소드
     @Override
     public void delete(UUID channelId) {
-        Objects.requireNonNull(channelId, "유효하지 않은 채널ID입니다.");
+        Objects.requireNonNull(channelId, "유효하지 않은 채널ID 입니다.");
 
         if (!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException("Channel with id " + channelId + " not found");

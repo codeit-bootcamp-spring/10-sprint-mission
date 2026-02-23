@@ -13,6 +13,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,9 +28,7 @@ public class ReadStatusController {
 
     private final ReadStatusService readStatusService;
 
-
-    @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
-    @ResponseBody
+    @RequestMapping(method = RequestMethod.GET)
     @ApiResponse(
         responseCode = "200",
         description = "Message 읽음 상태 목록 조회 성공",
@@ -37,12 +37,11 @@ public class ReadStatusController {
             array = @ArraySchema(schema = @Schema(implementation = ReadStatus.class))
         )
     )
-    public List<ReadStatusResponseDTO> getReadStatus(@PathVariable UUID userId) {
-        return readStatusService.findAllByUserId(userId);
+    public ResponseEntity<List<ReadStatusResponseDTO>> getReadStatus(@RequestParam UUID userId) {
+        return new ResponseEntity<>(readStatusService.findAllByUserId(userId), HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/{channelId}", method = RequestMethod.POST)
-    @ResponseBody
+    @RequestMapping(method = RequestMethod.POST)
     @ApiResponses({
         @ApiResponse(
             responseCode = "404",
@@ -68,12 +67,12 @@ public class ReadStatusController {
         )
     }
     )
-    public List<ReadStatusResponseDTO> createReadStatus(@PathVariable UUID channelId) {
-        return readStatusService.create(channelId);
+    public ResponseEntity<List<ReadStatusResponseDTO>> createReadStatus(
+        @RequestBody ReadStatusCreateRequestDTO req) {
+        return new ResponseEntity<>(readStatusService.create(req), HttpStatus.CREATED);
     }
 
     @RequestMapping(value = " /{readStatusId}", method = RequestMethod.PATCH)
-    @ResponseBody
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
@@ -92,9 +91,10 @@ public class ReadStatusController {
         )
     }
     )
-    public ReadStatusResponseDTO editReadStatus(
-        @Valid @RequestBody ReadStatusUpdateRequestDTO req, @PathVariable UUID readStatusId) {
-        return readStatusService.update(readStatusId, req);
+    public ResponseEntity<ReadStatusResponseDTO> editReadStatus(
+        @Valid @RequestBody ReadStatusUpdateRequestDTO req,
+        @PathVariable UUID readStatusId) {
+        return new ResponseEntity<>(readStatusService.update(readStatusId, req), HttpStatus.OK);
     }
 
 

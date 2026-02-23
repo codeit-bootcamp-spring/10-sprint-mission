@@ -51,19 +51,22 @@ public class BasicReadStatusService implements ReadStatusService {
 //    }
 
     @Override
-    public List<ReadStatusResponseDTO> create(UUID channelId) {
-        Objects.requireNonNull(channelId, "유효하지 않은 id입니다!");
+    public List<ReadStatusResponseDTO> create(ReadStatusCreateRequestDTO req) {
+        Objects.requireNonNull(req.channelId(), "유효하지 않은 id입니다!");
+        Objects.requireNonNull(req.userId(), "유효하지 않은 id입니다!");
 
-        Channel channel = channelRepository.findById(channelId)
+        Channel channel = channelRepository.findById(req.channelId())
             .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다!"));
 
         return channel.getUserList().stream().map(u -> {
-            if (readStatusRepository.findAll().stream().anyMatch(rs -> u.equals(rs.getUserID()))) {
+            if (readStatusRepository.findAll().stream().anyMatch(
+                rs -> u.equals(rs.getUserID()) && req.channelId().equals(rs.getChannelID()))) {
                 throw new IllegalStateException("읽기 정보가 이미 존재합니다.");
             }
-            ReadStatus readStatus = new ReadStatus(u, channelId);
+            ReadStatus readStatus = new ReadStatus(u, req.channelId());
+            ReadStatus saved = readStatusRepository.save(readStatus);
 
-            return readStatusDTOMapper.rsToResponse(readStatus);
+            return readStatusDTOMapper.rsToResponse(saved);
 
         }).toList();
     }
@@ -78,6 +81,8 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public List<ReadStatusResponseDTO> findAllByUserId(UUID userId) {
         Objects.requireNonNull(userId, "유효하지 않은 유저 ID 입니다.");
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("사용자 ID를 찾을 수 없습니다."));
 
         return readStatusRepository.findAll().stream()
             .filter(rs -> userId.equals(rs.getUserID()))

@@ -17,13 +17,18 @@ import java.util.NoSuchElementException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public static ErrorResponse handleIllegalStateMethod(IllegalStateException e) {
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public static ErrorResponse handleIllegalStateMethod(IllegalStateException e) {
+        ErrorResponse response = ErrorResponse.of(400, e.getMessage());
+        return response;
 
-    ErrorResponse response = ErrorResponse.of(400, e.getMessage());
-    return response;
+    }
 
-  }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public static ErrorResponse handleNoSuchElement(NoSuchElementException e) {
+        return ErrorResponse.of(404, e.getMessage());
+    }
 }

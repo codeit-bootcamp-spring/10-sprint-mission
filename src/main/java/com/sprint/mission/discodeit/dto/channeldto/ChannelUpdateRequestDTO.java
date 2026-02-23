@@ -6,12 +6,8 @@ import java.util.List;
 import java.util.UUID;
 
 public record ChannelUpdateRequestDTO(
-    UUID channelID,
-    Instant createdAt,
-    Instant updatedAt,
-    List<ChannelType> type,
-    String name,
-    String description
+    String newName,
+    String newDescription
 ) {
 
 }

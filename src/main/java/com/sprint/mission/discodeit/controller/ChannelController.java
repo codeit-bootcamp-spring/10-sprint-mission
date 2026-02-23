@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,25 +39,28 @@ public class ChannelController {
             schema = @Schema(implementation = ChannelResponseDTO.class)
         )
     )
-    public ChannelResponseDTO createPublicChannel(@Valid @RequestBody PublicChannelCreateDTO req) {
-        return channelService.createPublicChannel(req);
+    public ResponseEntity<ChannelResponseDTO> createPublicChannel(
+        @Valid @RequestBody PublicChannelCreateDTO req) {
+        return new ResponseEntity<>(channelService.createPublicChannel(req), HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/private", method = RequestMethod.POST)
     @ResponseBody
     @ApiResponse(
-        responseCode = " 201",
+        responseCode = "201",
         description = "Private Channel이 성공적으로 생성됨",
-        content = @Content(
+        content =
+        @Content(
             mediaType = "application/json",
             schema = @Schema(implementation = ChannelResponseDTO.class)
         )
     )
-    public ChannelResponseDTO createPrivateChannel(@RequestBody PrivateChannelCreateDTO req) {
-        return channelService.createPrivateChannel(req);
+    public ResponseEntity<ChannelResponseDTO> createPrivateChannel(
+        @RequestBody PrivateChannelCreateDTO req) {
+        return new ResponseEntity<>(channelService.createPrivateChannel(req), HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "/{userId}", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     @ResponseBody
     @ApiResponse(
         responseCode = "200",
@@ -66,8 +71,8 @@ public class ChannelController {
             )
         )
     )
-    public List<ChannelResponseDTO> getChannels(@PathVariable UUID userId) {
-        return channelService.findAllByUserId(userId);
+    public ResponseEntity<List<ChannelResponseDTO>> getChannels(@RequestParam UUID userId) {
+        return new ResponseEntity<>(channelService.findAllByUserId(userId), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{channelId}", method = RequestMethod.DELETE)
@@ -90,36 +95,19 @@ public class ChannelController {
     }
 
     @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH)
-    @ResponseBody
-    @ApiResponses({
-        @ApiResponse(
-            responseCode = "404",
-            description = "Channel을 찾을 수 없음",
-            content = @Content(
-                examples = @ExampleObject("Channel with id {channelId} not found")
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Private Channel은 수정할 수 없음",
-            content = @Content(
-                examples = @ExampleObject("Private channel cannot be updated")
-            )
-        ),
-        @ApiResponse(
-            responseCode = "200",
-            description = "Channel 정보가 성공적으로 수정됨",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(
-                    implementation = ChannelResponseDTO.class
-                )
+    @ApiResponse(
+        responseCode = "200",
+        description = "Channel 정보가 성공적으로 수정됨",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(
+                implementation = ChannelResponseDTO.class
             )
         )
-    })
-    public ChannelResponseDTO updateChannel(@PathVariable UUID channelId,
+    )
+    public ResponseEntity<ChannelResponseDTO> updateChannel(@PathVariable UUID channelId,
         @RequestBody PublicChannelUpdateRequestDTO req) {
-        return channelService.update(channelId, req);
+        return new ResponseEntity<>(channelService.update(channelId, req), HttpStatus.OK);
     }
 
 

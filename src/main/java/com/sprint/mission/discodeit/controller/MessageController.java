@@ -13,11 +13,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,8 +32,7 @@ public class MessageController {
     private final MessageService messageService;
 
 
-    @RequestMapping(method = RequestMethod.POST)
-    @ResponseBody
+    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiResponses({
         @ApiResponse(
             responseCode = "404",
@@ -45,9 +49,10 @@ public class MessageController {
             )
         )
     })
-    public MessageResponseDTO sendMessage(@RequestParam List<byte[]> attachments,
-        @RequestBody MessageCreateRequestDTO req) {
-        return messageService.create(attachments, req);
+    public ResponseEntity<MessageResponseDTO> createMessage(
+        @RequestPart(value = "profile", required = false) List<MultipartFile> profile,
+        @RequestPart("messageCreateRequestDto") MessageCreateRequestDTO req) {
+        return new ResponseEntity<>(messageService.create(profile, req), HttpStatus.CREATED);
     }
 
     @RequestMapping(method = RequestMethod.PATCH)
@@ -90,13 +95,13 @@ public class MessageController {
             )
         )
     })
-    public void deleteMessage(@PathVariable UUID messageId) {
-        messageService.delete(messageId);
+    public ResponseEntity<Void> deleteMessage(
+        @PathVariable UUID messageId) {
+        return ResponseEntity.noContent().build();
     }
 
 
     @RequestMapping(method = RequestMethod.GET)
-    @ResponseBody
     @ApiResponse(
         responseCode = "200",
         description = "Message 목록 조회 성공",
@@ -105,8 +110,9 @@ public class MessageController {
             array = @ArraySchema(schema = @Schema(implementation = MessageResponseDTO.class))
         )
     )
-    public List<MessageResponseDTO> viewChannelMessage(@RequestParam UUID channelId) {
-        return messageService.findAllByChannelId(channelId);
+    public ResponseEntity<List<MessageResponseDTO>> viewChannelMessage(
+        @RequestParam UUID channelId) {
+        return new ResponseEntity<>(messageService.findAllByChannelId(channelId), HttpStatus.OK);
 
 
     }
