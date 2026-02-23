@@ -15,20 +15,20 @@ public class UserStatus implements Serializable {
     private Instant createdAt;
     private Instant updatedAt;
     private UUID userId;// User의 id를 참조
-    private Instant lastAccessTime;
+    private Instant lastActiveAt;
 
     // UserStatus는 User서비스를 통해 User가 만들어질 때 동시에 만들어져야함
-    public UserStatus(UUID userId, Instant lastAccessTime) {
+    public UserStatus(UUID userId, Instant lastActiveAt) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.createdAt = Instant.now();
-        this.lastAccessTime = lastAccessTime;
+        this.lastActiveAt = lastActiveAt;
     }
     
     // 유저의 가장 최근 접속시간을 업데이트하기 위한 메소드
-    public void updateLastAccessTime(Instant lastAccessTime) {
-        if (lastAccessTime != null) {
-            this.lastAccessTime = lastAccessTime;
+    public void updateLastActiveAt(Instant lastActiveAt) {
+        if (lastActiveAt != null) {
+            this.lastActiveAt = lastActiveAt;
             this.updatedAt = Instant.now();
         }
     }
@@ -37,7 +37,7 @@ public class UserStatus implements Serializable {
     // 마지막 접속 시간이 현재시간으로 부터 5분 이내면 현재 접속 중인 유저로 간주
     public boolean isOnline() {
         Instant currentTime = Instant.now();
-        Duration duration = Duration.between(this.lastAccessTime, currentTime);
+        Duration duration = Duration.between(this.lastActiveAt, currentTime);
         return duration.toMinutes()<5;
     }
 }

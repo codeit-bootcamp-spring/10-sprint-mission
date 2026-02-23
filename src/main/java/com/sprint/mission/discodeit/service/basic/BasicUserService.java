@@ -146,8 +146,8 @@ public class BasicUserService implements UserService {
                 user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
-                userStatus.isOnline(),
-                user.getProfileId()
+                user.getProfileId(),
+                userStatus.isOnline()
         );
     }
 
@@ -155,6 +155,8 @@ public class BasicUserService implements UserService {
     private UserSummaryResponseDTO toUserSummaryResponseDTO(User user) {
         return new UserSummaryResponseDTO(
                 user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getProfileId()

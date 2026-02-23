@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Instant;
 
+@Schema(description = "변경할 User 온라인 상태 정보")
 public record UserStatusUpdateRequestDTO(
-        @NotBlank(message = "수정하려는 UserStatus의 lastAccessTime이 blank일 수 없습니다")
-        Instant lastAccessTime
+        Instant newLastActiveAt
 ) {}

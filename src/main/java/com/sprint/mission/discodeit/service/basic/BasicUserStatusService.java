@@ -23,7 +23,7 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatusResponseDTO create(UserStatusCreateRequestDTO userStatusCreateRequestDTO) {
         UUID userId = userStatusCreateRequestDTO.userId();
-        Instant lastAccessTime = userStatusCreateRequestDTO.lastAccessTime();
+        Instant lastActiveAt = userStatusCreateRequestDTO.lastActiveAt();
         // 관련된 User가 존재하지 않으면 예외를 발생
         if (!userRepository.existsById(userId)) {
             throw new NoSuchElementException(userId+"를 가진 User를 찾지 못했습니다");
@@ -32,7 +32,7 @@ public class BasicUserStatusService implements UserStatusService {
         if (userStatusRepository.findByUserId(userId).isPresent()) {
             throw new IllegalStateException(userId+"를 가진 UserState가 이미 존재합니다");
         }
-        UserStatus userStatus = new UserStatus(userId, lastAccessTime);
+        UserStatus userStatus = new UserStatus(userId, lastActiveAt);
         return toUserStatusResponseDTO(userStatusRepository.save(userStatus));
     }
 
@@ -59,20 +59,20 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatusResponseDTO updateByUserId(UUID userId, UserStatusUpdateRequestDTO userStatusUpdateRequestDTO) {
         UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException(userId+"를 가진 UserStatus를 찾지 못했습니다"));
+                .orElseThrow(() -> new NoSuchElementException("userId: "+userId+"를 가진 UserStatus를 찾지 못했습니다"));
         return toUserStatusResponseDTO(processUpdate(userStatus, userStatusUpdateRequestDTO));
     }
 
     private UserStatus processUpdate(UserStatus userStatus, UserStatusUpdateRequestDTO userStatusUpdateRequestDTO) {
-        Instant lastAccessTime = userStatusUpdateRequestDTO.lastAccessTime();
-        userStatus.updateLastAccessTime(lastAccessTime);
+        Instant lastActiveAt = userStatusUpdateRequestDTO.newLastActiveAt();
+        userStatus.updateLastActiveAt(lastActiveAt);
         return userStatusRepository.save(userStatus);
     }
 
     @Override
     public void delete(UUID userStatusId) {
         if(!userStatusRepository.existsById(userStatusId)) {
-            throw new NoSuchElementException(userStatusId+"를 가진 UserStatus를 찾지 못했습니다");
+            throw new NoSuchElementException("userStatusId: "+ userStatusId + "를 가진 UserStatus를 찾지 못했습니다");
         }
         userStatusRepository.deleteById(userStatusId);
     }
@@ -81,8 +81,11 @@ public class BasicUserStatusService implements UserStatusService {
     private UserStatusResponseDTO toUserStatusResponseDTO(UserStatus userStatus) {
         return new UserStatusResponseDTO(
                 userStatus.getId(),
+                userStatus.getCreatedAt(),
+                userStatus.getUpdatedAt(),
                 userStatus.getUserId(),
-                userStatus.getLastAccessTime()
+                userStatus.getLastActiveAt(),
+                userStatus.isOnline()
         );
     }
 

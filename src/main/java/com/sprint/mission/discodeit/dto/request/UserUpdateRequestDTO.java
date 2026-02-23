@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.Email;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "수정할 User 정보")
 public record UserUpdateRequestDTO(
    String newUsername,
 
-   @Email(message = "email 형식이 맞지 않습니다")
    String newEmail,
 
    String newPassword

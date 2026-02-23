@@ -8,6 +8,6 @@ import java.util.UUID;
 public record UserStatusCreateRequestDTO(
    @NotBlank(message = "UserStatus 생성시 userId가 blank일 수 없습니다")
    UUID userId,
-   @NotBlank(message = "UserStatus 생성시 lastAccessTime이 blank일 수 없습니다")
-   Instant lastAccessTime
+   @NotBlank(message = "UserStatus 생성시 lastActiveAt이 blank일 수 없습니다")
+   Instant lastActiveAt
 ) {}
