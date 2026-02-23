@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusRequestDTO;
 import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.UserStatus;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public interface UserStatusService {
 
     public UserStatusResponseDTO updateByUserId(UUID userId);
 
-    public UserStatusResponseDTO activateUserOnline(UUID userId);
+    public UserStatusResponseDTO activateUserOnline(UUID userId, UserStatusUpdateRequestDTO req);
 
     public void delete(UUID id);
 

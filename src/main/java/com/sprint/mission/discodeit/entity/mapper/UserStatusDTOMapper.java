@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class UserStatusDTOMapper {
 
     public UserStatus userStatusRequestToUS(UserStatusRequestDTO req) {
-        return new UserStatus(req.userID());
+        return new UserStatus(req.userId());
     }
 
     public UserStatusResponseDTO userStatusToResponse(UserStatus userStatus) {

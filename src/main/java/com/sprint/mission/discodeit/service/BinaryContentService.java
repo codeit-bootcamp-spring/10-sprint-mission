@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface BinaryContentService {
+
     BinaryContentResponseDTO create(BinaryContentCreateRequestDTO req);
 
-
-    ResponseEntity<BinaryContent> find(UUID id);
+    BinaryContentResponseDTO find(UUID id);
 
     List<BinaryContentResponseDTO> findAllByIdIn(List<UUID> ids);
 

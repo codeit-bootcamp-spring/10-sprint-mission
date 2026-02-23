@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusRequestDTO;
 import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.entity.mapper.UserStatusDTOMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -29,12 +30,12 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusResponseDTO create(UserStatusRequestDTO req) {
         Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
 
-        if (userRepository.findById(req.userID()).isEmpty()) {
+        if (userRepository.findById(req.userId()).isEmpty()) {
             throw new IllegalStateException("해당 유저는 존재하지 않습니다.");
         }
 
-        if ((userRepository.findById(req.userID()).isPresent()) && (userStatusRepository.findById(
-            req.id()).isPresent())) {
+        if ((userRepository.findById(req.userId()).isPresent()) && (userStatusRepository.findById(
+            req.userId()).isPresent())) {
             throw new IllegalStateException("해당 유저의 ReadStatus 객체가 이미 존재합니다.");
         }
         UserStatus userStatus = userStatusDTOMapper.userStatusRequestToUS(req);
@@ -62,9 +63,9 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     public UserStatusResponseDTO update(UserStatusRequestDTO req) {
         Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
-        userRepository.findById(req.userID())
+        userRepository.findById(req.userId())
             .orElseThrow(() -> new IllegalStateException("해당 유저가 존재하지 않습니다!"));
-        UserStatus userStatus = userStatusRepository.findById(req.id())
+        UserStatus userStatus = userStatusRepository.findById(req.userId())
             .orElseThrow(() -> new NoSuchElementException("해당 User Status는 존재하지 않습니다!"));
         userStatus.update(Instant.now());
         UserStatus saved = userStatusRepository.save(userStatus);
@@ -94,11 +95,12 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     @Override
-    public UserStatusResponseDTO activateUserOnline(UUID userId) {
+    public UserStatusResponseDTO activateUserOnline(UUID userId, UserStatusUpdateRequestDTO req) {
         Objects.requireNonNull(userId, "유효하지 않은 User ID 입니다!");
+        Objects.requireNonNull(req, "유효하지 않은 요청입니다!");
 
         UserStatus userStatus = find(userId);
-        userStatus.setLastActiveAt();
+        userStatus.update(req.newLastActiveAt());
         UserStatus saved = userStatusRepository.save(userStatus);
 
         return userStatusDTOMapper.userStatusToResponse(saved);

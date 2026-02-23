@@ -8,15 +8,16 @@ import java.util.UUID;
 
 @Component
 public class MessageDTOMapper {
-    public MessageResponseDTO messageToResponseDTO(Message message){
+
+    public MessageResponseDTO messageToResponseDTO(Message message) {
         return new MessageResponseDTO(
-                message.getId(),
-                message.getChannelId(),
-                message.getAuthorId(),
-                message.getContent(),
-                message.getCreatedAt(),
-                message.getUpdatedAt(),
-                message.getAttachmentIds()
+            message.getId(),
+            message.getCreatedAt(),
+            message.getUpdatedAt(),
+            message.getContent(),
+            message.getChannelId(),
+            message.getAuthorId(),
+            message.getAttachmentIds()
         );
     }
 }

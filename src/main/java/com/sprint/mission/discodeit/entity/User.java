@@ -10,12 +10,13 @@ import java.util.UUID;
 
 @Getter
 public class User extends BaseEntity implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
     private String username;
     private String email;
     private String password;
-    private UUID profileID; // BinaryContent??id瑜?媛由ы궡
+    private UUID profileID; // BinaryContent의 id
     private List<UUID> channelIds;
 
     public User(String username, String email, String password, UUID profileID) {
@@ -55,7 +56,7 @@ public class User extends BaseEntity implements Serializable {
         this.setUpdatedAt(Instant.now());
     }
 
-    public void update(String newUsername, String newEmail, String newPassword, UUID profileId) {
+    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
         boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
@@ -69,9 +70,8 @@ public class User extends BaseEntity implements Serializable {
             this.password = newPassword;
             anyValueUpdated = true;
         }
-
-        if (profileId != null && !profileId.equals(this.profileID)) {
-            this.profileID = profileId;
+        if (newProfileId != null && !newProfileId.equals(this.profileID)) {
+            this.profileID = newProfileId;
             anyValueUpdated = true;
         }
 

@@ -18,6 +18,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
+
     private final BinaryContentRepository binaryContentRepository;
     private final BinaryContentDTOMapper binaryContentDTOMapper;
 
@@ -27,26 +28,30 @@ public class BasicBinaryContentService implements BinaryContentService {
         Objects.requireNonNull(req.contentType(), "요청의 컨텐트 타입이 유효하지 않습니다!");
         Objects.requireNonNull(req.file(), "요청의 내용이 유효하지 않습니다!");
 
-        BinaryContent saved = binaryContentRepository.save(binaryContentDTOMapper.requestToBinaryContent(req));
+        BinaryContent saved = binaryContentRepository.save(
+            binaryContentDTOMapper.requestToBinaryContent(req));
 
         return binaryContentDTOMapper.binaryContentToResponse(saved);
     }
 
     @Override
-    public ResponseEntity<BinaryContent> find(UUID id) {
+    public BinaryContentResponseDTO find(UUID id) {
         Objects.requireNonNull(id, "유효하지 않은 ID 입니다!");
-        BinaryContent binaryContent = binaryContentRepository.findbyId(id).orElseThrow(() -> new NoSuchElementException("해당 첨부파일을 찾지 못했습니다."));
-        return ResponseEntity.ok(binaryContent);
+        BinaryContent binaryContent = binaryContentRepository.findbyId(id)
+            .orElseThrow(() -> new NoSuchElementException("해당 첨부파일을 찾지 못했습니다."));
+        return new BinaryContentResponseDTO(binaryContent.getId(), binaryContent.getContentType(),
+            binaryContent.getCreatedAt());
     }
-
 
 
     @Override
     public List<BinaryContentResponseDTO> findAllByIdIn(List<UUID> ids) {
         return binaryContentRepository.findAll()
-                .stream()
-                .filter(bc -> ids.contains(bc.getId()))
-                .map(binaryContentDTOMapper::binaryContentToResponse).toList();
+            .stream()
+            .filter(bc -> ids.contains(bc.getId()))
+            .map(BinaryContentDTOMapper::binaryContentToResponse
+            ).toList();
+        
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.channeldto.ChannelResponseDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PrivateChannelCreateDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PublicChannelCreateDTO;
 import com.sprint.mission.discodeit.dto.channeldto.ChannelUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.channeldto.PublicChannelUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
@@ -22,6 +23,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
+
     private final ChannelDTOMapper channelDTOMapper;
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
@@ -29,11 +31,11 @@ public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
 
     // 최신 메시지를 받아와서 Message로 리턴하는 메소드
-    private Message getLatestMessage(UUID channelId){
+    private Message getLatestMessage(UUID channelId) {
         return messageRepository.findByChannelId(channelId)
-                .stream()
-                .max(Comparator.comparing(Message::getUpdatedAt))
-                .orElse(null);
+            .stream()
+            .max(Comparator.comparing(Message::getUpdatedAt))
+            .orElse(null);
     }
 
     // Public 채널을 만드는 메소드
@@ -45,10 +47,9 @@ public class BasicChannelService implements ChannelService {
         Objects.requireNonNull(req.description(), "유효하지 않은 채널 설명입니다.");
 
         // 채널 리스트에 중복되는 이름이 있으면 예외 던짐.
-        if(channelRepository.findAll()
-                .stream()
-                .anyMatch(c -> req.name().equals(c.getName())))
-        {
+        if (channelRepository.findAll()
+            .stream()
+            .anyMatch(c -> req.name().equals(c.getName()))) {
             throw new IllegalStateException("해당 채널의 이름이 중복됩니다.");
         }
 
@@ -69,7 +70,7 @@ public class BasicChannelService implements ChannelService {
     public ChannelResponseDTO createPrivateChannel(PrivateChannelCreateDTO req) {
         Objects.requireNonNull(req.users(), "유효하지 않은 유저 목록 요청입니다.");
 
-        if(req.users().isEmpty()){
+        if (req.users().isEmpty()) {
             throw new IllegalStateException("유저 목록이 비어있습니다.");
         }
 
@@ -105,7 +106,7 @@ public class BasicChannelService implements ChannelService {
         // 메시지가 존재하지 않으면 null 리턴? <- 추후 바꿔야할듯
 
         // 만약 채널 타입이 PRIVATE이면...
-        if(channel.getType() == ChannelType.PRIVATE){
+        if (channel.getType() == ChannelType.PRIVATE) {
             // ChannelResponseDTO 생성 및 반환
             return channelDTOMapper.channelToResponseDTO(channel, getLatestMessage(channelId));
         }
@@ -121,33 +122,33 @@ public class BasicChannelService implements ChannelService {
     // Private 채널은 해당 유저가 가입되어 있을때만 공개 가능
     @Override
     public List<ChannelResponseDTO> findAllByUserId(UUID userID) {
-        Objects.requireNonNull(userID,"유효하지 않은 유저ID 입니다.");
-        if(userRepository.findAll().stream().noneMatch(u -> userID.equals(u.getId()))){
+        Objects.requireNonNull(userID, "유효하지 않은 유저ID 입니다.");
+        if (userRepository.findAll().stream().noneMatch(u -> userID.equals(u.getId()))) {
             throw new NoSuchElementException("해당 유저가 존재하지 않습니다!");
         }
 
         // 채널 레포지토리에서 모든 채널들을 스트림
         return channelRepository.findAll().stream()
-                // filter로 채널 타입이 Public이거나 채널 타입이 Private이면서 채널의 유저 리스트에 userID가 있는 채널들을 뽑아냄
-               .filter(c -> c.getType() == ChannelType.PUBLIC
-               || (c.getType() == ChannelType.PRIVATE && c.getUserList().contains(userID)))
+            // filter로 채널 타입이 Public이거나 채널 타입이 Private이면서 채널의 유저 리스트에 userID가 있는 채널들을 뽑아냄
+            .filter(c -> c.getType() == ChannelType.PUBLIC
+                || (c.getType() == ChannelType.PRIVATE && c.getUserList().contains(userID)))
 
-               .map(
-                       c -> {
-                           // 메시지가 없으면 시간 정보들은 다 null 처리,
-                           // 채널 타입이 Private이면 유저 정보를 DTO에 주입, Public이면 빈 리스트를 DTO에 주입
-                           return channelDTOMapper.channelToResponseDTO(c,getLatestMessage(c.getId()));
-                       }
-               ).toList(); // 리스트화 하여 반환함.
+            .map(
+                c -> {
+                    // 메시지가 없으면 시간 정보들은 다 null 처리,
+                    // 채널 타입이 Private이면 유저 정보를 DTO에 주입, Public이면 빈 리스트를 DTO에 주입
+                    return channelDTOMapper.channelToResponseDTO(c, getLatestMessage(c.getId()));
+                }
+            ).toList(); // 리스트화 하여 반환함.
     }
-
 
 
     // 채널이 유저를 가입시키는 메소드
     @Override
     public ChannelResponseDTO join(UUID channelId, UUID userId) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+            .orElseThrow(
+                () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
         channel.userJoin(userId);
         channelRepository.save(channel);
@@ -159,7 +160,8 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelResponseDTO leave(UUID channelId, UUID userId) {
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+            .orElseThrow(
+                () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
 
         channel.userLeave(userId);
         Channel saved = channelRepository.save(channel);
@@ -169,18 +171,16 @@ public class BasicChannelService implements ChannelService {
 
     // 업데이트 요청 DTO를 매개변수로 받아 채널을 업데이트하는 서비스 메소드
     @Override
-    public ChannelResponseDTO update(ChannelUpdateRequestDTO req) {
+    public ChannelResponseDTO update(UUID channelId, PublicChannelUpdateRequestDTO req) {
         Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
-        Objects.requireNonNull(req.channelID(), "유효하지 않은 채널입니다.");
-        Objects.requireNonNull(req.channelID(), "유효하지 않은 이름입니다.");
-        Objects.requireNonNull(req.channelID(), "유효하지 않은 설명입니다.");
+        Objects.requireNonNull(channelId, "유효하지 않은 식별자입니다.");
 
         // 채널 레포지토리에서 req의 채널ID를 통하여 채널 찾음.
-        Channel channel = channelRepository.findById(req.channelID())
-                .orElseThrow(() -> new IllegalStateException("해당 채널 존재하지 않음."));
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> new IllegalStateException("해당 채널 존재하지 않음."));
 
         // Private 채널은 수정이 불가하므로 예외 던짐.
-        if(channel.getType() == ChannelType.PRIVATE){
+        if (channel.getType() == ChannelType.PRIVATE) {
             throw new IllegalStateException("개인 채널은 업데이트가 불가능합니다.");
         }
 
@@ -206,16 +206,15 @@ public class BasicChannelService implements ChannelService {
         // 해당 채널에 존재하는 메시지의 ID를 사용
         // 메시지 레포지토리의 DeleteById를 통해 삭제한다.
         messageRepository.findByChannelId(channelId)
-                .forEach(m -> messageRepository.deleteById(m.getId()));
-
+            .forEach(m -> messageRepository.deleteById(m.getId()));
 
         // readStatus 레포지토리의 모든 객체중에서
         // channelId를 가리키는 객체를 filter로 뽑아내고
         // forEach와 deleteByID 메소드를 통해 각각 제거.
         readStatusRepository.findAll()
-                .stream()
-                .filter(r -> channelId.equals(r.getChannelID()))
-                .forEach(r -> readStatusRepository.deleteByID(r.getId()));
+            .stream()
+            .filter(r -> channelId.equals(r.getChannelID()))
+            .forEach(r -> readStatusRepository.deleteByID(r.getId()));
 
         // 목표 채널을 삭제 -> 영속화는 해당 메소드 내부에서 진행.
         channelRepository.deleteById(channelId);
