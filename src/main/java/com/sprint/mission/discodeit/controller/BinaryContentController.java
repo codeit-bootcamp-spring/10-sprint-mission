@@ -3,6 +3,9 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
@@ -25,14 +28,28 @@ public class BinaryContentController {
 
   @GetMapping("/{binaryContentId}")
   @Operation(summary = "첨부 파일 조회")
-  public ResponseEntity<?> findById(@PathVariable UUID binaryContentId) {
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "첨부 파일 조회 성공"),
+      @ApiResponse(responseCode = "404", description = "첨부 파일을 찾을 수 없음")
+  })
+  public ResponseEntity<?> findById(
+      @Parameter(description = "조회할 첨부 파일 ID", example = "0b71409f-f489-40a2-a075-c2c93640351c")
+      @PathVariable UUID binaryContentId
+  ) {
     BinaryContentDto.Response response = binaryContentService.findById(binaryContentId);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
   @GetMapping
   @Operation(summary = "여러 첨부 파일 조회")
-  public ResponseEntity<?> findAll(@RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
+  @ApiResponse(responseCode = "200", description = "첨부 파일 목록 조회 성공")
+  public ResponseEntity<?> findAll(
+      @Parameter(
+          description = "조회할 첨부 파일 ID 목록",
+          example = "[0b71409f-f489-40a2-a075-c2c93640351c, 8c4e7c2b-5ac0-4d75-849a-b55db3a1c67f]"
+      )
+      @RequestParam("binaryContentIds") List<UUID> binaryContentIds
+  ) {
     List<BinaryContentDto.Response> response = binaryContentService.findAllByIdIn(binaryContentIds);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }

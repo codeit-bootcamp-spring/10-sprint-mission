@@ -3,6 +3,9 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +32,7 @@ public class ChannelController {
 
   @PostMapping("/public")
   @Operation(summary = "Public Channel 생성")
+  @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
   public ResponseEntity<?> createPublic(@RequestBody ChannelDto.CreatePublic request) {
     ChannelDto.Response response = channelService.createPublic(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -36,6 +40,7 @@ public class ChannelController {
 
   @PostMapping("/private")
   @Operation(summary = "Private Channel 생성")
+  @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨")
   public ResponseEntity<?> createPrivate(@RequestBody ChannelDto.CreatePrivate request) {
     ChannelDto.Response response = channelService.createPrivate(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -43,7 +48,14 @@ public class ChannelController {
 
   @PatchMapping("/{channelId}")
   @Operation(summary = "Channel 정보 수정")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Channel 정보가 성공적으로 수정됨"),
+      @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음"),
+      @ApiResponse(responseCode = "400", description = "Private Channel은 수정할 수 없음")
+  })
+
   public ResponseEntity<?> update(
+      @Parameter(description = "수정할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @PathVariable UUID channelId,
       @RequestBody ChannelDto.Update request
   ) {
@@ -53,14 +65,25 @@ public class ChannelController {
 
   @DeleteMapping("/{channelId}")
   @Operation(summary = "Channel 삭제")
-  public ResponseEntity<?> delete(@PathVariable UUID channelId) {
+  @ApiResponses({
+      @ApiResponse(responseCode = "204", description = "Channel이 성공적으로 삭제됨"),
+      @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음")
+  })
+  public ResponseEntity<?> delete(
+      @Parameter(description = "삭제할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
+      @PathVariable UUID channelId
+  ) {
     channelService.delete(channelId);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping
   @Operation(summary = "User가 참여 중인 Channel 목록 조회")
-  public ResponseEntity<?> findAll(@RequestParam("userId") UUID userId) {
+  @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공")
+  public ResponseEntity<?> findAll(
+      @Parameter(description = "조회할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
+      @RequestParam("userId") UUID userId
+  ) {
     List<ChannelDto.Response> responses = channelService.findAllByUserId(userId);
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }

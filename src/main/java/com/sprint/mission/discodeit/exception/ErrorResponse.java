@@ -9,10 +9,10 @@ import org.springframework.validation.BindingResult;
 @Getter
 public class ErrorResponse {
 
-  private List<FieldError> fieldErrors;
-  private List<ConstraintViolationError> violationErrors;
-  private Integer statusCode;
-  private String message;
+  private final List<FieldError> fieldErrors;
+  private final List<ConstraintViolationError> violationErrors;
+  private final Integer statusCode;
+  private final String message;
 
   private ErrorResponse(
       List<FieldError> fieldErrors,
@@ -46,9 +46,9 @@ public class ErrorResponse {
   @Getter
   public static class FieldError {
 
-    private String field;
-    private Object rejectedValue;
-    private String message;
+    private final String field;
+    private final Object rejectedValue;
+    private final String message;
 
     private FieldError(String field, Object rejectedValue, String message) {
       this.field = field;
@@ -69,9 +69,9 @@ public class ErrorResponse {
   @Getter
   public static class ConstraintViolationError {
 
-    private String propertyPath;
-    private Object rejectedValue;
-    private String reason;
+    private final String propertyPath;
+    private final Object rejectedValue;
+    private final String reason;
 
     private ConstraintViolationError(String propertyPath, Object rejectedValue, String reason) {
       this.propertyPath = propertyPath;

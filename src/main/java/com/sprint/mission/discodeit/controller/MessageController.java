@@ -3,6 +3,10 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +36,10 @@ public class MessageController {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "Message 생성")
+  @ApiResponses({
+      @ApiResponse(responseCode = "201", description = "Message가 성공적으로 생성됨"),
+      @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음")
+  })
   public ResponseEntity<?> create(
       @RequestPart("messageCreateRequest") MessageDto.Create request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
@@ -42,7 +50,12 @@ public class MessageController {
 
   @PatchMapping("/{messageId}")
   @Operation(summary = "Message 내용 수정")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Message가 성공적으로 수정됨"),
+      @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음")
+  })
   public ResponseEntity<?> update(
+      @Parameter(description = "수정할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
       @PathVariable UUID messageId,
       @RequestBody MessageDto.Update request
   ) {
@@ -52,7 +65,12 @@ public class MessageController {
 
   @DeleteMapping("/{messageId}")
   @Operation(summary = "Message 삭제")
+  @ApiResponses({
+      @ApiResponse(responseCode = "204", description = "Message가 성공적으로 삭제됨"),
+      @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음")
+  })
   public ResponseEntity<?> delete(
+      @Parameter(description = "수정할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
       @PathVariable UUID messageId
   ) {
     messageService.delete(messageId);
@@ -61,7 +79,9 @@ public class MessageController {
 
   @GetMapping
   @Operation(summary = "Channel의 Message 목록 조회")
+  @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공")
   public ResponseEntity<?> findAllByChannelId(
+      @Parameter(description = "조회할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @RequestParam("channelId") UUID channelId
   ) {
     List<MessageDto.Response> responses = messageService.findAllByChannelId(channelId);
