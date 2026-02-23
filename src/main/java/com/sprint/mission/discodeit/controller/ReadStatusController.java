@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/readStatus")
+@RequestMapping("/api/readStatus")
 public class ReadStatusController {
 
     private final ReadStatusService readStatusService;
@@ -67,12 +67,12 @@ public class ReadStatusController {
         )
     }
     )
-    public ResponseEntity<List<ReadStatusResponseDTO>> createReadStatus(
+    public ResponseEntity<ReadStatusResponseDTO> createReadStatus(
         @RequestBody ReadStatusCreateRequestDTO req) {
         return new ResponseEntity<>(readStatusService.create(req), HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = " /{readStatusId}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{readStatusId}", method = RequestMethod.PATCH)
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",

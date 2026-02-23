@@ -44,7 +44,7 @@ public class BasicMessageService implements MessageService {
             throw new NoSuchElementException("Author not found with id " + req.authorID());
         }
 
-        List<UUID> profileIds = null;
+        List<UUID> profileIds = new ArrayList<>();
 
         // 입력받은 DTO에서 binaryContents를 뽑아오는데... 선택적이라 null일수도 있음 -> null 허용을 위해 Optional
 //        List<UUID> attachmentIds = Optional.ofNullable(attachments)

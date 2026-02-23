@@ -51,24 +51,25 @@ public class BasicReadStatusService implements ReadStatusService {
 //    }
 
     @Override
-    public List<ReadStatusResponseDTO> create(ReadStatusCreateRequestDTO req) {
+    public ReadStatusResponseDTO create(ReadStatusCreateRequestDTO req) {
         Objects.requireNonNull(req.channelId(), "유효하지 않은 id입니다!");
         Objects.requireNonNull(req.userId(), "유효하지 않은 id입니다!");
 
         Channel channel = channelRepository.findById(req.channelId())
             .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다!"));
+        User user = userRepository.findById(req.userId())
+            .orElseThrow(() -> new NoSuchElementException("해당 유저가 존재하지 않습니다!"));
 
-        return channel.getUserList().stream().map(u -> {
-            if (readStatusRepository.findAll().stream().anyMatch(
-                rs -> u.equals(rs.getUserID()) && req.channelId().equals(rs.getChannelID()))) {
-                throw new IllegalStateException("읽기 정보가 이미 존재합니다.");
-            }
-            ReadStatus readStatus = new ReadStatus(u, req.channelId());
-            ReadStatus saved = readStatusRepository.save(readStatus);
+        if (readStatusRepository.findAll().stream().anyMatch(
+            rs -> rs.getUserID().equals(req.userId()) && rs.getChannelID()
+                .equals(req.channelId()))) {
+            throw new IllegalStateException("읽기 정보가 이미 존재합니다.");
+        }
 
-            return readStatusDTOMapper.rsToResponse(saved);
+        ReadStatus readStatus = new ReadStatus(req.userId(), req.channelId());
+        ReadStatus saved = readStatusRepository.save(readStatus);
 
-        }).toList();
+        return readStatusDTOMapper.rsToResponse(saved);
     }
 
     @Override

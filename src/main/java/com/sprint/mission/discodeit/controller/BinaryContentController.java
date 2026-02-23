@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("api/binaryContent")
+@RequestMapping("api/binaryContents")
 @RequiredArgsConstructor
 public class BinaryContentController {
 
@@ -37,10 +38,11 @@ public class BinaryContentController {
             )
         )
     )
-    public List<BinaryContentResponseDTO> getBinaryContents(
+    public ResponseEntity<List<BinaryContentResponseDTO>> getBinaryContents(
         @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
 
-        return binaryContentService.findAllByIdIn(binaryContentIds);
+        return new ResponseEntity<>(binaryContentService.findAllByIdIn(binaryContentIds),
+            HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{binaryContentId}", method = RequestMethod.GET)
@@ -63,8 +65,9 @@ public class BinaryContentController {
             )
         )
     })
-    public BinaryContentResponseDTO getBinaryContent(@PathVariable UUID binaryContentId) {
-        return binaryContentService.find(binaryContentId);
+    public ResponseEntity<BinaryContentResponseDTO> getBinaryContent(
+        @PathVariable UUID binaryContentId) {
+        return new ResponseEntity<>(binaryContentService.find(binaryContentId), HttpStatus.OK);
     }
 
 }

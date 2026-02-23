@@ -26,7 +26,6 @@ public class AuthController {
     private final AuthService authService;
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    @ResponseBody
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",

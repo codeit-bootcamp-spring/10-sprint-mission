@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface ReadStatusService {
 
     //ReadStatusResponseDTO create(ReadStatusCreateRequestDTO req);
-    List<ReadStatusResponseDTO> create(ReadStatusCreateRequestDTO req);
+    ReadStatusResponseDTO create(ReadStatusCreateRequestDTO req);
 
     ReadStatusResponseDTO find(UUID rsId);
 

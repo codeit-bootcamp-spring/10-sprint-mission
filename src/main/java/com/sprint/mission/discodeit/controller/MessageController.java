@@ -50,13 +50,12 @@ public class MessageController {
         )
     })
     public ResponseEntity<MessageResponseDTO> createMessage(
-        @RequestPart(value = "profile", required = false) List<MultipartFile> profile,
-        @RequestPart("messageCreateRequestDto") MessageCreateRequestDTO req) {
+        @RequestPart(value = "attachment", required = false) List<MultipartFile> profile,
+        @RequestPart("messageCreateRequest") MessageCreateRequestDTO req) {
         return new ResponseEntity<>(messageService.create(profile, req), HttpStatus.CREATED);
     }
 
-    @RequestMapping(method = RequestMethod.PATCH)
-    @ResponseBody
+    @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
@@ -74,7 +73,7 @@ public class MessageController {
             )
         )
     })
-    public MessageResponseDTO editMessage(@RequestParam(name = "messageId") UUID messageId,
+    public MessageResponseDTO editMessage(@PathVariable UUID messageId,
         @RequestBody MessageUpdateRequestDto req) {
         return messageService.update(messageId, req);
     }
@@ -97,6 +96,7 @@ public class MessageController {
     })
     public ResponseEntity<Void> deleteMessage(
         @PathVariable UUID messageId) {
+        messageService.delete(messageId);
         return ResponseEntity.noContent().build();
     }
 

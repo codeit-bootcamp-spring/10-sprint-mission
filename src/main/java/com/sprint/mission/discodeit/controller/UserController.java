@@ -82,7 +82,7 @@ public class UserController {
             ))
     })
     public ResponseEntity<UserResponseDTO> create(
-        @RequestPart("userCreateRequestDTO") UserCreateRequestDTO userCreateRequestDTO,
+        @RequestPart("userCreateRequest") UserCreateRequestDTO userCreateRequestDTO,
         @RequestPart(value = "profile", required = false) MultipartFile profileImage) {
         Optional<BinaryContentDTO> profileDto = BinaryContentDTOMapper.multipartToResponseDto(
             profileImage);
@@ -140,8 +140,8 @@ public class UserController {
         )
     })
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID userId,
-        @RequestPart("userUpdateDto") UserUpdateDTO req,
-        @RequestPart("profile") MultipartFile profile
+        @RequestPart("userUpdateRequest") UserUpdateDTO req,
+        @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
         Optional<BinaryContentDTO> profileDto = BinaryContentDTOMapper.multipartToResponseDto(
             profile);
