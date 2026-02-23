@@ -62,7 +62,7 @@ public class BasicMessageService implements MessageService {
           binaryContentRepository.save(attachment);
           attachmentIds.add(attachment.getId());
         } catch (IOException e) {
-          throw new RuntimeException(e);
+          throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
         }
       }
     }

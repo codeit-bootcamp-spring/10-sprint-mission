@@ -51,7 +51,7 @@ public class BasicUserService implements UserService {
         binaryContentRepository.save(profile);
         profileId = profile.getId();
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
       }
     }
 
@@ -115,7 +115,7 @@ public class BasicUserService implements UserService {
         binaryContentRepository.save(newProfile);
         user.updateProfileId(newProfile.getId());
       } catch (IOException e) {
-        throw new RuntimeException(e);
+        throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
       }
 
     }

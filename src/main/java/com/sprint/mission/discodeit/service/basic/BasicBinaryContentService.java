@@ -31,7 +31,7 @@ public class BasicBinaryContentService implements BinaryContentService {
       binaryContentRepository.save(binaryContent);
       return BinaryContentDto.Response.of(binaryContent);
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
     }
   }
 
