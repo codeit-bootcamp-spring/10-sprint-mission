@@ -59,5 +59,12 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);//400
     }
+    @ExceptionHandler(WrongPasswordException.class)
+    @ResponseBody
+    public ResponseEntity<ErrorResponseDto> handleWrongPassword(WrongPasswordException e) {
+        ErrorResponseDto error = new ErrorResponseDto("WRONG_PASSWORD", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);//400
+    }
 
 }
