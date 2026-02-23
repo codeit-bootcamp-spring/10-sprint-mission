@@ -113,10 +113,9 @@ public class BasicChannelService implements ChannelService {
         Message lastMessage = messageRepository.findAllByChannelId(channel.getId())
                 .stream()
                 .max(Comparator.comparing(Message::getCreatedAt))
-                .orElseThrow(() -> new NoSuchElementException(channel.getId()+"에 아직 작성된 메시지가 없습니다"));
+                .orElse(null);
         // 해당 채널의 가장 최근 메시지 시간정보
-        Instant lastMessageAt = lastMessage.getCreatedAt();
-
+        Instant lastMessageAt = lastMessage != null ? lastMessage.getCreatedAt() : null;
         //PRIVATE 채널인 경우 참여한 User id 정보를 포함해야함
         List<UUID> participantIds = new ArrayList<>();
         if (channel.getType()==ChannelType.PRIVATE) {
