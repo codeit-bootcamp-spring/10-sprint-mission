@@ -3,10 +3,17 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.service.MessageService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +31,17 @@ public class MessageController {
 
     private final MessageService messageService;
 
-    @PostMapping
+    @Operation(summary = "메시지 전송(생성)")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "message created",
+                    content = @Content(
+                            schema = @Schema(implementation = Message.class)
+                    )
+            )
+    })
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Message> sendMessage(@RequestPart MessageCreateRequest messageCreateRequest,
                                               @RequestPart(required = false) List<MultipartFile> attachments) throws IOException {
         List<BinaryContentCreateRequest> binaryContentCreateRequests = new ArrayList<>();
@@ -64,7 +81,11 @@ public class MessageController {
         Message message = messageService.update(messageId, messageUpdateRequest);
         return ResponseEntity.ok(message);
     }
-
+    @Operation(summary = "메시지 삭제")
+    @ApiResponse(
+            responseCode = "204",
+            description = "message delete"
+    )
     @DeleteMapping("/{messageId}")
     public ResponseEntity<Void> deleteMessage(@PathVariable UUID messageId) {
         messageService.delete(messageId);

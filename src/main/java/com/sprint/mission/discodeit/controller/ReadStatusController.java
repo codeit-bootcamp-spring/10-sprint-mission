@@ -4,6 +4,9 @@ import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,11 @@ public class ReadStatusController {
 
     private final ReadStatusService readStatusService;
 
+    @Operation(summary = "읽음상태 생성")
+    @ApiResponse(
+            responseCode = "201",
+            description = "readStatus created"
+    )
     @PostMapping
     public ResponseEntity<ReadStatus> createReadStatus(@RequestBody ReadStatusCreateRequest request) {
         ReadStatus readStatus = readStatusService.create(request);

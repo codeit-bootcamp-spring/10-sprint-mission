@@ -6,6 +6,11 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +28,16 @@ public class ChannelController {
 
     private final ChannelService channelService;
 
+    @Operation(summary = "Public channel 생성")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Channel created",
+                    content = @Content(
+                            schema = @Schema(implementation = Channel.class)
+                    )
+            )
+    })
     @PostMapping("/public")
     public ResponseEntity<Channel> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
         Channel channel = channelService.create(request);
@@ -30,6 +45,16 @@ public class ChannelController {
 
     }
 
+    @Operation(summary = "Private channel 생성")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Channel created",
+                    content = @Content(
+                            schema = @Schema(implementation = Channel.class)
+                    )
+            )
+    })
     @PostMapping("/private")
     public ResponseEntity<Channel> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
         Channel channel = channelService.create(request);
@@ -51,6 +76,13 @@ public class ChannelController {
 
     }
 
+    @Operation(summary = "channel 삭제")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Channel delete"
+            )
+    })
     @DeleteMapping("/{channelId}")
     public ResponseEntity<Void> deleteChannel(@PathVariable UUID channelId){
 

@@ -5,11 +5,14 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -35,9 +38,12 @@ public class UserController {
     private final UserStatusService userStatusService;
 
     @Operation(summary = "User 등록")
-    @ApiResponse(responseCode = "201", description = "User가 성공적으로 생성됨")
-    @PostMapping
-    public ResponseEntity createUser(@RequestPart UserCreateRequest dto,
+    @ApiResponse(
+            responseCode = "201",
+            description = "User가 성공적으로 생성됨"
+            )
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<User> createUser(@RequestPart UserCreateRequest userCreateRequest,
                                      @RequestPart(required = false) MultipartFile profile) throws IOException {
         if(profile != null) {
             BinaryContentCreateRequest profileImage = new BinaryContentCreateRequest(
@@ -46,15 +52,15 @@ public class UserController {
                     profile.getBytes()
             );
 
-            dto = new UserCreateRequest(
-                    dto.username(),
-                    dto.email(),
-                    dto.password(),
+            userCreateRequest = new UserCreateRequest(
+                    userCreateRequest.username(),
+                    userCreateRequest.email(),
+                    userCreateRequest.password(),
                     Optional.of(profileImage)
             );
         }
 
-        User user = userService.create(dto);
+        User user = userService.create(userCreateRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
@@ -65,23 +71,28 @@ public class UserController {
         return ResponseEntity.ok(userService.findAll());
     }
 
-    @PatchMapping("/{userId}")
+    @Operation(summary = "사용자 수정")
+    @PatchMapping(value = "/{userId}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<User> updateUser(@PathVariable("userId") UUID userId,
                            @RequestPart UserUpdateRequest userUpdateRequest,
-                           @RequestPart MultipartFile profileImage) throws IOException {
+                           @RequestPart(required = false) MultipartFile profile) throws IOException {
 
-        BinaryContentCreateRequest profile = new BinaryContentCreateRequest(
-                profileImage.getOriginalFilename(),
-                profileImage.getContentType(),
-                profileImage.getBytes()
-        );
+        if(profile != null) {
+            BinaryContentCreateRequest profileImage = new BinaryContentCreateRequest(
+                    profile.getOriginalFilename(),
+                    profile.getContentType(),
+                    profile.getBytes()
+            );
 
-        userUpdateRequest = new UserUpdateRequest(
-                userUpdateRequest.newUsername(),
-                userUpdateRequest.newEmail(),
-                userUpdateRequest.newPassword(),
-                Optional.of(profile)
-        );
+            userUpdateRequest = new UserUpdateRequest(
+                    userUpdateRequest.newUsername(),
+                    userUpdateRequest.newEmail(),
+                    userUpdateRequest.newPassword(),
+                    Optional.of(profileImage)
+            );
+
+        }
+
         User user = userService.update(userId,userUpdateRequest);
         return ResponseEntity.ok(user);
     }
