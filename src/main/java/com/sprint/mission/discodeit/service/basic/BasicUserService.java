@@ -32,14 +32,14 @@ public class BasicUserService implements UserService {
         if (userRepository.findAll()
                 .stream()
                 .anyMatch(user -> username.equals(user.getUsername()))) {
-            throw new IllegalStateException("이미 동일한 username을 갖고 있는 유저가 있습니다");
+            throw new IllegalArgumentException("이미 동일한 username을 갖고 있는 유저가 있습니다");
         }
 
         String email= userCreateRequestDTO.email();
         if (userRepository.findAll()
                 .stream()
                 .anyMatch(user -> email.equals(user.getEmail()))) {
-            throw new IllegalStateException("이미 동일한 email을 갖고 있는 유저가 있습니다.");
+            throw new IllegalArgumentException("이미 동일한 email을 갖고 있는 유저가 있습니다.");
         }
 
         String password = userCreateRequestDTO.password();
@@ -100,7 +100,7 @@ public class BasicUserService implements UserService {
                 .anyMatch(u -> !u.getId().equals(userId) &&
                         (u.getUsername().equals(newUsername) || u.getEmail().equals(newEmail)));
         if (isDuplicated) {
-            throw new IllegalStateException("수정하려는 새로운 username 또는 email를 사용중인 유저가 이미 있습니다");
+            throw new IllegalArgumentException("수정하려는 새로운 username 또는 email를 사용중인 유저가 이미 있습니다");
         }
 
         if (binaryContentCreateRequestDTO.isPresent()) { // 프로필 이미지를 수정한다면
