@@ -6,10 +6,12 @@ import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -18,16 +20,19 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public BinaryContentDto.Response create(BinaryContentDto.Create request) {
-    BinaryContent binaryContent = new BinaryContent(
-        request.fileName(),
-        request.contentType(),
-        request.size(),
-        request.bytes()
-    );
-    binaryContentRepository.save(binaryContent);
-
-    return BinaryContentDto.Response.of(binaryContent);
+  public BinaryContentDto.Response create(MultipartFile multipartFile) {
+    try {
+      BinaryContent binaryContent = new BinaryContent(
+          multipartFile.getOriginalFilename(),
+          multipartFile.getContentType(),
+          multipartFile.getSize(),
+          multipartFile.getBytes()
+      );
+      binaryContentRepository.save(binaryContent);
+      return BinaryContentDto.Response.of(binaryContent);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
