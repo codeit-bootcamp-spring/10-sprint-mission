@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Controller
-@RequestMapping("/api")
+@RequestMapping("/api/readStatuses")
 public class ReadStatusController {
     private final ChannelService channelService;
     private final UserService userService;
@@ -30,20 +30,20 @@ public class ReadStatusController {
         this.readStatusService = readStatusService;
     }
 
-    @RequestMapping(value = "/channel/readstatus", method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<ReadStatus> postReadStatus(@RequestBody ReadStatusCreateRequest request) {
         ReadStatus readStatus = readStatusService.create(request);
         return new ResponseEntity<>(readStatus, HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "/channel/readstatus/{readStatusId}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{readStatusId}", method = RequestMethod.PATCH)
     public ResponseEntity<ReadStatus> putReadStatus(@PathVariable UUID readStatusId,
                               @RequestBody ReadStatusUpdateRequest request) {
         ReadStatus readStatus = readStatusService.update(readStatusId, request);
         return new ResponseEntity<>(readStatus, HttpStatus.ACCEPTED);
     }
 
-    @RequestMapping(value = "/user/readStatus/{userId}", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity<List<ReadStatus>> getReadStatusAllByUserId(@PathVariable UUID userId) {
         List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
         return new ResponseEntity<>(readStatuses, HttpStatus.OK);

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Controller
-@RequestMapping("/api")
+@RequestMapping("/api/messages")
 public class MessageController {
     private final MessageService messageService;
 
@@ -26,27 +26,27 @@ public class MessageController {
         this.messageService = messageService;
     }
 
-    @RequestMapping(value = "/message", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Message> postMessage(@RequestPart("message") MessageCreateRequest request,
                                                @RequestPart("binarycontent")List<BinaryContentCreateRequest> binaryContents) {
         Message message = messageService.create(request, binaryContents);
         return new ResponseEntity<>(message, HttpStatus.CREATED);
     }
 
-    @RequestMapping(value = "/message/{messageId}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
     public ResponseEntity<Message> putMessage(@PathVariable UUID messageId,
                                               @RequestBody MessageUpdateRequest request) {
         Message message = messageService.update(messageId, request);
         return new ResponseEntity<>(message, HttpStatus.ACCEPTED);
     }
 
-    @RequestMapping(value = "/channel/{channelId}/messages", method = RequestMethod.GET)
-    public ResponseEntity<List<Message>> getMessageAllByChannelId(@PathVariable UUID channelId) {
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity<List<Message>> getMessageAllByChannelId(@RequestParam UUID channelId) {
         List<Message> messageList = messageService.findAllByChannelId(channelId);
         return new ResponseEntity<>(messageList, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/message/{messageId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/{messageId}", method = RequestMethod.DELETE)
     public ResponseEntity<Void> deleteMessage(@PathVariable UUID messageId) {
         System.out.println("메시지 삭제 시작");
         messageService.delete(messageId);

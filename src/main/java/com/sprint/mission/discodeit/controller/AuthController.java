@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
-@RequestMapping("/api")
+@RequestMapping("/api/auth")
 public class AuthController {
     private final AuthService authService;
     private final UserService userService;
@@ -23,7 +23,7 @@ public class AuthController {
         this.userService = userService;
     }
 
-    @RequestMapping(value = "/user/login", method = RequestMethod.POST)
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<UserDto> login(@RequestBody LoginRequest loginRequest) {
         System.out.println("로그인 시작");
         User user = authService.login(loginRequest);

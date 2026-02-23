@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Controller
-@RequestMapping("/api")
+@RequestMapping("/api/user")
 public class UserController {
     private final UserService userService;
     private final UserStatusService userStatusService;
@@ -28,7 +28,7 @@ public class UserController {
     }
 
     // 사용자 등록
-    @RequestMapping(value = "/user", method = RequestMethod.POST)
+    @PostMapping
     public ResponseEntity<UserDto> postUser(@RequestBody UserCreateRequest request) {
         System.out.println(request);
         User user = userService.create(request, Optional.empty());
@@ -37,7 +37,8 @@ public class UserController {
     }
 
     // 사용자 정보 수정
-    @RequestMapping(value = "/user/{userId}", method = RequestMethod.PUT)
+//    @RequestMapping(value = "/user/{userId}", method = RequestMethod.PATCH)
+    @PatchMapping("/{userId}")
     public ResponseEntity<UserDto> putUser(@PathVariable UUID userId,
                                            @RequestBody UserUpdateRequest request) {
         User user = userService.update(userId, request, Optional.empty());
@@ -48,22 +49,30 @@ public class UserController {
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
-    // 사용자 조회
-    @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
-    public ResponseEntity<UserDto> getUser(@PathVariable UUID userId) {
-        UserDto userDto = userService.find(userId);
-        return new ResponseEntity<>(userDto, HttpStatus.OK);
+
+//    @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
+//    public ResponseEntity<UserDto> getUser(@PathVariable UUID userId) {
+//        UserDto userDto = userService.find(userId);
+//        return new ResponseEntity<>(userDto, HttpStatus.OK);
+//    }
+
+    // 사용자 목록 조회
+    @GetMapping
+    public ResponseEntity<List<UserDto>> getUsers() {
+        List<UserDto> userDtos = userService.findAll();
+        return new ResponseEntity<>(userDtos, HttpStatus.OK);
     }
 
     // 모든 사용자 조회
-    @RequestMapping(value = "/user/findAll", method = RequestMethod.GET)
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
     public ResponseEntity<List<UserDto>> findAll() {
         List<UserDto> userDtos = userService.findAll();
         return new ResponseEntity<>(userDtos, HttpStatus.OK);
     }
 
     // 사용자 삭제
-    @RequestMapping(value = "/user/{userId}", method = RequestMethod.DELETE)
+//    @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
+    @DeleteMapping("/{userId}")
     public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
         System.out.println("유저 삭제 시작");
         userService.delete(userId);
@@ -72,7 +81,8 @@ public class UserController {
     }
 
     // 사용자 온라인 변경
-    @RequestMapping(value = "/user/{userId}", method = RequestMethod.PATCH)
+//    @RequestMapping(value = "/{userId}", method = RequestMethod.PATCH)
+    @PatchMapping("/{userId}/userStatus")
     public ResponseEntity<UserDto> patchUserOnline(@PathVariable UUID userId,
                                                    @RequestBody UserStatusUpdateRequest userStatusUpdateRequest) {
         userStatusService.updateByUserId(userId, userStatusUpdateRequest);
