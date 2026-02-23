@@ -7,4 +7,4 @@ discodeit:
     type: jcf   # jcf | file
     file-directory: .discodeit
 server:
-  port: 8080
+  port: ${PORT:8080}
