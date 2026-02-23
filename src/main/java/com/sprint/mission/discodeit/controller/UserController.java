@@ -39,18 +39,20 @@ public class UserController {
     @PostMapping
     public ResponseEntity createUser(@RequestPart UserCreateRequest dto,
                                      @RequestPart(required = false) MultipartFile profile) throws IOException {
-        BinaryContentCreateRequest profileImage = new BinaryContentCreateRequest(
-                profile.getOriginalFilename(),
-                profile.getContentType(),
-                profile.getBytes()
-        );
+        if(profile != null) {
+            BinaryContentCreateRequest profileImage = new BinaryContentCreateRequest(
+                    profile.getOriginalFilename(),
+                    profile.getContentType(),
+                    profile.getBytes()
+            );
 
-        dto = new UserCreateRequest(
-                dto.username(),
-                dto.email(),
-                dto.password(),
-                Optional.of(profileImage)
-        );
+            dto = new UserCreateRequest(
+                    dto.username(),
+                    dto.email(),
+                    dto.password(),
+                    Optional.of(profileImage)
+            );
+        }
 
         User user = userService.create(dto);
 
@@ -65,7 +67,7 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public ResponseEntity<User> updateUser(@PathVariable("userId") UUID userId,
-                           @RequestPart UserUpdateRequest dto,
+                           @RequestPart UserUpdateRequest userUpdateRequest,
                            @RequestPart MultipartFile profileImage) throws IOException {
 
         BinaryContentCreateRequest profile = new BinaryContentCreateRequest(
@@ -74,13 +76,13 @@ public class UserController {
                 profileImage.getBytes()
         );
 
-        dto = new UserUpdateRequest(
-                dto.newUsername(),
-                dto.newEmail(),
-                dto.newPassword(),
+        userUpdateRequest = new UserUpdateRequest(
+                userUpdateRequest.newUsername(),
+                userUpdateRequest.newEmail(),
+                userUpdateRequest.newPassword(),
                 Optional.of(profile)
         );
-        User user = userService.update(userId,dto);
+        User user = userService.update(userId,userUpdateRequest);
         return ResponseEntity.ok(user);
     }
 
@@ -101,10 +103,4 @@ public class UserController {
         userService.delete(userId);
         return ResponseEntity.noContent().build();//204
     }
-
-
-
-
-
-
 }
