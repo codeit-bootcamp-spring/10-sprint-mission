@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.ChannelUpdateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.PrivateCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.PublicCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.ChannelDetailResponseDTO;
 import com.sprint.mission.discodeit.dto.response.ChannelSummaryResponseDTO;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -27,12 +27,12 @@ public class BasicChannelService implements ChannelService {
     private final MessageRepository messageRepository;
 
     @Override
-    public ChannelSummaryResponseDTO create(PublicCreateRequestDTO publicCreateRequestDTO) {
+    public ChannelSummaryResponseDTO create(PublicChannelCreateRequestDTO publicChannelCreateRequestDTO) {
         // DTO 에서 NotBlank 애너테이션으로 검증
         Channel channel = new Channel(
             ChannelType.PUBLIC,
-            publicCreateRequestDTO.channelName(),
-            publicCreateRequestDTO.description()
+            publicChannelCreateRequestDTO.name(),
+            publicChannelCreateRequestDTO.description()
         );
         return toChannelSummaryResponseDTO(channelRepository.save(channel));
     }
@@ -40,9 +40,8 @@ public class BasicChannelService implements ChannelService {
     // PrivateCreateRequestDTO에 유저 정보가 포함되어 있어야함
     // 유저별 ReadStatus 정보를 생성
     @Override
-    public ChannelSummaryResponseDTO create(PrivateCreateRequestDTO privateCreateRequestDTO) {
-        // DTO에서 애너테이션으로 검증
-        List<UUID> participantsIds = privateCreateRequestDTO.participantIds();
+    public ChannelSummaryResponseDTO create(PrivateChannelCreateRequestDTO privateChannelCreateRequestDTO) {
+        List<UUID> participantsIds = privateChannelCreateRequestDTO.participantIds();
         // Channel 생성
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         channelRepository.save(channel);
@@ -88,7 +87,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = getChannelByIdOrThrow(channelId);
         // PRIVATE 채널은 수정 불가능
         if (channel.getType() == ChannelType.PRIVATE) {
-            throw new IllegalStateException("PRIVATE 채널은 수정 불가능합니다");
+            throw new IllegalArgumentException("PRIVATE 채널은 수정 불가능합니다");
         }
         channel.update(
                 channelUpdateRequestDTO.newName(),
@@ -111,12 +110,12 @@ public class BasicChannelService implements ChannelService {
     // ChannelDetailResponseDTO를 만드는 겹치는 코드를 다로 메소드로
     // find/findAll 반환용 DTO를 만드는 메서드
     private ChannelDetailResponseDTO toChannelDetailResponseDTO(Channel channel) {
-        Message recentMessage = messageRepository.findAllByChannelId(channel.getId())
+        Message lastMessage = messageRepository.findAllByChannelId(channel.getId())
                 .stream()
                 .max(Comparator.comparing(Message::getCreatedAt))
                 .orElseThrow(() -> new NoSuchElementException(channel.getId()+"에 아직 작성된 메시지가 없습니다"));
         // 해당 채널의 가장 최근 메시지 시간정보
-        Instant recentMessageTime = recentMessage.getCreatedAt();
+        Instant lastMessageAt = lastMessage.getCreatedAt();
 
         //PRIVATE 채널인 경우 참여한 User id 정보를 포함해야함
         List<UUID> participantIds = new ArrayList<>();
@@ -132,7 +131,7 @@ public class BasicChannelService implements ChannelService {
                 channel.getName(),
                 channel.getDescription(),
                 participantIds,
-                recentMessageTime
+                lastMessageAt
         );
     }
 
@@ -140,6 +139,8 @@ public class BasicChannelService implements ChannelService {
     private ChannelSummaryResponseDTO toChannelSummaryResponseDTO(Channel channel) {
         return new ChannelSummaryResponseDTO(
                 channel.getId(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
                 channel.getType(),
                 channel.getName(),
                 channel.getDescription()

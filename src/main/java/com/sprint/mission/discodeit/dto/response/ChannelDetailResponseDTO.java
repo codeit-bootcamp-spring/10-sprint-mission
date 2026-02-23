@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.UUID;
 
 public record ChannelDetailResponseDTO(
-   UUID channelId,
-   ChannelType channelType,
-   String channelName,
+   UUID id,
+   ChannelType type,
+   String name,
    String description,
    List<UUID> participantIds,
-   Instant recentMessageTime
+   Instant lastMessageAt
 ) {}
