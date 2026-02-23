@@ -9,6 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 public class RepositoryProperties {
 
-    private String type = "jcf"; // 기본값
+    private String type = "file"; // 기본값
     private String fileDirectory;
 }
