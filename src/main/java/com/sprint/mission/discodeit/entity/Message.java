@@ -18,13 +18,13 @@ public class Message extends BaseEntity implements Serializable {
     private String content;
     private UUID channelId;
     private UUID authorId;
-    private List<UUID> profileIds;
+    private List<UUID> attachmentIds;
 
     public Message(String content, UUID channelId, UUID authorId, List<UUID> binaryContents) {
         this.content = content;
         this.channelId = channelId;
         this.authorId = authorId;
-        this.profileIds =
+        this.attachmentIds =
             binaryContents == null ? new ArrayList<>() : new ArrayList<>(binaryContents);
     }
 

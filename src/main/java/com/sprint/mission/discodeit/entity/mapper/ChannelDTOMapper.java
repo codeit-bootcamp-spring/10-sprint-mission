@@ -27,7 +27,9 @@ public class ChannelDTOMapper {
 
     public Channel privateReqToChannel(PrivateChannelCreateDTO req) {
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
-        channel.getUserList().addAll(req.users());
+        if (req != null && req.users() != null) {
+            channel.getUserList().addAll(req.users());
+        }
         return channel;
     }
 

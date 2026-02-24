@@ -7,8 +7,8 @@ import java.util.UUID;
 
 public record MessageCreateRequestDTO(
     String content,
-    UUID channelID,
-    UUID authorID
+    UUID channelId,
+    UUID authorId
 ) {
 
 }

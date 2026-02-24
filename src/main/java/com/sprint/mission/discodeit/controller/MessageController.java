@@ -50,9 +50,10 @@ public class MessageController {
         )
     })
     public ResponseEntity<MessageResponseDTO> createMessage(
-        @RequestPart(value = "attachment", required = false) List<MultipartFile> profile,
+        @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments,
         @RequestPart("messageCreateRequest") MessageCreateRequestDTO req) {
-        return new ResponseEntity<>(messageService.create(profile, req), HttpStatus.CREATED);
+        return new ResponseEntity<>(messageService.create(attachments, req), HttpStatus.CREATED);
+
     }
 
     @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)

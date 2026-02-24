@@ -7,7 +7,7 @@ public record UserResponseDTO(
     UUID id,
     Instant createdAt,
     Instant updatedAt,
-    String userName,
+    String username,
     String email,
     UUID profileId,
     boolean online

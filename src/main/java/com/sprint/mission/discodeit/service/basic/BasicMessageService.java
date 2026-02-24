@@ -33,15 +33,15 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageResponseDTO create(List<MultipartFile> profiles, MessageCreateRequestDTO req) {
         Objects.requireNonNull(req, "유효하지 않은 요청입니다!");
-        Objects.requireNonNull(req.channelID(), "유효하지 않은 채널ID 입니다!");
-        Objects.requireNonNull(req.authorID(), "유효하지 않은 사용자ID 입니다!");
+        Objects.requireNonNull(req.channelId(), "유효하지 않은 채널ID 입니다!");
+        Objects.requireNonNull(req.authorId(), "유효하지 않은 사용자ID 입니다!");
 
-        if (!channelRepository.existsById(req.channelID())) {
-            throw new NoSuchElementException("Channel not found with id " + req.channelID());
+        if (!channelRepository.existsById(req.channelId())) {
+            throw new NoSuchElementException("Channel not found with id " + req.channelId());
         }
 
-        if (!userRepository.existsById(req.authorID())) {
-            throw new NoSuchElementException("Author not found with id " + req.authorID());
+        if (!userRepository.existsById(req.authorId())) {
+            throw new NoSuchElementException("Author not found with id " + req.authorId());
         }
 
         List<UUID> profileIds = new ArrayList<>();
@@ -73,7 +73,7 @@ public class BasicMessageService implements MessageService {
             }
         }
 
-        Message message = new Message(req.content(), req.channelID(), req.authorID(), profileIds);
+        Message message = new Message(req.content(), req.channelId(), req.authorId(), profileIds);
         Message saved = messageRepository.save(message);
 
         return messageDTOMapper.messageToResponseDTO(saved);
@@ -127,7 +127,7 @@ public class BasicMessageService implements MessageService {
 
         messageRepository.findById(messageId)
             .orElseThrow(() -> new IllegalStateException("존재하지 않는 메시지에요"))
-            .getProfileIds()
+            .getAttachmentIds()
             .forEach(binaryContentRepository::deleteByID);
 
         messageRepository.deleteById(messageId);

@@ -101,14 +101,14 @@ public class BasicUserService implements UserService {
             );
 
         //요청에 담긴 유저 이름이나 이메일이 이미 레포지토리 내에 존재할 경우 예외를 던짐.
-        if (userRepository
-            .findAll()
-            .stream()
-            // 유저 ID는 다르지만 (다른 유저지만), 변경하고자 하는 아이디나 이메일이 이미 레포지토리 내에 존재 (중복) 할 시 예외 던짐.
-            .anyMatch(u -> !u.getId().equals(userId) && (req.newUsername().equals(u.getUsername())
-                || req.newEmail().equals(u.getEmail())))) {
-            throw new IllegalStateException("중복되는 이름 or 이메일입니다.");
-        }
+//        if (userRepository
+//            .findAll()
+//            .stream()
+//            // 유저 ID는 다르지만 (다른 유저지만), 변경하고자 하는 아이디나 이메일이 이미 레포지토리 내에 존재 (중복) 할 시 예외 던짐.
+//            .anyMatch(u -> !u.getId().equals(userId) && (req.newUsername().equals(u.getUsername())
+//                || req.newEmail().equals(u.getEmail())))) {
+//            throw new IllegalStateException("중복되는 이름 or 이메일입니다.");
+//        }
 
         // 유저 업데이트에 쓰일 newProfileID (새로운 첨부파일 ID)는 null로 초기화 해줌.
         UUID newProfileId = null;

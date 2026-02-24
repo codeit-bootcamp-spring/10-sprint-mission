@@ -30,7 +30,9 @@ async function fetchUserProfile(profileId) {
         const profile = await response.json();
 
         // Convert base64 encoded bytes to data URL
-        return `data:${profile.contentType};base64,${profile.file}`;
+        const base64 = profile.bytes || profile.file;
+        if (!base64) throw new Error('Profile bytes missing');
+        return `data:${profile.contentType};base64,${base64}`;
     } catch (error) {
         console.error('Error fetching profile:', error);
         return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCA3MiA3MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIzNiIgY3k9IjM2IiByPSIzNiIgZmlsbD0iI2RkZGRkZCIvPjx0ZXh0IHg9IjM2IiB5PSI0MiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9Ik51bml0bywgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZpbGw9IiM3Nzc3NzciPk88L3RleHQ+PC9zdmc+'; // Fallback avatar

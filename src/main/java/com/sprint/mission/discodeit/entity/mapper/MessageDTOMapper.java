@@ -17,7 +17,7 @@ public class MessageDTOMapper {
             message.getContent(),
             message.getChannelId(),
             message.getAuthorId(),
-            message.getProfileIds()
+            message.getAttachmentIds()
         );
     }
 }

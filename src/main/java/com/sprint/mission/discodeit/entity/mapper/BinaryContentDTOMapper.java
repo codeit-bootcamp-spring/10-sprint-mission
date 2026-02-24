@@ -16,20 +16,21 @@ public class BinaryContentDTOMapper {
 
     public static BinaryContentResponseDTO binaryContentToResponse(BinaryContent binaryContent) {
         return new BinaryContentResponseDTO(binaryContent.getId(), binaryContent.getContentType(),
-            binaryContent.getCreatedAt());
+            binaryContent.getCreatedAt(), binaryContent.getFile());
     }
 
     public static Optional<BinaryContentDTO> multipartToResponseDto(MultipartFile multipartFile) {
-
-        try {
-            return Optional.of(
-                new BinaryContentDTO(UUID.randomUUID(), Instant.now(), multipartFile.getName(),
-                    multipartFile.getSize(),
-                    multipartFile.getContentType(), multipartFile.getBytes()));
-        } catch (IOException e) {
-            throw new IllegalStateException("해당 파일을 읽을 수 없습니다!");
+        if (multipartFile != null) {
+            try {
+                return Optional.of(
+                    new BinaryContentDTO(UUID.randomUUID(), Instant.now(), multipartFile.getName(),
+                        multipartFile.getSize(),
+                        multipartFile.getContentType(), multipartFile.getBytes()));
+            } catch (IOException e) {
+                throw new IllegalStateException("해당 파일을 읽을 수 없습니다!");
+            }
         }
-
+        return Optional.empty();
     }
 
     public static BinaryContent requestToBinaryContent(BinaryContentCreateRequestDTO req) {
