@@ -1,1 +1,9 @@
 rootProject.name = 'discodeit'
+
+toolchainManagement {
+    jvm {
+        javaRepositories {
+            repository("adoptium")
+        }
+    }
+}
