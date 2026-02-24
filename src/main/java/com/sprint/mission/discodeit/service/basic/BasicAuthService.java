@@ -17,7 +17,6 @@ public class BasicAuthService implements AuthService {
 
     @Override
     public AuthResponseDTO login(AuthLoginRequestDTO userLoginRequestDTO) {
-        // DTO 애너테이션으로 NotBlank 검증
         String username = userLoginRequestDTO.username();
         String password = userLoginRequestDTO.password();
         // username 일치하는 유저 있는지 확인 -> UserRepository에 메서드 정의
@@ -34,6 +33,8 @@ public class BasicAuthService implements AuthService {
     private AuthResponseDTO toAuthResponseDTO(User user) {
         return new AuthResponseDTO(
                 user.getId(),
+                user.getCreatedAt(),
+                user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getProfileId()

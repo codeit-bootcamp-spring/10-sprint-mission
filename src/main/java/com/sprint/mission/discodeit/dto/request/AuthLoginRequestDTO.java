@@ -1,10 +1,9 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "로그인 정보")
 public record AuthLoginRequestDTO(
-   @NotBlank(message = "username이 blank일 수 없습니다")
    String username,
-   @NotBlank(message = "password가 blank일 수 없습니다")
    String password
 ) {}
