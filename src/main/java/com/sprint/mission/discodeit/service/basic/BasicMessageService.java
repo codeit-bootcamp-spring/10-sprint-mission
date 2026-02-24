@@ -114,28 +114,10 @@ public class BasicMessageService implements MessageService {
     }
 
     private User findUserOrThrow(UUID userId) {
-        Objects.requireNonNull(userId, "userId는 null값일 수 없습니다.");
+        Objects.requireNonNull(userId, "userId는 null 값일 수 없습니다.");
 
         return userRepository.findById(userId)
                 .orElseThrow(() ->
                         new NoSuchElementException("해당 id를 가진 사용자가 존재하지 않습니다."));
-    }
-
-    private void checkDTOHasNull(CreateBinaryContentRequestDTO dto) {
-        if(dto == null) {
-            throw new IllegalArgumentException("bcDTO는 null일 수 없습니다.");
-        }
-
-        if (dto.data() == null) {
-            throw new IllegalArgumentException("data의 값은 null일 수 없습니다.");
-        }
-
-        if (dto.contentType() == null) {
-            throw new IllegalArgumentException("contentType은 null일 수 없습니다.");
-        }
-
-        if (dto.filename() == null) {
-            throw new IllegalArgumentException("filename은 null일 수 없습니다.");
-        }
     }
 }

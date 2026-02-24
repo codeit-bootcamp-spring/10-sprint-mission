@@ -21,10 +21,10 @@ public class ChannelMapper {
         );
     }
 
-    public static Channel toPrivateChannelEntity(String channelName, String description) {
+    public static Channel toPrivateChannelEntity() {
         return new Channel(
-                channelName,
-                description,
+                null,
+                null,
                 ChannelType.PRIVATE
         );
     }

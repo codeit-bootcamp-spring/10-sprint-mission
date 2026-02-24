@@ -28,21 +28,16 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelResponseDTO createPublicChannel(CreatePublicChannelRequestDTO dto) {
-        Objects.requireNonNull(dto.name(), "공개 채널의 이름은 null일 수 없습니다.");
-
         Channel channel = ChannelMapper.toPublicChannelEntity(dto);
         channelRepository.save(channel);
+
         return ChannelMapper.toResponse(channel);
     }
 
     @Override
     public ChannelResponseDTO createPrivateChannel(CreatePrivateChannelRequestDTO dto) {
-        Objects.requireNonNull(dto.participantIds(), "participantIds는 null값일 수 없습니다.");
-        if (dto.participantIds().isEmpty()) {
-            throw new IllegalArgumentException("비공개 채널엔 최소 1명 이상 입장하여야 합니다.");
-        }
-
-        Channel channel = ChannelMapper.toPrivateChannelEntity(null, null);
+        // Mapper에서 name, description은 null로 처리
+        Channel channel = ChannelMapper.toPrivateChannelEntity();
 
         for (UUID ids : dto.participantIds()) {
             channel.updateUser(ids);

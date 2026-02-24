@@ -1,11 +1,6 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
-import com.sprint.mission.discodeit.entity.UserStatusType;
-import jakarta.annotation.Nullable;
-
-import java.util.UUID;
-
+// 비어있으면 해당 필드는 업데이트 안 함
 public record UpdateUserRequestDTO(
         String newUsername,
         String newEmail,
