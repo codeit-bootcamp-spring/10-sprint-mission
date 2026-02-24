@@ -27,7 +27,7 @@ public class BasicReadStatusService implements ReadStatusService {
     public ReadStatusResponseDTO create(ReadStatusCreateRequestDTO readStatusCreateRequestDTO) {
         UUID userId = readStatusCreateRequestDTO.userId();
         UUID channelId = readStatusCreateRequestDTO.channelId();
-        Instant lastReadTime = readStatusCreateRequestDTO.lastReadTime();
+        Instant lastReadAt = readStatusCreateRequestDTO.lastReadAt();
         // 관련된 Channel이나 User가 존재하지 않으면 예외 발생
         if (!channelRepository.existsById(channelId)) {
             throw new NoSuchElementException(channelId+"를 가진 채널은 존재하지 않습니다");
@@ -39,9 +39,9 @@ public class BasicReadStatusService implements ReadStatusService {
         if (readStatusRepository.findAllByChannelId(channelId)
                 .stream()
                 .anyMatch(readStatus -> readStatus.getUserId().equals(userId))) {
-            throw new IllegalStateException("이미 channelId:"+channelId+", userId:"+userId+"와 관련된 객체가 존재합니다");
+            throw new IllegalArgumentException("이미 channelId:"+channelId+", userId:"+userId+"와 관련된 객체가 존재합니다");
         }
-        ReadStatus readStatus = new ReadStatus(userId, channelId, lastReadTime);
+        ReadStatus readStatus = new ReadStatus(userId, channelId, lastReadAt);
         return toReadStatusResponseDTO(readStatusRepository.save(readStatus));
     }
 
@@ -62,8 +62,8 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public ReadStatusResponseDTO update(UUID readStatusId, ReadStatusUpdateRequestDTO readStatusUpdateRequestDTO) {
         ReadStatus readStatus = getReadStatusByIdOrThrow(readStatusId);
-        Instant lastReadTime = readStatusUpdateRequestDTO.lastReadTime();
-        readStatus.updateLastReadTime(lastReadTime);
+        Instant lastReadAt = readStatusUpdateRequestDTO.newLastReadAt();
+        readStatus.updateLastReadAt(lastReadAt);
         return toReadStatusResponseDTO(readStatusRepository.save(readStatus));
     }
 
@@ -79,9 +79,11 @@ public class BasicReadStatusService implements ReadStatusService {
     private ReadStatusResponseDTO toReadStatusResponseDTO(ReadStatus readStatus) {
         return new ReadStatusResponseDTO(
                 readStatus.getId(),
+                readStatus.getCreatedAt(),
+                readStatus.getUpdatedAt(),
                 readStatus.getUserId(),
                 readStatus.getChannelId(),
-                readStatus.getLastReadTime()
+                readStatus.getLastReadAt()
         );
     }
 

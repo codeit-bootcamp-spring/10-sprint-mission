@@ -15,21 +15,21 @@ public class ReadStatus implements Serializable {
     private Instant updatedAt;
     private UUID userId;// User의 id를 참조
     private UUID channelId;// channel의 id를 참조
-    private Instant lastReadTime;
+    private Instant lastReadAt;
 
     // private 채널 생성할 때 채널에 참여하는 User의 정보를 받아 User별 ReadStatus 정보를 생성함
-    public ReadStatus(UUID userId, UUID channelId, Instant lastReadTime) {
+    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
         this.id = UUID.randomUUID();
         this.userId = userId;
         this.channelId = channelId;
         this.createdAt = Instant.now();
-        this.lastReadTime = lastReadTime;
+        this.lastReadAt = lastReadAt;
     }
     
-    // lastReadTime을 업데이트 하기 위한 메소드
-    public void updateLastReadTime(Instant lastReadTime) {
-        if (lastReadTime != null) {
-            this.lastReadTime = lastReadTime;
+    // lastReadAt을 업데이트 하기 위한 메소드
+    public void updateLastReadAt(Instant lastReadAt) {
+        if (lastReadAt != null) {
+            this.lastReadAt = lastReadAt;
             this.updatedAt = Instant.now();
         }
     }

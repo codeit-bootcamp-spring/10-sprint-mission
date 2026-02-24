@@ -1,15 +1,13 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Instant;
 import java.util.UUID;
 
+@Schema(description = "Message 읽음 상태 생성 정보")
 public record ReadStatusCreateRequestDTO(
-    @NotBlank(message = "userId가 blank일 수 없습니다")
     UUID userId,
-    @NotBlank(message = "channelId가 blank일 수 없습니다")
     UUID channelId,
-    @NotBlank(message = "lastReadTime이 blank일 수 없습니다")
-    Instant lastReadTime
+    Instant lastReadAt
 ) {}
