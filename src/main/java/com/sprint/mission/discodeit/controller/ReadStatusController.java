@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,8 +38,8 @@ public class ReadStatusController {
       @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음"),
       @ApiResponse(responseCode = "400", description = "이미 읽음 상태가 존재함")
   })
-  public ResponseEntity<?> create(@RequestBody ReadStatusDto.Create request) {
-    ReadStatusDto.Response response = readStatusService.create(request);
+  public ResponseEntity<?> create(@RequestBody ReadStatusCreateRequest request) {
+    ReadStatusResponse response = readStatusService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -50,8 +52,8 @@ public class ReadStatusController {
   public ResponseEntity<?> update(
       @Parameter(description = "수정할 읽음 상태 ID", example = "0d56555c-7d86-4fa7-b5d6-3170a70909e1")
       @PathVariable UUID readStatusId,
-      @RequestBody ReadStatusDto.Update request) {
-    ReadStatusDto.Response response = readStatusService.update(readStatusId, request);
+      @RequestBody ReadStatusUpdateRequest request) {
+    ReadStatusResponse response = readStatusService.update(readStatusId, request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -62,7 +64,7 @@ public class ReadStatusController {
       @Parameter(description = "조회할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @RequestParam("userId") UUID userId
   ) {
-    List<ReadStatusDto.Response> responses = readStatusService.findAllByUserId(userId);
+    List<ReadStatusResponse> responses = readStatusService.findAllByUserId(userId);
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 }

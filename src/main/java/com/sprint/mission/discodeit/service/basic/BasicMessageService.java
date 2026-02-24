@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.MessageDto;
+import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -32,7 +34,7 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public MessageDto.Response create(MessageDto.Create request, List<MultipartFile> attachments) {
+  public MessageResponse create(MessageCreateRequest request, List<MultipartFile> attachments) {
 
     userRepository.findById(request.authorId())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
@@ -74,32 +76,32 @@ public class BasicMessageService implements MessageService {
     );
     messageRepository.save(message);
 
-    return MessageDto.Response.of(message);
+    return MessageResponse.of(message);
   }
 
   @Override
-  public MessageDto.Response findById(UUID messageId) {
+  public MessageResponse findById(UUID messageId) {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
-    return MessageDto.Response.of(message);
+    return MessageResponse.of(message);
   }
 
   @Override
-  public List<MessageDto.Response> findAllByChannelId(UUID channelId) {
+  public List<MessageResponse> findAllByChannelId(UUID channelId) {
     return messageRepository.findAll().stream()
         .filter(message -> message.getChannelId().equals(channelId))
-        .map(MessageDto.Response::of)
+        .map(MessageResponse::of)
         .toList();
   }
 
   @Override
-  public MessageDto.Response update(UUID messageId, MessageDto.Update request) {
+  public MessageResponse update(UUID messageId, MessageUpdateRequest request) {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
 
     message.update(request.newContent());
     messageRepository.save(message);
-    return MessageDto.Response.of(message);
+    return MessageResponse.of(message);
   }
 
   @Override

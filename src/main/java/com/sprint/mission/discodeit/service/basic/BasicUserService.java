@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
@@ -32,7 +34,7 @@ public class BasicUserService implements UserService {
   private final ReadStatusRepository readStatusRepository;
 
   @Override
-  public UserDto.Response create(UserDto.Create request, MultipartFile file) {
+  public UserResponse create(UserCreateRequest request, MultipartFile file) {
     existsByUsername(request.username());
     existsByEmail(request.email());
 
@@ -67,31 +69,31 @@ public class BasicUserService implements UserService {
     UserStatus status = new UserStatus(user.getId());
     userStatusRepository.save(status);
 
-    return UserDto.Response.of(user, status);
+    return UserResponse.of(user, status);
   }
 
   @Override
-  public UserDto.Response findById(UUID userId) {
+  public UserResponse findById(UUID userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     UserStatus status = userStatusRepository.findByUserId(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
-    return UserDto.Response.of(user, status);
+    return UserResponse.of(user, status);
   }
 
   @Override
-  public List<UserDto.Response> findAll() {
+  public List<UserResponse> findAll() {
     return userRepository.findAll().stream()
         .map(user -> {
           UserStatus status = userStatusRepository.findByUserId(user.getId())
               .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
-          return UserDto.Response.of(user, status);
+          return UserResponse.of(user, status);
         })
         .toList();
   }
 
   @Override
-  public UserDto.Response update(UUID userId, UserDto.Update request, MultipartFile file) {
+  public UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
@@ -133,7 +135,7 @@ public class BasicUserService implements UserService {
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
 
     userStatusRepository.save(status);
-    return UserDto.Response.of(user, status);
+    return UserResponse.of(user, status);
   }
 
   @Override

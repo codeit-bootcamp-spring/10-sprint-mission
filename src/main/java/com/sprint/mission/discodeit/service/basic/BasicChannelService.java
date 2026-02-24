@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.ChannelDto;
+import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.BaseEntity;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -17,7 +20,10 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +37,7 @@ public class BasicChannelService implements ChannelService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public ChannelDto.Response createPublic(ChannelDto.CreatePublic createRequest) {
+  public ChannelResponse createPublic(PublicChannelCreateRequest createRequest) {
     Channel channel = new Channel(
         ChannelType.PUBLIC,
         createRequest.name(),
@@ -39,68 +45,69 @@ public class BasicChannelService implements ChannelService {
     );
     channelRepository.save(channel);
 
-    return ChannelDto.Response.of(channel, List.of(), null);
+    return ChannelResponse.of(channel, List.of(), null);
   }
 
   @Override
-  public ChannelDto.Response createPrivate(ChannelDto.CreatePrivate createRequest) {
+  public ChannelResponse createPrivate(PrivateChannelCreateRequest createRequest) {
     //채널 생성 후 저장
-    Channel channel = new Channel(ChannelType.PRIVATE, null, null);
+    Channel channel = new Channel(
+        ChannelType.PRIVATE,
+        null,
+        null
+    );
     channelRepository.save(channel);
     //채널 참여자 아이디 목록
     List<UUID> memberIds = createRequest.participantIds();
-    //null 체크
-    if (memberIds == null) {
-      memberIds = List.of();
-    }
     //User별 ReadStatus정보 생성
     for (UUID memberId : memberIds) {
       ReadStatus status = new ReadStatus(memberId, channel.getId());
       readStatusRepository.save(status);
     }
-    return ChannelDto.Response.of(channel, memberIds, null);
+    return ChannelResponse.of(channel, memberIds, null);
   }
 
   @Override
-  public ChannelDto.Response findById(UUID channelId) {
+  public ChannelResponse findById(UUID channelId) {
     //채널Id로 채널 객체 조회
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
-    return ChannelDto.Response.of(
+    return ChannelResponse.of(
         channel,
         getParticipantIds(channelId),
         getLastMessageAt(channelId));
   }
 
   @Override
-  public List<ChannelDto.Response> findAllByUserId(UUID userId) {
-    //public 채널 리스트
-    List<ChannelDto.Response> publicChannels = channelRepository.findAll().stream()
+  public List<ChannelResponse> findAllByUserId(UUID userId) {
+    List<ChannelResponse> publicChannels = channelRepository.findAll().stream()
         .filter(channel -> channel.getType() == ChannelType.PUBLIC)
-        .map(channel -> ChannelDto.Response.of(channel, List.of(),
+        .map(channel -> ChannelResponse.of(
+            channel,
+            List.of(),
             getLastMessageAt(channel.getId())))
         .toList();
     //private 채널 리스트(내가 참여하고 있어야함)
-    List<ChannelDto.Response> privateChannels = readStatusRepository.findAllByUserId(userId)
+    List<ChannelResponse> privateChannels = readStatusRepository.findAllByUserId(userId)
         .stream()
         .map(ReadStatus::getChannelId)
         .map(channelRepository::findById)
         .flatMap(Optional::stream)
         .filter(channel -> channel.getType() == ChannelType.PRIVATE)
-        .map(channel -> ChannelDto.Response.of(
+        .map(channel -> ChannelResponse.of(
             channel,
             getParticipantIds(channel.getId()),
             getLastMessageAt(channel.getId()))
         )
         .toList();
-    List<ChannelDto.Response> allChannels = new ArrayList<>();
+    List<ChannelResponse> allChannels = new ArrayList<>();
     allChannels.addAll(publicChannels);
     allChannels.addAll(privateChannels);
     return allChannels;
   }
 
   @Override
-  public ChannelDto.Response update(UUID channelId, ChannelDto.Update request) {
+  public ChannelResponse update(UUID channelId, PublicChannelUpdateRequest request) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
 

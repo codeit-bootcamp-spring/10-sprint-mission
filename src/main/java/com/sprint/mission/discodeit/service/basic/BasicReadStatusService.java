@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ExceptionCode;
@@ -22,7 +24,7 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ChannelRepository channelRepository;
 
   @Override
-  public ReadStatusDto.Response create(ReadStatusDto.Create request) {
+  public ReadStatusResponse create(ReadStatusCreateRequest request) {
 
     userRepository.findById(request.userId())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
@@ -37,30 +39,30 @@ public class BasicReadStatusService implements ReadStatusService {
 
     ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
     readStatusRepository.save(readStatus);
-    return ReadStatusDto.Response.of(readStatus);
+    return ReadStatusResponse.of(readStatus);
   }
 
   @Override
-  public ReadStatusDto.Response findById(UUID statusId) {
+  public ReadStatusResponse findById(UUID statusId) {
     ReadStatus status = readStatusRepository.findById(statusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
-    return ReadStatusDto.Response.of(status);
+    return ReadStatusResponse.of(status);
   }
 
   @Override
-  public List<ReadStatusDto.Response> findAllByUserId(UUID userId) {
+  public List<ReadStatusResponse> findAllByUserId(UUID userId) {
     return readStatusRepository.findAllByUserId(userId).stream()
-        .map(ReadStatusDto.Response::of)
+        .map(ReadStatusResponse::of)
         .toList();
   }
 
   @Override
-  public ReadStatusDto.Response update(UUID readStatusId, ReadStatusDto.Update request) {
+  public ReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request) {
     ReadStatus status = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
     status.updateLastReadAt(request.newLastReadAt());
     readStatusRepository.save(status);
-    return ReadStatusDto.Response.of(status);
+    return ReadStatusResponse.of(status);
   }
 
   @Override

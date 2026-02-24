@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserStatusDto;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ExceptionCode;
@@ -21,7 +23,7 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserRepository userRepository;
 
   @Override
-  public UserStatusDto.Response create(UserStatusDto.Create request) {
+  public UserStatusResponse create(UserStatusCreateRequest request) {
 
     //유저가 존재하지 않으면 예외
     userRepository.findById(request.userId())
@@ -36,43 +38,43 @@ public class BasicUserStatusService implements UserStatusService {
     UserStatus status = new UserStatus(request.userId());
     userStatusRepository.save(status);
 
-    return UserStatusDto.Response.of(status);
+    return UserStatusResponse.of(status);
   }
 
   @Override
-  public UserStatusDto.Response findById(UUID userStatusId) {
+  public UserStatusResponse findById(UUID userStatusId) {
     UserStatus status = userStatusRepository.findById(userStatusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
-    return UserStatusDto.Response.of(status);
+    return UserStatusResponse.of(status);
   }
 
   @Override
-  public List<UserStatusDto.Response> findAll() {
+  public List<UserStatusResponse> findAll() {
     return userStatusRepository.findAll().stream()
-        .map(UserStatusDto.Response::of)
+        .map(UserStatusResponse::of)
         .toList();
   }
 
   @Override
-  public UserStatusDto.Response update(UUID id, UserStatusDto.Update request) {
+  public UserStatusResponse update(UUID id, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus status = userStatusRepository.findByUserId(id)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
     status.updateOnline(newLastActiveAt);
     userStatusRepository.save(status);
-    return UserStatusDto.Response.of(status);
+    return UserStatusResponse.of(status);
   }
 
   @Override
-  public UserStatusDto.Response updateByUserId(UUID userId, UserStatusDto.Update request) {
+  public UserStatusResponse updateByUserId(UUID userId, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
 
     UserStatus status = userStatusRepository.findByUserId(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
     status.updateOnline(newLastActiveAt);
     userStatusRepository.save(status);
-    return UserStatusDto.Response.of(status);
+    return UserStatusResponse.of(status);
   }
 
   @Override

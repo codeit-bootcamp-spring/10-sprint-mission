@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -90,6 +91,13 @@ public class FileChannelRepository implements ChannelRepository {
     } catch (IOException e) {
       throw new RuntimeException("Channel 데이터 목록 조회 실패", e);
     }
+  }
+
+  @Override
+  public List<Channel> findAllByType(ChannelType type) {
+    return findAll().stream()
+        .filter(channel -> channel.getType().equals(type))
+        .toList();
   }
 
   @Override

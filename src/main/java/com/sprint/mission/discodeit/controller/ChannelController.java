@@ -1,12 +1,16 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.ChannelDto;
+import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -33,16 +37,16 @@ public class ChannelController {
   @PostMapping("/public")
   @Operation(summary = "Public Channel 생성")
   @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
-  public ResponseEntity<?> createPublic(@RequestBody ChannelDto.CreatePublic request) {
-    ChannelDto.Response response = channelService.createPublic(request);
+  public ResponseEntity<?> createPublic(@Valid @RequestBody PublicChannelCreateRequest request) {
+    ChannelResponse response = channelService.createPublic(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
   @PostMapping("/private")
   @Operation(summary = "Private Channel 생성")
   @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨")
-  public ResponseEntity<?> createPrivate(@RequestBody ChannelDto.CreatePrivate request) {
-    ChannelDto.Response response = channelService.createPrivate(request);
+  public ResponseEntity<?> createPrivate(@Valid @RequestBody PrivateChannelCreateRequest request) {
+    ChannelResponse response = channelService.createPrivate(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -57,9 +61,9 @@ public class ChannelController {
   public ResponseEntity<?> update(
       @Parameter(description = "수정할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @PathVariable UUID channelId,
-      @RequestBody ChannelDto.Update request
+      @Valid @RequestBody PublicChannelUpdateRequest request
   ) {
-    ChannelDto.Response response = channelService.update(channelId, request);
+    ChannelResponse response = channelService.update(channelId, request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -84,7 +88,7 @@ public class ChannelController {
       @Parameter(description = "조회할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @RequestParam("userId") UUID userId
   ) {
-    List<ChannelDto.Response> responses = channelService.findAllByUserId(userId);
+    List<ChannelResponse> responses = channelService.findAllByUserId(userId);
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 }

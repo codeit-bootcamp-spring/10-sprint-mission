@@ -1,13 +1,15 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.MessageDto;
+import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -41,10 +43,10 @@ public class MessageController {
       @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음")
   })
   public ResponseEntity<?> create(
-      @RequestPart("messageCreateRequest") MessageDto.Create request,
+      @Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
-    MessageDto.Response response = messageService.create(request, attachments);
+    MessageResponse response = messageService.create(request, attachments);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -57,9 +59,9 @@ public class MessageController {
   public ResponseEntity<?> update(
       @Parameter(description = "수정할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
       @PathVariable UUID messageId,
-      @RequestBody MessageDto.Update request
+      @Valid @RequestBody MessageUpdateRequest request
   ) {
-    MessageDto.Response response = messageService.update(messageId, request);
+    MessageResponse response = messageService.update(messageId, request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -70,7 +72,7 @@ public class MessageController {
       @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음")
   })
   public ResponseEntity<?> delete(
-      @Parameter(description = "수정할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
+      @Parameter(description = "삭제할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
       @PathVariable UUID messageId
   ) {
     messageService.delete(messageId);
@@ -84,7 +86,7 @@ public class MessageController {
       @Parameter(description = "조회할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @RequestParam("channelId") UUID channelId
   ) {
-    List<MessageDto.Response> responses = messageService.findAllByChannelId(channelId);
+    List<MessageResponse> responses = messageService.findAllByChannelId(channelId);
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 }
