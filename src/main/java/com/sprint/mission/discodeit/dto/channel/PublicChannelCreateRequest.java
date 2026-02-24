@@ -1,6 +1,13 @@
 package com.sprint.mission.discodeit.dto.channel;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record PublicChannelCreateRequest(
-        String name,
-        String description
-) {}
+    @JsonProperty("name")
+    String name,
+
+    @JsonProperty("description")
+    String description
+) {
+
+}

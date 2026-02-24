@@ -16,35 +16,32 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
 
-    private final UserRepository userRepository;
+  private final UserRepository userRepository;
 
-    @Override
-    public LoginResponse login(LoginRequest request) {
-        if (request == null ||
-                request.userName() == null ||
-                request.password() == null) {
-            throw new BusinessLogicException(ErrorCode.BAD_REQUEST);
-        }
-
-        if (request.password().isEmpty()) {
-            throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
-        }
-
-        User user = userRepository.findAll().stream()
-                .filter(u ->
-                        u.getName().equals(request.userName()) &&
-                                u.getPassword().equals(request.password())
-                )
-                .findFirst()
-                .orElseThrow(() ->
-                        new BusinessLogicException(ErrorCode.UNAUTHORIZED)
-                );
-
-        return new LoginResponse(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                Optional.ofNullable(user.getProfileImageId())
-        );
+  @Override
+  public LoginResponse login(LoginRequest request) {
+    if (request == null || request.userName() == null || request.password() == null) {
+      throw new BusinessLogicException(ErrorCode.BAD_REQUEST);
     }
+
+    if (request.password().isEmpty()) {
+      throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
+    }
+
+    User user = userRepository.findByName(request.userName());
+    if (user == null) {
+      throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+    }
+
+    if (!user.getPassword().equals(request.password())) {
+      throw new BusinessLogicException(ErrorCode.WRONG_PASSWORD);
+    }
+
+    return new LoginResponse(
+        user.getId(),
+        user.getName(),
+        user.getEmail(),
+        Optional.ofNullable(user.getProfileImageId())
+    );
+  }
 }

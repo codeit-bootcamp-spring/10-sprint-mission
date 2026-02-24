@@ -1,11 +1,18 @@
 package com.sprint.mission.discodeit.dto.message;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import java.util.UUID;
 
 public record MessageCreateRequest(
-        UUID channelId,
-        UUID userId,
-        String content,
-        List<UUID>attachmentIds
-) {}
+    UUID channelId,
+
+    @JsonProperty("authorId")
+    UUID userId,
+
+    String content,
+    List<UUID> attachmentIds
+) {
+
+}

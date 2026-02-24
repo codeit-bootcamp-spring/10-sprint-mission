@@ -26,183 +26,207 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
-    private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
-    private final ReadStatusRepository readStatusRepository;
-    private final BinaryContentRepository binaryContentRepository;
+  private final UserRepository userRepository;
+  private final UserStatusRepository userStatusRepository;
+  private final ReadStatusRepository readStatusRepository;
+  private final BinaryContentRepository binaryContentRepository;
 
-    @Override
-    public UserResponse create(UserCreateRequest request) {
-        requireNonNull(request, "request");
-        requireNonNull(request.userName(), "userName");
-        requireNonNull(request.email(), "email");
-        requireNonNull(request.password(), "password");
+  @Override
+  public UserResponse create(UserCreateRequest request) {
+    requireNonNull(request, "request");
+    requireNonNull(request.userName(), "userName");
+    requireNonNull(request.email(), "email");
+    requireNonNull(request.password(), "password");
 
-        if (request.password().isEmpty()) {
-            throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
-        }
-
-        if (userRepository.existsByName(request.userName())) {
-            throw new BusinessLogicException(ErrorCode.DUPLICATION_USER);
-        }
-
-        if (userRepository.existsByEmail(request.email())) {
-            throw new BusinessLogicException(ErrorCode.DUPLICATION_EMAIL);
-        }
-
-        User user = new User(request.userName(), request.email(), request.password());
-        userRepository.save(user);
-
-        UserStatus status = new UserStatus(user.getId(), Instant.now());
-        userStatusRepository.save(status);
-
-        if (request.profileImage() != null) {
-            ProfileImageCreateRequest imgReq = request.profileImage();
-
-            BinaryContent image = new BinaryContent(
-                    imgReq.fileName(),
-                    imgReq.contentType(),
-                    imgReq.data(),
-                    user.getId(),
-                    null
-            );
-
-            binaryContentRepository.save(image);
-            user.updateProfileImage(image.getId());
-            userRepository.save(user);
-        }
-
-        return toResponse(user, status);
+    if (request.password().isEmpty()) {
+      throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
     }
 
-    @Override
-    public UserResponse find(UUID userId) {
-        requireNonNull(userId, "userId");
-
-        User user = userRepository.findById(userId);
-        if (user == null) throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
-
-        UserStatus status = userStatusRepository.findByUserId(userId);
-        if (status == null) throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
-
-        return toResponse(user, status);
+    if (userRepository.existsByName(request.userName())) {
+      throw new BusinessLogicException(ErrorCode.DUPLICATION_USER);
     }
 
-    @Override
-    public List<UserResponse> findAll() {
-        return userRepository.findAll().stream()
-                .map(user -> {
-                    UserStatus status = userStatusRepository.findByUserId(user.getId());
-                    if (status == null) throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
-                    return toResponse(user, status);
-                })
-                .toList();
+    if (userRepository.existsByEmail(request.email())) {
+      throw new BusinessLogicException(ErrorCode.DUPLICATION_EMAIL);
     }
 
-    @Override
-    public List<UserDto> findAllDto() {
-        return userRepository.findAll().stream()
-                .map(user -> {
-                    UserStatus status = userStatusRepository.findByUserId(user.getId());
-                    if (status == null) throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+    User user = new User(request.userName(), request.email(), request.password());
+    userRepository.save(user);
 
-                    return new UserDto(
-                            user.getId(),
-                            user.getCreatedAt(),
-                            user.getUpdatedAt(),
-                            user.getName(),
-                            user.getEmail(),
-                            user.getProfileImageId(),
-                            status.isOnline()
-                    );
-                })
-                .toList();
+    UserStatus status = new UserStatus(user.getId(), Instant.now());
+    userStatusRepository.save(status);
+
+    if (request.profileImage() != null) {
+      ProfileImageCreateRequest imgReq = request.profileImage();
+
+      BinaryContent image = new BinaryContent(
+          imgReq.fileName(),
+          imgReq.contentType(),
+          imgReq.data(),
+          user.getId(),
+          null
+      );
+
+      binaryContentRepository.save(image);
+      user.updateProfileImage(image.getId());
+      userRepository.save(user);
     }
 
-    @Override
-    public UserResponse update(UserUpdateRequest request) {
-        requireNonNull(request, "request");
-        requireNonNull(request.userId(), "userId");
+    return toResponse(user, status);
+  }
 
-        User user = userRepository.findById(request.userId());
-        if (user == null) throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+  @Override
+  public UserResponse find(UUID userId) {
+    requireNonNull(userId, "userId");
 
-        request.userName().ifPresent(newName -> {
-            if (!user.getName().equals(newName) && userRepository.existsByName(newName)) {
-                throw new BusinessLogicException(ErrorCode.DUPLICATION_USER);
+    User user = userRepository.findById(userId);
+      if (user == null) {
+          throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+      }
+
+    UserStatus status = userStatusRepository.findByUserId(userId);
+      if (status == null) {
+          throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+      }
+
+    return toResponse(user, status);
+  }
+
+  @Override
+  public List<UserResponse> findAll() {
+    return userRepository.findAll().stream()
+        .map(user -> {
+          UserStatus status = userStatusRepository.findByUserId(user.getId());
+            if (status == null) {
+                throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
             }
-            user.updateName(newName);
-        });
+          return toResponse(user, status);
+        })
+        .toList();
+  }
 
-        request.email().ifPresent(newEmail -> {
-            if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
-                throw new BusinessLogicException(ErrorCode.DUPLICATION_EMAIL);
-            }
-            user.updateEmail(newEmail);
-        });
-
-        request.password().ifPresent(newPassword -> {
-            if (newPassword.isEmpty()) {
-                throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
-            }
-            user.updatePassword(newPassword);
-        });
-
-        request.profileImage().ifPresent(imgReq -> {
-            if (user.getProfileImageId() != null) {
-                binaryContentRepository.delete(user.getProfileImageId());
+  @Override
+  public List<UserDto> findAllDto() {
+    return userRepository.findAll().stream()
+        .map(user -> {
+          UserStatus status = userStatusRepository.findByUserId(user.getId());
+            if (status == null) {
+                throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
             }
 
-            BinaryContent newImage = new BinaryContent(
-                    imgReq.fileName(),
-                    imgReq.contentType(),
-                    imgReq.data(),
-                    user.getId(),
-                    null
-            );
+          return new UserDto(
+              user.getId(),
+              user.getCreatedAt(),
+              user.getUpdatedAt(),
+              user.getName(),
+              user.getEmail(),
+              user.getProfileImageId(),
+              status.isOnline()
+          );
+        })
+        .toList();
+  }
 
-            binaryContentRepository.save(newImage);
-            user.updateProfileImage(newImage.getId());
-        });
+  @Override
+  public UserResponse update(UserUpdateRequest request) {
+    requireNonNull(request, "request");
+    requireNonNull(request.userId(), "userId");
 
-        userRepository.save(user);
+    User user = userRepository.findById(request.userId());
+      if (user == null) {
+          throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+      }
 
-        UserStatus status = userStatusRepository.findByUserId(user.getId());
-        if (status == null) throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+    request.userName().ifPresent(newName -> {
+      if (!user.getName().equals(newName) && userRepository.existsByName(newName)) {
+        throw new BusinessLogicException(ErrorCode.DUPLICATION_USER);
+      }
+      user.updateName(newName);
+    });
 
-        return toResponse(user, status);
+    request.email().ifPresent(newEmail -> {
+      if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
+        throw new BusinessLogicException(ErrorCode.DUPLICATION_EMAIL);
+      }
+      user.updateEmail(newEmail);
+    });
+
+    request.password().ifPresent(newPassword -> {
+      if (newPassword.isEmpty()) {
+        throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
+      }
+      user.updatePassword(newPassword);
+    });
+
+    request.profileImage().ifPresent(imgReq -> {
+      if (user.getProfileImageId() != null) {
+        binaryContentRepository.delete(user.getProfileImageId());
+      }
+
+      BinaryContent newImage = new BinaryContent(
+          imgReq.fileName(),
+          imgReq.contentType(),
+          imgReq.data(),
+          user.getId(),
+          null
+      );
+
+      binaryContentRepository.save(newImage);
+      user.updateProfileImage(newImage.getId());
+    });
+
+    userRepository.save(user);
+
+    UserStatus status = userStatusRepository.findByUserId(user.getId());
+      if (status == null) {
+          throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+      }
+
+    return toResponse(user, status);
+  }
+
+  @Override
+  public void delete(UUID userId) {
+    requireNonNull(userId, "userId");
+
+    User user = userRepository.findById(userId);
+      if (user == null) {
+          throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+      }
+
+    if (user.getProfileImageId() != null) {
+      binaryContentRepository.delete(user.getProfileImageId());
     }
 
-    @Override
-    public void delete(UUID userId) {
-        requireNonNull(userId, "userId");
+    userStatusRepository.deleteByUserId(userId);
+    readStatusRepository.deleteByUserId(userId);
+    userRepository.delete(userId);
+  }
 
-        User user = userRepository.findById(userId);
-        if (user == null) throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+  @Override
+  public User findEntity(UUID userId) {
+    requireNonNull(userId, "userId");
+    User user = userRepository.findById(userId);
+      if (user == null) {
+          throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+      }
+    return user;
+  }
 
-        if (user.getProfileImageId() != null) {
-            binaryContentRepository.delete(user.getProfileImageId());
-        }
+  private UserResponse toResponse(User user, UserStatus status) {
+    return new UserResponse(
+        user.getId(),
+        user.getName(),
+        user.getEmail(),
+        status.isOnline(),
+        status.getLastSeenAt(),
+        user.getProfileImageId()
+    );
+  }
 
-        userStatusRepository.deleteByUserId(userId);
-        readStatusRepository.deleteByUserId(userId);
-        userRepository.delete(userId);
+  private static <T> void requireNonNull(T value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException(name + " null이 될 수 없습니다.");
     }
-
-    private UserResponse toResponse(User user, UserStatus status) {
-        return new UserResponse(
-                user.getId(),
-                user.getName(),
-                user.getEmail(),
-                status.isOnline(),
-                status.getLastSeenAt(),
-                user.getProfileImageId()
-        );
-    }
-
-    private static <T> void requireNonNull(T value, String name) {
-        if (value == null) {
-            throw new IllegalArgumentException(name + " null이 될 수 없습니다.");
-        }
-    }
+  }
 }

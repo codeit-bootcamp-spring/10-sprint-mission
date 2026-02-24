@@ -1,41 +1,34 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping
+@RequestMapping("/api/binaryContents")
 public class BinaryContentController {
 
-    private final BinaryContentService binaryContentService;
+  private final BinaryContentService binaryContentService;
 
-    public BinaryContentController(BinaryContentService binaryContentService) {
-        this.binaryContentService = binaryContentService;
-    }
+  public BinaryContentController(BinaryContentService binaryContentService) {
+    this.binaryContentService = binaryContentService;
+  }
 
-    // 기존 API 유지
-    // GET /binaryContents?ids=...
-    @RequestMapping(value = "/binarycontents", method = RequestMethod.GET)
-    public List<BinaryContentResponse> getBinaryContents(
-            @RequestParam List<UUID> ids
-    ) {
-        return binaryContentService.findAllByIdIn(ids);
-    }
+  @RequestMapping(value = "/{binaryContentId}", method = RequestMethod.GET)
+  public ResponseEntity<BinaryContent> find(@PathVariable UUID binaryContentId) {
+    return ResponseEntity.ok(binaryContentService.findEntity(binaryContentId));
+  }
 
-    // 심화 요구사항
-    // GET /api/binaryContent/find?binaryContentId=...
-    @RequestMapping(value = "/api/binarycontent/find", method = RequestMethod.GET)
-    public ResponseEntity<BinaryContent> findBinaryContent(
-            @RequestParam UUID binaryContentId
-    ) {
-        return ResponseEntity.ok(
-                binaryContentService.findEntity(binaryContentId)
-        );
-    }
+  @RequestMapping(method = RequestMethod.GET)
+  public ResponseEntity<List<BinaryContent>> findAllByIdIn(
+      @RequestParam List<UUID> binaryContentIds) {
+    return ResponseEntity.ok(binaryContentService.findAllEntitiesByIdIn(binaryContentIds));
+  }
 }

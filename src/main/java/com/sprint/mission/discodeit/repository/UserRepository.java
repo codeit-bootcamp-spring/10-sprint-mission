@@ -6,10 +6,18 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserRepository {
-    User save(User user);
-    User findById(UUID id);
-    List<User> findAll();
-    void delete(UUID id);
-    boolean existsByName(String name);
-    boolean existsByEmail(String email);
+
+  User save(User user);
+
+  User findById(UUID id);
+
+  List<User> findAll();
+
+  void delete(UUID id);
+
+  boolean existsByName(String name);
+
+  boolean existsByEmail(String email);
+
+  User findByName(String name);
 }

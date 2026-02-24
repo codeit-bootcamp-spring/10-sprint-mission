@@ -6,3 +6,10 @@ discodeit:
   repository:
     type: jcf          # jcf | file (없으면 jcf로 동작하게 만들 예정)
     file-directory: .discodeit
+
+logging:
+  level:
+    org.springdoc: DEBUG
+    io.swagger.v3: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.boot.autoconfigure: INFO
