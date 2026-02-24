@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.time.OffsetDateTime;
 import java.util.NoSuchElementException;
 
 @ControllerAdvice
@@ -13,23 +14,33 @@ import java.util.NoSuchElementException;
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<String> handleException(IllegalArgumentException e) {
+  public ResponseEntity<ErrorResponse> handleException(IllegalArgumentException e) {
     return ResponseEntity
         .status(HttpStatus.BAD_REQUEST)
-        .body(e.getMessage());
+        .body(ErrorResponse.of("BAD_REQUEST",e.getMessage(),400));
   }
 
   @ExceptionHandler(NoSuchElementException.class)
-  public ResponseEntity<String> handleException(NoSuchElementException e) {
+  public ResponseEntity<ErrorResponse> handleException(NoSuchElementException e) {
     return ResponseEntity
         .status(HttpStatus.NOT_FOUND)
-        .body(e.getMessage());
+        .body(ErrorResponse.of("NOT FOUND", e.getMessage(), 404));
   }
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<String> handleException(Exception e) {
+  public ResponseEntity<ErrorResponse> handleException(Exception e) {
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(e.getMessage());
+        .body(ErrorResponse.of("INTERNAL_ERROR",e.getMessage(), 500));
+  }
+
+  public record ErrorResponse(
+          String code,
+          String message,
+          int status
+  ) {
+    static ErrorResponse of(String code, String message, int status) {
+      return new ErrorResponse(code, message, status);
+    }
   }
 }
