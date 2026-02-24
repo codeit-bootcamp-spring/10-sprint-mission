@@ -59,15 +59,30 @@ public class UserController {
 
     // 사용자 정보 수정
 //    @RequestMapping(value = "/user/{userId}", method = RequestMethod.PATCH)
-    @PatchMapping("/{userId}")
-    public ResponseEntity<UserDto> putUser(@PathVariable UUID userId,
-                                           @RequestBody UserUpdateRequest request) {
-        User user = userService.update(userId, request, Optional.empty());
+    @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<User> patchUser(@PathVariable UUID userId,
+                                             @RequestPart(value = "userUpdateRequest") UserUpdateRequest request,
+                                             @RequestPart(value = "profile", required = false) MultipartFile profile) {
+        BinaryContentCreateRequest binaryContentCreateRequest = null;
+
+        if (profile != null && !profile.isEmpty()) {
+            try {
+                binaryContentCreateRequest = new BinaryContentCreateRequest(
+                        profile.getOriginalFilename(),
+                        profile.getContentType(),
+                        profile.getBytes()
+                );
+            } catch (IOException e) {
+                throw new RuntimeException("파일 변환 실패", e);
+            }
+        }
+
+        User user = userService.update(userId, request, Optional.ofNullable(binaryContentCreateRequest));
         System.out.println(user.getUsername());
         System.out.println(request);
         UserDto userDto = userService.find(userId);
         System.out.println(userDto);
-        return new ResponseEntity<>(userDto, HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
 

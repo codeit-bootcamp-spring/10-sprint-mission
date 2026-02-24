@@ -30,6 +30,6 @@ public class AuthController {
         User user = authService.login(loginRequest);
         UserDto userDto = userService.find(user.getId());
         System.out.println("로그인 성공");
-        return new ResponseEntity<>(user, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 }

@@ -37,11 +37,11 @@ public class ReadStatusController {
     public ResponseEntity<ReadStatus> putReadStatus(@PathVariable UUID readStatusId,
                               @RequestBody ReadStatusUpdateRequest request) {
         ReadStatus readStatus = readStatusService.update(readStatusId, request);
-        return new ResponseEntity<>(readStatus, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(readStatus, HttpStatus.OK);
     }
 
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<ReadStatus>> getReadStatusAllByUserId(@PathVariable UUID userId) {
+    public ResponseEntity<List<ReadStatus>> getReadStatusAllByUserId(@RequestParam UUID userId) {
         List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
         return new ResponseEntity<>(readStatuses, HttpStatus.OK);
     }

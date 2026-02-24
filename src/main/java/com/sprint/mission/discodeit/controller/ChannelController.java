@@ -47,7 +47,7 @@ public class ChannelController {
                                                        @RequestBody PublicChannelUpdateRequest request) {
         channelService.update(channelId, request);
         ChannelDto channelDto = channelService.find(channelId);
-        return new ResponseEntity<>(channelDto, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(channelDto, HttpStatus.OK);
     }
 
 //    @RequestMapping(value = "/user/{userId}/channels", method = RequestMethod.GET)
