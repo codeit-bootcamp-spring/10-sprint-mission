@@ -132,12 +132,9 @@ public class UserController {
   @RequestMapping(value = "/{userId}/userStatus", method = RequestMethod.PATCH)
   public ResponseEntity<UserStatusResponse> updateUserStatusByUserId(
       @PathVariable UUID userId,
-      @RequestBody(required = false) UserStatusUpdateRequest request
+      @RequestBody UserStatusUpdateRequest request
   ) {
-    if (request == null || request.online() == null) {
-      return ResponseEntity.ok(userStatusService.updateByUserId(userId));
-    }
-    return ResponseEntity.ok(userStatusService.updateOnline(userId, request.online()));
+    return ResponseEntity.ok(userStatusService.updateByUserId(userId, request.newLastActiveAt()));
   }
 
   private ProfileImageCreateRequest readProfile(MultipartFile profile) {
