@@ -6,15 +6,18 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +30,7 @@ import java.util.UUID;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
+  private final ChannelRepository channelRepository;
   private final UserStatusRepository userStatusRepository;
   private final ReadStatusRepository readStatusRepository;
   private final BinaryContentRepository binaryContentRepository;
@@ -52,6 +56,16 @@ public class BasicUserService implements UserService {
 
     User user = new User(request.userName(), request.email(), request.password());
     userRepository.save(user);
+
+    // 새 유저를 모든 PUBLIC 채널에 자동 참여
+    List<Channel> channels = channelRepository.findAllChannel();
+    for (Channel ch : channels) {
+      if (ch.isPrivate()) {
+        continue;
+      }
+      ch.addParticipant(user);
+      channelRepository.saveChannel(ch);
+    }
 
     UserStatus status = new UserStatus(user.getId(), Instant.now());
     userStatusRepository.save(status);
@@ -80,14 +94,14 @@ public class BasicUserService implements UserService {
     requireNonNull(userId, "userId");
 
     User user = userRepository.findById(userId);
-      if (user == null) {
-          throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
-      }
+    if (user == null) {
+      throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+    }
 
     UserStatus status = userStatusRepository.findByUserId(userId);
-      if (status == null) {
-          throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
-      }
+    if (status == null) {
+      throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+    }
 
     return toResponse(user, status);
   }
@@ -97,9 +111,9 @@ public class BasicUserService implements UserService {
     return userRepository.findAll().stream()
         .map(user -> {
           UserStatus status = userStatusRepository.findByUserId(user.getId());
-            if (status == null) {
-                throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
-            }
+          if (status == null) {
+            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+          }
           return toResponse(user, status);
         })
         .toList();
@@ -110,9 +124,9 @@ public class BasicUserService implements UserService {
     return userRepository.findAll().stream()
         .map(user -> {
           UserStatus status = userStatusRepository.findByUserId(user.getId());
-            if (status == null) {
-                throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
-            }
+          if (status == null) {
+            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+          }
 
           return new UserDto(
               user.getId(),
@@ -133,9 +147,9 @@ public class BasicUserService implements UserService {
     requireNonNull(request.userId(), "userId");
 
     User user = userRepository.findById(request.userId());
-      if (user == null) {
-          throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
-      }
+    if (user == null) {
+      throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+    }
 
     request.userName().ifPresent(newName -> {
       if (!user.getName().equals(newName) && userRepository.existsByName(newName)) {
@@ -178,9 +192,9 @@ public class BasicUserService implements UserService {
     userRepository.save(user);
 
     UserStatus status = userStatusRepository.findByUserId(user.getId());
-      if (status == null) {
-          throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
-      }
+    if (status == null) {
+      throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+    }
 
     return toResponse(user, status);
   }
@@ -190,9 +204,9 @@ public class BasicUserService implements UserService {
     requireNonNull(userId, "userId");
 
     User user = userRepository.findById(userId);
-      if (user == null) {
-          throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
-      }
+    if (user == null) {
+      throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+    }
 
     if (user.getProfileImageId() != null) {
       binaryContentRepository.delete(user.getProfileImageId());
@@ -207,9 +221,9 @@ public class BasicUserService implements UserService {
   public User findEntity(UUID userId) {
     requireNonNull(userId, "userId");
     User user = userRepository.findById(userId);
-      if (user == null) {
-          throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
-      }
+    if (user == null) {
+      throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+    }
     return user;
   }
 

@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +71,17 @@ public class BasicChannelService implements ChannelService {
     }
 
     Channel channel = new Channel(req.name(), req.description());
+
+    List<User> users = userRepository.findAll();
+
+    for (User u : users) {
+      boolean alreadyJoined = channel.getParticipants().stream()
+          .anyMatch(p -> p.getId().equals(u.getId()));
+      if (!alreadyJoined) {
+        channel.getParticipants().add(u);
+      }
+    }
+
     return channelRepository.createChannel(channel);
   }
 
@@ -117,9 +129,9 @@ public class BasicChannelService implements ChannelService {
               .max(Instant::compareTo)
               .orElse(null);
 
-          List<UUID> participantIds = channel.isPrivate()
-              ? channel.getParticipants().stream().map(User::getId).toList()
-              : List.of();
+          List<UUID> participantIds = channel.getParticipants().stream()
+              .map(User::getId)
+              .toList();
 
           return new ChannelResponse(
               channel.getId(),
