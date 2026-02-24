@@ -13,8 +13,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -27,9 +29,27 @@ public class MessageController {
     }
 
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Message> postMessage(@RequestPart("message") MessageCreateRequest request,
-                                               @RequestPart("binarycontent")List<BinaryContentCreateRequest> binaryContents) {
-        Message message = messageService.create(request, binaryContents);
+    public ResponseEntity<Message> postMessage(@RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
+                                               @RequestPart(value = "attachments", required = false)List<MultipartFile> attachments) {
+        System.out.println(messageCreateRequest);
+        List<BinaryContentCreateRequest> binaryContentCreateRequests = new ArrayList<>();
+
+        if (attachments != null && !attachments.isEmpty()) {
+            try {
+                for (MultipartFile file : attachments) {
+                    BinaryContentCreateRequest request = new BinaryContentCreateRequest(
+                            file.getOriginalFilename(),
+                            file.getContentType(),
+                            file.getBytes()
+                    );
+                    binaryContentCreateRequests.add(request);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("파일 변환 실패", e);
+            }
+        }
+
+        Message message = messageService.create(messageCreateRequest, binaryContentCreateRequests);
         return new ResponseEntity<>(message, HttpStatus.CREATED);
     }
 

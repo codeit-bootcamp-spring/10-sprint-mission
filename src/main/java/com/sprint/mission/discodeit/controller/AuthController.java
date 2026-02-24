@@ -25,11 +25,11 @@ public class AuthController {
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public ResponseEntity<UserDto> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
         System.out.println("로그인 시작");
         User user = authService.login(loginRequest);
         UserDto userDto = userService.find(user.getId());
         System.out.println("로그인 성공");
-        return new ResponseEntity<>(userDto, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(user, HttpStatus.ACCEPTED);
     }
 }

@@ -34,8 +34,8 @@ public class UserController {
 
     // 사용자 등록
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserDto> postUser(@ModelAttribute UserCreateRequest request,
-                                            @RequestPart(value = "file", required = false)MultipartFile file) {
+    public ResponseEntity<UserDto> postUser(@RequestPart("userCreateRequest") UserCreateRequest request,
+                                            @RequestPart(value = "profile", required = false)MultipartFile file) {
         System.out.println(request);
         BinaryContentCreateRequest binaryContentCreateRequest = null;
 
