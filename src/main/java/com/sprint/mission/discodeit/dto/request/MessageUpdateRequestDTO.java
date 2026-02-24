@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "수정할 Message 내용")
 public record MessageUpdateRequestDTO(
-   @NotBlank(message = "newContent가 blank일 수 없습니다")
    String newContent
 ) {}

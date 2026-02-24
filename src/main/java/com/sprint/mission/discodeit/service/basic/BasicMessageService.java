@@ -57,11 +57,9 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public MessageResponseDTO update(UUID messageId, MessageUpdateRequestDTO messageUpdateRequestDTO,
-                                     Optional<List<BinaryContentCreateRequestDTO>> binaryContentCreateRequestDTO) {
+    public MessageResponseDTO update(UUID messageId, MessageUpdateRequestDTO messageUpdateRequestDTO) {
         Message message = getMessageByIdOrThrow(messageId);
-        List<UUID> newAttachmentIds = toAttachmentIds(binaryContentCreateRequestDTO.orElse(new ArrayList<>()));
-        message.update(messageUpdateRequestDTO.newContent(), newAttachmentIds);
+        message.update(messageUpdateRequestDTO.newContent(), message.getAttachmentIds());
         return toMessageResponseDTO(messageRepository.save(message));
     }
 
@@ -80,6 +78,8 @@ public class BasicMessageService implements MessageService {
     private MessageResponseDTO toMessageResponseDTO(Message message) {
         return new MessageResponseDTO(
                 message.getId(),
+                message.getCreatedAt(),
+                message.getUpdatedAt(),
                 message.getContent(),
                 message.getChannelId(),
                 message.getAuthorId(),
@@ -87,7 +87,7 @@ public class BasicMessageService implements MessageService {
         );
     }
     
-    // Message create,update요청시 List<BinaryContentCreateRequestDTO> attachments를 통해 BinaryContent를 생성하고
+    // Message create요청시 List<BinaryContentCreateRequestDTO> attachments를 통해 BinaryContent를 생성하고
     // Message의 필드로 들어갈 List<UUID> attachmentIds를 반환하는 메서드
     private List<UUID> toAttachmentIds(List<BinaryContentCreateRequestDTO> attachments) {
         List<UUID> attachmentIds = new ArrayList<>();

@@ -14,7 +14,6 @@ public interface MessageService {
                               Optional<List<BinaryContentCreateRequestDTO>> binaryContentCreateRequestDTO);
     MessageResponseDTO find(UUID messageId);
     List<MessageResponseDTO> findAllByChannelId(UUID channelId);
-    MessageResponseDTO update(UUID messageId, MessageUpdateRequestDTO messageUpdateRequestDTO,
-                              Optional<List<BinaryContentCreateRequestDTO>> binaryContentCreateRequestDTO);
+    MessageResponseDTO update(UUID messageId, MessageUpdateRequestDTO messageUpdateRequestDTO);
     void delete(UUID messageId);
 }
