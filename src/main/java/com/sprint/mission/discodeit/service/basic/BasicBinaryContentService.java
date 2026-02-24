@@ -20,9 +20,10 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     @Override
     public BinaryContentResponseDTO create(BinaryContentCreateRequestDTO binaryContentCreateRequestDTO) {
-        byte[] content = binaryContentCreateRequestDTO.content();
+        String fileName = binaryContentCreateRequestDTO.fileName();
+        byte[] bytes = binaryContentCreateRequestDTO.bytes();
         String contentType = binaryContentCreateRequestDTO.contentType();
-        BinaryContent binaryContent = new BinaryContent(contentType, content);
+        BinaryContent binaryContent = new BinaryContent(fileName, (long)bytes.length, bytes, contentType);
         return toBinaryContentResponseDTO(binaryContentRepository.save(binaryContent));
     }
 
@@ -57,8 +58,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     private BinaryContentResponseDTO toBinaryContentResponseDTO(BinaryContent binaryContent) {
         return new BinaryContentResponseDTO(
                 binaryContent.getId(),
-                binaryContent.getContent(),
-                binaryContent.getContentType()
+                binaryContent.getCreatedAt(),
+                binaryContent.getFileName(),
+                binaryContent.getSize(),
+                binaryContent.getContentType(),
+                binaryContent.getBytes()
         );
     }
 

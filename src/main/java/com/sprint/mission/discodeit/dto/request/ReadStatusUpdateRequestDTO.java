@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Instant;
 
+@Schema(description = "수정할 읽음 상태 정보")
 public record ReadStatusUpdateRequestDTO(
-   @NotBlank(message = "수정하려는 lastReadTime이 blank일 수 없습니다")
-   Instant lastReadTime
+   Instant newLastReadAt
 ) {}

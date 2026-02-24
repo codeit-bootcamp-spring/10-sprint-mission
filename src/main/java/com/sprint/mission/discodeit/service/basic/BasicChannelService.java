@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.ChannelUpdateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.PrivateCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.PublicCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.response.ChannelDetailResponseDTO;
 import com.sprint.mission.discodeit.dto.response.ChannelSummaryResponseDTO;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -26,18 +26,13 @@ public class BasicChannelService implements ChannelService {
     private final ReadStatusRepository readStatusRepository;
     private final MessageRepository messageRepository;
 
-//    @RequiredArgsConstructor로 대체
-//    public BasicChannelService(ChannelRepository channelRepository) {
-//        this.channelRepository = channelRepository;
-//    }
-
     @Override
-    public ChannelSummaryResponseDTO create(PublicCreateRequestDTO publicCreateRequestDTO) {
+    public ChannelSummaryResponseDTO create(PublicChannelCreateRequestDTO publicChannelCreateRequestDTO) {
         // DTO 에서 NotBlank 애너테이션으로 검증
         Channel channel = new Channel(
             ChannelType.PUBLIC,
-            publicCreateRequestDTO.channelName(),
-            publicCreateRequestDTO.description()
+            publicChannelCreateRequestDTO.name(),
+            publicChannelCreateRequestDTO.description()
         );
         return toChannelSummaryResponseDTO(channelRepository.save(channel));
     }
@@ -45,9 +40,8 @@ public class BasicChannelService implements ChannelService {
     // PrivateCreateRequestDTO에 유저 정보가 포함되어 있어야함
     // 유저별 ReadStatus 정보를 생성
     @Override
-    public ChannelSummaryResponseDTO create(PrivateCreateRequestDTO privateCreateRequestDTO) {
-        // DTO에서 애너테이션으로 검증
-        List<UUID> participantsIds = privateCreateRequestDTO.participantIds();
+    public ChannelSummaryResponseDTO create(PrivateChannelCreateRequestDTO privateChannelCreateRequestDTO) {
+        List<UUID> participantsIds = privateChannelCreateRequestDTO.participantIds();
         // Channel 생성
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         channelRepository.save(channel);
@@ -57,13 +51,6 @@ public class BasicChannelService implements ChannelService {
         );
         return toChannelSummaryResponseDTO(channelRepository.save(channel));
     }
-
-//    @Override
-//    public Channel find(UUID channelId) {
-//        return channelRepository.findById(channelId)
-//                        .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
-//    }
-
 
     @Override
     public ChannelDetailResponseDTO find(UUID channelId) {
@@ -100,7 +87,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = getChannelByIdOrThrow(channelId);
         // PRIVATE 채널은 수정 불가능
         if (channel.getType() == ChannelType.PRIVATE) {
-            throw new IllegalStateException("PRIVATE 채널은 수정 불가능합니다");
+            throw new IllegalArgumentException("PRIVATE 채널은 수정 불가능합니다");
         }
         channel.update(
                 channelUpdateRequestDTO.newName(),
@@ -123,15 +110,12 @@ public class BasicChannelService implements ChannelService {
     // ChannelDetailResponseDTO를 만드는 겹치는 코드를 다로 메소드로
     // find/findAll 반환용 DTO를 만드는 메서드
     private ChannelDetailResponseDTO toChannelDetailResponseDTO(Channel channel) {
-        // findAll()로 전체 메시지 데이터를 가져와서 원하는 조건으로 필터링 하는 것 보다
-        // 그런 작업은 Repository의 책임으로, 가져온 데이터를 어떻게 할지가 Service의 책임
-        Message recentMessage = messageRepository.findAllByChannelId(channel.getId())
+        Message lastMessage = messageRepository.findAllByChannelId(channel.getId())
                 .stream()
                 .max(Comparator.comparing(Message::getCreatedAt))
-                .orElseThrow(() -> new NoSuchElementException(channel.getId()+"에 아직 작성된 메시지가 없습니다"));
+                .orElse(null);
         // 해당 채널의 가장 최근 메시지 시간정보
-        Instant recentMessageTime = recentMessage.getCreatedAt();
-
+        Instant lastMessageAt = lastMessage != null ? lastMessage.getCreatedAt() : null;
         //PRIVATE 채널인 경우 참여한 User id 정보를 포함해야함
         List<UUID> participantIds = new ArrayList<>();
         if (channel.getType()==ChannelType.PRIVATE) {
@@ -146,7 +130,7 @@ public class BasicChannelService implements ChannelService {
                 channel.getName(),
                 channel.getDescription(),
                 participantIds,
-                recentMessageTime
+                lastMessageAt
         );
     }
 
@@ -154,6 +138,8 @@ public class BasicChannelService implements ChannelService {
     private ChannelSummaryResponseDTO toChannelSummaryResponseDTO(Channel channel) {
         return new ChannelSummaryResponseDTO(
                 channel.getId(),
+                channel.getCreatedAt(),
+                channel.getUpdatedAt(),
                 channel.getType(),
                 channel.getName(),
                 channel.getDescription()

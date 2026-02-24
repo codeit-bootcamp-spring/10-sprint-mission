@@ -18,8 +18,6 @@ public class User implements Serializable {
     private String email;
     private String password;
     private UUID profileId; // BinaryContent의 id를 참조(프로필 이미지)
-    // UserService에서 프로필 이미지를 선택적으로 같이 등록할 수 있음
-    // -> User생성자에서 profileId를 null로 받는 것을 허용?
 
     public User(String username, String email, String password, UUID profileId) {
         this.id = UUID.randomUUID();
@@ -31,30 +29,6 @@ public class User implements Serializable {
         this.profileId = profileId;
     }
 
-    // @Getter로 대체
-//    public UUID getId() {
-//        return id;
-//    }
-//
-//    public Long getCreatedAt() {
-//        return createdAt;
-//    }
-//
-//    public Long getUpdatedAt() {
-//        return updatedAt;
-//    }
-//
-//    public String getUsername() {
-//        return username;
-//    }
-//
-//    public String getEmail() {
-//        return email;
-//    }
-//
-//    public String getPassword() {
-//        return password;
-//    }
 
     public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
         boolean anyValueUpdated = false;

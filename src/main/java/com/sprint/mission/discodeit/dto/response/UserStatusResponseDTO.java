@@ -4,7 +4,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record UserStatusResponseDTO(
-        UUID userStatusId,
+        UUID id,
+        Instant createdAt,
+        Instant updatedAt,
         UUID userId,
-        Instant lastAccessTime
+        Instant lastActiveAt,
+        boolean online
 ) {}
