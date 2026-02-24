@@ -48,8 +48,9 @@ public class BasicUserService implements UserService {
         if (binaryContentCreateRequestDTO.isPresent()) { // 프로필 이미지 등록을 했다면
             BinaryContent binaryContent = new BinaryContent(
                     binaryContentCreateRequestDTO.get().fileName(),
-                    binaryContentCreateRequestDTO.get().contentType(),
-                    binaryContentCreateRequestDTO.get().content()
+                    (long)binaryContentCreateRequestDTO.get().bytes().length,
+                    binaryContentCreateRequestDTO.get().bytes(),
+                    binaryContentCreateRequestDTO.get().contentType()
             );
             binaryContentRepository.save(binaryContent);
             user = new User(username, email, password, binaryContent.getId());
@@ -106,8 +107,9 @@ public class BasicUserService implements UserService {
         if (binaryContentCreateRequestDTO.isPresent()) { // 프로필 이미지를 수정한다면
             BinaryContent binaryContent = new BinaryContent(
                     binaryContentCreateRequestDTO.get().fileName(),
-                    binaryContentCreateRequestDTO.get().contentType(),
-                    binaryContentCreateRequestDTO.get().content()
+                    (long)binaryContentCreateRequestDTO.get().bytes().length,
+                    binaryContentCreateRequestDTO.get().bytes(),
+                    binaryContentCreateRequestDTO.get().contentType()
             );
             binaryContentRepository.save(binaryContent);
             user.update(newUsername, newEmail, newPassword, binaryContent.getId());

@@ -94,9 +94,9 @@ public class BasicMessageService implements MessageService {
         if (!attachments.isEmpty()) {
             for (BinaryContentCreateRequestDTO binaryContentCreateRequestDTO : attachments) {
                 String fileName = binaryContentCreateRequestDTO.fileName();
-                byte[] bytes = binaryContentCreateRequestDTO.content();
+                byte[] bytes = binaryContentCreateRequestDTO.bytes();
                 String contentType = binaryContentCreateRequestDTO.contentType();
-                BinaryContent attachment = binaryContentRepository.save(new BinaryContent(fileName, contentType, bytes));
+                BinaryContent attachment = binaryContentRepository.save(new BinaryContent(fileName, (long)bytes.length, bytes, contentType));
                 attachmentIds.add(attachment.getId());
             }
         }
