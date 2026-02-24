@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,9 @@ public class ReadStatusController {
       @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음"),
       @ApiResponse(responseCode = "400", description = "이미 읽음 상태가 존재함")
   })
-  public ResponseEntity<?> create(@RequestBody ReadStatusCreateRequest request) {
+  public ResponseEntity<?> create(
+      @Valid @RequestBody ReadStatusCreateRequest request
+  ) {
     ReadStatusResponse response = readStatusService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
@@ -52,7 +55,7 @@ public class ReadStatusController {
   public ResponseEntity<?> update(
       @Parameter(description = "수정할 읽음 상태 ID", example = "0d56555c-7d86-4fa7-b5d6-3170a70909e1")
       @PathVariable UUID readStatusId,
-      @RequestBody ReadStatusUpdateRequest request) {
+      @Valid @RequestBody ReadStatusUpdateRequest request) {
     ReadStatusResponse response = readStatusService.update(readStatusId, request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
-@Schema(name = "messageCreateRequest", description = "메시지 생성 요청")
+@Schema(description = "메시지 생성 요청")
 public record MessageCreateRequest(
     @NotBlank
     @Schema(description = "메시지 본문", example = "안녕하세요")

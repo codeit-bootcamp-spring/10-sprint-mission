@@ -46,8 +46,8 @@ public class UserController {
       @ApiResponse(responseCode = "400", description = "같은 email 또는 username를 사용하는 User가 이미 존재함")
   })
   public ResponseEntity<?> create(
-      @RequestPart("userCreateRequest") UserCreateRequest request,
-      @Valid @RequestPart(value = "profile", required = false) MultipartFile profile
+      @Valid @RequestPart UserCreateRequest request,
+      @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
     UserResponse response = userService.create(request, profile);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -58,7 +58,7 @@ public class UserController {
   public ResponseEntity<?> update(
       @Parameter(description = "수정할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @PathVariable UUID userId,
-      @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
+      @Valid @RequestPart UserUpdateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
     UserResponse response = userService.update(userId, request, profile);
@@ -96,7 +96,7 @@ public class UserController {
   public ResponseEntity<?> updateOnline(
       @Parameter(description = "업데이트할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @PathVariable UUID userId,
-      @RequestBody UserStatusUpdateRequest request) {
+      @Valid @RequestBody UserStatusUpdateRequest request) {
     UserStatusResponse response = userStatusService.updateByUserId(userId, request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
