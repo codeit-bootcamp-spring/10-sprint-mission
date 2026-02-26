@@ -1,7 +1,14 @@
 package com.sprint.mission.discodeit.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public record PublicChannelPostDto(
-	String name,
-	String description
+    @NotBlank
+    String name,
+
+    @NotNull
+    String description
 ) {
+
 }

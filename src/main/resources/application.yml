@@ -6,3 +6,5 @@ discodeit:
   repository:
     type: file
     file-directory: .discodeit
+  static:
+    file-directory: .attachments

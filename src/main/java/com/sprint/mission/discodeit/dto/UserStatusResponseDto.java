@@ -3,13 +3,13 @@ package com.sprint.mission.discodeit.dto;
 import java.time.Instant;
 import java.util.UUID;
 
-public record BinaryContentResponseDto(
+public record UserStatusResponseDto(
     UUID id,
     Instant createdAt,
-    String fileName,
-    int size,
-    String contentType,
-    String bytes // base64
+    Instant updatedAt,
+    UUID userId,
+    Instant lastActivateAt,
+    boolean online
 ) {
 
 }
