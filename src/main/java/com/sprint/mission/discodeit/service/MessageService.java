@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface MessageService {
 
-  MessageDto create(MessageCreateRequest request, MultipartFile[] attachments);
+  MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments);
 
   MessageDto findById(UUID id);
 

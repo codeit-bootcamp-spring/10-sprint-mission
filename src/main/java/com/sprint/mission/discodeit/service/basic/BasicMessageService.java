@@ -24,32 +24,32 @@ public class BasicMessageService implements MessageService {
   private final ReadStatusRepository readStatusRepository;
 
   @Override
-  public MessageDto create(MessageCreateRequest request, MultipartFile[] attachments) {
+  public MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments) {
     User author = getOrThrowUser(request.authorId());
     Channel channel = getOrThrowChannel(request.channelId());
     validateAccess(request.authorId(), request.channelId());
 
     List<UUID> attachmentIds = new ArrayList<>();
-    if (attachments != null && attachments.length > 0) {
-      for (MultipartFile file : attachments) {
-        if (!file.isEmpty()) {
-          try {
-            BinaryContent binaryContent = new BinaryContent(
-                file.getOriginalFilename(),
-                file.getSize(),
-                file.getContentType(),
-                file.getBytes()
-            );
-            binaryContentRepository.save(binaryContent);
-            attachmentIds.add(binaryContent.getId());
-          } catch (IOException e) {
-            throw new RuntimeException("메시지 첨부 파일 저장 중 오류가 발생했습니다.", e);
-          }
-        }
-      }
+    if (attachments != null && !attachments.isEmpty()) {
+      attachments.stream()
+          .filter(file -> !file.isEmpty()) // 유효한 파일만 필터링
+          .forEach(file -> {
+            try {
+              BinaryContent binaryContent = new BinaryContent(
+                  file.getOriginalFilename(),
+                  file.getSize(),
+                  file.getContentType(),
+                  file.getBytes()
+              );
+              binaryContentRepository.save(binaryContent);
+              attachmentIds.add(binaryContent.getId());
+            } catch (IOException e) {
+              throw new RuntimeException("메시지 첨부 파일 저장 중 오류가 발생했습니다.", e);
+            }
+          });
     }
 
-    com.sprint.mission.discodeit.entity.Message newMessage = new com.sprint.mission.discodeit.entity.Message(
+    Message newMessage = new com.sprint.mission.discodeit.entity.Message(
         request.content(), author, channel, attachmentIds);
 
     messageRepository.save(newMessage);
@@ -59,7 +59,7 @@ public class BasicMessageService implements MessageService {
 
   @Override
   public MessageDto findById(UUID id) {
-    com.sprint.mission.discodeit.entity.Message message = getOrThrowMessage(id);
+    Message message = getOrThrowMessage(id);
     return toDto(message);
   }
 
@@ -73,7 +73,7 @@ public class BasicMessageService implements MessageService {
 
   @Override
   public MessageDto update(UUID id, MessageUpdateRequest request) {
-    com.sprint.mission.discodeit.entity.Message message = getOrThrowMessage(id);
+    Message message = getOrThrowMessage(id);
 
     // 텍스트 내용 수정
     Optional.ofNullable(request.newContent()).ifPresent(message::updateContent);
@@ -91,7 +91,7 @@ public class BasicMessageService implements MessageService {
 
   @Override
   public void deleteById(UUID id) {
-    com.sprint.mission.discodeit.entity.Message message = getOrThrowMessage(id);
+    Message message = getOrThrowMessage(id);
 
     // 첨부파일 삭제
     if (message.getAttachmentIds() != null) {
@@ -106,7 +106,7 @@ public class BasicMessageService implements MessageService {
   // 메시지 고정
   @Override
   public MessageDto togglePin(UUID id) {
-    com.sprint.mission.discodeit.entity.Message message = getOrThrowMessage(id);
+    Message message = getOrThrowMessage(id);
 
     messageRepository.save(message);
     return toDto(message);
@@ -148,7 +148,7 @@ public class BasicMessageService implements MessageService {
   }
 
   // 엔티티 -> DTO 변환
-  private MessageDto toDto(com.sprint.mission.discodeit.entity.Message message) {
+  private MessageDto toDto(Message message) {
     return new MessageDto(
         message.getId(),
         message.getCreatedAt(),
