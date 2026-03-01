@@ -35,7 +35,7 @@ public class BasicBinaryContentService implements BinaryContentService {
       );
 
       binaryContentRepository.save(binaryContent);
-      return convertToResponse(binaryContent);
+      return toDto(binaryContent);
 
     } catch (IOException e) {
       throw new RuntimeException("파일 데이터를 읽는 중 오류가 발생했습니다.", e);
@@ -44,13 +44,13 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public BinaryContentResponse findById(UUID id) {
-    return convertToResponse(getOrThrowBinaryContent(id));
+    return toDto(getOrThrowBinaryContent(id));
   }
 
   @Override
   public List<BinaryContentResponse> findAllByIdIn(List<UUID> ids) {
     return binaryContentRepository.findAllById(ids).stream()
-        .map(this::convertToResponse)
+        .map(this::toDto)
         .toList();
   }
 
@@ -79,7 +79,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   // 엔티티 -> DTO 변환
-  private BinaryContentResponse convertToResponse(BinaryContent binaryContent) {
+  private BinaryContentResponse toDto(BinaryContent binaryContent) {
     return new BinaryContentResponse(
         binaryContent.getId(),
         binaryContent.getFileName(),

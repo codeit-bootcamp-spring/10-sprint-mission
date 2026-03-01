@@ -11,14 +11,14 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
 
-  com.sprint.mission.discodeit.dto.user.User create(UserCreateRequest request,
+  UserDto create(UserCreateRequest request,
       MultipartFile profileFile);
 
-  com.sprint.mission.discodeit.dto.user.User findById(UUID id);
+  UserDto findById(UUID id);
 
   List<UserDto> findAll();
 
-  com.sprint.mission.discodeit.dto.user.User update(UUID id, UserUpdateRequest request,
+  UserDto update(UUID id, UserUpdateRequest request,
       MultipartFile profileFile);
 
   void deleteById(UUID id);

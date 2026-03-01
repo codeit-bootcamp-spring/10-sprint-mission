@@ -27,7 +27,7 @@ public class BasicUserService implements UserService {
   private final ReadStatusRepository readStatusRepository;
 
   @Override
-  public com.sprint.mission.discodeit.dto.user.User create(UserCreateRequest request,
+  public UserDto create(UserCreateRequest request,
       MultipartFile profileFile) {
     // username, email 중복 체크
     validateDuplicateName(request.username());
@@ -63,24 +63,25 @@ public class BasicUserService implements UserService {
     UserStatus status = new UserStatus(user.getId(), true, Instant.now());
     userStatusRepository.save(status);
 
-    return convertToUserResponse(user);
+    return toDto(user, status);
   }
 
   @Override
-  public com.sprint.mission.discodeit.dto.user.User findById(UUID id) {
+  public UserDto findById(UUID id) {
     User user = validateUserExists(id);
-    return convertToUserResponse(user);
+    UserStatus status = getUserStatus(id);
+    return toDto(user, status);
   }
 
   @Override
   public List<UserDto> findAll() {
     return userRepository.findAll().stream()
-        .map(user -> convertToUserDto(user, getUserStatus(user.getId())))
+        .map(user -> toDto(user, getUserStatus(user.getId())))
         .toList();
   }
 
   @Override
-  public com.sprint.mission.discodeit.dto.user.User update(UUID id, UserUpdateRequest request,
+  public UserDto update(UUID id, UserUpdateRequest request,
       MultipartFile profileFile) {
     User user = validateUserExists(id);
 
@@ -131,7 +132,7 @@ public class BasicUserService implements UserService {
     userRepository.save(user);
     UserStatus status = getUserStatus(id);
 
-    return convertToUserResponse(user);
+    return toDto(user, status);
   }
 
   @Override
@@ -180,7 +181,7 @@ public class BasicUserService implements UserService {
   }
 
   // 엔티티 -> DTO 변환
-  private UserDto convertToUserDto(User user, UserStatus status) {
+  private UserDto toDto(User user, UserStatus status) {
     return new UserDto(
         user.getId(),
         user.getCreatedAt(),
@@ -188,19 +189,7 @@ public class BasicUserService implements UserService {
         user.getUsername(),
         user.getEmail(),
         user.getProfileId(),
-        status.isOnline()
-    );
-  }
-
-  private com.sprint.mission.discodeit.dto.user.User convertToUserResponse(User user) {
-    return new com.sprint.mission.discodeit.dto.user.User(
-        user.getId(),
-        user.getCreatedAt(),
-        user.getUpdatedAt(),
-        user.getUsername(),
-        user.getEmail(),
-        user.getPassword(),
-        user.getProfileId()
+        status != null && status.isOnline()
     );
   }
 }

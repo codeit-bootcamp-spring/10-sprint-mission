@@ -26,7 +26,7 @@ public class UserController {
   private final UserStatusService userStatusService;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<com.sprint.mission.discodeit.dto.user.User> create(
+  public ResponseEntity<UserDto> create(
       @RequestPart("userCreateRequest") UserCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
     return ResponseEntity.status(HttpStatus.CREATED)
@@ -34,7 +34,7 @@ public class UserController {
   }
 
   @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<com.sprint.mission.discodeit.dto.user.User> update(
+  public ResponseEntity<UserDto> update(
       @PathVariable UUID userId,
       @RequestPart("userUpdateRequest") UserUpdateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {

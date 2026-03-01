@@ -37,18 +37,18 @@ public class BasicUserStatusService implements UserStatusService {
         request.userId(), request.isActive(), Instant.now());
     userStatusRepository.save(userStatus);
 
-    return convertToResponse(userStatus);
+    return toDto(userStatus);
   }
 
   @Override
   public UserStatus findById(UUID id) {
-    return convertToResponse(getOrThrowUserStatus(id));
+    return toDto(getOrThrowUserStatus(id));
   }
 
   @Override
   public List<UserStatus> findAll() {
     return userStatusRepository.findAll().stream()
-        .map(this::convertToResponse)
+        .map(this::toDto)
         .toList();
   }
 
@@ -59,7 +59,7 @@ public class BasicUserStatusService implements UserStatusService {
     userStatus.updateLastActiveAt(request.newLastActiveAt());
 
     userStatusRepository.save(userStatus);
-    return convertToResponse(userStatus);
+    return toDto(userStatus);
   }
 
   @Override
@@ -76,7 +76,7 @@ public class BasicUserStatusService implements UserStatusService {
         .orElseThrow(() -> new NoSuchElementException("해당 상태 정보를 찾을 수 없습니다."));
   }
 
-  private UserStatus convertToResponse(com.sprint.mission.discodeit.entity.UserStatus userStatus) {
+  private UserStatus toDto(com.sprint.mission.discodeit.entity.UserStatus userStatus) {
     return new UserStatus(
         userStatus.getId(),
         userStatus.getCreatedAt(),

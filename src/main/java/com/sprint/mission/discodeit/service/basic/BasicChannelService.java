@@ -35,7 +35,7 @@ public class BasicChannelService implements ChannelService {
         ChannelType.PUBLIC
     );
     channelRepository.save(channel);
-    return convertToResponse(channel, null, null);
+    return toDto(channel, null, null);
   }
 
   // PRIVATE 채널 생성
@@ -52,14 +52,14 @@ public class BasicChannelService implements ChannelService {
       readStatusRepository.save(readStatus);
     });
 
-    return convertToResponse(channel, null, request.participantIds());
+    return toDto(channel, null, request.participantIds());
   }
 
   // 단건 조회
   @Override
   public ChannelDto findById(UUID id) {
     Channel channel = getOrThrowChannel(id);
-    return convertToResponse(channel, getLastMessageAt(id), getMemberIdsIfPrivate(channel));
+    return toDto(channel, getLastMessageAt(id), getMemberIdsIfPrivate(channel));
   }
 
   // 유저별 참여하고 있는 채널 전체 조회
@@ -77,7 +77,7 @@ public class BasicChannelService implements ChannelService {
         .map(channel -> {
           Instant lastMessageAt = getLastMessageAt(channel.getId());
           List<UUID> memberIds = getMemberIdsIfPrivate(channel);
-          return convertToResponse(channel, lastMessageAt, memberIds);
+          return toDto(channel, lastMessageAt, memberIds);
         })
         .toList();
   }
@@ -96,7 +96,7 @@ public class BasicChannelService implements ChannelService {
     Optional.ofNullable(request.newDescription()).ifPresent(channel::updateDescription);
 
     channelRepository.save(channel);
-    return convertToResponse(channel, getLastMessageAt(id), getMemberIdsIfPrivate(channel));
+    return toDto(channel, getLastMessageAt(id), getMemberIdsIfPrivate(channel));
   }
 
   // 채널 삭제
@@ -142,7 +142,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   // 엔티티 -> DTO 변환
-  private ChannelDto convertToResponse(Channel channel, Instant lastMessageAt,
+  private ChannelDto toDto(Channel channel, Instant lastMessageAt,
       List<UUID> participantIds) {
     return new ChannelDto(
         channel.getId(),

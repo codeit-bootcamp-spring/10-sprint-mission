@@ -53,21 +53,21 @@ public class BasicMessageService implements MessageService {
         request.content(), author, channel, attachmentIds);
 
     messageRepository.save(newMessage);
-    return convertToResponse(newMessage);
+    return toDto(newMessage);
   }
 
 
   @Override
   public Message findById(UUID id) {
     com.sprint.mission.discodeit.entity.Message message = getOrThrowMessage(id);
-    return convertToResponse(message);
+    return toDto(message);
   }
 
   // 특정 채널의 메시지 목록 조회
   @Override
   public List<Message> findAllByChannelId(UUID channelId) {
     return messageRepository.findAllByChannelId(channelId).stream()
-        .map(this::convertToResponse)
+        .map(this::toDto)
         .toList();
   }
 
@@ -86,7 +86,7 @@ public class BasicMessageService implements MessageService {
     }
 
     messageRepository.save(message);
-    return convertToResponse(message);
+    return toDto(message);
   }
 
   @Override
@@ -109,7 +109,7 @@ public class BasicMessageService implements MessageService {
     com.sprint.mission.discodeit.entity.Message message = getOrThrowMessage(id);
 
     messageRepository.save(message);
-    return convertToResponse(message);
+    return toDto(message);
   }
 
 
@@ -148,7 +148,7 @@ public class BasicMessageService implements MessageService {
   }
 
   // 엔티티 -> DTO 변환
-  private Message convertToResponse(com.sprint.mission.discodeit.entity.Message message) {
+  private Message toDto(com.sprint.mission.discodeit.entity.Message message) {
     return new Message(
         message.getId(),
         message.getCreatedAt(),

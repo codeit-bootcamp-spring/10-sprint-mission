@@ -38,19 +38,19 @@ public class BasicReadStatusService implements ReadStatusService {
         request.userId(), request.channelId(), null);
     readStatusRepository.save(readStatus);
 
-    return convertToResponse(readStatus);
+    return toDto(readStatus);
   }
 
   @Override
   public ReadStatus findById(UUID id) {
     com.sprint.mission.discodeit.entity.ReadStatus readStatus = getOrThrowReadStatus(id);
-    return convertToResponse(readStatus);
+    return toDto(readStatus);
   }
 
   @Override
   public List<ReadStatus> findAllByUserId(UUID userId) {
     return readStatusRepository.findAllByUserId(userId).stream()
-        .map(this::convertToResponse)
+        .map(this::toDto)
         .toList();
   }
 
@@ -63,7 +63,7 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     readStatusRepository.save(readStatus);
-    return convertToResponse(readStatus);
+    return toDto(readStatus);
   }
 
   @Override
@@ -90,7 +90,7 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   // 엔티티 -> DTO 변환
-  private ReadStatus convertToResponse(com.sprint.mission.discodeit.entity.ReadStatus readStatus) {
+  private ReadStatus toDto(com.sprint.mission.discodeit.entity.ReadStatus readStatus) {
     return new ReadStatus(
         readStatus.getId(),
         readStatus.getCreatedAt(),
