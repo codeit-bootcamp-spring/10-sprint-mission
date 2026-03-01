@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
@@ -15,10 +16,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/readStatuses")
 @RequiredArgsConstructor
-public class ReadStatusController {
+public class ReadStatusController implements ReadStatusApi {
 
   private final ReadStatusService readStatusService;
 
+  @Override
   @PostMapping
   public ResponseEntity<ReadStatusDto> create(
       @RequestBody ReadStatusCreateRequest request) {
@@ -26,6 +28,7 @@ public class ReadStatusController {
         .body(readStatusService.create(request));
   }
 
+  @Override
   @PatchMapping("/{readStatusId}")
   public ResponseEntity<ReadStatusDto> update(
       @PathVariable UUID readStatusId,
@@ -33,6 +36,7 @@ public class ReadStatusController {
     return ResponseEntity.ok(readStatusService.update(readStatusId, request));
   }
 
+  @Override
   @GetMapping
   public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@RequestParam UUID userId) {
     return ResponseEntity.ok(readStatusService.findAllByUserId(userId));

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.UserApi;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
@@ -20,11 +21,12 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-public class UserController {
+public class UserController implements UserApi {
 
   private final UserService userService;
   private final UserStatusService userStatusService;
 
+  @Override
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserDto> create(
       @RequestPart("userCreateRequest") UserCreateRequest request,
@@ -33,6 +35,7 @@ public class UserController {
         .body(userService.create(request, profile));
   }
 
+  @Override
   @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserDto> update(
       @PathVariable UUID userId,
@@ -41,17 +44,20 @@ public class UserController {
     return ResponseEntity.ok(userService.update(userId, request, profile));
   }
 
+  @Override
   @DeleteMapping("/{userId}")
   public ResponseEntity<Void> delete(@PathVariable UUID userId) {
     userService.deleteById(userId);
     return ResponseEntity.noContent().build();
   }
 
+  @Override
   @GetMapping
   public ResponseEntity<List<UserDto>> findAll() {
     return ResponseEntity.ok(userService.findAll());
   }
 
+  @Override
   @PatchMapping("/{userId}/userStatus")
   public ResponseEntity<UserStatusDto> updateStatus(
       @PathVariable UUID userId,

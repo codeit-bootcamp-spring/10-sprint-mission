@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.ChannelApi;
 import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
@@ -16,10 +17,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/channels")
 @RequiredArgsConstructor
-public class ChannelController {
+public class ChannelController implements ChannelApi {
 
   private final ChannelService channelService;
 
+  @Override
   @PostMapping("/public")
   public ResponseEntity<ChannelDto> create(
       @RequestBody PublicChannelCreateRequest request) {
@@ -28,6 +30,7 @@ public class ChannelController {
 
   }
 
+  @Override
   @PostMapping("/private")
   public ResponseEntity<ChannelDto> create(
       @RequestBody PrivateChannelCreateRequest request) {
@@ -35,6 +38,7 @@ public class ChannelController {
         .body(channelService.createPrivateChannel(request));
   }
 
+  @Override
   @PatchMapping("/{channelId}")
   public ResponseEntity<ChannelDto> update(
       @PathVariable UUID channelId,
@@ -42,11 +46,13 @@ public class ChannelController {
     return ResponseEntity.ok(channelService.update(channelId, request));
   }
 
+  @Override
   @GetMapping
   public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
     return ResponseEntity.ok(channelService.findAllByUserId(userId));
   }
 
+  @Override
   @DeleteMapping("/{channelId}")
   public ResponseEntity<Void> delete(@PathVariable UUID channelId) {
     channelService.deleteById(channelId);
