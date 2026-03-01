@@ -44,7 +44,7 @@ public class BasicChannelService implements ChannelService {
     Channel channel = new Channel(null, null, ChannelType.PRIVATE);
     channelRepository.save(channel);
 
-    // 참여 유저별 ReadStatus 정보 생성
+    // 참여 유저별 ReadStatusDto 정보 생성
     request.participantIds().forEach(memberId -> {
       validateUserExists(memberId);
 

@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -21,7 +20,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public BinaryContentResponse create(MultipartFile file) {
+  public BinaryContentDto create(MultipartFile file) {
     if (file == null || file.isEmpty()) {
       throw new IllegalArgumentException("파일이 비어있습니다.");
     }
@@ -43,12 +42,12 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
-  public BinaryContentResponse findById(UUID id) {
+  public BinaryContentDto findById(UUID id) {
     return toDto(getOrThrowBinaryContent(id));
   }
 
   @Override
-  public List<BinaryContentResponse> findAllByIdIn(List<UUID> ids) {
+  public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
     return binaryContentRepository.findAllById(ids).stream()
         .map(this::toDto)
         .toList();
@@ -79,8 +78,8 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   // 엔티티 -> DTO 변환
-  private BinaryContentResponse toDto(BinaryContent binaryContent) {
-    return new BinaryContentResponse(
+  private BinaryContentDto toDto(BinaryContent binaryContent) {
+    return new BinaryContentDto(
         binaryContent.getId(),
         binaryContent.getFileName(),
         binaryContent.getSize(),

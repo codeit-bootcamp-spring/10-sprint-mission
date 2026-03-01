@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.Message;
+import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
@@ -24,7 +24,7 @@ public class BasicMessageService implements MessageService {
   private final ReadStatusRepository readStatusRepository;
 
   @Override
-  public Message create(MessageCreateRequest request, MultipartFile[] attachments) {
+  public MessageDto create(MessageCreateRequest request, MultipartFile[] attachments) {
     User author = getOrThrowUser(request.authorId());
     Channel channel = getOrThrowChannel(request.channelId());
     validateAccess(request.authorId(), request.channelId());
@@ -58,21 +58,21 @@ public class BasicMessageService implements MessageService {
 
 
   @Override
-  public Message findById(UUID id) {
+  public MessageDto findById(UUID id) {
     com.sprint.mission.discodeit.entity.Message message = getOrThrowMessage(id);
     return toDto(message);
   }
 
   // 특정 채널의 메시지 목록 조회
   @Override
-  public List<Message> findAllByChannelId(UUID channelId) {
+  public List<MessageDto> findAllByChannelId(UUID channelId) {
     return messageRepository.findAllByChannelId(channelId).stream()
         .map(this::toDto)
         .toList();
   }
 
   @Override
-  public Message update(UUID id, MessageUpdateRequest request) {
+  public MessageDto update(UUID id, MessageUpdateRequest request) {
     com.sprint.mission.discodeit.entity.Message message = getOrThrowMessage(id);
 
     // 텍스트 내용 수정
@@ -105,7 +105,7 @@ public class BasicMessageService implements MessageService {
 
   // 메시지 고정
   @Override
-  public Message togglePin(UUID id) {
+  public MessageDto togglePin(UUID id) {
     com.sprint.mission.discodeit.entity.Message message = getOrThrowMessage(id);
 
     messageRepository.save(message);
@@ -148,8 +148,8 @@ public class BasicMessageService implements MessageService {
   }
 
   // 엔티티 -> DTO 변환
-  private Message toDto(com.sprint.mission.discodeit.entity.Message message) {
-    return new Message(
+  private MessageDto toDto(com.sprint.mission.discodeit.entity.Message message) {
+    return new MessageDto(
         message.getId(),
         message.getCreatedAt(),
         message.getUpdatedAt(),

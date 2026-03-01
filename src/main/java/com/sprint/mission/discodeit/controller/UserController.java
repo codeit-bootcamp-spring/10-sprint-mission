@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatus;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -53,7 +53,7 @@ public class UserController {
   }
 
   @PatchMapping("/{userId}/userStatus")
-  public ResponseEntity<UserStatus> updateStatus(
+  public ResponseEntity<UserStatusDto> updateStatus(
       @PathVariable UUID userId,
       @RequestBody UserStatusUpdateRequest request) {
     return ResponseEntity.ok(userStatusService.updateByUserId(userId, request));

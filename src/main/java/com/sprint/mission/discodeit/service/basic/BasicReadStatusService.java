@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatus;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -23,7 +24,7 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ChannelRepository channelRepository;
 
   @Override
-  public ReadStatus create(ReadStatusCreateRequest request) {
+  public ReadStatusDto create(ReadStatusCreateRequest request) {
     validateUserAndChannelExists(request.userId(), request.channelId());
 
     // 해당 채널에 참여 중인지 확인
@@ -34,7 +35,7 @@ public class BasicReadStatusService implements ReadStatusService {
           throw new IllegalStateException("이미 해당 채널에 참여 중인 유저입니다.");
         });
 
-    com.sprint.mission.discodeit.entity.ReadStatus readStatus = new com.sprint.mission.discodeit.entity.ReadStatus(
+    ReadStatus readStatus = new ReadStatus(
         request.userId(), request.channelId(), null);
     readStatusRepository.save(readStatus);
 
@@ -42,21 +43,21 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
-  public ReadStatus findById(UUID id) {
-    com.sprint.mission.discodeit.entity.ReadStatus readStatus = getOrThrowReadStatus(id);
+  public ReadStatusDto findById(UUID id) {
+    ReadStatus readStatus = getOrThrowReadStatus(id);
     return toDto(readStatus);
   }
 
   @Override
-  public List<ReadStatus> findAllByUserId(UUID userId) {
+  public List<ReadStatusDto> findAllByUserId(UUID userId) {
     return readStatusRepository.findAllByUserId(userId).stream()
         .map(this::toDto)
         .toList();
   }
 
   @Override
-  public ReadStatus update(UUID id, ReadStatusUpdateRequest request) {
-    com.sprint.mission.discodeit.entity.ReadStatus readStatus = getOrThrowReadStatus(id);
+  public ReadStatusDto update(UUID id, ReadStatusUpdateRequest request) {
+    ReadStatus readStatus = getOrThrowReadStatus(id);
 
     if (request.newLastReadAt() != null) {
       readStatus.updateLastReadAt(request.newLastReadAt());
@@ -74,7 +75,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
 
   // 참여 정보 검증
-  private com.sprint.mission.discodeit.entity.ReadStatus getOrThrowReadStatus(UUID id) {
+  private ReadStatus getOrThrowReadStatus(UUID id) {
     return readStatusRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("해당 참여 정보를 찾을 수 없습니다."));
   }
@@ -90,8 +91,8 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   // 엔티티 -> DTO 변환
-  private ReadStatus toDto(com.sprint.mission.discodeit.entity.ReadStatus readStatus) {
-    return new ReadStatus(
+  private ReadStatusDto toDto(ReadStatus readStatus) {
+    return new ReadStatusDto(
         readStatus.getId(),
         readStatus.getCreatedAt(),
         readStatus.getUpdatedAt(),

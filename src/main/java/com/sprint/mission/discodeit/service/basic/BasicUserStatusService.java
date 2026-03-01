@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatus;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -22,7 +23,7 @@ public class BasicUserStatusService implements UserStatusService {
   private final UserRepository userRepository;
 
   @Override
-  public UserStatus create(UserStatusCreateRequest request) {
+  public UserStatusDto create(UserStatusCreateRequest request) {
     // 관련 유저가 존재하는지 확인
     if (userRepository.findById(request.userId()).isEmpty()) {
       throw new NoSuchElementException("존재하지 않는 유저입니다.");
@@ -33,7 +34,7 @@ public class BasicUserStatusService implements UserStatusService {
       throw new IllegalStateException("해당 유저의 상태 정보가 이미 존재합니다.");
     });
 
-    com.sprint.mission.discodeit.entity.UserStatus userStatus = new com.sprint.mission.discodeit.entity.UserStatus(
+    UserStatus userStatus = new UserStatus(
         request.userId(), request.isActive(), Instant.now());
     userStatusRepository.save(userStatus);
 
@@ -41,20 +42,20 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
-  public UserStatus findById(UUID id) {
+  public UserStatusDto findById(UUID id) {
     return toDto(getOrThrowUserStatus(id));
   }
 
   @Override
-  public List<UserStatus> findAll() {
+  public List<UserStatusDto> findAll() {
     return userStatusRepository.findAll().stream()
         .map(this::toDto)
         .toList();
   }
 
   @Override
-  public UserStatus updateByUserId(UUID id, UserStatusUpdateRequest request) {
-    com.sprint.mission.discodeit.entity.UserStatus userStatus = getOrThrowUserStatus(id);
+  public UserStatusDto updateByUserId(UUID id, UserStatusUpdateRequest request) {
+    UserStatus userStatus = getOrThrowUserStatus(id);
 
     userStatus.updateLastActiveAt(request.newLastActiveAt());
 
@@ -71,13 +72,13 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
 
-  private com.sprint.mission.discodeit.entity.UserStatus getOrThrowUserStatus(UUID id) {
+  private UserStatus getOrThrowUserStatus(UUID id) {
     return userStatusRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("해당 상태 정보를 찾을 수 없습니다."));
   }
 
-  private UserStatus toDto(com.sprint.mission.discodeit.entity.UserStatus userStatus) {
-    return new UserStatus(
+  private UserStatusDto toDto(UserStatus userStatus) {
+    return new UserStatusDto(
         userStatus.getId(),
         userStatus.getCreatedAt(),
         userStatus.getUpdatedAt(),

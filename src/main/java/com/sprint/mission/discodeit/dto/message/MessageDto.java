@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 // 클라이언트에게 반환할 메시지 정보
-public record Message(
+public record MessageDto(
     UUID id,
     Instant createdAt,
     Instant updatedAt,
