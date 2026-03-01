@@ -4,10 +4,12 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record BinaryContentResponse(
-        UUID id,
-        String fileName,
-        String contentType,
-        byte[] bytes,
-        Instant createdAt
+    UUID id,
+    String fileName,
+    long size,
+    String contentType,
+    byte[] bytes,
+    Instant createdAt
 ) {
+
 }
