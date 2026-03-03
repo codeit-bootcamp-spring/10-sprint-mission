@@ -23,13 +23,14 @@ public record ChannelResponse(
     Instant lastMessageAt
 ) {
 
-  public static ChannelResponse of(Channel channel, List<UUID> allUserIds, Instant lastMessageAt) {
+  public static ChannelResponse of(Channel channel, List<UUID> participantIds,
+      Instant lastMessageAt) {
     return new ChannelResponse(
         channel.getId(),
         channel.getType(),
         channel.getName(),
         channel.getDescription(),
-        allUserIds,
+        participantIds,
         lastMessageAt
     );
   }
