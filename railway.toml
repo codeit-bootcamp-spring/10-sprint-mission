@@ -1,0 +1,5 @@
+[build]
+builder = "NIXPACKS"
+
+[variables]
+JAVA_VERSION = "17"
