@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +40,7 @@ public class JCFUserStatusRepository extends JCFDomainRepository<UserStatus> imp
     }
 
     @Override
-    public List<UserStatus> findAll() throws IOException {
+    public List<UserStatus> findAll() {
         return streamAll(Stream::toList);
     }
 }

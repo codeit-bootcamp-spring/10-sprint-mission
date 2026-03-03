@@ -1,14 +1,24 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserResponse;
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusServiceDTO.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.userstatus.command.UserStatusUpdateCommand;
+import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.user.UserServiceDTO.UserResponse;
+import com.sprint.mission.discodeit.dto.user.command.UserCreateCommand;
+import com.sprint.mission.discodeit.dto.user.command.UserUpdateCommand;
+import com.sprint.mission.discodeit.dto.user.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
+import jakarta.annotation.Nullable;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,35 +27,45 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final UserStatusService userStatusService;
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public ResponseEntity<UserResponse> find(@PathVariable UUID id) throws IOException, ClassNotFoundException {
-        return ResponseEntity.ok(userService.find(id));
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<UserResponse> find(@PathVariable UUID id) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.find(id));
     }
 
-    @RequestMapping(value = "/all", method = RequestMethod.GET)
-    public ResponseEntity<List<UserResponse>> findAll() throws IOException, ClassNotFoundException {
-        return ResponseEntity.ok(userService.findAll());
+    @GetMapping
+    public ResponseEntity<List<UserResponse>> findAll() {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.findAll());
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<UserResponse> create(@RequestBody UserCreateRequest request) throws IOException, ClassNotFoundException {
-        return ResponseEntity.status(201).body(userService.create(request));
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponse> create(
+            @RequestPart @Valid UserCreateRequest userCreateRequest,
+            @RequestPart @Nullable MultipartFile profile) {
+        UserCreateCommand command = new UserCreateCommand(userCreateRequest, profile);
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(command));
     }
 
-    @RequestMapping(method = RequestMethod.PATCH)
-    public ResponseEntity<UserResponse> update(@RequestBody UserUpdateRequest request) throws IOException, ClassNotFoundException {
-        return ResponseEntity.ok(userService.update(request));
+    @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponse> update(
+            @PathVariable UUID id,
+            @RequestPart @Valid UserUpdateRequest userUpdateRequest,
+            @RequestPart @Nullable MultipartFile profile) {
+        UserUpdateCommand command = new UserUpdateCommand(id, userUpdateRequest, profile);
+        return ResponseEntity.status(HttpStatus.OK).body(userService.update(command));
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> delete(@PathVariable UUID id) throws IOException, ClassNotFoundException {
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
         userService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
-    public ResponseEntity<UserResponse> updateActiveStatus(@PathVariable UUID id) throws IOException, ClassNotFoundException {
-        return ResponseEntity.ok(userService.updateActiveAt(id));
+    @PatchMapping(value = "/{id}/userStatus")
+    public ResponseEntity<UserStatusResponse> updateActiveStatus(@PathVariable UUID id,
+                                                                 @RequestBody @Valid UserStatusUpdateRequest request) {
+        UserStatusUpdateCommand command = new UserStatusUpdateCommand(id, request.datetime());
+        return ResponseEntity.status(HttpStatus.OK).body(userStatusService.update(command));
     }
 }

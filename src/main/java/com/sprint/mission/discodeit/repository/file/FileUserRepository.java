@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Stream;
@@ -18,28 +17,28 @@ import java.util.stream.Stream;
 )
 public class FileUserRepository extends FileDomainRepository<User> implements UserRepository {
 
-    public FileUserRepository() throws IOException {
+    public FileUserRepository() {
         super(Paths.get(System.getProperty("user.dir"), "file-data-map", "User"),
                 ".user");
     }
 
     @Override
-    public User save(User user) throws IOException {
+    public User save(User user) {
         return save(user, User::getId);
     }
 
     @Override
-    public List<User> findAll() throws IOException {
+    public List<User> findAll() {
         return streamAll(Stream::toList);
     }
 
     @Override
-    public boolean existsByUsername(String username) throws IOException {
+    public boolean existsByUsername(String username) {
         return anyMatch(user -> user.matchUsername(username));
     }
 
     @Override
-    public boolean existsByEmail(String email) throws IOException {
+    public boolean existsByEmail(String email) {
         return anyMatch(user -> user.matchEmail(email));
     }
 }

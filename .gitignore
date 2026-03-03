@@ -1,3 +1,8 @@
+### postman ###
+.postman
+postman/
+!postman/collections
+
 ### legacy ###
 /file-data-map
 

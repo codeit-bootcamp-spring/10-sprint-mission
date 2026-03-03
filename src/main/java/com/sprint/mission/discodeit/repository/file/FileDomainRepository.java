@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.repository.file;
 
-import com.sprint.mission.discodeit.common.function.ThrowingFunction;
 import com.sprint.mission.discodeit.repository.DomainRepository;
 
 import java.io.*;
@@ -16,13 +15,17 @@ public abstract class FileDomainRepository<T> implements DomainRepository<T> {
     protected final Path DIRECTORY;
     protected final String EXTENSION;
 
-    public FileDomainRepository(Path DIRECTORY, String EXTENSION) throws IOException {
+    public FileDomainRepository(Path DIRECTORY, String EXTENSION) {
         this.DIRECTORY = DIRECTORY;
         this.EXTENSION = EXTENSION;
-        Files.createDirectories(DIRECTORY);
+        try {
+            Files.createDirectories(DIRECTORY);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    protected T save(T entity, Function<T, UUID> idExtractor) throws IOException {
+    protected T save(T entity, Function<T, UUID> idExtractor) {
         Path path = resolvePath(idExtractor.apply(entity));
         try (
                 FileOutputStream fos = new FileOutputStream(path.toFile());
@@ -30,11 +33,13 @@ public abstract class FileDomainRepository<T> implements DomainRepository<T> {
         ) {
             oos.writeObject(entity);
             return entity;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Optional<T> findById(UUID id) throws IOException, ClassNotFoundException {
+    public Optional<T> findById(UUID id) {
         if (existsById(id)) {
             Path path = resolvePath(id);
             return findByPath(path);
@@ -48,36 +53,45 @@ public abstract class FileDomainRepository<T> implements DomainRepository<T> {
     }
 
     @Override
-    public void deleteById(UUID id) throws IOException {
-        Files.deleteIfExists(resolvePath(id));
+    public void deleteById(UUID id) {
+        try {
+            Files.deleteIfExists(resolvePath(id));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @SuppressWarnings(value = "unchecked")
-    protected Optional<T> findByPath(Path path) throws IOException, ClassNotFoundException {
+    protected Optional<T> findByPath(Path path) {
         try (
                 FileInputStream fis = new FileInputStream(path.toFile());
                 ObjectInputStream ois = new ObjectInputStream(fis)
         ) {
+            // todo: deserialize to T ...?
             return Optional.of((T) ois.readObject());
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public  <R> R streamAll(Function<Stream<T>, R> action) throws IOException {
+    public <R> R streamAll(Function<Stream<T>, R> action) {
         try (Stream<Path> paths = Files.list(DIRECTORY)) {
-            Stream<T> stream = paths.map(ThrowingFunction.unchecked(this::findByPath))
+            Stream<T> stream = paths.map(this::findByPath)
                     .flatMap(Optional::stream);
             return action.apply(stream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public boolean anyMatch(Predicate<T> predicate) throws IOException {
+    public boolean anyMatch(Predicate<T> predicate) {
         return streamAll(stream -> stream.anyMatch(predicate));
     }
 
     @Override
-    public Stream<T> filter(Predicate<T> predicate) throws IOException {
+    public Stream<T> filter(Predicate<T> predicate) {
         return streamAll(stream -> stream.filter(predicate));
     }
 

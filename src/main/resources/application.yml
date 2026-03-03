@@ -1,6 +1,7 @@
-discodeit:
-  repository:
-    type: jcf # jcf | file
-    file-directory: .discodeit
-  uuid:
-    type: dev
+spring:
+  profiles:
+    active: dev # dev | prod
+
+springdoc:
+  swagger-ui:
+    url: /api-docs.json

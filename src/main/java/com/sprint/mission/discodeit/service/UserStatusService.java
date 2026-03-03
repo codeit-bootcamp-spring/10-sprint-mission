@@ -1,12 +1,11 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.UserStatusServiceDTO.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.UserStatusServiceDTO.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.UserStatusServiceDTO.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusServiceDTO.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.userstatus.command.UserStatusUpdateCommand;
 
-import java.io.IOException;
 import java.util.List;
 
-public interface UserStatusService extends DomainService<UserStatusResponse, UserStatusCreateRequest, UserStatusUpdateRequest> {
-    List<UserStatusResponse> findAll() throws IOException;
+public interface UserStatusService extends DomainService<UserStatusResponse, UserStatusCreateRequest, UserStatusUpdateCommand> {
+    List<UserStatusResponse> findAll();
 }

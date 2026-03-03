@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
@@ -19,29 +18,28 @@ import java.util.stream.Stream;
         havingValue = "file"
 )
 public class FileUserStatusRepository extends FileDomainRepository<UserStatus> implements UserStatusRepository {
-    public FileUserStatusRepository() throws IOException {
+    public FileUserStatusRepository() {
         super(Paths.get(System.getProperty("user.dir"), "file-data-map", "UserStatus"),
                 ".us");
     }
 
     @Override
-    public UserStatus save(UserStatus userStatus) throws IOException {
+    public UserStatus save(UserStatus userStatus) {
         return save(userStatus, UserStatus::getId);
     }
 
     @Override
-    public List<UserStatus> findAll() throws IOException {
+    public List<UserStatus> findAll() {
         return streamAll(Stream::toList);
     }
 
     @Override
-    public Optional<UserStatus> findByUserId(UUID userId) throws IOException {
+    public Optional<UserStatus> findByUserId(UUID userId) {
         return filter(userStatus -> userStatus.matchUserId(userId)).findFirst();
     }
 
-    // todo: remove later
     @Override
-    public boolean existsByUserId(UUID userId) throws IOException {
+    public boolean existsByUserId(UUID userId) {
         return anyMatch(userStatus -> userStatus.matchUserId(userId));
     }
 }

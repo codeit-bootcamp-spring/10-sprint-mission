@@ -1,25 +1,22 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserResponse;
+import com.sprint.mission.discodeit.common.util.TimeConverter;
+import com.sprint.mission.discodeit.dto.user.UserServiceDTO.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserServiceDTO.UserUpdateDto;
 import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
-import java.util.function.Consumer;
 
-@ToString
-public class User implements Serializable {
+public class User extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
     @Getter
     private final UUID id;
-    private final Long createdAt = Instant.now().getEpochSecond();
-    private Long updatedAt = createdAt;
+    private final Instant createdAt = Instant.now();
+    private Instant updatedAt = Instant.now();
     private String username;
     private String email;
     private String password;
@@ -27,8 +24,8 @@ public class User implements Serializable {
     // todo: add message, channel id list
     // todo: add parameters of update, which is messageId, channelId
 
-    public User(@NonNull UUID id, @NonNull String username, @NonNull String email,
-                @NonNull String password, UUID profileId) {
+    public User(UUID id, String username, String email,
+                String password, UUID profileId) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -48,32 +45,26 @@ public class User implements Serializable {
         return this.email.equals(email);
     }
 
-    private <T> boolean updateIfChanged(T current, T next, Consumer<T> action) {
-        if (current == null || current.equals(next)) {
-            return false;
-        }
-        action.accept(next);
-        return true;
-    }
-
-    public void update(UserUpdateRequest model) {
+    public void update(UserUpdateDto dto) {
         boolean hasUpdated = false;
-        hasUpdated |= updateIfChanged(this.username, model.newUsername(), val -> this.username = val);
-        hasUpdated |= updateIfChanged(this.email, model.newEmail(), val -> this.email = val);
-        hasUpdated |= updateIfChanged(this.password, model.newPassword(), val -> this.password = val);
-        hasUpdated |= updateIfChanged(this.profileId, model.newProfileId(), val -> this.profileId = val);
+        hasUpdated |= updateIfChanged(this.username, dto.username(), val -> this.username = val);
+        hasUpdated |= updateIfChanged(this.email, dto.email(), val -> this.email = val);
+        hasUpdated |= updateIfChanged(this.password, dto.password(), val -> this.password = val);
+        hasUpdated |= updateIfChanged(this.profileId, dto.profileId(), val -> this.profileId = val);
         if (hasUpdated) {
-            this.updatedAt = Instant.now().getEpochSecond();
+            this.updatedAt = Instant.now();
         }
     }
 
     public UserResponse toResponse(boolean isActive) {
         return UserResponse.builder()
-                .userId(id)
+                .id(id)
                 .username(username)
                 .email(email)
-                .isActive(isActive)
+                .online(isActive)
                 .profileId(profileId)
+                .createdAt(TimeConverter.toDateTime(createdAt))
+                .updatedAt(TimeConverter.toDateTime(updatedAt))
                 .build();
     }
 }

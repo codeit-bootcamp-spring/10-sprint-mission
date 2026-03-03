@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.common.util.TimeConverter;
 import com.sprint.mission.discodeit.dto.ChannelServiceDTO.ChannelResponse;
 import lombok.Getter;
-import lombok.ToString;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -12,34 +12,30 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-@ToString
-public class Channel implements Serializable {
+public class Channel extends BaseEntity implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
     @Getter
     private final UUID id;
-    private final Long createdAt;
-    private Long updatedAt;
-    //
+    private final Instant createdAt = Instant.now();
+    private Instant updatedAt = Instant.now();
     private ChannelType type;
     private String channelName;
     private String description;
-    private Set<UUID> userIdsInPrivateChannel;
+    private Set<UUID> participantIds;
 
     private Channel(UUID id) {
         this.id = id;
-        this.createdAt = Instant.now().getEpochSecond();
-        this.updatedAt = createdAt;
-        this.userIdsInPrivateChannel = new HashSet<>();
+        this.participantIds = new HashSet<>();
     }
 
-    public Channel(UUID id, List<UUID> userIdsInPrivateChannel) {
+    public Channel(UUID id, List<UUID> participantIds) {
         this(id);
         this.type = ChannelType.PRIVATE;
         this.channelName = null;
         this.description = null;
-        this.userIdsInPrivateChannel = Set.copyOf(userIdsInPrivateChannel);
+        this.participantIds = Set.copyOf(participantIds);
     }
 
     public Channel(UUID id, String channelName, String description) {
@@ -57,38 +53,32 @@ public class Channel implements Serializable {
         if (type == ChannelType.PUBLIC) {
             return false;
         }
-        return userIdsInPrivateChannel.contains(userId);
+        return participantIds.contains(userId);
     }
 
     public ChannelResponse toResponse() {
-        // new channel or private channel
-        return toResponse(0);
-    }
-
-    public ChannelResponse toResponse(long lastMessageTimestamp) {
         return ChannelResponse.builder()
-                .channelId(id)
-                .channelName(channelName)
+                .id(id)
+                .name(channelName)
                 .description(description)
                 .type(type)
-                .lastMessageTimestamp(lastMessageTimestamp)
-                .userIdsInPrivateChannel(List.copyOf(userIdsInPrivateChannel))
+                .participantIds(List.copyOf(participantIds))
+                .createdAt(TimeConverter.toDateTime(createdAt))
+                .updatedAt(TimeConverter.toDateTime(updatedAt))
                 .build();
     }
-    // todo: refactoring
-    public void update(String newName, String newDescription) {
-        boolean anyValueUpdated = false;
-        if (newName != null && !newName.equals(this.channelName)) {
-            this.channelName = newName;
-            anyValueUpdated = true;
-        }
-        if (newDescription != null && !newDescription.equals(this.description)) {
-            this.description = newDescription;
-            anyValueUpdated = true;
-        }
 
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now().getEpochSecond();
+    public void update(String newName, String newDescription) {
+        boolean hasUpdated = false;
+        hasUpdated |= updateIfChanged(this.channelName, newName, val -> this.channelName = val);
+        hasUpdated |= updateIfChanged(this.description, newDescription, val -> this.description = val);
+
+        if (hasUpdated) {
+            this.updatedAt = Instant.now();
         }
+    }
+
+    public boolean isVisibleTo(UUID userId) {
+        return this.matchChannelType(ChannelType.PUBLIC) || this.isPrivateMember(userId);
     }
 }

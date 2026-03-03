@@ -1,15 +1,15 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.common.function.ThrowingFunction;
-import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.BinaryContentServiceDTO.BinaryContentResponse;
+import com.sprint.mission.discodeit.common.exception.code.ErrorCode;
+import com.sprint.mission.discodeit.common.exception.custom.APIException;
+import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentServiceDTO.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -23,32 +23,30 @@ public class BasicBinaryContentService extends BasicDomainService<BinaryContent>
     public List<BinaryContentResponse> findAllByIdIn(List<UUID> ids) {
         return ids.stream()
                 .filter(binaryContentRepository::existsById)
-                .map(ThrowingFunction.unchecked(this::find))
+                .map(this::find)
                 .toList();
     }
 
     @Override
-    public BinaryContentResponse create(BinaryContentCreateRequest model) throws IOException {
-        BinaryContent content = new BinaryContent(model.fileName(), model.fileType(), model.data());
+    public BinaryContentResponse create(BinaryContentCreateRequest request) {
+        BinaryContent content = new BinaryContent(request.fileName(), request.data());
         binaryContentRepository.save(content);
         return content.toResponse();
     }
 
     @Override
-    public BinaryContentResponse find(UUID id) throws IOException, ClassNotFoundException {
+    public BinaryContentResponse find(UUID id) {
         return findById(id).toResponse();
     }
 
     @Override
-    public void delete(UUID id) throws IOException {
-        if (!binaryContentRepository.existsById(id)) {
-            throw new NoSuchElementException("Binary Content with id, %s, not found".formatted(id));
-        }
-        binaryContentRepository.deleteById(id);
+    public void delete(UUID id) {
+        deleteIfExist(id, binaryContentRepository, () -> new APIException(ErrorCode.BINARYCONTENTID_NOT_FOUND, id));
     }
 
     @Override
-    protected BinaryContent findById(UUID id) throws IOException, ClassNotFoundException {
-        return findEntityById(id, "BinaryContent", binaryContentRepository);
+    protected BinaryContent findById(UUID id) {
+        return findEntityById(id, binaryContentRepository,
+                () -> new APIException(ErrorCode.BINARYCONTENTID_NOT_FOUND, id));
     }
 }

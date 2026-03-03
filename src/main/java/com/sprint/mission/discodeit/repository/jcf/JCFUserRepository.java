@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Stream;
@@ -39,7 +38,7 @@ public class JCFUserRepository extends JCFDomainRepository<User> implements User
     }
 
     @Override
-    public List<User> findAll() throws IOException, ClassNotFoundException {
+    public List<User> findAll() {
         return streamAll(Stream::toList);
     }
 

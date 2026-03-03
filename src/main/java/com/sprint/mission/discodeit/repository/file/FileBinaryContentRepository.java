@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 
 @Repository
@@ -15,13 +14,13 @@ import java.nio.file.Paths;
         havingValue = "file"
 )
 public class FileBinaryContentRepository extends FileDomainRepository<BinaryContent> implements BinaryContentRepository {
-    public FileBinaryContentRepository() throws IOException {
+    public FileBinaryContentRepository() {
         super(Paths.get(System.getProperty("user.dir"), "file-data-map", "BinaryContent"),
                 ".bc");
     }
 
     @Override
-    public BinaryContent save(BinaryContent entity) throws IOException {
+    public BinaryContent save(BinaryContent entity) {
         return save(entity, BinaryContent::getId);
     }
 }

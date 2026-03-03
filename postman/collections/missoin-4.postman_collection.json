@@ -791,8 +791,26 @@
           "name": "12-채널메세지읽음상태생성-1",
           "id": "87b93465-ca49-4fc1-a64e-c73785ffdcb2",
           "request": {
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
-            "header": []
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{baseURL}}/users/00000000-0000-0000-0000-000000000003/status",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "users",
+                "00000000-0000-0000-0000-000000000003",
+                "status"
+              ]
+            }
           },
           "response": []
         }

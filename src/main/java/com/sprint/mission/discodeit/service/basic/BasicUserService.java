@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.common.function.ThrowingFunction;
-import com.sprint.mission.discodeit.dto.AuthServiceDTO.LoginRequest;
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserResponse;
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserUpdateRequest;
+import com.sprint.mission.discodeit.common.exception.code.ErrorCode;
+import com.sprint.mission.discodeit.common.exception.custom.APIException;
+import com.sprint.mission.discodeit.dto.user.UserServiceDTO.UserProfileImageDto;
+import com.sprint.mission.discodeit.dto.user.UserServiceDTO.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserServiceDTO.UserUniquenessDto;
+import com.sprint.mission.discodeit.dto.user.UserServiceDTO.UserUpdateDto;
+import com.sprint.mission.discodeit.dto.user.command.UserCreateCommand;
+import com.sprint.mission.discodeit.dto.user.command.UserUpdateCommand;
+import com.sprint.mission.discodeit.dto.user.request.UserFindRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -12,13 +16,12 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.IdGenerator;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Service
@@ -30,99 +33,114 @@ public class BasicUserService extends BasicDomainService<User> implements UserSe
     private final IdGenerator idGenerator;
 
     @Override
-    public UserResponse find(LoginRequest request) throws IOException {
-        User user = userRepository.filter(user1 -> user1.matchUsername(request.username()))
-                .filter(user1 -> user1.matchPassword(request.password()))
+    public UserResponse find(UserFindRequest request) {
+        User user = userRepository.filter(u -> u.matchUsername(request.username()))
+                .filter(u -> u.matchPassword(request.password()))
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("username or password incorrect"));
+                .orElseThrow(() -> new APIException(ErrorCode.USERNAME_OR_PASSWORD_INCORRECT));
         UserStatus userStatus = findUserStatusByUserId(user.getId());
         return user.toResponse(userStatus.isActive());
     }
 
     @Override
-    public UserResponse find(UUID userId) throws IOException, ClassNotFoundException {
+    public UserResponse find(UUID userId) {
         User user = findById(userId);
         UserStatus userStatus = findUserStatusByUserId(user.getId());
         return user.toResponse(userStatus.isActive());
     }
 
     @Override
-    public List<UserResponse> findAll() throws IOException {
-        return userRepository.streamAll(stream ->
-                        stream.map(ThrowingFunction.unchecked(this::getUserResponse)))
+    public List<UserResponse> findAll() {
+        return userRepository.streamAll(
+                        stream -> stream.map(this::getUserResponse))
                 .toList();
     }
 
     @Override
-    public UserResponse create(UserCreateRequest request) throws IOException {
-        validateUserUniqueness(request);
+    public UserResponse create(UserCreateCommand dto) {
+        validateUserUniqueness(dto.getUserUniquenessDto());
 
-        BinaryContent profileImage = registerProfileImage(request);
-        UUID profileImageId = profileImage == null ? null : profileImage.getId();
-        User user = new User(idGenerator.generateId(), request.username(), request.email(),
-                request.password(), profileImageId);
+        BinaryContent profileImage = registerProfile(dto.getProfile());
+        UUID profileImageId = getProfileId(profileImage);
+        User user = new User(idGenerator.generateId(), dto.getUsername(), dto.getEmail(),
+                dto.getPassword(), profileImageId);
         UserStatus userStatus = new UserStatus(user.getId());
         userStatusRepository.save(userStatus);
         userRepository.save(user);
         return user.toResponse(userStatus.isActive());
     }
 
+    /*
+     * todo: Regarding profile image updates.
+     *  If an image already exists and the received image is null,
+     *  distinguish whether to delete the image or not update it.
+     * */
     @Override
-    public UserResponse update(UserUpdateRequest request) throws IOException, ClassNotFoundException {
-        User user = findById(request.userId());
-        user.update(request);
+    public UserResponse update(UserUpdateCommand command) {
+        User user = findById(command.getId());
+        validateUserUniqueness(command.getUserUniquenessDto());
+
+        UserStatus userStatus = findUserStatusByUserId(command.getId());
+        BinaryContent newProfileImage = registerProfile(command.getProfile());
+        UUID newProfileId = getProfileId(newProfileImage);
+        user.update(
+                UserUpdateDto.builder()
+                        .username(command.getUsername())
+                        .email(command.getEmail())
+                        .password(command.getPassword())
+                        .profileId(newProfileId)
+                        .build());
         userRepository.save(user);
-        UserStatus userStatus = findUserStatusByUserId(request.userId());
         return user.toResponse(userStatus.isActive());
     }
 
     @Override
-    public void delete(UUID userId) throws IOException, ClassNotFoundException {
+    public void delete(UUID userId) {
         User user = findById(userId);
         UserStatus status = findUserStatusByUserId(userId);
         UserResponse userResponse = user.toResponse(status.isActive());
-        deleteIfExist(userResponse.profileId(), "Profile", profileRepository);
-        deleteIfExist(status.getId(), "UserStatus", userStatusRepository);
-        deleteIfExist(userId, "User", userRepository);
+        deleteIfExist(userResponse.profileId(), profileRepository,
+                () -> new APIException(ErrorCode.BINARYCONTENTID_NOT_FOUND, userResponse.profileId()));
+        deleteIfExist(status.getId(), userStatusRepository,
+                () -> new APIException(ErrorCode.USERSTATUSID_NOT_FOUND, status.getId()));
+        deleteIfExist(userId, userRepository,
+                () -> new APIException(ErrorCode.USERID_NOT_FOUND, userId));
     }
 
     @Override
-    public UserResponse updateActiveAt(UUID id) throws IOException, ClassNotFoundException {
-        UserStatus status = findUserStatusByUserId(id);
-        status.update();
-        userStatusRepository.save(status);
-        return findById(id).toResponse(status.isActive());
+    protected User findById(UUID id) {
+        return findEntityById(id, userRepository, () -> new APIException(ErrorCode.USERID_NOT_FOUND, id));
     }
 
-    @Override
-    protected User findById(UUID id) throws IOException, ClassNotFoundException {
-        return findEntityById(id, "User", userRepository);
-    }
-
-    private void validateUserUniqueness(UserCreateRequest model) throws IOException {
-        if (userRepository.existsByUsername(model.username())) {
-            throw new IllegalArgumentException("username, %s, exist already.".formatted(model.username()));
+    private void validateUserUniqueness(UserUniquenessDto dto) {
+        if (userRepository.existsByUsername(dto.username())) {
+            throw new APIException(ErrorCode.USERNAME_ALREADY_EXIST, dto.username());
         }
-        if (userRepository.existsByEmail(model.email())) {
-            throw new IllegalArgumentException("email, %s, exist already.".formatted(model.email()));
+        if (userRepository.existsByEmail(dto.email())) {
+            throw new APIException(ErrorCode.EMAIL_ALREADY_EXIST, dto.email());
         }
     }
 
-    private BinaryContent registerProfileImage(UserCreateRequest model) throws IOException {
-        if (model.profileImage() == null) {
+    private BinaryContent registerProfile(UserProfileImageDto dto) {
+        if (dto == null) {
             return null;
         }
-        BinaryContent profileImage = new BinaryContent(model.profileImage());
+        BinaryContent profileImage = new BinaryContent(dto.fileName(), dto.data());
         return profileRepository.save(profileImage);
     }
 
-    private UserStatus findUserStatusByUserId(UUID userId) throws IOException {
+    private UserStatus findUserStatusByUserId(UUID userId) {
         return userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new NoSuchElementException(ID_NOT_FOUND.formatted("User", userId)));
+                .orElseThrow(() -> new APIException(ErrorCode.USERSTATUS_NOT_FOUND_BY_USERID, userId));
     }
 
-    private UserResponse getUserResponse(User user) throws IOException {
+    private UserResponse getUserResponse(User user) {
         UserStatus userStatus = findUserStatusByUserId(user.getId());
         return user.toResponse(userStatus.isActive());
+    }
+
+    @Nullable
+    private UUID getProfileId(BinaryContent profileImage) {
+        return profileImage == null ? null : profileImage.getId();
     }
 }

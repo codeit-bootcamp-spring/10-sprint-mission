@@ -1,0 +1,6 @@
+discodeit:
+  repository:
+    type: file # jcf | file
+    file-directory: .discodeit
+  uuid:
+    type: prod # dev / prod

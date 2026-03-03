@@ -5,7 +5,6 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 
 @Repository
@@ -16,13 +15,13 @@ import java.nio.file.Paths;
 )
 public class FileMessageRepository extends FileDomainRepository<Message> implements MessageRepository {
 
-    public FileMessageRepository() throws IOException {
+    public FileMessageRepository() {
         super(Paths.get(System.getProperty("user.dir"), "file-data-map", "Message"),
                 ".msg");
     }
 
     @Override
-    public Message save(Message message) throws IOException {
+    public Message save(Message message) {
         return save(message, Message::getId);
     }
 

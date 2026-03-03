@@ -1,18 +1,15 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.AuthServiceDTO.LoginRequest;
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserResponse;
-import com.sprint.mission.discodeit.dto.UserServiceDTO.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.user.UserServiceDTO.UserResponse;
+import com.sprint.mission.discodeit.dto.user.command.UserCreateCommand;
+import com.sprint.mission.discodeit.dto.user.command.UserUpdateCommand;
+import com.sprint.mission.discodeit.dto.user.request.UserFindRequest;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
-public interface UserService extends DomainService<UserResponse, UserCreateRequest, UserUpdateRequest> {
-    UserResponse find(LoginRequest dto) throws IOException;
+public interface UserService extends DomainService<UserResponse, UserCreateCommand, UserUpdateCommand> {
+    UserResponse find(UserFindRequest request);
 
-    List<UserResponse> findAll() throws IOException, ClassNotFoundException;
+    List<UserResponse> findAll();
 
-    UserResponse updateActiveAt(UUID id) throws IOException, ClassNotFoundException;
 }

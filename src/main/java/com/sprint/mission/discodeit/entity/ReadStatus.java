@@ -1,17 +1,18 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.common.util.TimeConverter;
 import com.sprint.mission.discodeit.dto.ReadStatusServiceDTO.ReadStatusResponse;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RequiredArgsConstructor
-@ToString
 public class ReadStatus implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -19,13 +20,14 @@ public class ReadStatus implements Serializable {
     private final UUID id = UUID.randomUUID();
     private final UUID userId;
     private final UUID channelId;
-    private final long createdAt = Instant.now().getEpochSecond();
-    private long updatedAt = createdAt;
-    private ReadType type = ReadType.UNREAD;
+    private final Instant createdAt = Instant.now();
+    private Instant updatedAt = Instant.now();
+    @NonNull
+    private Instant lastReadAt;
 
-    public void update(ReadType type) {
-        this.type = type;
-        updatedAt = Instant.now().getEpochSecond();
+    public void update(LocalDateTime datetime) {
+        lastReadAt = TimeConverter.toInstant(datetime);
+        updatedAt = Instant.now();
     }
 
     public boolean matchChannelId(UUID channelId) {
@@ -41,7 +43,9 @@ public class ReadStatus implements Serializable {
                 .id(id)
                 .userId(userId)
                 .channelId(channelId)
-                .type(type)
+                .createdAt(TimeConverter.toDateTime(createdAt))
+                .updatedAt(TimeConverter.toDateTime(updatedAt))
+                .lastReadAt(TimeConverter.toDateTime(lastReadAt))
                 .build();
     }
 }

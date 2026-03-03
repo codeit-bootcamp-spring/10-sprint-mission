@@ -1,35 +1,35 @@
 package com.sprint.mission.discodeit.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import jakarta.annotation.Nonnull;
 import lombok.Builder;
-import lombok.NonNull;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 public interface ChannelServiceDTO {
-    record ChannelCreateRequest(@JsonProperty("type") @NonNull ChannelType type,
-                                String channelName, String description,
-                                List<UUID> userIdsInChannel) {
+
+    record PublicChannelCreateRequest(@Nonnull String name, @Nonnull String description) {
     }
 
-    record PublicChannelCreateRequest(@NonNull String channelName, @NonNull String description) {
+    record PrivateChannelCreateRequest(@Nonnull List<UUID> participantIds) {
     }
 
-    record PrivateChannelCreateRequest(@NonNull List<UUID> userIdsInPrivateChannel) {
+    record PublicChannelUpdateRequest(String newName, String newDescription) {
     }
 
-    record PublicChannelUpdateRequest(@NonNull UUID channelId, String newName, String newDescription) {
+    record PublicChannelUpdateCommand(UUID id, String name, String description) {
     }
 
+    // todo: error log
     @Builder
-    record ChannelResponse(@NonNull UUID channelId, String channelName, String description, @NonNull ChannelType type,
-                           long lastMessageTimestamp, List<UUID> userIdsInPrivateChannel) {
+    record ChannelResponse(UUID id, String name, String description, ChannelType type,
+                           List<UUID> participantIds, LocalDateTime createdAt, LocalDateTime updatedAt) {
         public ChannelResponse {
             if (type == ChannelType.PUBLIC) {
-                Objects.requireNonNull(channelName);
+                Objects.requireNonNull(name);
                 Objects.requireNonNull(description);
             }
         }
