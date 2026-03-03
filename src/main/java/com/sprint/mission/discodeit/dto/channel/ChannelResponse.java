@@ -16,51 +16,54 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class ChannelResponse {
-    private UUID id;
-    private String name;
-    private String description;
-    private ChannelType type;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private Instant lastMessageTime; // 최근 메시지 시간
-    private List<UUID> participantUserIds; // PRIVATE 채널 참여자 (PRIVATE일 때만)
 
-    //Channel 엔티티를 DTO로 변환 (최근 메시지 시간, 참여자 정보 제외)
-    public static ChannelResponse from (Channel channel) {
-        return ChannelResponse.builder()
-                .id(channel.getId())
-                .name(channel.getName())
-                .description(channel.getDescription())
-                .type(channel.getType())
-                .createdAt(channel.getCreatedAt())
-                .updatedAt(channel.getUpdatedAt())
-                .build();
-    }
+  private UUID id;
+  private String name;
+  private String description;
+  private ChannelType type;
+  private Instant createdAt;
+  private Instant updatedAt;
+  private Instant lastMessageTime; // 최근 메시지 시간
+  private List<UUID> participantUserIds; // PRIVATE 채널 참여자 (PRIVATE일 때만)
 
-    // 최근 메시지 시간 포함
-    public static ChannelResponse from(Channel channel, Instant lastMessageTime) {
-        return ChannelResponse.builder()
-                .id(channel.getId())
-                .name(channel.getName())
-                .description(channel.getDescription())
-                .type(channel.getType())
-                .createdAt(channel.getCreatedAt())
-                .updatedAt(channel.getUpdatedAt())
-                .lastMessageTime(lastMessageTime)
-                .build();
-    }
+  //Channel 엔티티를 DTO로 변환 (최근 메시지 시간, 참여자 정보 제외)
+  public static ChannelResponse from(Channel channel) {
+    return ChannelResponse.builder()
+        .id(channel.getId())
+        .name(channel.getName())
+        .description(channel.getDescription())
+        .type(channel.getType())
+        .createdAt(channel.getCreatedAt())
+        .updatedAt(channel.getUpdatedAt())
+        .build();
+  }
 
-    // 최근 메시지 시간 + 참여자 정보 포함 (PRIVATE 채널용)
-    public static ChannelResponse from(Channel channel, Instant lastMessageTime, List<UUID> participantUserIds) {
-        return ChannelResponse.builder()
-                .id(channel.getId())
-                .name(channel.getName())
-                .description(channel.getDescription())
-                .type(channel.getType())
-                .createdAt(channel.getCreatedAt())
-                .updatedAt(channel.getUpdatedAt())
-                .lastMessageTime(lastMessageTime)
-                .participantUserIds(participantUserIds)
-                .build();
-    }
+  // 최근 메시지 시간 포함
+  public static ChannelResponse from(Channel channel, Instant lastMessageTime) {
+    return ChannelResponse.builder()
+        .id(channel.getId())
+        .name(channel.getName())
+        .description(channel.getDescription())
+        .type(channel.getType())
+        .createdAt(channel.getCreatedAt())
+        .updatedAt(channel.getUpdatedAt())
+        .lastMessageTime(lastMessageTime)
+        .build();
+  }
+
+  // 최근 메시지 시간 + 참여자 정보 포함 (PRIVATE 채널용)
+  public static ChannelResponse from(Channel channel, Instant lastMessageTime,
+      List<UUID> participantUserIds) {
+    return ChannelResponse.builder()
+        .id(channel.getId())
+        .name(channel.getName())
+        .description(channel.getDescription())
+        .type(channel.getType())
+        .createdAt(channel.getCreatedAt())
+        .updatedAt(channel.getUpdatedAt())
+        .lastMessageTime(lastMessageTime)
+        .participantUserIds(participantUserIds)
+        .build();
+  }
+
 }

@@ -7,16 +7,20 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRepository {
-    User save(User user);
-    Optional<User> findById(UUID id);
-    Optional<User> findByUsername(String username);  // AuthService용 추가
-    Optional<User> findByEmail(String email);
-    List<User> findAll();
-    boolean existsById(UUID id);
-    void deleteById(UUID id);
 
-    // 중복 체크용 메서드 추가
-    boolean existsByUsername(String username);
-    boolean existsByEmail(String email);
+  User save(User user);
 
+  Optional<User> findById(UUID id);
+
+  Optional<User> findByUsername(String username);
+
+  List<User> findAll();
+
+  boolean existsById(UUID id);
+
+  void deleteById(UUID id);
+
+  boolean existsByEmail(String email);
+
+  boolean existsByUsername(String username);
 }
