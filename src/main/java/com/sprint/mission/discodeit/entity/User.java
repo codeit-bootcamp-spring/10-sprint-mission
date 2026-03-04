@@ -1,40 +1,65 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.UUID;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class User extends BaseEntity {
+@Entity
+@Table(name = "USERS")
+public class User extends BaseUpdatableEntity {
 
+  @Column(nullable = false, unique = true)
   private String username;
-  private String email;
-  private String password;
-  private UUID profileId;
 
-  public User(String username, String email, String password, UUID profileId) {
+  @Column(nullable = false, unique = true)
+  private String email;
+
+  @Column(nullable = false)
+  private String password;
+
+  @OneToOne
+  @JoinColumn(name = "PROFILE_ID")
+  private BinaryContent profile;
+
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus userStatus;
+
+  public User(String username, String email, String password, BinaryContent profile) {
     this.username = username;
     this.email = email;
     this.password = password;
-    this.profileId = profileId;
+    this.profile = profile;
+  }
+
+  public void setUserStatus(UserStatus userStatus) {
+    this.userStatus = userStatus;
+    if (userStatus.getUser() != this) {
+      userStatus.setUser(this);
+    }
   }
 
   public void updateUsername(String username) {
     this.username = username;
-    setUpdatedAt();
   }
 
   public void updateEmail(String email) {
     this.email = email;
-    setUpdatedAt();
   }
 
   public void updatePassword(String newPassword) {
     this.password = newPassword;
-    setUpdatedAt();
   }
 
-  public void updateProfileId(UUID profileId) {
-    this.profileId = profileId;
-    setUpdatedAt();
+  public void updateProfile(BinaryContent newProfile) {
+    this.profile = newProfile;
   }
 }

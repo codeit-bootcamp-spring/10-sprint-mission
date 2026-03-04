@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
@@ -39,19 +38,18 @@ public class BasicUserService implements UserService {
     existsByEmail(request.email());
 
     //프로필 설정하지 않으면 null
-    UUID profileId = null;
+    BinaryContent profile = null;
 
     //요청에 프로필이 있다면 binaryContent 객체 생성 후 저장
     if (file != null && !file.isEmpty()) {
       try {
-        BinaryContent profile = new BinaryContent(
+        profile = new BinaryContent(
             file.getOriginalFilename(),
             file.getContentType(),
             file.getSize(),
             file.getBytes()
         );
         binaryContentRepository.save(profile);
-        profileId = profile.getId();
       } catch (IOException e) {
         throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
       }
@@ -61,15 +59,15 @@ public class BasicUserService implements UserService {
         request.username(),
         request.email(),
         request.password(),
-        profileId
+        profile
     );
-    userRepository.save(user);
 
-    //유저 상태 객체 생성 후 저장
-    UserStatus status = new UserStatus(user.getId());
-    userStatusRepository.save(status);
+    UserStatus userStatus = new UserStatus(user);
 
-    return UserResponse.of(user, status);
+    user.setUserStatus(userStatus); // 편의 메서드
+    userRepository.save(user); //cascade로 UserStatus도 같이 INSERT
+
+    return UserResponse.of(user, userStatus);
   }
 
   @Override
@@ -81,6 +79,7 @@ public class BasicUserService implements UserService {
     return UserResponse.of(user, status);
   }
 
+  //todo N+1 문제 발생하는 코드
   @Override
   public List<UserResponse> findAll() {
     return userRepository.findAll().stream()
@@ -108,9 +107,8 @@ public class BasicUserService implements UserService {
     Optional.ofNullable(request.newPassword()).ifPresent(user::updatePassword);
 
     if (file != null && !file.isEmpty()) { //요청에 프로필 파일이 있는지 확인
-      if (user.getProfileId() != null) { //기존 유저에게 프로필이 있는지 확인, 프로필이 있으면 지움
-        binaryContentRepository.findById(user.getProfileId())
-            .ifPresent(binaryContentRepository::delete);
+      if (user.getProfile() != null) { //기존 유저에게 프로필이 있는지 확인, 프로필이 있으면 지움
+        binaryContentRepository.delete(user.getProfile());
       }
 
       try {
@@ -121,7 +119,7 @@ public class BasicUserService implements UserService {
             file.getBytes()
         );
         binaryContentRepository.save(newProfile);
-        user.updateProfileId(newProfile.getId());
+        user.updateProfile(newProfile);
       } catch (IOException e) {
         throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
       }
@@ -134,7 +132,6 @@ public class BasicUserService implements UserService {
     UserStatus status = userStatusRepository.findByUserId(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
 
-    userStatusRepository.save(status);
     return UserResponse.of(user, status);
   }
 
@@ -143,40 +140,15 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
-    //유저가 작성한 메시지 목록
-    List<Message> messages = messageRepository.findAll().stream()
-        .filter(message -> message.getAuthorId().equals(userId))
-        .toList();
-    //메시지 속 첨부파일 삭제, 메시지 삭제
-    for (Message message : messages) {
-      for (UUID attachmentId : message.getAttachmentIds()) {
-        binaryContentRepository.findById(attachmentId)
-            .ifPresent(binaryContentRepository::delete);
-      }
-      messageRepository.delete(message);
-    }
-
-    //읽음 상태 삭제
-    readStatusRepository.findAllByUserId(userId)
-        .forEach(readStatusRepository::delete);
-
-    //유저 상태 삭제
-    UserStatus status = userStatusRepository.findByUserId(userId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
-    userStatusRepository.delete(status);
-
-    //유저 프로필 삭제
-    Optional.ofNullable(user.getProfileId())
-        .flatMap(binaryContentRepository::findById)
-        .ifPresent(binaryContentRepository::delete);
+    //todo 유저 프로필 파일 삭제 로직 추가 필요
+    //todo 유저가 발행한 메시지 첨부파일 삭제 로직 추가 필요
 
     userRepository.delete(user);
   }
 
   //유저명 중복체크
   private void existsByUsername(String username) {
-    boolean exist = userRepository.findAll().stream()
-        .anyMatch(user -> user.getUsername().equals(username));
+    boolean exist = userRepository.existsByUsername(username);
     if (exist) {
       throw new BusinessLogicException(ExceptionCode.DUPLICATE_USERNAME);
     }
@@ -184,8 +156,7 @@ public class BasicUserService implements UserService {
 
   //유저 이메일 중복체크
   private void existsByEmail(String email) {
-    boolean exist = userRepository.findAll().stream()
-        .anyMatch(user -> user.getEmail().equals(email));
+    boolean exist = userRepository.existsByEmail(email);
     if (exist) {
       throw new BusinessLogicException(ExceptionCode.DUPLICATE_EMAIL);
     }

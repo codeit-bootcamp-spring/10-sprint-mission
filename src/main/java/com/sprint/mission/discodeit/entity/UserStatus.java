@@ -1,30 +1,45 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class UserStatus extends BaseEntity {
+@Entity
+@Table(name = "USER_STATUSES")
+public class UserStatus extends BaseUpdatableEntity {
 
-  private final UUID userId;
+  @OneToOne
+  @JoinColumn(name = "USER_ID")
+  private User user;
+
+  @Column(nullable = false)
   private Instant lastActiveAt;
 
-  public UserStatus(UUID userId) {
-    this.userId = userId;
+  public UserStatus(User user) {
+    this.user = user;
     this.lastActiveAt = Instant.now();
   }
 
-  public void updateOnline(Instant lastActiveAt) {
-    boolean anyValueUpdated = false;
-    if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
-      this.lastActiveAt = lastActiveAt;
-      anyValueUpdated = true;
+  public void setUser(User user) {
+    this.user = user;
+    if (user.getUserStatus() != this) {
+      user.setUserStatus(this);
     }
+  }
 
-    if (anyValueUpdated) {
-      setUpdatedAt();
+  public void updateOnline(Instant lastActiveAt) {
+    if (lastActiveAt != null) {
+      this.lastActiveAt = lastActiveAt;
     }
   }
 
@@ -33,3 +48,4 @@ public class UserStatus extends BaseEntity {
     return between.toMinutes() <= 5;
   }
 }
+

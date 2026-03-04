@@ -3,7 +3,9 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -26,10 +28,10 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   public ReadStatusResponse create(ReadStatusCreateRequest request) {
 
-    userRepository.findById(request.userId())
+    User user = userRepository.findById(request.userId())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
-    channelRepository.findById(request.channelId())
+    Channel channel = channelRepository.findById(request.channelId())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
 
     readStatusRepository.findByUserIdAndChannelId(request.userId(), request.channelId())
@@ -37,7 +39,7 @@ public class BasicReadStatusService implements ReadStatusService {
           throw new BusinessLogicException(ExceptionCode.READ_STATUS_ALREADY_EXISTS);
         });
 
-    ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
+    ReadStatus readStatus = new ReadStatus(user, channel);
     readStatusRepository.save(readStatus);
     return ReadStatusResponse.of(readStatus);
   }

@@ -21,9 +21,7 @@ public class BasicAuthService implements AuthService {
 
   @Override
   public UserResponse login(LoginRequest request) {
-    User user = userRepository.findAll().stream()
-        .filter(u -> u.getUsername().equals(request.username()))
-        .findFirst()
+    User user = userRepository.findByUsername(request.username())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
     if (!user.getPassword().equals(request.password())) {

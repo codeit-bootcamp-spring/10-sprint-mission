@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -16,7 +17,6 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +34,9 @@ public class BasicMessageService implements MessageService {
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public MessageResponse create(MessageCreateRequest request, List<MultipartFile> attachments) {
+  public MessageResponse create(MessageCreateRequest request, List<MultipartFile> multipartFiles) {
 
-    userRepository.findById(request.authorId())
+    User user = userRepository.findById(request.authorId())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
     Channel channel = channelRepository.findById(request.channelId())
@@ -46,11 +46,16 @@ public class BasicMessageService implements MessageService {
       readStatusRepository.findByUserIdAndChannelId(request.authorId(), request.channelId())
           .orElseThrow(() -> new BusinessLogicException(ExceptionCode.NOT_A_CHANNEL_PARTICIPANT));
     }
-    //메시지 객체 내부의 첨부파일Id 리스트 저장용
-    List<UUID> attachmentIds = new ArrayList<>();
+
+    Message message = new Message(
+        request.content(),
+        user,
+        channel
+    );
+
     //요청에 첨부파일이 있다면 for-loop를 통해 객체 생성 후 저장
-    if (attachments != null && !attachments.isEmpty()) {
-      for (MultipartFile file : attachments) {
+    if (multipartFiles != null && !multipartFiles.isEmpty()) {
+      for (MultipartFile file : multipartFiles) {
         if (file.isEmpty()) { //리스트 안에 특정 파일이 비었는지 확인
           continue;
         }
@@ -61,20 +66,13 @@ public class BasicMessageService implements MessageService {
               file.getSize(),
               file.getBytes()
           );
-          binaryContentRepository.save(attachment);
-          attachmentIds.add(attachment.getId());
+          message.addAttachment(attachment); //편의 메서드 사용
         } catch (IOException e) {
           throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
         }
       }
     }
-    Message message = new Message(
-        request.content(),
-        request.authorId(),
-        request.channelId(),
-        attachmentIds
-    );
-    messageRepository.save(message);
+    messageRepository.save(message); //cascade로 attachment들도 같이 INSERT
 
     return MessageResponse.of(message);
   }
@@ -86,10 +84,11 @@ public class BasicMessageService implements MessageService {
     return MessageResponse.of(message);
   }
 
+  //todo N+1 문제 발생하는 코드
   @Override
   public List<MessageResponse> findAllByChannelId(UUID channelId) {
     return messageRepository.findAll().stream()
-        .filter(message -> message.getChannelId().equals(channelId))
+        .filter(message -> message.getChannel().getId().equals(channelId))
         .map(MessageResponse::of)
         .toList();
   }
@@ -109,10 +108,7 @@ public class BasicMessageService implements MessageService {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
 
-    for (UUID attachmentId : message.getAttachmentIds()) {
-      binaryContentRepository.findById(attachmentId)
-          .ifPresent(binaryContentRepository::delete);
-    }
+    //todo 메시지에 연관된 첨부파일 삭제 로직 구현 필요
     messageRepository.delete(message);
   }
 }

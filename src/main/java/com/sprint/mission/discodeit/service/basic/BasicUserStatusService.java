@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ExceptionCode;
@@ -26,7 +27,7 @@ public class BasicUserStatusService implements UserStatusService {
   public UserStatusResponse create(UserStatusCreateRequest request) {
 
     //유저가 존재하지 않으면 예외
-    userRepository.findById(request.userId())
+    User user = userRepository.findById(request.userId())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
     //유저 상태가 이미 존재하면 에외
@@ -35,7 +36,7 @@ public class BasicUserStatusService implements UserStatusService {
           throw new BusinessLogicException(ExceptionCode.USER_STATUS_ALREADY_EXISTS);
         });
 
-    UserStatus status = new UserStatus(request.userId());
+    UserStatus status = new UserStatus(user);
     userStatusRepository.save(status);
 
     return UserStatusResponse.of(status);
@@ -56,10 +57,10 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
-  public UserStatusResponse update(UUID id, UserStatusUpdateRequest request) {
+  public UserStatusResponse update(UUID userStatusId, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
 
-    UserStatus status = userStatusRepository.findByUserId(id)
+    UserStatus status = userStatusRepository.findById(userStatusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
     status.updateOnline(newLastActiveAt);
     userStatusRepository.save(status);
