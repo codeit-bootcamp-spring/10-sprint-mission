@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,7 +46,7 @@ public class MessageController {
       @Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
-    MessageResponse response = messageService.create(request, attachments);
+    MessageDto response = messageService.create(request, attachments);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -61,7 +61,7 @@ public class MessageController {
       @PathVariable UUID messageId,
       @Valid @RequestBody MessageUpdateRequest request
   ) {
-    MessageResponse response = messageService.update(messageId, request);
+    MessageDto response = messageService.update(messageId, request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -86,7 +86,7 @@ public class MessageController {
       @Parameter(description = "조회할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @RequestParam("channelId") UUID channelId
   ) {
-    List<MessageResponse> responses = messageService.findAllByChannelId(channelId);
+    List<MessageDto> responses = messageService.findAllByChannelId(channelId);
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 }

@@ -1,13 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ExceptionCode;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -29,11 +30,10 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final UserStatusRepository userStatusRepository;
-  private final MessageRepository messageRepository;
-  private final ReadStatusRepository readStatusRepository;
+  private final UserMapper userMapper;
 
   @Override
-  public UserResponse create(UserCreateRequest request, MultipartFile file) {
+  public UserDto create(UserCreateRequest request, MultipartFile file) {
     existsByUsername(request.username());
     existsByEmail(request.email());
 
@@ -49,7 +49,6 @@ public class BasicUserService implements UserService {
             file.getSize(),
             file.getBytes()
         );
-        binaryContentRepository.save(profile);
       } catch (IOException e) {
         throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
       }
@@ -67,32 +66,36 @@ public class BasicUserService implements UserService {
     user.setUserStatus(userStatus); // 편의 메서드
     userRepository.save(user); //cascade로 UserStatus도 같이 INSERT
 
-    return UserResponse.of(user, userStatus);
+    return userMapper.toDto(user);
   }
 
   @Override
-  public UserResponse findById(UUID userId) {
+  public UserDto findById(UUID userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
-    UserStatus status = userStatusRepository.findByUserId(userId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
-    return UserResponse.of(user, status);
+
+    if (user.getUserStatus() == null) {
+      throw new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND);
+    }
+
+    return userMapper.toDto(user);
   }
 
   //todo N+1 문제 발생하는 코드
   @Override
-  public List<UserResponse> findAll() {
+  public List<UserDto> findAll() {
     return userRepository.findAll().stream()
         .map(user -> {
-          UserStatus status = userStatusRepository.findByUserId(user.getId())
-              .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
-          return UserResponse.of(user, status);
+          if (user.getUserStatus() == null) {
+            throw new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND);
+          }
+          return userMapper.toDto(user);
         })
         .toList();
   }
 
   @Override
-  public UserResponse update(UUID userId, UserUpdateRequest request, MultipartFile file) {
+  public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile file) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
@@ -107,10 +110,6 @@ public class BasicUserService implements UserService {
     Optional.ofNullable(request.newPassword()).ifPresent(user::updatePassword);
 
     if (file != null && !file.isEmpty()) { //요청에 프로필 파일이 있는지 확인
-      if (user.getProfile() != null) { //기존 유저에게 프로필이 있는지 확인, 프로필이 있으면 지움
-        binaryContentRepository.delete(user.getProfile());
-      }
-
       try {
         BinaryContent newProfile = new BinaryContent(
             file.getOriginalFilename(),
@@ -118,7 +117,6 @@ public class BasicUserService implements UserService {
             file.getSize(),
             file.getBytes()
         );
-        binaryContentRepository.save(newProfile);
         user.updateProfile(newProfile);
       } catch (IOException e) {
         throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
@@ -126,13 +124,9 @@ public class BasicUserService implements UserService {
 
     }
     //프로필 말고 다른 변경사항이 있을 수 있으니 if문 밖에서 저장
-    userRepository.save(user);
+    userRepository.save(user); //cascade로 프로필 변경사항까지 DB업데이트
 
-    //유저 상태 객체 획인
-    UserStatus status = userStatusRepository.findByUserId(userId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
-
-    return UserResponse.of(user, status);
+    return userMapper.toDto(user);
   }
 
   @Override

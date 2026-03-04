@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,7 +42,7 @@ public class ReadStatusController {
   public ResponseEntity<?> create(
       @Valid @RequestBody ReadStatusCreateRequest request
   ) {
-    ReadStatusResponse response = readStatusService.create(request);
+    ReadStatusDto response = readStatusService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -56,7 +56,7 @@ public class ReadStatusController {
       @Parameter(description = "수정할 읽음 상태 ID", example = "0d56555c-7d86-4fa7-b5d6-3170a70909e1")
       @PathVariable UUID readStatusId,
       @Valid @RequestBody ReadStatusUpdateRequest request) {
-    ReadStatusResponse response = readStatusService.update(readStatusId, request);
+    ReadStatusDto response = readStatusService.update(readStatusId, request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -67,7 +67,7 @@ public class ReadStatusController {
       @Parameter(description = "조회할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @RequestParam("userId") UUID userId
   ) {
-    List<ReadStatusResponse> responses = readStatusService.findAllByUserId(userId);
+    List<ReadStatusDto> responses = readStatusService.findAllByUserId(userId);
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 }

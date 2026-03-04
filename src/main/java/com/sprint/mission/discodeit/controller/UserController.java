@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -46,10 +46,10 @@ public class UserController {
       @ApiResponse(responseCode = "400", description = "같은 email 또는 username를 사용하는 User가 이미 존재함")
   })
   public ResponseEntity<?> create(
-      @Valid @RequestPart UserCreateRequest request,
+      @Valid @RequestPart("userCreateRequest") UserCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    UserResponse response = userService.create(request, profile);
+    UserDto response = userService.create(request, profile);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -58,10 +58,10 @@ public class UserController {
   public ResponseEntity<?> update(
       @Parameter(description = "수정할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @PathVariable UUID userId,
-      @Valid @RequestPart UserUpdateRequest request,
+      @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
-    UserResponse response = userService.update(userId, request, profile);
+    UserDto response = userService.update(userId, request, profile);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -83,7 +83,7 @@ public class UserController {
   @Operation(summary = "전체 User 목록 조회")
   @ApiResponse(responseCode = "200", description = "User 목록 조회 성공")
   public ResponseEntity<?> findAll() {
-    List<UserResponse> responses = userService.findAll();
+    List<UserDto> responses = userService.findAll();
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 
@@ -97,7 +97,7 @@ public class UserController {
       @Parameter(description = "업데이트할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @PathVariable UUID userId,
       @Valid @RequestBody UserStatusUpdateRequest request) {
-    UserStatusResponse response = userStatusService.updateByUserId(userId, request);
+    UserStatusDto response = userStatusService.updateByUserId(userId, request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

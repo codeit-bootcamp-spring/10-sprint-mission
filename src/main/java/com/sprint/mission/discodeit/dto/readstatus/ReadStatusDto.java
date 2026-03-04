@@ -1,12 +1,11 @@
 package com.sprint.mission.discodeit.dto.readstatus;
 
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;
 
 @Schema(description = "수신 정보 응답")
-public record ReadStatusResponse(
+public record ReadStatusDto(
     @Schema(description = "수신 정보 ID", example = "0d56555c-7d86-4fa7-b5d6-3170a70909e1")
     UUID id,
     @Schema(description = "유저 ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
@@ -17,12 +16,4 @@ public record ReadStatusResponse(
     Instant lastReadAt
 ) {
 
-  public static ReadStatusResponse of(ReadStatus status) {
-    return new ReadStatusResponse(
-        status.getId(),
-        status.getUserId(),
-        status.getChannelId(),
-        status.getLastReadAt()
-    );
-  }
 }

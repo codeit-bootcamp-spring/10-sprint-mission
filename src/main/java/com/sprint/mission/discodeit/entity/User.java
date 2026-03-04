@@ -26,7 +26,7 @@ public class User extends BaseUpdatableEntity {
   @Column(nullable = false)
   private String password;
 
-  @OneToOne
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "PROFILE_ID")
   private BinaryContent profile;
 

@@ -1,13 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponse;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ExceptionCode;
+import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -24,9 +25,10 @@ public class BasicReadStatusService implements ReadStatusService {
   private final ReadStatusRepository readStatusRepository;
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
+  private final ReadStatusMapper readStatusMapper;
 
   @Override
-  public ReadStatusResponse create(ReadStatusCreateRequest request) {
+  public ReadStatusDto create(ReadStatusCreateRequest request) {
 
     User user = userRepository.findById(request.userId())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
@@ -41,30 +43,31 @@ public class BasicReadStatusService implements ReadStatusService {
 
     ReadStatus readStatus = new ReadStatus(user, channel);
     readStatusRepository.save(readStatus);
-    return ReadStatusResponse.of(readStatus);
+
+    return readStatusMapper.toDto(readStatus);
   }
 
   @Override
-  public ReadStatusResponse findById(UUID statusId) {
+  public ReadStatusDto findById(UUID statusId) {
     ReadStatus status = readStatusRepository.findById(statusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
-    return ReadStatusResponse.of(status);
+    return readStatusMapper.toDto(status);
   }
 
   @Override
-  public List<ReadStatusResponse> findAllByUserId(UUID userId) {
+  public List<ReadStatusDto> findAllByUserId(UUID userId) {
     return readStatusRepository.findAllByUserId(userId).stream()
-        .map(ReadStatusResponse::of)
+        .map(readStatusMapper::toDto)
         .toList();
   }
 
   @Override
-  public ReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest request) {
+  public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
     ReadStatus status = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
     status.updateLastReadAt(request.newLastReadAt());
     readStatusRepository.save(status);
-    return ReadStatusResponse.of(status);
+    return readStatusMapper.toDto(status);
   }
 
   @Override

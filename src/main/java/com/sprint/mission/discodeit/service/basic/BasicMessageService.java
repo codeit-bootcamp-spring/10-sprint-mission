@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ExceptionCode;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -31,10 +32,10 @@ public class BasicMessageService implements MessageService {
   private final UserRepository userRepository;
   private final MessageRepository messageRepository;
   private final ReadStatusRepository readStatusRepository;
-  private final BinaryContentRepository binaryContentRepository;
+  private final MessageMapper messageMapper;
 
   @Override
-  public MessageResponse create(MessageCreateRequest request, List<MultipartFile> multipartFiles) {
+  public MessageDto create(MessageCreateRequest request, List<MultipartFile> multipartFiles) {
 
     User user = userRepository.findById(request.authorId())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
@@ -74,33 +75,33 @@ public class BasicMessageService implements MessageService {
     }
     messageRepository.save(message); //cascade로 attachment들도 같이 INSERT
 
-    return MessageResponse.of(message);
+    return messageMapper.toDto(message);
   }
 
   @Override
-  public MessageResponse findById(UUID messageId) {
+  public MessageDto findById(UUID messageId) {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
-    return MessageResponse.of(message);
+    return messageMapper.toDto(message);
   }
 
   //todo N+1 문제 발생하는 코드
   @Override
-  public List<MessageResponse> findAllByChannelId(UUID channelId) {
+  public List<MessageDto> findAllByChannelId(UUID channelId) {
     return messageRepository.findAll().stream()
         .filter(message -> message.getChannel().getId().equals(channelId))
-        .map(MessageResponse::of)
+        .map(messageMapper::toDto)
         .toList();
   }
 
   @Override
-  public MessageResponse update(UUID messageId, MessageUpdateRequest request) {
+  public MessageDto update(UUID messageId, MessageUpdateRequest request) {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
 
     message.update(request.newContent());
     messageRepository.save(message);
-    return MessageResponse.of(message);
+    return messageMapper.toDto(message);
   }
 
   @Override

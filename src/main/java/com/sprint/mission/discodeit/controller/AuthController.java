@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.user.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -34,7 +34,7 @@ public class AuthController {
   public ResponseEntity<?> login(
       @Valid @RequestBody LoginRequest request
   ) {
-    UserResponse response = authService.login(request);
+    UserDto response = authService.login(request);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }
