@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -9,9 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-public class User extends BaseEntity implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class User extends BaseUpdatableEntity {
 
     private String username;
     private String email;
@@ -20,7 +20,6 @@ public class User extends BaseEntity implements Serializable {
     private List<UUID> channelIds;
 
     public User(String username, String email, String password, UUID profileID) {
-        super();
         this.username = username;
         this.email = email;
         this.password = password;
@@ -39,7 +38,7 @@ public class User extends BaseEntity implements Serializable {
             throw new IllegalStateException("User already joined channel");
         }
         channelIds.add(channelId);
-        this.setUpdatedAt(Instant.now());
+        this.updatedAt = Instant.now();
     }
 
     public void leaveChannel(UUID channelId) {
@@ -53,7 +52,7 @@ public class User extends BaseEntity implements Serializable {
             throw new IllegalStateException("User is not in channel");
         }
         channelIds.remove(channelId);
-        this.setUpdatedAt(Instant.now());
+        this.updatedAt = Instant.now();
     }
 
     public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
@@ -76,7 +75,7 @@ public class User extends BaseEntity implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.setUpdatedAt(Instant.now());
+            this.updatedAt = Instant.now();
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,8 +14,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class Channel extends BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class Channel extends BaseUpdatableEntity {
 
     private ChannelType type;
     private String name;
@@ -27,17 +28,17 @@ public class Channel extends BaseEntity implements Serializable {
         this.userList = new ArrayList<>();
     }
 
-    public void userJoin(UUID userID){
+    public void userJoin(UUID userID) {
         Objects.requireNonNull(userID, "유효하지 않은 User 입니다.");
-        if(userList.stream().anyMatch(userID::equals)){
+        if (userList.stream().anyMatch(userID::equals)) {
             throw new IllegalStateException("이미 유저가 채널에 가입되어 있습니다.");
         }
         userList.add(userID);
     }
 
-    public void userLeave(UUID userID){
+    public void userLeave(UUID userID) {
         Objects.requireNonNull(userID, "유효하지 않은 User 입니다.");
-        if(userList.stream().noneMatch(userID::equals)){
+        if (userList.stream().noneMatch(userID::equals)) {
             throw new IllegalStateException("해당 채널에 유저가 존재하지 않습니다.");
         }
         userList.remove(userID);
@@ -55,7 +56,7 @@ public class Channel extends BaseEntity implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.setUpdatedAt(Instant.now());
+            this.updatedAt = Instant.now();
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -8,7 +9,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class ReadStatus extends BaseEntity implements Serializable {
+public class ReadStatus extends BaseUpdatableEntity {
 
     private final UUID id;
     private final UUID userID;
@@ -32,7 +33,7 @@ public class ReadStatus extends BaseEntity implements Serializable {
 
     public void update() {
         this.lastReadAt = Instant.now();
-        setUpdatedAt(Instant.now()); // 업데이트 날짜 최신화
+        this.updatedAt = Instant.now();
     }
 
 

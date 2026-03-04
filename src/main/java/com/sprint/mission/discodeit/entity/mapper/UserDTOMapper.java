@@ -15,7 +15,7 @@ public class UserDTOMapper {
         return new UserResponseDTO(
             user.getId(),
             user.getCreatedAt(),
-            user.getUpdatedAt(),
+            user.getUp(),
             user.getUsername(),
             user.getEmail(),
             user.getProfileID(),
