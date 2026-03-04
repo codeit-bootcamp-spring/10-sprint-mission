@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -8,19 +9,16 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class UserStatus implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private UUID id;
-    private Instant createdAt;
+public class UserStatus extends BaseEntity {
+
     private Instant updatedAt;
     //
     private UUID userId;
     private Instant lastActiveAt;
 
     public UserStatus(UUID userId, Instant lastActiveAt) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        //
+//        super();//id,createdAt 값 삽입(BseEntity)
+
         this.userId = userId;
         this.lastActiveAt = lastActiveAt;
     }
