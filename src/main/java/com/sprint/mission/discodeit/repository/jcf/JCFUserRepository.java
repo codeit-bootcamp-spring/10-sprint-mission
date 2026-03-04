@@ -35,9 +35,9 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByName(String name) {
+    public Optional<User> findByUserName(String username) {
         return data.values().stream()
-                .filter(user -> user.getName().equals(name))
+                .filter(user -> user.getUsername().equals(username))
                 .findFirst();
     }
 

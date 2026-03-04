@@ -1,50 +1,60 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageResponse;
+import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
-public class MessageController {
-    private final MessageService messageService;
+public class MessageController implements MessageApi {
 
-    @PostMapping
-    public ResponseEntity<MessageResponse> createMessage(@RequestBody MessageCreateRequest request){
-        return ResponseEntity.status(HttpStatus.CREATED).body(messageService.create(request));
-    }
+  private final MessageService messageService;
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<MessageResponse> updateMessage(
-            @PathVariable UUID id,
-            @RequestBody MessageUpdateRequest request){
-        return ResponseEntity.ok(messageService.update(id, request));
-    }
+  @Override
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<MessageDto> create(
+      @RequestPart("messageCreateRequest") MessageCreateRequest request,
+      @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(messageService.create(request, attachments));
+  }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMessage(@PathVariable UUID id){
-        messageService.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
+  @Override
+  @PatchMapping("/{messageId}")
+  public ResponseEntity<MessageDto> update(
+      @PathVariable UUID messageId,
+      @RequestBody MessageUpdateRequest request) {
+    return ResponseEntity.ok(messageService.update(messageId, request));
+  }
 
-    @GetMapping("/channel/{channelId}")
-    public ResponseEntity<List<MessageResponse>> findAllByChannel(
-            @PathVariable UUID channelId,
-            @RequestParam UUID userId){
-        return ResponseEntity.ok(messageService.findAllByChannelId(channelId, userId));
-    }
+  @Override
+  @DeleteMapping("/{messageId}")
+  public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
+    messageService.deleteById(messageId);
+    return ResponseEntity.noContent().build();
+  }
 
-    @PatchMapping("/{id}/pin")
-    public ResponseEntity<MessageResponse> togglePin(@PathVariable UUID id){
-        return ResponseEntity.ok(messageService.togglePin(id));
-    }
+  @Override
+  @GetMapping
+  public ResponseEntity<List<MessageDto>> findAllByChannelId(@RequestParam UUID channelId) {
+    return ResponseEntity.ok(messageService.findAllByChannelId(channelId));
+  }
+
+  @Override
+  @PatchMapping("/{id}/pin")
+  public ResponseEntity<MessageDto> togglePin(@PathVariable UUID id) {
+    return ResponseEntity.ok(messageService.togglePin(id));
+  }
 }

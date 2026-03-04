@@ -8,64 +8,56 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.UUID;
 
 @Getter
 @ToString(exclude = {"joinedChannels", "myMessages"})
 public class User extends BaseEntity implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
 
-    private String name;
-    private String nickname;
-    private String email;
-    private String password;
-    private UUID profileId; // 프로필 이미지 (BinaryContent 참조 ID)
+  @Serial
+  private static final long serialVersionUID = 1L;
 
-    @Getter(AccessLevel.NONE)
-    private final List<Channel> joinedChannels = new ArrayList<>();
+  private String username;
+  private String email;
+  private String password;
+  private UUID profileId; // 프로필 이미지 (BinaryContent 참조 ID)
 
-    @Getter(AccessLevel.NONE)
-    private final List<Message> myMessages = new ArrayList<>();
+  @Getter(AccessLevel.NONE)
+  private final List<Channel> joinedChannels = new ArrayList<>();
+
+  @Getter(AccessLevel.NONE)
+  private final List<Message> myMessages = new ArrayList<>();
 
 
-    public User(String name, String nickname, String email, String password, UUID profileId) {
-        super();
-        this.name = name;
-        this.nickname = nickname;
-        this.email = email;
-        this.password = password;
-        this.profileId = profileId;
-    }
+  public User(String name, String email, String password, UUID profileId) {
+    super();
+    this.username = name;
+    this.email = email;
+    this.password = password;
+    this.profileId = profileId;
+  }
 
-    // 유저 이름 수정
-    public void updateName(String name) {
-        this.name = name;
-        this.updated();
-    }
+  // 유저 이름 수정
+  public void updateName(String name) {
+    this.username = name;
+    this.updated();
+  }
 
-    // 유저 닉네임 수정
-    public void updateNickname(String nickname) {
-        this.nickname = nickname;
-        this.updated();
-    }
+  // 유저 이메일 수정
+  public void updateEmail(String email) {
+    this.email = email;
+    this.updated();
+  }
 
-    // 유저 이메일 수정
-    public void updateEmail(String email) {
-        this.email = email;
-        this.updated();
-    }
+  // 프로필 이미지 수정
+  public void updateProfileImage(UUID profileId) {
+    this.profileId = profileId;
+    this.updated();
+  }
 
-    // 프로필 이미지 수정
-    public void updateProfileImage(UUID profileId) {
-        this.profileId = profileId;
-        this.updated();
-    }
-
-    // 비밀번호 변경
-    public void updatePassword(String password) {
-        this.password = password;
-        this.updated();
-    }
+  // 비밀번호 변경
+  public void updatePassword(String password) {
+    this.password = password;
+    this.updated();
+  }
 }
