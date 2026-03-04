@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface UserStatusService {
-    UserStatusResponseDTO createUserStatus(CreateUserStatusRequestDTO dto);
 
     UserStatusResponseDTO findByUserStatusId(UUID userStatusId);
 
