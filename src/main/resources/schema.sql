@@ -1,12 +1,11 @@
 -- PostgreSQL UUID 생성 함수 사용을 위한 확장
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-
 -- binary_contents
 
 CREATE TABLE IF NOT EXISTS binary_contents
 (
-    id           uuid PRIMARY KEY,
+    id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at   timestamptz  NOT NULL DEFAULT now(),
     file_name    varchar(255) NOT NULL,
     size         bigint       NOT NULL,
@@ -17,7 +16,7 @@ CREATE TABLE IF NOT EXISTS binary_contents
 -- users
 create table if not exists users
 (
-    id         uuid PRIMARY KEY,
+    id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     create_at  timestamptz  NOT NULL DEFAULT now(),
     updated_at timestamptz  NOT NULL DEFAULT now(),
     username   varchar(50)  NOT NULL UNIQUE,
@@ -30,10 +29,10 @@ create table if not exists users
             REFERENCES binary_contents
             ON DELETE SET NULL
 );
--- userstatus
+-- userstatuses
 CREATE TABLE IF NOT EXISTS user_statuses
 (
-    id             uuid PRIMARY KEY ,
+    id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at     timestamptz NOT NULL DEFAULT now(),
     updated_at     timestamptz NOT NULL DEFAULT now(),
     user_id        uuid        NOT NULL UNIQUE ,
@@ -58,7 +57,7 @@ CREATE TABLE IF NOT EXISTS channels
 
 CREATE TABLE IF NOT EXISTS read_statuses
 (
-    id           uuid PRIMARY KEY,
+    id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at   timestamptz NOT NULL DEFAULT now(),
     user_id      uuid        NOT NULL,
     channel_id   uuid        NOT NULL,
@@ -80,7 +79,7 @@ CREATE TABLE IF NOT EXISTS read_statuses
 
 CREATE TABLE IF NOT EXISTS messages
 (
-    id         uuid PRIMARY KEY,
+    id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at timestamptz NOT NULL DEFAULT now(),
     updated_at timestamptz NOT NULL DEFAULT now(),
     content    text,
@@ -100,10 +99,13 @@ CREATE TABLE IF NOT EXISTS messages
 -- message_attachments
 CREATE TABLE IF NOT EXISTS message_attachments
 (
-    id            uuid PRIMARY KEY,
+    id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     message_id    uuid NOT NULL UNIQUE ,
     attachment_id uuid NOT NULL UNIQUE ,
 
     FOREIGN KEY (message_id) REFERENCES messages (id) ON DELETE CASCADE,
     FOREIGN KEY (attachment_id) REFERENCES binary_contents (id) ON DELETE CASCADE
 );
+
+ALTER TABLE message_attachments
+    ALTER COLUMN id SET DEFAULT gen_random_uuid();
