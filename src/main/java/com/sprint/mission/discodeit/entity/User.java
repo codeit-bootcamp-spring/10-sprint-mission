@@ -26,7 +26,7 @@ public class User extends BaseUpdatableEntity {
     @OneToOne(optional = true)
     private BinaryContent profile;
 
-    // 사용자 상태
+    // 사용자 상태 -> userStatus는 자식 엔티티
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private UserStatus userStatus;
 
@@ -56,6 +56,10 @@ public class User extends BaseUpdatableEntity {
 
     public void updateProfileImage(BinaryContent profile) {
         this.profile = profile;
+    }
+
+    public void updateStatus(UserStatus userStatus) {
+        this.userStatus = userStatus;
     }
 
     @Override

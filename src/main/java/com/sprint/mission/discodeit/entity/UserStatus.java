@@ -42,8 +42,7 @@ public class UserStatus extends BaseUpdatableEntity {
     @Override
     public String toString() {
         return "UserStatus{" +
-                "userId=" + user.getId() +
-                ", lastLoginAt=" + lastLoginAt +
+                "lastLoginAt=" + lastLoginAt +
                 '}';
     }
 }

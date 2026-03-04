@@ -14,16 +14,21 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
+
+    private final UserMapper userMapper;
+    private final BinaryContentMapper binaryContentMapper;
 
     @Override
     public UserDto createUser(CreateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
@@ -36,48 +41,38 @@ public class BasicUserService implements UserService {
         }
 
         // userId를 받아오기 위해 우선 객체 생성
-        User user = UserMapper.toEntity(dto, null);
+        User user = userMapper.toEntity(dto, null);
 
         if (profileImage != null) {
-            BinaryContent bc = BinaryContentMapper.toEntity(user.getId(), null, profileImage);
+            BinaryContent bc = binaryContentMapper.toEntity(profileImage);
 
             binaryContentRepository.save(bc);
 
             // 프로필 사진이 있으면 갱신하기
-            user.updateProfileImage(bc.getId());
+            user.updateProfileImage(bc);
         }
 
-        UserStatus status = new UserStatus(user.getId(), Instant.now());
-        userStatusRepository.save(status);
+        UserStatus status = new UserStatus(user, Instant.now());
+        user.updateStatus(status);
 
         userRepository.save(user);
 
-        return UserMapper.toResponse(user, status);
+        return userMapper.toResponse(user, status);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
         List<UserStatus> statuses = userStatusRepository.findAll();
 
-        return UserMapper.toResponseList(users, statuses);
+        return userMapper.toResponseList(users, statuses);
     }
 
     @Override
-    public List<UserDto> findAllByChannel(UUID channelId) {
-
-        List<User> users = userRepository.findAll().stream()
-                .filter(user -> user.getJoinedChannelIds().stream()
-                        .anyMatch(c -> c.equals(channelId)))
-                .toList();
-        List<UserStatus> statuses = userStatusRepository.findAll();
-
-        return UserMapper.toResponseList(users, statuses);
-    }
-
-    @Override
+    @Transactional(readOnly = true)
     public UserDto findByUserId(UUID userId) {
-        return UserMapper.toResponse(
+        return userMapper.toResponse(
                 findUserOrThrow(userId),
                 userStatusRepository.findByUserId(userId)
                         .orElseThrow(() -> new NoSuchElementException(
@@ -103,7 +98,7 @@ public class BasicUserService implements UserService {
             updateUserProfileImage(profileImage, user);
         }
 
-        return UserMapper.toResponse(
+        return userMapper.toResponse(
                 user,
                 userStatusRepository.findByUserId(userId)
                         .orElseThrow(() -> new NoSuchElementException(
@@ -120,16 +115,15 @@ public class BasicUserService implements UserService {
                         "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
                 ));
 
-        status.updateIsOnline(dto.newLastActiveAt());
         userStatusRepository.save(status);
 
-        return UserMapper.toResponse(user, status);
+        return userMapper.toResponse(user, status);
     }
 
     @Override
     public void deleteUser(UUID userId) {
         User user = findUserOrThrow(userId);
-        UUID binaryContentId = user.getProfileImageId();
+        UUID binaryContentId = user.getProfile().getId();
 
         userStatusRepository.deleteById(userStatusRepository.findByUserId(userId)
                 .orElseThrow(() -> new NoSuchElementException(
@@ -159,8 +153,8 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("이미 사용중인 username입니다.");
         }
 
-        user.updateUsername(dto.newUsername());
-        userRepository.save(user);
+        user.updateUsername(dto.newUsername());     // 객체를 수정하면 JPA가 트랜잭션 커밋되는 순간에 update를 실행해줌
+        // 그래서 userRepository.save(user); 코드가 삭제된 것
     }
 
     private void updateEmail(UpdateUserRequestDTO dto, User user) {
@@ -173,12 +167,10 @@ public class BasicUserService implements UserService {
         }
 
         user.updateEmail(dto.newEmail());
-        userRepository.save(user);
     }
 
     private void updatePassword(UpdateUserRequestDTO dto, User user) {
         user.updatePassword(dto.newPassword());
-        userRepository.save(user);
     }
 
     private void updateUserProfileImage(CreateBinaryContentPayloadDTO profileImage, User user) {
@@ -186,12 +178,11 @@ public class BasicUserService implements UserService {
             throw new IllegalArgumentException("profile 값이 존재하지 않습니다.");
         }
 
-        BinaryContent binaryContent = BinaryContentMapper.toEntity(user.getId(), null, profileImage);
+        BinaryContent binaryContent = binaryContentMapper.toEntity(profileImage);
 
         binaryContentRepository.save(binaryContent);
 
         // 프로필 사진이 있으면 갱신하기
-        user.updateProfileImage(binaryContent.getId());
-        userRepository.save(user);
+        user.updateProfileImage(binaryContent);
     }
 }

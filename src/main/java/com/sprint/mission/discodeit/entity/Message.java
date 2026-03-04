@@ -58,9 +58,6 @@ public class Message extends BaseUpdatableEntity {
                 ", createdAt=" + super.getCreatedAt() +
                 ", updatedAt=" + super.getUpdatedAt() +
                 ", content='" + content + '\'' +
-                ", sentUser='" + author + '\'' +
-                ", sentChannel='" + channel + '\'' +
-                ", attachments='" + attachments + '\'' +
                 '}';
     }
 }

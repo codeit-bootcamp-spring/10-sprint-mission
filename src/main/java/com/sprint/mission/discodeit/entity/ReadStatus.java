@@ -47,9 +47,7 @@ public class ReadStatus extends BaseUpdatableEntity {
     @Override
     public String toString() {
         return "ReadStatus{" +
-                "user=" + user +
-                ", channel=" + channel +
-                ", lastReadAt=" + lastReadAt +
+                "lastReadAt=" + lastReadAt +
                 '}';
     }
 }

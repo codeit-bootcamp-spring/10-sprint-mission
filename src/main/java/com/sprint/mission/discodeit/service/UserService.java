@@ -14,8 +14,6 @@ public interface UserService {
 
     List<UserDto> findAll();
 
-    List<UserDto> findAllByChannel(UUID channelId);
-
     UserDto findByUserId(UUID userId);
 
     UserDto updateUserInfo(UUID userId, UpdateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage);
