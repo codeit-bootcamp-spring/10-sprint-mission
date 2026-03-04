@@ -1,11 +1,11 @@
 package com.sprint.mission.discodeit.dto.channeldto;
 
-import com.sprint.mission.discodeit.entity.User;
+import com.fasterxml.jackson.annotation.JsonAlias;
 
 import java.util.List;
 import java.util.UUID;
 
 public record PrivateChannelCreateDTO(
-        List<UUID> users
+        @JsonAlias("participantIds") List<UUID> users
 ) {
 }

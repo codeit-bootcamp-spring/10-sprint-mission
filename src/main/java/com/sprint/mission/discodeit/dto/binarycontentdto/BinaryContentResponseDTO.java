@@ -6,7 +6,8 @@ import java.util.UUID;
 public record BinaryContentResponseDTO (
         UUID id,
         String contentType,
-        Instant createdAt
+        Instant createdAt,
+        byte[] bytes
 )
 {
 }

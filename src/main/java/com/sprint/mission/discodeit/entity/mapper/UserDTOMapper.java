@@ -11,21 +11,21 @@ import java.util.UUID;
 @Component
 public class UserDTOMapper {
 
-    public UserResponseDTO userToResponse (User user, UserStatus userStatus) {
-        return new UserResponseDTO(user.getId(),
-                user.getProfileID(),
-                user.getUsername(),
-                user.getEmail(),
-                userStatus.isOnline(),
-                user.getCreatedAt(),
-                user.getUpdatedAt()
+    public UserResponseDTO userToResponse(User user, UserStatus userStatus) {
+        return new UserResponseDTO(
+            user.getId(),
+            user.getCreatedAt(),
+            user.getUpdatedAt(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getProfileID(),
+            userStatus.isOnline()
         );
     }
 
-    public User regtoUser(UserCreateRequestDTO req, UUID profileId){
-        return new User(req.userName(), req.email(), req.password(), profileId);
+    public User regtoUser(UserCreateRequestDTO req, UUID profileId) {
+        return new User(req.username(), req.email(), req.password(), profileId);
     }
-
 
 
 }

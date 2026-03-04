@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record MessageUpdateRequestDto(
-        UUID messageId,
-        String newContent,
-        List<BinaryContentDTO> attachmentsToAdd,
-        List<UUID> attachmentIdsToRemove
+    String newContent
 ) {
+
 }

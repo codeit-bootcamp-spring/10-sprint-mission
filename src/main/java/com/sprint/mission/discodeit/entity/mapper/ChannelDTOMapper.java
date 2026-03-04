@@ -13,21 +13,27 @@ import java.time.Instant;
 
 @Component
 public class ChannelDTOMapper {
-    public ChannelResponseDTO channelToResponseDTO(Channel channel, Message latestMessage){
+
+    public ChannelResponseDTO channelToResponseDTO(Channel channel, Instant lastMessageAt) {
         return new ChannelResponseDTO(
-                channel.getId(),
-                latestMessage != null ? latestMessage.getCreatedAt() : null,
-                latestMessage != null ? latestMessage.getUpdatedAt() : null,
-                channel.getUserList());
+            channel.getId(),
+            channel.getType(),
+            channel.getName(),
+            channel.getDescription(),
+            channel.getUserList(),
+            lastMessageAt
+        );
     }
 
-    public Channel privateReqToChannel(PrivateChannelCreateDTO req){
+    public Channel privateReqToChannel(PrivateChannelCreateDTO req) {
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
-        channel.getUserList().addAll(req.users());
+        if (req != null && req.users() != null) {
+            channel.getUserList().addAll(req.users());
+        }
         return channel;
     }
 
-    public Channel publicReqToChannel(PublicChannelCreateDTO req){
+    public Channel publicReqToChannel(PublicChannelCreateDTO req) {
         return new Channel(ChannelType.PUBLIC, req.name(), req.description());
     }
 }

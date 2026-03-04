@@ -9,28 +9,29 @@ import java.util.UUID;
 
 @Getter
 public class ReadStatus extends BaseEntity implements Serializable {
+
     private final UUID id;
     private final UUID userID;
     private final UUID channelID;
     private Instant lastReadAt;
 
-    public ReadStatus(UUID userID, UUID channelID){
+    public ReadStatus(UUID userID, UUID channelID) {
         this.id = UUID.randomUUID();
         this.userID = userID;
         this.channelID = channelID;
         this.lastReadAt = Instant.EPOCH;
     }
 
-    public void read(){
+    public void read() {
         this.lastReadAt = Instant.now();
     }
 
-    public boolean isRead(){
+    public boolean isRead() {
         return lastReadAt.isAfter(Instant.EPOCH);
     }
 
-    public void update(Instant lastReadAt){
-        this.lastReadAt = lastReadAt;
+    public void update() {
+        this.lastReadAt = Instant.now();
         setUpdatedAt(Instant.now()); // 업데이트 날짜 최신화
     }
 
