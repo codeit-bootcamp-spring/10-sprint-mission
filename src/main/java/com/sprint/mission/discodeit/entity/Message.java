@@ -1,57 +1,66 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Getter
-public class Message extends BaseEntity {
+@Entity
+@NoArgsConstructor
+public class Message extends BaseUpdatableEntity {
     // 메시지 내용
+    @Column(nullable = false, updatable = true)
     private String content;
-    // 유저 정보
-    private UUID sentUserId;
-    // 채널 정보
-    private UUID sentChannelId;
-    // 연결되어 있는 id들
-    private List<UUID> attachmentIds;
 
-    public Message(UUID sentUserId, UUID sentChannelId, String content, List<UUID> attachmentIds) {
+    // 유저 정보
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User author;
+
+    // 채널 정보
+    @ManyToOne
+    @JoinColumn(name = "channel_id")
+    private Channel channel;
+
+    // 미디어, 파일 등
+    @ManyToMany
+    @JoinTable(
+            name = "message_attachments",
+            joinColumns = @JoinColumn(name = "message_id"),
+            inverseJoinColumns = @JoinColumn(name = "attachment_id")
+    )
+    private List<BinaryContent> attachments = new ArrayList<>();
+
+    public Message(User author, Channel channel, String content, List<BinaryContent> attachments) {
         // id 자동생성 및 초기화
         super();
         // content 초기화
         this.content = content;
         // sentUserId 초기화는 메시지 전송 시점에 설정
-        this.sentUserId = sentUserId;
+        this.author = author;
         // sentChannelId 초기화는 메시지 전송 시점에 설정
-        this.sentChannelId = sentChannelId;
-        this.attachmentIds = attachmentIds;
+        this.channel = channel;
+        this.attachments = attachments;
     }
 
     public void updateContent(String content) {
         this.content = content;
-        setUpdatedAt();
-    }
-
-    public void updateAttachmentIds(UUID attachmentId) {
-        attachmentIds.add(attachmentId);
-    }
-
-    public void removeAttachmentIds(UUID attachmentId) {
-        attachmentIds.removeIf(id -> id.equals(attachmentId));
     }
 
     @Override
     public String toString() {
         return "Message{" +
-                "id='" + id + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
+                "id='" + super.getId() + '\'' +
+                ", createdAt=" + super.getCreatedAt() +
+                ", updatedAt=" + super.getUpdatedAt() +
                 ", content='" + content + '\'' +
-                ", sentUser='" + sentUserId + '\'' +
-                ", sentChannel='" + sentChannelId + '\'' +
-                ", attachmentIds='" + attachmentIds + '\'' +
+                ", sentUser='" + author + '\'' +
+                ", sentChannel='" + channel + '\'' +
+                ", attachments='" + attachments + '\'' +
                 '}';
     }
 }

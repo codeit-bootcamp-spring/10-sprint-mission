@@ -1,12 +1,7 @@
 package com.sprint.mission.discodeit.config;
 
-import com.sprint.mission.discodeit.repository.*;
-import com.sprint.mission.discodeit.repository.file.*;
-import com.sprint.mission.discodeit.repository.jcf.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -63,70 +58,70 @@ public class RepositoryConfig {
     // =========================
     // File repositories
     // =========================
-
-    @Bean
-    @ConditionalOnProperty(
-            prefix = "discodeit.repository",
-            name = "type",
-            havingValue = "file",
-            matchIfMissing = true
-    )
-    public UserRepository userRepositoryFile() {
-        return new FileUserRepository();
-    }
-
-    @Bean
-    @ConditionalOnProperty(
-            prefix = "discodeit.repository",
-            name = "type",
-            havingValue = "file",
-            matchIfMissing = true
-    )
-    public ChannelRepository channelRepositoryFile() {
-        return new FileChannelRepository();
-    }
-
-    @Bean
-    @ConditionalOnProperty(
-            prefix = "discodeit.repository",
-            name = "type",
-            havingValue = "file",
-            matchIfMissing = true
-    )
-    public MessageRepository messageRepositoryFile() {
-        return new FileMessageRepository();
-    }
-
-    @Bean
-    @ConditionalOnProperty(
-            prefix = "discodeit.repository",
-            name = "type",
-            havingValue = "file",
-            matchIfMissing = true
-    )
-    public UserStatusRepository userStatusRepositoryFile() {
-        return new FileUserStatusRepository();
-    }
-
-    @Bean
-    @ConditionalOnProperty(
-            prefix = "discodeit.repository",
-            name = "type",
-            havingValue = "file",
-            matchIfMissing = true
-    )
-    public ReadStatusRepository readStatusRepositoryFile() {
-        return new FileReadStatusRepository();
-    }
-
-    @Bean
-    @ConditionalOnProperty(
-            prefix = "discodeit.repository",
-            name = "type",
-            havingValue = "file",
-            matchIfMissing = true
-    )
-    public BinaryContentRepository binaryContentRepositoryFile() {
-        return new FileBinaryContentRepository();
-    }
+//
+//    @Bean
+//    @ConditionalOnProperty(
+//            prefix = "discodeit.repository",
+//            name = "type",
+//            havingValue = "file",
+//            matchIfMissing = true
+//    )
+//    public UserRepository userRepositoryFile() {
+//        return new FileUserRepository();
+//    }
+//
+//    @Bean
+//    @ConditionalOnProperty(
+//            prefix = "discodeit.repository",
+//            name = "type",
+//            havingValue = "file",
+//            matchIfMissing = true
+//    )
+//    public ChannelRepository channelRepositoryFile() {
+//        return new FileChannelRepository();
+//    }
+//
+//    @Bean
+//    @ConditionalOnProperty(
+//            prefix = "discodeit.repository",
+//            name = "type",
+//            havingValue = "file",
+//            matchIfMissing = true
+//    )
+//    public MessageRepository messageRepositoryFile() {
+//        return new FileMessageRepository();
+//    }
+//
+//    @Bean
+//    @ConditionalOnProperty(
+//            prefix = "discodeit.repository",
+//            name = "type",
+//            havingValue = "file",
+//            matchIfMissing = true
+//    )
+//    public UserStatusRepository userStatusRepositoryFile() {
+//        return new FileUserStatusRepository();
+//    }
+//
+//    @Bean
+//    @ConditionalOnProperty(
+//            prefix = "discodeit.repository",
+//            name = "type",
+//            havingValue = "file",
+//            matchIfMissing = true
+//    )
+//    public ReadStatusRepository readStatusRepositoryFile() {
+//        return new FileReadStatusRepository();
+//    }
+//
+//    @Bean
+//    @ConditionalOnProperty(
+//            prefix = "discodeit.repository",
+//            name = "type",
+//            havingValue = "file",
+//            matchIfMissing = true
+//    )
+//    public BinaryContentRepository binaryContentRepositoryFile() {
+//        return new FileBinaryContentRepository();
+//    }
 }
