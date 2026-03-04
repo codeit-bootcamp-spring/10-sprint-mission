@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @Table(name = "USERS")
 public class User extends BaseEntity{
 
+    @LastModifiedDate
     private Instant updatedAt;
     //
     @Column(unique = true, nullable = false,length = 50)

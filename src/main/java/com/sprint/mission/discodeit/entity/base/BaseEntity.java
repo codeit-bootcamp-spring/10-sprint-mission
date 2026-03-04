@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity.base;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -16,6 +17,7 @@ public abstract class BaseEntity {
     private UUID id;
 
     @Column(nullable = false)
+    @CreatedDate
     private Instant createdAt;
 
     protected BaseEntity() {

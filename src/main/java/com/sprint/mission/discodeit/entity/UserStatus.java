@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import lombok.Getter;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -11,6 +12,7 @@ import java.util.UUID;
 @Getter
 public class UserStatus extends BaseEntity {
 
+    @LastModifiedDate
     private Instant updatedAt;
     //
     private UUID userId;

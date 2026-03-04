@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import lombok.Getter;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -10,6 +11,7 @@ import java.util.UUID;
 @Getter
 public class Channel extends BaseEntity {
 
+    @LastModifiedDate
     private Instant updatedAt;
     //
     private ChannelType type;
