@@ -1,14 +1,12 @@
 package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-@Setter
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -16,24 +14,25 @@ public class User implements Serializable {
     private Instant createdAt;
     private Instant updatedAt;
     //
-    private String userName;
+    private String username;
     private String email;
     private String password;
-    private UUID profileId; //BinaryContent의 id와 일치
+    private UUID profileId;     // BinaryContent
 
-    public User(String username, String email, String password) {
+    public User(String username, String email, String password, UUID profileId) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         //
-        this.userName = username;
+        this.username = username;
         this.email = email;
         this.password = password;
+        this.profileId = profileId;
     }
 
     public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
         boolean anyValueUpdated = false;
-        if (newUsername != null && !newUsername.equals(this.userName)) {//이름이 null이 아니고 기존꺼와 같지 않을때 변경.
-            this.userName = newUsername;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
             anyValueUpdated = true;
         }
         if (newEmail != null && !newEmail.equals(this.email)) {
@@ -44,25 +43,13 @@ public class User implements Serializable {
             this.password = newPassword;
             anyValueUpdated = true;
         }
+        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+            this.profileId = newProfileId;
+            anyValueUpdated = true;
+        }
 
         if (anyValueUpdated) {
             this.updatedAt = Instant.now();
         }
-        if(newProfileId != null && !newProfileId.equals(this.profileId)) {
-            this.profileId = newProfileId;
-        }
-
-    }
-
-    public void touchLastSeen() {
-        this.updatedAt = Instant.now();
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "username='" + userName + '\'' +
-                ", email='" + email + '\'' +
-                '}';
     }
 }

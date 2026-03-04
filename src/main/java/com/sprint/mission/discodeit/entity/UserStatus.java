@@ -2,40 +2,44 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class UserStatus {
-    //사용자 별 마지막으로 확인된 접속 시간을 표현하는 도메인
-    //사용자의 온라인 상태를 확인하기 위해 활용
-
+public class UserStatus implements Serializable {
+    private static final long serialVersionUID = 1L;
     private UUID id;
-    private Instant createdAt;//최초 로그인 시간
+    private Instant createdAt;
     private Instant updatedAt;
     //
     private UUID userId;
+    private Instant lastActiveAt;
 
-    public UserStatus(UUID userId) {
+    public UserStatus(UUID userId, Instant lastActiveAt) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
         //
         this.userId = userId;
-
+        this.lastActiveAt = lastActiveAt;
     }
 
-    //사용자 온라인 상태 체크
-    public boolean CheckOnline(){
+    public void update(Instant lastActiveAt) {
+        boolean anyValueUpdated = false;
+        if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+            this.lastActiveAt = lastActiveAt;
+            anyValueUpdated = true;
+        }
 
-        Instant fiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));//현재시각에서 5분을뺀 기준점
-        return updatedAt.isAfter(fiveMinutesAgo);
-
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 
-    //마지막 접속 갱신
-    public void touch(){
-        this.updatedAt = Instant.now();
+    public Boolean isOnline() {
+        Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
+
+        return lastActiveAt.isAfter(instantFiveMinutesAgo);
     }
 }

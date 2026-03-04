@@ -2,57 +2,45 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@ConditionalOnProperty(name = "discodeit.repository.type", havingValue = "jcf", matchIfMissing = true)
 @Repository
 public class JCFBinaryContentRepository implements BinaryContentRepository {
+    private final Map<UUID, BinaryContent> data;
 
-    public final Map<UUID, BinaryContent> data;
-
-    public  JCFBinaryContentRepository() {
+    public JCFBinaryContentRepository() {
         this.data = new HashMap<>();
     }
+
     @Override
     public BinaryContent save(BinaryContent binaryContent) {
-        this.data.put(binaryContent.getUserId(), binaryContent);
+        this.data.put(binaryContent.getId(), binaryContent);
         return binaryContent;
     }
 
     @Override
-    public Optional<BinaryContent> findById(UUID contentId) {
-        return Optional.ofNullable(this.data.get(contentId));
+    public Optional<BinaryContent> findById(UUID id) {
+        return Optional.ofNullable(this.data.get(id));
     }
 
     @Override
-    public List<BinaryContent> findAll() {
-        return this.data.values().stream().toList();
+    public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+        return this.data.values().stream()
+                .filter(content -> ids.contains(content.getId()))
+                .toList();
     }
 
     @Override
-    public boolean existsById(UUID contentId) {
-        return this.data.values().stream().anyMatch(u -> u.getUserId().equals(contentId));
+    public boolean existsById(UUID id) {
+        return this.data.containsKey(id);
     }
 
     @Override
-    public void deleteById(UUID contentId) {
-        this.data.remove(contentId);
-
+    public void deleteById(UUID id) {
+        this.data.remove(id);
     }
-
-//    @Override
-//    public boolean existProfile(UUID userId) {
-//        return this.data.values().stream().anyMatch(u -> u.getUserId().equals(userId));
-//    }
-//
-//    @Override
-//    public Optional<BinaryContent> findByUserId(UUID userId) {
-//        return this.data.values().stream().filter(u -> u.getUserId().equals(userId)).findFirst();
-//    }
-//
-//    @Override
-//    public Optional<BinaryContent> findByAuthorId(UUID authorId) {
-//        return this.data.values().stream().filter(u -> u.getUserId().equals(authorId)).findFirst();
-//    }
 }
