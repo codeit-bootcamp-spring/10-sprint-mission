@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.lock.FileLockProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -11,85 +12,110 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Repository
 @ConditionalOnProperty(
-        prefix = "discodeit.repository",
-        name = "type",
-        havingValue = "file"
+    prefix = "discodeit.repository",
+    name = "type",
+    havingValue = "file"
 )
 public class FileChannelRepository implements ChannelRepository {
 
-    private final Path filePath;
+  private final Path filePath;
+  private final FileLockProvider fileLockProvider;
 
-    public FileChannelRepository(
-            @Value("${discodeit.repository.file-directory:.discodeit}") String fileDirectory
-    ) {
-        try {
-            Files.createDirectories(Paths.get(fileDirectory));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        this.filePath = Paths.get(fileDirectory, "channels.dat");
+  public FileChannelRepository(
+      @Value("${discodeit.repository.file-directory:.discodeit}") String fileDirectory,
+      FileLockProvider fileLockProvider
+  ) {
+    try {
+      Files.createDirectories(Paths.get(fileDirectory));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    this.filePath = Paths.get(fileDirectory, "channels.dat");
+    this.fileLockProvider = fileLockProvider;
+  }
+
+  @SuppressWarnings("unchecked")
+  private Map<UUID, Channel> loadChannelFile() {
+    ReentrantLock lock = fileLockProvider.getLock(filePath);
+    lock.lock();
+    try {
+      File file = filePath.toFile();
+      if (!file.exists()) {
+        return new LinkedHashMap<>();
+      }
+
+      try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+        return (Map<UUID, Channel>) ois.readObject();
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  private void saveChannelFile(Map<UUID, Channel> channels) {
+    ReentrantLock lock = fileLockProvider.getLock(filePath);
+    lock.lock();
+    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
+      oos.writeObject(channels);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  public void resetFile() {
+    saveChannelFile(new LinkedHashMap<>());
+  }
+
+  @Override
+  public UUID createChannel(Channel channel) {
+    Map<UUID, Channel> channels = loadChannelFile();
+    channels.put(channel.getId(), channel);
+    saveChannelFile(channels);
+    return channel.getId();
+  }
+
+  @Override
+  public Channel saveChannel(Channel channel) {
+    Map<UUID, Channel> channels = loadChannelFile();
+    channels.put(channel.getId(), channel);
+    saveChannelFile(channels);
+    return channel;
+  }
+
+  @Override
+  public Channel findChannel(UUID channelId) {
+    if (channelId == null) {
+      return null;
+    }
+    return loadChannelFile().get(channelId);
+  }
+
+  @Override
+  public List<Channel> findAllChannel() {
+    return new ArrayList<>(loadChannelFile().values());
+  }
+
+  @Override
+  public void deleteChannel(UUID channelId) {
+    if (channelId == null) {
+      return;
     }
 
-    @SuppressWarnings("unchecked")
-    private Map<UUID, Channel> loadChannelFile() {
-        File file = filePath.toFile();
-        if (!file.exists()) return new LinkedHashMap<>();
+    Map<UUID, Channel> channels = loadChannelFile();
+    channels.remove(channelId);
+    saveChannelFile(channels);
+  }
 
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            return (Map<UUID, Channel>) ois.readObject();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void saveChannelFile(Map<UUID, Channel> channels) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
-            oos.writeObject(channels);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void resetFile() {
-        saveChannelFile(new LinkedHashMap<>());
-    }
-
-    @Override
-    public UUID createChannel(Channel channel) {
-        Map<UUID, Channel> channels = loadChannelFile();
-        channels.put(channel.getId(), channel);
-        saveChannelFile(channels);
-        return channel.getId();
-    }
-
-    @Override
-    public Channel saveChannel(Channel channel) {
-        Map<UUID, Channel> channels = loadChannelFile();
-        channels.put(channel.getId(), channel);
-        saveChannelFile(channels);
-        return channel;
-    }
-
-    @Override
-    public Channel findChannel(UUID channelId) {
-        if (channelId == null) return null;
-        return loadChannelFile().get(channelId);
-    }
-
-    @Override
-    public List<Channel> findAllChannel() {
-        return new ArrayList<>(loadChannelFile().values());
-    }
-
-    @Override
-    public void deleteChannel(UUID channelId) {
-        if (channelId == null) return;
-
-        Map<UUID, Channel> channels = loadChannelFile();
-        channels.remove(channelId);
-        saveChannelFile(channels);
-    }
+  @Override
+  public Optional<Channel> findById(UUID channelId) {
+    return Optional.ofNullable(findChannel(channelId));
+  }
 }

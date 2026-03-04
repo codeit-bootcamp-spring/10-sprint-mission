@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.repository.file;
 
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.lock.FileLockProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Repository;
@@ -11,90 +12,118 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Repository
 @ConditionalOnProperty(
-        prefix = "discodeit.repository",
-        name = "type",
-        havingValue = "file"
+    prefix = "discodeit.repository",
+    name = "type",
+    havingValue = "file"
 )
 public class FileMessageRepository implements MessageRepository {
 
-    private final Path filePath;
+  private final Path filePath;
+  private final FileLockProvider fileLockProvider;
 
-    public FileMessageRepository(
-            @Value("${discodeit.repository.file-directory:.discodeit}") String fileDirectory
-    ) {
-        try {
-            Files.createDirectories(Paths.get(fileDirectory));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        this.filePath = Paths.get(fileDirectory, "messages.dat");
+  public FileMessageRepository(
+      @Value("${discodeit.repository.file-directory:.discodeit}") String fileDirectory,
+      FileLockProvider fileLockProvider
+  ) {
+    try {
+      Files.createDirectories(Paths.get(fileDirectory));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+    this.filePath = Paths.get(fileDirectory, "messages.dat");
+    this.fileLockProvider = fileLockProvider;
+  }
 
-    @SuppressWarnings("unchecked")
-    private Map<UUID, Message> loadMessageFile() {
-        File file = filePath.toFile();
-        if (!file.exists()) return new LinkedHashMap<>();
-
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-            Object obj = ois.readObject();
-            if (obj instanceof Map<?, ?>) return (Map<UUID, Message>) obj;
+  @SuppressWarnings("unchecked")
+  private Map<UUID, Message> loadMessageFile() {
+    ReentrantLock lock = fileLockProvider.getLock(filePath);
+    lock.lock();
+    try {
+      File file = filePath.toFile();
+        if (!file.exists()) {
             return new LinkedHashMap<>();
-        } catch (EOFException e) {
-            return new LinkedHashMap<>();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        }
+
+      try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+        Object obj = ois.readObject();
+          if (obj instanceof Map<?, ?>) {
+              return (Map<UUID, Message>) obj;
+          }
+        return new LinkedHashMap<>();
+      } catch (EOFException e) {
+        return new LinkedHashMap<>();
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  private void saveMessageFile(Map<UUID, Message> messages) {
+    ReentrantLock lock = fileLockProvider.getLock(filePath);
+    lock.lock();
+    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
+      oos.writeObject(messages);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  public void resetFile() {
+    saveMessageFile(new LinkedHashMap<>());
+  }
+
+  @Override
+  public Optional<Message> findById(UUID id) {
+      if (id == null) {
+          return Optional.empty();
+      }
+    return Optional.ofNullable(loadMessageFile().get(id));
+  }
+
+  @Override
+  public List<Message> findAllByChannelId(UUID channelId) {
+      if (channelId == null) {
+          return List.of();
+      }
+
+    List<Message> result = new ArrayList<>();
+    for (Message m : loadMessageFile().values()) {
+        if (channelId.equals(m.getChannelId())) {
+            result.add(m);
         }
     }
+    return result;
+  }
 
-    private void saveMessageFile(Map<UUID, Message> messages) {
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath.toFile()))) {
-            oos.writeObject(messages);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+  @Override
+  public Message save(Message message) {
+      if (message == null) {
+          throw new IllegalArgumentException("message is null");
+      }
 
-    public void resetFile() {
-        saveMessageFile(new LinkedHashMap<>());
-    }
+    Map<UUID, Message> messages = loadMessageFile();
+    messages.put(message.getId(), message);
+    saveMessageFile(messages);
 
-    @Override
-    public synchronized Optional<Message> findById(UUID id) {
-        if (id == null) return Optional.empty();
-        return Optional.ofNullable(loadMessageFile().get(id));
-    }
+    return message;
+  }
 
-    @Override
-    public synchronized List<Message> findAllByChannelId(UUID channelId) {
-        if (channelId == null) return List.of();
+  @Override
+  public void delete(UUID id) {
+      if (id == null) {
+          return;
+      }
 
-        List<Message> result = new ArrayList<>();
-        for (Message m : loadMessageFile().values()) {
-            if (channelId.equals(m.getChannelId())) result.add(m);
-        }
-        return result;
-    }
-
-    @Override
-    public synchronized Message save(Message message) {
-        if (message == null) throw new IllegalArgumentException("message is null");
-
-        Map<UUID, Message> messages = loadMessageFile();
-        messages.put(message.getId(), message);
-        saveMessageFile(messages);
-
-        return message;
-    }
-
-    @Override
-    public synchronized void delete(UUID id) {
-        if (id == null) return;
-
-        Map<UUID, Message> messages = loadMessageFile();
-        messages.remove(id); // 없으면 그냥 무시
-        saveMessageFile(messages);
-    }
+    Map<UUID, Message> messages = loadMessageFile();
+    messages.remove(id);
+    saveMessageFile(messages);
+  }
 }

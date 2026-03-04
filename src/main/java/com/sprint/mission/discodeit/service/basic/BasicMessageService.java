@@ -22,131 +22,131 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
 
-    private final MessageRepository messageRepository;
-    private final ChannelRepository channelRepository;
-    private final UserRepository userRepository;
-    private final BinaryContentRepository binaryContentRepository;
+  private final MessageRepository messageRepository;
+  private final ChannelRepository channelRepository;
+  private final UserRepository userRepository;
+  private final BinaryContentRepository binaryContentRepository;
 
-    @Override
-    public MessageResponse create(MessageCreateRequest req) {
-        requireNonNull(req, "request");
-        requireNonNull(req.channelId(), "channelId");
-        requireNonNull(req.userId(), "userId");
+  @Override
+  public MessageResponse create(MessageCreateRequest req) {
+    requireNonNull(req, "request");
+    requireNonNull(req.channelId(), "channelId");
+    requireNonNull(req.userId(), "userId");
 
-        if (req.content() == null || req.content().isBlank()) {
-            throw new BusinessLogicException(ErrorCode.MESSAGE_EMPTY);
-        }
+    if (req.content() == null || req.content().isBlank()) {
+      throw new BusinessLogicException(ErrorCode.MESSAGE_EMPTY);
+    }
 
-        // 존재 검증
-        findChannelOrThrow(req.channelId());
+    // 존재 검증
+    findChannelOrThrow(req.channelId());
 
-        if (userRepository.findById(req.userId()) == null) {
-            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
-        }
+    if (userRepository.findById(req.userId()) == null) {
+      throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
+    }
 
-        List<UUID> attachmentIds =
-                (req.attachmentIds() == null) ? List.of() : List.copyOf(req.attachmentIds());
+    List<UUID> attachmentIds =
+        (req.attachmentIds() == null) ? List.of() : List.copyOf(req.attachmentIds());
 
-        if (!attachmentIds.isEmpty()) {
-            List<UUID> distinctIds = attachmentIds.stream()
-                    .filter(Objects::nonNull)
-                    .distinct()
-                    .toList();
+    if (!attachmentIds.isEmpty()) {
+      List<UUID> distinctIds = attachmentIds.stream()
+          .filter(Objects::nonNull)
+          .distinct()
+          .toList();
 
-            var found = binaryContentRepository.findAllByIdIn(distinctIds);
-            if (found.size() != distinctIds.size()) {
-                throw new BusinessLogicException(ErrorCode.BINARY_CONTENT_NOT_FOUND);
-            }
-        }
+      var found = binaryContentRepository.findAllByIdIn(distinctIds);
+      if (found.size() != distinctIds.size()) {
+        throw new BusinessLogicException(ErrorCode.BINARY_CONTENT_NOT_FOUND);
+      }
+    }
 
-        Message saved = messageRepository.save(
-                new Message(
-                        req.channelId(),
-                        req.userId(),
-                        req.content(),
-                        attachmentIds
-                )
+    Message saved = messageRepository.save(
+        new Message(
+            req.channelId(),
+            req.userId(),
+            req.content(),
+            attachmentIds
+        )
+    );
+
+    return toResponse(saved);
+  }
+
+  @Override
+  public List<MessageResponse> findAllByChannelId(UUID channelId) {
+    requireNonNull(channelId, "channelId");
+
+    findChannelOrThrow(channelId);
+
+    return messageRepository.findAllByChannelId(channelId).stream()
+        .map(this::toResponse)
+        .toList();
+  }
+
+  @Override
+  public MessageResponse update(MessageUpdateRequest req) {
+    requireNonNull(req, "request");
+    requireNonNull(req.newMessageId(), "messageId");
+
+    if (req.newContent() == null || req.newContent().isBlank()) {
+      throw new BusinessLogicException(ErrorCode.MESSAGE_EMPTY);
+    }
+
+    Message message = messageRepository.findById(req.newMessageId())
+        .orElseThrow(() ->
+            new BusinessLogicException(ErrorCode.MESSAGE_NOT_FOUND)
         );
 
-        return toResponse(saved);
-    }
+    message.updateContent(req.newContent());
+    Message saved = messageRepository.save(message);
 
-    @Override
-    public List<MessageResponse> findAllByChannelId(UUID channelId) {
-        requireNonNull(channelId, "channelId");
+    return toResponse(saved);
+  }
 
-        findChannelOrThrow(channelId);
+  @Override
+  public void delete(UUID messageId) {
+    requireNonNull(messageId, "messageId");
 
-        return messageRepository.findAllByChannelId(channelId).stream()
-                .map(this::toResponse)
-                .toList();
-    }
-
-    @Override
-    public MessageResponse update(MessageUpdateRequest req) {
-        requireNonNull(req, "request");
-        requireNonNull(req.messageId(), "messageId");
-
-        if (req.content() == null || req.content().isBlank()) {
-            throw new BusinessLogicException(ErrorCode.MESSAGE_EMPTY);
-        }
-
-        Message message = messageRepository.findById(req.messageId())
-                .orElseThrow(() ->
-                        new BusinessLogicException(ErrorCode.MESSAGE_NOT_FOUND)
-                );
-
-        message.updateContent(req.content());
-        Message saved = messageRepository.save(message);
-
-        return toResponse(saved);
-    }
-
-    @Override
-    public void delete(UUID messageId) {
-        requireNonNull(messageId, "messageId");
-
-        Message message = messageRepository.findById(messageId)
-                .orElseThrow(() ->
-                        new BusinessLogicException(ErrorCode.MESSAGE_NOT_FOUND)
-                );
-
-        List<UUID> attachmentIds =
-                (message.getAttachmentIds() == null) ? List.of() : List.copyOf(message.getAttachmentIds());
-
-        for (UUID attachmentId : attachmentIds) {
-            if (attachmentId != null) {
-                binaryContentRepository.delete(attachmentId);
-            }
-        }
-
-        messageRepository.delete(messageId);
-    }
-
-    private void findChannelOrThrow(UUID channelId) {
-        if (channelRepository.findChannel(channelId) == null) {
-            throw new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND);
-        }
-    }
-
-    private MessageResponse toResponse(Message m) {
-        List<UUID> attachmentIds =
-                (m.getAttachmentIds() == null) ? List.of() : List.copyOf(m.getAttachmentIds());
-
-        return new MessageResponse(
-                m.getId(),
-                m.getChannelId(),
-                m.getUserId(),
-                m.getContent(),
-                attachmentIds,
-                m.getCreatedAt(),
-                m.getUpdatedAt()
+    Message message = messageRepository.findById(messageId)
+        .orElseThrow(() ->
+            new BusinessLogicException(ErrorCode.MESSAGE_NOT_FOUND)
         );
+
+    List<UUID> attachmentIds =
+        (message.getAttachmentIds() == null) ? List.of() : List.copyOf(message.getAttachmentIds());
+
+    for (UUID attachmentId : attachmentIds) {
+      if (attachmentId != null) {
+        binaryContentRepository.delete(attachmentId);
+      }
     }
 
-    private static <T> void requireNonNull(T value, String name) {
-        if (value == null) {
-            throw new IllegalArgumentException(name + " null이 될 수 없습니다.");
-        }
+    messageRepository.delete(messageId);
+  }
+
+  private void findChannelOrThrow(UUID channelId) {
+    if (channelRepository.findChannel(channelId) == null) {
+      throw new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND);
     }
+  }
+
+  private MessageResponse toResponse(Message m) {
+    List<UUID> attachmentIds =
+        (m.getAttachmentIds() == null) ? List.of() : List.copyOf(m.getAttachmentIds());
+
+    return new MessageResponse(
+        m.getId(),
+        m.getChannelId(),
+        m.getUserId(),
+        m.getContent(),
+        attachmentIds,
+        m.getCreatedAt(),
+        m.getUpdatedAt()
+    );
+  }
+
+  private static <T> void requireNonNull(T value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException(name + " null이 될 수 없습니다.");
+    }
+  }
 }

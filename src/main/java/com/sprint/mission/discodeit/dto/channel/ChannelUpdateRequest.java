@@ -1,9 +1,18 @@
 package com.sprint.mission.discodeit.dto.channel;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;
 
 public record ChannelUpdateRequest(
-        UUID channelId,
-        String name,
-        String description
-) {}
+    @JsonIgnore
+    UUID channelId,
+
+    @JsonProperty("newName")
+    String name,
+
+    @JsonProperty("newDescription")
+    String description
+) {
+
+}

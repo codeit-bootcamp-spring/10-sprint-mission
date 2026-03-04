@@ -21,107 +21,113 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BasicReadStatusService implements ReadStatusService {
 
-    private final ReadStatusRepository readStatusRepository;
-    private final ChannelRepository channelRepository;
-    private final UserRepository userRepository;
+  private final ReadStatusRepository readStatusRepository;
+  private final ChannelRepository channelRepository;
+  private final UserRepository userRepository;
 
-    @Override
-    public UUID create(ReadStatusCreateRequest request) {
-        requireNonNull(request, "request");
-        requireNonNull(request.userId(), "userId");
-        requireNonNull(request.channelId(), "channelId");
+  @Override
+  public UUID create(ReadStatusCreateRequest request) {
+    requireNonNull(request, "request");
+    requireNonNull(request.userId(), "userId");
+    requireNonNull(request.channelId(), "channelId");
 
-        if (userRepository.findById(request.userId()) == null) {
-            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
-        }
-
-        findChannelOrThrow(request.channelId());
-
-        ReadStatus duplicated =
-                readStatusRepository.findByUserIdAndChannelId(
-                        request.userId(), request.channelId());
-
-        if (duplicated != null) {
-            throw new BusinessLogicException(ErrorCode.DUPLICATION_READ_STATUS);
-        }
-
-        ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
-        readStatus.updateLastReadAt(Instant.now());
-
-        return readStatusRepository.save(readStatus).getId();
+    if (userRepository.findById(request.userId()) == null) {
+      throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
     }
 
-    @Override
-    public ReadStatusResponse find(UUID id) {
-        requireNonNull(id, "id");
+    findChannelOrThrow(request.channelId());
 
-        ReadStatus readStatus = readStatusRepository.findById(id);
-        if (readStatus == null) {
-            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
-        }
+    ReadStatus duplicated =
+        readStatusRepository.findByUserIdAndChannelId(
+            request.userId(), request.channelId());
 
-        return toDto(readStatus);
+    if (duplicated != null) {
+      throw new BusinessLogicException(ErrorCode.DUPLICATION_READ_STATUS);
     }
 
-    @Override
-    public List<ReadStatusResponse> findAllByUserId(UUID userId) {
-        requireNonNull(userId, "userId");
+    ReadStatus readStatus = new ReadStatus(request.userId(), request.channelId());
 
-        if (userRepository.findById(userId) == null) {
-            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
-        }
+    Instant lastReadAt = (request.lastReadAt() == null) ? Instant.now() : request.lastReadAt();
+    readStatus.updateLastReadAt(lastReadAt);
 
-        return readStatusRepository.findAllByUserId(userId).stream()
-                .map(this::toDto)
-                .toList();
+    return readStatusRepository.save(readStatus).getId();
+  }
+
+  @Override
+  public ReadStatusResponse find(UUID id) {
+    requireNonNull(id, "id");
+
+    ReadStatus readStatus = readStatusRepository.findById(id);
+    if (readStatus == null) {
+      throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
     }
 
-    @Override
-    public ReadStatusResponse update(ReadStatusUpdateRequest req) {
-        requireNonNull(req, "req");
-        requireNonNull(req.readStatus(), "readStatus");
+    return toDto(readStatus);
+  }
 
-        ReadStatus rs = readStatusRepository.findById(req.readStatus());
-        if (rs == null) {
-            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
-        }
+  @Override
+  public List<ReadStatusResponse> findAllByUserId(UUID userId) {
+    requireNonNull(userId, "userId");
 
-        rs.updateLastReadAt(Instant.now());
-        readStatusRepository.save(rs);
-
-        return toDto(rs);
+    if (userRepository.findById(userId) == null) {
+      throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
     }
 
-    @Override
-    public void delete(UUID id) {
-        requireNonNull(id, "id");
+    return readStatusRepository.findAllByUserId(userId).stream()
+        .map(this::toDto)
+        .toList();
+  }
 
-        ReadStatus existing = readStatusRepository.findById(id);
-        if (existing == null) {
-            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
-        }
+  @Override
+  public ReadStatusResponse update(UUID readStatusId, ReadStatusUpdateRequest req) {
+    requireNonNull(readStatusId, "readStatusId");
+    requireNonNull(req, "request");
 
-        readStatusRepository.delete(id);
+    ReadStatus rs = readStatusRepository.findById(readStatusId);
+    if (rs == null) {
+      throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
     }
 
-    private void findChannelOrThrow(UUID channelId) {
-        if (channelRepository.findChannel(channelId) == null) {
-            throw new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND);
-        }
+    Instant newLastReadAt = (req.newLastReadAt() == null) ? Instant.now() : req.newLastReadAt();
+    rs.updateLastReadAt(newLastReadAt);
+
+    readStatusRepository.save(rs);
+
+    return toDto(rs);
+  }
+
+  @Override
+  public void delete(UUID id) {
+    requireNonNull(id, "id");
+
+    ReadStatus existing = readStatusRepository.findById(id);
+    if (existing == null) {
+      throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
     }
 
-    private ReadStatusResponse toDto(ReadStatus rs) {
-        return new ReadStatusResponse(
-                rs.getId(),
-                rs.getUserId(),
-                rs.getChannelId(),
-                rs.getReadAt()
-        );
-    }
+    readStatusRepository.delete(id);
+  }
 
-    private static <T> void requireNonNull(T value, String name) {
-        if (value == null) {
-            throw new IllegalArgumentException(name + " null이 될 수 없습니다.");
-        }
+  private void findChannelOrThrow(UUID channelId) {
+    if (channelRepository.findChannel(channelId) == null) {
+      throw new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND);
     }
+  }
+
+  private ReadStatusResponse toDto(ReadStatus rs) {
+    return new ReadStatusResponse(
+        rs.getId(),
+        rs.getCreatedAt(),
+        rs.getUpdatedAt(),
+        rs.getUserId(),
+        rs.getChannelId(),
+        rs.getReadAt() // JSON은 lastReadAt로 나감
+    );
+  }
+
+  private static <T> void requireNonNull(T value, String name) {
+    if (value == null) {
+      throw new IllegalArgumentException(name + " null이 될 수 없습니다.");
+    }
+  }
 }

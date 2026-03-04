@@ -1,8 +1,12 @@
 package com.sprint.mission.discodeit.dto.message;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.UUID;
 
 public record MessageUpdateRequest(
-        UUID messageId,
-        String content
-) {}
+    @JsonIgnore
+    UUID newMessageId,
+    String newContent
+) {
+
+}
