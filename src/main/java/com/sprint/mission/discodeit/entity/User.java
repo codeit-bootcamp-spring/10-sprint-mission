@@ -8,19 +8,17 @@ import java.util.*;
 public class User extends MutableEntity {
     private final Set<UUID> joinedChannels;
     private final List<UUID> messageHistory;
-    private String accountId;           // 계정ID, 상속받은id(UUID)와 다름, 헷갈림 주의
-    private String password;
     private String username;
+    private String password;
     private String email;
     private UUID profileId;
 
-    public User(String accountId, String password, String username, String email) {
+    public User(String username, String password, String email) {
         super();
         this.joinedChannels = new HashSet<>();
         this.messageHistory = new ArrayList<>();
-        this.accountId = accountId;
-        this.password = password;
         this.username = username;
+        this.password = password;
         this.email = email;
         this.profileId = null;
     }
@@ -52,10 +50,6 @@ public class User extends MutableEntity {
     }
 
 
-    public void updateAccountId(String accountId) {
-        this.accountId = accountId;
-    }
-
     public void updateUserName(String username) {
         this.username = username;
     }
@@ -74,7 +68,7 @@ public class User extends MutableEntity {
 
     @Override
     public String toString() {
-        return String.format("'계정ID: %s / 이름: %s / 메일: %s'",
-                getAccountId(), getUsername(), getEmail());
+        return String.format("'유저이름: %s / 메일: %s'",
+                getUsername(), getEmail());
     }
 }

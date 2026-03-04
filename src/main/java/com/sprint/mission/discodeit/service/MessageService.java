@@ -7,10 +7,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface MessageService {
-    MessageDto.response createMessage(MessageDto.createRequest messageReq,
-                                      List<BinaryContentDto.createRequest> contentReqs);
-    MessageDto.response findMessage(UUID uuid);
-    List<MessageDto.response> findAllByChannelId(UUID channelId);
-    MessageDto.response updateMessage(UUID uuid, MessageDto.updateRequest messageReq);
+    MessageDto.messageResponse createMessage(MessageDto.messageCreateRequest messageReq,
+                                             List<BinaryContentDto.binaryContentCreateRequest> contentReqs);
+    MessageDto.messageResponse findMessage(UUID uuid);
+    List<MessageDto.messageResponse> findAllByChannelId(UUID channelId);
+    MessageDto.messageResponse updateMessage(UUID uuid, MessageDto.messageUpdateRequest messageReq);
     void deleteMessage(UUID uuid);
 }

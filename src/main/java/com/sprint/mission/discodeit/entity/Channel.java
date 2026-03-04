@@ -12,13 +12,21 @@ public class Channel extends MutableEntity {
     private String description;
     private final ChannelType channelType;
 
-    public Channel(ChannelType channelType, String title, String description) {
+    private Channel(ChannelType channelType, String title, String description, List<UUID> participantIds) {
         super();
-        this.participants = new HashSet<>();
+        this.participants = participantIds == null ? new HashSet<>() : new HashSet<>(participantIds);
         this.messages = new ArrayList<>();
         this.channelType = channelType;
         this.title = title;
         this.description = description;
+    }
+
+    public static Channel of(String title, String description) {
+        return new Channel(ChannelType.PUBLIC, title, description, null);
+    }
+
+    public static Channel of(List<UUID> participantIds) {
+        return new Channel(ChannelType.PRIVATE, null, null, participantIds);
     }
 
     // participants

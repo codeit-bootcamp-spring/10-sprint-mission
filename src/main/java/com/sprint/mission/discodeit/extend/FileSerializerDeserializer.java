@@ -53,11 +53,15 @@ public abstract class FileSerializerDeserializer<T extends BaseEntity> {
 
         try (Stream<Path> paths = Files.list(directory)) {
             return paths.map(path -> {
+                long fileSize = path.toFile().length();
                 try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(path.toFile()))) {
                     Object obj = ois.readObject();
                     return type.cast(obj);
+                } catch (EOFException e) {
+                    throw new RuntimeException(
+                            String.format("EOF 발생! 파일명: %s, 크기: %d bytes", path.getFileName(), fileSize), e);
                 } catch (Exception e) {
-                    throw new RuntimeException("파일 읽는데 실패함: " + e);
+                    throw new RuntimeException("파일 읽는데 실패함: ", e);
                 }
             }).toList();
         } catch (IOException e) {

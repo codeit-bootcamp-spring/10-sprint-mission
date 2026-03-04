@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sprint.mission.discodeit.entity.ChannelType;
 
 import java.time.Instant;
@@ -9,10 +10,10 @@ import java.util.UUID;
 public final class ChannelDto {
     private ChannelDto() {}
 
-    public record createPrivateRequest(ChannelType channelType, String title, String description) {}
-    public record createPublicRequest(ChannelType channelType, String title, String description) {}
-    public record updatePublicRequest(String title, String description) {}
-    public record response(UUID uuid, Instant createdAt, Instant updatedAt,
-                           ChannelType channelType, String title, String description,
-                           Instant lastMessageAt, List<UUID> participantIds) {}
+    public record channelCreatePrivateRequest(List<UUID> participantIds) {}
+    public record channelCreatePublicRequest(@JsonProperty("name") String title, String description) {}
+    public record channelUpdatePublicRequest(@JsonProperty("newName") String title, @JsonProperty("newDescription") String description) {}
+    public record channelResponse(@JsonProperty("id") UUID uuid, Instant createdAt, Instant updatedAt,
+                                  @JsonProperty("type") ChannelType channelType, @JsonProperty("name") String title, String description,
+                                  List<UUID> participantIds, Instant lastMessageAt) {}
 }

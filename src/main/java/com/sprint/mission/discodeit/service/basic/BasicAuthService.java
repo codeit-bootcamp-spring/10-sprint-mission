@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -15,20 +17,18 @@ public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDto.response login(UserDto.LoginRequest loginReq) {
+    public UserDto.userResponse login(UserDto.userLoginRequest loginReq) {
         User user = userRepository.findAll().stream()
-                .filter(u -> Objects.equals(u.getAccountId(), loginReq.accountId()))
+                .filter(u -> Objects.equals(u.getUsername(), loginReq.username()))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
 
         if (!Objects.equals(user.getPassword(), loginReq.password())) {
-            throw new IllegalStateException("비밀번호가 틀렸습니다");
+            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
         }
 
-        return new UserDto.response(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
-                user.getAccountId(), user.getUsername(), user.getEmail(),
-                user.getProfileId(), true,
-                user.getJoinedChannels().stream().toList(),
-                user.getMessageHistory());
+        return new UserDto.userResponse(user.getId(), user.getCreatedAt(), user.getUpdatedAt(),
+                user.getUsername(), user.getEmail(),
+                user.getProfileId(), true);
     }
 }

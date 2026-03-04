@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
@@ -21,41 +23,53 @@ public class BasicChannelService implements ChannelService {
 
 
     @Override
-    public ChannelDto.response createChannel(ChannelDto.createPrivateRequest channelPrivateReq) {
+    public ChannelDto.channelResponse createChannel(ChannelDto.channelCreatePrivateRequest channelPrivateReq) {
         // title과 description 불필요에 따른 title 미검증
-        Channel channel = new Channel(channelPrivateReq.channelType(), null, null);
-        channelRepository.save(channel);
-        return toResponse(channel);
+        List<UUID> participantIds = channelPrivateReq.participantIds();
+
+        // 참여자 목록의 유저가 user DB에 있는지 확인
+        participantIds.forEach(userId -> {
+            userRepository.findById(userId)
+                    .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
+        });
+        Channel privateChannel = Channel.of(participantIds);
+
+        // ReadStatus 생성
+        participantIds.forEach(userId -> {
+            readStatusRepository.save(new ReadStatus(userId, privateChannel.getId()));
+        });
+
+        channelRepository.save(privateChannel);
+        return toResponse(privateChannel);
     }
 
     @Override
-    public ChannelDto.response createChannel(ChannelDto.createPublicRequest channelPublicReq) {
+    public ChannelDto.channelResponse createChannel(ChannelDto.channelCreatePublicRequest channelPublicReq) {
         validateDuplicateTitle(channelPublicReq.title());
 
-        Channel channel = new Channel(channelPublicReq.channelType(),
-                channelPublicReq.title(), channelPublicReq.description());
-        channelRepository.save(channel);
-        return toResponse(channel);
+        Channel publicChannel = Channel.of(channelPublicReq.title(), channelPublicReq.description());
+        channelRepository.save(publicChannel);
+        return toResponse(publicChannel);
     }
 
     @Override
-    public ChannelDto.response findChannel(UUID uuid) {
+    public ChannelDto.channelResponse findChannel(UUID uuid) {
         return channelRepository.findById(uuid)
                 .map(this::toResponse)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND));
     }
 
     @Override
-    public ChannelDto.response findChannelByTitle(String title) {
+    public ChannelDto.channelResponse findChannelByTitle(String title) {
         return channelRepository.findAll().stream()
                 .filter(c -> Objects.equals(c.getTitle(), title))
                 .map(this::toResponse)
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND));
     }
 
     @Override
-    public List<ChannelDto.response> findAllByUserId(UUID userId) {
+    public List<ChannelDto.channelResponse> findAllByUserId(UUID userId) {
         getUserOrThrow(userId);
 
         return channelRepository.findAll().stream()
@@ -67,8 +81,12 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public ChannelDto.response updateChannel(UUID uuid, ChannelDto.updatePublicRequest channelReq) {
+    public ChannelDto.channelResponse updateChannel(UUID uuid, ChannelDto.channelUpdatePublicRequest channelReq) {
         Channel channel = getChannelOrThrow(uuid);
+
+        if (channel.getChannelType() == ChannelType.PRIVATE) {
+            throw new BusinessLogicException(ErrorCode.PRIVATE_CHANNEL_NOT_EDITABLE);
+        }
 
         // title 중복성 검사
         if (channelReq.title() != null && !Objects.equals(channel.getTitle(), channelReq.title()))
@@ -88,7 +106,7 @@ public class BasicChannelService implements ChannelService {
         channel.getParticipants()
                 .forEach(userId -> {
                     User user = userRepository.findById(userId)
-                            .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+                            .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
                     user.removeJoinedChannels(channel.getId());
                     user.updateUpdatedAt();
                     userRepository.save(user);
@@ -108,85 +126,85 @@ public class BasicChannelService implements ChannelService {
         channelRepository.deleteById(uuid);
     }
 
-    @Override
-    public void joinChannel(UUID channelId, UUID userId) {
-        Channel channel = getChannelOrThrow(channelId);
-        User user = getUserOrThrow(userId);
-
-        if (channel.getParticipants().stream()
-                .anyMatch(u -> Objects.equals(u, userId))) {
-            throw new IllegalStateException("이미 참가한 참가자입니다");
-        }
-
-        if (user.getJoinedChannels().stream()
-                .anyMatch(u -> Objects.equals(u, channelId))) {
-            throw new IllegalStateException("이미 참가한 채널입니다");
-        }
-
-        channel.addParticipant(userId);
-        channel.updateUpdatedAt();
-        channelRepository.save(channel);
-
-        user.addJoinedChannels(channelId);
-        user.updateUpdatedAt();
-        userRepository.save(user);
-
-        readStatusRepository.findAllByUserId(userId).stream()
-                .filter(r -> Objects.equals(r.getChannelId(), channelId))
-                .findFirst()
-                .ifPresent(r -> { throw new IllegalStateException("이미 존재하는 readStatus입니다"); });
-        ReadStatus readStatus = new ReadStatus(userId, channelId);
-        readStatusRepository.save(readStatus);
-    }
-
-    @Override
-    public void leaveChannel(UUID channelId, UUID userId) {
-        Channel channel = getChannelOrThrow(channelId);
-        User user = getUserOrThrow(userId);
-
-        if (channel.getParticipants().stream()
-                .noneMatch(u -> Objects.equals(u, userId))) {
-            throw new IllegalStateException("참여하지 않은 참가자입니다");
-        }
-
-        if (user.getJoinedChannels().stream()
-                .noneMatch(u -> Objects.equals(u, channelId))) {
-            throw new IllegalStateException("참가하지 않은 채널입니다");
-        }
-
-        channel.removeParticipant(userId);
-        channel.updateUpdatedAt();
-        channelRepository.save(channel);
-
-        user.removeJoinedChannels(channelId);
-        user.updateUpdatedAt();
-        userRepository.save(user);
-
-        ReadStatus readStatus = readStatusRepository.findAllByUserId(userId).stream()
-                .filter(r -> Objects.equals(r.getChannelId(), channelId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("readStatus가 존재하지 않습니다"));
-        readStatusRepository.deleteById(readStatus.getId());
-    }
+//    @Override
+//    public void joinChannel(UUID channelId, UUID userId) {
+//        Channel channel = getChannelOrThrow(channelId);
+//        User user = getUserOrThrow(userId);
+//
+//        if (channel.getParticipants().stream()
+//                .anyMatch(u -> Objects.equals(u, userId))) {
+//            throw new BusinessLogicException(ErrorCode.USER_ALREADY_IN_CHANNEL);
+//        }
+//
+//        if (user.getJoinedChannels().stream()
+//                .anyMatch(u -> Objects.equals(u, channelId))) {
+//            throw new BusinessLogicException(ErrorCode.USER_ALREADY_IN_CHANNEL);
+//        }
+//
+//        channel.addParticipant(userId);
+//        channel.updateUpdatedAt();
+//        channelRepository.save(channel);
+//
+//        user.addJoinedChannels(channelId);
+//        user.updateUpdatedAt();
+//        userRepository.save(user);
+//
+//        readStatusRepository.findAllByUserId(userId).stream()
+//                .filter(r -> Objects.equals(r.getChannelId(), channelId))
+//                .findFirst()
+//                .ifPresent(r -> { throw new BusinessLogicException(ErrorCode.READSTATUS_ALREADY_EXISTS); });
+//        ReadStatus readStatus = new ReadStatus(userId, channelId);
+//        readStatusRepository.save(readStatus);
+//    }
+//
+//    @Override
+//    public void leaveChannel(UUID channelId, UUID userId) {
+//        Channel channel = getChannelOrThrow(channelId);
+//        User user = getUserOrThrow(userId);
+//
+//        if (channel.getParticipants().stream()
+//                .noneMatch(u -> Objects.equals(u, userId))) {
+//            throw new BusinessLogicException(ErrorCode.USER_NOT_IN_CHANNEL);
+//        }
+//
+//        if (user.getJoinedChannels().stream()
+//                .noneMatch(u -> Objects.equals(u, channelId))) {
+//            throw new BusinessLogicException(ErrorCode.USER_NOT_IN_CHANNEL);
+//        }
+//
+//        channel.removeParticipant(userId);
+//        channel.updateUpdatedAt();
+//        channelRepository.save(channel);
+//
+//        user.removeJoinedChannels(channelId);
+//        user.updateUpdatedAt();
+//        userRepository.save(user);
+//
+//        ReadStatus readStatus = readStatusRepository.findAllByUserId(userId).stream()
+//                .filter(r -> Objects.equals(r.getChannelId(), channelId))
+//                .findFirst()
+//                .orElseThrow(() -> new BusinessLogicException(ErrorCode.READSTATUS_NOT_FOUND));
+//        readStatusRepository.deleteById(readStatus.getId());
+//    }
 
     private void validateDuplicateTitle(String title) {
         channelRepository.findAll().stream()
                 .filter(c -> Objects.equals(c.getTitle(), title))
                 .findFirst()
-                .ifPresent(u -> { throw new IllegalStateException("이미 존재하는 채널명입니다"); });
+                .ifPresent(u -> { throw new BusinessLogicException(ErrorCode.DUPLICATE_TITLE); });
     }
 
     private Channel getChannelOrThrow(UUID channelId) {
         return channelRepository.findById(channelId)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND));
     }
 
     private User getUserOrThrow(UUID userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
     }
 
-    private ChannelDto.response toResponse(Channel channel) {
+    private ChannelDto.channelResponse toResponse(Channel channel) {
         Instant lastMessageAt  = messageRepository.findAllByChannelId(channel.getId()).stream()
                 .sorted(Comparator.comparing(BaseEntity::getCreatedAt).reversed())
                 .limit(1)
@@ -199,9 +217,8 @@ public class BasicChannelService implements ChannelService {
             participantIds = channel.getParticipants().stream().toList();
         }
 
-        return new ChannelDto.response(channel.getId(), channel.getCreatedAt(), channel.getUpdatedAt(),
+        return new ChannelDto.channelResponse(channel.getId(), channel.getCreatedAt(), channel.getUpdatedAt(),
                 channel.getChannelType(), channel.getTitle(), channel.getDescription(),
-                lastMessageAt,
-                participantIds);
+                participantIds, lastMessageAt);
     }
 }

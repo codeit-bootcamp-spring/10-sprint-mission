@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.dto.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -23,16 +25,16 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ChannelRepository channelRepository;
 
     @Override
-    public ReadStatusDto.response createReadStatus(ReadStatusDto.createRequest createReq) {
+    public ReadStatusDto.readStatusResponse createReadStatus(ReadStatusDto.readStatusCreateRequest createReq) {
         User user = userRepository.findById(createReq.userId())
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
         Channel channel = channelRepository.findById(createReq.channelId())
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 채널입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND));
 
         readStatusRepository.findAllByUserId(user.getId()).stream()
                 .filter(r -> Objects.equals(r.getChannelId(), channel.getId()))
                 .findFirst()
-                .ifPresent(r -> { throw new IllegalStateException("이미 존재하는 readStatus입니다"); });
+                .ifPresent(r -> { throw new BusinessLogicException(ErrorCode.READSTATUS_ALREADY_EXISTS); });
 
         ReadStatus readStatus = new ReadStatus(user.getId(), channel.getId());
         readStatusRepository.save(readStatus);
@@ -40,17 +42,17 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatusDto.response findById(UUID uuid) {
+    public ReadStatusDto.readStatusResponse findById(UUID uuid) {
         ReadStatus readStatus = readStatusRepository.findById(uuid)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 readStatus입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.READSTATUS_NOT_FOUND));
 
         return toResponse(readStatus);
     }
 
     @Override
-    public List<ReadStatusDto.response> findAllByUserId(UUID userId) {
+    public List<ReadStatusDto.readStatusResponse> findAllByUserId(UUID userId) {
         userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 유저입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
 
         return readStatusRepository.findAllByUserId(userId).stream()
                 .map(this::toResponse)
@@ -58,11 +60,11 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
-    public ReadStatusDto.response updateReadStatus(UUID uuid, ReadStatusDto.updateRequest updateReq) {
+    public ReadStatusDto.readStatusResponse updateReadStatus(UUID uuid, ReadStatusDto.readStatusUpdateRequest updateReq) {
         ReadStatus readStatus = readStatusRepository.findById(uuid)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 readStatus입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.READSTATUS_NOT_FOUND));
 
-        readStatus.updateLastReadAt(updateReq.lastReadAt());
+        readStatus.updateLastReadAt(updateReq.newLastReadAt());
         readStatus.updateUpdatedAt();
         readStatusRepository.save(readStatus);
 
@@ -74,8 +76,8 @@ public class BasicReadStatusService implements ReadStatusService {
         readStatusRepository.deleteById(uuid);
     }
 
-    private ReadStatusDto.response toResponse(ReadStatus readStatus) {
-        return new ReadStatusDto.response(readStatus.getId(), readStatus.getCreatedAt(), readStatus.getUpdatedAt(),
+    private ReadStatusDto.readStatusResponse toResponse(ReadStatus readStatus) {
+        return new ReadStatusDto.readStatusResponse(readStatus.getId(), readStatus.getCreatedAt(), readStatus.getUpdatedAt(),
                 readStatus.getUserId(), readStatus.getChannelId(), readStatus.getLastReadAt());
     }
 }

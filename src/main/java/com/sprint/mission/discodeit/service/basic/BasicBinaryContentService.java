@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     private String ATTACHMENT_DIR;
 
     @Override
-    public BinaryContentDto.response create(BinaryContentDto.createRequest createReq) {
+    public BinaryContentDto.binaryContentResponse create(BinaryContentDto.binaryContentCreateRequest createReq) {
         BinaryContent binaryContent = new BinaryContent(createReq.contentType(), createReq.filename(), ATTACHMENT_DIR);
         // 첨부파일 저장
         Path attachmentDir = Paths.get(ATTACHMENT_DIR);
@@ -42,14 +44,14 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public BinaryContentDto.response findById(UUID uuid) {
+    public BinaryContentDto.binaryContentResponse findById(UUID uuid) {
         return binaryContentRepository.findById(uuid)
                 .map(this::toResponse)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 binaryContent입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.BINARYCONTENT_NOT_FOUND));
     }
 
     @Override
-    public List<BinaryContentDto.response> findAllByIdIn(List<UUID> uuids) {
+    public List<BinaryContentDto.binaryContentResponse> findAllByIdIn(List<UUID> uuids) {
         return binaryContentRepository.findAllByIdIn(uuids).stream()
                 .map(this::toResponse)
                 .toList();
@@ -58,7 +60,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     public void deleteById(UUID uuid) {
         binaryContentRepository.findById(uuid)
-                .orElseThrow(() -> new IllegalStateException("존재하지 않는 binaryContent입니다"));
+                .orElseThrow(() -> new BusinessLogicException(ErrorCode.BINARYCONTENT_NOT_FOUND));
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(ATTACHMENT_DIR), uuid + ".*")) {
             for (Path p : stream) {
@@ -72,7 +74,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContentRepository.deleteById(uuid);
     }
 
-    private BinaryContentDto.response toResponse(BinaryContent binaryContent) {
+    private BinaryContentDto.binaryContentResponse toResponse(BinaryContent binaryContent) {
         byte[] bytes = null;
         String fileName = binaryContent.getId() + "." + StringUtils.getFilenameExtension(binaryContent.getFileName());
         try {
@@ -81,8 +83,8 @@ public class BasicBinaryContentService implements BinaryContentService {
             throw new RuntimeException(e);
         }
 
-        return new BinaryContentDto.response(binaryContent.getId(), binaryContent.getCreatedAt(),
-                binaryContent.getContentType().getMimeType(),
-                binaryContent.getFileName(), bytes);
+        return new BinaryContentDto.binaryContentResponse(binaryContent.getId(), binaryContent.getCreatedAt(),
+                binaryContent.getFileName(), bytes.length,
+                binaryContent.getContentType().getMimeType(), bytes);
     }
 }
