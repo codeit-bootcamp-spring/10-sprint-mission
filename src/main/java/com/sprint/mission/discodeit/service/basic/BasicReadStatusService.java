@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.readstatus.CreateReadStatusRequestDTO;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.UpdateReadStatusRequestDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -13,6 +13,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -20,46 +21,49 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
 
+    private final ReadStatusMapper readStatusMapper;
+
     @Override
-    public ReadStatusResponseDTO createReadStatus(CreateReadStatusRequestDTO dto) {
-        // DTO 검증
-        checkCreateDTOHasNull(dto);
+    public ReadStatusDto createReadStatus(CreateReadStatusRequestDTO dto) {
         // 객체 검증
-        findUserOrThrow(dto.userId());
-        findChannelOrThrow(dto.channelId());
+        User user = findUserOrThrow(dto.userId());
+        Channel channel = findChannelOrThrow(dto.channelId());
 
         // 중복 검증
         checkStatusAlreadyExists(dto.userId(), dto.channelId());
 
-        ReadStatus status = ReadStatusMapper.toEntity(dto);
+        ReadStatus status = new ReadStatus(user, channel);
         readStatusRepository.save(status);
 
-        return ReadStatusMapper.toResponse(status);
+        return readStatusMapper.toDto(status);
     }
 
     @Override
-    public ReadStatusResponseDTO findById(UUID statusId) {
+    @Transactional(readOnly = true)
+    public ReadStatusDto findById(UUID statusId) {
         ReadStatus status = findReadStatusOrThrow(statusId);
 
-        return ReadStatusMapper.toResponse(status);
+        return readStatusMapper.toDto(status);
     }
 
     @Override
-    public List<ReadStatusResponseDTO> findAllByUserId(UUID userId) {
+    @Transactional(readOnly = true)
+    public List<ReadStatusDto> findAllByUserId(UUID userId) {
         findUserOrThrow(userId);
         List<ReadStatus> statuses = readStatusRepository.findAllByUser_Id(userId);
 
-        return ReadStatusMapper.toResponseList(statuses);
+        return readStatusMapper.toDtoList(statuses);
     }
 
     @Override
-    public ReadStatusResponseDTO updateReadStatus(UUID statusId, UpdateReadStatusRequestDTO dto) {
+    public ReadStatusDto updateReadStatus(UUID statusId, UpdateReadStatusRequestDTO dto) {
         Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
 
         if (dto.newLastReadAt() == null) {
@@ -69,9 +73,7 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus status = findReadStatusOrThrow(statusId);
         status.updateLastReadAt(dto.newLastReadAt());
 
-        readStatusRepository.save(status);
-
-        return ReadStatusMapper.toResponse(status);
+        return readStatusMapper.toDto(status);
     }
 
     @Override
@@ -100,20 +102,6 @@ public class BasicReadStatusService implements ReadStatusService {
 
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("해당 id에 채널이 존재하지 않습니다."));
-    }
-
-    private void checkCreateDTOHasNull(CreateReadStatusRequestDTO dto) {
-        if (dto == null) {
-            throw new IllegalArgumentException("dto는 null일 수 없습니다.");
-        }
-
-        if (dto.userId() == null) {
-            throw new IllegalArgumentException("dto의 userId값은 null일 수 없습니다.");
-        }
-
-        if (dto.channelId() == null) {
-            throw new IllegalArgumentException("dto의 channelId값은 null일 수 없습니다.");
-        }
     }
 
     private void checkStatusAlreadyExists(UUID userId, UUID channelId) {

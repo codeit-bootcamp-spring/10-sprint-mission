@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.readstatus.CreateReadStatusRequestDTO;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.UpdateReadStatusRequestDTO;
-import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +24,7 @@ public class ReadStatusController {
     public ResponseEntity createReadStatus(
             @RequestBody CreateReadStatusRequestDTO dto
     ) {
-        ReadStatusResponseDTO created = readStatusService.createReadStatus(dto);
+        ReadStatusDto created = readStatusService.createReadStatus(dto);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -42,7 +41,7 @@ public class ReadStatusController {
             @PathVariable UUID readStatusId,
             @RequestBody UpdateReadStatusRequestDTO dto
     ) {
-        ReadStatusResponseDTO updated = readStatusService.updateReadStatus(readStatusId, dto);
+        ReadStatusDto updated = readStatusService.updateReadStatus(readStatusId, dto);
 
         return ResponseEntity.ok(updated);
     }
@@ -51,7 +50,7 @@ public class ReadStatusController {
     public ResponseEntity getReadStatus(
             @RequestParam UUID userId
     ) {
-        List<ReadStatusResponseDTO> statuses = readStatusService.findAllByUserId(userId);
+        List<ReadStatusDto> statuses = readStatusService.findAllByUserId(userId);
 
         return ResponseEntity.ok(statuses);
     }

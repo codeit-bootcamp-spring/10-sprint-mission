@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -21,7 +21,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public BinaryContentResponseDTO create(CreateBinaryContentRequestDTO dto) {
+    public BinaryContentDto create(CreateBinaryContentRequestDTO dto) {
         validateCreateRequest(dto);
         CreateBinaryContentPayloadDTO payload
                 = new CreateBinaryContentPayloadDTO(dto.data(), dto.contentType(), dto.filename());
@@ -33,13 +33,13 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public BinaryContentResponseDTO findById(UUID binaryContentId) {
+    public BinaryContentDto findById(UUID binaryContentId) {
         BinaryContent binaryContent = findBinaryContentOrThrow(binaryContentId);
         return BinaryContentMapper.toResponse(binaryContent);
     }
 
     @Override
-    public List<BinaryContentResponseDTO> findAllByIdIn(List<UUID> ids) {
+    public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
         Objects.requireNonNull(ids, "id 리스트는 null값일 수 없습니다.");
 
         if (ids.isEmpty()) {
@@ -59,7 +59,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     @Override
-    public List<BinaryContentResponseDTO> findAll() {
+    public List<BinaryContentDto> findAll() {
         List<BinaryContent> binaryContents = binaryContentRepository.findAll();
 
         return BinaryContentMapper.toResponseList(binaryContents);

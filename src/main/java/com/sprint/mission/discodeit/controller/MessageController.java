@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.DeleteMessageResponseDTO;
-import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
+import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class MessageController {
             method = RequestMethod.POST,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    public ResponseEntity<MessageResponseDTO> createMessage(
+    public ResponseEntity<MessageDto> createMessage(
             @RequestPart("messageCreateRequest") CreateMessageRequestDTO dto,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
@@ -53,7 +53,7 @@ public class MessageController {
                     .toList();
         }
 
-        MessageResponseDTO created = messageService.createMessage(dto, payloads);
+        MessageDto created = messageService.createMessage(dto, payloads);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -70,7 +70,7 @@ public class MessageController {
             @PathVariable UUID messageId,
             @RequestBody UpdateMessageRequestDTO dto
     ) {
-        MessageResponseDTO updated = messageService.updateMessage(messageId, dto);
+        MessageDto updated = messageService.updateMessage(messageId, dto);
 
         return ResponseEntity.ok(updated);
     }
@@ -94,7 +94,7 @@ public class MessageController {
     public ResponseEntity findAllByChannelId(
             @RequestParam UUID channelId
     ) {
-        List<MessageResponseDTO> messages = messageService.findAllByChannelId(channelId);
+        List<MessageDto> messages = messageService.findAllByChannelId(channelId);
 
         return ResponseEntity.ok(messages);
     }
@@ -103,7 +103,7 @@ public class MessageController {
     public ResponseEntity findAllByUserId(
             @RequestParam UUID userId
     ) {
-        List<MessageResponseDTO> messages = messageService.findAllByUserId(userId);
+        List<MessageDto> messages = messageService.findAllByUserId(userId);
 
         return ResponseEntity.ok(messages);
     }

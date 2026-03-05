@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
+import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.entity.Message;
 
@@ -18,8 +18,8 @@ public class MessageMapper {
         );
     }
 
-    public static MessageResponseDTO toResponse(Message message) {
-        return new MessageResponseDTO(
+    public static MessageDto toResponse(Message message) {
+        return new MessageDto(
                 message.getId(),
                 message.getCreatedAt(),
                 message.getUpdatedAt(),
@@ -30,8 +30,8 @@ public class MessageMapper {
         );
     }
 
-    public static List<MessageResponseDTO> toResponseList(List<Message> messages) {
-        List<MessageResponseDTO> dtos = new ArrayList<>();
+    public static List<MessageDto> toResponseList(List<Message> messages) {
+        List<MessageDto> dtos = new ArrayList<>();
 
         for (Message message : messages) {
             dtos.add(MessageMapper.toResponse(message));

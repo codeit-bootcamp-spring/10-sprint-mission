@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
-import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
-import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
+import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -30,7 +29,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
 
     @Override
-    public MessageResponseDTO createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments) {
+    public MessageDto createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments) {
         findUserOrThrow(dto.authorId());
         findChannelOrThrow(dto.channelId());
         List<UUID> attachment = new ArrayList<>();
@@ -51,7 +50,7 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<MessageResponseDTO> findAllByUserId(UUID userId) {
+    public List<MessageDto> findAllByUserId(UUID userId) {
         findUserOrThrow(userId);
         List<Message> messages = messageRepository.findAll().stream()
                 .filter(message -> message.getSentUserId().equals(userId))
@@ -61,19 +60,19 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
+    public List<MessageDto> findAllByChannelId(UUID channelId) {
         findChannelOrThrow(channelId);
 
         return MessageMapper.toResponseList(messageRepository.findByChannel_Id(channelId));
     }
 
     @Override
-    public MessageResponseDTO findByMessageId(UUID messageId) {
+    public MessageDto findByMessageId(UUID messageId) {
         return MessageMapper.toResponse(findMessageOrThrow(messageId));
     }
 
     @Override
-    public MessageResponseDTO updateMessage(UUID messageId, UpdateMessageRequestDTO dto) {
+    public MessageDto updateMessage(UUID messageId, UpdateMessageRequestDTO dto) {
         Message message = findMessageOrThrow(messageId);
 
         if (dto.newContent() == null) {

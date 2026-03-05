@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponseDTO;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import org.mapstruct.Mapper;
@@ -16,7 +16,7 @@ public interface BinaryContentMapper {
 
     BinaryContent toEntity(CreateBinaryContentPayloadDTO dto);
 
-    BinaryContentResponseDTO toResponse(BinaryContent binaryContent);
+    BinaryContentDto toResponse(BinaryContent binaryContent);
 
-    List<BinaryContentResponseDTO> toResponseList(List<BinaryContent> binaryContents);
+    List<BinaryContentDto> toResponseList(List<BinaryContent> binaryContents);
 }
