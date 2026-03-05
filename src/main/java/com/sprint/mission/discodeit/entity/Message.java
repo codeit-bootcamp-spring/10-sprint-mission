@@ -21,7 +21,7 @@ public class Message extends BaseUpdatableEntity {
 //  private UUID id;
 //  private Instant createdAt;
 //  private Instant updatedAt;
-  @Column
+  @Column(nullable = false)
   private String content;
 
   // Channel 연결 단방향 , 메세지 주인쪽 일대다
@@ -49,7 +49,7 @@ public class Message extends BaseUpdatableEntity {
     this.content = content;
     this.channel = channel;
     this.author = author;
-    this.attachments = attachments;
+    this.attachments = (attachments != null) ? attachments : new ArrayList<>();
   }
 
   public void update(String newContent) {
