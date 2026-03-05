@@ -1,9 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.userstatus.CreateUserStatusRequestDTO;
 import com.sprint.mission.discodeit.dto.userstatus.UpdateStatusByStatusIdRequestDTO;
 import com.sprint.mission.discodeit.dto.userstatus.UpdateStatusByUserIdRequestDTO;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
@@ -14,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -31,43 +29,43 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserStatusResponseDTO findByUserStatusId(UUID userStatusId) {
+    public UserStatusDto findByUserStatusId(UUID userStatusId) {
         UserStatus status = findStatusByIdOrThrow(userStatusId);
 
-        return userStatusMapper.toResponse(status);
+        return userStatusMapper.toDto(status);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserStatusResponseDTO> findAll() {
+    public List<UserStatusDto> findAll() {
         return userStatusMapper.toResponseList(userStatusRepository.findAll());
     }
 
     @Override
-    public UserStatusResponseDTO updateUserStatus(UpdateStatusByStatusIdRequestDTO dto) {
+    public UserStatusDto updateUserStatus(UpdateStatusByStatusIdRequestDTO dto) {
         Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
 
         UserStatus status = findStatusByIdOrThrow(dto.userStatusId());
         status.updateLastActiveAt();
 
-        return userStatusMapper.toResponse(status);
+        return userStatusMapper.toDto(status);
     }
 
     @Override
-    public UserStatusResponseDTO updateStatusByUserId(
+    public UserStatusDto updateStatusByUserId(
             UUID userId, UpdateStatusByUserIdRequestDTO dto
             ) {
         Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
 
         findUserByIdOrThrow(userId);
-        UserStatus status = userStatusRepository.findByUserId(userId)
+        UserStatus status = userStatusRepository.findByUser_Id(userId)
                 .orElseThrow(() ->
                         new NoSuchElementException(
                                 "해당 userId에 대한 UserStatus가 존재하지 않습니다 userId=" + userId
                         ));
 
         status.updateLastActiveAt();
-        return userStatusMapper.toResponse(status);
+        return userStatusMapper.toDto(status);
     }
 
     // User 삭제시 같이 삭제되지만 일단 테스트용으로만 둠

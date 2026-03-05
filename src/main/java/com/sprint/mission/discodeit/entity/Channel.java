@@ -14,20 +14,20 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 public class Channel extends BaseUpdatableEntity {
-    private String channelName;
+    private String name;
     private String description;
-    private ChannelType channelType;
+    private ChannelType type;
 
-    public Channel(String channelName, String description, ChannelType channelType) {
+    public Channel(String name, String description, ChannelType type) {
         super();
         // 필드 초기화
-        this.channelName = channelName;
+        this.name = name;
         this.description = description;
-        this.channelType = channelType;
+        this.type = type;
     }
 
-    public void updateChannelName(String channelName) {
-        this.channelName = channelName;
+    public void updateChannelName(String name) {
+        this.name = name;
     }
 
     public void updateDescription(String description) {
@@ -35,7 +35,7 @@ public class Channel extends BaseUpdatableEntity {
     }
 
     public void updateChannelType(ChannelType channelType) {
-        this.channelType = channelType;
+        this.type = channelType;
     }
 
     @Override
@@ -44,7 +44,7 @@ public class Channel extends BaseUpdatableEntity {
                 "id='" + super.getId() + '\'' +
                 ", createdAt=" + super.getCreatedAt() +
                 ", updatedAt=" + super.getUpdatedAt() +
-                ", channelName='" + channelName + '\'' +
+                ", channelName='" + name + '\'' +
                 ", description=" + description +
                 '}';
     }

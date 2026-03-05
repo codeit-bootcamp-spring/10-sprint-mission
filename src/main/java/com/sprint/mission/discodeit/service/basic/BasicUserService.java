@@ -57,7 +57,7 @@ public class BasicUserService implements UserService {
 
         userRepository.save(user);
 
-        return userMapper.toResponse(user, status);
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -66,19 +66,13 @@ public class BasicUserService implements UserService {
         List<User> users = userRepository.findAll();
         List<UserStatus> statuses = userStatusRepository.findAll();
 
-        return userMapper.toResponseList(users, statuses);
+        return userMapper.toDtoList(users);
     }
 
     @Override
     @Transactional(readOnly = true)
     public UserDto findByUserId(UUID userId) {
-        return userMapper.toResponse(
-                findUserOrThrow(userId),
-                userStatusRepository.findByUserId(userId)
-                        .orElseThrow(() -> new NoSuchElementException(
-                                "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
-                        ))
-        );
+        return userMapper.toDto(findUserOrThrow(userId));
     }
 
     @Override
@@ -98,26 +92,20 @@ public class BasicUserService implements UserService {
             updateUserProfileImage(profileImage, user);
         }
 
-        return userMapper.toResponse(
-                user,
-                userStatusRepository.findByUserId(userId)
-                        .orElseThrow(() -> new NoSuchElementException(
-                                "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
-                        ))
-        );
+        return userMapper.toDto(user);
     }
 
     @Override
     public UserDto updateUserStatus(UUID userId, UpdateUserStatusRequestDTO dto) {
         User user = findUserOrThrow(userId);
-        UserStatus status = userStatusRepository.findByUserId(userId)
+        UserStatus status = userStatusRepository.findByUser_Id(userId)
                 .orElseThrow(() -> new NoSuchElementException(
                         "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
                 ));
 
         userStatusRepository.save(status);
 
-        return userMapper.toResponse(user, status);
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -125,7 +113,7 @@ public class BasicUserService implements UserService {
         User user = findUserOrThrow(userId);
         UUID binaryContentId = user.getProfile().getId();
 
-        userStatusRepository.deleteById(userStatusRepository.findByUserId(userId)
+        userStatusRepository.deleteById(userStatusRepository.findByUser_Id(userId)
                 .orElseThrow(() -> new NoSuchElementException(
                         "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
                 )).getId());

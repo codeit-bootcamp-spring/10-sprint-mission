@@ -1,70 +1,57 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.channel.ChannelWithLastMessageDTO;
-import com.sprint.mission.discodeit.dto.channel.CreatePrivateChannelRequestDTO;
-import com.sprint.mission.discodeit.dto.channel.CreatePublicChannelRequestDTO;
-import com.sprint.mission.discodeit.dto.channel.ChannelResponseDTO;
+import com.sprint.mission.discodeit.dto.channel.ChannelDto;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.NoSuchElementException;
 
-public class ChannelMapper {
-    public static Channel toPublicChannelEntity(CreatePublicChannelRequestDTO dto) {
-        return new Channel(
-                dto.name(),
-                dto.description(),
-                ChannelType.PUBLIC
-        );
+// final 필드 기반 생성자 주입이 아니기 때문에 Autowired로 주입
+@Mapper(
+        componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.ERROR
+)
+public abstract class ChannelMapper {
+
+    @Autowired
+    protected MessageRepository messageRepository;
+
+    @Autowired
+    protected ReadStatusRepository readStatusRepository;
+
+    @Autowired
+    protected UserMapper userMapper;
+
+    @Mapping(target = "participants", expression = "java(getParticipants(channel))")
+    @Mapping(target = "lastMessageAt", expression = "java(getLastMessageAt(channel))")
+    public abstract ChannelDto toDto(Channel channel);
+
+    protected List<UserDto> getParticipants(Channel channel) {
+        List<ReadStatus> readStatuses =
+                readStatusRepository.findAllByChannel_Id(channel.getId());
+
+        return readStatuses.stream()
+                .map(ReadStatus::getUser)
+                .distinct()
+                .map(userMapper::toDto)
+                .toList();
     }
 
-    public static Channel toPrivateChannelEntity() {
-        return new Channel(
-                null,
-                null,
-                ChannelType.PRIVATE
-        );
-    }
-
-    public static ChannelResponseDTO toResponse(Channel channel) {
-        return new ChannelResponseDTO(
-                channel.getId(),
-                channel.getCreatedAt(),
-                channel.getUpdatedAt(),
-                channel.getChannelType(),
-                channel.getChannelName(),
-                channel.getDescription(),
-                channel.getJoinedUserIds(),
-                channel.getCreatedAt()   // 채널 생성 시점이 마지막 메시지 시점이므로 createdAt으로 설정
-        );
-    }
-
-    public static ChannelWithLastMessageDTO toWithLastMessage(
-            Channel channel, Instant lastMessageAt
-    ) {
-        return new ChannelWithLastMessageDTO(
-                channel.getId(),
-                channel.getCreatedAt(),
-                channel.getUpdatedAt(),
-                channel.getChannelType(),
-                channel.getChannelName(),
-                channel.getDescription(),
-                channel.getJoinedUserIds(),
-                lastMessageAt
-        );
-    }
-
-    public static List<ChannelWithLastMessageDTO> toWithLastMessageList(
-            List<Channel> channels
-    ) {
-        List<ChannelWithLastMessageDTO> dtos = new ArrayList<>();
-        for (Channel channel: channels) {
-            dtos.add(ChannelMapper.toWithLastMessage(channel, channel.getCreatedAt()));
-        }
-
-        return dtos;
+    protected Instant getLastMessageAt(Channel channel) {
+        return messageRepository
+                .findTopByChannel_IdOrderByCreatedAtDesc(channel.getId())
+                .map(Message::getCreatedAt)
+                .orElse(null);
     }
 }

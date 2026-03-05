@@ -27,9 +27,9 @@ public interface UserMapper {
 
     // 2) User + UserStatus -> UserDto
     // online 계산은 @Named 메서드로 분리해서 매핑
-    @Mapping(target = "online", source = "status", qualifiedByName = "statusToOnline")
+    @Mapping(target = "online", source = "user.userStatus", qualifiedByName = "statusToOnline")
     @Mapping(target = "profile", source = "user.profile.id")
-    UserDto toResponse(User user, UserStatus status);
+    UserDto toDto(User user);
 
     @Named("statusToOnline")
     default boolean statusToOnline(UserStatus status) {
@@ -39,25 +39,16 @@ public interface UserMapper {
     // 3) List<User> + List<UserStatus> -> List<UserDto>
     // 여기 “매칭/검증/인덱싱”은 비즈니스 규칙이라 MapStruct가 자동으로 하기 어려움.
     // 대신 default 메서드에서 인덱싱만 하고, 개별 변환은 위 toResponse(user, status)에 위임.
-    default List<UserDto> toResponseList(List<User> users, List<UserStatus> statuses) {
-        Map<UUID, UserStatus> statusMap = indexStatusByUserId(statuses);
+    default List<UserDto> toDtoList(List<User> users) {
 
         List<UserDto> result = new ArrayList<>(users.size());
         for (User user : users) {
-            UserStatus status = statusMap.get(user.getId());
+            UserStatus status = user.getUserStatus();
             if (status == null) {
                 throw new IllegalStateException("UserStatus가 없습니다.: userId=" + user.getId());
             }
-            result.add(toResponse(user, status));
+            result.add(toDto(user));
         }
         return result;
-    }
-
-    default Map<UUID, UserStatus> indexStatusByUserId(List<UserStatus> statuses) {
-        if (statuses == null) return Collections.emptyMap();
-        return statuses.stream().collect(Collectors.toMap(
-                s -> s.getUser().getId(),
-                s -> s
-        ));
     }
 }

@@ -53,7 +53,7 @@ public class BasicReadStatusService implements ReadStatusService {
     @Override
     public List<ReadStatusResponseDTO> findAllByUserId(UUID userId) {
         findUserOrThrow(userId);
-        List<ReadStatus> statuses = readStatusRepository.findByUserId(userId);
+        List<ReadStatus> statuses = readStatusRepository.findAllByUser_Id(userId);
 
         return ReadStatusMapper.toResponseList(statuses);
     }
@@ -117,7 +117,7 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     private void checkStatusAlreadyExists(UUID userId, UUID channelId) {
-        if (readStatusRepository.existsByUserIdAndChannelId(userId, channelId)) {
+        if (readStatusRepository.existsByUser_IdAndChannel_Id(userId, channelId)) {
             throw new IllegalArgumentException("이미 ReadStatus가 존재합니다.");
         }
     }

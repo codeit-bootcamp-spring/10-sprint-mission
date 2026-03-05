@@ -11,7 +11,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @Table(
-        name = "READ_STATUSES",
+        name = "read_statuses",
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_read_statuses_user_channel",
                 columnNames = {"user_id", "channel_id"}
@@ -20,11 +20,11 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ReadStatus extends BaseUpdatableEntity {
     @ManyToOne
-    @JoinColumn(name = "USER_ID")
+    @JoinColumn(name = "USER_ID", nullable = false)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "CHANNEL_ID")
+    @JoinColumn(name = "CHANNEL_ID", nullable = false)
     private Channel channel;
 
     @Column(nullable = false, updatable = true)
@@ -37,10 +37,8 @@ public class ReadStatus extends BaseUpdatableEntity {
     }
 
     public void updateLastReadAt(Instant newLastReadAt) {
-        boolean anyValueUpdated = false;
         if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
             this.lastReadAt = newLastReadAt;
-            anyValueUpdated = true;
         }
     }
 

@@ -26,7 +26,7 @@ public class ChannelController {
     public ResponseEntity createPublicChannel(
             @RequestBody CreatePublicChannelRequestDTO dto
     ) {
-        ChannelResponseDTO created = channelService.createPublicChannel(dto);
+        ChannelDto created = channelService.createPublicChannel(dto);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -42,7 +42,7 @@ public class ChannelController {
     public ResponseEntity createPrivateChannel(
             @RequestBody CreatePrivateChannelRequestDTO dto
             ) {
-        ChannelResponseDTO created = channelService.createPrivateChannel(dto);
+        ChannelDto created = channelService.createPrivateChannel(dto);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
