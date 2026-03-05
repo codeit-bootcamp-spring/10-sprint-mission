@@ -29,6 +29,7 @@ public class UserStatus extends BaseUpdatableEntity {
 
     public void updateLastActiveAt() {
         lastActiveAt = Instant.now();
+        isCurrentlyLoggedIn();
     }
 
     // 마지막 로그인 기준으로 온라인인지 계산

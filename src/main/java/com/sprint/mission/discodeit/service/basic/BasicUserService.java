@@ -103,7 +103,8 @@ public class BasicUserService implements UserService {
                         "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
                 ));
 
-        userStatusRepository.save(status);
+        // 갱신
+        status.updateLastActiveAt();
 
         return userMapper.toDto(user);
     }
@@ -111,14 +112,14 @@ public class BasicUserService implements UserService {
     @Override
     public void deleteUser(UUID userId) {
         User user = findUserOrThrow(userId);
-        UUID binaryContentId = user.getProfile().getId();
 
         userStatusRepository.deleteById(userStatusRepository.findByUser_Id(userId)
                 .orElseThrow(() -> new NoSuchElementException(
                         "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
                 )).getId());
-        if (binaryContentId != null){
-            binaryContentRepository.deleteById(binaryContentId);
+        BinaryContent profile = user.getProfile();
+        if (profile != null && profile.getId() != null) {
+            binaryContentRepository.deleteById(profile.getId());
         }
         userRepository.deleteById(userId);
     }
