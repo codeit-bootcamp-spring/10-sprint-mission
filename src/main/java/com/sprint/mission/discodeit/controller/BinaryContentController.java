@@ -20,7 +20,7 @@ public class BinaryContentController {
     public ResponseEntity findAll(
             @RequestParam List<UUID> binaryContentIds
     ) {
-        List<BinaryContentDto> binaryContents = binaryContentService.findAll();
+        List<BinaryContentDto> binaryContents = binaryContentService.findAllByIdIn(binaryContentIds);
 
         return ResponseEntity.ok(binaryContents);
     }
