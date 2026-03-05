@@ -9,13 +9,13 @@ import java.util.UUID;
 
 public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
-  List<ReadStatus> findAllByUserId(UUID userId);
+  List<ReadStatus> findAllByUser_Id(UUID userId);
 
-  List<ReadStatus> findAllByChannelId(UUID channelId);
+  List<ReadStatus> findAllByChannel_Id(UUID channelId);
 
-  void deleteAllByChannelId(UUID channelId);
+  void deleteAllByChannel_Id(UUID channelId);
 
-
+  Optional<ReadStatus> findByUser_IdAndChannel_Id(UUID userId, UUID channelId);
   //ReadStatus save(ReadStatus readStatus);
 
   //Optional<ReadStatus> findById(UUID id);

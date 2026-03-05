@@ -91,7 +91,7 @@ public class BasicMessageService implements MessageService {
   @Transactional(readOnly = true)
   @Override
   public List<Message> findAllByChannelId(UUID channelId) {
-    return messageRepository.findAllByChannelId(channelId).stream()
+    return messageRepository.findAllByChannel_Id(channelId).stream()
         .toList();
   }
 

@@ -14,10 +14,6 @@ import java.time.Instant;
 @NoArgsConstructor
 public class UserStatus extends BaseUpdatableEntity {
 
-//  private static final long serialVersionUID = 1L;
-//  private UUID id;
-//  private Instant createdAt;
-//  private Instant updatedAt;
   @OneToOne(optional = false)
   @JoinColumn(name="user_id", nullable = false, unique = true) //FK user_id
   private User user;
