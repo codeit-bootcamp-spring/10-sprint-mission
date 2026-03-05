@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -45,7 +46,7 @@ public class UserController {
       @ApiResponse(responseCode = "201", description = "User가 성공적으로 생성됨"),
       @ApiResponse(responseCode = "400", description = "같은 email 또는 username를 사용하는 User가 이미 존재함")
   })
-  public ResponseEntity<?> create(
+  public ResponseEntity<UserDto> create(
       @Valid @RequestPart("userCreateRequest") UserCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
@@ -55,7 +56,7 @@ public class UserController {
 
   @PatchMapping(value = "/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @Operation(summary = "User 정보 수정")
-  public ResponseEntity<?> update(
+  public ResponseEntity<UserDto> update(
       @Parameter(description = "수정할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @PathVariable UUID userId,
       @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
@@ -71,7 +72,7 @@ public class UserController {
       @ApiResponse(responseCode = "204", description = "User가 성공적으로 삭제됨"),
       @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음")
   })
-  public ResponseEntity<?> delete(
+  public ResponseEntity<UserDto> delete(
       @Parameter(description = "삭제할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @PathVariable UUID userId
   ) {
@@ -82,7 +83,7 @@ public class UserController {
   @GetMapping
   @Operation(summary = "전체 User 목록 조회")
   @ApiResponse(responseCode = "200", description = "User 목록 조회 성공")
-  public ResponseEntity<?> findAll() {
+  public ResponseEntity<List<UserDto>> findAll() {
     List<UserDto> responses = userService.findAll();
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
@@ -93,7 +94,7 @@ public class UserController {
       @ApiResponse(responseCode = "202", description = "User 온라인 상태가 성공적으로 업데이트됨"),
       @ApiResponse(responseCode = "404", description = "해당 User의 UserStatus를 찾을 수 없음")
   })
-  public ResponseEntity<?> updateOnline(
+  public ResponseEntity<UserStatusDto> updateOnline(
       @Parameter(description = "업데이트할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @PathVariable UUID userId,
       @Valid @RequestBody UserStatusUpdateRequest request) {

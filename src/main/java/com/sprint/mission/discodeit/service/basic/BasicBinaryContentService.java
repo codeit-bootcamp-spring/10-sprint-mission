@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -21,17 +22,20 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentMapper binaryContentMapper;
+  private final BinaryContentStorage binaryContentStorage;
 
   @Override
   public BinaryContentDto create(MultipartFile multipartFile) {
     try {
       BinaryContent binaryContent = new BinaryContent(
           multipartFile.getOriginalFilename(),
-          multipartFile.getContentType(),
           multipartFile.getSize(),
-          multipartFile.getBytes()
+          multipartFile.getContentType()
       );
+      //DB에 메타데이터 저장
       binaryContentRepository.save(binaryContent);
+      //실제 byte[] 저장
+      binaryContentStorage.put(binaryContent.getId(), multipartFile.getBytes());
       return binaryContentMapper.toDto(binaryContent);
     } catch (IOException e) {
       throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);

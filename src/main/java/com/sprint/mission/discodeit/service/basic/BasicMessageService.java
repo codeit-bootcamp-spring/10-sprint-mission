@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -33,6 +34,8 @@ public class BasicMessageService implements MessageService {
   private final MessageRepository messageRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageMapper messageMapper;
+  private final BinaryContentStorage binaryContentStorage;
+  private final BinaryContentRepository binaryContentRepository;
 
   @Override
   public MessageDto create(MessageCreateRequest request, List<MultipartFile> multipartFiles) {
@@ -63,10 +66,11 @@ public class BasicMessageService implements MessageService {
         try {
           BinaryContent attachment = new BinaryContent(
               file.getOriginalFilename(),
-              file.getContentType(),
               file.getSize(),
-              file.getBytes()
+              file.getContentType()
           );
+          binaryContentRepository.save(attachment);
+          binaryContentStorage.put(attachment.getId(), file.getBytes());
           message.addAttachment(attachment); //편의 메서드 사용
         } catch (IOException e) {
           throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
@@ -88,8 +92,7 @@ public class BasicMessageService implements MessageService {
   //todo N+1 문제 발생하는 코드
   @Override
   public List<MessageDto> findAllByChannelId(UUID channelId) {
-    return messageRepository.findAll().stream()
-        .filter(message -> message.getChannel().getId().equals(channelId))
+    return messageRepository.findAllByChannelId(channelId).stream()
         .map(messageMapper::toDto)
         .toList();
   }
@@ -108,8 +111,6 @@ public class BasicMessageService implements MessageService {
   public void delete(UUID messageId) {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
-
-    //todo 메시지에 연관된 첨부파일 삭제 로직 구현 필요
     messageRepository.delete(message);
   }
 }

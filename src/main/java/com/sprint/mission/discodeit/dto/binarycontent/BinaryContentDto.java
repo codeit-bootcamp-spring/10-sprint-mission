@@ -12,9 +12,7 @@ public record BinaryContentDto(
     @Schema(description = "첨부 파일 크기", example = "1048576")
     long size,
     @Schema(description = "첨부 파일 타입", example = "image/png")
-    String contentType,
-    @Schema(description = "첨부 파일 byte 데이터", example = "U3dhZ2dlciB0ZXN0IGZpbGU=")
-    byte[] bytes
+    String contentType
 ) {
 
 }

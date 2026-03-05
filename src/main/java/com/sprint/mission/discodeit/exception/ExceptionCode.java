@@ -20,7 +20,9 @@ public enum ExceptionCode {
   USER_STATUS_NOT_FOUND(404, "유저 상태를 찾을 수 없습니다."),
   USER_STATUS_ALREADY_EXISTS(409, "이미 유저 상태가 존재합니다."),
   BINARY_CONTENT_NOT_FOUND(404, "첨부 파일이 존재하지 않습니다."),
-  BINARY_CONTENT_UPLOAD_FAILED(500, "첨부 파일 저장 중 오류가 발생했습니다.");
+  BINARY_CONTENT_UPLOAD_FAILED(500, "첨부 파일 저장 중 오류가 발생했습니다."),
+  BINARY_CONTENT_DOWNLOAD_FAILED(500, "첨부 파일을 읽는 도중 오류가 발생했습니다."),
+  STORAGE_INITIALIZATION_FAILED(500, "저장소 시스템을 초기화할 수 없습니다.");
 
   private final int statusCode;
   private final String message;

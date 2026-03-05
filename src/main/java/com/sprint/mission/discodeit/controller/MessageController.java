@@ -42,7 +42,7 @@ public class MessageController {
       @ApiResponse(responseCode = "201", description = "Message가 성공적으로 생성됨"),
       @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음")
   })
-  public ResponseEntity<?> create(
+  public ResponseEntity<MessageDto> create(
       @Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
@@ -56,7 +56,7 @@ public class MessageController {
       @ApiResponse(responseCode = "200", description = "Message가 성공적으로 수정됨"),
       @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음")
   })
-  public ResponseEntity<?> update(
+  public ResponseEntity<MessageDto> update(
       @Parameter(description = "수정할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
       @PathVariable UUID messageId,
       @Valid @RequestBody MessageUpdateRequest request
@@ -71,7 +71,7 @@ public class MessageController {
       @ApiResponse(responseCode = "204", description = "Message가 성공적으로 삭제됨"),
       @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음")
   })
-  public ResponseEntity<?> delete(
+  public ResponseEntity<MessageDto> delete(
       @Parameter(description = "삭제할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
       @PathVariable UUID messageId
   ) {
@@ -82,7 +82,7 @@ public class MessageController {
   @GetMapping
   @Operation(summary = "Channel의 Message 목록 조회")
   @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공")
-  public ResponseEntity<?> findAllByChannelId(
+  public ResponseEntity<List<MessageDto>> findAllByChannelId(
       @Parameter(description = "조회할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @RequestParam("channelId") UUID channelId
   ) {

@@ -37,7 +37,8 @@ public class ChannelController {
   @PostMapping("/public")
   @Operation(summary = "Public Channel 생성")
   @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
-  public ResponseEntity<?> createPublic(@Valid @RequestBody PublicChannelCreateRequest request) {
+  public ResponseEntity<ChannelDto> createPublic(
+      @Valid @RequestBody PublicChannelCreateRequest request) {
     ChannelDto response = channelService.createPublic(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
@@ -45,7 +46,8 @@ public class ChannelController {
   @PostMapping("/private")
   @Operation(summary = "Private Channel 생성")
   @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨")
-  public ResponseEntity<?> createPrivate(@Valid @RequestBody PrivateChannelCreateRequest request) {
+  public ResponseEntity<ChannelDto> createPrivate(
+      @Valid @RequestBody PrivateChannelCreateRequest request) {
     ChannelDto response = channelService.createPrivate(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
@@ -58,7 +60,7 @@ public class ChannelController {
       @ApiResponse(responseCode = "400", description = "Private Channel은 수정할 수 없음")
   })
 
-  public ResponseEntity<?> update(
+  public ResponseEntity<ChannelDto> update(
       @Parameter(description = "수정할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @PathVariable UUID channelId,
       @Valid @RequestBody PublicChannelUpdateRequest request
@@ -73,7 +75,7 @@ public class ChannelController {
       @ApiResponse(responseCode = "204", description = "Channel이 성공적으로 삭제됨"),
       @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음")
   })
-  public ResponseEntity<?> delete(
+  public ResponseEntity<ChannelDto> delete(
       @Parameter(description = "삭제할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @PathVariable UUID channelId
   ) {
@@ -84,7 +86,7 @@ public class ChannelController {
   @GetMapping
   @Operation(summary = "User가 참여 중인 Channel 목록 조회")
   @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공")
-  public ResponseEntity<?> findAll(
+  public ResponseEntity<List<ChannelDto>> findAll(
       @Parameter(description = "조회할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @RequestParam("userId") UUID userId
   ) {
