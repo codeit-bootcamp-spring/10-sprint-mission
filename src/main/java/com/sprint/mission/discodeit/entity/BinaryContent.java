@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
+@Table(name = "binary_contents")
 @NoArgsConstructor
 @AllArgsConstructor
 public class BinaryContent extends BaseEntity {

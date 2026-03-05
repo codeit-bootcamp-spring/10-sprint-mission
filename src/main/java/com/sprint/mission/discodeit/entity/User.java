@@ -11,6 +11,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
+@Table(name = "users")
 @NoArgsConstructor
 public class User extends BaseUpdatableEntity {
     @Column(nullable = false, unique = true)
@@ -54,7 +55,7 @@ public class User extends BaseUpdatableEntity {
         this.password = password;
     }
 
-    public void updateProfileImage(BinaryContent profile) {
+    public void updateProfile(BinaryContent profile) {
         this.profile = profile;
     }
 

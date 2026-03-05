@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.auth.LoginRequestDTO;
-import com.sprint.mission.discodeit.dto.auth.LoginResponseDTO;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.AuthMapper;
@@ -17,6 +16,8 @@ import java.util.NoSuchElementException;
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
 
+    private final AuthMapper authMapper;
+
     @Override
     public UserDto login(LoginRequestDTO dto) {
         // username 존재 여부 확인까지 하기
@@ -31,7 +32,7 @@ public class BasicAuthService implements AuthService {
             throw new IllegalArgumentException("로그인에 실패하였습니다.");
         }
 
-        return AuthMapper.toResponse(user);
+        return authMapper.toDto(user);
     }
 
 }

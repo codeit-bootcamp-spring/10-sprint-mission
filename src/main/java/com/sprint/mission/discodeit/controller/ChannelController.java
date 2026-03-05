@@ -59,7 +59,7 @@ public class ChannelController {
             @PathVariable UUID channelId,
             @RequestBody UpdateChannelRequestDTO dto
             ) {
-        ChannelWithLastMessageDTO response = channelService.updateChannel(channelId, dto);
+        ChannelDto response = channelService.updateChannel(channelId, dto);
 
         return ResponseEntity.ok(response);
     }
@@ -83,44 +83,8 @@ public class ChannelController {
     public ResponseEntity findChannelsByUserId(
             @RequestParam("userId") UUID userId
     ) {
-        List<ChannelWithLastMessageDTO> channels = channelService.findAllByUserId(userId);
+        List<ChannelDto> channels = channelService.findAllByUserId(userId);
 
         return ResponseEntity.ok(channels);
-    }
-
-    @RequestMapping(value = "/{channelId}/users", method = RequestMethod.GET)
-    public ResponseEntity findAllUsersByChannelId(
-            @PathVariable UUID channelId
-    ) {
-        List<UserDto> users = userService.findAllByChannel(channelId);
-
-        return ResponseEntity.ok(users);
-    }
-
-    @RequestMapping(value = "/{channelId}/join/{userId}", method = RequestMethod.POST)
-    public ResponseEntity joinChannel(
-            @PathVariable UUID channelId,
-            @PathVariable UUID userId
-    ) {
-        channelService.joinChannel(channelId, userId);
-        ChannelWithLastMessageDTO response = channelService.findByChannelId(channelId);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @RequestMapping(value = "/{channelId}/leave/{userId}", method = RequestMethod.POST)
-    public ResponseEntity leaveChannel(
-            @PathVariable UUID channelId,
-            @PathVariable UUID userId
-    ) {
-        channelService.leaveChannel(channelId, userId);
-
-        return ResponseEntity.ok(
-                new DeleteOrLeaveChannelResponseDTO(
-                        Instant.now(),
-                        200,
-                        "채널을 떠났습니다."
-                )
-        );
     }
 }

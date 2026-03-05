@@ -14,10 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -52,7 +49,13 @@ public class BasicChannelService implements ChannelService {
         Channel channel = new Channel(null, null, ChannelType.PRIVATE);
         channelRepository.save(channel);
 
-        List<User> users = userRepository.findAllByUserIds(dto.participantIds());
+        List<User> users = new ArrayList<>();
+
+        for (UUID id: dto.participantIds()) {
+            users.add(userRepository.findById(id)
+                    .orElseThrow(() ->
+                            new NoSuchElementException("해당 id에 사용자가 존재하지 않습니다")));
+        }
 
         for (User user: users) {
             ReadStatus readStatus = new ReadStatus(user, channel);

@@ -10,6 +10,7 @@ import java.util.List;
 
 @Getter
 @Entity
+@Table(name = "messages")
 @NoArgsConstructor
 public class Message extends BaseUpdatableEntity {
     // 메시지 내용

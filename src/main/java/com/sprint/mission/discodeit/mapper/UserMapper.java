@@ -19,16 +19,9 @@ import java.util.stream.Collectors;
 )
 public interface UserMapper {
 
-    // 1) CreateUserRequestDTO + BinaryContent(profile) -> User
-    // dto의 username/email/password는 이름이 같아서 자동 매핑,
-    // profile만 따로 지정해주면 됨.
-    @Mapping(target = "profile", source = "profile")
-    User toEntity(CreateUserRequestDTO dto, BinaryContent profile);
-
-    // 2) User + UserStatus -> UserDto
     // online 계산은 @Named 메서드로 분리해서 매핑
-    @Mapping(target = "online", source = "user.userStatus", qualifiedByName = "statusToOnline")
-    @Mapping(target = "profile", source = "user.profile.id")
+    @Mapping(target = "online", source = "userStatus", qualifiedByName = "statusToOnline")
+    @Mapping(target = "profile", source = "profile")
     UserDto toDto(User user);
 
     @Named("statusToOnline")
@@ -36,7 +29,6 @@ public interface UserMapper {
         return status != null && status.isCurrentlyLoggedIn();
     }
 
-    // 3) List<User> + List<UserStatus> -> List<UserDto>
     // 여기 “매칭/검증/인덱싱”은 비즈니스 규칙이라 MapStruct가 자동으로 하기 어려움.
     // 대신 default 메서드에서 인덱싱만 하고, 개별 변환은 위 toResponse(user, status)에 위임.
     default List<UserDto> toDtoList(List<User> users) {

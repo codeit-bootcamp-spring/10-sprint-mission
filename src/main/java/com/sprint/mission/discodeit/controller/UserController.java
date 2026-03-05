@@ -37,7 +37,8 @@ public class UserController {
                 payload = new CreateBinaryContentPayloadDTO(
                         profile.getBytes(),
                         profile.getContentType(),
-                        profile.getOriginalFilename()
+                        profile.getOriginalFilename(),
+                        profile.getSize()
                 );
             } catch (IOException e) {
                 throw new IllegalArgumentException("프로필 파일을 읽을 수 없습니다.", e);
@@ -74,7 +75,8 @@ public class UserController {
                 payload = new CreateBinaryContentPayloadDTO(
                         profile.getBytes(),
                         profile.getContentType(),
-                        profile.getOriginalFilename()
+                        profile.getOriginalFilename(),
+                        profile.getSize()
                 );
             } catch (IOException e) {
                 throw new IllegalArgumentException("프로필 파일을 읽을 수 없습니다.", e);

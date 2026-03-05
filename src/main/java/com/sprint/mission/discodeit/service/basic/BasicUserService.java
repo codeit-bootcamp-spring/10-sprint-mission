@@ -41,7 +41,7 @@ public class BasicUserService implements UserService {
         }
 
         // userId를 받아오기 위해 우선 객체 생성
-        User user = userMapper.toEntity(dto, null);
+        User user = new User(dto.username(), dto.email(), dto.password(), null);
 
         if (profileImage != null) {
             BinaryContent bc = binaryContentMapper.toEntity(profileImage);
@@ -49,7 +49,7 @@ public class BasicUserService implements UserService {
             binaryContentRepository.save(bc);
 
             // 프로필 사진이 있으면 갱신하기
-            user.updateProfileImage(bc);
+            user.updateProfile(bc);
         }
 
         UserStatus status = new UserStatus(user, Instant.now());
@@ -171,6 +171,6 @@ public class BasicUserService implements UserService {
         binaryContentRepository.save(binaryContent);
 
         // 프로필 사진이 있으면 갱신하기
-        user.updateProfileImage(binaryContent);
+        user.updateProfile(binaryContent);
     }
 }

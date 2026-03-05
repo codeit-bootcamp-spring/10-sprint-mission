@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -16,29 +17,34 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
+
+    private final BinaryContentMapper binaryContentMapper;
 
     @Override
     public BinaryContentDto create(CreateBinaryContentRequestDTO dto) {
         validateCreateRequest(dto);
         CreateBinaryContentPayloadDTO payload
-                = new CreateBinaryContentPayloadDTO(dto.data(), dto.contentType(), dto.filename());
+                = new CreateBinaryContentPayloadDTO(dto.data(), dto.contentType(), dto.filename(), dto.data().length);
 
-        BinaryContent binaryContent = BinaryContentMapper.toEntity(dto.userId(), dto.messageId(), payload);
+        BinaryContent binaryContent = binaryContentMapper.toEntity(payload);
         binaryContentRepository.save(binaryContent);
 
-        return BinaryContentMapper.toResponse(binaryContent);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BinaryContentDto findById(UUID binaryContentId) {
         BinaryContent binaryContent = findBinaryContentOrThrow(binaryContentId);
-        return BinaryContentMapper.toResponse(binaryContent);
+        return binaryContentMapper.toDto(binaryContent);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
         Objects.requireNonNull(ids, "id 리스트는 null값일 수 없습니다.");
 
@@ -55,14 +61,15 @@ public class BasicBinaryContentService implements BinaryContentService {
                     );
         }
 
-        return BinaryContentMapper.toResponseList(binaryContents);
+        return binaryContentMapper.toDtoList(binaryContents);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<BinaryContentDto> findAll() {
         List<BinaryContent> binaryContents = binaryContentRepository.findAll();
 
-        return BinaryContentMapper.toResponseList(binaryContents);
+        return binaryContentMapper.toDtoList(binaryContents);
     }
 
     @Override

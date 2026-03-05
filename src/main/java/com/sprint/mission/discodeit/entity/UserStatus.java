@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
 
 @Getter
 @Entity
+@Table(name = "user_statuses")
 @NoArgsConstructor
 public class UserStatus extends BaseUpdatableEntity {
     @OneToOne

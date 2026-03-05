@@ -44,7 +44,8 @@ public class MessageController {
                             return new CreateBinaryContentPayloadDTO(
                                     file.getBytes(),
                                     file.getContentType(),
-                                    file.getOriginalFilename()
+                                    file.getOriginalFilename(),
+                                    file.getSize()
                             );
                         } catch (IOException e) {
                             throw new IllegalArgumentException("첨부 파일을 읽을 수 없습니다.", e);

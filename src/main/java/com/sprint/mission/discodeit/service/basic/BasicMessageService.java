@@ -17,10 +17,12 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
@@ -28,47 +30,53 @@ public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     private final BinaryContentRepository binaryContentRepository;
 
+    private final MessageMapper messageMapper;
+    private final BinaryContentMapper binaryContentMapper;
+
     @Override
     public MessageDto createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments) {
-        findUserOrThrow(dto.authorId());
-        findChannelOrThrow(dto.channelId());
-        List<UUID> attachment = new ArrayList<>();
+        User user = findUserOrThrow(dto.authorId());
+        Channel channel = findChannelOrThrow(dto.channelId());
+        List<BinaryContent> attachment = new ArrayList<>();
         // 껍데기 생성
-        Message message = MessageMapper.toEntity(dto, attachment);
+        Message message = new Message(user, channel, dto.content(), attachment);
 
         if (attachments != null && !attachments.isEmpty()) {
             for (var payload : attachments) {
-                BinaryContent bc = BinaryContentMapper.toEntity(dto.authorId(), message.getId(), payload);
+                BinaryContent bc = binaryContentMapper.toEntity(payload);
                 binaryContentRepository.save(bc);
-                attachment.add(bc.getId());
+                attachment.add(bc);
             }
         }
         // 영속화
         messageRepository.save(message);
 
-        return MessageMapper.toResponse(message);
+        return messageMapper.toDto(message);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MessageDto> findAllByUserId(UUID userId) {
         findUserOrThrow(userId);
         List<Message> messages = messageRepository.findAll().stream()
-                .filter(message -> message.getSentUserId().equals(userId))
+                .filter(message -> message.getAuthor().getId().equals(userId))
                 .toList();
 
-        return MessageMapper.toResponseList(messages);
+        return messageMapper.toDtoList(messages);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MessageDto> findAllByChannelId(UUID channelId) {
         findChannelOrThrow(channelId);
 
-        return MessageMapper.toResponseList(messageRepository.findByChannel_Id(channelId));
+        return messageMapper.toDtoList(messageRepository.findByChannel_Id(channelId));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MessageDto findByMessageId(UUID messageId) {
-        return MessageMapper.toResponse(findMessageOrThrow(messageId));
+        return messageMapper.toDto(findMessageOrThrow(messageId));
     }
 
     @Override
@@ -80,17 +88,16 @@ public class BasicMessageService implements MessageService {
         }
 
         message.updateContent(dto.newContent());
-        messageRepository.save(message);
 
-        return MessageMapper.toResponse(message);
+        return messageMapper.toDto(message);
     }
 
     @Override
     public void deleteMessage(UUID messageId) {
-        List<UUID> ids = findMessageOrThrow(messageId).getAttachmentIds();
+        List<BinaryContent> attachments = findMessageOrThrow(messageId).getAttachments();
 
-        for (UUID id: ids) {
-            binaryContentRepository.deleteById(id);
+        for (BinaryContent bc: attachments) {
+            binaryContentRepository.deleteById(bc.getId());
         }
 
         messageRepository.deleteById(messageId);

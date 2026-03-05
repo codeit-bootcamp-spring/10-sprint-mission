@@ -16,7 +16,7 @@ public interface BinaryContentMapper {
 
     BinaryContent toEntity(CreateBinaryContentPayloadDTO dto);
 
-    BinaryContentDto toResponse(BinaryContent binaryContent);
+    BinaryContentDto toDto(BinaryContent binaryContent);
 
-    List<BinaryContentDto> toResponseList(List<BinaryContent> binaryContents);
+    List<BinaryContentDto> toDtoList(List<BinaryContent> binaryContents);
 }
