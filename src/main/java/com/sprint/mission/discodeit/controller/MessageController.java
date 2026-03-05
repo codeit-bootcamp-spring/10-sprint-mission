@@ -16,6 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,12 +33,12 @@ public class MessageController {
     )
     public ResponseEntity<MessageDto> createMessage(
             @RequestPart("messageCreateRequest") CreateMessageRequestDTO dto,
-            @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
+            @RequestPart(value = "attachments", required = false) MultipartFile[] attachments
     ) {
         List<CreateBinaryContentPayloadDTO> payloads = List.of();
 
-        if (attachments != null && !attachments.isEmpty()) {
-            payloads = attachments.stream()
+        if (attachments != null && attachments.length > 0) {
+            payloads = Arrays.stream(attachments)
                     .filter(file -> file != null && !file.isEmpty())
                     .map(file -> {
                         try {
@@ -64,7 +65,6 @@ public class MessageController {
 
         return ResponseEntity.created(location).body(created);
     }
-
 
     @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
     public ResponseEntity updateMessage(

@@ -21,6 +21,9 @@ public abstract class MessageMapper {
     @Autowired
     protected BinaryContentMapper binaryContentMapper;
 
+    @Autowired
+    protected UserMapper userMapper;
+
     @Mapping(target = "channelId", source = "message.channel.id")
     public MessageDto toDto(Message message) {
         return new MessageDto(
@@ -29,7 +32,7 @@ public abstract class MessageMapper {
                 message.getUpdatedAt(),
                 message.getContent(),
                 message.getChannel().getId(),
-                message.getAuthor(),
+                userMapper.toDto(message.getAuthor()),
                 binaryContentMapper.toDtoList(message.getAttachments())
         );
     }

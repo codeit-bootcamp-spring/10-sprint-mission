@@ -6,6 +6,7 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -13,8 +14,8 @@ import java.util.UUID;
 @Getter
 @Entity
 @Table(name = "binary_contents")
+@Setter     // 매퍼가 못 찾아서 setter 설정
 @NoArgsConstructor
-@AllArgsConstructor
 public class BinaryContent extends BaseEntity {
 
     private byte[] bytes;
@@ -23,13 +24,11 @@ public class BinaryContent extends BaseEntity {
     private long size;            // 바이트 크기
 
     // 사용자 프로필 사진용
-    public BinaryContent(byte[] bytes, String contentType, String fileName) {
-        super();
-
+    public BinaryContent(byte[] bytes, String contentType, String fileName, long size) {
         this.bytes = bytes;
         this.contentType = contentType;
         this.fileName = fileName;
-        this.size = bytes.length;
+        this.size = size;
     }
 
     @Override
@@ -37,7 +36,7 @@ public class BinaryContent extends BaseEntity {
         return "BinaryContent{" +
                 "id=" + super.getId() +
                 ", createdAt=" + super.getCreatedAt() +
-                ", bytes=" + bytes.length +
+                ", bytes=" + (bytes == null ? "null" : bytes.length) +
                 ", contentType='" + contentType + '\'' +
                 ", fileName='" + fileName + '\'' +
                 ", size=" + size +
