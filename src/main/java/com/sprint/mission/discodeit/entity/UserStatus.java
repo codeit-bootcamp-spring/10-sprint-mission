@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.io.Serializable;
@@ -10,18 +12,25 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
+@Entity
+@NoArgsConstructor
+@Table(name = "USER_STATUSES")
 public class UserStatus extends BaseEntity {
 
     @LastModifiedDate
     private Instant updatedAt;
-    //
-    private UUID userId;
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @Column(nullable = false)
     private Instant lastActiveAt;
 
-    public UserStatus(UUID userId, Instant lastActiveAt) {
+    public UserStatus(User user, Instant lastActiveAt) {
 //        super();//id,createdAt 값 삽입(BseEntity)
 
-        this.userId = userId;
+        this.user = user;
         this.lastActiveAt = lastActiveAt;
     }
 

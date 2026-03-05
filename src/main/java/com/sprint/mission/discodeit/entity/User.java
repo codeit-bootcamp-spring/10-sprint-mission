@@ -23,7 +23,7 @@ public class User extends BaseEntity{
 
     @LastModifiedDate
     private Instant updatedAt;
-    //
+
     @Column(unique = true, nullable = false,length = 50)
     private String username;
 
@@ -33,18 +33,25 @@ public class User extends BaseEntity{
     @Column(nullable = false,length = 60)
     private String password;
 
-    private UUID profileId;     // BinaryContent
+    @OneToOne
+    @JoinColumn(name = "profile_id")
+    private BinaryContent profile;
 
-    public User(String username, String email, String password, UUID profileId) {
+    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL,orphanRemoval = true) //상대 Entity의 필드명
+    private UserStatus status;
+
+
+    public User(String username, String email, String password, BinaryContent profile, UserStatus status) {
 //        super();//id,createdAt 값 삽입(BseEntity)
         //
         this.username = username;
         this.email = email;
         this.password = password;
-        this.profileId = profileId;
+        this.profile = profile;
+        this.status = status;
     }
 
-    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+    public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
         boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
@@ -58,8 +65,8 @@ public class User extends BaseEntity{
             this.password = newPassword;
             anyValueUpdated = true;
         }
-        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
-            this.profileId = newProfileId;
+        if (newProfile != null && !newProfile.equals(this.profile)) {
+            this.profile = newProfile;
             anyValueUpdated = true;
         }
 

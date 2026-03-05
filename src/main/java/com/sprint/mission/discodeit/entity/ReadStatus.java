@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.context.annotation.EnableMBeanExport;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.io.Serializable;
@@ -9,20 +12,30 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
+@Entity
+@Table(name = "READ_STATUSES")
+@NoArgsConstructor
 public class ReadStatus extends BaseEntity {
 
     @LastModifiedDate
     private Instant updatedAt;
     //
-    private UUID userId;
-    private UUID channelId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "channel_id")
+    private Channel channel;
+
+    @Column(nullable = false)
     private Instant lastReadAt;
 
-    public ReadStatus(UUID userId, UUID channelId, Instant lastReadAt) {
+    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
 //        super();//id,createdAt 값 삽입(BseEntity)
 
-        this.userId = userId;
-        this.channelId = channelId;
+        this.user = user;
+        this.channel = channel;
         this.lastReadAt = lastReadAt;
     }
 
@@ -44,8 +57,8 @@ public class ReadStatus extends BaseEntity {
                 "id=" + getId() +
                 ", createdAt=" + getCreatedAt() +
                 ", updatedAt=" + updatedAt +
-                ", userId=" + userId +
-                ", channelId=" + channelId +
+                ", user=" + user +
+                ", channel=" + channel +
                 ", lastReadAt=" + lastReadAt +
                 '}';
     }
