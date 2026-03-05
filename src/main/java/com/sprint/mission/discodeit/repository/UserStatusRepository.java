@@ -10,9 +10,10 @@ import java.util.UUID;
 public interface UserStatusRepository extends JpaRepository<UserStatus, UUID> {
 //    UserStatus save(UserStatus userStatus);
 //    Optional<UserStatus> findById(UUID id);
-//    Optional<UserStatus> findByUserId(UUID userId);
 //    List<UserStatus> findAll();
 //    boolean existsById(UUID id);
 //    void delete(UUID id);
+    Optional<UserStatus> findByUserId(UUID userId);
+    boolean existsByUserId(UUID userId);
     void deleteByUserId(UUID userId);
 }

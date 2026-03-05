@@ -27,11 +27,11 @@ public class UserStatus extends BaseEntity {
     @Column(nullable = false)
     private Instant lastActiveAt;
 
-    public UserStatus(User user, Instant lastActiveAt) {
+    public UserStatus(User user) {
 //        super();//id,createdAt 값 삽입(BseEntity)
 
         this.user = user;
-        this.lastActiveAt = lastActiveAt;
+        this.lastActiveAt = Instant.now();
     }
 
     public void update(Instant lastActiveAt) {

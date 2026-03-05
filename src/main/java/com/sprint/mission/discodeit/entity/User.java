@@ -33,7 +33,7 @@ public class User extends BaseEntity{
     @Column(nullable = false,length = 60)
     private String password;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true) //기존 등록된 프로필을 다른걸로 교체하거나, 지정을 안할시, BinaryContent 삭제
     @JoinColumn(name = "profile_id")
     private BinaryContent profile;
 
@@ -41,14 +41,13 @@ public class User extends BaseEntity{
     private UserStatus status;
 
 
-    public User(String username, String email, String password, BinaryContent profile, UserStatus status) {
+    public User(String username, String email, String password, BinaryContent profile) {
 //        super();//id,createdAt 값 삽입(BseEntity)
         //
         this.username = username;
         this.email = email;
         this.password = password;
         this.profile = profile;
-        this.status = status;
     }
 
     public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
