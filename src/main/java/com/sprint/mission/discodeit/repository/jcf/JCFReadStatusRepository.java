@@ -1,5 +1,5 @@
 package com.sprint.mission.discodeit.repository.jcf;
-
+/*
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -58,3 +58,4 @@ public class JCFReadStatusRepository implements ReadStatusRepository {
         .forEach(readStatus -> this.deleteById(readStatus.getId()));
   }
 }
+*/

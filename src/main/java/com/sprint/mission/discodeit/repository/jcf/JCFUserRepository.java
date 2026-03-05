@@ -1,5 +1,5 @@
 package com.sprint.mission.discodeit.repository.jcf;
-
+/*
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -60,3 +60,4 @@ public class JCFUserRepository implements UserRepository {
     return this.findAll().stream().anyMatch(user -> user.getUsername().equals(username));
   }
 }
+*/

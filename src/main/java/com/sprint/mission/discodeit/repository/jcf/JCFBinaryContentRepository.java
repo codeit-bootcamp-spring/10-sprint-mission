@@ -1,5 +1,5 @@
 package com.sprint.mission.discodeit.repository.jcf;
-
+/*
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -45,3 +45,4 @@ public class JCFBinaryContentRepository implements BinaryContentRepository {
     this.data.remove(id);
   }
 }
+*/

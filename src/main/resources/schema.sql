@@ -99,13 +99,10 @@ CREATE TABLE IF NOT EXISTS messages
 -- message_attachments
 CREATE TABLE IF NOT EXISTS message_attachments
 (
-    id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    message_id    uuid NOT NULL UNIQUE ,
-    attachment_id uuid NOT NULL UNIQUE ,
-
+    message_id    uuid NOT NULL,
+    attachment_id uuid NOT NULL,
+    PRIMARY KEY (message_id, attachment_id),
     FOREIGN KEY (message_id) REFERENCES messages (id) ON DELETE CASCADE,
     FOREIGN KEY (attachment_id) REFERENCES binary_contents (id) ON DELETE CASCADE
 );
 
-ALTER TABLE message_attachments
-    ALTER COLUMN id SET DEFAULT gen_random_uuid();

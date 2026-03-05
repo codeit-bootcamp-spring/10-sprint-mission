@@ -1,5 +1,5 @@
 package com.sprint.mission.discodeit.repository.jcf;
-
+/*
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -56,3 +56,4 @@ public class JCFUserStatusRepository implements UserStatusRepository {
         .ifPresent(userStatus -> this.deleteByUserId(userStatus.getId()));
   }
 }
+*/

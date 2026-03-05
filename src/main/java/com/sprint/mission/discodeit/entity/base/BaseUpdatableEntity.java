@@ -14,8 +14,8 @@ import java.time.Instant;
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-public abstract class BaseUpdatableEntity {
-    @LastModifiedDate
+public abstract class BaseUpdatableEntity extends BaseEntity {
+    @LastModifiedDate // 엔티티 변경시 자동처리
     @Column(nullable = false)
     private Instant updatedAt;
 }

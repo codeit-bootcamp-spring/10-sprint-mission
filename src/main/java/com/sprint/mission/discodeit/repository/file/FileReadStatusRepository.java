@@ -1,5 +1,5 @@
 package com.sprint.mission.discodeit.repository.file;
-
+/*
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -158,3 +158,4 @@ public class FileReadStatusRepository implements ReadStatusRepository {
         .forEach(readStatus -> this.deleteById(readStatus.getId()));
   }
 }
+*/
