@@ -14,10 +14,10 @@ spring:
     init:
       mode: always
 
-discodeit:
-  repository:
-    type: jcf   # jcf | file
-    file-directory: .discodeit
+#discodeit:
+#  repository:
+#    type: jcf   # jcf | file
+#    file-directory: .discodeit
 server:
   port: ${PORT:8080}
 
