@@ -48,6 +48,8 @@ public class BasicMessageService implements MessageService {
                 attachment.add(bc);
             }
         }
+        user.getUserStatus().updateLastActiveAt();
+
         // 영속화
         messageRepository.save(message);
 
@@ -94,11 +96,7 @@ public class BasicMessageService implements MessageService {
 
     @Override
     public void deleteMessage(UUID messageId) {
-        List<BinaryContent> attachments = findMessageOrThrow(messageId).getAttachments();
-
-        for (BinaryContent bc: attachments) {
-            binaryContentRepository.deleteById(bc.getId());
-        }
+        findMessageOrThrow(messageId).getAttachments();
 
         messageRepository.deleteById(messageId);
     }
