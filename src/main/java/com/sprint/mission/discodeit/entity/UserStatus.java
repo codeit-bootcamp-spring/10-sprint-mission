@@ -1,49 +1,49 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.UUID;
 
+@Entity
+@Table(name = "user_statuses")
 @Getter
-@ToString
-public class UserStatus extends BaseEntity implements Serializable {
+@ToString(callSuper = true, exclude = "user")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class UserStatus extends BaseUpdatableEntity {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false, unique = true)
+  private User user;
 
-  private final UUID userId;
-  private boolean isActive;
+  @Column(nullable = false)
   private Instant lastActiveAt;
 
-  public UserStatus(UUID userId, boolean isActive, Instant lastActiveAt) {
+  public UserStatus(User user, Instant lastActiveAt) {
     super();
-    this.userId = userId;
-    this.isActive = isActive;
-    this.lastActiveAt = lastActiveAt;
+    this.user = user;
+    this.lastActiveAt = (lastActiveAt != null) ? lastActiveAt : Instant.now();
   }
 
-  // 5분 이내 접속 여부
   public boolean isOnline() {
-    return this.isActive && this.lastActiveAt.isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
-  }
-
-  // 유저 상태 설정
-  public void updateStatus(boolean online) {
-    this.isActive = online;
-    this.lastActiveAt = Instant.now();
-    this.updated();
+    return this.lastActiveAt != null &&
+        this.lastActiveAt.isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
   }
 
   // 마지막 접속시간 저장
   public void updateLastActiveAt(Instant lastActiveAt) {
     if (lastActiveAt != null) {
       this.lastActiveAt = lastActiveAt;
-      this.updated();
     }
   }
 }

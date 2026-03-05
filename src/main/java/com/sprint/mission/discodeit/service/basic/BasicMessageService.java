@@ -82,7 +82,7 @@ public class BasicMessageService implements MessageService {
     if (request.attachmentIds() != null) {
       request.attachmentIds().forEach(this::validateBinaryContentExists);
       message.getAttachmentIds().forEach(binaryContentRepository::deleteById);
-      message.updateAttachmentIds(request.attachmentIds());
+      message.updateAttachments(request.attachmentIds());
     }
 
     messageRepository.save(message);
