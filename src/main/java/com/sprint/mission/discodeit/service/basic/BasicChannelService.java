@@ -99,7 +99,6 @@ public class BasicChannelService implements ChannelService {
   public void delete(UUID channelId) {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
-    //채널의 연관 데이터 (메시지, ReadStatus) 처리 여부 추가 필요
     channelRepository.delete(channel);
   }
 

@@ -62,7 +62,7 @@ public class BasicUserService implements UserService {
 
     UserStatus userStatus = new UserStatus(user);
 
-    user.setUserStatus(userStatus); // 편의 메서드
+    user.setStatus(userStatus); // 편의 메서드
     userRepository.save(user); //cascade로 UserStatus도 같이 INSERT
 
     return userMapper.toDto(user);
@@ -123,7 +123,6 @@ public class BasicUserService implements UserService {
   public void delete(UUID userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
-    //유저의 연관 데이터 (메시지, ReadStatus) 처리 여부 추가 필요
     userRepository.delete(user);
   }
 

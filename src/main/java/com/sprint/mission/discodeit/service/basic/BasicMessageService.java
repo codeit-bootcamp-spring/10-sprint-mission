@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.page.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
@@ -11,6 +12,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -22,6 +24,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +42,7 @@ public class BasicMessageService implements MessageService {
   private final MessageMapper messageMapper;
   private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentRepository binaryContentRepository;
+  private final PageMapper pageMapper;
 
   @Override
   public MessageDto create(MessageCreateRequest request, List<MultipartFile> multipartFiles) {
@@ -53,8 +60,8 @@ public class BasicMessageService implements MessageService {
 
     Message message = new Message(
         request.content(),
-        user,
-        channel
+        channel,
+        user
     );
 
     //요청에 첨부파일이 있다면 for-loop를 통해 객체 생성 후 저장
@@ -90,11 +97,12 @@ public class BasicMessageService implements MessageService {
   }
 
   //todo N+1 문제 발생하는 코드
-  @Override
-  public List<MessageDto> findAllByChannelId(UUID channelId) {
-    return messageRepository.findAllByChannelId(channelId).stream()
-        .map(messageMapper::toDto)
-        .toList();
+  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page, int size) {
+    Pageable pageable = PageRequest.of(page, size,
+        Sort.by("createdAt").descending());
+    Page<Message> messages = messageRepository.findAllByChannelId(channelId, pageable);
+    Page<MessageDto> messageDtos = messages.map(messageMapper::toDto);
+    return pageMapper.fromPage(messageDtos);
   }
 
   @Override

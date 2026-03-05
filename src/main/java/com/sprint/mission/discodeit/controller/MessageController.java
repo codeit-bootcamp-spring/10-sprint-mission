@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.page.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -82,11 +83,12 @@ public class MessageController {
   @GetMapping
   @Operation(summary = "Channel의 Message 목록 조회")
   @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공")
-  public ResponseEntity<List<MessageDto>> findAllByChannelId(
+  public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @Parameter(description = "조회할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
-      @RequestParam("channelId") UUID channelId
+      @RequestParam("channelId") UUID channelId,
+      @RequestParam("page") int page
   ) {
-    List<MessageDto> responses = messageService.findAllByChannelId(channelId);
-    return ResponseEntity.status(HttpStatus.OK).body(responses);
+    PageResponse<MessageDto> response = messageService.findAllByChannelId(channelId, page, 50);
+    return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

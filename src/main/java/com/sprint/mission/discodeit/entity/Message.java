@@ -25,12 +25,13 @@ public class Message extends BaseUpdatableEntity {
   private String content;
 
   @ManyToOne
+  @JoinColumn(name = "CHANNEL_ID")
+  private Channel channel;
+
+  @ManyToOne
   @JoinColumn(name = "AUTHOR_ID")
   private User author;
 
-  @ManyToOne
-  @JoinColumn(name = "CHANNEL_ID")
-  private Channel channel;
 
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinTable(
@@ -40,10 +41,10 @@ public class Message extends BaseUpdatableEntity {
   )
   private List<BinaryContent> attachments = new ArrayList<>();
 
-  public Message(String content, User author, Channel channel) {
+  public Message(String content, Channel channel, User author) {
     this.content = content;
-    this.author = author;
     this.channel = channel;
+    this.author = author;
   }
 
   public void update(String content) {
