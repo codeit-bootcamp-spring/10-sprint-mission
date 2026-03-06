@@ -29,10 +29,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicMessageService implements MessageService {
 
   private final ChannelRepository channelRepository;
@@ -90,13 +92,15 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public MessageDto findById(UUID messageId) {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
     return messageMapper.toDto(message);
   }
 
-  //todo N+1 문제 발생하는 코드
+  @Override
+  @Transactional(readOnly = true)
   public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page, int size) {
     Pageable pageable = PageRequest.of(page, size,
         Sort.by("createdAt").descending());
@@ -111,7 +115,6 @@ public class BasicMessageService implements MessageService {
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
 
     message.update(request.newContent());
-    messageRepository.save(message);
     return messageMapper.toDto(message);
   }
 

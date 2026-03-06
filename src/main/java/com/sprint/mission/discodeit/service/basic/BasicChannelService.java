@@ -20,14 +20,15 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicChannelService implements ChannelService {
 
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
-  private final MessageRepository messageRepository;
   private final UserRepository userRepository;
   private final ChannelMapper channelMapper;
 
@@ -63,6 +64,7 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ChannelDto findById(UUID channelId) {
     //채널Id로 채널 객체 조회
     Channel channel = channelRepository.findById(channelId)
@@ -70,13 +72,15 @@ public class BasicChannelService implements ChannelService {
     return channelMapper.toDto(channel);
   }
 
+  //todo N+1 문제 발생하는 코드
   @Override
+  @Transactional(readOnly = true)
   public List<ChannelDto> findAllByUserId(UUID userId) {
     List<Channel> channelList = channelRepository.findAccessibleChannelsByUserId(
         userId); //쿼리튜닝
 
     return channelList.stream()
-        .map(channelMapper::toDto)
+        .map(channelMapper::toDto) //이 메서드는 매핑 과정에서 MessageRepository와 ReadStatusRepository를 각각 호출
         .toList();
   }
 
@@ -91,7 +95,6 @@ public class BasicChannelService implements ChannelService {
     Optional.ofNullable(request.newName()).ifPresent(channel::updateChannelName);
     Optional.ofNullable(request.newDescription()).ifPresent(channel::updateDescription);
 
-    channelRepository.save(channel);
     return channelMapper.toDto(channel);
   }
 

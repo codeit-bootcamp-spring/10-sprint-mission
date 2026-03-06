@@ -32,7 +32,6 @@ public class Message extends BaseUpdatableEntity {
   @JoinColumn(name = "AUTHOR_ID")
   private User author;
 
-
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinTable(
       name = "MESSAGE_ATTACHMENTS",

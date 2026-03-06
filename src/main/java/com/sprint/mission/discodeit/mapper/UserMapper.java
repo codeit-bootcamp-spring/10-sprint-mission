@@ -9,6 +9,6 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
   @Mapping(target = "profile", source = "profile")
-  @Mapping(target = "online", source = "userStatus.online")
+  @Mapping(target = "online", source = "status.online")
   UserDto toDto(User user);
 }

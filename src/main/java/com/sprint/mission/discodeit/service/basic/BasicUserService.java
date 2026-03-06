@@ -19,10 +19,12 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
@@ -69,14 +71,15 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserDto findById(UUID userId) {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     return userMapper.toDto(user);
   }
 
-  //todo N+1 문제 발생하는 코드
   @Override
+  @Transactional(readOnly = true)
   public List<UserDto> findAll() {
     return userRepository.findAll().stream()
         .map(userMapper::toDto)
@@ -113,8 +116,6 @@ public class BasicUserService implements UserService {
       }
 
     }
-    //프로필 말고 다른 변경사항이 있을 수 있으니 if문 밖에서 저장
-    userRepository.save(user);
 
     return userMapper.toDto(user);
   }

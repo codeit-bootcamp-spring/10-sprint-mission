@@ -17,9 +17,11 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicReadStatusService implements ReadStatusService {
 
   private final ReadStatusRepository readStatusRepository;
@@ -48,6 +50,7 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ReadStatusDto findById(UUID statusId) {
     ReadStatus status = readStatusRepository.findById(statusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
@@ -55,6 +58,7 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<ReadStatusDto> findAllByUserId(UUID userId) {
     return readStatusRepository.findAllByUserId(userId).stream()
         .map(readStatusMapper::toDto)
@@ -66,7 +70,6 @@ public class BasicReadStatusService implements ReadStatusService {
     ReadStatus status = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
     status.updateLastReadAt(request.newLastReadAt());
-    readStatusRepository.save(status);
     return readStatusMapper.toDto(status);
   }
 

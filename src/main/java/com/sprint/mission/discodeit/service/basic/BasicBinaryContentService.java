@@ -14,10 +14,12 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
@@ -43,6 +45,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public BinaryContentDto findById(UUID binaryContentId) {
     BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.BINARY_CONTENT_NOT_FOUND));
@@ -50,9 +53,11 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
-  public List<BinaryContentDto> findAllByIdIn(List<UUID> contentsIds) {
-    return contentsIds.stream()
-        .map(this::findById)
+  @Transactional(readOnly = true)
+  public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
+    List<BinaryContent> allByIdIn = binaryContentRepository.findAllByIdIn(ids);
+    return allByIdIn.stream()
+        .map(binaryContentMapper::toDto)
         .toList();
   }
 

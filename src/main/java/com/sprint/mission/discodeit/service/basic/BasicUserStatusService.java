@@ -16,9 +16,11 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicUserStatusService implements UserStatusService {
 
   private final UserStatusRepository userStatusRepository;
@@ -45,6 +47,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public UserStatusDto findById(UUID userStatusId) {
     UserStatus status = userStatusRepository.findById(userStatusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
@@ -52,6 +55,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<UserStatusDto> findAll() {
     return userStatusRepository.findAll().stream()
         .map(userStatusMapper::toDto)

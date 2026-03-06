@@ -10,15 +10,18 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicAuthService implements AuthService {
 
   private final UserRepository userRepository;
   private final UserMapper userMapper;
 
   @Override
+  @Transactional(readOnly = true)
   public UserDto login(LoginRequest request) {
     User user = userRepository.findByUsername(request.username())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
