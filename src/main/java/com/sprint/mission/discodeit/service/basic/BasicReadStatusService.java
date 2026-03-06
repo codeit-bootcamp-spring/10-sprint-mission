@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -12,9 +12,11 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,35 +25,10 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
-    private final ReadStatusDTOMapper readStatusDTOMapper;
 
-//    @Override
-//    public ReadStatusResponseDTO create(ReadStatusCreateRequestDTO req) {
-//        Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
-//
-//        Channel channel = channelRepository.findById(req.channelId())
-//                .orElseThrow(
-//                        () -> new IllegalStateException("채널이 존재하지 않습니다.")
-//                );
-//
-//        User user = userRepository.findById(req.userId())
-//                .orElseThrow(
-//                        () -> new IllegalStateException("유저가 존재하지 않습니다.")
-//                );
-//
-//        if(readStatusRepository.findAll().stream().anyMatch(rs ->
-//            channel.getId().equals(rs.getChannelID()) && user.getId().equals(rs.getUserID()))
-//        ){
-//            throw new IllegalStateException("해당 ReadStatus 정보가 중복됩니다.");
-//        }
-//
-//        ReadStatus readStatus = readStatusDTOMapper.createReqToReadStatus(req);
-//        ReadStatus saved = readStatusRepository.save(readStatus);
-//        return readStatusDTOMapper.rsToResponse(saved);
-//    }
-
+    @Transactional
     @Override
-    public ReadStatusResponseDTO create(ReadStatusCreateRequestDTO req) {
+    public ReadStatusDto create(ReadStatusCreateRequestDTO req) {
         Objects.requireNonNull(req.channelId(), "유효하지 않은 id입니다!");
         Objects.requireNonNull(req.userId(), "유효하지 않은 id입니다!");
 
@@ -60,71 +37,69 @@ public class BasicReadStatusService implements ReadStatusService {
         User user = userRepository.findById(req.userId())
             .orElseThrow(() -> new NoSuchElementException("해당 유저가 존재하지 않습니다!"));
 
-        if (readStatusRepository.findAll().stream().anyMatch(
-            rs -> rs.getUserID().equals(req.userId()) && rs.getChannelID()
-                .equals(req.channelId()))) {
-            throw new IllegalStateException("읽기 정보가 이미 존재합니다.");
+        try {
+            ReadStatus readStatus = new ReadStatus(user, channel);
+            readStatusRepository.save(readStatus);
+            return ReadStatusDTOMapper.rsToResponse(readStatus);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalStateException("ReadStatus 데이터가 중복됩니다!");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public ReadStatusDto find(UUID rsId) {
+        Objects.requireNonNull(rsId, "유효하지 않은 ReadStatus ID 입니다.");
+        ReadStatus readStatus =
+            readStatusRepository.findById(rsId)
+                .orElseThrow(
+                    () -> new NoSuchElementException("해당 ReadStatus를 찾을 수 없음."));
+
+        return ReadStatusDTOMapper.rsToResponse(readStatus);
+    }
+
+    @Transactional
+    @Override
+    public List<ReadStatusDto> findAllByUserId(UUID userId) {
+        Objects.requireNonNull(userId, "유효하지 않은 유저 ID 입니다.");
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("유저가 존재하지 않음");
         }
 
-        ReadStatus readStatus = new ReadStatus(req.userId(), req.channelId());
-        ReadStatus saved = readStatusRepository.save(readStatus);
-
-        return readStatusDTOMapper.rsToResponse(saved);
-    }
-
-    @Override
-    public ReadStatusResponseDTO find(UUID rsId) {
-        Objects.requireNonNull(rsId, "유효하지 않은 ReadStatus ID 입니다.");
-        Optional<ReadStatus> readStatus = readStatusRepository.findByID(rsId);
-        return readStatusDTOMapper.rsToResponse(Objects.requireNonNull(readStatus.orElse(null)));
-    }
-
-    @Override
-    public List<ReadStatusResponseDTO> findAllByUserId(UUID userId) {
-        Objects.requireNonNull(userId, "유효하지 않은 유저 ID 입니다.");
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("사용자 ID를 찾을 수 없습니다."));
-
-        return readStatusRepository.findAll().stream()
-            .filter(rs -> userId.equals(rs.getUserID()))
-            .map(readStatusDTOMapper::rsToResponse
-            ).toList();
+        return readStatusRepository
+            .findAllByUserId(userId)
+            .stream()
+            .map(ReadStatusDTOMapper::rsToResponse).toList();
 
     }
 
+    @Transactional
     @Override
-    public ReadStatusResponseDTO update(UUID id, ReadStatusUpdateRequestDTO req) {
+    public ReadStatusDto update(UUID id, ReadStatusUpdateRequestDTO req) {
         Objects.requireNonNull(req, "유효하지 않은 요청입니다!");
         Objects.requireNonNull(id, "유효하지 않은 식별자입니다!");
 
-//        ReadStatus readStatus = readStatusRepository
-//                .findAll()
-//                .stream()
-//                .filter(rs -> req.id().equals(rs.getId()))
-//                .findFirst()
-//                .orElseThrow(() -> new IllegalStateException("존재하지 않는 ReadStatus 입니다!"));
-
-        ReadStatus readStatus = readStatusRepository.findByID(id).orElseThrow(
+        ReadStatus readStatus = readStatusRepository.findById(id).orElseThrow(
             () -> new NoSuchElementException("존재하지 않는 ReadStatus 입니다!")
         );
 
         readStatus.update();
         ReadStatus saved = readStatusRepository.save(readStatus);
 
-        return new ReadStatusResponseDTO(readStatus.getId(),
-            saved.getCreatedAt(),
-            saved.getUpdatedAt(),
-            readStatus.getUserID(),
-            readStatus.getChannelID(),
+        return new ReadStatusDto(
+            readStatus.getId(),
+            readStatus.getUser().getId(),
+            readStatus.getChannel().getId(),
             saved.getLastReadAt());
 
     }
 
+    @Transactional
     @Override
     public void delete(UUID id) {
         Objects.requireNonNull(id, "유효하지 않은 ID입니다.");
 
-        readStatusRepository.deleteByID(id);
+        readStatusRepository.deleteById(id);
 
     }
 }

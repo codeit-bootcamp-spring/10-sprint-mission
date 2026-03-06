@@ -1,10 +1,10 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.userdto.UserCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.userdto.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
-import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
@@ -18,16 +18,12 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import javax.print.attribute.standard.Media;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -51,13 +47,13 @@ public class UserController {
             content = @Content(
                 array = @ArraySchema(
                     schema = @Schema(
-                        implementation = UserResponseDTO.class
+                        implementation = UserDto.class
                     )
                 )
             )
         )
     })
-    public ResponseEntity<List<UserResponseDTO>> getUsers() {
+    public ResponseEntity<List<UserDto>> getUsers() {
         return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }
 
@@ -69,7 +65,7 @@ public class UserController {
             description = "User가 성공적으로 생성됨",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = UserResponseDTO.class)
+                schema = @Schema(implementation = UserDto.class)
             )
         ),
         @ApiResponse(
@@ -81,12 +77,12 @@ public class UserController {
                 examples = @ExampleObject("User with email {email} already exists")
             ))
     })
-    public ResponseEntity<UserResponseDTO> create(
+    public ResponseEntity<UserDto> create(
         @RequestPart("userCreateRequest") UserCreateRequestDTO userCreateRequestDTO,
         @RequestPart(value = "profile", required = false) MultipartFile profileImage) {
-        Optional<BinaryContentDTO> profileDto = BinaryContentDTOMapper.multipartToResponseDto(
+        Optional<BinaryContentDto> profileDto = BinaryContentDTOMapper.multipartToResponseDto(
             profileImage);
-        UserResponseDTO response = userService.create(userCreateRequestDTO,
+        UserDto response = userService.create(userCreateRequestDTO,
             profileDto.orElse(null));
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -139,11 +135,11 @@ public class UserController {
             )
         )
     })
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID userId,
+    public ResponseEntity<UserDto> updateUser(@PathVariable UUID userId,
         @RequestPart("userUpdateRequest") UserUpdateDTO req,
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-        Optional<BinaryContentDTO> profileDto = BinaryContentDTOMapper.multipartToResponseDto(
+        Optional<BinaryContentDto> profileDto = BinaryContentDTOMapper.multipartToResponseDto(
             profile);
 
         return new ResponseEntity<>(userService.update(userId, req, profileDto.orElse(null)),
@@ -170,7 +166,7 @@ public class UserController {
         )
     }
     )
-    public ResponseEntity<UserStatusResponseDTO> updateUserOnline(
+    public ResponseEntity<UserStatusDto> updateUserOnline(
         @PathVariable UUID userId,
         @RequestBody UserStatusUpdateRequestDTO req) {
         return new ResponseEntity<>(userStatusService.activateUserOnline(userId, req),

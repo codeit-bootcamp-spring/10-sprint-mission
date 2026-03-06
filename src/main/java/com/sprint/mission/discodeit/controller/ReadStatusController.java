@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.service.ReadStatusService;
@@ -15,7 +15,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,7 +36,7 @@ public class ReadStatusController {
             array = @ArraySchema(schema = @Schema(implementation = ReadStatus.class))
         )
     )
-    public ResponseEntity<List<ReadStatusResponseDTO>> getReadStatus(@RequestParam UUID userId) {
+    public ResponseEntity<List<ReadStatusDto>> getReadStatus(@RequestParam UUID userId) {
         return new ResponseEntity<>(readStatusService.findAllByUserId(userId), HttpStatus.OK);
     }
 
@@ -62,12 +61,12 @@ public class ReadStatusController {
             description = "Message 읽음 상태가 성공적으로 생성됨",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = ReadStatusResponseDTO.class)
+                schema = @Schema(implementation = ReadStatusDto.class)
             )
         )
     }
     )
-    public ResponseEntity<ReadStatusResponseDTO> createReadStatus(
+    public ResponseEntity<ReadStatusDto> createReadStatus(
         @RequestBody ReadStatusCreateRequestDTO req) {
         return new ResponseEntity<>(readStatusService.create(req), HttpStatus.CREATED);
     }
@@ -79,7 +78,7 @@ public class ReadStatusController {
             description = "Message 읽음 상태가 성공적으로 수정됨",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = ReadStatusResponseDTO.class)
+                schema = @Schema(implementation = ReadStatusDto.class)
             )
         ),
         @ApiResponse(
@@ -91,7 +90,7 @@ public class ReadStatusController {
         )
     }
     )
-    public ResponseEntity<ReadStatusResponseDTO> editReadStatus(
+    public ResponseEntity<ReadStatusDto> editReadStatus(
         @Valid @RequestBody ReadStatusUpdateRequestDTO req,
         @PathVariable UUID readStatusId) {
         return new ResponseEntity<>(readStatusService.update(readStatusId, req), HttpStatus.OK);

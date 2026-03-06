@@ -2,7 +2,19 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.NoSuchElementException;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -14,35 +26,28 @@ import java.util.UUID;
 
 @Getter
 @Setter
+@Entity
+@Table(name = "channels")
+@RequiredArgsConstructor
 public class Channel extends BaseUpdatableEntity {
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, updatable = true)
     private ChannelType type;
+
+    @Column(nullable = false, updatable = true, unique = true)
     private String name;
+
+    @Column(nullable = false, updatable = true)
     private String description;
-    private List<UUID> userList;
+
 
     public Channel(ChannelType type, String name, String description) {
         this.type = type;
         this.name = name;
         this.description = description;
-        this.userList = new ArrayList<>();
     }
 
-    public void userJoin(UUID userID) {
-        Objects.requireNonNull(userID, "유효하지 않은 User 입니다.");
-        if (userList.stream().anyMatch(userID::equals)) {
-            throw new IllegalStateException("이미 유저가 채널에 가입되어 있습니다.");
-        }
-        userList.add(userID);
-    }
-
-    public void userLeave(UUID userID) {
-        Objects.requireNonNull(userID, "유효하지 않은 User 입니다.");
-        if (userList.stream().noneMatch(userID::equals)) {
-            throw new IllegalStateException("해당 채널에 유저가 존재하지 않습니다.");
-        }
-        userList.remove(userID);
-    }
 
     public void update(String newName, String newDescription) {
         boolean anyValueUpdated = false;

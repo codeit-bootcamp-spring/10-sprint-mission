@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentResponseDTO;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,7 +36,7 @@ public class BinaryContentController {
             )
         )
     )
-    public ResponseEntity<List<BinaryContentResponseDTO>> getBinaryContents(
+    public ResponseEntity<List<BinaryContentDto>> getBinaryContents(
         @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
 
         return new ResponseEntity<>(binaryContentService.findAllByIdIn(binaryContentIds),
@@ -65,7 +63,7 @@ public class BinaryContentController {
             )
         )
     })
-    public ResponseEntity<BinaryContentResponseDTO> getBinaryContent(
+    public ResponseEntity<BinaryContentDto> getBinaryContent(
         @PathVariable UUID binaryContentId) {
         return new ResponseEntity<>(binaryContentService.find(binaryContentId), HttpStatus.OK);
     }

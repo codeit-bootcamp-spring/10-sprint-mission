@@ -1,30 +1,34 @@
 package com.sprint.mission.discodeit.entity.mapper;
 
 import com.sprint.mission.discodeit.dto.userdto.UserCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.userdto.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.userdto.UserDto;
+import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
-import org.springframework.stereotype.Component;
+//import com.sprint.mission.discodeit.entity.UserStatus;
+//import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+//import com.sprint.mission.discodeit.service.UserStatusService;
+//import org.springframework.stereotype.Component;
+//
+//import java.util.UUID;
 
-import java.util.UUID;
-
-@Component
+//@Component
 public class UserDTOMapper {
 
-    public UserResponseDTO userToResponse(User user, UserStatus userStatus) {
-        return new UserResponseDTO(
+    public static UserDto userToResponse(User user, boolean online) {
+        return new UserDto(
             user.getId(),
-            user.getCreatedAt(),
-            user.getUp(),
             user.getUsername(),
             user.getEmail(),
-            user.getProfileID(),
-            userStatus.isOnline()
-        );
+            BinaryContentDTOMapper.binaryContentToResponse(user.getProfile()),
+            online);
     }
 
-    public User regtoUser(UserCreateRequestDTO req, UUID profileId) {
-        return new User(req.username(), req.email(), req.password(), profileId);
+    public static User regtoUser(UserCreateRequestDTO req, BinaryContent profile) {
+        return new User(
+            req.username(),
+            req.email(),
+            req.password(),
+            profile);
     }
 
 

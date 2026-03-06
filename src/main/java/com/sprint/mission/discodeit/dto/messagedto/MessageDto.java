@@ -1,18 +1,19 @@
 package com.sprint.mission.discodeit.dto.messagedto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public record MessageResponseDTO(
+public record MessageDto(
     UUID id,
     Instant createdAt,
     Instant updatedAt,
     String content,
     UUID channelId,
-    UUID authorId,
-    List<UUID> attachmentIds
+    UserDto author,
+    List<BinaryContentDto> attachmentIds
 ) {
 
 }

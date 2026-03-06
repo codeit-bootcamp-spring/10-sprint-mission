@@ -1,27 +1,30 @@
 package com.sprint.mission.discodeit.entity.mapper;
 
 import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusDto;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
 @Component
+@RequiredArgsConstructor
 public class ReadStatusDTOMapper {
 
-    public ReadStatus createReqToReadStatus(ReadStatusCreateRequestDTO req) {
-        Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
-        return new ReadStatus(req.userId(), req.channelId());
-    }
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
 
-    public ReadStatusResponseDTO rsToResponse(ReadStatus readStatus) {
-        return new ReadStatusResponseDTO(
+
+    public static ReadStatusDto rsToResponse(ReadStatus readStatus) {
+        return new ReadStatusDto(
             readStatus.getId(),
-            readStatus.getCreatedAt(),
-            readStatus.getUpdatedAt(),
-            readStatus.getUserID(),
-            readStatus.getChannelID(),
+            readStatus.getUser().getId(),
+            readStatus.getChannel().getId(),
             readStatus.getLastReadAt()
         );
     }
