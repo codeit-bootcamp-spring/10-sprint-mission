@@ -1,21 +1,20 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.response.UserDetailResponseDTO;
-import com.sprint.mission.discodeit.dto.response.UserSummaryResponseDTO;
-import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.response.UserDto;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface UserService {
-    UserSummaryResponseDTO create(UserCreateRequestDTO userCreateRequestDTO,
-                                  Optional<BinaryContentCreateRequestDTO> binaryContentCreateRequestDTO);
-    UserDetailResponseDTO find(UUID userId);
-    List<UserDetailResponseDTO> findAll();
-    UserSummaryResponseDTO update(UUID userId, UserUpdateRequestDTO userUpdateRequestDTO,
-                                  Optional<BinaryContentCreateRequestDTO> binaryContentCreateRequestDTO);
+    UserDto create(UserCreateRequest userCreateRequest,
+                                  Optional<BinaryContentCreateRequest> binaryContentCreateRequestDTO);
+    UserDto find(UUID userId);
+    List<UserDto> findAll();
+    UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
+                                  Optional<BinaryContentCreateRequest> binaryContentCreateRequestDTO);
     void delete(UUID userId);
 }

@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.MessageCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequestDTO;
-import com.sprint.mission.discodeit.dto.response.MessageResponseDTO;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.MessageDto;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,7 +41,7 @@ public class MessageController {
                     responseCode = "201",
                     description = "Message가 성공적으로 생성됨",
                     content = @Content(
-                            schema = @Schema(implementation = MessageResponseDTO.class)
+                            schema = @Schema(implementation = MessageDto.class)
                     )
             ),
             @ApiResponse(
@@ -52,13 +52,13 @@ public class MessageController {
                     )
             )
     })
-    public ResponseEntity<MessageResponseDTO> create(
+    public ResponseEntity<MessageDto> create(
             @Parameter(description = "Message 생성 정보")
-            @RequestPart("messageCreateRequest") MessageCreateRequestDTO messageCreateRequestDTO,
+            @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
             @Parameter(description = "Message 첨부 파일들")
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
-        Optional<List<BinaryContentCreateRequestDTO>> attachmentsDTOList = toBinaryContentCreateRequestDTOList(attachments);
-        MessageResponseDTO response = messageService.create(messageCreateRequestDTO, attachmentsDTOList);
+        Optional<List<BinaryContentCreateRequest>> attachmentsDTOList = toBinaryContentCreateRequestDTOList(attachments);
+        MessageDto response = messageService.create(messageCreateRequest, attachmentsDTOList);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -70,7 +70,7 @@ public class MessageController {
                     responseCode = "200",
                     description = "Message가 성공적으로 수정됨",
                     content = @Content(
-                            schema = @Schema(implementation = MessageResponseDTO.class)
+                            schema = @Schema(implementation = MessageDto.class)
                     )
             ),
             @ApiResponse(
@@ -81,11 +81,11 @@ public class MessageController {
                     )
             )
     })
-    public ResponseEntity<MessageResponseDTO> update(
+    public ResponseEntity<MessageDto> update(
             @Parameter(description = "수정할 Message ID")
             @PathVariable("messageId") UUID messageId,
-            @RequestBody MessageUpdateRequestDTO messageUpdateRequestDTO) {
-        MessageResponseDTO response = messageService.update(messageId, messageUpdateRequestDTO);
+            @RequestBody MessageUpdateRequest messageUpdateRequest) {
+        MessageDto response = messageService.update(messageId, messageUpdateRequest);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -121,25 +121,25 @@ public class MessageController {
                     description = "Message 목록 조회 성공",
                     content = @Content(
                             array = @ArraySchema(
-                                    schema = @Schema(implementation = MessageResponseDTO.class)
+                                    schema = @Schema(implementation = MessageDto.class)
                             )
                     )
             )
     })
-    public ResponseEntity<List<MessageResponseDTO>> findAllByChannelId(
+    public ResponseEntity<List<MessageDto>> findAllByChannelId(
             @Parameter(description = "조회할 Channel ID")
             @RequestParam UUID channelId) {
-        List<MessageResponseDTO> response = messageService.findAllByChannelId(channelId);
+        List<MessageDto> response = messageService.findAllByChannelId(channelId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     // 메시지 생성시 첨부 파일을 Service에 전달 하기전 Optional<List<BinaryContentCreateRequestDTO>>로 변환하는 private 메서드
-    private Optional<List<BinaryContentCreateRequestDTO>> toBinaryContentCreateRequestDTOList(List<MultipartFile> attachments) {
+    private Optional<List<BinaryContentCreateRequest>> toBinaryContentCreateRequestDTOList(List<MultipartFile> attachments) {
         return Optional.ofNullable(attachments)
                 .map(files -> files.stream()
                         .map(file -> {
                             try {
-                                return new BinaryContentCreateRequestDTO(
+                                return new BinaryContentCreateRequest(
                                         file.getOriginalFilename(),
                                         file.getBytes(),
                                         file.getContentType()

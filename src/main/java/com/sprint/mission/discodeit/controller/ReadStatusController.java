@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequestDTO;
-import com.sprint.mission.discodeit.dto.response.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.ReadStatusDto;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -36,7 +36,7 @@ public class ReadStatusController {
                     responseCode = "201",
                     description = "Message 읽음 상태가 성공적으로 생성됨",
                     content = @Content(
-                            schema = @Schema(implementation = ReadStatusResponseDTO.class)
+                            schema = @Schema(implementation = ReadStatusDto.class)
                     )
             ),
             @ApiResponse(
@@ -54,8 +54,8 @@ public class ReadStatusController {
                     )
             )
     })
-    public ResponseEntity<ReadStatusResponseDTO> create(@RequestBody ReadStatusCreateRequestDTO readStatusCreateRequestDTO) {
-        ReadStatusResponseDTO response = readStatusService.create(readStatusCreateRequestDTO);
+    public ResponseEntity<ReadStatusDto> create(@RequestBody ReadStatusCreateRequest readStatusCreateRequest) {
+        ReadStatusDto response = readStatusService.create(readStatusCreateRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -67,7 +67,7 @@ public class ReadStatusController {
                     responseCode = "200",
                     description = "Message 읽음 상태가 성공적으로 수정됨",
                     content = @Content(
-                            schema = @Schema(implementation = ReadStatusResponseDTO.class)
+                            schema = @Schema(implementation = ReadStatusDto.class)
                     )
             ),
             @ApiResponse(
@@ -78,11 +78,11 @@ public class ReadStatusController {
                     )
             )
     })
-    public ResponseEntity<ReadStatusResponseDTO> update(
+    public ResponseEntity<ReadStatusDto> update(
             @Parameter(description = "수정할 읽음 상태 ID")
             @PathVariable("readStatusId") UUID readStatusId,
-            @RequestBody ReadStatusUpdateRequestDTO readStatusUpdateRequestDTO) {
-        ReadStatusResponseDTO response = readStatusService.update(readStatusId, readStatusUpdateRequestDTO);
+            @RequestBody ReadStatusUpdateRequest readStatusUpdateRequest) {
+        ReadStatusDto response = readStatusService.update(readStatusId, readStatusUpdateRequest);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -95,15 +95,15 @@ public class ReadStatusController {
                     description = "Message 읽음 상태 목록 조회 성공",
                     content = @Content(
                             array = @ArraySchema(
-                                    schema = @Schema(implementation = ReadStatusResponseDTO.class)
+                                    schema = @Schema(implementation = ReadStatusDto.class)
                             )
                     )
             )
     })
-    public ResponseEntity<List<ReadStatusResponseDTO>> findAllByUserId(
+    public ResponseEntity<List<ReadStatusDto>> findAllByUserId(
             @Parameter(description = "조회할 User ID")
             @RequestParam UUID userId) {
-        List<ReadStatusResponseDTO> response = readStatusService.findAllByUserId(userId);
+        List<ReadStatusDto> response = readStatusService.findAllByUserId(userId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

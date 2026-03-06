@@ -23,7 +23,8 @@ spring:
         format_sql: true
 
 
-discodeit:
-  repository:
-    type: file   #jcf | file
-    file-directory: .discodeit
+## 레포지토리와 서비스에 JPA 도입
+#discodeit:
+#  repository:
+#    type: file   #jcf | file
+#    file-directory: .discodeit

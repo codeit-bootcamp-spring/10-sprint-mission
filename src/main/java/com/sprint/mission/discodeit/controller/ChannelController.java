@@ -1,10 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.request.ChannelUpdateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.response.ChannelDetailResponseDTO;
-import com.sprint.mission.discodeit.dto.response.ChannelSummaryResponseDTO;
+import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.response.ChannelDto;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,12 +37,12 @@ public class ChannelController {
                     responseCode = "201",
                     description = "Public Channel이 성공적으로 생성됨",
                     content = @Content(
-                            schema = @Schema(implementation = ChannelSummaryResponseDTO.class)
+                            schema = @Schema(implementation = ChannelDto.class)
                     )
             )
     })
-    public ResponseEntity<ChannelSummaryResponseDTO> create(@RequestBody PublicChannelCreateRequestDTO publicChannelCreateRequestDTO) {
-        ChannelSummaryResponseDTO response = channelService.create(publicChannelCreateRequestDTO);
+    public ResponseEntity<ChannelDto> create(@RequestBody PublicChannelCreateRequest publicChannelCreateRequest) {
+        ChannelDto response = channelService.create(publicChannelCreateRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -55,12 +54,12 @@ public class ChannelController {
                     responseCode = "201",
                     description = "Private Channel이 성공적으로 생성됨",
                     content = @Content(
-                            schema = @Schema(implementation = ChannelSummaryResponseDTO.class)
+                            schema = @Schema(implementation = ChannelDto.class)
                     )
             )
     })
-    public ResponseEntity<ChannelSummaryResponseDTO> create(@RequestBody PrivateChannelCreateRequestDTO privateChannelCreateRequestDTO) {
-        ChannelSummaryResponseDTO response = channelService.create(privateChannelCreateRequestDTO);
+    public ResponseEntity<ChannelDto> create(@RequestBody PrivateChannelCreateRequest privateChannelCreateRequest) {
+        ChannelDto response = channelService.create(privateChannelCreateRequest);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -72,7 +71,7 @@ public class ChannelController {
                     responseCode = "200",
                     description = "Channel 정보가 성공적으로 수정됨",
                     content = @Content(
-                            schema = @Schema(implementation = ChannelSummaryResponseDTO.class)
+                            schema = @Schema(implementation = ChannelDto.class)
                     )
             ),
             @ApiResponse(
@@ -90,11 +89,11 @@ public class ChannelController {
                     )
             )
     })
-    public ResponseEntity<ChannelSummaryResponseDTO> update(
+    public ResponseEntity<ChannelDto> update(
             @Parameter(description = "수정할 Channel ID")
             @PathVariable("channelId") UUID channelId,
-            @RequestBody ChannelUpdateRequestDTO channelUpdateRequestDTO) {
-        ChannelSummaryResponseDTO response = channelService.update(channelId, channelUpdateRequestDTO);
+            @RequestBody PublicChannelUpdateRequest publicChannelUpdateRequest) {
+        ChannelDto response = channelService.update(channelId, publicChannelUpdateRequest);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -130,15 +129,15 @@ public class ChannelController {
                     description = "Channel 목록 조회 성공",
                     content = @Content(
                             array = @ArraySchema(
-                                    schema = @Schema(implementation = ChannelDetailResponseDTO.class)
+                                    schema = @Schema(implementation = ChannelDto.class)
                             )
                     )
             )
     })
-    public ResponseEntity<List<ChannelDetailResponseDTO>> findAllByUserId(
+    public ResponseEntity<List<ChannelDto>> findAllByUserId(
             @Parameter(description = "조회할 User ID")
             @RequestParam UUID userId) {
-        List<ChannelDetailResponseDTO> response = channelService.findAllByUserId(userId);
+        List<ChannelDto> response = channelService.findAllByUserId(userId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

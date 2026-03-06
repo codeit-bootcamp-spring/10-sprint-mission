@@ -1,12 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.UserCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.UserUpdateRequestDTO;
-import com.sprint.mission.discodeit.dto.response.UserDetailResponseDTO;
-import com.sprint.mission.discodeit.dto.response.UserStatusResponseDTO;
-import com.sprint.mission.discodeit.dto.response.UserSummaryResponseDTO;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.UserDto;
+import com.sprint.mission.discodeit.dto.response.UserStatusDto;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -47,7 +46,7 @@ public class UserController {
                     responseCode = "201",
                     description = "User가 성공적으로 생성됨",
                     content = @Content(
-                            schema = @Schema(implementation = UserSummaryResponseDTO.class)
+                            schema = @Schema(implementation = UserDto.class)
                     )
             ),
             @ApiResponse(
@@ -58,11 +57,11 @@ public class UserController {
                     )
             )
     })
-    public ResponseEntity<UserSummaryResponseDTO> create(@Valid @RequestPart("userCreateRequest") UserCreateRequestDTO userCreateRequestDTO,
+    public ResponseEntity<UserDto> create(@Valid @RequestPart("userCreateRequest") UserCreateRequest userCreateRequest,
                                                          @Parameter(description = "User 프로필 이미지", required = false)
                                                          @RequestPart(value = "profile", required = false) MultipartFile profileImage) {
-        Optional<BinaryContentCreateRequestDTO> profileImageDTO = toBinaryContentCreateRequestDTO(profileImage);
-        UserSummaryResponseDTO response = userService.create(userCreateRequestDTO, profileImageDTO);
+        Optional<BinaryContentCreateRequest> profileImageDto = toBinaryContentCreateRequest(profileImage);
+        UserDto response = userService.create(userCreateRequest, profileImageDto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
     
@@ -74,7 +73,7 @@ public class UserController {
                     responseCode = "200",
                     description = "User 정보가 성공적으로 수정됨",
                     content = @Content(
-                            schema = @Schema(implementation = UserSummaryResponseDTO.class)
+                            schema = @Schema(implementation = UserDto.class)
                     )
             ),
             @ApiResponse(
@@ -92,15 +91,15 @@ public class UserController {
                     )
             )
     })
-    public ResponseEntity<UserSummaryResponseDTO> update(
+    public ResponseEntity<UserDto> update(
             @Parameter(description = "수정할 User ID")
             @PathVariable("userId") UUID userId,
             @Parameter(description = "수정할 User 정보")
-            @Valid @RequestPart("userUpdateRequest") UserUpdateRequestDTO userUpdateRequestDTO,
+            @Valid @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
             @Parameter(description = "수정할 User 프로필 이미지")
             @RequestPart(value = "profile", required = false) MultipartFile profileImage) {
-        Optional<BinaryContentCreateRequestDTO> profileImageDTO = toBinaryContentCreateRequestDTO(profileImage);
-        UserSummaryResponseDTO response = userService.update(userId, userUpdateRequestDTO, profileImageDTO);
+        Optional<BinaryContentCreateRequest> profileImageDto = toBinaryContentCreateRequest(profileImage);
+        UserDto response = userService.update(userId, userUpdateRequest, profileImageDto);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -129,8 +128,8 @@ public class UserController {
     
     // 특정 사용자 조회
     @GetMapping(value = "/{userId}")
-    public ResponseEntity<UserDetailResponseDTO> find(@PathVariable("userId") UUID userId) {
-        UserDetailResponseDTO response = userService.find(userId);
+    public ResponseEntity<UserDto> find(@PathVariable("userId") UUID userId) {
+        UserDto response = userService.find(userId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
     
@@ -143,13 +142,13 @@ public class UserController {
                     description = "User 목록 조회 성공",
                     content = @Content(
                             array = @ArraySchema(
-                                    schema = @Schema(implementation = UserDetailResponseDTO.class)
+                                    schema = @Schema(implementation = UserDto.class)
                             )
                     )
             )
     })
-    public ResponseEntity<List<UserDetailResponseDTO>> findAll() {
-        List<UserDetailResponseDTO> response = userService.findAll();
+    public ResponseEntity<List<UserDto>> findAll() {
+        List<UserDto> response = userService.findAll();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -161,7 +160,7 @@ public class UserController {
                     responseCode = "200",
                     description = "User 온라인 상태가 성공적으로 업데이트됨",
                     content = @Content(
-                            schema = @Schema(implementation = UserStatusResponseDTO.class)
+                            schema = @Schema(implementation = UserStatusDto.class)
                     )
             ),
             @ApiResponse(
@@ -172,26 +171,26 @@ public class UserController {
                     )
             )
     })
-    public ResponseEntity<UserStatusResponseDTO> updateUserStatusByUserId(
+    public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
             @Parameter(description = "상태를 변경할 User ID")
             @PathVariable("userId") UUID userId,
-            @Valid @RequestBody UserStatusUpdateRequestDTO userStatusUpdateRequestDTO) {
-        UserStatusResponseDTO response = userStatusService.updateByUserId(userId, userStatusUpdateRequestDTO);
+            @Valid @RequestBody UserStatusUpdateRequest userStatusUpdateRequest) {
+        UserStatusDto response = userStatusService.updateByUserId(userId, userStatusUpdateRequest);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // 유저 생성, 수정 시 입력 받은 프로필 이미지를 Service에 전달하기 전 Optional<BinaryContentCreateRequestDTO>로 변환하는 private 메서드
-    private Optional<BinaryContentCreateRequestDTO> toBinaryContentCreateRequestDTO(MultipartFile file) {
+    // 유저 생성, 수정 시 입력 받은 프로필 이미지를 Service에 전달하기 전 Optional<BinaryContentCreateRequest>로 변환하는 private 메서드
+    private Optional<BinaryContentCreateRequest> toBinaryContentCreateRequest(MultipartFile file) {
         return Optional.ofNullable(file)
                 .map(f -> {
                     try {
-                        return new BinaryContentCreateRequestDTO(
+                        return new BinaryContentCreateRequest(
                                 f.getOriginalFilename(),
                                 f.getBytes(),
                                 f.getContentType()
                         );
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new IllegalArgumentException("파일 처리 중 오류 발생" + e.getMessage());
                     }
                 });
     }

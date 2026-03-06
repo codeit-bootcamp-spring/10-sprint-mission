@@ -6,6 +6,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Schema(description = "Private Channel 생성 정보")
-public record PrivateChannelCreateRequestDTO(
+public record PrivateChannelCreateRequest(
     List<UUID> participantIds
 ) {}

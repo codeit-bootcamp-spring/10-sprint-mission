@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.UUID;
 
-public record UserStatusCreateRequestDTO(
+public record UserStatusCreateRequest(
    @NotBlank(message = "UserStatus 생성시 userId가 blank일 수 없습니다")
    UUID userId,
    @NotBlank(message = "UserStatus 생성시 lastActiveAt이 blank일 수 없습니다")
