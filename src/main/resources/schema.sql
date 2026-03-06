@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS binary_contents
 create table if not exists users
 (
     id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    create_at  timestamptz  NOT NULL DEFAULT now(),
+    created_at timestamptz  NOT NULL DEFAULT now(),
     updated_at timestamptz  NOT NULL DEFAULT now(),
     username   varchar(50)  NOT NULL UNIQUE,
     email      varchar(100) NOT NULL UNIQUE,
@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS read_statuses
 (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at   timestamptz NOT NULL DEFAULT now(),
+    updated_at  timestamptz NOT NULL DEFAULT now(),
     user_id      uuid        NOT NULL,
     channel_id   uuid        NOT NULL,
     last_read_at timestamptz NOT NULL,

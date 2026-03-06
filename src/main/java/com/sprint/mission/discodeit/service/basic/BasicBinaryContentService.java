@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -13,24 +14,25 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
   public BinaryContent create(BinaryContentCreateRequest request) {
-    String fileName = request.fileName();
     byte[] bytes = request.bytes();
-    String contentType = request.contentType();
+    if(bytes == null) throw new IllegalArgumentException("Bytes must not be null");
     BinaryContent binaryContent = new BinaryContent(
-        fileName,
-        (long) bytes.length,
-        contentType,
-        bytes
+            request.fileName(),
+            (long) bytes.length,
+            request.contentType(),
+            bytes
     );
     return binaryContentRepository.save(binaryContent);
   }
 
+  @Transactional(readOnly = true)
   @Override
   public BinaryContent find(UUID binaryContentId) {
     return binaryContentRepository.findById(binaryContentId)
@@ -38,6 +40,7 @@ public class BasicBinaryContentService implements BinaryContentService {
             "BinaryContent with id " + binaryContentId + " not found"));
   }
 
+  @Transactional(readOnly = true)
   @Override
   public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
     return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
@@ -46,9 +49,10 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public void delete(UUID binaryContentId) {
-    if (!binaryContentRepository.existsById(binaryContentId)) {
-      throw new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
-    }
-    binaryContentRepository.deleteById(binaryContentId);
+    BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
+            .orElseThrow(() ->
+                    new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
+
+    binaryContentRepository.delete(binaryContent);
   }
 }

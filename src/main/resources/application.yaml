@@ -20,7 +20,7 @@ spring:
       encoding: UTF-8
   jpa:
     hibernate:
-        ddl-auto: none # 개발 단계는 update, 운영은 none 권장
+        ddl-auto: none # 개발 단계는 update, 운영은 none 권장 , 검증은 validate
     show-sql: true       # 실행 쿼리 확인
     properties:
         hibernate:

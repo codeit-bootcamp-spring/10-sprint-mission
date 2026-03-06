@@ -53,12 +53,13 @@ public class BasicUserService implements UserService {
 
     //각 항목둘로 생성
     User createdUser = new User(username, email, userCreateRequest.password(), profile);
+    User savedUser = userRepository.save(createdUser);
 
     // UserStatus 는 User를 객체로 받아서 참조.
-    UserStatus userStatus = new UserStatus(createdUser, Instant.now());
+    UserStatus userStatus = new UserStatus(savedUser, Instant.now());
     userStatusRepository.save(userStatus);
 
-    return createdUser;
+    return savedUser;
   }
 
   @Override

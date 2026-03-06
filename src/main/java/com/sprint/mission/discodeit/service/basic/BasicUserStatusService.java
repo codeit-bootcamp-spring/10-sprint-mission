@@ -46,22 +46,22 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatus find(UUID userStatusId) {
     return userStatusRepository.findById(userStatusId)
-            .orElseThrow(
-                    () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
+        .orElseThrow(
+            () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
   }
 
   @Transactional(readOnly = true)
   @Override
   public List<UserStatus> findAll() {
     return userStatusRepository.findAll().stream()
-            .toList();
+        .toList();
   }
 
   @Override
   public UserStatus update(UUID userStatusId, UserStatusUpdateRequest request) {
     UserStatus userStatus = userStatusRepository.findById(userStatusId)
-            .orElseThrow(
-                    () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
+        .orElseThrow(
+            () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
     userStatus.update(request.newLastActiveAt());
     //Dirty Checking
     return userStatus;
@@ -70,8 +70,8 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
     UserStatus userStatus = userStatusRepository.findByUser_Id(userId)
-            .orElseThrow(
-                    () -> new NoSuchElementException("UserStatus with userId " + userId + " not found"));
+        .orElseThrow(
+            () -> new NoSuchElementException("UserStatus with userId " + userId + " not found"));
 
     userStatus.update(request.newLastActiveAt());
     return userStatus;
@@ -84,5 +84,5 @@ public class BasicUserStatusService implements UserStatusService {
                     new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
 
     userStatusRepository.delete(userStatus);
-  }
+}
 }
