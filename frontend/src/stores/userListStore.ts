@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { getUsers, updateUserStatus } from '../api/user';
-import { UserDto, Pageable } from '../types/api';
+import { UserDto } from '../types/api';
 
 
 interface UserListStore {
   users: UserDto[];
-  fetchUsers: (pageable?: Pageable) => Promise<void>;
+  fetchUsers: () => Promise<void>;
   updateUserStatus: (userId: string) => Promise<void>;
 }
 

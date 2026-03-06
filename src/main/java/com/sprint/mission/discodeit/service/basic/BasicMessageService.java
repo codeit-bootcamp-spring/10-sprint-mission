@@ -21,13 +21,12 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -101,12 +100,37 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional(readOnly = true)
-  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page, int size) {
-    Pageable pageable = PageRequest.of(page, size,
-        Sort.by("createdAt").descending());
-    Page<Message> messages = messageRepository.findAllByChannelId(channelId, pageable);
-    Page<MessageDto> messageDtos = messages.map(messageMapper::toDto);
-    return pageMapper.fromPage(messageDtos);
+  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor,
+      Pageable pageable) {
+
+    Slice<Message> messages;
+
+    if (cursor == null) {
+      messages = messageRepository.findAllByChannelId(channelId, pageable);
+    } else {
+      messages = messageRepository.findAllByChannelIdAndCreatedAtLessThan(channelId, cursor,
+          pageable);
+    }
+
+    Slice<MessageDto> messageDtos = messages.map(messageMapper::toDto);
+    Instant nextCursor = getNextCursor(messageDtos);
+    return pageMapper.fromSlice(messageDtos, nextCursor);
+  }
+
+  private static Instant getNextCursor(Slice<MessageDto> messageDtos) {
+    // 다음 페이지가 더 이상 없다면 무한 스크롤을 종료하기 위해 null 반환
+    if (!messageDtos.hasNext()) {
+      return null;
+    }
+
+    List<MessageDto> content = messageDtos.getContent();
+
+    // 리스트가 비어있지 않은지 확인 후, 실제 데이터 리스트의 크기(size)를 기준으로 마지막 요소 추출
+    if (!content.isEmpty()) {
+      return content.get(content.size() - 1).createdAt();
+    }
+
+    return null;
   }
 
   @Override

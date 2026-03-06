@@ -11,9 +11,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -86,9 +88,11 @@ public class MessageController {
   public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @Parameter(description = "조회할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @RequestParam("channelId") UUID channelId,
-      @RequestParam("page") int page
+      @Parameter(description = "페이징 커서 정보")
+      @RequestParam(value = "cursor", required = false) Instant cursor, Pageable pageable
   ) {
-    PageResponse<MessageDto> response = messageService.findAllByChannelId(channelId, page, 50);
+    PageResponse<MessageDto> response = messageService.findAllByChannelId(channelId, cursor,
+        pageable);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

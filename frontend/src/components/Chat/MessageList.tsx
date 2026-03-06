@@ -40,7 +40,7 @@ function MessageList({ channel }: MessageListProps): JSX.Element {
 
   useEffect(() => {
     if (channel?.id) {
-      fetchMessages(channel.id);
+      fetchMessages(channel.id, null);
       startPolling(channel.id);
 
       return () => {
@@ -180,7 +180,7 @@ function MessageList({ channel }: MessageListProps): JSX.Element {
           inverse={true}
           endMessage={
             <p style={{ textAlign: 'center' }}>
-              <b>{pagination.currentPage > 0 ? "모든 메시지를 불러왔습니다" : ""}</b>
+              <b>{pagination.nextCursor !== null ? "모든 메시지를 불러왔습니다" : ""}</b>
             </p>
           }
         >

@@ -7,8 +7,8 @@ interface PollingIntervals {
   [channelId: string]: NodeJS.Timeout | boolean;
 }
 
-interface Pagination {
-  currentPage: number;
+interface CursorPagination {
+  nextCursor: string | null;
   pageSize: number;
   hasNext: boolean;
 }
@@ -17,8 +17,8 @@ interface MessageStore {
   messages: MessageDto[];
   pollingIntervals: PollingIntervals;
   lastMessageId: string | null;
-  pagination: Pagination;
-  fetchMessages: (channelId: string, pageable?: Pageable) => Promise<boolean>;
+  pagination: CursorPagination;
+  fetchMessages: (channelId: string, cursor: string | null, pageable?: Pageable) => Promise<boolean>;
   loadMoreMessages: (channelId: string) => Promise<void>;
   startPolling: (channelId: string) => void;
   stopPolling: (channelId: string) => void;
@@ -26,7 +26,6 @@ interface MessageStore {
 }
 
 const defaultPageable: Pageable = {
-  page: 0,
   size: 50,
   sort: ["createdAt,desc"]
 };
@@ -36,21 +35,21 @@ const useMessageStore = create<MessageStore>((set, get) => ({
   pollingIntervals: {},  // channelId를 key로 하는 polling interval map
   lastMessageId: null,  // 마지막 메시지 ID 저장
   pagination: {
-    currentPage: 0,
+    nextCursor: null,
     pageSize: 50,
     hasNext: false,
   },
 
-  fetchMessages: async (channelId, pageable = defaultPageable) => {
+  fetchMessages: async (channelId, cursor, pageable = defaultPageable) => {
     try {
-      const response = await getMessages(channelId, pageable);
+      const response = await getMessages(channelId, cursor, pageable);
       
       const messageList = response.content;
       const lastMessage = messageList.length > 0 ? messageList[0] : null;
       const hasNewMessages = lastMessage?.id !== get().lastMessageId;
       
       set((state) => {
-        const isPolling = pageable.page === 0;
+        const isPolling = !cursor;
         const isChannelChanged = channelId !== state.messages[0]?.channelId;
         const isFirstPolling = isPolling && (state.messages.length === 0 || isChannelChanged);
         let updatedMessages = [];
@@ -60,7 +59,7 @@ const useMessageStore = create<MessageStore>((set, get) => ({
           // 최초 로딩 시
           updatedMessages = messageList;
           pagination = {
-            currentPage: response.number,
+            nextCursor: response.nextCursor,
             pageSize: response.size,
             hasNext: response.hasNext
           };
@@ -75,20 +74,12 @@ const useMessageStore = create<MessageStore>((set, get) => ({
           updatedMessages = [...newMessages, ...state.messages];
         } else {
           // 이전 메시지 로드 시 (무한 스크롤)
-          if (state.messages.length > 0) {
-            // ID 기반 중복 체크 추가
-            const existingMessageIds = new Set(state.messages.map(msg => msg.id));
-            const loadedMessages = messageList.filter(message => 
-              !existingMessageIds.has(message.id) && 
-              message.createdAt < state.messages[state.messages.length - 1].createdAt
-            );
-            updatedMessages = [...state.messages, ...loadedMessages];
-          } else {
-            updatedMessages = messageList;
-          }
-          
+          // ID 기반 중복 체크 추가
+          const existingMessageIds = new Set(state.messages.map(msg => msg.id));
+          const loadedMessages = messageList.filter(message => !existingMessageIds.has(message.id));
+          updatedMessages = [...state.messages, ...loadedMessages];
           pagination = {
-            currentPage: response.number,
+            nextCursor: response.nextCursor,
             pageSize: response.size,
             hasNext: response.hasNext
           };
@@ -113,12 +104,9 @@ const useMessageStore = create<MessageStore>((set, get) => ({
     
     if (!pagination.hasNext) return;
     
-    const nextPage: Pageable = {
-      ...defaultPageable,
-      page: pagination.currentPage + 1
-    };
-    
-    await get().fetchMessages(channelId, nextPage);
+    await get().fetchMessages(channelId, pagination.nextCursor, {
+      ...defaultPageable
+    });
   },
 
   startPolling: (channelId) => {
@@ -152,8 +140,8 @@ const useMessageStore = create<MessageStore>((set, get) => ({
         return;
       }
 
-      // 항상 첫 페이지만 폴링
-      const hasNewMessages = await currentStore.fetchMessages(channelId, defaultPageable);
+      // 커서 없이 폴링 (최신 메시지만 가져오기)
+      const hasNewMessages = await currentStore.fetchMessages(channelId, null, defaultPageable);
       
       if (hasNewMessages) {
         pollInterval = 300;

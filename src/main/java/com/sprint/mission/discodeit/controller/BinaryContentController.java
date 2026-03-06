@@ -35,7 +35,7 @@ public class BinaryContentController {
       @ApiResponse(responseCode = "200", description = "첨부 파일 조회 성공"),
       @ApiResponse(responseCode = "404", description = "첨부 파일을 찾을 수 없음")
   })
-  public ResponseEntity<BinaryContentDto> findById(
+  public ResponseEntity<BinaryContentDto> find(
       @Parameter(description = "조회할 첨부 파일 ID", example = "0b71409f-f489-40a2-a075-c2c93640351c")
       @PathVariable UUID binaryContentId
   ) {
@@ -46,7 +46,7 @@ public class BinaryContentController {
   @GetMapping
   @Operation(summary = "여러 첨부 파일 조회")
   @ApiResponse(responseCode = "200", description = "첨부 파일 목록 조회 성공")
-  public ResponseEntity<List<BinaryContentDto>> findAll(
+  public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(
       @Parameter(
           description = "조회할 첨부 파일 ID 목록",
           example = "[0b71409f-f489-40a2-a075-c2c93640351c, 8c4e7c2b-5ac0-4d75-849a-b55db3a1c67f]"
