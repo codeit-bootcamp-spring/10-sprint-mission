@@ -18,14 +18,12 @@ import java.util.UUID;
 @NoArgsConstructor
 public class BinaryContent extends BaseEntity {
 
-    private byte[] bytes;
     private String contentType;   // image/png, image/jpeg
     private String fileName;      // 원본 파일명
     private long size;            // 바이트 크기
 
     // 사용자 프로필 사진용
-    public BinaryContent(byte[] bytes, String contentType, String fileName, long size) {
-        this.bytes = bytes;
+    public BinaryContent(String contentType, String fileName, long size) {
         this.contentType = contentType;
         this.fileName = fileName;
         this.size = size;
@@ -36,7 +34,6 @@ public class BinaryContent extends BaseEntity {
         return "BinaryContent{" +
                 "id=" + super.getId() +
                 ", createdAt=" + super.getCreatedAt() +
-                ", bytes=" + (bytes == null ? "null" : bytes.length) +
                 ", contentType='" + contentType + '\'' +
                 ", fileName='" + fileName + '\'' +
                 ", size=" + size +

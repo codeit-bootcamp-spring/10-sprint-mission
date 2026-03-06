@@ -7,6 +7,12 @@
 #    type: file   # jcf | file
 #    file-directory: .discodeit
 
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: .discodeit.storage
+
 spring:
   servlet:
     multipart:    # binaryContent 활성화

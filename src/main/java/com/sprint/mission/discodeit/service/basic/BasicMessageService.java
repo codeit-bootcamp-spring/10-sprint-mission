@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ public class BasicMessageService implements MessageService {
 
     private final MessageMapper messageMapper;
     private final BinaryContentMapper binaryContentMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Override
     public MessageDto createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments) {
@@ -45,6 +47,7 @@ public class BasicMessageService implements MessageService {
             for (var payload : attachments) {
                 BinaryContent bc = binaryContentMapper.toEntity(payload);
                 binaryContentRepository.save(bc);
+                binaryContentStorage.put(bc.getId(), payload.bytes());
                 attachment.add(bc);
             }
         }

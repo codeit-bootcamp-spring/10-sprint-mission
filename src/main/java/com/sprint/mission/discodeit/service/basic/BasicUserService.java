@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
     private final BinaryContentRepository binaryContentRepository;
+    private final BinaryContentStorage binaryContentStorage;
 
     private final UserMapper userMapper;
     private final BinaryContentMapper binaryContentMapper;
@@ -46,10 +48,11 @@ public class BasicUserService implements UserService {
         if (profileImage != null) {
             BinaryContent bc = binaryContentMapper.toEntity(profileImage);
 
-            binaryContentRepository.save(bc);
-
-            // 프로필 사진이 있으면 갱신하기
-            user.updateProfile(bc);
+            BinaryContent saved = binaryContentRepository.save(bc);
+            // 반환값 사용하기
+            binaryContentStorage.put(saved.getId(), profileImage.bytes());
+            // 갱신하기
+            user.updateProfile(saved);
         }
 
         UserStatus status = new UserStatus(user, Instant.now());
@@ -90,6 +93,7 @@ public class BasicUserService implements UserService {
         }
         if (profileImage != null) {
             updateUserProfileImage(profileImage, user);
+            binaryContentStorage.put(binaryContentMapper.toEntity(profileImage).getId(), profileImage.bytes());
         }
 
         return userMapper.toDto(user);
