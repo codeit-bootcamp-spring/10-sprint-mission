@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.dto.authdto.LoginRequestDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.entity.mapper.UserDTOMapper;
+import com.sprint.mission.discodeit.entity.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -22,6 +22,7 @@ public class BasicAuthService implements AuthService {
 
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
+    private final UserMapper userMapper;
 
     @Override
     @Transactional
@@ -43,7 +44,7 @@ public class BasicAuthService implements AuthService {
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
             .orElseThrow(() -> new NoSuchElementException("해당 User Status가 없습니다."));
         userStatus.update(Instant.now());
-        return UserDTOMapper.userToResponse(user, userStatus.isOnline());
+        return userMapper.toDto(user);
 
     }
 }

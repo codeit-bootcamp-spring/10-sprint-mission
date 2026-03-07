@@ -1,28 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.NoSuchElementException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+
 
 @Getter
 @Setter
@@ -46,6 +35,12 @@ public class Channel extends BaseUpdatableEntity {
         this.type = type;
         this.name = name;
         this.description = description;
+    }
+
+    public Channel(ChannelType type) {
+        this.type = type;
+        this.name = "";
+        this.description = "";
     }
 
 

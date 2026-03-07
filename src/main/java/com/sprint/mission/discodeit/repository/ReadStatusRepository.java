@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
-    public List<ReadStatus> findAllByUserId(UUID id);
+    List<ReadStatus> findAllByUserId(UUID id);
 
     List<ReadStatus> findAllByChannelId(UUID id);
 }

@@ -5,10 +5,10 @@ import com.sprint.mission.discodeit.dto.channeldto.PrivateChannelCreateDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PublicChannelCreateDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PublicChannelUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.mapper.ChannelDTOMapper;
+import com.sprint.mission.discodeit.entity.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -28,9 +28,8 @@ public class BasicChannelService implements ChannelService {
 
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
-    private final MessageRepository messageRepository;
     private final UserRepository userRepository;
-    private final ChannelDTOMapper channelDTOMapper;
+    private final ChannelMapper channelMapper;
 
     @Override
     @Transactional
@@ -42,13 +41,14 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalStateException("채널 이름이 중복됩니다.");
         }
 
-        Channel channel = ChannelDTOMapper.publicReqToChannel(req);
+        // 채널 객체 생성
+        Channel channel = new Channel(ChannelType.PUBLIC, req.name(), req.description());
 
         // Transactional 에서 CREATE 작업 시에는 save나 persist 등 영속 메서드 호출이 필수.
         // 채널 검증과 save의 원자성을 보장하기 위해 아래와 같이 코드 작성
         try {
             Channel saved = channelRepository.save(channel);
-            return channelDTOMapper.channelToResponseDTO(saved);
+            return channelMapper.toDto(saved);
         } catch (DataIntegrityViolationException e) {
             throw new IllegalStateException("채널 이름이 중복됩니다.");
         }
@@ -65,7 +65,7 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalStateException("User list is empty");
         }
 
-        Channel channel = ChannelDTOMapper.privateReqToChannel(req);
+        Channel channel = new Channel(ChannelType.PRIVATE);
         Channel saved = channelRepository.save(channel);
 
         // req에서 유저 리스트를 뽑아낸 뒤,
@@ -76,7 +76,7 @@ public class BasicChannelService implements ChannelService {
             readStatusRepository.save(rs);
         });
 
-        return channelDTOMapper.channelToResponseDTO(saved);
+        return channelMapper.toDto(saved);
     }
 
     @Transactional(readOnly = true)
@@ -86,7 +86,7 @@ public class BasicChannelService implements ChannelService {
             .findById(channelId)
             .orElseThrow(() -> new IllegalStateException("해당 채널이 존재하지 않습니다."));
 
-        return channelDTOMapper.channelToResponseDTO(channel);
+        return channelMapper.toDto(channel);
 
     }
 
@@ -101,7 +101,7 @@ public class BasicChannelService implements ChannelService {
             .toList();
 
         return channels.stream()
-            .map(channelDTOMapper::channelToResponseDTO
+            .map(channelMapper::toDto
             ).toList();
     }
 
@@ -121,7 +121,7 @@ public class BasicChannelService implements ChannelService {
 
         channel.update(req.newName(), req.newDescription()); // dirty-checking
 
-        return channelDTOMapper.channelToResponseDTO(channel);
+        return channelMapper.toDto(channel);
     }
 
     @Transactional

@@ -6,7 +6,7 @@ import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusUpdateRequestDTO
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.mapper.ReadStatusDTOMapper;
+import com.sprint.mission.discodeit.entity.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -40,7 +40,7 @@ public class BasicReadStatusService implements ReadStatusService {
         try {
             ReadStatus readStatus = new ReadStatus(user, channel);
             readStatusRepository.save(readStatus);
-            return ReadStatusDTOMapper.rsToResponse(readStatus);
+            return ReadStatusMapper.toDto(readStatus);
         } catch (DataIntegrityViolationException e) {
             throw new IllegalStateException("ReadStatus 데이터가 중복됩니다!");
         }
@@ -55,7 +55,7 @@ public class BasicReadStatusService implements ReadStatusService {
                 .orElseThrow(
                     () -> new NoSuchElementException("해당 ReadStatus를 찾을 수 없음."));
 
-        return ReadStatusDTOMapper.rsToResponse(readStatus);
+        return ReadStatusMapper.toDto(readStatus);
     }
 
     @Transactional
@@ -69,7 +69,7 @@ public class BasicReadStatusService implements ReadStatusService {
         return readStatusRepository
             .findAllByUserId(userId)
             .stream()
-            .map(ReadStatusDTOMapper::rsToResponse).toList();
+            .map(ReadStatusMapper::toDto).toList();
 
     }
 

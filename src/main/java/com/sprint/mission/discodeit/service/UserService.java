@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
 

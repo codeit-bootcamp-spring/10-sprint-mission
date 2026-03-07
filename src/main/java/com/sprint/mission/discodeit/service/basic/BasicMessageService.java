@@ -7,12 +7,11 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.mapper.MessageDTOMapper;
+import com.sprint.mission.discodeit.entity.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
@@ -30,8 +29,7 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentRepository binaryContentRepository;
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
-    private final MessageDTOMapper messageDTOMapper;
+    private final MessageMapper messageMapper;
 
     // 메세지 생성 메소드
     // 선택적으로 첨부 파일(BinaryContent)를 여러 개 등록할 수 있다.
@@ -66,9 +64,8 @@ public class BasicMessageService implements MessageService {
 
         Message message = new Message(req.content(), channel, user, profileList);
         Message saved = messageRepository.save(message);
-        boolean online = userStatusRepository.findByUserId(user.getId()).get().isOnline();
 
-        return messageDTOMapper.messageToResponseDTO(saved, online);
+        return messageMapper.toDto(saved);
     }
 
     @Transactional(readOnly = true)
@@ -81,10 +78,7 @@ public class BasicMessageService implements MessageService {
                 () -> new IllegalStateException("존재하지 않는 메시지입니다.")
             );
 
-        boolean online = userStatusRepository.findByUserId(message.getAuthor().getId()).get()
-            .isOnline();
-
-        return messageDTOMapper.messageToResponseDTO(message, online);
+        return messageMapper.toDto(message);
 
 
     }
@@ -96,17 +90,11 @@ public class BasicMessageService implements MessageService {
 
         List<Message> messages = messageRepository.findByChannelId(channelId);
 
-        return messages.stream()
-            .map(m ->
-                MessageDTOMapper.messageToResponseDTO(
-                    m,
-                    userStatusRepository.
-                        findByUserId(
-                            m.getAuthor()
-                                .getId())
-                        .get()
-                        .isOnline()))
-            .toList();
+        return messages
+            .stream()
+            .map(
+                messageMapper::toDto
+            ).toList();
 
     }
 
@@ -124,10 +112,7 @@ public class BasicMessageService implements MessageService {
             message.setContent(req.newContent());
         }
 
-        boolean online = userStatusRepository.findByUserId(message.getAuthor().getId()).get()
-            .isOnline();
-
-        return messageDTOMapper.messageToResponseDTO(message, online);
+        return messageMapper.toDto(message);
     }
 
     @Transactional
