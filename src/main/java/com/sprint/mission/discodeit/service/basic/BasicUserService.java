@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -53,7 +54,7 @@ public class BasicUserService implements UserService {
         }else {// 프로필 이미지 등록을 안했다면
             user = new User(username,email,password,null);
         }
-        UserStatus userStatus = new UserStatus(user, user.getCreatedAt());
+        UserStatus userStatus = new UserStatus(user, Instant.now());
         userStatus.setUser(user);// 연관관계 매핑(User와 UserStatus 서로 연결됨)
         userRepository.save(user);// user가 binaryContent, userStatus 들고있으니 한 번에 저장
         return userMapper.toDto(user);
