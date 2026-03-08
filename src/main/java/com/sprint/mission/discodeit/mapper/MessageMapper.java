@@ -7,6 +7,6 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring", uses = {UserMapper.class, BinaryContentMapper.class})
 public abstract class MessageMapper {
-    @Mapping(source = "channel.getId()", target = "channelId")
+    @Mapping(source = "channel.id", target = "channelId")
     public abstract MessageDto toDto(Message message);
 }

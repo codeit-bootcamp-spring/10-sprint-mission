@@ -7,6 +7,6 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public abstract class UserStatusMapper {
-    @Mapping(source = "user.getId()", target = "userId")
+    @Mapping(source = "user.id", target = "userId")
     public abstract UserStatusDto toDto(UserStatus userStatus);
 }
