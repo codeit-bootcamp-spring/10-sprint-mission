@@ -13,6 +13,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class BasicMessageService implements MessageService {
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final MessageMapper messageMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     // 메세지 생성 메소드
     // 선택적으로 첨부 파일(BinaryContent)를 여러 개 등록할 수 있다.
@@ -49,16 +51,21 @@ public class BasicMessageService implements MessageService {
 
         if (profiles != null) {
             for (MultipartFile profile : profiles) {
-                try {
-                    BinaryContent saved = binaryContentRepository.save(
-                        new BinaryContent(profile.getName(), profile.getSize(),
-                            profile.getContentType(), profile.getBytes())
-                    );
-                    profileList.add(saved);
+                BinaryContent saved = binaryContentRepository.save(
+                    new BinaryContent(
+                        profile.getName(),
+                        profile.getSize(),
+                        profile.getContentType()
+                    )
+                );
+                profileList.add(saved);
 
+                try {
+                    binaryContentStorage.put(saved.getId(), profile.getBytes());
                 } catch (IOException e) {
-                    throw new IllegalStateException(e);
+                    throw new RuntimeException("Byte 저장 실패");
                 }
+
             }
         }
 

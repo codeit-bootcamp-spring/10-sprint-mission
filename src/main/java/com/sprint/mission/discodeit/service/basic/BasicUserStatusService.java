@@ -11,9 +11,6 @@ import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-//import java.time.Instant;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
@@ -30,15 +27,6 @@ public class BasicUserStatusService implements UserStatusService {
         Objects.requireNonNull(id, "유효하지 않은 ID입니다!");
         return userStatusRepository.findById(id)
             .orElseThrow(() -> new NoSuchElementException("해당 UserStatus는 존재하지 않습니다!"));
-    }
-
-    @Transactional
-    @Override
-    public List<UserStatusDto> findAll() {
-        return userStatusRepository.findAll()
-            .stream()
-            .map(UserStatusDTOMapper::toDto
-            ).toList();
     }
 
     @Override
@@ -69,11 +57,4 @@ public class BasicUserStatusService implements UserStatusService {
         userStatusRepository.deleteById(id);
     }
 
-    @Override
-    public boolean isUserOnline(UUID userId) {
-        Objects.requireNonNull(userId, "유효하지 않은 ID 입니다!");
-        UserStatus userStatus = userStatusRepository.findByUserId(userId)
-            .orElseThrow(() -> new NoSuchElementException("UserStatus를 찾을 수 없음!"));
-        return userStatus.isOnline();
-    }
 }

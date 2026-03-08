@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository; // 아직 인터페이스 구현체가 없어서 bean을 못찾음.
     private final UserMapper userMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     // 유저 생성 요청 DTO를 받아 유저 도메인 객체를 생성하고, 해당 객체 정보를 바탕으로 UserResponseDTO를 만들어 반환한다.
     @Override
@@ -40,14 +42,15 @@ public class BasicUserService implements UserService {
 
         // 유저 생성 요청 DTO에 binaryContent(첨부 파일)에 대한 정보가 들어가있다면...
         if (profileDto != null) {
-            // 해당 첨부 파일 정보를 바탕으로 BinaryContent 객체를 생성한다.
-            BinaryContent binaryContent = new BinaryContent(
+            // 해당 첨부 파일 정보를 바탕으로 BinaryContent 객체를 생성과 동시에 BinaryRepository 영속화
+            saved = binaryContentRepository.save(new BinaryContent(
                 profileDto.fileName(),
                 profileDto.size(),
-                profileDto.contentType(),
-                profileDto.bytes()
-            );
-            saved = binaryContentRepository.save(binaryContent);
+                profileDto.contentType()
+            ));
+
+            // BinaryContentStorage 인터페이스 사용. UUID, MULTIPART의 Bytes를 Storage에 put.
+            binaryContentStorage.put(saved.getId(), profileDto.bytes());
         }
 
         User user = new User(
@@ -99,15 +102,15 @@ public class BasicUserService implements UserService {
         BinaryContent saved = null;
         // profileDto(BinaryContentDto)가 존재한다면...
         if (profileDto != null) {
-            // 해당 BinaryContentDTO를 통해 binaryContent를 생성
-            BinaryContent binaryContent = new BinaryContent(
+            // 해당 첨부 파일 정보를 바탕으로 BinaryContent 객체를 생성과 동시에 BinaryRepository 영속화
+            saved = binaryContentRepository.save(new BinaryContent(
                 profileDto.fileName(),
                 profileDto.size(),
-                profileDto.contentType(),
-                profileDto.bytes()
-            );
+                profileDto.contentType()
+            ));
 
-            saved = binaryContentRepository.save(binaryContent); // 해당 BinaryContent를 영속화함.
+            // BinaryContentStorage 인터페이스 사용. UUID, MULTIPART의 Bytes를 Storage에 put.
+            binaryContentStorage.put(saved.getId(), profileDto.bytes());
         }
 
         // 유저 도메인 객체의 update 메소드를 통해 업데이트.

@@ -3,6 +3,10 @@ discodeit:
     type: file # jcf | file
     file-directory: .discodeit
 
+  storage:
+    local:
+      root-path: .discodeit
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/discodeit

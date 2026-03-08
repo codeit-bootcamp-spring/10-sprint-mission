@@ -28,6 +28,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         Objects.requireNonNull(id, "유효하지 않은 ID 입니다!");
         BinaryContent binaryContent = binaryContentRepository.findById(id)
             .orElseThrow(() -> new NoSuchElementException("해당 첨부파일을 찾지 못했습니다."));
+
         return binaryContentMapper.toDto(binaryContent);
     }
 

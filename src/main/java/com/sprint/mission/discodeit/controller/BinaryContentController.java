@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class BinaryContentController {
 
     private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
 
     @RequestMapping(method = RequestMethod.GET)
     @ApiResponse(
@@ -64,6 +66,15 @@ public class BinaryContentController {
     public ResponseEntity<BinaryContentDto> getBinaryContent(
         @PathVariable UUID binaryContentId) {
         return new ResponseEntity<>(binaryContentService.find(binaryContentId), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{binaryContentId}/download")
+    public ResponseEntity<?> downloadBinaryContent(
+        @PathVariable UUID binaryContentId) {
+
+        return new ResponseEntity<>(
+            binaryContentStorage.download(binaryContentService.find(binaryContentId)),
+            HttpStatus.OK);
     }
 
 }
