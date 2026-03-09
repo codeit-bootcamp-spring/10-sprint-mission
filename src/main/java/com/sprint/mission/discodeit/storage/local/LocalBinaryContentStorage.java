@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @Component
@@ -58,6 +59,9 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     @Override
     public InputStream get(UUID id) {
         Path path = resolvePath(id);
+        if (Files.notExists(path)) {
+            throw new NoSuchElementException(id+"에 해당하는 파일을 찾지 못했습니다");
+        }
         try {
             return new FileInputStream(path.toString());
         } catch (IOException e) {
