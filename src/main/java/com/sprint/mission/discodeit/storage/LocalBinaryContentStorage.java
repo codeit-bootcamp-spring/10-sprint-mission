@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -74,6 +75,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     InputStream inputStream = get(binaryContentDto.id());
     Resource resource = new InputStreamResource(inputStream);
 
-    return ResponseEntity.status(HttpStatus.OK).body(resource);
+    String headerContent = "attachment; filename=\"" + binaryContentDto.fileName() + "\"";
+
+    return ResponseEntity
+        .status(HttpStatus.OK)
+        .header(HttpHeaders.CONTENT_DISPOSITION, headerContent)
+        .body(resource);
   }
 }

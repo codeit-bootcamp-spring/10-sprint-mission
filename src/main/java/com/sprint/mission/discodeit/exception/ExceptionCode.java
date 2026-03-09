@@ -8,7 +8,7 @@ public enum ExceptionCode {
   USER_NOT_FOUND(404, "유저를 찾을 수 없습니다."),
   DUPLICATE_USERNAME(409, "이미 사용중인 유저 이름입니다."),
   DUPLICATE_EMAIL(409, "이미 사용중인 이메일입니다."),
-  PASSWORD_MISMATCH(400, "비밀번호가 일치하지 않습니다."),
+  PASSWORD_MISMATCH(401, "비밀번호가 일치하지 않습니다."),
 
   CHANNEL_NOT_FOUND(404, "채널을 찾을 수 없습니다."),
   CANNOT_UPDATE_PRIVATE_CHANNEL(400, "PRIVATE 채널은 수정할 수 없습니다."),
