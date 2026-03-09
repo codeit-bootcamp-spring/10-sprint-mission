@@ -4,19 +4,14 @@ import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,8 +20,10 @@ public abstract class ChannelMapper{
 
     @Autowired
     protected MessageRepository messageRepository;
+
     @Autowired
     protected ReadStatusRepository readStatusRepository;
+
     @Autowired
     protected UserRepository userRepository;
 
@@ -55,9 +52,8 @@ public abstract class ChannelMapper{
     protected Instant mapLastMessageAt(Channel channel){
         if(channel == null) return Instant.MIN;
 
-        return messageRepository.findAllByChannel_Id(channel.getId()).stream()
-                .map(Message::getCreatedAt)
-                .max(Comparator.naturalOrder())
+        return messageRepository.findTopByChannel_IdOrderByCreatedAtDesc(channel.getId())
+                .map(message -> message.getCreatedAt())
                 .orElse(Instant.MIN);
     }
 

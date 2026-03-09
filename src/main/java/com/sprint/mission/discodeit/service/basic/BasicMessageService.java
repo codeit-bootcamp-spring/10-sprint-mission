@@ -14,6 +14,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,9 +75,14 @@ public class BasicMessageService implements MessageService {
 
   @Transactional(readOnly = true)
   @Override
-  public List<Message> findAllByChannelId(UUID channelId) {
-    return messageRepository.findAllByChannel_Id(channelId).stream()
-        .toList();
+  public Slice<Message> findAllByChannelId(UUID channelId, int page, int size) {
+    PageRequest pageRequest = PageRequest.of(
+            page,
+            size,
+            Sort.by(Sort.Direction.DESC, "createdAt")
+    );
+
+    return messageRepository.findAllByChannel_Id(channelId, pageRequest);
   }
 
 
