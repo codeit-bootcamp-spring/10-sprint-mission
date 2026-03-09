@@ -11,7 +11,6 @@ import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
@@ -76,8 +75,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional(readOnly = true)
   public List<ChannelDto> findAllByUserId(UUID userId) {
-    List<Channel> channelList = channelRepository.findAccessibleChannelsByUserId(
-        userId); //쿼리튜닝
+    List<Channel> channelList = channelRepository.findAllByUserId(userId); //쿼리튜닝
 
     return channelList.stream()
         .map(channelMapper::toDto) //이 메서드는 매핑 과정에서 MessageRepository와 ReadStatusRepository를 각각 호출

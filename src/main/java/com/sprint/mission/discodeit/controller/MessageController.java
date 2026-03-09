@@ -89,7 +89,8 @@ public class MessageController {
       @Parameter(description = "조회할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @RequestParam("channelId") UUID channelId,
       @Parameter(description = "페이징 커서 정보")
-      @RequestParam(value = "cursor", required = false) Instant cursor, Pageable pageable
+      @RequestParam(value = "cursor", required = false) Instant cursor,
+      Pageable pageable
   ) {
     PageResponse<MessageDto> response = messageService.findAllByChannelId(channelId, cursor,
         pageable);
