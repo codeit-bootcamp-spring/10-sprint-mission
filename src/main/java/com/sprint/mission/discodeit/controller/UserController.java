@@ -104,13 +104,7 @@ public class UserController {
             ) {
         userService.deleteUser(userId);
 
-        return ResponseEntity.ok(
-                new DeleteUserResponseDTO(
-                        Instant.now(),
-                        204,
-                        "사용자가 삭제되었습니다."
-                )
-        );
+        return ResponseEntity.noContent().build();
     }
 
     @RequestMapping(method = RequestMethod.GET)

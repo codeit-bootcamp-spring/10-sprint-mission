@@ -70,13 +70,7 @@ public class ChannelController {
     ) {
         channelService.deleteChannel(channelId);
 
-        return ResponseEntity.ok(
-                new DeleteOrLeaveChannelResponseDTO(
-                        Instant.now(),
-                        204,
-                        "채널이 삭제되었습니다."
-                )
-        );
+        return ResponseEntity.noContent().build();
     }
 
     @RequestMapping(method = RequestMethod.GET)

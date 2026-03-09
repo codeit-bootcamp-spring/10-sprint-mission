@@ -83,13 +83,7 @@ public class MessageController {
             ) {
         messageService.deleteMessage(messageId);
 
-        return ResponseEntity.ok(
-                new DeleteMessageResponseDTO(
-                        Instant.now(),
-                        204,
-                        "메시지가 성공적으로 삭제되었습니다."
-                )
-        );
+        return ResponseEntity.noContent().build();
     }
 
     @RequestMapping(method = RequestMethod.GET)
