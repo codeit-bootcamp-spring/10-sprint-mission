@@ -52,9 +52,11 @@ public class User extends BaseUpdatableEntity {
         }
     }
 
-    // UserStatus에 작성한 연관관계 편의 메소드에 필요한 status setter 메소드
-    // default로 두어 UserStatus의 setUser() 사용을 서비스(외부)에서 사용을 강제하게끔 함
-    void setStatus(UserStatus status) {
+    // User와 UserStatus 양방향 연관관계 편의 메서드
+    public void setStatus(UserStatus status) {
         this.status = status;
+        if (status.getUser() != this) {
+            status.setUser(this);
+        }
     }
 }

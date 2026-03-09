@@ -42,12 +42,10 @@ public class UserStatus extends BaseUpdatableEntity {
     }
 
     // User와 UserStatus 양방향 연관관계 편의 메소드
-    // UserStatus가 User를 fk(user_id)로 참조하기 때문에 연관관계의 주인은 UserStatus, UserStatus의 user를 통해서 관리
-    // 그러므로 UserStatus에 연관관계 편의 메서드를 작성
-    // 서비스(외부)에서 사용할 때는 이 메서드 사용을 위해 public으로
-    // 내부 User의 setStatus()는 default로 두어서 UserStaus의 setUser() 사용을 강제하게끔 했음
     public void setUser(User user) {
         this.user = user;
-        user.setStatus(this);
+        if (user.getStatus()!=this) {
+            user.setStatus(this);
+        }
     }
 }
