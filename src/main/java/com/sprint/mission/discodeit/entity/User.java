@@ -34,7 +34,7 @@ public class User extends BaseUpdatableEntity {
   private BinaryContent profile;
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-  private UserStatus status;
+  private UserStatus userStatus;
 
   public User(String username, String email, String password, BinaryContent profile) {
     super();
@@ -42,6 +42,11 @@ public class User extends BaseUpdatableEntity {
     this.email = email;
     this.password = password;
     this.profile = profile;
+  }
+
+  public void assignUserStatus(UserStatus status) { // 연관관계 편의 메서드
+    this.userStatus = status;
+    status.assignToUser(this);
   }
 
   public void updateName(String name) {

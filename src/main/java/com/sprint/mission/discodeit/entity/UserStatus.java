@@ -35,12 +35,15 @@ public class UserStatus extends BaseUpdatableEntity {
     this.lastActiveAt = (lastActiveAt != null) ? lastActiveAt : Instant.now();
   }
 
+  public void assignToUser(User user) { // 연관관계 편의 메서드
+    this.user = user;
+  }
+
   public boolean isOnline() {
     return this.lastActiveAt != null &&
         this.lastActiveAt.isAfter(Instant.now().minus(5, ChronoUnit.MINUTES));
   }
 
-  // 마지막 접속시간 저장
   public void updateLastActiveAt(Instant lastActiveAt) {
     if (lastActiveAt != null) {
       this.lastActiveAt = lastActiveAt;
