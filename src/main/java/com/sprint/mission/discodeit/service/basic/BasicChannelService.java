@@ -45,12 +45,13 @@ public class BasicChannelService implements ChannelService {
         List<UUID> participantsIds = privateChannelCreateRequest.participantIds();
         // Channel 생성
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
+        channelRepository.save(channel);
         // 유저별 ReadStatus 생성
         List<User> users = userRepository.findAllById(participantsIds);
         for (User user : users) {
             readStatusRepository.save(new ReadStatus(user, channel, Instant.now()));
         }
-        return channelMapper.toDto(channelRepository.save(channel));
+        return channelMapper.toDto(channel);
     }
 
     @Override
