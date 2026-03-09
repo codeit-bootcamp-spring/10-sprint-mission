@@ -13,12 +13,14 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     //
@@ -33,7 +35,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = new Channel(ChannelType.PUBLIC, name, description);
         List<User> users = userRepository.findAll();
         for (User user : users) {
-            ReadStatus readStatus = new ReadStatus(user.getId(),channel.getId(), Instant.now());
+            ReadStatus readStatus = new ReadStatus(user,channel, Instant.now());
             readStatusRepository.save(readStatus);
         }
         return channelRepository.save(channel);
@@ -44,14 +46,15 @@ public class BasicChannelService implements ChannelService {
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         Channel createdChannel = channelRepository.save(channel);
 
-        request.participantIds().stream()
-                .map(userId -> new ReadStatus(userId, createdChannel.getId(), channel.getCreatedAt()))
+        request.users().stream()
+                .map(user -> new ReadStatus(user, createdChannel, channel.getCreatedAt()))
                 .forEach(readStatusRepository::save);
 
         return createdChannel;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ChannelDto find(UUID channelId) {
         return channelRepository.findById(channelId)
                 .map(this::toDto)
@@ -59,15 +62,16 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ChannelDto> findAllByUserId(UUID userId) {
-        List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUserId(userId).stream()
-                .map(ReadStatus::getChannelId)
+        List<Channel> mySubscribedChannels = readStatusRepository.findAllByUserId(userId).stream()
+                .map(ReadStatus::getChannel) //readStatus -> readStatus.getChannel
                 .toList();
 
         return channelRepository.findAll().stream()
                 .filter(channel ->
                         channel.getType().equals(ChannelType.PUBLIC)
-                                || mySubscribedChannelIds.contains(channel.getId())
+                                || mySubscribedChannels.contains(channel)
                 )
                 .map(this::toDto)
                 .toList();
@@ -84,7 +88,7 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalArgumentException("Private channel cannot be updated");
         }
         channel.update(newName, newDescription);
-        return channelRepository.save(channel);
+        return channel;
     }
 
     @Override
@@ -106,12 +110,12 @@ public class BasicChannelService implements ChannelService {
                 .findFirst()
                 .orElse(Instant.MIN);
 
-        List<UUID> participantIds = new ArrayList<>();
+        List<User> participants = new ArrayList<>();
         if (channel.getType().equals(ChannelType.PRIVATE)) {
             readStatusRepository.findAllByChannelId(channel.getId())
                     .stream()
-                    .map(ReadStatus::getUserId)
-                    .forEach(participantIds::add);
+                    .map(ReadStatus::getUser)
+                    .forEach(participants::add);
         }
 
         return new ChannelDto(
@@ -119,7 +123,7 @@ public class BasicChannelService implements ChannelService {
                 channel.getType(),
                 channel.getName(),
                 channel.getDescription(),
-                participantIds,
+                participants,
                 lastMessageAt
         );
     }
