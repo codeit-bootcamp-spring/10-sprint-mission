@@ -67,12 +67,13 @@ public class MessageController {
 
   // PATCH /api/messages/{messageId}
   @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
-  public ResponseEntity<Message> update(
+  public ResponseEntity<MessageDto> update(
           @PathVariable UUID messageId,
           @RequestBody MessageUpdateRequest request
   ) {
     Message updatedMessage = messageService.update(messageId, request);
-    return ResponseEntity.ok(updatedMessage);
+    MessageDto dto = messageMapper.toDto(updatedMessage);
+    return ResponseEntity.ok(dto);
   }
 
   // DELETE /api/messages/{messageId} -> 204

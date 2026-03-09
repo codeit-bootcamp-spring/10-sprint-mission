@@ -60,16 +60,15 @@ public class BasicChannelService implements ChannelService {
 
   @Transactional(readOnly = true)
   @Override
-  public ChannelDto find(UUID channelId) {
+  public Channel find(UUID channelId) {
     return channelRepository.findById(channelId)
-        .map(this::toDto)
         .orElseThrow(
             () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
   }
 
   @Transactional(readOnly = true)
   @Override
-  public List<ChannelDto> findAllByUserId(UUID userId) {
+  public List<Channel> findAllByUserId(UUID userId) {
     List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUser_Id(userId).stream()
         .map(readStatus -> readStatus.getChannel().getId())
         .toList();
@@ -79,7 +78,6 @@ public class BasicChannelService implements ChannelService {
             channel.getType().equals(ChannelType.PUBLIC)
                 || mySubscribedChannelIds.contains(channel.getId())
         )
-        .map(this::toDto)
         .toList();
   }
 
@@ -109,31 +107,4 @@ public class BasicChannelService implements ChannelService {
   }
 
 
-  // DTO 변환 메소드
-  private ChannelDto toDto(Channel channel) {
-    Instant lastMessageAt = messageRepository.findAllByChannel_Id(channel.getId())
-        .stream()
-        .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
-        .map(Message::getCreatedAt)
-        .limit(1)
-        .findFirst()
-        .orElse(Instant.MIN);
-
-    List<UUID> participantIds = new ArrayList<>();
-    if (channel.getType().equals(ChannelType.PRIVATE)) {
-      readStatusRepository.findAllByChannel_Id(channel.getId())
-          .stream()
-          .map(readStatus -> readStatus.getUser().getId())
-          .forEach(participantIds::add);
-    }
-
-    return new ChannelDto(
-        channel.getId(),
-        channel.getType(),
-        channel.getName(),
-        channel.getDescription(),
-        participantIds,
-        lastMessageAt
-    );
-  }
 }
