@@ -13,13 +13,13 @@ import java.util.UUID;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-    @EntityGraph(attributePaths = {"author.userStatus", "author.profile", "channel", "attachments"})
+    @EntityGraph(attributePaths = {"author", "author.userStatus", "author.profile", "channel", "attachments"})
     Slice<Message> findByAuthor_IdOrderByCreatedAtDesc(UUID userId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"author", "channel", "attachments"})
+    @EntityGraph(attributePaths = {"author", "author.userStatus", "author.profile", "channel", "attachments"})
     Slice<Message> findByChannel_IdOrderByCreatedAtDesc(UUID channelId, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"author", "channel", "attachments"})
+    @EntityGraph(attributePaths = {"author", "author.userStatus", "author.profile", "channel", "attachments"})
     Optional<Message> findById(UUID messageId);
 
     @EntityGraph(attributePaths = {"author", "channel", "attachments"})

@@ -12,7 +12,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -25,6 +24,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -34,7 +34,6 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final MessageRepository messageRepository;
-    private final BinaryContentRepository binaryContentRepository;
 
     private final MessageMapper messageMapper;
     private final BinaryContentMapper binaryContentMapper;
@@ -45,24 +44,32 @@ public class BasicMessageService implements MessageService {
     public MessageDto createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments) {
         User user = findUserOrThrow(dto.authorId());
         Channel channel = findChannelOrThrow(dto.channelId());
-        List<BinaryContent> attachment = new ArrayList<>();
-        // 껍데기 생성
-        Message message = new Message(user, channel, dto.content(), attachment);
+        List<BinaryContent> attachmentEntities = new ArrayList<>();
 
         if (attachments != null && !attachments.isEmpty()) {
-            for (var payload : attachments) {
+            for (CreateBinaryContentPayloadDTO payload : attachments) {
                 BinaryContent bc = binaryContentMapper.toEntity(payload);
-                binaryContentRepository.save(bc);
-                binaryContentStorage.put(bc.getId(), payload.bytes());
-                attachment.add(bc);
+                attachmentEntities.add(bc);
             }
         }
-        user.getUserStatus().updateLastActiveAt();
 
-        // 영속화
-        messageRepository.save(message);
+        Message message = new Message(user, channel, dto.content(), attachmentEntities);
 
-        return messageMapper.toDto(message);
+        user.getUserStatus().updateLastActiveAt(Instant.now());
+        // id를 만들기 위해 저장
+        Message savedMessage = messageRepository.saveAndFlush(message);
+        // storage에 반영
+        if (attachments != null && !attachments.isEmpty()) {
+            List<BinaryContent> savedAttachments = savedMessage.getAttachments();
+            for (int i = 0; i < attachments.size(); i++) {
+                binaryContentStorage.put(
+                        savedAttachments.get(i).getId(),
+                        attachments.get(i).bytes()
+                );
+            }
+        }
+
+        return messageMapper.toDto(savedMessage);
     }
 
     @Override

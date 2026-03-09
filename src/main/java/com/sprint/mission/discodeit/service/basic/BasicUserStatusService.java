@@ -46,7 +46,7 @@ public class BasicUserStatusService implements UserStatusService {
         Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
 
         UserStatus status = findStatusByIdOrThrow(dto.userStatusId());
-        status.updateLastActiveAt();
+        status.updateLastActiveAt(status.getLastActiveAt());
 
         return userStatusMapper.toDto(status);
     }
@@ -64,7 +64,7 @@ public class BasicUserStatusService implements UserStatusService {
                                 "해당 userId에 대한 UserStatus가 존재하지 않습니다 userId=" + userId
                         ));
 
-        status.updateLastActiveAt();
+        status.updateLastActiveAt(dto.newLastActiveAt());
         return userStatusMapper.toDto(status);
     }
 

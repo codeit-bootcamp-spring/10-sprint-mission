@@ -24,7 +24,7 @@ public class User extends BaseUpdatableEntity {
     private String password;
 
     // 사용자의 프로필 이미지
-    @OneToOne(optional = true, fetch = FetchType.LAZY)
+    @OneToOne(optional = true, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private BinaryContent profile;
 
     // 사용자 상태 -> userStatus는 자식 엔티티

@@ -28,7 +28,7 @@ public class Message extends BaseUpdatableEntity {
     private Channel channel;
 
     // 미디어, 파일 등
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "message_attachments",
             joinColumns = @JoinColumn(name = "message_id"),

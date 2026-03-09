@@ -46,21 +46,22 @@ public class BasicUserService implements UserService {
         User user = new User(dto.username(), dto.email(), dto.password(), null);
 
         if (profileImage != null) {
-            BinaryContent bc = binaryContentMapper.toEntity(profileImage);
+            BinaryContent profile = binaryContentMapper.toEntity(profileImage);
 
-            BinaryContent saved = binaryContentRepository.save(bc);
-            // 반환값 사용하기
-            binaryContentStorage.put(saved.getId(), profileImage.bytes());
             // 갱신하기
-            user.updateProfile(saved);
+            user.updateProfile(profile);
         }
 
         UserStatus status = new UserStatus(user, Instant.now());
         user.updateStatus(status);
 
-        userRepository.save(user);
+        User savedUser = userRepository.saveAndFlush(user);
 
-        return userMapper.toDto(user);
+        if (profileImage != null && savedUser.getProfile() != null) {
+            binaryContentStorage.put(savedUser.getProfile().getId(), profileImage.bytes());
+        }
+
+        return userMapper.toDto(savedUser);
     }
 
     @Override
@@ -91,8 +92,13 @@ public class BasicUserService implements UserService {
             updatePassword(dto, user);
         }
         if (profileImage != null) {
-            updateUserProfileImage(profileImage, user);
-            binaryContentStorage.put(binaryContentMapper.toEntity(profileImage).getId(), profileImage.bytes());
+            // 새 객체를 만들지 않고 같은 엔티티 인스턴스를 사용 하도록 수정
+            BinaryContent profile = binaryContentMapper.toEntity(profileImage);
+            user.updateProfile(profile);
+
+            userRepository.saveAndFlush(user); // 여기서 cascade로 profile도 저장되고 id 생성
+
+            binaryContentStorage.put(profile.getId(), profileImage.bytes());
         }
 
         return userMapper.toDto(user);
@@ -107,7 +113,7 @@ public class BasicUserService implements UserService {
                 ));
 
         // 갱신
-        status.updateLastActiveAt();
+        status.updateLastActiveAt(dto.newLastActiveAt());
 
         return userMapper.toDto(user);
     }
@@ -116,10 +122,6 @@ public class BasicUserService implements UserService {
     public void deleteUser(UUID userId) {
         User user = findUserOrThrow(userId);
 
-        userStatusRepository.deleteById(userStatusRepository.findByUser_Id(userId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
-                )).getId());
         BinaryContent profile = user.getProfile();
         if (profile != null && profile.getId() != null) {
             binaryContentRepository.deleteById(profile.getId());
@@ -163,18 +165,5 @@ public class BasicUserService implements UserService {
 
     private void updatePassword(UpdateUserRequestDTO dto, User user) {
         user.updatePassword(dto.newPassword());
-    }
-
-    private void updateUserProfileImage(CreateBinaryContentPayloadDTO profileImage, User user) {
-        if (profileImage == null) {
-            throw new IllegalArgumentException("profile 값이 존재하지 않습니다.");
-        }
-
-        BinaryContent binaryContent = binaryContentMapper.toEntity(profileImage);
-
-        binaryContentRepository.save(binaryContent);
-
-        // 프로필 사진이 있으면 갱신하기
-        user.updateProfile(binaryContent);
     }
 }

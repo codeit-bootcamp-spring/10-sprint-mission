@@ -24,8 +24,8 @@ public class UserStatus extends BaseUpdatableEntity {
         this.lastActiveAt = lastActiveAt;
     }
 
-    public void updateLastActiveAt() {
-        lastActiveAt = Instant.now();
+    public void updateLastActiveAt(Instant newLastActiveAt) {
+        this.lastActiveAt = newLastActiveAt;
         isCurrentlyLoggedIn();
     }
 
