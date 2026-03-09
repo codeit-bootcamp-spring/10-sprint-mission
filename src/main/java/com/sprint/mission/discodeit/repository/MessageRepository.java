@@ -3,19 +3,12 @@ package com.sprint.mission.discodeit.repository;
 import com.sprint.mission.discodeit.entity.Message;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MessageRepository {
-    Message save(Message message);
+public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-    Optional<Message> findById(UUID id);
+  List<Message> findAllByChannelId(UUID channelId);
 
-    List<Message> findAll();
-
-    List<Message> findAllByChannelId(UUID channelId);
-
-    void deleteById(UUID id);
-
-    void deleteByChannelId(UUID channelId); // 특정 채널의 모든 메시지 삭제
+  void deleteByChannelId(UUID channelId);
 }
