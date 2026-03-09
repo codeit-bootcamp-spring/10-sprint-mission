@@ -16,9 +16,4 @@ public interface BinaryContentService {
   List<BinaryContentDto> findAllByIdIn(List<UUID> ids);
 
   void deleteById(UUID id);
-
-  // BinaryContentController에서 파일 조회할 때 엔티티를 반환하기 위해 만든 메서드
-  BinaryContent findEntity(UUID id);
-
-  List<BinaryContent> findEntities(List<UUID> ids);
 }

@@ -14,11 +14,9 @@ public interface MessageService {
 
   MessageDto findById(UUID id);
 
-  List<MessageDto> findAllByChannelId(UUID channelId); // 특정 채널의 메시지 목록 조회
+  List<MessageDto> findAllByChannelId(UUID channelId);
 
   MessageDto update(UUID id, MessageUpdateRequest request);
 
   void deleteById(UUID id);
-
-  MessageDto togglePin(UUID id); // 메시지 고정
 }

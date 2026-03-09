@@ -7,19 +7,22 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import org.springframework.web.multipart.MultipartFile;
+
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
+  @Transactional
   public BinaryContentDto create(MultipartFile file) {
     if (file == null || file.isEmpty()) {
       throw new IllegalArgumentException("파일이 비어있습니다.");
@@ -54,22 +57,13 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
+  @Transactional
   public void deleteById(UUID id) {
-    getOrThrowBinaryContent(id);
-    binaryContentRepository.deleteById(id);
+    BinaryContent content = getOrThrowBinaryContent(id);
+    binaryContentRepository.delete(content);
   }
 
-  // BinaryContentController에서 파일 조회할 때 엔티티를 반환하기 위해 만든 메서드
-  @Override
-  public BinaryContent findEntity(UUID id) {
-    return getOrThrowBinaryContent(id);
-  }
-
-  @Override
-  public List<BinaryContent> findEntities(List<UUID> ids) {
-    return binaryContentRepository.findAllById(ids);
-  }
-
+  // --- Helper Methods ---
 
   // 바이너리 컨텐츠 검증
   private BinaryContent getOrThrowBinaryContent(UUID id) {
@@ -88,5 +82,4 @@ public class BasicBinaryContentService implements BinaryContentService {
         binaryContent.getCreatedAt()
     );
   }
-
 }

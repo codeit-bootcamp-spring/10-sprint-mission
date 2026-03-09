@@ -9,12 +9,13 @@ import com.sprint.mission.discodeit.service.MessageService;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicMessageService implements MessageService {
 
   private final MessageRepository messageRepository;
@@ -24,33 +25,33 @@ public class BasicMessageService implements MessageService {
   private final ReadStatusRepository readStatusRepository;
 
   @Override
+  @Transactional
   public MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments) {
     User author = getOrThrowUser(request.authorId());
     Channel channel = getOrThrowChannel(request.channelId());
     validateAccess(request.authorId(), request.channelId());
 
-    List<UUID> attachmentIds = new ArrayList<>();
+    List<BinaryContent> binaryContents = new ArrayList<>();
     if (attachments != null && !attachments.isEmpty()) {
       attachments.stream()
-          .filter(file -> !file.isEmpty()) // 유효한 파일만 필터링
+          .filter(file -> !file.isEmpty())
           .forEach(file -> {
             try {
-              BinaryContent binaryContent = new BinaryContent(
+              BinaryContent content = new BinaryContent(
                   file.getOriginalFilename(),
                   file.getSize(),
                   file.getContentType(),
                   file.getBytes()
               );
-              binaryContentRepository.save(binaryContent);
-              attachmentIds.add(binaryContent.getId());
+              binaryContentRepository.save(content);
+              binaryContents.add(content);
             } catch (IOException e) {
-              throw new RuntimeException("메시지 첨부 파일 저장 중 오류가 발생했습니다.", e);
+              throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);
             }
           });
     }
 
-    Message newMessage = new com.sprint.mission.discodeit.entity.Message(
-        request.content(), author, channel, attachmentIds);
+    Message newMessage = new Message(request.content(), author, channel, binaryContents);
 
     messageRepository.save(newMessage);
     return toDto(newMessage);
@@ -63,7 +64,6 @@ public class BasicMessageService implements MessageService {
     return toDto(message);
   }
 
-  // 특정 채널의 메시지 목록 조회
   @Override
   public List<MessageDto> findAllByChannelId(UUID channelId) {
     return messageRepository.findAllByChannelId(channelId).stream()
@@ -72,6 +72,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
+  @Transactional
   public MessageDto update(UUID id, MessageUpdateRequest request) {
     Message message = getOrThrowMessage(id);
 
@@ -80,38 +81,21 @@ public class BasicMessageService implements MessageService {
 
     // 첨부파일 수정
     if (request.attachmentIds() != null) {
-      request.attachmentIds().forEach(this::validateBinaryContentExists);
-      message.getAttachmentIds().forEach(binaryContentRepository::deleteById);
-      message.updateAttachments(request.attachmentIds());
+      List<BinaryContent> newAttachments = binaryContentRepository.findAllById(
+          request.attachmentIds());
+      message.updateAttachments(newAttachments);
     }
-
-    messageRepository.save(message);
     return toDto(message);
   }
 
   @Override
+  @Transactional
   public void deleteById(UUID id) {
     Message message = getOrThrowMessage(id);
-
-    // 첨부파일 삭제
-    if (message.getAttachmentIds() != null) {
-      message.getAttachmentIds().forEach(attachmentId -> {
-        binaryContentRepository.deleteById(attachmentId);
-      });
-    }
-
-    messageRepository.deleteById(id);
+    messageRepository.delete(message);
   }
 
-  // 메시지 고정
-  @Override
-  public MessageDto togglePin(UUID id) {
-    Message message = getOrThrowMessage(id);
-
-    messageRepository.save(message);
-    return toDto(message);
-  }
-
+  // --- Helper Methods ---
 
   // 접근 권한 확인 (비공개 채널 여부 체크)
   private void validateAccess(UUID userId, UUID channelId) {
@@ -155,8 +139,8 @@ public class BasicMessageService implements MessageService {
         message.getUpdatedAt(),
         message.getContent(),
         message.getChannel().getId(),
-        message.getAuthor().getId(),
-        message.getAttachmentIds()
+        message.getAuthor() != null ? message.getAuthor().getId() : null,
+        message.getAttachments().stream().map(BinaryContent::getId).toList()
 
     );
   }

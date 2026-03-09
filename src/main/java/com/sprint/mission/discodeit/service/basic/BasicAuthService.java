@@ -5,24 +5,25 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicAuthService implements AuthService {
 
   private final UserRepository userRepository;
-  private final UserStatusRepository userStatusRepository;
 
+  @Override
   public UserDto login(LoginRequest request) {
     // 유저 확인
-    User user = userRepository.findByUserName(request.username())
+    User user = userRepository.findByUsername(request.username())
         .orElseThrow(() -> new NoSuchElementException("일치하는 유저가 없습니다."));
 
     // 비밀번호 확인
@@ -31,11 +32,12 @@ public class BasicAuthService implements AuthService {
     }
 
     // 유저 상태 조회 및 업데이트
-    UserStatus status = userStatusRepository.findByUserId(user.getId())
-        .orElseThrow(() -> new NoSuchElementException("유저 상태 정보가 존재하지 않습니다."));
+    UserStatus status = user.getUserStatus();
+    if (status == null) {
+      throw new NoSuchElementException("유저 상태 정보가 존재하지 않습니다.");
+    }
 
     status.updateLastActiveAt(Instant.now());
-    userStatusRepository.save(status);
 
     return toDto(user, status);
   }
@@ -48,7 +50,7 @@ public class BasicAuthService implements AuthService {
         user.getUpdatedAt(),
         user.getUsername(),
         user.getEmail(),
-        user.getProfileId(),
+        user.getProfile() != null ? user.getProfile().getId() : null,
         status != null && status.isOnline()
     );
   }

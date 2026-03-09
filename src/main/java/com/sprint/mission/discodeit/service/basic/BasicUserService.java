@@ -12,84 +12,82 @@ import com.sprint.mission.discodeit.service.UserService;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import java.time.Instant;
 import java.util.*;
-import org.springframework.web.multipart.MultipartFile;
+
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
-  private final UserStatusRepository userStatusRepository;
-  private final ReadStatusRepository readStatusRepository;
 
   @Override
-  public UserDto create(UserCreateRequest request,
-      MultipartFile profileFile) {
+  @Transactional
+  public UserDto create(UserCreateRequest request, MultipartFile profileFile) {
+
     // username, email 중복 체크
-    validateDuplicateName(request.username());
-    validateDuplicateEmail(request.email());
+    if (userRepository.existsByUsername(request.username())) {
+      throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
+    }
+    if (userRepository.existsByEmail(request.email())) {
+      throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+    }
 
     // 프로필 사진 설정
-    UUID profileId = null;
+    BinaryContent profile = null;
     if (profileFile != null && !profileFile.isEmpty()) {
       try {
-        BinaryContent profileImage = new BinaryContent(
+        profile = new BinaryContent(
             profileFile.getOriginalFilename(),
             profileFile.getSize(),
             profileFile.getContentType(),
             profileFile.getBytes()
         );
-        binaryContentRepository.save(profileImage);
-        profileId = profileImage.getId();
+        binaryContentRepository.save(profile);
       } catch (IOException e) {
-        throw new RuntimeException("프로필 이미지 저장 중 오류가 발생했습니다.", e);
+        throw new RuntimeException("프로필 이미지 저장 중 오류 발생", e);
       }
     }
 
     // 유저 생성
-    User user = new User(
-        request.username(),
-        request.email(),
-        request.password(),
-        profileId
-    );
+    User user = new User(request.username(), request.email(), request.password(), profile);
+    UserStatus status = new UserStatus(user, Instant.now());
+    user.assignUserStatus(status);
+
     userRepository.save(user);
-
-    // 유저 상태 생성
-    UserStatus status = new UserStatus(user.getId(), true, Instant.now());
-    userStatusRepository.save(status);
-
     return toDto(user, status);
   }
 
   @Override
   public UserDto findById(UUID id) {
-    User user = validateUserExists(id);
-    UserStatus status = getUserStatus(id);
-    return toDto(user, status);
+    User user = getOrThrowUser(id);
+    return toDto(user, user.getUserStatus());
   }
 
   @Override
   public List<UserDto> findAll() {
     return userRepository.findAll().stream()
-        .map(user -> toDto(user, getUserStatus(user.getId())))
+        .map(user -> toDto(user, user.getUserStatus()))
         .toList();
   }
 
   @Override
-  public UserDto update(UUID id, UserUpdateRequest request,
-      MultipartFile profileFile) {
-    User user = validateUserExists(id);
+  @Transactional
+  public UserDto update(UUID id, UserUpdateRequest request, MultipartFile profileFile) {
+    User user = getOrThrowUser(id);
 
     // 이름 수정 + 중복 체크
     Optional.ofNullable(request.newUsername())
         .filter(username -> !username.equals(user.getUsername()))
         .ifPresent(username -> {
-          validateDuplicateName(username);
+          if (userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("이미 사용 중인 사용자명입니다.");
+          }
           user.updateName(username);
         });
 
@@ -97,7 +95,9 @@ public class BasicUserService implements UserService {
     Optional.ofNullable(request.newEmail())
         .filter(email -> !email.equals(user.getEmail()))
         .ifPresent(email -> {
-          validateDuplicateEmail(email);
+          if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+          }
           user.updateEmail(email);
         });
 
@@ -108,12 +108,6 @@ public class BasicUserService implements UserService {
     // 프로필 사진 수정
     if (profileFile != null && !profileFile.isEmpty()) {
       try {
-        // 기존 프로필 사진 삭제
-        if (user.getProfileId() != null) {
-          binaryContentRepository.deleteById(user.getProfileId());
-        }
-
-        // 새 프로필 사진 저장
         BinaryContent newImage = new BinaryContent(
             profileFile.getOriginalFilename(),
             profileFile.getSize(),
@@ -121,63 +115,28 @@ public class BasicUserService implements UserService {
             profileFile.getBytes()
         );
         binaryContentRepository.save(newImage);
-
-        // 유저 정보에 새 이미지 ID 연결
-        user.updateProfileImage(newImage.getId());
+        user.updateProfileImage(newImage);
       } catch (IOException e) {
-        throw new RuntimeException("프로필 사진 업데이트 중 오류가 발생했습니다.", e);
+        throw new RuntimeException("프로필 업데이트 오류", e);
       }
     }
 
-    userRepository.save(user);
-    UserStatus status = getUserStatus(id);
-
-    return toDto(user, status);
+    return toDto(user, user.getUserStatus());
   }
 
   @Override
+  @Transactional
   public void deleteById(UUID id) {
-    User user = validateUserExists(id);
-
-    // 유저가 참여하고 있는 채널 삭제
-    readStatusRepository.deleteByUserId(id);
-
-    // 유저 상태 삭제
-    userStatusRepository.deleteByUserId(id);
-
-    // 프로필 사진 삭제
-    if (user.getProfileId() != null) {
-      binaryContentRepository.deleteById(user.getProfileId());
-    }
-
-    // 유저 삭제
-    userRepository.deleteById(id);
+    User user = getOrThrowUser(id);
+    userRepository.delete(user);
   }
 
-
-  // 유저 상태 조회
-  private UserStatus getUserStatus(UUID userId) {
-    return userStatusRepository.findByUserId(userId).orElse(null);
-  }
+  // --- Helper Methods ---
 
   // 유저 검증
-  private User validateUserExists(UUID id) {
+  private User getOrThrowUser(UUID id) {
     return userRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다."));
-  }
-
-  // 사용자명 중복 체크
-  private void validateDuplicateName(String name) {
-    if (userRepository.findByUserName(name).isPresent()) {
-      throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
-    }
-  }
-
-  // 이메일 중복 체크
-  private void validateDuplicateEmail(String email) {
-    if (userRepository.findByEmail(email).isPresent()) {
-      throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
-    }
   }
 
   // 엔티티 -> DTO 변환
@@ -188,7 +147,7 @@ public class BasicUserService implements UserService {
         user.getUpdatedAt(),
         user.getUsername(),
         user.getEmail(),
-        user.getProfileId(),
+        user.getProfile() != null ? user.getProfile().getId() : null,
         status != null && status.isOnline()
     );
   }
