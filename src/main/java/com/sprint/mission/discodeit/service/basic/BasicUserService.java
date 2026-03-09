@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +28,9 @@ import java.util.UUID;
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
-  private final BinaryContentRepository binaryContentRepository;
+  // binaryContentRepo 삭제
   private final UserStatusRepository userStatusRepository;
+  private final BinaryContentService binaryContentService;
 
   @Override
   public User create(UserCreateRequest userCreateRequest,
@@ -44,11 +46,7 @@ public class BasicUserService implements UserService {
     }
 
     BinaryContent profile = optionalProfileCreateRequest
-            .map(req -> {
-              byte[] bytes = req.bytes();
-              BinaryContent bc = new BinaryContent(req.fileName(), (long) bytes.length, req.contentType(), bytes);
-              return binaryContentRepository.save(bc);
-            })
+            .map(binaryContentService::create)
             .orElse(null);
 
     //각 항목둘로 생성
@@ -64,17 +62,15 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional(readOnly = true)
-  public UserDto find(UUID userId) {
+  public User find(UUID userId) {
     return userRepository.findById(userId)
-        .map(this::toDto)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<UserDto> findAll() {
+  public List<User> findAll() {
     return userRepository.findAll().stream()
-        .map(this::toDto)
         .toList();
   }
 
@@ -94,17 +90,10 @@ public class BasicUserService implements UserService {
       throw new IllegalArgumentException("User with username " + newUsername + " already exists");
     }
 
-    BinaryContent newProfile = optionalProfileCreateRequest
-            .map(req -> {
-              byte[] bytes = req.bytes();
-              BinaryContent bc = new BinaryContent(req.fileName(), (long) bytes.length, req.contentType(), bytes);
-              return binaryContentRepository.save(bc);
-            })
-            .orElse(null);
-    String newPassword = userUpdateRequest.newPassword();
-
-    // 프로필 교체 : 엔티티 참조 변경..
-    user.update(newUsername, newEmail, newPassword, newProfile);
+    optionalProfileCreateRequest.ifPresent(request->{
+      BinaryContent newProfile = binaryContentService.create(request);
+      user.update(null,null,null, newProfile);
+    });
     // 변경 감지후 자동 저장 (Dirty Checking?)
     return user;
   }
@@ -114,27 +103,7 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-//    Optional.ofNullable(user.getProfile())
-//        .ifPresent(binaryContentRepository::delete);
-//    userStatusRepository.deleteByUserId(userId);
-
     userRepository.delete(user);
   }
 
-  private UserDto toDto(User user) {
-    Boolean online = userStatusRepository.findByUser_Id(user.getId())
-        .map(UserStatus::isOnline)
-        .orElse(null);
-    UUID profileId = (user.getProfile() != null) ? user.getProfile().getId() : null;
-
-    return new UserDto(
-        user.getId(),
-        user.getCreatedAt(),
-        user.getUpdatedAt(),
-        user.getUsername(),
-        user.getEmail(),
-        profileId,
-        online
-    );
-  }
 }

@@ -88,7 +88,11 @@ public class UserController {
   // GET /api/users
   @RequestMapping(method = RequestMethod.GET)
   public ResponseEntity<List<UserDto>> findAll() {
-    return ResponseEntity.ok(userService.findAll());
+    List<User> users = userService.findAll();
+    List<UserDto> dtos = users.stream()
+            .map(userMapper::toDto)
+            .toList();
+    return ResponseEntity.ok(dtos);
   }
 
   // PATCH /api/users/{userId}/userStatus

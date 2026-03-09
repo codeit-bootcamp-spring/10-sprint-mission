@@ -52,7 +52,7 @@ public abstract class ChannelMapper{
                 .toList();
     }
     //LastMessageAt 계산
-    protected Instant mapLastMesssageAt(Channel channel){
+    protected Instant mapLastMessageAt(Channel channel){
         if(channel == null) return Instant.MIN;
 
         return messageRepository.findAllByChannel_Id(channel.getId()).stream()
