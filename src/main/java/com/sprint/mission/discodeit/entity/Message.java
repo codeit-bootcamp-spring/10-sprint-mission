@@ -1,27 +1,56 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Message extends BaseEntity {
+@Entity
+@Table(name = "MESSAGES")
+public class Message extends BaseUpdatableEntity {
 
-    private String content;
-    private final UUID authorId;
-    private final UUID channelId;
-    private final List<UUID> attachmentIds;
+  @Column(nullable = false)
+  private String content;
 
-    public Message(String content, UUID authorId, UUID channelId, List<UUID> attachmentIds) {
-        this.content = content;
-        this.authorId = authorId;
-        this.channelId = channelId;
-        this.attachmentIds = attachmentIds;
-    }
+  @ManyToOne
+  @JoinColumn(name = "CHANNEL_ID")
+  private Channel channel;
 
-    public void update(String content) {
-        this.content = content;
-        setUpdatedAt();
-    }
+  @ManyToOne
+  @JoinColumn(name = "AUTHOR_ID")
+  private User author;
+
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinTable(
+      name = "MESSAGE_ATTACHMENTS",
+      joinColumns = @JoinColumn(name = "MESSAGE_ID"),
+      inverseJoinColumns = @JoinColumn(name = "ATTACHMENT_ID")
+  )
+  private List<BinaryContent> attachments = new ArrayList<>();
+
+  public Message(String content, Channel channel, User author) {
+    this.content = content;
+    this.channel = channel;
+    this.author = author;
+  }
+
+  public void update(String content) {
+    this.content = content;
+  }
+
+  public void addAttachment(BinaryContent attachment) {
+    this.attachments.add(attachment);
+  }
 }
