@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.message.MessageDto;
-import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.entity.Message;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -40,7 +39,7 @@ public abstract class MessageMapper {
     public List<MessageDto> toDtoList(List<Message> messages) {
         List<MessageDto> dtos = new ArrayList<>();
 
-        for (Message message : messages) {
+        for (Message message: messages) {
             dtos.add(toDto(message));
         }
 

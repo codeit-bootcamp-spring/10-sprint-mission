@@ -26,16 +26,16 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      # update: ????? ???? ?
-      ddl-auto: update # ?? ??? update, ??? none ??
-    show-sql: true       # ?? ??? ??? ???? ?? ??
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
         #        id:
         #          optimizer:
         #          pooled:
         #            preferred: false
-        format_sql: true # SQL ??? ???
+        format_sql: true
+    open-in-view: false
 logging:
   level:
     org.hibernate.sql: debug

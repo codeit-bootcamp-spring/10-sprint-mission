@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayload
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
+import org.springframework.data.domain.Slice;
 
 import java.util.List;
 import java.util.UUID;
@@ -11,9 +13,9 @@ import java.util.UUID;
 public interface MessageService {
     MessageDto createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments);
 
-    List<MessageDto> findAllByUserId(UUID userId);
+    PageResponse<MessageDto> findAllByUserId(UUID userId, int page);
 
-    List<MessageDto> findAllByChannelId(UUID channelId);
+    PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page);
 
     MessageDto findByMessageId(UUID messageId);
 

@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.DeleteMessageResponseDTO;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -93,18 +94,20 @@ public class MessageController {
 
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity findAllByChannelId(
-            @RequestParam UUID channelId
+            @RequestParam UUID channelId,
+            @RequestParam(defaultValue = "1") int page
     ) {
-        List<MessageDto> messages = messageService.findAllByChannelId(channelId);
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, page - 1);
 
         return ResponseEntity.ok(messages);
     }
 
     @RequestMapping(value = "/by-user", method = RequestMethod.GET)
     public ResponseEntity findAllByUserId(
-            @RequestParam UUID userId
+            @RequestParam UUID userId,
+            @RequestParam(defaultValue = "1") int page
     ) {
-        List<MessageDto> messages = messageService.findAllByUserId(userId);
+        PageResponse<MessageDto> messages = messageService.findAllByUserId(userId, page - 1);
 
         return ResponseEntity.ok(messages);
     }

@@ -4,12 +4,14 @@ import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayload
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -17,6 +19,9 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +39,7 @@ public class BasicMessageService implements MessageService {
     private final MessageMapper messageMapper;
     private final BinaryContentMapper binaryContentMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final PageResponseMapper pageResponseMapper;
 
     @Override
     public MessageDto createMessage(CreateMessageRequestDTO dto, List<CreateBinaryContentPayloadDTO> attachments) {
@@ -61,21 +67,25 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MessageDto> findAllByUserId(UUID userId) {
+    public PageResponse<MessageDto> findAllByUserId(UUID userId, int page) {
         findUserOrThrow(userId);
-        List<Message> messages = messageRepository.findAll().stream()
-                .filter(message -> message.getAuthor().getId().equals(userId))
-                .toList();
+        Pageable pageable = PageRequest.of(page, 50);
+        Slice<Message> slice = messageRepository.findByAuthor_IdOrderByCreatedAtDesc(userId, pageable);
+        List<MessageDto> contents = messageMapper.toDtoList(slice.getContent());
 
-        return messageMapper.toDtoList(messages);
+        return pageResponseMapper.fromSlice(slice, contents);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<MessageDto> findAllByChannelId(UUID channelId) {
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page) {
         findChannelOrThrow(channelId);
+        // 요구사항 -> 50개씩 정렬
+        Pageable pageable = PageRequest.of(page, 50);
+        Slice<Message> slice = messageRepository.findByChannel_IdOrderByCreatedAtDesc(channelId, pageable);
+        List<MessageDto> contents = messageMapper.toDtoList(slice.getContent());
 
-        return messageMapper.toDtoList(messageRepository.findByChannel_Id(channelId));
+        return pageResponseMapper.fromSlice(slice, contents);
     }
 
     @Override
