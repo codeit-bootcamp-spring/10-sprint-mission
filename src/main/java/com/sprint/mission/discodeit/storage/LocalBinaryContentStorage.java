@@ -71,7 +71,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
                 .header(
                         // 첨부파일이니까 다운로드로 처리하라는 뜻
                         HttpHeaders.CONTENT_DISPOSITION,
-                        "attachments; filename=\"" + dto.fileName() + "\"")
+                        "attachment; filename=\"" + dto.fileName() + "\"")
                 .body(resource);
     }
 
