@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,9 +30,12 @@ public class MessageController {
   private final MessageService messageService;
   private final ObjectMapper objectMapper;
 
+  // mapper 추가'
+  private final MessageMapper messageMapper;
+
   // POST /api/messages -> 201
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Message> create(
+  public ResponseEntity<MessageDto> create(
           @RequestPart("messageCreateRequest") String messageCreateRequestJson,
           @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) throws Exception {
@@ -54,7 +59,10 @@ public class MessageController {
             .orElse(new ArrayList<>());
 
     Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
-    return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
+
+    // Entity -> Dto로
+    MessageDto dto = messageMapper.toDto(createdMessage);
+    return ResponseEntity.status(HttpStatus.CREATED).body(dto);
   }
 
   // PATCH /api/messages/{messageId}
@@ -76,8 +84,12 @@ public class MessageController {
 
   // GET /api/messages?channelId
   @RequestMapping(method = RequestMethod.GET)
-  public ResponseEntity<List<Message>> findAllByChannelId(@RequestParam("channelId") UUID channelId) {
+  public ResponseEntity<List<MessageDto>> findAllByChannelId(@RequestParam("channelId") UUID channelId) {
     List<Message> messages = messageService.findAllByChannelId(channelId);
-    return ResponseEntity.ok(messages);
+    List<MessageDto> dtos = messages.stream()
+            .map(messageMapper::toDto)
+            .toList();
+
+    return ResponseEntity.ok(dtos);
   }
 }
