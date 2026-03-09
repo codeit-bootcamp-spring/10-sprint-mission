@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.response.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +27,7 @@ import java.util.UUID;
 @Tag(name = "BinaryContent", description = "첨부 파일 API")
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
 
     // 바이너리 파일 1개 조회
     @GetMapping(value = "/{binaryContentId}")
@@ -68,5 +71,24 @@ public class BinaryContentController {
             @RequestParam List<UUID> binaryContentIds) {
         List<BinaryContentDto> response = binaryContentService.findAllByIdIn(binaryContentIds);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // 파일 다운로드
+    @Operation(summary = "파일 다운로드")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "파일 다운로드 성공",
+                    content = @Content(
+                            schema = @Schema(implementation = Resource.class)
+                    )
+            )
+    })
+    @GetMapping(value = "/{binaryContentId}/download")
+    public ResponseEntity<?> download(
+            @Parameter(description = "다운로드할 파일 ID")
+            @PathVariable("binaryContentId") UUID binaryContentId) {
+        BinaryContentDto data = binaryContentService.find(binaryContentId);
+        return binaryContentStorage.download(data);
     }
 }

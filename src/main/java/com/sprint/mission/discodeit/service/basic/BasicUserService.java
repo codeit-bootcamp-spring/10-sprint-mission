@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,10 +28,11 @@ public class BasicUserService implements UserService {
     private final BinaryContentRepository binaryContentRepository;// 왜 불가능? -> 구현 클래스에 @Repository 필요한데 아직 구현 클래스 X
     private final UserStatusRepository userStatusRepository;// 왜 불가능?
     private final UserMapper userMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Override
     public UserDto create(UserCreateRequest userCreateRequest,
-                                         Optional<BinaryContentCreateRequest> binaryContentCreateRequestDTO) {
+                                         Optional<BinaryContentCreateRequest> binaryContentCreateRequest) {
         String username = userCreateRequest.username();
         String email = userCreateRequest.email();
         if (userRepository.existsByUsername(username)) {
@@ -43,14 +45,16 @@ public class BasicUserService implements UserService {
         String password = userCreateRequest.password();
 
         User user;
-        if (binaryContentCreateRequestDTO.isPresent()) { // 프로필 이미지 등록을 했다면
+        if (binaryContentCreateRequest.isPresent()) { // 프로필 이미지 등록을 했다면
             BinaryContent binaryContent = new BinaryContent(
-                    binaryContentCreateRequestDTO.get().fileName(),
-                    (long)binaryContentCreateRequestDTO.get().bytes().length,
-                    binaryContentCreateRequestDTO.get().bytes(),
-                    binaryContentCreateRequestDTO.get().contentType()
+                    binaryContentCreateRequest.get().fileName(),
+                    (long)binaryContentCreateRequest.get().bytes().length,
+                    binaryContentCreateRequest.get().contentType()
             );
             user = new User(username, email, password, binaryContent);// 여기서 binaryContent와 연결
+            binaryContentRepository.save(binaryContent);
+            // binaryContent를 save해야 binaryContent의 id가 생기고 그걸 .getId()로 가져올 수 있음
+            binaryContentStorage.put(binaryContent.getId(), binaryContentCreateRequest.get().bytes());
         }else {// 프로필 이미지 등록을 안했다면
             user = new User(username,email,password,null);
         }
@@ -102,10 +106,11 @@ public class BasicUserService implements UserService {
             BinaryContent binaryContent = new BinaryContent(
                     binaryContentCreateRequest.get().fileName(),
                     (long)binaryContentCreateRequest.get().bytes().length,
-                    binaryContentCreateRequest.get().bytes(),
                     binaryContentCreateRequest.get().contentType()
             );
             user.update(newUsername, newEmail, newPassword, binaryContent);
+            binaryContentRepository.save(binaryContent);
+            binaryContentStorage.put(binaryContent.getId(), binaryContentCreateRequest.get().bytes());
         } else { // 프로필 이미지를 수정하지 않는다면
             // 기존 프로필 이미지를 사용
             user.update(newUsername, newEmail, newPassword, user.getProfile());

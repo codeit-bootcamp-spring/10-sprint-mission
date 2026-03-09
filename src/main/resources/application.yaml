@@ -21,6 +21,11 @@ spring:
       hibernate:
         format_sql: true
 
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: .discodeit/binaryContent
 
 ## 레포지토리와 서비스에 JPA 도입
 #discodeit:

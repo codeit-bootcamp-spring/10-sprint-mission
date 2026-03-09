@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +31,7 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
     private final MessageMapper messageMapper;
+    private final BinaryContentStorage binaryContentStorage;
 
     @Override
     public MessageDto create(MessageCreateRequest messageCreateRequest,
@@ -49,10 +51,12 @@ public class BasicMessageService implements MessageService {
             BinaryContent attachment = new BinaryContent(
                     attachmentDto.fileName(),
                     (long)attachmentDto.bytes().length,
-                    attachmentDto.bytes(),
                     attachmentDto.contentType()
             );
             attachments.add(attachment);
+            binaryContentRepository.save(attachment);
+            // attachment를 save해야 id가 생기게 되고 attachment.getId()를 할 수가 있음
+            binaryContentStorage.put(attachment.getId(), attachmentDto.bytes());
         }
         Message newMessage = new Message(content, channel, author, attachments);
         return messageMapper.toDto(messageRepository.save(newMessage));
