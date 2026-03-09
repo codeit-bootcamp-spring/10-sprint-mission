@@ -67,7 +67,6 @@ public class BasicUserService implements UserService {
     @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
-        List<UserStatus> statuses = userStatusRepository.findAll();
 
         return userMapper.toDtoList(users);
     }

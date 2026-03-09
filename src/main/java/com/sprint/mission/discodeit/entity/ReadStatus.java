@@ -19,11 +19,11 @@ import java.util.UUID;
 )
 @NoArgsConstructor
 public class ReadStatus extends BaseUpdatableEntity {
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USER_ID", nullable = false)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CHANNEL_ID", nullable = false)
     private Channel channel;
 

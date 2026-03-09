@@ -18,12 +18,12 @@ public class Message extends BaseUpdatableEntity {
     private String content;
 
     // 유저 정보
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User author;
 
     // 채널 정보
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id")
     private Channel channel;
 
