@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
 
   @Override
   @Transactional
@@ -31,14 +33,15 @@ public class BasicBinaryContentService implements BinaryContentService {
       BinaryContent binaryContent = new BinaryContent(
           file.getOriginalFilename(),
           file.getSize(),
-          file.getContentType(),
-          file.getBytes()
+          file.getContentType()
       );
+      binaryContentRepository.save(binaryContent);
 
-      return binaryContentRepository.save(binaryContent);
+      binaryContentStorage.put(binaryContent.getId(), file.getBytes());
+      return binaryContent;
 
     } catch (IOException e) {
-      throw new RuntimeException("파일 데이터를 읽는 중 오류가 발생했습니다.", e);
+      throw new RuntimeException("파일 저장 오류", e);
     }
   }
 

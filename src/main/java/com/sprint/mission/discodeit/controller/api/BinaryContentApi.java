@@ -33,6 +33,21 @@ public interface BinaryContentApi {
   })
   ResponseEntity<BinaryContentDto> findById(@Parameter(description = "파일 ID") UUID binaryContentId);
 
+  @Operation(summary = "파일 다운로드")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200",
+          description = "파일 다운로드 성공",
+          content = @Content(mediaType = "application/octet-stream", schema = @Schema(type = "string", format = "binary"))
+      ),
+      @ApiResponse(
+          responseCode = "404",
+          description = "파일을 찾을 수 없거나 읽을 수 없음",
+          content = @Content(examples = @ExampleObject(value = "File not found or readable"))
+      )
+  })
+  ResponseEntity<?> download(@Parameter(description = "다운로드할 파일 ID") UUID binaryContentId);
+
   @Operation(summary = "파일 다건 조회")
   @ApiResponses(value = {
       @ApiResponse(

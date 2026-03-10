@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,8 +19,9 @@ public class BasicMessageService implements MessageService {
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
   private final ChannelRepository channelRepository;
-  private final BinaryContentRepository binaryContentRepository;
   private final ReadStatusRepository readStatusRepository;
+  private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
 
   @Override
   @Transactional
@@ -38,10 +40,12 @@ public class BasicMessageService implements MessageService {
               BinaryContent binaryContent = new BinaryContent(
                   file.getOriginalFilename(),
                   file.getSize(),
-                  file.getContentType(),
-                  file.getBytes()
+                  file.getContentType()
               );
               binaryContentRepository.save(binaryContent);
+
+              binaryContentStorage.put(binaryContent.getId(), file.getBytes());
+
               binaryContents.add(binaryContent);
             } catch (IOException e) {
               throw new RuntimeException("파일 저장 오류", e);
@@ -52,7 +56,7 @@ public class BasicMessageService implements MessageService {
     Message newMessage = new Message(content, author, channel, binaryContents);
     return messageRepository.save(newMessage);
   }
-  
+
   @Override
   public Message findById(UUID id) {
     return getOrThrowMessage(id);
@@ -73,8 +77,7 @@ public class BasicMessageService implements MessageService {
 
     // 첨부파일 수정
     if (attachmentIds != null) {
-      List<BinaryContent> newAttachments = binaryContentRepository.findAllById(
-          attachmentIds);
+      List<BinaryContent> newAttachments = binaryContentRepository.findAllById(attachmentIds);
       message.updateAttachments(newAttachments);
     }
     return message;

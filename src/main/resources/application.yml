@@ -1,3 +1,9 @@
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: ./discodeit-storage
+
 spring:
   application:
     name: discodeit

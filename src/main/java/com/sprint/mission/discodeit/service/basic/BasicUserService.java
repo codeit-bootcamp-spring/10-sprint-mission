@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
 
   @Override
   @Transactional
@@ -40,12 +42,13 @@ public class BasicUserService implements UserService {
         profile = new BinaryContent(
             profileFile.getOriginalFilename(),
             profileFile.getSize(),
-            profileFile.getContentType(),
-            profileFile.getBytes()
+            profileFile.getContentType()
         );
         binaryContentRepository.save(profile);
+
+        binaryContentStorage.put(profile.getId(), profileFile.getBytes());
       } catch (IOException e) {
-        throw new RuntimeException("프로필 이미지 저장 중 오류 발생", e);
+        throw new RuntimeException("프로필 사진 설정 오류", e);
       }
     }
 
@@ -103,13 +106,15 @@ public class BasicUserService implements UserService {
         BinaryContent newImage = new BinaryContent(
             profileFile.getOriginalFilename(),
             profileFile.getSize(),
-            profileFile.getContentType(),
-            profileFile.getBytes()
+            profileFile.getContentType()
         );
         binaryContentRepository.save(newImage);
+        
+        binaryContentStorage.put(newImage.getId(), profileFile.getBytes());
+
         user.updateProfileImage(newImage);
       } catch (IOException e) {
-        throw new RuntimeException("프로필 업데이트 오류", e);
+        throw new RuntimeException("프로필 사진 업데이트 중 오류가 발생했습니다.", e);
       }
     }
 
