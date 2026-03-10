@@ -4,10 +4,10 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.MessageDto;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,6 +15,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -120,16 +123,17 @@ public class MessageController {
                     responseCode = "200",
                     description = "Message 목록 조회 성공",
                     content = @Content(
-                            array = @ArraySchema(
-                                    schema = @Schema(implementation = MessageDto.class)
-                            )
+                            schema = @Schema(implementation = PageResponse.class)
                     )
             )
     })
-    public ResponseEntity<List<MessageDto>> findAllByChannelId(
+    public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
             @Parameter(description = "조회할 Channel ID")
-            @RequestParam UUID channelId) {
-        List<MessageDto> response = messageService.findAllByChannelId(channelId);
+            @RequestParam UUID channelId,
+            @Parameter(description = "페이징 정보")
+            @PageableDefault(page = 0, size = 50, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+        PageResponse<MessageDto> response = messageService.findAllByChannelId(channelId, pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
