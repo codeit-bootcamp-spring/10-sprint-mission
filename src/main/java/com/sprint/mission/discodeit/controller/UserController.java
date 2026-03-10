@@ -13,6 +13,7 @@ import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -99,7 +100,7 @@ public class UserController {
   @RequestMapping(value = "/{userId}/userStatus", method = RequestMethod.PATCH)
   public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
           @PathVariable UUID userId,
-          @RequestBody UserStatusUpdateRequest request
+          @Valid @RequestBody UserStatusUpdateRequest request
   ) {
     UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
 

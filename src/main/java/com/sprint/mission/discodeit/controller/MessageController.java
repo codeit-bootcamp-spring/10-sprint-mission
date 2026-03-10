@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
@@ -72,7 +73,7 @@ public class MessageController {
   @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
   public ResponseEntity<MessageDto> update(
           @PathVariable UUID messageId,
-          @RequestBody MessageUpdateRequest request
+          @Valid @RequestBody MessageUpdateRequest request
   ) {
     Message updatedMessage = messageService.update(messageId, request);
     MessageDto dto = messageMapper.toDto(updatedMessage);
