@@ -13,7 +13,7 @@ public interface ReadStatusService {
 
   ReadStatus find(UUID readStatusId);
 
-  List<ReadStatus> findAllByUserId(UUID userId);
+  List<ReadStatus> findAllByUser_Id(UUID userId);
 
   ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request);
 

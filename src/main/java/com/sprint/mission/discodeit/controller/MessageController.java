@@ -89,11 +89,11 @@ public class MessageController {
   // GET /api/messages/{channelId}
   // v페이징 적용 부분.
   @RequestMapping(value = "/{channelId}",method = RequestMethod.GET)
-  public PageResponse<MessageDto> findAllByChannelId(
+  public PageResponse<MessageDto> findAllByChannel_Id(
           @PathVariable UUID channelId,
           @RequestParam(defaultValue = "0") int page
   ) {
-    Slice<MessageDto> slice = messageService.findAllByChannelId(channelId, page, 50)
+    Slice<MessageDto> slice = messageService.findAllByChannel_Id(channelId, page, 50)
             .map(messageMapper::toDto);
 
     return PageResponseMapper.fromSlice(slice);

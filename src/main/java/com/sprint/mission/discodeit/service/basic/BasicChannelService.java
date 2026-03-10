@@ -68,7 +68,7 @@ public class BasicChannelService implements ChannelService {
 
   @Transactional(readOnly = true)
   @Override
-  public List<Channel> findAllByUserId(UUID userId) {
+  public List<Channel> findAllByUser_Id(UUID userId) {
     List<UUID> mySubscribedChannelIds = readStatusRepository.findAllByUser_Id(userId).stream()
         .map(readStatus -> readStatus.getChannel().getId())
         .toList();

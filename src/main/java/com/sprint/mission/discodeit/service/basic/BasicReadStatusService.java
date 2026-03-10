@@ -39,19 +39,9 @@ public class BasicReadStatusService implements ReadStatusService {
 
     return readStatusRepository.findByUser_IdAndChannel_Id(userId, channelId)
             .orElseGet(() ->
-                    readStatusRepository.save(new ReadStatus(user, channel, Instant.now())));
+                    readStatusRepository.save(new ReadStatus(user, channel, request.lastReadAt())));
   }
 
-//    return readStatusRepository.findAllByUserId(userId).stream()
-//        .filter(readStatus -> readStatus.getChannelId().equals(channelId))
-//        .findFirst()
-//        .orElseGet(
-//            () -> {
-//              ReadStatus readStatus = new ReadStatus(userId, channelId);
-//              return readStatusRepository.save(readStatus);
-//            }
-//        );
-//  }
 
   @Transactional(readOnly = true)
   @Override
@@ -63,7 +53,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Transactional(readOnly = true)
   @Override
-  public List<ReadStatus> findAllByUserId(UUID userId) {
+  public List<ReadStatus> findAllByUser_Id(UUID userId) {
     return readStatusRepository.findAllByUser_Id(userId).stream()
         .toList();
   }
@@ -74,7 +64,7 @@ public class BasicReadStatusService implements ReadStatusService {
         .orElseThrow(
             () -> new NoSuchElementException("ReadStatus with id " + readStatusId + " not found"));
 
-    readStatus.update();
+    readStatus.update(request.newLastReadAt());
     //Dirty checking
     return readStatus;
   }

@@ -32,6 +32,7 @@ public class BasicBinaryContentService implements BinaryContentService {
             (long) bytes.length,
             request.contentType()
     );
+    // 메타 저장 후.
     BinaryContent saved = binaryContentRepository.save(meta);
 
     // 실제 bytes는 storage 에 저장.

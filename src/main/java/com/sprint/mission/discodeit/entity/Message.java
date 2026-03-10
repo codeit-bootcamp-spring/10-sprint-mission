@@ -16,11 +16,6 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Message extends BaseUpdatableEntity {
 
-//  private static final long serialVersionUID = 1L;
-//
-//  private UUID id;
-//  private Instant createdAt;
-//  private Instant updatedAt;
   @Column(nullable = false)
   private String content;
 
@@ -57,18 +52,5 @@ public class Message extends BaseUpdatableEntity {
       this.content = newContent;
     }
   }
-
-//  // 신규 추가
-//  public void addAttachment(BinaryContent attachment) {
-//    if (attachment != null) {
-//      this.attachments.add(attachment);
-//    }
-//  }
-//
-//  public void removeAttachment(BinaryContent attachment) {
-//    if (attachment != null) {
-//      this.attachments.remove(attachment);
-//    }
-//  }
 
 }

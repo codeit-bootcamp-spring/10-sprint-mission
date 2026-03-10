@@ -18,15 +18,4 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
 
   Optional<Message> findTopByChannel_IdOrderByCreatedAtDesc(UUID channelId);
 
-
-
-
-  //Message save(Message message);
-
-  //Optional<Message> findById(UUID id);
-
-  //boolean existsById(UUID id);
-
-  //void deleteById(UUID id);
-
 }

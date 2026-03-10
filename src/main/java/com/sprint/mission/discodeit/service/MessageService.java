@@ -16,7 +16,7 @@ public interface MessageService {
 
   Message find(UUID messageId);
 
-  Slice<Message> findAllByChannelId(UUID channelId, int page, int size);
+  Slice<Message> findAllByChannel_Id(UUID channelId, int page, int size);
 
   Message update(UUID messageId, MessageUpdateRequest request);
 

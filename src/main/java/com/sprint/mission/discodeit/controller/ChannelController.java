@@ -29,7 +29,7 @@ public class ChannelController {
   // GET /api/channels?userId=...
   @RequestMapping(method = RequestMethod.GET)
   public ResponseEntity<List<ChannelDto>> findAll(@RequestParam("userId") UUID userId) {
-    List<Channel> channels = channelService.findAllByUserId(userId);
+    List<Channel> channels = channelService.findAllByUser_Id(userId);
 
     List<ChannelDto> dtos = channels.stream()
             .map(channelMapper::toDto)

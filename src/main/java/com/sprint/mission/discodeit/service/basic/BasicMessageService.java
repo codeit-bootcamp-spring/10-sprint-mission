@@ -75,7 +75,7 @@ public class BasicMessageService implements MessageService {
 
   @Transactional(readOnly = true)
   @Override
-  public Slice<Message> findAllByChannelId(UUID channelId, int page, int size) {
+  public Slice<Message> findAllByChannel_Id(UUID channelId, int page, int size) {
     PageRequest pageRequest = PageRequest.of(
             page,
             size,

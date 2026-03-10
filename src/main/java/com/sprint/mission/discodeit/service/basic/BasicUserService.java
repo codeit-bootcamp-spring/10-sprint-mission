@@ -82,18 +82,20 @@ public class BasicUserService implements UserService {
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
+    String newPassword = userUpdateRequest.newPassword();
 
-    if (userRepository.existsByEmail(newEmail)) {
+    if (newEmail != null && !newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
       throw new IllegalArgumentException("User with email " + newEmail + " already exists");
     }
-    if (userRepository.existsByUsername(newUsername)) {
+
+    if (newUsername != null && !newUsername.equals(user.getUsername()) && userRepository.existsByUsername(newUsername)) {
       throw new IllegalArgumentException("User with username " + newUsername + " already exists");
     }
 
-    optionalProfileCreateRequest.ifPresent(request->{
-      BinaryContent newProfile = binaryContentService.create(request);
-      user.update(null,null,null, newProfile);
-    });
+    BinaryContent newProfile = optionalProfileCreateRequest
+            .map(binaryContentService::create)
+            .orElse(null);
+    user.update(newUsername, newEmail, newPassword, newProfile);
     // 변경 감지후 자동 저장 (Dirty Checking?)
     return user;
   }

@@ -43,8 +43,8 @@ public class ReadStatusController {
 
   // GET /api/readStatuses?userId=...
   @RequestMapping(method = RequestMethod.GET)
-  public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@RequestParam("userId") UUID userId) {
-    List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
+  public ResponseEntity<List<ReadStatusDto>> findAllByUser_Id(@RequestParam("userId") UUID userId) {
+    List<ReadStatus> readStatuses = readStatusService.findAllByUser_Id(userId);
 
     List<ReadStatusDto> dtos = readStatuses.stream()
             .map(readStatusMapper::toDto)
