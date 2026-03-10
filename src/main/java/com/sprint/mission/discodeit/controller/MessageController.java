@@ -1,10 +1,15 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.data.MessageDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,6 +17,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +37,8 @@ import java.util.UUID;
 public class MessageController {
 
     private final MessageService messageService;
+    private final MessageMapper messageMapper;
+    private final PageResponseMapper pageResponseMapper;
 
     @Operation(summary = "메시지 전송(생성)")
     @ApiResponses({
@@ -42,8 +51,8 @@ public class MessageController {
             )
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Message> sendMessage(@RequestPart MessageCreateRequest messageCreateRequest,
-                                              @RequestPart(required = false) List<MultipartFile> attachments) throws IOException {
+    public ResponseEntity<MessageDto> sendMessage(@RequestPart MessageCreateRequest messageCreateRequest,
+                                                  @RequestPart(required = false) List<MultipartFile> attachments) throws IOException {
         List<BinaryContentCreateRequest> binaryContentCreateRequests = new ArrayList<>();
 
         if (attachments != null) {
@@ -64,23 +73,31 @@ public class MessageController {
         );
 
         Message message = messageService.create(messageCreateRequest);
+        MessageDto messageDto = messageMapper.toDto(message);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(message);
+        return ResponseEntity.status(HttpStatus.CREATED).body(messageDto);
     }
 
     @GetMapping
-    public ResponseEntity<List<Message>> getAllMessages(@RequestParam UUID channelId) {
-        List<Message> messages = messageService.findAllByChannelId(channelId);
-        return ResponseEntity.ok(messages);
+    public ResponseEntity<PageResponse<MessageDto>> getAllMessages(@RequestParam UUID channelId,
+                                                                Pageable pageable) { //Postman에서 page,size,sort를 보내면 자동으로 pageable로 들어옴.
+
+        Page<Message> messages = messageService.findAllByChannelId(channelId,pageable);
+        Page<MessageDto> messageDtos = messages.map(messageMapper::toDto);
+        PageResponse<MessageDto> response = pageResponseMapper.fromPage(messageDtos);
+
+        return ResponseEntity.ok(response);
 
     }
 
     @PatchMapping("/{messageId}")
-    public ResponseEntity<Message> updateMessage(@PathVariable UUID messageId,
+    public ResponseEntity<MessageDto> updateMessage(@PathVariable UUID messageId,
                                  @RequestBody MessageUpdateRequest messageUpdateRequest) {
         Message message = messageService.update(messageId, messageUpdateRequest);
-        return ResponseEntity.ok(message);
+        MessageDto messageDto = messageMapper.toDto(message);
+        return ResponseEntity.ok(messageDto);
     }
+
     @Operation(summary = "메시지 삭제")
     @ApiResponse(
             responseCode = "204",

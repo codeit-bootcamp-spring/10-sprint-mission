@@ -62,6 +62,13 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ReadStatus> findAllByChannelId(UUID channelId) {
+        return readStatusRepository.findAllByChannelId(channelId).stream()
+                .toList();
+    }
+
+    @Override
     public ReadStatus update(UUID readStatusId, ReadStatusUpdateRequest request) {
         Instant newLastReadAt = request.newLastReadAt();
         ReadStatus readStatus = readStatusRepository.findById(readStatusId)

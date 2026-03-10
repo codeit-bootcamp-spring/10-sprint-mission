@@ -28,15 +28,14 @@ public class BinaryContent extends BaseEntity {
     @Column(nullable = false)
     private String contentType;
 
-    @Column(nullable = false)
-    private byte[] bytes;
+//    @Column(nullable = false)
+//    private byte[] bytes; //실제 바이너리 데이터는 별도의 공간에 저장하고, DB에는 파일명,크기,유형등만 저장.
 
-    public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+    public BinaryContent(String fileName, Long size, String contentType) {
 //        super();//id값과 createdAt값 주입
 
         this.fileName = fileName;
         this.size = size;
         this.contentType = contentType;
-        this.bytes = bytes;
     }
 }

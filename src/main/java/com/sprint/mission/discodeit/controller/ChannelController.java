@@ -1,11 +1,19 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,6 +35,10 @@ import java.util.UUID;
 public class ChannelController {
 
     private final ChannelService channelService;
+    private final ChannelMapper channelMapper;
+    private final UserService userService;
+    private final UserMapper userMapper;
+    private final ReadStatusService readStatusService;
 
     @Operation(summary = "Public channel 생성")
     @ApiResponses({
@@ -39,9 +51,20 @@ public class ChannelController {
             )
     })
     @PostMapping("/public")
-    public ResponseEntity<Channel> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
+    public ResponseEntity<ChannelDto> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
         Channel channel = channelService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(channel);//201
+        ChannelDto baseDto = channelMapper.toDto(channel); //아직 participants와 lastMessageAt이 안들어가 있음.
+        List<UserDto> participants = userService.findAll();
+
+        ChannelDto channelDto = new ChannelDto(
+                baseDto.id(),
+                baseDto.type(),
+                baseDto.name(),
+                baseDto.description(),
+                participants,
+                null
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(channelDto);//201
 
     }
 
@@ -56,9 +79,21 @@ public class ChannelController {
             )
     })
     @PostMapping("/private")
-    public ResponseEntity<Channel> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
+    public ResponseEntity<ChannelDto> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
         Channel channel = channelService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(channel);
+        ChannelDto baseDto = channelMapper.toDto(channel);
+
+        List<UserDto> participants = request.users().stream().map(userMapper::toDto).toList();
+
+        ChannelDto channelDto = new ChannelDto(
+                baseDto.id(),
+                baseDto.type(),
+                baseDto.name(),
+                baseDto.description(),
+                participants,
+                null
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(channelDto);
     }
 
     @GetMapping
@@ -68,11 +103,27 @@ public class ChannelController {
     }
 
     @PatchMapping("/{channelId}")
-    public ResponseEntity<Channel> updatePublicChannel(@PathVariable UUID channelId,
+    public ResponseEntity<ChannelDto> updatePublicChannel(@PathVariable UUID channelId,
                                        @RequestBody PublicChannelUpdateRequest request){
         Channel channel = channelService.update(channelId, request);
+        ChannelDto baseDto = channelMapper.toDto(channel);
 
-        return ResponseEntity.ok(channel);
+        List<UserDto> participants =
+                readStatusService.findAllByChannelId(channel.getId()).stream()
+                        .map(ReadStatus::getUser)
+                        .map(userMapper::toDto)
+                        .toList();
+
+        ChannelDto channelDto = new ChannelDto(
+                baseDto.id(),
+                baseDto.type(),
+                baseDto.name(),
+                baseDto.description(),
+                participants,
+                null
+        );
+
+        return ResponseEntity.ok(channelDto);
 
     }
 
