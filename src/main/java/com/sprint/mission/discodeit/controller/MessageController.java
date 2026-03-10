@@ -86,7 +86,8 @@ public class MessageController {
     return ResponseEntity.noContent().build();
   }
 
-  // GET /api/messages?channelId
+  // GET /api/messages/{channelId}
+  // v페이징 적용 부분.
   @RequestMapping(method = RequestMethod.GET)
   public PageResponse<MessageDto> findAllByChannelId(
           @PathVariable UUID channelId,
