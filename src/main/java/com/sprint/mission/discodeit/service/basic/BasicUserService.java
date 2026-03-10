@@ -92,13 +92,14 @@ public class BasicUserService implements UserService {
             updatePassword(dto, user);
         }
         if (profileImage != null) {
-            // 새 객체를 만들지 않고 같은 엔티티 인스턴스를 사용 하도록 수정
+            // binaryConent는 수정불가 -> 요구사항
             BinaryContent profile = binaryContentMapper.toEntity(profileImage);
-            user.updateProfile(profile);
+            BinaryContent savedProfile = binaryContentRepository.save(profile);
+            user.updateProfile(savedProfile);
 
             userRepository.saveAndFlush(user); // 여기서 cascade로 profile도 저장되고 id 생성
 
-            binaryContentStorage.put(profile.getId(), profileImage.bytes());
+            binaryContentStorage.put(savedProfile.getId(), profileImage.bytes());
         }
 
         return userMapper.toDto(user);
