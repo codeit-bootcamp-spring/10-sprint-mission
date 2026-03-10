@@ -74,25 +74,54 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<MessageDto> findAllByUserId(UUID userId, int page) {
+    public PageResponse<MessageDto> findAllByUserId(UUID userId, Instant cursor, int size) {
         findUserOrThrow(userId);
-        Pageable pageable = PageRequest.of(page, 50);
-        Slice<Message> slice = messageRepository.findByAuthor_IdOrderByCreatedAtDesc(userId, pageable);
-        List<MessageDto> contents = messageMapper.toDtoList(slice.getContent());
+        Pageable pageable = PageRequest.of(0, size);
+        Slice<Message> messages;
 
-        return pageResponseMapper.fromSlice(slice, contents);
+        if (cursor == null) {
+            messages = messageRepository.findByAuthor_IdOrderByCreatedAtDesc(userId, pageable);
+        } else {
+            messages = messageRepository.findByAuthorIdWithCursor(userId, cursor, pageable);
+        }
+        
+        List<MessageDto> contents = messageMapper.toDtoList(messages.getContent());
+
+        Object nextCursor = null;
+        if (!messages.getContent().isEmpty()) {
+            Message lastMessage = messages.getContent().get(messages.getContent().size() - 1);
+            nextCursor = lastMessage.getCreatedAt();
+        }
+
+        return pageResponseMapper.fromSlice(messages, contents, nextCursor);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page) {
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, int size) {
         findChannelOrThrow(channelId);
-        // 요구사항 -> 50개씩 정렬
-        Pageable pageable = PageRequest.of(page, 50);
-        Slice<Message> slice = messageRepository.findByChannel_IdOrderByCreatedAtDesc(channelId, pageable);
-        List<MessageDto> contents = messageMapper.toDtoList(slice.getContent());
+        // 요구사항 -> 50개씩 정렬 + cursor에선 항상 pageNumber=0
+        Pageable pageable = PageRequest.of(0, size);
+        Slice<Message> messages;
 
-        return pageResponseMapper.fromSlice(slice, contents);
+        if (cursor == null) {
+            // cursor가 없는 경우 첫페이지
+            messages = messageRepository.findByChannel_IdOrderByCreatedAtDesc(channelId, pageable);
+        } else {
+            // cursor가 있는 경우 cursor 반영
+            messages = messageRepository.findByChannelIdWithCursor(channelId, cursor, pageable);
+        }
+
+        List<MessageDto> contents = messageMapper.toDtoList(messages.getContent());
+
+        Object nextCursor = null;
+        if (!messages.getContent().isEmpty()) {
+            // 마지막 메시지 계산
+            Message lastMessage = messages.getContent().get(messages.getContent().size() - 1);
+            nextCursor = lastMessage.getCreatedAt();
+        }
+
+        return pageResponseMapper.fromSlice(messages, contents, nextCursor);
     }
 
     @Override

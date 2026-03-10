@@ -10,10 +10,10 @@ import java.util.List;
 @Component
 public class PageResponseMapper {
 
-    public <T> PageResponse<T> fromSlice(Slice<?> slice, List<T> dtos) {
+    public <T> PageResponse<T> fromSlice(Slice<?> slice, List<T> dtos, Object nextCursor) {
         return new PageResponse<T>(
                 dtos,
-                slice.getNumber() + 1,      // 응답 방식 보정: page값과 맞추기 위함
+                nextCursor,     // cursor값 반영
                 slice.getSize(),
                 slice.hasNext(),
                 null        // slice에선 totalElements가 없어도 됨
@@ -23,7 +23,7 @@ public class PageResponseMapper {
     public <T> PageResponse<T> fromPage(Page<T> page) {
         return new PageResponse<>(
                 page.getContent(),
-                page.getNumber() + 1,       // 응답 방식 보정: page값과 맞추기 위함
+                null,
                 page.getSize(),
                 page.hasNext(),
                 page.getTotalElements()

@@ -89,9 +89,10 @@ public class MessageController {
     @RequestMapping(method = RequestMethod.GET)
     public ResponseEntity findAllByChannelId(
             @RequestParam UUID channelId,
-            @RequestParam(defaultValue = "1") int page
+            @RequestParam(required = false) Instant cursor,
+            @RequestParam(defaultValue = "50") int size
     ) {
-        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, page - 1);
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor, size);
 
         return ResponseEntity.ok(messages);
     }
@@ -99,9 +100,10 @@ public class MessageController {
     @RequestMapping(value = "/by-user", method = RequestMethod.GET)
     public ResponseEntity findAllByUserId(
             @RequestParam UUID userId,
-            @RequestParam(defaultValue = "1") int page
+            @RequestParam(required = false) Instant cursor,
+            @RequestParam(defaultValue = "50") int size
     ) {
-        PageResponse<MessageDto> messages = messageService.findAllByUserId(userId, page - 1);
+        PageResponse<MessageDto> messages = messageService.findAllByUserId(userId, cursor, size);
 
         return ResponseEntity.ok(messages);
     }
