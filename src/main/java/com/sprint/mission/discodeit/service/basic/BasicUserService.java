@@ -68,23 +68,17 @@ public class BasicUserService implements UserService {
     @Transactional(readOnly = true)
     public UserDto find(UUID userId) {
         User user = getUserByIdOrThrow(userId);
-        // UserStatusRepository에 userId를 통해 UserStatus를 찾는 메소드를 정의 해야함
-        UserStatus userStatus = getUserStatusByUserIdOrThrow(userId);
-
         return userMapper.toDto(user);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<UserDto> findAll() {
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.findAllWithStatusAndProfile();
         List<UserDto> userDtoList = new ArrayList<>();
-
-        for (User user : users) {
-            UserStatus userStatus = getUserStatusByUserIdOrThrow(user.getId());
-            UserDto userDto = userMapper.toDto(user);
-            userDtoList.add(userDto);
-        }
+        users.stream()
+                .map(userMapper::toDto)
+                .forEach(userDtoList::add);
         return userDtoList;
     }
 

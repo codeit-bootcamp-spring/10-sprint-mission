@@ -49,10 +49,11 @@ public class BasicBinaryContentService implements BinaryContentService {
             throw new IllegalArgumentException("입력된 binaryContentIds가 null 또는 빈 리스트 입니다");
         }
         List<BinaryContentDto> binaryContentDtoList = new ArrayList<>();
-        for (UUID binaryContentId : binaryContentIds) {
-            BinaryContent binaryContent = getBinaryContentByIdOrThrow(binaryContentId);
-            binaryContentDtoList.add(binaryContentMapper.toDto(binaryContent));
+        List<BinaryContent> binaryContents = binaryContentRepository.findAllById(binaryContentIds);
+        if (binaryContents.isEmpty()) {
+            throw new IllegalArgumentException("해당Id 리스트에 binaryContent는 존재하지 않습니다");
         }
+        binaryContents.forEach(binaryContent -> binaryContentDtoList.add(binaryContentMapper.toDto(binaryContent)));
         return binaryContentDtoList;
     }
 
