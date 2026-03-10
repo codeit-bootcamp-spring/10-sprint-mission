@@ -88,7 +88,7 @@ public class MessageController {
 
   // GET /api/messages/{channelId}
   // v페이징 적용 부분.
-  @RequestMapping(method = RequestMethod.GET)
+  @RequestMapping(value = "/{channelId}",method = RequestMethod.GET)
   public PageResponse<MessageDto> findAllByChannelId(
           @PathVariable UUID channelId,
           @RequestParam(defaultValue = "0") int page
