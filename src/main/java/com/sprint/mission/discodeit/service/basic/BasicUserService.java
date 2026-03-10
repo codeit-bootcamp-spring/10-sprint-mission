@@ -8,10 +8,12 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,8 @@ public class BasicUserService implements UserService {
     //
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
+    private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentMapper binaryContentMapper;
 
     @Override
     public User create(UserCreateRequest userCreateRequest) {
@@ -49,8 +53,10 @@ public class BasicUserService implements UserService {
                     String fileName = profileRequest.fileName();
                     String contentType = profileRequest.contentType();
                     byte[] bytes = profileRequest.bytes();
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long)bytes.length, contentType, bytes);
-                    return binaryContentRepository.save(binaryContent);
+                    BinaryContent binaryContent = new BinaryContent(fileName, (long)bytes.length, contentType);
+                    BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
+                    binaryContentStorage.put(savedBinaryContent.getId(),bytes);
+                    return savedBinaryContent;
                 })
                 .orElse(null);
 
@@ -97,13 +103,19 @@ public class BasicUserService implements UserService {
         }
 
         BinaryContent nullableProfile = userUpdateRequest.optionalProfileCreateRequest()
-                .map(profileRequest -> new BinaryContent(
-                        profileRequest.fileName(),
-                        (long) profileRequest.bytes().length,
-                        profileRequest.contentType(),
-                        profileRequest.bytes()
-                ))
+                .map(profileRequest -> {
+                    BinaryContent binaryContent = new BinaryContent(
+                            profileRequest.fileName(),
+                            (long) profileRequest.bytes().length,
+                            profileRequest.contentType()
+                    );
+                    binaryContentRepository.save(binaryContent);
+                    binaryContentStorage.put(binaryContent.getId(),profileRequest.bytes());
+                    return binaryContent;
+
+                })
                 .orElse(null);
+
 //        binaryContentRepository.save(nullableProfile);//User Entity에 CascadeType.ALL 설정해서 BinaryContent도 자동 저장.
         user.update(newUsername, newEmail, newPassword, nullableProfile);
 
@@ -125,11 +137,9 @@ public class BasicUserService implements UserService {
 
         return new UserDto(
                 user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getProfile().getId(),
+                binaryContentMapper.toDto(user.getProfile()),
                 online
         );
     }

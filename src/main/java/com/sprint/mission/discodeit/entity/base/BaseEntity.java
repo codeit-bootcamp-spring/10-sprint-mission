@@ -21,7 +21,7 @@ public abstract class BaseEntity {
     private Instant createdAt;
 
     protected BaseEntity() {
-        this.id = UUID.randomUUID();
+//        this.id = UUID.randomUUID(); //@GeneratedValue와 같이쓰면 충돌난다.
         this.createdAt = Instant.now();
     }
 }
