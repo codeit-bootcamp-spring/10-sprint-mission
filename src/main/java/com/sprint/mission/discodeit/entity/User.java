@@ -1,35 +1,47 @@
 package com.sprint.mission.discodeit.entity;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class User implements Serializable {
+@Entity
+@NoArgsConstructor
+public class User extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
+//    private UUID id;
+//    private Instant createdAt;
+//    private Instant updatedAt;
     //
     private String username;
     private String email;
     private String password;
-    private UUID profileId;     // BinaryContent
+    //
+    @OneToOne
+    private BinaryContent profile;     // BinaryContent
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserStatus status;
 
-    public User(String username, String email, String password, UUID profileId) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
+    public User(String username, String email, String password, BinaryContent profile, UserStatus status) {
+        super();
         //
         this.username = username;
         this.email = email;
         this.password = password;
-        this.profileId = profileId;
+        this.profile = profile;
+        this.status = status;
     }
 
-    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+    public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
         boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
@@ -43,8 +55,8 @@ public class User implements Serializable {
             this.password = newPassword;
             anyValueUpdated = true;
         }
-        if (newProfileId != null && !newProfileId.equals(this.profileId)) {
-            this.profileId = newProfileId;
+        if (newProfile != null && !newProfile.equals(this.profile)) {
+            this.profile = newProfile;
             anyValueUpdated = true;
         }
 

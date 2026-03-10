@@ -34,12 +34,15 @@ public class BasicReadStatusService implements ReadStatusService {
             throw new NoSuchElementException("Channel with id " + channelId + " does not exist");
         }
         if (readStatusRepository.findAllByUserId(userId).stream()
-                .anyMatch(readStatus -> readStatus.getChannelId().equals(channelId))) {
+                .anyMatch(readStatus -> readStatus.getChannel().getId().equals(channelId))) {
             throw new IllegalArgumentException("ReadStatus with userId " + userId + " and channelId " + channelId + " already exists");
         }
 
         Instant lastReadAt = request.lastReadAt();
-        ReadStatus readStatus = new ReadStatus(userId, channelId, lastReadAt);
+        ReadStatus readStatus = new ReadStatus(
+                userRepository.findById(userId).orElseThrow(() -> new NoSuchElementException()),
+                channelRepository.findById(channelId).orElseThrow(() -> new NoSuchElementException()),
+                lastReadAt);
         return readStatusRepository.save(readStatus);
     }
 

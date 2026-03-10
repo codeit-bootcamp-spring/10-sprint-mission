@@ -14,6 +14,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ErrorResponse> handleNoNoSuchElementException(NoSuchElementException e) {
         ErrorResponse errorResponse = new ErrorResponse("NO_SUCH_ELEMENT", e.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+        ErrorResponse errorResponse = new ErrorResponse("ILLEGAL_ARGUMENT_EXCEPTION", e.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }

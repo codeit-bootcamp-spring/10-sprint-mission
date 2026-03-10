@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToOne;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.Duration;
@@ -8,20 +11,22 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class UserStatus implements Serializable {
+@Entity
+@NoArgsConstructor
+public class UserStatus extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
+//    private UUID id;
+//    private Instant createdAt;
+//    private Instant updatedAt;
     //
-    private UUID userId;
+    @OneToOne
+    private User user;
     private Instant lastActiveAt;
 
-    public UserStatus(UUID userId, Instant lastActiveAt) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
+    public UserStatus(User user, Instant lastActiveAt) {
+        super();
         //
-        this.userId = userId;
+        this.user = user;
         this.lastActiveAt = lastActiveAt;
     }
 

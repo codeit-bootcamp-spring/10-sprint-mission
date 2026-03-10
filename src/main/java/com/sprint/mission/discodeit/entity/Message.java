@@ -1,5 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -8,27 +12,29 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-public class Message implements Serializable {
+public class Message extends BaseUpdatableEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
     //
     private String content;
     //
-    private UUID channelId;
-    private UUID authorId;
-    private List<UUID> attachmentIds;
+    @ManyToOne
+    @JoinColumn(name = "channel_id")
+    private User author;
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private Channel channel;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "message_id")
+    private List<BinaryContent> attachments;
 
-    public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
+    public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
+        super();
         //
         this.content = content;
-        this.channelId = channelId;
-        this.authorId = authorId;
-        this.attachmentIds = attachmentIds;
+        this.channel = channel;
+        this.author = author;
+        this.attachments = attachments;
     }
 
     public void update(String newContent) {
