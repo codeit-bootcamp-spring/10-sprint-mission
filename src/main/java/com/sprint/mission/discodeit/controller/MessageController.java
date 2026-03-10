@@ -8,6 +8,8 @@ import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
@@ -15,6 +17,9 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.io.IOException;
@@ -56,12 +61,16 @@ public class MessageController {
       @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공")
   })
   @RequestMapping(method = RequestMethod.GET)
-  public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
+  public ResponseEntity<PageResponse> findAllByChannelId(
+      @Parameter(description = "조회할 Channel ID")
       @RequestParam UUID channelId,
+      @Parameter(
+          description = "페이징 정보",
+          example = "{\"size\":50,\"page\":0,\"sort\":\"createdAt,desc\"}"
+      )
       Pageable pageable
   ) {
     Slice<MessageResponse> slice = messageService.findAllByChannelId(channelId, pageable);
-
     Slice<MessageDto> dtoSlice = slice.map(this::toDto);
 
     return ResponseEntity.ok(pageResponseMapper.fromSlice(dtoSlice));
@@ -70,11 +79,19 @@ public class MessageController {
   @Operation(summary = "Message 생성", operationId = "create_2", tags = {"Message"})
   @ApiResponses({
       @ApiResponse(responseCode = "201", description = "Message가 성공적으로 생성됨"),
-      @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음")
+      @ApiResponse(
+          responseCode = "404",
+          description = "Channel 또는 User를 찾을 수 없음",
+          content = @Content(
+              mediaType = "*/*",
+              examples = @ExampleObject(value = "Channel | Author with id {channelId | author} not found")
+          )
+      )
   })
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<MessageDto> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest request,
+      @Parameter(description = "Message 첨부 파일들")
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
     List<UUID> attachmentIds = uploadAttachments(attachments);
@@ -93,10 +110,18 @@ public class MessageController {
   @Operation(summary = "Message 내용 수정", operationId = "update_2", tags = {"Message"})
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "Message가 성공적으로 수정됨"),
-      @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음")
+      @ApiResponse(
+          responseCode = "404",
+          description = "Message를 찾을 수 없음",
+          content = @Content(
+              mediaType = "*/*",
+              examples = @ExampleObject(value = "Message with id {messageId} not found")
+          )
+      )
   })
   @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
   public ResponseEntity<MessageDto> update(
+      @Parameter(description = "수정할 Message ID")
       @PathVariable UUID messageId,
       @RequestBody MessageUpdateRequest body
   ) {
@@ -107,17 +132,27 @@ public class MessageController {
   @Operation(summary = "Message 삭제", operationId = "delete_1", tags = {"Message"})
   @ApiResponses({
       @ApiResponse(responseCode = "204", description = "Message가 성공적으로 삭제됨"),
-      @ApiResponse(responseCode = "404", description = "Message를 찾을 수 없음")
+      @ApiResponse(
+          responseCode = "404",
+          description = "Message를 찾을 수 없음",
+          content = @Content(
+              mediaType = "*/*",
+              examples = @ExampleObject(value = "Message with id {messageId} not found")
+          )
+      )
   })
   @RequestMapping(value = "/{messageId}", method = RequestMethod.DELETE)
-  public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
+  public ResponseEntity<Void> delete(
+      @Parameter(description = "삭제할 Message ID")
+      @PathVariable UUID messageId
+  ) {
     messageService.delete(messageId);
     return ResponseEntity.noContent().build();
   }
 
   private MessageDto toDto(MessageResponse response) {
-    var authorResponse = userService.find(response.userId());
-    var author = toUserDto(authorResponse);
+    UserResponse authorResponse = userService.find(response.userId());
+    UserDto author = toUserDto(authorResponse);
 
     List<BinaryContentDto> attachments = response.attachmentIds() == null
         ? List.of()
@@ -136,16 +171,14 @@ public class MessageController {
     );
   }
 
-  private com.sprint.mission.discodeit.dto.user.UserDto toUserDto(
-      com.sprint.mission.discodeit.dto.user.UserResponse userResponse
-  ) {
+  private UserDto toUserDto(UserResponse userResponse) {
     BinaryContentDto profile = null;
     if (userResponse.profileImageId() != null) {
       BinaryContentResponse binary = binaryContentService.find(userResponse.profileImageId());
       profile = toBinaryDto(binary);
     }
 
-    return new com.sprint.mission.discodeit.dto.user.UserDto(
+    return new UserDto(
         userResponse.id(),
         userResponse.userName(),
         userResponse.email(),

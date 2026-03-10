@@ -1,5 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+DROP TYPE IF EXISTS channel_type CASCADE;
+CREATE TYPE channel_type AS ENUM ('PUBLIC', 'PRIVATE');
 
 -- binary_contents
 CREATE TABLE IF NOT EXISTS binary_contents

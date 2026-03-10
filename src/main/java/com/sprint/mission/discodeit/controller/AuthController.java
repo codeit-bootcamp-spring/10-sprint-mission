@@ -9,6 +9,8 @@ import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +27,11 @@ public class AuthController {
   private final UserService userService;
   private final BinaryContentService binaryContentService;
 
-  public AuthController(AuthService authService, UserService userService,
-      BinaryContentService binaryContentService) {
+  public AuthController(
+      AuthService authService,
+      UserService userService,
+      BinaryContentService binaryContentService
+  ) {
     this.authService = authService;
     this.userService = userService;
     this.binaryContentService = binaryContentService;
@@ -35,8 +40,22 @@ public class AuthController {
   @Operation(summary = "로그인", operationId = "login", tags = {"Auth"})
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "로그인 성공"),
-      @ApiResponse(responseCode = "400", description = "비밀번호가 일치하지 않음"),
-      @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+      @ApiResponse(
+          responseCode = "400",
+          description = "비밀번호가 일치하지 않음",
+          content = @Content(
+              mediaType = "*/*",
+              examples = @ExampleObject(value = "Wrong password")
+          )
+      ),
+      @ApiResponse(
+          responseCode = "404",
+          description = "사용자를 찾을 수 없음",
+          content = @Content(
+              mediaType = "*/*",
+              examples = @ExampleObject(value = "User with username {username} not found")
+          )
+      )
   })
   @RequestMapping(value = "/login", method = RequestMethod.POST)
   public ResponseEntity<UserDto> postLogin(@RequestBody LoginRequest dto) {
