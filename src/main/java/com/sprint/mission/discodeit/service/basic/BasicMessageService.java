@@ -6,6 +6,10 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -63,8 +67,12 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public List<Message> findAllByChannelId(UUID channelId) {
-    return messageRepository.findAllByChannelId(channelId);
+  public Slice<Message> findAllByChannelId(UUID channelId, int page) {
+
+    int internalPage = Math.max(0, page - 1);
+
+    Pageable pageable = PageRequest.of(internalPage, 50, Sort.by(Sort.Direction.DESC, "createdAt"));
+    return messageRepository.findAllByChannelId(channelId, pageable);
   }
 
   @Override
@@ -92,7 +100,7 @@ public class BasicMessageService implements MessageService {
 
   // --- Helper Methods ---
 
-  // 접근 권한 확인 (비공개 채널 여부 체크)
+  // 비공개 채널 접근 권한 확인
   private void validateAccess(UUID userId, UUID channelId) {
     Channel channel = getOrThrowChannel(channelId);
     if (channel.getType() == ChannelType.PRIVATE) {

@@ -4,10 +4,13 @@ import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -43,13 +46,20 @@ public class MessageController implements MessageApi {
 
   @Override
   @GetMapping
-  public ResponseEntity<List<MessageDto>> findAllByChannelId(@RequestParam UUID channelId) {
-    List<Message> messages = messageService.findAllByChannelId(channelId);
-    List<MessageDto> dtos = messages.stream()
-        .map(messageMapper::toDto)
-        .toList();
+  public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
+      @RequestParam UUID channelId,
+      @RequestParam(defaultValue = "1") int page) {
 
-    return ResponseEntity.ok(dtos);
+    // 페이징 처리된 객체 받아옴
+    Slice<Message> messageSlice = messageService.findAllByChannelId(channelId, page);
+
+    // 엔티티를 dto로 변환
+    Slice<MessageDto> dtoSlice = messageSlice.map(messageMapper::toDto);
+
+    // PageResponse dto로 변환
+    PageResponse<MessageDto> response = PageResponseMapper.fromSlice(dtoSlice);
+
+    return ResponseEntity.ok(response);
   }
 
   @Override
