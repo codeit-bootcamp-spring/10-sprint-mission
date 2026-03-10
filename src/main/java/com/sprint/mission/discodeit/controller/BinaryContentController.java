@@ -72,9 +72,7 @@ public class BinaryContentController {
     public ResponseEntity<?> downloadBinaryContent(
         @PathVariable UUID binaryContentId) {
 
-        return new ResponseEntity<>(
-            binaryContentStorage.download(binaryContentService.find(binaryContentId)),
-            HttpStatus.OK);
+        return binaryContentStorage.download(binaryContentService.find(binaryContentId));
     }
 
 }

@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.messagedto.MessageDto;
 import com.sprint.mission.discodeit.dto.messagedto.MessageUpdateRequestDto;
 
 import com.sprint.mission.discodeit.dto.response.PageResponse;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +19,7 @@ public interface MessageService {
 
     List<MessageDto> findAllByChannelId(UUID channelId);
 
-    PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable);
+    PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable);
 
     MessageDto update(UUID messageId, MessageUpdateRequestDto req);
 

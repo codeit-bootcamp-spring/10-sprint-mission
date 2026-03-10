@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.repository;
 import com.sprint.mission.discodeit.entity.Message;
 
 import java.time.Instant;
-import java.util.Map;
+import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +38,18 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
         "author", "author.userStatus", "author.profile"
     })
     Slice<Message> findByChannelId(UUID channelId, Pageable pageable);
+
+    @EntityGraph(attributePaths = {
+        "author", "author.userStatus", "author.profile"
+    })
+    @Query("""
+        SELECT m
+        FROM Message m
+        WHERE m.channel.id = :channelId
+          AND (:cursor IS NULL OR m.createdAt < :cursor)
+        """)
+    Slice<Message> findByChannelIdAndCursor(UUID channelId, Optional<Instant> cursor,
+        Pageable pageable);
 
 }
 

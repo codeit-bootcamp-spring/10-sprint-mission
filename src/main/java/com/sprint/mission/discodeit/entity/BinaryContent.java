@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,7 +32,6 @@ public class BinaryContent extends BaseEntity {
     private Message message;
 
     public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
-        this.id = UUID.randomUUID();
         this.fileName = fileName;
         this.size = size;
         this.contentType = contentType;

@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface ChannelRepository extends JpaRepository<Channel, UUID> {
 
-    @EntityGraph(attributePaths = {"readStatus", "user"})
+    @EntityGraph(attributePaths = {"readStatuses"})
     boolean existsByName(String name);
 
     // 채널과 연관 엔티티인 readStatus, user를 fetch join

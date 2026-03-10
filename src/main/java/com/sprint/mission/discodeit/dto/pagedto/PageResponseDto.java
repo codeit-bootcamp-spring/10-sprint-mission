@@ -4,9 +4,9 @@ import java.util.List;
 
 public record PageResponseDto<T>(
     List<T> content,
-    Integer number,
-    Integer size,
-    Boolean hasNext,
+    Object nextCursor,
+    int size,
+    boolean hasNext,
     Long totalElements
 ) {
 

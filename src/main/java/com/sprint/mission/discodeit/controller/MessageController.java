@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import java.time.Instant;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
@@ -113,7 +115,12 @@ public class MessageController {
     )
     public ResponseEntity<PageResponse<MessageDto>> viewChannelMessage(
         @RequestParam UUID channelId,
+        @RequestParam(required = false) Optional<Instant> cursor,
         @ParameterObject Pageable pageable) {
-        return ResponseEntity.ok(messageService.findAllByChannelId(channelId, pageable));
+        return ResponseEntity.ok(
+            messageService.findAllByChannelId(
+                channelId,
+                cursor.isPresent() ? cursor.get() : Optional.empty(),
+                pageable));
     }
 }

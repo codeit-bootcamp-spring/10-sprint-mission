@@ -18,10 +18,9 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import org.springframework.data.domain.Pageable;
 import java.io.IOException;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -113,9 +112,18 @@ public class BasicMessageService implements MessageService {
     }
 
     @Override
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
-        Slice<Message> slice = messageRepository.findByChannelId(channelId, pageable);
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Optional<Instant> cursor,
+        Pageable pageable) {
+        Objects.requireNonNull(channelId, "유효하지 않은 채널 식별자!");
+        Objects.requireNonNull(cursor, "유효하지 않은 cursor!");
+        Objects.requireNonNull(pageable, "유효하지 않은 페이징 정보!");
 
+        if (cursor.isEmpty()) {
+            throw new NoSuchElementException("조회할 커서가 없습니다");
+        }
+
+        Slice<Message> slice = messageRepository.findByChannelIdAndCursor(channelId, cursor.get(),
+            pageable);
         Slice<MessageDto> dtoSlice = slice.map(messageMapper::toDto);
 
         return pageResponseMapper.fromSlice(dtoSlice);

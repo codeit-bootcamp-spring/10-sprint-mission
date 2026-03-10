@@ -1,13 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
@@ -51,8 +48,8 @@ public class Channel extends BaseUpdatableEntity {
 
     public Channel(ChannelType type) {
         this.type = type;
-        this.name = "";
-        this.description = "";
+        this.name = null;
+        this.description = null;
     }
 
 
