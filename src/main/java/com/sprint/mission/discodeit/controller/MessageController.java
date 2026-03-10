@@ -10,7 +10,10 @@ import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -48,10 +51,10 @@ public class MessageController implements MessageApi {
   @GetMapping
   public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @RequestParam UUID channelId,
-      @RequestParam(defaultValue = "1") int page) {
+      @PageableDefault(page = 0, size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
     // 페이징 처리된 객체 받아옴
-    Slice<Message> messageSlice = messageService.findAllByChannelId(channelId, page);
+    Slice<Message> messageSlice = messageService.findAllByChannelId(channelId, pageable);
 
     // 엔티티를 dto로 변환
     Slice<MessageDto> dtoSlice = messageSlice.map(messageMapper::toDto);

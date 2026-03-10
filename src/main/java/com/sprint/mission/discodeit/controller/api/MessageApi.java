@@ -15,8 +15,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "Message", description = "Message API")
@@ -51,12 +54,13 @@ public interface MessageApi {
       @ApiResponse(
           responseCode = "200",
           description = "Message 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = MessageDto.class)))
+          content = @Content(schema = @Schema(implementation = PageResponse.class))
       )
   })
   ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
-      @Parameter(description = "조회할 Channel ID") UUID channelId,
-      @Parameter(description = "페이지 번호") int page
+      @Parameter(description = "조회할 Channel ID", required = true)
+      @RequestParam UUID channelId,
+      @ParameterObject Pageable pageable
   );
 
   @Operation(summary = "Message 내용 수정")

@@ -67,11 +67,7 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public Slice<Message> findAllByChannelId(UUID channelId, int page) {
-
-    int internalPage = Math.max(0, page - 1);
-
-    Pageable pageable = PageRequest.of(internalPage, 50, Sort.by(Sort.Direction.DESC, "createdAt"));
+  public Slice<Message> findAllByChannelId(UUID channelId, Pageable pageable) {
     return messageRepository.findAllByChannelId(channelId, pageable);
   }
 
