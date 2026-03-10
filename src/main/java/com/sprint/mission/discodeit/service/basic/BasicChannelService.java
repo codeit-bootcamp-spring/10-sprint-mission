@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -52,11 +53,14 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public Channel create(PrivateChannelCreateRequest request) {
+
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         Channel createdChannel = channelRepository.save(channel);
 
-        request.users().stream()
-                .map(user -> new ReadStatus(user, createdChannel, channel.getCreatedAt()))
+        request.participantIds().stream()
+                .map(userId -> userRepository.findById(userId)
+                        .orElseThrow(() -> new UserNotFoundException(userId + "에 해당하는 User가 없습니다.")))
+                .map(user -> new ReadStatus(user, createdChannel, createdChannel.getCreatedAt()))
                 .forEach(readStatusRepository::save);
 
         return createdChannel;
