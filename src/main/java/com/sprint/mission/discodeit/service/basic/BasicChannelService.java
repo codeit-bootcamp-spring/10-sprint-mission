@@ -37,33 +37,34 @@ public class BasicChannelService implements ChannelService {
     private final UserMapper userMapper;
 
     @Override
-    public Channel create(PublicChannelCreateRequest request) {
+    public ChannelDto create(PublicChannelCreateRequest request) {
         String name = request.name();
         String description = request.description();
+
         Channel channel = new Channel(ChannelType.PUBLIC, name, description);
-        channelRepository.save(channel);
+        Channel savedChannel = channelRepository.save(channel);
 
         List<User> users = userRepository.findAll();
         for (User user : users) {
             ReadStatus readStatus = new ReadStatus(user,channel, Instant.now());
             readStatusRepository.save(readStatus);
         }
-        return channel;
+        return toDto(savedChannel);
     }
 
     @Override
-    public Channel create(PrivateChannelCreateRequest request) {
+    public ChannelDto create(PrivateChannelCreateRequest request) {
 
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
-        Channel createdChannel = channelRepository.save(channel);
+        Channel savedChannel = channelRepository.save(channel);
 
         request.participantIds().stream()
                 .map(userId -> userRepository.findById(userId)
                         .orElseThrow(() -> new UserNotFoundException(userId + "에 해당하는 User가 없습니다.")))
-                .map(user -> new ReadStatus(user, createdChannel, createdChannel.getCreatedAt()))
+                .map(user -> new ReadStatus(user, savedChannel, savedChannel.getCreatedAt()))
                 .forEach(readStatusRepository::save);
 
-        return createdChannel;
+        return toDto(savedChannel);
     }
 
     @Override
@@ -110,17 +111,18 @@ public class BasicChannelService implements ChannelService {
     }
 
     @Override
-    public Channel update(UUID channelId, PublicChannelUpdateRequest request) {
+    public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
         String newName = request.newName();
         String newDescription = request.newDescription();
         Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new ChannelNotFoundException("Channel with" + channelId + " not found."));
+                .orElseThrow(() -> new ChannelNotFoundException("Channel with " + channelId + " not found."));
 
-        if (channel.getType().equals(ChannelType.PRIVATE)) {
+        if (channel.getType() == ChannelType.PRIVATE) {
             throw new IllegalArgumentException("Private channel cannot be updated");
         }
-        channel.update(newName, newDescription);
-        return channel;
+        channel.update(newName, newDescription);//JPA Dirty Checking 때문에 save 안해도 된다.
+
+        return toDto(channel);
     }
 
     @Override

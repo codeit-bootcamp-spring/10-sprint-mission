@@ -45,11 +45,11 @@ public class UserController {
     @Operation(summary = "User 등록")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "User가 성공적으로 생성됨"),
-            @ApiResponse(responseCode = "400", description = "email/username 중복")
+            @ApiResponse(responseCode = "400", description = "같은 email 또는 username를 사용하는 User가 이미 존재함")
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserDto> createUser(@RequestPart UserCreateRequest userCreateRequest,
-                                     @RequestPart(required = false) MultipartFile profile) throws IOException {
+    public ResponseEntity<UserDto> create(@RequestPart UserCreateRequest userCreateRequest,
+                                          @RequestPart(value = "profile", required = false) MultipartFile profile) throws IOException {
         if(profile != null) {
             BinaryContentCreateRequest profileImage = new BinaryContentCreateRequest(
                     profile.getOriginalFilename(),
@@ -65,15 +65,13 @@ public class UserController {
             );
         }
 
-        User user = userService.create(userCreateRequest);
-        UserDto userDto = userMapper.toDto(user);
-
+        UserDto userDto = userService.create(userCreateRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(userDto);
     }
 
 
     @GetMapping
-    public ResponseEntity<List<UserDto>> findAllUser(Model model) {
+    public ResponseEntity<List<UserDto>> findAll() {
         return ResponseEntity.ok(userService.findAll());
     }
 
@@ -99,8 +97,7 @@ public class UserController {
 
         }
 
-        User user = userService.update(userId,userUpdateRequest);
-        UserDto userDto = userMapper.toDto(user);
+        UserDto userDto = userService.update(userId,userUpdateRequest);
         return ResponseEntity.ok(userDto);
     }
 

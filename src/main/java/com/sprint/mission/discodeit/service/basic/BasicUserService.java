@@ -36,35 +36,46 @@ public class BasicUserService implements UserService {
     private final BinaryContentMapper binaryContentMapper;
 
     @Override
-    public User create(UserCreateRequest userCreateRequest) {
+    @Transactional
+    public UserDto create(UserCreateRequest userCreateRequest) {
+
         String username = userCreateRequest.username();
         String email = userCreateRequest.email();
         String password = userCreateRequest.password();
 
-        if (userRepository.existsByEmail(email)) {//이메일 검증
+        if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("User with email " + email + " already exists");
         }
-        if (userRepository.existsByUsername(username)) {//사용자이름 검증
+
+        if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("User with username " + username + " already exists");
         }
 
-        BinaryContent nullableProfile = userCreateRequest.optionalProfileCreateRequest()
+        BinaryContent profile = userCreateRequest.optionalProfileCreateRequest()
                 .map(profileRequest -> {
-                    String fileName = profileRequest.fileName();
-                    String contentType = profileRequest.contentType();
-                    byte[] bytes = profileRequest.bytes();
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long)bytes.length, contentType);
-                    BinaryContent savedBinaryContent = binaryContentRepository.save(binaryContent);
-                    binaryContentStorage.put(savedBinaryContent.getId(),bytes);
-                    return savedBinaryContent;
+
+                    BinaryContent binaryContent = new BinaryContent(
+                            profileRequest.fileName(),
+                            (long) profileRequest.bytes().length,
+                            profileRequest.contentType()
+                    );
+
+                    BinaryContent saved = binaryContentRepository.save(binaryContent);
+
+                    binaryContentStorage.put(saved.getId(), profileRequest.bytes());
+
+                    return saved;
                 })
                 .orElse(null);
 
-        User user = new User(username, email, password, nullableProfile);
+        User user = new User(username, email, password, profile);
+
         UserStatus userStatus = new UserStatus(user);
         user.setStatus(userStatus);
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        return toDto(savedUser);
     }
 
     @Override
@@ -85,7 +96,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, UserUpdateRequest userUpdateRequest) {
+    public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId + "에 해당하는 사용자가 없습니다."));
 
@@ -119,7 +130,7 @@ public class BasicUserService implements UserService {
 //        binaryContentRepository.save(nullableProfile);//User Entity에 CascadeType.ALL 설정해서 BinaryContent도 자동 저장.
         user.update(newUsername, newEmail, newPassword, nullableProfile);
 
-        return user;
+        return toDto(user);
     }
 
     @Override

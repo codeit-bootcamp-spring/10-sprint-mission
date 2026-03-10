@@ -8,6 +8,5 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface BinaryContentMapper {
 
-    @Mapping(target = "bytes",ignore = true) //Entity에서 bytes 삭제해서 DTO에 들어갈 bytes를 미룸.(Service단에서 넣어줘야함.)
     BinaryContentDto toDto(BinaryContent binaryContent);
 }

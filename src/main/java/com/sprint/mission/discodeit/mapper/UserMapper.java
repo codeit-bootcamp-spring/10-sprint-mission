@@ -10,6 +10,8 @@ import org.mapstruct.Mappings;
         uses = {BinaryContentMapper.class})
 public interface UserMapper { //MapStruct에게 User -> UserDto 변환 코드를 자동으로 만들어줘라고 지시하는 설정.
 
-    @Mapping(target = "online",ignore = true) //online 변수는 User Entity에 없기때문에 Service 단에서 채우도록 미룸.
+    //책임이 명확하지 않아서 사용하지 않는다.
+    //UserService내 toDto를 사용한다.
+    @Mapping(target = "online",ignore = true)//online 변수는 User Entity에 없기때문에 Service 단에서 채우도록 미룸.
     UserDto toDto(User user);
 }

@@ -28,10 +28,12 @@ public class ReadStatusController {
     private final ReadStatusMapper readStatusMapper;
 
     @Operation(summary = "읽음상태 생성")
-    @ApiResponse(
-            responseCode = "201",
-            description = "readStatus created"
-    )
+
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "readStatus created"),
+            @ApiResponse(responseCode = "400", description = "이미 읽음 상태가 존재함"),
+            @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음")
+    })
     @PostMapping
     public ResponseEntity<ReadStatusDto> createReadStatus(@RequestBody ReadStatusCreateRequest request) {
         ReadStatus readStatus = readStatusService.create(request);
@@ -40,8 +42,10 @@ public class ReadStatusController {
         return ResponseEntity.status(HttpStatus.CREATED).body(readStatusDto);
     }
 
+    @Operation(summary = "User의 Message 읽음 상태 목록 조회")
+    @ApiResponse(responseCode = "200", description = "Message 읽음 상태 목록 조회 성공")
     @GetMapping
-    public ResponseEntity<List<ReadStatusDto>> getAllReadStatus(@RequestParam UUID userId) {
+    public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@RequestParam UUID userId) {
         List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
 
         List<ReadStatusDto> readStatusDtos = readStatuses.stream().map(readStatusMapper::toDto).toList();

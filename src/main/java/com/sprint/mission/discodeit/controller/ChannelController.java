@@ -52,18 +52,8 @@ public class ChannelController {
     })
     @PostMapping("/public")
     public ResponseEntity<ChannelDto> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
-        Channel channel = channelService.create(request);
-        ChannelDto baseDto = channelMapper.toDto(channel); //아직 participants와 lastMessageAt이 안들어가 있음.
-        List<UserDto> participants = userService.findAll();
 
-        ChannelDto channelDto = new ChannelDto(
-                baseDto.id(),
-                baseDto.type(),
-                baseDto.name(),
-                baseDto.description(),
-                participants,
-                null
-        );
+        ChannelDto channelDto = channelService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(channelDto);//201
 
     }
@@ -80,19 +70,8 @@ public class ChannelController {
     })
     @PostMapping("/private")
     public ResponseEntity<ChannelDto> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
-        Channel channel = channelService.create(request);
-        ChannelDto baseDto = channelMapper.toDto(channel);
 
-        List<UserDto> participants = request.users().stream().map(userMapper::toDto).toList();
-
-        ChannelDto channelDto = new ChannelDto(
-                baseDto.id(),
-                baseDto.type(),
-                baseDto.name(),
-                baseDto.description(),
-                participants,
-                null
-        );
+        ChannelDto channelDto = channelService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(channelDto);
     }
 
@@ -105,23 +84,7 @@ public class ChannelController {
     @PatchMapping("/{channelId}")
     public ResponseEntity<ChannelDto> updatePublicChannel(@PathVariable UUID channelId,
                                        @RequestBody PublicChannelUpdateRequest request){
-        Channel channel = channelService.update(channelId, request);
-        ChannelDto baseDto = channelMapper.toDto(channel);
-
-        List<UserDto> participants =
-                readStatusService.findAllByChannelId(channel.getId()).stream()
-                        .map(ReadStatus::getUser)
-                        .map(userMapper::toDto)
-                        .toList();
-
-        ChannelDto channelDto = new ChannelDto(
-                baseDto.id(),
-                baseDto.type(),
-                baseDto.name(),
-                baseDto.description(),
-                participants,
-                null
-        );
+        ChannelDto channelDto = channelService.update(channelId, request);
 
         return ResponseEntity.ok(channelDto);
 

@@ -23,7 +23,7 @@ public class UserStatus extends BaseUpdatableEntity {
     private User user;
 
     @Column(nullable = false)
-    private Instant lastActiveAt;
+    private Instant lastActiveAt; //마지막활동 시간.
 
     public UserStatus(User user) {
 //        super();//id,createdAt 값 삽입(BseEntity)
