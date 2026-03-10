@@ -2,12 +2,12 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
-import com.sprint.mission.discodeit.dto.message.DeleteMessageResponseDTO;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -90,9 +90,9 @@ public class MessageController {
     public ResponseEntity findAllByChannelId(
             @RequestParam UUID channelId,
             @RequestParam(required = false) Instant cursor,
-            @RequestParam(defaultValue = "50") int size
+            Pageable pageable
     ) {
-        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor, size);
+        PageResponse<MessageDto> messages = messageService.findAllByChannelId(channelId, cursor, pageable);
 
         return ResponseEntity.ok(messages);
     }
@@ -101,9 +101,9 @@ public class MessageController {
     public ResponseEntity findAllByUserId(
             @RequestParam UUID userId,
             @RequestParam(required = false) Instant cursor,
-            @RequestParam(defaultValue = "50") int size
+            Pageable pageable
     ) {
-        PageResponse<MessageDto> messages = messageService.findAllByUserId(userId, cursor, size);
+        PageResponse<MessageDto> messages = messageService.findAllByUserId(userId, cursor, pageable);
 
         return ResponseEntity.ok(messages);
     }

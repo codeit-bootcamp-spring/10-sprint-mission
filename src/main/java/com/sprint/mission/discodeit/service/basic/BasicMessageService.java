@@ -74,15 +74,15 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<MessageDto> findAllByUserId(UUID userId, Instant cursor, int size) {
+    public PageResponse<MessageDto> findAllByUserId(UUID userId, Instant cursor, Pageable pageable) {
         findUserOrThrow(userId);
-        Pageable pageable = PageRequest.of(0, size);
+        Pageable pageRequest = PageRequest.of(0, pageable.getPageSize());
         Slice<Message> messages;
 
         if (cursor == null) {
-            messages = messageRepository.findByAuthor_IdOrderByCreatedAtDesc(userId, pageable);
+            messages = messageRepository.findByAuthor_IdOrderByCreatedAtDesc(userId, pageRequest);
         } else {
-            messages = messageRepository.findByAuthorIdWithCursor(userId, cursor, pageable);
+            messages = messageRepository.findByAuthorIdWithCursor(userId, cursor, pageRequest);
         }
         
         List<MessageDto> contents = messageMapper.toDtoList(messages.getContent());
@@ -98,18 +98,18 @@ public class BasicMessageService implements MessageService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, int size) {
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
         findChannelOrThrow(channelId);
         // 요구사항 -> 50개씩 정렬 + cursor에선 항상 pageNumber=0
-        Pageable pageable = PageRequest.of(0, size);
+        Pageable pageRequest = PageRequest.of(0, pageable.getPageSize());
         Slice<Message> messages;
 
         if (cursor == null) {
             // cursor가 없는 경우 첫페이지
-            messages = messageRepository.findByChannel_IdOrderByCreatedAtDesc(channelId, pageable);
+            messages = messageRepository.findByChannel_IdOrderByCreatedAtDesc(channelId, pageRequest);
         } else {
             // cursor가 있는 경우 cursor 반영
-            messages = messageRepository.findByChannelIdWithCursor(channelId, cursor, pageable);
+            messages = messageRepository.findByChannelIdWithCursor(channelId, cursor, pageRequest);
         }
 
         List<MessageDto> contents = messageMapper.toDtoList(messages.getContent());
