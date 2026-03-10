@@ -5,7 +5,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.entity.mapper.UserStatusDTOMapper;
+import com.sprint.mission.discodeit.mapper.UserStatusDTOMapper;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.util.Optional;

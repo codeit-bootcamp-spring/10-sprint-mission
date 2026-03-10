@@ -11,7 +11,6 @@ public interface BinaryContentStorage {
     // uuid = binaryContent의 id다.
     UUID put(UUID uuid, byte[] bytes);
 
-
     // 키 정보를 바탕으로 byte[]를 읽어 InputStream 타입으로 반환
     // uuid는 binaryContent의 id다.
     InputStream get(UUID uuid);

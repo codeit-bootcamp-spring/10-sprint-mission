@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -12,11 +11,9 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 
 @Getter
@@ -25,7 +22,7 @@ import java.util.UUID;
 @Table(name = "messages")
 public class Message extends BaseUpdatableEntity {
 
-    @Column(nullable = false, updatable = true)
+    @Column(nullable = false)
     private String content;
 
     @ManyToOne
@@ -36,10 +33,8 @@ public class Message extends BaseUpdatableEntity {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "message_id")
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BinaryContent> attachments = new ArrayList<>();
-
 
     public Message() {
     }

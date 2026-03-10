@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.entity.mapper;
+package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusDto;
 import com.sprint.mission.discodeit.entity.UserStatus;

@@ -4,6 +4,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.messagedto.MessageCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.messagedto.MessageDto;
 import com.sprint.mission.discodeit.dto.messagedto.MessageUpdateRequestDto;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -12,6 +13,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -105,13 +108,12 @@ public class MessageController {
         description = "Message 목록 조회 성공",
         content = @Content(
             mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = MessageDto.class))
+            array = @ArraySchema(schema = @Schema(implementation = PageResponse.class))
         )
     )
-    public ResponseEntity<List<MessageDto>> viewChannelMessage(
-        @RequestParam UUID channelId) {
-        return new ResponseEntity<>(messageService.findAllByChannelId(channelId), HttpStatus.OK);
-
-
+    public ResponseEntity<PageResponse<MessageDto>> viewChannelMessage(
+        @RequestParam UUID channelId,
+        @ParameterObject Pageable pageable) {
+        return ResponseEntity.ok(messageService.findAllByChannelId(channelId, pageable));
     }
 }

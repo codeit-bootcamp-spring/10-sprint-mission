@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.entity.mapper;
+package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.messagedto.MessageDto;
 import com.sprint.mission.discodeit.entity.Message;
@@ -19,7 +19,7 @@ public class MessageMapper {
             message.getUpdatedAt(),
             message.getContent(),
             message.getChannel().getId(),
-            userMapper.toDto(message.getAuthor()),
+            userMapper.toDto(message.getAuthor()), // 연관된 데이터를 추가 조회 -> N + 1 문제 발생
             message.getAttachments()
                 .stream()
                 .map(

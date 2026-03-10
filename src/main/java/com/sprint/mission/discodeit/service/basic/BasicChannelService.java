@@ -6,16 +6,20 @@ import com.sprint.mission.discodeit.dto.channeldto.PublicChannelCreateDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PublicChannelUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.mapper.ChannelMapper;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -29,6 +33,7 @@ public class BasicChannelService implements ChannelService {
     private final ChannelRepository channelRepository;
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
     private final ChannelMapper channelMapper;
 
     @Override
@@ -48,7 +53,7 @@ public class BasicChannelService implements ChannelService {
         // 채널 검증과 save의 원자성을 보장하기 위해 아래와 같이 코드 작성
         try {
             Channel saved = channelRepository.save(channel);
-            return channelMapper.toDto(saved);
+            return channelMapper.toDto(saved, null);
         } catch (DataIntegrityViolationException e) {
             throw new IllegalStateException("채널 이름이 중복됩니다.");
         }
@@ -76,33 +81,44 @@ public class BasicChannelService implements ChannelService {
             readStatusRepository.save(rs);
         });
 
-        return channelMapper.toDto(saved);
+        return channelMapper.toDto(saved, null);
     }
 
     @Transactional(readOnly = true)
     @Override
     public ChannelDto find(UUID channelId) {
-        Channel channel = channelRepository
-            .findById(channelId)
-            .orElseThrow(() -> new IllegalStateException("해당 채널이 존재하지 않습니다."));
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> new NoSuchElementException("찾을 수없음"));
+        Message lastMessage = messageRepository.findTopByChannelIdOrderByCreatedAtDesc(channelId);
 
-        return channelMapper.toDto(channel);
-
+        return channelMapper.toDto(channel, lastMessage);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<ChannelDto> findAllByUserId(UUID userId) {
         Objects.requireNonNull(userId, "유효하지 않은 식별자입니다!");
-        List<Channel> channels = readStatusRepository
-            .findAllByUserId(userId)
-            .stream()
-            .map(ReadStatus::getChannel)
+
+        List<Channel> channels = channelRepository.findAllParticipatingWithParticipants(userId);
+
+        List<UUID> channelIds = channels.stream()
+            .map(Channel::getId)
             .toList();
 
+        // Channel Mapper에 채널 UUID와 마지막 메시지를 전달하기 위해 Map 형태로 변환.
+        Map<UUID, Message> lastMessageMap = messageRepository.findLastMessageByChannelIds(
+                channelIds)
+            .stream()
+            .collect(Collectors.toMap(
+                m -> m.getChannel().getId(),
+                m -> m,
+                (m1, m2) -> m1
+            ));
+
         return channels.stream()
-            .map(channelMapper::toDto
-            ).toList();
+            .map(channel -> channelMapper.toDto(
+                channel, lastMessageMap.get(channel.getId())
+            )).toList();
     }
 
 
@@ -121,7 +137,9 @@ public class BasicChannelService implements ChannelService {
 
         channel.update(req.newName(), req.newDescription()); // dirty-checking
 
-        return channelMapper.toDto(channel);
+        Message lastMessage = messageRepository.findTopByChannelIdOrderByCreatedAtDesc(channelId);
+
+        return channelMapper.toDto(channel, lastMessage);
     }
 
     @Transactional

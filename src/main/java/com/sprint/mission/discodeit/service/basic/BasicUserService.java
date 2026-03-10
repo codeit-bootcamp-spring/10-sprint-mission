@@ -6,9 +6,11 @@ import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.mapper.UserMapper;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository; // 아직 인터페이스 구현체가 없어서 bean을 못찾음.
+    private final UserStatusRepository userStatusRepository;
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
 
@@ -61,6 +64,7 @@ public class BasicUserService implements UserService {
         );
 
         User savedUser = userRepository.save(user); // user 레포지토리의 save로 해당 유저 객체를 영속화한다.
+        userStatusRepository.save(new UserStatus(savedUser));
         return userMapper.toDto(savedUser); // entities -> DTO
     }
 

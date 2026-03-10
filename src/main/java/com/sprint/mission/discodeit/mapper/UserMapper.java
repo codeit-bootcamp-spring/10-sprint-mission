@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.entity.mapper;
+package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.entity.User;
@@ -18,7 +18,7 @@ public class UserMapper {
             user.getUsername(),
             user.getEmail(),
             binaryContentMapper.toDto(user.getProfile()),
-            user.getUserStatus().isOnline()
+            user.getUserStatus() != null && user.getUserStatus().isOnline()
         );
     }
 

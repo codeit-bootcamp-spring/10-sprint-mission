@@ -3,19 +3,25 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.messagedto.MessageCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.messagedto.MessageDto;
 import com.sprint.mission.discodeit.dto.messagedto.MessageUpdateRequestDto;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -32,6 +38,7 @@ public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final MessageMapper messageMapper;
     private final BinaryContentStorage binaryContentStorage;
+    private final PageResponseMapper pageResponseMapper;
 
     // 메세지 생성 메소드
     // 선택적으로 첨부 파일(BinaryContent)를 여러 개 등록할 수 있다.
@@ -102,6 +109,16 @@ public class BasicMessageService implements MessageService {
             .map(
                 messageMapper::toDto
             ).toList();
+
+    }
+
+    @Override
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Pageable pageable) {
+        Slice<Message> slice = messageRepository.findByChannelId(channelId, pageable);
+
+        Slice<MessageDto> dtoSlice = slice.map(messageMapper::toDto);
+
+        return pageResponseMapper.fromSlice(dtoSlice);
 
     }
 

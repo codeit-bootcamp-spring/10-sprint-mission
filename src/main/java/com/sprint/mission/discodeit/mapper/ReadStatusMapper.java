@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.entity.mapper;
+package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;

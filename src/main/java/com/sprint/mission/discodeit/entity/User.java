@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
+
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,7 +8,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import java.util.UUID;
 import lombok.Getter;
 
 import java.time.Instant;
@@ -33,6 +32,7 @@ public class User extends BaseUpdatableEntity {
 
     @OneToOne(mappedBy = "user")
     private UserStatus userStatus;
+
 
     public User(String username, String email, String password, BinaryContent profile) {
         this.username = username;
