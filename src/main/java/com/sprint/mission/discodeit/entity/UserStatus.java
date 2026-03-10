@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,10 +16,7 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 @Table(name = "USER_STATUSES")
-public class UserStatus extends BaseEntity {
-
-    @LastModifiedDate
-    private Instant updatedAt;
+public class UserStatus extends BaseUpdatableEntity {
 
     @OneToOne
     @JoinColumn(name = "user_id")
@@ -35,14 +33,8 @@ public class UserStatus extends BaseEntity {
     }
 
     public void update(Instant lastActiveAt) {
-        boolean anyValueUpdated = false;
         if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
             this.lastActiveAt = lastActiveAt;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
         }
     }
 

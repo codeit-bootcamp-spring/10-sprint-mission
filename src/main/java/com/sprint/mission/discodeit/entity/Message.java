@@ -1,24 +1,17 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.LastModifiedDate;
 
-import java.io.Serializable;
-import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Entity
 @NoArgsConstructor
 @Table(name = "MESSAGES")
-public class Message extends BaseEntity{
-
-    @LastModifiedDate
-    private Instant updatedAt;
+public class Message extends BaseUpdatableEntity {
 
     private String content;
 
@@ -46,14 +39,8 @@ public class Message extends BaseEntity{
     }
 
     public void update(String newContent) {
-        boolean anyValueUpdated = false;
         if (newContent != null && !newContent.equals(this.content)) {
             this.content = newContent;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
         }
     }
 }

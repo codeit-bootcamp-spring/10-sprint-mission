@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,11 +16,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "READ_STATUSES")
 @NoArgsConstructor
-public class ReadStatus extends BaseEntity {
+public class ReadStatus extends BaseUpdatableEntity {
 
-    @LastModifiedDate
-    private Instant updatedAt;
-    //
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -40,14 +38,8 @@ public class ReadStatus extends BaseEntity {
     }
 
     public void update(Instant newLastReadAt) {
-        boolean anyValueUpdated = false;
         if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
             this.lastReadAt = newLastReadAt;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
         }
     }
 
@@ -56,7 +48,7 @@ public class ReadStatus extends BaseEntity {
         return "ReadStatus{" +
                 "id=" + getId() +
                 ", createdAt=" + getCreatedAt() +
-                ", updatedAt=" + updatedAt +
+                ", updatedAt=" + getUpdatedAt() +
                 ", user=" + user +
                 ", channel=" + channel +
                 ", lastReadAt=" + lastReadAt +

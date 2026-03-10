@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,10 +20,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "USERS")
-public class User extends BaseEntity{
-
-    @LastModifiedDate
-    private Instant updatedAt;
+public class User extends BaseUpdatableEntity{
 
     @Column(unique = true, nullable = false,length = 50)
     private String username;
@@ -51,26 +49,17 @@ public class User extends BaseEntity{
     }
 
     public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
-        boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
-            anyValueUpdated = true;
         }
         if (newEmail != null && !newEmail.equals(this.email)) {
             this.email = newEmail;
-            anyValueUpdated = true;
         }
         if (newPassword != null && !newPassword.equals(this.password)) {
             this.password = newPassword;
-            anyValueUpdated = true;
         }
         if (newProfile != null && !newProfile.equals(this.profile)) {
             this.profile = newProfile;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
         }
     }
 }

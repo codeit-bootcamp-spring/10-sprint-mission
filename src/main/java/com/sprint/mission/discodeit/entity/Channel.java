@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,10 +15,7 @@ import java.util.UUID;
 @Entity
 @Table(name = "CHANNELS")
 @NoArgsConstructor
-public class Channel extends BaseEntity {
-
-    @LastModifiedDate
-    private Instant updatedAt;
+public class Channel extends BaseUpdatableEntity {
 
     @Column(length = 100)
     private String name;
@@ -38,18 +36,11 @@ public class Channel extends BaseEntity {
     }
 
     public void update(String newName, String newDescription) {
-        boolean anyValueUpdated = false;
         if (newName != null && !newName.equals(this.name)) {
             this.name = newName;
-            anyValueUpdated = true;
         }
         if (newDescription != null && !newDescription.equals(this.description)) {
             this.description = newDescription;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
         }
     }
 }
