@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -23,7 +22,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   @Transactional
-  public BinaryContentDto create(MultipartFile file) {
+  public BinaryContent create(MultipartFile file) {
     if (file == null || file.isEmpty()) {
       throw new IllegalArgumentException("파일이 비어있습니다.");
     }
@@ -36,8 +35,7 @@ public class BasicBinaryContentService implements BinaryContentService {
           file.getBytes()
       );
 
-      binaryContentRepository.save(binaryContent);
-      return toDto(binaryContent);
+      return binaryContentRepository.save(binaryContent);
 
     } catch (IOException e) {
       throw new RuntimeException("파일 데이터를 읽는 중 오류가 발생했습니다.", e);
@@ -45,15 +43,13 @@ public class BasicBinaryContentService implements BinaryContentService {
   }
 
   @Override
-  public BinaryContentDto findById(UUID id) {
-    return toDto(getOrThrowBinaryContent(id));
+  public BinaryContent findById(UUID id) {
+    return getOrThrowBinaryContent(id);
   }
 
   @Override
-  public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
-    return binaryContentRepository.findAllById(ids).stream()
-        .map(this::toDto)
-        .toList();
+  public List<BinaryContent> findAllByIdIn(List<UUID> ids) {
+    return binaryContentRepository.findAllById(ids);
   }
 
   @Override
@@ -69,17 +65,5 @@ public class BasicBinaryContentService implements BinaryContentService {
   private BinaryContent getOrThrowBinaryContent(UUID id) {
     return binaryContentRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("해당 바이너리 콘텐츠를 찾을 수 없습니다."));
-  }
-
-  // 엔티티 -> DTO 변환
-  private BinaryContentDto toDto(BinaryContent binaryContent) {
-    return new BinaryContentDto(
-        binaryContent.getId(),
-        binaryContent.getFileName(),
-        binaryContent.getSize(),
-        binaryContent.getContentType(),
-        binaryContent.getBytes(),
-        binaryContent.getCreatedAt()
-    );
   }
 }

@@ -1,8 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageDto;
-import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -26,10 +23,11 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
-  public MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments) {
-    User author = getOrThrowUser(request.authorId());
-    Channel channel = getOrThrowChannel(request.channelId());
-    validateAccess(request.authorId(), request.channelId());
+  public Message create(String content, UUID authorId, UUID channelId,
+      List<MultipartFile> attachments) {
+    User author = getOrThrowUser(authorId);
+    Channel channel = getOrThrowChannel(channelId);
+    validateAccess(authorId, channelId);
 
     List<BinaryContent> binaryContents = new ArrayList<>();
     if (attachments != null && !attachments.isEmpty()) {
@@ -37,55 +35,49 @@ public class BasicMessageService implements MessageService {
           .filter(file -> !file.isEmpty())
           .forEach(file -> {
             try {
-              BinaryContent content = new BinaryContent(
+              BinaryContent binaryContent = new BinaryContent(
                   file.getOriginalFilename(),
                   file.getSize(),
                   file.getContentType(),
                   file.getBytes()
               );
-              binaryContentRepository.save(content);
-              binaryContents.add(content);
+              binaryContentRepository.save(binaryContent);
+              binaryContents.add(binaryContent);
             } catch (IOException e) {
-              throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);
+              throw new RuntimeException("파일 저장 오류", e);
             }
           });
     }
 
-    Message newMessage = new Message(request.content(), author, channel, binaryContents);
-
-    messageRepository.save(newMessage);
-    return toDto(newMessage);
+    Message newMessage = new Message(content, author, channel, binaryContents);
+    return messageRepository.save(newMessage);
   }
-
-
+  
   @Override
-  public MessageDto findById(UUID id) {
-    Message message = getOrThrowMessage(id);
-    return toDto(message);
+  public Message findById(UUID id) {
+    return getOrThrowMessage(id);
   }
 
   @Override
-  public List<MessageDto> findAllByChannelId(UUID channelId) {
-    return messageRepository.findAllByChannelId(channelId).stream()
-        .map(this::toDto)
-        .toList();
+  public List<Message> findAllByChannelId(UUID channelId) {
+    return messageRepository.findAllByChannelId(channelId);
   }
 
   @Override
   @Transactional
-  public MessageDto update(UUID id, MessageUpdateRequest request) {
+  public Message update(UUID id, String newContent, List<UUID> attachmentIds) {
     Message message = getOrThrowMessage(id);
 
     // 텍스트 내용 수정
-    Optional.ofNullable(request.newContent()).ifPresent(message::updateContent);
+    Optional.ofNullable(newContent).ifPresent(message::updateContent);
 
     // 첨부파일 수정
-    if (request.attachmentIds() != null) {
+    if (attachmentIds != null) {
       List<BinaryContent> newAttachments = binaryContentRepository.findAllById(
-          request.attachmentIds());
+          attachmentIds);
       message.updateAttachments(newAttachments);
     }
-    return toDto(message);
+    return message;
   }
 
   @Override
@@ -122,26 +114,5 @@ public class BasicMessageService implements MessageService {
   private com.sprint.mission.discodeit.entity.Message getOrThrowMessage(UUID id) {
     return messageRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다."));
-  }
-
-  // 첨부파일 검증
-  private void validateBinaryContentExists(UUID id) {
-    if (!binaryContentRepository.findById(id).isPresent()) {
-      throw new NoSuchElementException("해당 첨부파일을 찾을 수 없습니다.");
-    }
-  }
-
-  // 엔티티 -> DTO 변환
-  private MessageDto toDto(Message message) {
-    return new MessageDto(
-        message.getId(),
-        message.getCreatedAt(),
-        message.getUpdatedAt(),
-        message.getContent(),
-        message.getChannel().getId(),
-        message.getAuthor() != null ? message.getAuthor().getId() : null,
-        message.getAttachments().stream().map(BinaryContent::getId).toList()
-
-    );
   }
 }

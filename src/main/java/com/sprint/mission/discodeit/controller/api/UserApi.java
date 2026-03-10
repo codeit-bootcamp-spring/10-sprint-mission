@@ -47,6 +47,16 @@ public interface UserApi {
       ) MultipartFile profile
   );
 
+  @Operation(summary = "전체 User 목록 조회")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200",
+          description = "User 목록 조회 성공",
+          content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))
+      )
+  })
+  ResponseEntity<List<UserDto>> findAll();
+
   @Operation(summary = "User 정보 수정")
   @ApiResponses(value = {
       @ApiResponse(
@@ -70,16 +80,6 @@ public interface UserApi {
       @Parameter(description = "수정할 User 정보") UserUpdateRequest userUpdateRequest,
       @Parameter(description = "수정할 User 프로필 이미지") MultipartFile profile
   );
-
-  @Operation(summary = "전체 User 목록 조회")
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200",
-          description = "User 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserDto.class)))
-      )
-  })
-  ResponseEntity<List<UserDto>> findAll();
 
   @Operation(summary = "UserStatus 업데이트")
   @ApiResponses(value = {

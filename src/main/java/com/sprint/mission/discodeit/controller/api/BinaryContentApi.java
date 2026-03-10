@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller.api;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +31,7 @@ public interface BinaryContentApi {
           content = @Content(examples = @ExampleObject(value = "BinaryContent with id {binaryContentId} not found"))
       )
   })
-  ResponseEntity<BinaryContent> findById(@Parameter(description = "파일 ID") UUID binaryContentId);
+  ResponseEntity<BinaryContentDto> findById(@Parameter(description = "파일 ID") UUID binaryContentId);
 
   @Operation(summary = "파일 다건 조회")
   @ApiResponses(value = {
@@ -40,6 +41,6 @@ public interface BinaryContentApi {
           content = @Content(array = @ArraySchema(schema = @Schema(implementation = BinaryContent.class)))
       )
   })
-  ResponseEntity<List<BinaryContent>> findAllById(
+  ResponseEntity<List<BinaryContentDto>> findAllById(
       @Parameter(description = "파일 ID 목록") List<UUID> binaryContentIds);
 }

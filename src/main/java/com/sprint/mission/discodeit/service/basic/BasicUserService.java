@@ -1,12 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.repository.ReadStatusRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import java.io.IOException;
@@ -28,13 +23,13 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
-  public UserDto create(UserCreateRequest request, MultipartFile profileFile) {
+  public User create(String username, String email, String password, MultipartFile profileFile) {
 
     // username, email 중복 체크
-    if (userRepository.existsByUsername(request.username())) {
+    if (userRepository.existsByUsername(username)) {
       throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
     }
-    if (userRepository.existsByEmail(request.email())) {
+    if (userRepository.existsByEmail(email)) {
       throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
     }
 
@@ -55,34 +50,31 @@ public class BasicUserService implements UserService {
     }
 
     // 유저 생성
-    User user = new User(request.username(), request.email(), request.password(), profile);
+    User user = new User(username, email, password, profile);
     UserStatus status = new UserStatus(user, Instant.now());
     user.assignUserStatus(status);
 
-    userRepository.save(user);
-    return toDto(user, status);
+    return userRepository.save(user);
   }
 
   @Override
-  public UserDto findById(UUID id) {
-    User user = getOrThrowUser(id);
-    return toDto(user, user.getUserStatus());
+  public User findById(UUID id) {
+    return getOrThrowUser(id);
   }
 
   @Override
-  public List<UserDto> findAll() {
-    return userRepository.findAll().stream()
-        .map(user -> toDto(user, user.getUserStatus()))
-        .toList();
+  public List<User> findAll() {
+    return userRepository.findAll();
   }
 
   @Override
   @Transactional
-  public UserDto update(UUID id, UserUpdateRequest request, MultipartFile profileFile) {
+  public User update(UUID id, String newUsername, String newEmail, String newPassword,
+      MultipartFile profileFile) {
     User user = getOrThrowUser(id);
 
     // 이름 수정 + 중복 체크
-    Optional.ofNullable(request.newUsername())
+    Optional.ofNullable(newUsername)
         .filter(username -> !username.equals(user.getUsername()))
         .ifPresent(username -> {
           if (userRepository.existsByUsername(username)) {
@@ -92,7 +84,7 @@ public class BasicUserService implements UserService {
         });
 
     // 이메일 수정 + 중복 체크
-    Optional.ofNullable(request.newEmail())
+    Optional.ofNullable(newEmail)
         .filter(email -> !email.equals(user.getEmail()))
         .ifPresent(email -> {
           if (userRepository.existsByEmail(email)) {
@@ -102,7 +94,7 @@ public class BasicUserService implements UserService {
         });
 
     // 비밀번호 수정
-    Optional.ofNullable(request.newPassword())
+    Optional.ofNullable(newPassword)
         .ifPresent(user::updatePassword);
 
     // 프로필 사진 수정
@@ -121,7 +113,7 @@ public class BasicUserService implements UserService {
       }
     }
 
-    return toDto(user, user.getUserStatus());
+    return user;
   }
 
   @Override
@@ -137,18 +129,5 @@ public class BasicUserService implements UserService {
   private User getOrThrowUser(UUID id) {
     return userRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("해당 유저를 찾을 수 없습니다."));
-  }
-
-  // 엔티티 -> DTO 변환
-  private UserDto toDto(User user, UserStatus status) {
-    return new UserDto(
-        user.getId(),
-        user.getCreatedAt(),
-        user.getUpdatedAt(),
-        user.getUsername(),
-        user.getEmail(),
-        user.getProfile() != null ? user.getProfile().getId() : null,
-        status != null && status.isOnline()
-    );
   }
 }

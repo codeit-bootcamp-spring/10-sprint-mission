@@ -1,8 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
@@ -10,6 +7,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,9 +27,9 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   @Transactional
-  public ReadStatusDto create(ReadStatusCreateRequest request) {
-    User user = getOrThrowUser(request.userId());
-    Channel channel = getOrThrowChannel(request.channelId());
+  public ReadStatus create(UUID userId, UUID channelId) {
+    User user = getOrThrowUser(userId);
+    Channel channel = getOrThrowChannel(channelId);
 
     // 해당 채널에 참여 중인지 확인
     readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
@@ -40,34 +38,29 @@ public class BasicReadStatusService implements ReadStatusService {
         });
 
     ReadStatus readStatus = new ReadStatus(user, channel, null);
-    readStatusRepository.save(readStatus);
-
-    return toDto(readStatus);
+    return readStatusRepository.save(readStatus);
   }
 
   @Override
-  public ReadStatusDto findById(UUID id) {
-    ReadStatus readStatus = getOrThrowReadStatus(id);
-    return toDto(readStatus);
+  public ReadStatus findById(UUID id) {
+    return getOrThrowReadStatus(id);
   }
 
   @Override
-  public List<ReadStatusDto> findAllByUserId(UUID userId) {
-    return readStatusRepository.findAllByUserId(userId).stream()
-        .map(this::toDto)
-        .toList();
+  public List<ReadStatus> findAllByUserId(UUID userId) {
+    return readStatusRepository.findAllByUserId(userId);
   }
 
   @Override
   @Transactional
-  public ReadStatusDto update(UUID id, ReadStatusUpdateRequest request) {
+  public ReadStatus update(UUID id, Instant newLastReadAt) {
     ReadStatus readStatus = getOrThrowReadStatus(id);
 
-    if (request.newLastReadAt() != null) {
-      readStatus.updateLastReadAt(request.newLastReadAt());
+    if (newLastReadAt != null) {
+      readStatus.updateLastReadAt(newLastReadAt);
     }
 
-    return toDto(readStatus);
+    return readStatus;
   }
 
   @Override
@@ -95,17 +88,5 @@ public class BasicReadStatusService implements ReadStatusService {
   private ReadStatus getOrThrowReadStatus(UUID id) {
     return readStatusRepository.findById(id)
         .orElseThrow(() -> new NoSuchElementException("해당 참여 정보를 찾을 수 없습니다."));
-  }
-
-  // 엔티티 -> DTO 변환
-  private ReadStatusDto toDto(ReadStatus readStatus) {
-    return new ReadStatusDto(
-        readStatus.getId(),
-        readStatus.getCreatedAt(),
-        readStatus.getUpdatedAt(),
-        readStatus.getUser().getId(),
-        readStatus.getChannel().getId(),
-        readStatus.getLastReadAt()
-    );
   }
 }

@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,14 +23,33 @@ import org.springframework.web.multipart.MultipartFile;
 public class MessageController implements MessageApi {
 
   private final MessageService messageService;
+  private final MessageMapper messageMapper;
 
   @Override
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<MessageDto> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) {
+    Message message = messageService.create(
+        request.content(),
+        request.authorId(),
+        request.channelId(),
+        attachments
+    );
+
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(messageService.create(request, attachments));
+        .body(messageMapper.toDto(message));
+  }
+
+  @Override
+  @GetMapping
+  public ResponseEntity<List<MessageDto>> findAllByChannelId(@RequestParam UUID channelId) {
+    List<Message> messages = messageService.findAllByChannelId(channelId);
+    List<MessageDto> dtos = messages.stream()
+        .map(messageMapper::toDto)
+        .toList();
+
+    return ResponseEntity.ok(dtos);
   }
 
   @Override
@@ -36,7 +57,13 @@ public class MessageController implements MessageApi {
   public ResponseEntity<MessageDto> update(
       @PathVariable UUID messageId,
       @RequestBody MessageUpdateRequest request) {
-    return ResponseEntity.ok(messageService.update(messageId, request));
+    Message message = messageService.update(
+        messageId,
+        request.newContent(),
+        request.attachmentIds()
+    );
+
+    return ResponseEntity.ok(messageMapper.toDto(message));
   }
 
   @Override
@@ -44,17 +71,5 @@ public class MessageController implements MessageApi {
   public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
     messageService.deleteById(messageId);
     return ResponseEntity.noContent().build();
-  }
-
-  @Override
-  @GetMapping
-  public ResponseEntity<List<MessageDto>> findAllByChannelId(@RequestParam UUID channelId) {
-    return ResponseEntity.ok(messageService.findAllByChannelId(channelId));
-  }
-
-  @Override
-  @PatchMapping("/{id}/pin")
-  public ResponseEntity<MessageDto> togglePin(@PathVariable UUID id) {
-    return ResponseEntity.ok(messageService.togglePin(id));
   }
 }

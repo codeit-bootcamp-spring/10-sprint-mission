@@ -1,7 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -21,13 +19,13 @@ public class BasicAuthService implements AuthService {
   private final UserRepository userRepository;
 
   @Override
-  public UserDto login(LoginRequest request) {
+  public User login(String username, String password) {
     // 유저 확인
-    User user = userRepository.findByUsername(request.username())
+    User user = userRepository.findByUsername(username)
         .orElseThrow(() -> new NoSuchElementException("일치하는 유저가 없습니다."));
 
     // 비밀번호 확인
-    if (!user.getPassword().equals(request.password())) {
+    if (!user.getPassword().equals(password)) {
       throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
     }
 
@@ -39,19 +37,6 @@ public class BasicAuthService implements AuthService {
 
     status.updateLastActiveAt(Instant.now());
 
-    return toDto(user, status);
-  }
-
-  // 엔티티 -> DTO 변환
-  private UserDto toDto(User user, UserStatus status) {
-    return new UserDto(
-        user.getId(),
-        user.getCreatedAt(),
-        user.getUpdatedAt(),
-        user.getUsername(),
-        user.getEmail(),
-        user.getProfile() != null ? user.getProfile().getId() : null,
-        status != null && status.isOnline()
-    );
+    return user;
   }
 }
