@@ -23,10 +23,12 @@ public class Message extends BaseUpdatableEntity {
     @JoinColumn(name = "author_id")
     private User author;
 
-    @ManyToMany
-    @JoinTable(name = "MESSAGE_ATTACHMENTS",
-               joinColumns = @JoinColumn(name = "message_id"),
-               inverseJoinColumns = @JoinColumn(name = "attachment_id"))
+    @OneToMany
+    @JoinTable(
+            name = "MESSAGE_ATTACHMENTS",
+            joinColumns = @JoinColumn(name = "message_id"),
+            inverseJoinColumns = @JoinColumn(name = "attachment_id")
+    )
     private List<BinaryContent> attachments;
 
     public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
