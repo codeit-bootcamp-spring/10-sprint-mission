@@ -9,9 +9,11 @@ public record MessageCreateRequest(
     UUID channelId,
 
     @JsonProperty("authorId")
-    UUID userId,
+    UUID authorId,
 
     String content,
+
+    @JsonIgnore
     List<UUID> attachmentIds
 ) {
 

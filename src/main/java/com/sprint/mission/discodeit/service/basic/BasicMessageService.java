@@ -3,83 +3,98 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicMessageService implements MessageService {
 
   private final MessageRepository messageRepository;
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
+  private final BinaryContentService binaryContentService;
+  private final MessageMapper messageMapper;
 
   @Override
   public MessageResponse create(MessageCreateRequest req) {
     requireNonNull(req, "request");
     requireNonNull(req.channelId(), "channelId");
-    requireNonNull(req.userId(), "userId");
+    requireNonNull(req.authorId(), "authorId");
 
     if (req.content() == null || req.content().isBlank()) {
       throw new BusinessLogicException(ErrorCode.MESSAGE_EMPTY);
     }
 
-    // 존재 검증
-    findChannelOrThrow(req.channelId());
+    Channel channel = channelRepository.findById(req.channelId())
+        .orElseThrow(() -> new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND));
 
-    if (userRepository.findById(req.userId()) == null) {
-      throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
-    }
+    User user = userRepository.findById(req.authorId())
+        .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
 
     List<UUID> attachmentIds =
         (req.attachmentIds() == null) ? List.of() : List.copyOf(req.attachmentIds());
 
-    if (!attachmentIds.isEmpty()) {
-      List<UUID> distinctIds = attachmentIds.stream()
-          .filter(Objects::nonNull)
-          .distinct()
-          .toList();
+    List<UUID> distinctIds = attachmentIds.stream()
+        .filter(Objects::nonNull)
+        .distinct()
+        .toList();
 
-      var found = binaryContentRepository.findAllByIdIn(distinctIds);
-      if (found.size() != distinctIds.size()) {
+    List<BinaryContent> attachments = List.of();
+    if (!distinctIds.isEmpty()) {
+      attachments = binaryContentRepository.findAllById(distinctIds);
+
+      if (attachments.size() != distinctIds.size()) {
         throw new BusinessLogicException(ErrorCode.BINARY_CONTENT_NOT_FOUND);
       }
     }
 
     Message saved = messageRepository.save(
-        new Message(
-            req.channelId(),
-            req.userId(),
-            req.content(),
-            attachmentIds
-        )
+        new Message(channel, user, req.content(), attachments)
     );
 
-    return toResponse(saved);
+    return messageMapper.toResponse(saved);
   }
 
   @Override
-  public List<MessageResponse> findAllByChannelId(UUID channelId) {
+  @Transactional(readOnly = true)
+  public Slice<MessageResponse> findAllByChannelId(UUID channelId, Pageable pageable) {
     requireNonNull(channelId, "channelId");
+    requireNonNull(pageable, "pageable");
 
     findChannelOrThrow(channelId);
 
-    return messageRepository.findAllByChannelId(channelId).stream()
-        .map(this::toResponse)
-        .toList();
+    Pageable fixedPageable = PageRequest.of(
+        Math.max(pageable.getPageNumber(), 0),
+        50,
+        Sort.by(Sort.Direction.DESC, "createdAt")
+    );
+
+    return messageRepository.findByChannel_Id(channelId, fixedPageable)
+        .map(messageMapper::toResponse);
   }
 
   @Override
@@ -92,14 +107,10 @@ public class BasicMessageService implements MessageService {
     }
 
     Message message = messageRepository.findById(req.newMessageId())
-        .orElseThrow(() ->
-            new BusinessLogicException(ErrorCode.MESSAGE_NOT_FOUND)
-        );
+        .orElseThrow(() -> new BusinessLogicException(ErrorCode.MESSAGE_NOT_FOUND));
 
     message.updateContent(req.newContent());
-    Message saved = messageRepository.save(message);
-
-    return toResponse(saved);
+    return messageMapper.toResponse(messageRepository.save(message));
   }
 
   @Override
@@ -107,41 +118,24 @@ public class BasicMessageService implements MessageService {
     requireNonNull(messageId, "messageId");
 
     Message message = messageRepository.findById(messageId)
-        .orElseThrow(() ->
-            new BusinessLogicException(ErrorCode.MESSAGE_NOT_FOUND)
-        );
+        .orElseThrow(() -> new BusinessLogicException(ErrorCode.MESSAGE_NOT_FOUND));
 
     List<UUID> attachmentIds =
         (message.getAttachmentIds() == null) ? List.of() : List.copyOf(message.getAttachmentIds());
 
+    messageRepository.delete(message);
+
     for (UUID attachmentId : attachmentIds) {
       if (attachmentId != null) {
-        binaryContentRepository.delete(attachmentId);
+        binaryContentService.delete(attachmentId);
       }
     }
-
-    messageRepository.delete(messageId);
   }
 
   private void findChannelOrThrow(UUID channelId) {
     if (channelRepository.findChannel(channelId) == null) {
       throw new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND);
     }
-  }
-
-  private MessageResponse toResponse(Message m) {
-    List<UUID> attachmentIds =
-        (m.getAttachmentIds() == null) ? List.of() : List.copyOf(m.getAttachmentIds());
-
-    return new MessageResponse(
-        m.getId(),
-        m.getChannelId(),
-        m.getUserId(),
-        m.getContent(),
-        attachmentIds,
-        m.getCreatedAt(),
-        m.getUpdatedAt()
-    );
   }
 
   private static <T> void requireNonNull(T value, String name) {

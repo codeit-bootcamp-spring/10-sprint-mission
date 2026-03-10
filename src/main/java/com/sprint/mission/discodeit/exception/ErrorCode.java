@@ -14,6 +14,9 @@ public enum ErrorCode {
   MESSAGE_EMPTY(HttpStatus.BAD_REQUEST, "메시지 내용이 필요합니다."),
   PASSWORD_EMPTY(HttpStatus.BAD_REQUEST, "비밀번호는 빈 값이 될 수 없습니다."),
   WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 올바르지 않습니다."),
+  DUPLICATION_USER(HttpStatus.BAD_REQUEST, "이미 존재하는 사용자입니다."),
+  DUPLICATION_EMAIL(HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다."),
+  DUPLICATION_READ_STATUS(HttpStatus.BAD_REQUEST, "이미 존재하는 수신 정보입니다."),
 
   // 401
   UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증에 실패했습니다."),
@@ -26,10 +29,7 @@ public enum ErrorCode {
   BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "파일을 찾을 수 없습니다."),
 
   // 409
-  DUPLICATION_USER(HttpStatus.CONFLICT, "이미 존재하는 사용자입니다."),
-  DUPLICATION_EMAIL(HttpStatus.CONFLICT, "이미 존재하는 이메일입니다."),
   DUPLICATION_CHANNEL(HttpStatus.CONFLICT, "이미 존재하는 채널입니다."),
-  DUPLICATION_READ_STATUS(HttpStatus.CONFLICT, "이미 존재하는 수신 정보입니다."),
   ALREADY_JOINED_CHANNEL(HttpStatus.CONFLICT, "이미 채널에 참여한 사용자입니다."),
   USER_NOT_IN_CHANNEL(HttpStatus.CONFLICT, "사용자가 채널에 없습니다."),
   CONFLICT(HttpStatus.CONFLICT, "요청이 현재 상태와 충돌합니다."),

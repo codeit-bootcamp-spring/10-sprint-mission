@@ -1,18 +1,24 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.dto.channel.ChannelDocResponse;
-import com.sprint.mission.discodeit.dto.channel.ChannelDtoResponse;
+import com.sprint.mission.discodeit.dto.channel.ChannelDto;
+import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
 import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.dto.user.UserResponse;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,80 +27,79 @@ import org.springframework.web.bind.annotation.*;
 public class ChannelController {
 
   private final ChannelService channelService;
+  private final UserService userService;
+  private final BinaryContentService binaryContentService;
 
-  public ChannelController(ChannelService channelService) {
+  public ChannelController(
+      ChannelService channelService,
+      UserService userService,
+      BinaryContentService binaryContentService
+  ) {
     this.channelService = channelService;
+    this.userService = userService;
+    this.binaryContentService = binaryContentService;
   }
 
-  // POST /api/channels/public -> 201 + Channel
+  @Operation(summary = "Public Channel 생성", operationId = "create_3", tags = {"Channel"})
   @ApiResponses({
       @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
   })
   @RequestMapping(value = "/public", method = RequestMethod.POST)
-  public ResponseEntity<ChannelDocResponse> createPublic(
+  public ResponseEntity<ChannelDto> createPublic(
       @RequestBody PublicChannelCreateRequest dto
   ) {
     UUID id = channelService.createPublic(dto);
-    Channel channel = channelService.findEntity(id);
-    return ResponseEntity.status(201).body(toDocChannel(channel));
+    return ResponseEntity.status(201).body(toDto(channelService.find(id)));
   }
 
-  // POST /api/channels/private -> 201 + Channel
+  @Operation(summary = "Private Channel 생성", operationId = "create_4", tags = {"Channel"})
   @ApiResponses({
       @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨")
   })
   @RequestMapping(value = "/private", method = RequestMethod.POST)
-  public ResponseEntity<ChannelDocResponse> createPrivate(
+  public ResponseEntity<ChannelDto> createPrivate(
       @RequestBody PrivateChannelCreateRequest dto
   ) {
     UUID id = channelService.createPrivate(dto);
-    Channel channel = channelService.findEntity(id);
-    return ResponseEntity.status(201).body(toDocChannel(channel));
+    return ResponseEntity.status(201).body(toDto(channelService.find(id)));
   }
 
-  // GET /api/channels?userId= -> 200 + List<ChannelDto>
+  @Operation(summary = "User가 참여 중인 Channel 목록 조회", operationId = "findAll_1", tags = {"Channel"})
   @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "OK")
+      @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공")
   })
   @RequestMapping(method = RequestMethod.GET)
-  public ResponseEntity<List<ChannelDtoResponse>> findAllByUserId(
+  public ResponseEntity<List<ChannelDto>> findAllByUserId(
       @RequestParam UUID userId
   ) {
     return ResponseEntity.ok(
         channelService.findAllByUserId(userId).stream()
-            .map(ChannelDtoResponse::from)
-            .collect(Collectors.toList())
+            .map(this::toDto)
+            .toList()
     );
   }
 
-  // PATCH /api/channels/{channelId} -> 200 + Channel, 400 if private, 404
+  @Operation(summary = "Channel 정보 수정", operationId = "update_3", tags = {"Channel"})
   @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "OK"),
-      @ApiResponse(responseCode = "400", description = "Private channel cannot be updated"),
-      @ApiResponse(responseCode = "404", description = "Channel with id {channelId} not found")
+      @ApiResponse(responseCode = "200", description = "Channel 정보가 성공적으로 수정됨"),
+      @ApiResponse(responseCode = "400", description = "Private Channel은 수정할 수 없음"),
+      @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음")
   })
   @RequestMapping(value = "/{channelId:[0-9a-fA-F\\-]{36}}", method = RequestMethod.PATCH)
-  public ResponseEntity<?> update(@PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateRequest dto) {
+  public ResponseEntity<ChannelDto> update(
+      @PathVariable UUID channelId,
+      @RequestBody PublicChannelUpdateRequest dto
+  ) {
+    ChannelUpdateRequest request =
+        new ChannelUpdateRequest(channelId, dto.newName(), dto.newDescription());
 
-    try {
-      ChannelUpdateRequest request =
-          new ChannelUpdateRequest(channelId, dto.newName(), dto.newDescription());
-
-      channelService.update(request);
-      Channel channel = channelService.findEntity(channelId);
-
-      return ResponseEntity.ok(toDocChannel(channel));
-    } catch (IllegalStateException e) {
-      // docs example: "Private channel cannot be updated"
-      return ResponseEntity.badRequest().body("Private channel cannot be updated");
-    }
+    return ResponseEntity.ok(toDto(channelService.update(request)));
   }
 
-  // DELETE /api/channels/{channelId} -> 204, 404
+  @Operation(summary = "Channel 삭제", operationId = "delete_2", tags = {"Channel"})
   @ApiResponses({
       @ApiResponse(responseCode = "204", description = "Channel이 성공적으로 삭제됨"),
-      @ApiResponse(responseCode = "404", description = "Channel with id {channelId} not found")
+      @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음")
   })
   @RequestMapping(value = "/{channelId:[0-9a-fA-F\\-]{36}}", method = RequestMethod.DELETE)
   public ResponseEntity<Void> delete(@PathVariable UUID channelId) {
@@ -102,14 +107,43 @@ public class ChannelController {
     return ResponseEntity.noContent().build();
   }
 
-  private ChannelDocResponse toDocChannel(Channel c) {
-    return ChannelDocResponse.of(
-        c.getId(),
-        c.getCreatedAt(),
-        c.getUpdatedAt(),
-        c.isPrivate(),
-        c.getChannelName(),
-        c.getDescription()
+  private ChannelDto toDto(ChannelResponse response) {
+    List<UserDto> participants = response.participantIds() == null
+        ? List.of()
+        : response.participantIds().stream()
+            .map(userService::find)
+            .map(this::toUserDto)
+            .toList();
+
+    return new ChannelDto(
+        response.channelId(),
+        response.isPrivate() ? ChannelDocResponse.ChannelType.PRIVATE
+            : ChannelDocResponse.ChannelType.PUBLIC,
+        response.channelName(),
+        response.description(),
+        participants,
+        response.lastMessageTime()
+    );
+  }
+
+  private UserDto toUserDto(UserResponse userResponse) {
+    BinaryContentDto profile = null;
+    if (userResponse.profileImageId() != null) {
+      BinaryContentResponse binary = binaryContentService.find(userResponse.profileImageId());
+      profile = new BinaryContentDto(
+          binary.id(),
+          binary.fileName(),
+          binary.size(),
+          binary.contentType()
+      );
+    }
+
+    return new UserDto(
+        userResponse.id(),
+        userResponse.userName(),
+        userResponse.email(),
+        profile,
+        userResponse.online()
     );
   }
 }

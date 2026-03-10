@@ -2,26 +2,43 @@ package com.sprint.mission.discodeit.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.util.UUID;
+import lombok.Getter;
 
 @Getter
-public class User extends BaseEntity implements Serializable {
-
-  private static final long serialVersionUID = 1L;
+@Entity
+@Table(name = "users")
+public class User extends BaseUpdatableEntity {
 
   @JsonIgnore
+  @Column(name = "username", nullable = false, unique = true)
   private String name;
 
+  @Column(name = "email", nullable = false, unique = true)
   private String email;
+
+  @Column(name = "password", nullable = false)
   private String password;
 
-  @JsonIgnore
-  private UUID profileImageId;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "profile_id")
+  private BinaryContent profileImage;
+
+  @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,
+      cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+  private UserStatus status;
+
+  protected User() {
+  }
 
   public User(String name, String email, String password) {
-    super();
     this.name = name;
     this.email = email;
     this.password = password;
@@ -34,7 +51,15 @@ public class User extends BaseEntity implements Serializable {
 
   @JsonProperty("profileId")
   public UUID getProfileId() {
-    return profileImageId;
+    return profileImage == null ? null : profileImage.getId();
+  }
+
+  public UUID getProfileImageId() {
+    return profileImage == null ? null : profileImage.getId();
+  }
+
+  public void bindStatus(UserStatus status) {
+    this.status = status;
   }
 
   public void updateName(String name) {
@@ -52,8 +77,8 @@ public class User extends BaseEntity implements Serializable {
     touch();
   }
 
-  public void updateProfileImage(UUID imageId) {
-    this.profileImageId = imageId;
+  public void updateProfileImage(BinaryContent image) {
+    this.profileImage = image;
     touch();
   }
 

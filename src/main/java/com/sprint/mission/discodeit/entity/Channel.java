@@ -1,58 +1,71 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
 
 @Getter
-@NoArgsConstructor
-public class Channel extends BaseEntity {
+@Entity
+@Table(name = "channels")
+public class Channel extends BaseUpdatableEntity {
 
-  private String channelName;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "type", nullable = false)
+  private ChannelType type;
+
+  @Column(name = "name")
+  private String name;
+
+  @Column(name = "description")
   private String description;
-  private boolean isPrivate;
-  private List<User> participants;
 
-  public Channel(String name, String description) {
-    super();
-    this.channelName = name;
-    this.description = description;
-    this.isPrivate = false;
-    this.participants = new ArrayList<>();
+  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Message> messages = new ArrayList<>();
+
+  @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<ReadStatus> readStatuses = new ArrayList<>();
+
+  protected Channel() {
   }
 
-  public Channel(List<User> participants) {
-    super();
-    this.isPrivate = true;
-    this.participants = participants != null ? participants : new ArrayList<>();
+  public Channel(String name, String description) {
+    this.type = ChannelType.PUBLIC;
+    this.name = name;
+    this.description = description;
+  }
+
+  public Channel(ChannelType type, String name, String description) {
+    this.type = type;
+    this.name = name;
+    this.description = description;
   }
 
   public void updateChannel(String name, String description) {
-    if (isPrivate) {
+    if (this.type == ChannelType.PRIVATE) {
       throw new IllegalStateException("PRIVATE 채널은 수정할 수 없습니다.");
     }
-      if (name != null) {
-          this.channelName = name;
-      }
-      if (description != null) {
-          this.description = description;
-      }
+    if (name != null) {
+      this.name = name;
+    }
+    if (description != null) {
+      this.description = description;
+    }
     touch();
   }
 
-  public void addParticipant(User user) {
-    boolean exists = participants.stream()
-        .anyMatch(u -> u.getId().equals(user.getId()));
-    if (!exists) {
-      participants.add(user);
-      touch();
-    }
+  public boolean isPrivate() {
+    return this.type == ChannelType.PRIVATE;
   }
 
-  public void removeParticipant(User user) {
-    if (participants.remove(user)) {
-      touch();
-    }
+  public String getChannelName() {
+    return this.name;
   }
 }

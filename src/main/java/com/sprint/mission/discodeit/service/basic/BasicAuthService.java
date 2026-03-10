@@ -17,7 +17,6 @@ public class BasicAuthService implements AuthService {
 
   @Override
   public User login(LoginRequest request) {
-
     if (request == null || request.userName() == null || request.password() == null) {
       throw new BusinessLogicException(ErrorCode.BAD_REQUEST);
     }

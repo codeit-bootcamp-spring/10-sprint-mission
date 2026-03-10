@@ -1,28 +1,76 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.Getter;
 
 @Getter
-public class Message extends BaseEntity implements Serializable {
+@Entity
+@Table(name = "messages")
+public class Message extends BaseUpdatableEntity {
 
-        private final UUID channelId;
-        private final UUID userId;
-        private String content;
-        private List<UUID> attachmentIds;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "channel_id", nullable = false)
+  private Channel channel;
 
-        public Message(UUID channelId, UUID userId, String content, List<UUID> attachmentIds) {
-            super();
-            this.channelId = channelId;
-            this.userId = userId;
-            this.content = content;
-            this.attachmentIds = (attachmentIds == null) ? List.of() : List.copyOf(attachmentIds);
-        }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "author_id")
+  private User author;
 
-        public void updateContent(String content) {
-            this.content = content;
-            touch();
-        }
+  @Column(name = "content")
+  private String content;
+
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+      name = "message_attachments",
+      joinColumns = @JoinColumn(name = "message_id"),
+      inverseJoinColumns = @JoinColumn(name = "attachment_id")
+  )
+  private List<BinaryContent> attachments = new ArrayList<>();
+
+  protected Message() {
+  }
+
+  public Message(
+      Channel channel,
+      User author,
+      String content,
+      List<BinaryContent> attachments
+  ) {
+    this.channel = channel;
+    this.author = author;
+    this.content = content;
+    if (attachments != null) {
+      this.attachments.addAll(attachments);
+    }
+  }
+
+  public UUID getChannelId() {
+    return channel == null ? null : channel.getId();
+  }
+
+  public UUID getUserId() {
+    return author == null ? null : author.getId();
+  }
+
+  public List<UUID> getAttachmentIds() {
+    return attachments.stream()
+        .map(BinaryContent::getId)
+        .toList();
+  }
+
+  public void updateContent(String content) {
+    this.content = content;
+    touch();
+  }
 }
