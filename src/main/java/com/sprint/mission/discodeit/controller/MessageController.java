@@ -17,6 +17,8 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -116,11 +118,12 @@ public class MessageController {
     public ResponseEntity<PageResponse<MessageDto>> viewChannelMessage(
         @RequestParam UUID channelId,
         @RequestParam(required = false) Optional<Instant> cursor,
-        @ParameterObject Pageable pageable) {
+        @ParameterObject
+        @PageableDefault(page = 0, size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(
             messageService.findAllByChannelId(
                 channelId,
-                cursor.isPresent() ? cursor.get() : Optional.empty(),
+                cursor,
                 pageable));
     }
 }

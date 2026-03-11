@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.exceptionhandler;
 
 import com.sprint.mission.discodeit.error.ErrorResponse;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,5 +24,16 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public static ErrorResponse handleNoSuchElement(NoSuchElementException e) {
         return ErrorResponse.of(404, e.getMessage());
+    }
+
+    @ExceptionHandler({
+        NullPointerException.class,
+        IllegalArgumentException.class,
+        DataIntegrityViolationException.class,
+        MethodArgumentNotValidException.class
+    })
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public static ErrorResponse handleBadRequest(Exception e) {
+        return ErrorResponse.of(400, e.getMessage());
     }
 }

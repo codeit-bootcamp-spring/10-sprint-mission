@@ -3,8 +3,6 @@ package com.sprint.mission.discodeit.entity;
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,10 +24,6 @@ public class BinaryContent extends BaseEntity {
 
     @Column(nullable = false, columnDefinition = "bytea")
     private byte[] bytes = new byte[0];
-
-    @ManyToOne
-    @JoinColumn(name = "message_id")
-    private Message message;
 
     public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
         this.fileName = fileName;

@@ -27,6 +27,12 @@ public class ChannelController {
 
     private final ChannelService channelService;
 
+
+    @GetMapping(value = "/all")
+    public ResponseEntity<List<ChannelDto>> findAllChannel() {
+        return new ResponseEntity<>(channelService.findAll(), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/public", method = RequestMethod.POST)
     @ApiResponse(
         responseCode = "201",
@@ -53,7 +59,7 @@ public class ChannelController {
         )
     )
     public ResponseEntity<ChannelDto> createPrivateChannel(
-        @RequestBody PrivateChannelCreateDTO req) {
+        @Valid @RequestBody PrivateChannelCreateDTO req) {
         return new ResponseEntity<>(channelService.createPrivateChannel(req), HttpStatus.CREATED);
     }
 

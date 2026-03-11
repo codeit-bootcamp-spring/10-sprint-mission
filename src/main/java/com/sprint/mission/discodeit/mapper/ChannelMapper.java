@@ -1,39 +1,41 @@
 package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.channeldto.ChannelDto;
+import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.repository.MessageRepository;
-import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Component
-@RequiredArgsConstructor
-public class ChannelMapper {
+@Mapper(componentModel = "spring", uses = UserMapper.class)
+public abstract class ChannelMapper {
 
-    private final ReadStatusRepository readStatusRepository;
-    private final MessageRepository messageRepository;
-    private final UserMapper userMapper;
+    @Autowired
+    protected UserMapper userMapper;
 
-    // 시그니쳐를 바꿔보았습니다.
-    public ChannelDto toDto(Channel channel, Message lastMessage) {
-        return new ChannelDto(
-            channel.getId(),
-            channel.getType(),
-            channel.getName(),
-            channel.getDescription(),
-            channel.getReadStatuses()
-                .stream()
-                .map(ReadStatus::getUser)
-                .filter(Objects::nonNull)
-                .map(userMapper::toDto)
-                .toList(),
-            // 새로 생성한 메시지가 없는 채널을 dto로 변환하면, lastMessageAt 값에는 채널 생성 날짜가 들어감.
-            lastMessage != null ? lastMessage.getCreatedAt() : channel.getCreatedAt()
-        );
+    @Mapping(target = "id", source = "channel.id")
+    @Mapping(target = "type", source = "channel.type")
+    @Mapping(target = "name", source = "channel.name")
+    @Mapping(target = "description", source = "channel.description")
+    @Mapping(target = "participants", expression = "java(mapParticipants(channel))")
+    @Mapping(target = "lastMessageAt", expression = "java(resolveLastMessageAt(channel, lastMessage))")
+    public abstract ChannelDto toDto(Channel channel, Message lastMessage);
+
+    protected List<UserDto> mapParticipants(Channel channel) {
+        return channel.getReadStatuses()
+            .stream()
+            .map(ReadStatus::getUser)
+            .filter(Objects::nonNull)
+            .map(userMapper::toDto)
+            .toList();
+    }
+
+    protected Instant resolveLastMessageAt(Channel channel, Message lastMessage) {
+        return lastMessage != null ? lastMessage.getCreatedAt() : channel.getCreatedAt();
     }
 }

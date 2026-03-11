@@ -16,6 +16,8 @@ public interface ChannelService {
 
     ChannelDto find(UUID channelId);
 
+    List<ChannelDto> findAll();
+
     List<ChannelDto> findAllByUserId(UUID userID);
 
     ChannelDto update(UUID channelId, PublicChannelUpdateRequestDTO req);

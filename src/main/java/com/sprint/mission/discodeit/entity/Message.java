@@ -34,9 +34,11 @@ public class Message extends BaseUpdatableEntity {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinTable(name = "message_binaryContent",
-        joinColumns = @JoinColumn(name = "profile_id")
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+        name = "message_attachments",
+        joinColumns = @JoinColumn(name = "message_id"),
+        inverseJoinColumns = @JoinColumn(name = "attachment_id")
     )
     private List<BinaryContent> attachments = new ArrayList<>();
 

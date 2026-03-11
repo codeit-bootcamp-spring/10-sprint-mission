@@ -37,7 +37,7 @@ public class BasicUserService implements UserService {
         // 유저 레포지토리 내에서 유저 요청으로 들어온 이름과 이메일이 중복되는지 확인하고 중복 시 예외를 던진다.
         if (
             userRepository.existsByUsername(req.username())
-                && userRepository.existsByEmail(req.email())) {
+                || userRepository.existsByEmail(req.email())) {
             throw new IllegalStateException("중복되는 유저 정보입니다.");
         }
 

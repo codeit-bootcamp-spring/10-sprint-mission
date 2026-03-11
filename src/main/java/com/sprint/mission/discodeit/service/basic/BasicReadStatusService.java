@@ -25,62 +25,63 @@ public class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
+    private final ReadStatusMapper readStatusMapper;
 
     @Transactional
     @Override
     public ReadStatusDto create(ReadStatusCreateRequestDTO req) {
-        Objects.requireNonNull(req.channelId(), "유효하지 않은 id입니다!");
-        Objects.requireNonNull(req.userId(), "유효하지 않은 id입니다!");
+        Objects.requireNonNull(req.channelId(), "??ル쪇???? ??? id???낅퉵??");
+        Objects.requireNonNull(req.userId(), "??ル쪇???? ??? id???낅퉵??");
 
         Channel channel = channelRepository.findById(req.channelId())
-            .orElseThrow(() -> new NoSuchElementException("해당 채널이 존재하지 않습니다!"));
+            .orElseThrow(() -> new NoSuchElementException("?????嶺??х몭???브퀡????? ???용????덈펲!"));
         User user = userRepository.findById(req.userId())
-            .orElseThrow(() -> new NoSuchElementException("해당 유저가 존재하지 않습니다!"));
+            .orElseThrow(() -> new NoSuchElementException("?????????띠럾? ?브퀡????? ???용????덈펲!"));
 
         try {
             ReadStatus readStatus = new ReadStatus(user, channel);
             readStatusRepository.save(readStatus);
-            return ReadStatusMapper.toDto(readStatus);
+            return readStatusMapper.toDto(readStatus);
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalStateException("ReadStatus 데이터가 중복됩니다!");
+            throw new IllegalStateException("ReadStatus ??⑥щ턄??? 繞벿살탮???紐껊퉵??");
         }
     }
 
     @Transactional(readOnly = true)
     @Override
     public ReadStatusDto find(UUID rsId) {
-        Objects.requireNonNull(rsId, "유효하지 않은 ReadStatus ID 입니다.");
+        Objects.requireNonNull(rsId, "??ル쪇???? ??? ReadStatus ID ???낅퉵??");
         ReadStatus readStatus =
             readStatusRepository.findById(rsId)
                 .orElseThrow(
-                    () -> new NoSuchElementException("해당 ReadStatus를 찾을 수 없음."));
+                    () -> new NoSuchElementException("?????ReadStatus??嶺뚢돦堉??????怨몃쾳."));
 
-        return ReadStatusMapper.toDto(readStatus);
+        return readStatusMapper.toDto(readStatus);
     }
 
     @Transactional
     @Override
     public List<ReadStatusDto> findAllByUserId(UUID userId) {
-        Objects.requireNonNull(userId, "유효하지 않은 유저 ID 입니다.");
+        Objects.requireNonNull(userId, "??ル쪇???? ??? ??? ID ???낅퉵??");
         if (!userRepository.existsById(userId)) {
-            throw new NoSuchElementException("유저가 존재하지 않음");
+            throw new NoSuchElementException("????띠럾? ?브퀡????? ???곷쾳");
         }
 
         return readStatusRepository
             .findAllByUserId(userId)
             .stream()
-            .map(ReadStatusMapper::toDto).toList();
+            .map(readStatusMapper::toDto).toList();
 
     }
 
     @Transactional
     @Override
     public ReadStatusDto update(UUID id, ReadStatusUpdateRequestDTO req) {
-        Objects.requireNonNull(req, "유효하지 않은 요청입니다!");
-        Objects.requireNonNull(id, "유효하지 않은 식별자입니다!");
+        Objects.requireNonNull(req, "??ル쪇???? ??? ??븐슙????낅퉵??");
+        Objects.requireNonNull(id, "??ル쪇???? ??? ??紐끒???肉???덈펲!");
 
         ReadStatus readStatus = readStatusRepository.findById(id).orElseThrow(
-            () -> new NoSuchElementException("존재하지 않는 ReadStatus 입니다!")
+            () -> new NoSuchElementException("?브퀡????? ???낅츎 ReadStatus ???낅퉵??")
         );
 
         readStatus.update();
@@ -97,7 +98,7 @@ public class BasicReadStatusService implements ReadStatusService {
     @Transactional
     @Override
     public void delete(UUID id) {
-        Objects.requireNonNull(id, "유효하지 않은 ID입니다.");
+        Objects.requireNonNull(id, "??ル쪇???? ??? ID???낅퉵??");
 
         readStatusRepository.deleteById(id);
 
