@@ -11,7 +11,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @NoArgsConstructor
-public class BinaryContent extends BaseUpdatableEntity implements Serializable {
+public class BinaryContent extends BaseEntity{
     private static final long serialVersionUID = 1L;
 //    private UUID id;
 //    private Instant createdAt;

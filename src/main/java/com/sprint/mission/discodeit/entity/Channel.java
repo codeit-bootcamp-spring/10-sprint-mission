@@ -12,10 +12,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @NoArgsConstructor
-public class Channel extends BaseUpdatableEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
-
-    private Instant updatedAt;
+public class Channel extends BaseUpdatableEntity {
     //
     private ChannelType type;
     private String name;

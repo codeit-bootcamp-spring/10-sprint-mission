@@ -14,8 +14,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @NoArgsConstructor
-public class ReadStatus extends BaseUpdatableEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class ReadStatus extends BaseUpdatableEntity {
 //    private UUID id;
 //    private Instant createdAt;
 //    private Instant updatedAt;

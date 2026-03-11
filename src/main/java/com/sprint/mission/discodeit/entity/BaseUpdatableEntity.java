@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Getter
 @MappedSuperclass
-public class BaseUpdatableEntity extends BaseEntity {
+public class BaseUpdatableEntity extends BaseEntity{
     @LastModifiedDate
     protected Instant updatedAt;
 

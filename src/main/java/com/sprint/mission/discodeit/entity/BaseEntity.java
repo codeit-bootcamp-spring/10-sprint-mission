@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Getter
 @MappedSuperclass
-public class BaseEntity implements Serializable {
+public class BaseEntity{
     @Id
     private UUID id;
     @CreatedDate

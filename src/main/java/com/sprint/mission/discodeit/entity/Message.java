@@ -1,10 +1,8 @@
 package com.sprint.mission.discodeit.entity;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -12,7 +10,9 @@ import java.util.List;
 import java.util.UUID;
 
 @Getter
-public class Message extends BaseUpdatableEntity implements Serializable {
+@Entity
+@NoArgsConstructor
+public class Message extends BaseUpdatableEntity {
     private static final long serialVersionUID = 1L;
 
     //
