@@ -4,14 +4,20 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -22,66 +28,56 @@ import java.util.UUID;
 public class BasicMessageService implements MessageService {
 
   private final MessageRepository messageRepository;
-  //
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
+  private final BinaryContentService binaryContentService;
   private final BinaryContentRepository binaryContentRepository;
 
   @Override
-  public Message create(MessageCreateRequest messageCreateRequest,
-      List<BinaryContentCreateRequest> binaryContentCreateRequests) {
-    UUID channelId = messageCreateRequest.channelId();
-    UUID authorId = messageCreateRequest.authorId();
+  @Transactional
+  public Message create(MessageCreateRequest request,
+                        List<BinaryContentCreateRequest> binaryContentCreateRequests) {
 
-    if (!channelRepository.existsById(channelId)) {
-      throw new NoSuchElementException("Channel with id " + channelId + " does not exist");
-    }
-    if (!userRepository.existsById(authorId)) {
-      throw new NoSuchElementException("Author with id " + authorId + " does not exist");
-    }
+    // Getter 방식으로 변경
+    UUID authorId = request.getAuthorId();
+    UUID channelId = request.getChannelId();
 
-    List<UUID> attachmentIds = binaryContentCreateRequests.stream()
-        .map(attachmentRequest -> {
-          String fileName = attachmentRequest.fileName();
-          String contentType = attachmentRequest.contentType();
-          byte[] bytes = attachmentRequest.bytes();
+    User author = userRepository.findById(authorId)
+            .orElseThrow(() -> new NoSuchElementException("User not found: " + authorId));
+    Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(() -> new NoSuchElementException("Channel not found: " + channelId));
 
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType, bytes);
-          BinaryContent createdBinaryContent = binaryContentRepository.save(binaryContent);
-          return createdBinaryContent.getId();
-        })
-        .toList();
+    List<BinaryContent> attachments = binaryContentCreateRequests.stream()
+            .map(attachmentRequest -> binaryContentService.create(attachmentRequest))
+            .toList();
 
-    String content = messageCreateRequest.content();
-    Message message = new Message(
-        content,
-        channelId,
-        authorId,
-        attachmentIds
-    );
+    String content = request.getContent();
+    Message message = new Message(content, channel, author, attachments);
     return messageRepository.save(message);
+  }
+
+  public Slice<Message> findAllByChannelId(UUID channelId, Pageable pageable) {
+    return messageRepository.findAllByChannelId(channelId, pageable);
   }
 
   @Override
   public Message find(UUID messageId) {
     return messageRepository.findById(messageId)
-        .orElseThrow(
-            () -> new NoSuchElementException("Message with id " + messageId + " not found"));
+            .orElseThrow(
+                    () -> new NoSuchElementException("Message with id " + messageId + " not found"));
   }
 
   @Override
   public List<Message> findAllByChannelId(UUID channelId) {
-    return messageRepository.findAllByChannelId(channelId).stream()
-        .toList();
+    return messageRepository.findAllByChannelId(channelId);
   }
 
   @Override
   public Message update(UUID messageId, MessageUpdateRequest request) {
-    String newContent = request.newContent();
+    String newContent = request.getNewContent();
     Message message = messageRepository.findById(messageId)
-        .orElseThrow(
-            () -> new NoSuchElementException("Message with id " + messageId + " not found"));
+            .orElseThrow(
+                    () -> new NoSuchElementException("Message with id " + messageId + " not found"));
     message.update(newContent);
     return messageRepository.save(message);
   }
@@ -89,11 +85,11 @@ public class BasicMessageService implements MessageService {
   @Override
   public void delete(UUID messageId) {
     Message message = messageRepository.findById(messageId)
-        .orElseThrow(
-            () -> new NoSuchElementException("Message with id " + messageId + " not found"));
+            .orElseThrow(
+                    () -> new NoSuchElementException("Message with id " + messageId + " not found"));
 
     message.getAttachmentIds()
-        .forEach(binaryContentRepository::deleteById);
+            .forEach(binaryContentRepository::deleteById);
 
     messageRepository.deleteById(messageId);
   }
