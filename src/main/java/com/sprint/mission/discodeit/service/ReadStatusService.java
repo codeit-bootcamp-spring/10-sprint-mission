@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface ReadStatusService {
 
-  ReadStatus create(UUID userId, UUID channelId);
+  ReadStatus create(UUID userId, UUID channelId, Instant lastReadAt);
 
   ReadStatus findById(UUID id);
 

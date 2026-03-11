@@ -27,7 +27,7 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   @Transactional
-  public ReadStatus create(UUID userId, UUID channelId) {
+  public ReadStatus create(UUID userId, UUID channelId, Instant lastReadAt) {
     User user = getOrThrowUser(userId);
     Channel channel = getOrThrowChannel(channelId);
 
@@ -37,7 +37,7 @@ public class BasicReadStatusService implements ReadStatusService {
           throw new IllegalStateException("이미 해당 채널에 참여 중인 유저입니다.");
         });
 
-    ReadStatus readStatus = new ReadStatus(user, channel, null);
+    ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
     return readStatusRepository.save(readStatus);
   }
 
