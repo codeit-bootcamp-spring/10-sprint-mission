@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.Message;
 import org.springframework.data.domain.Slice;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,7 +17,8 @@ public interface MessageService {
 
   Message find(UUID messageId);
 
-  Slice<Message> findAllByChannel_Id(UUID channelId, int page, int size);
+  // 커서 기반 패이징
+  List<Message> findAllByChannel_Id(UUID channelId, Instant cursor, int size);
 
   Message update(UUID messageId, MessageUpdateRequest request);
 

@@ -17,10 +17,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -87,16 +89,34 @@ public class MessageController {
     return ResponseEntity.noContent().build();
   }
 
-  // GET /api/messages/{channelId}
-  // v페이징 적용 부분.
+  // GET /api/messages?channelId
+  // v 커서 페이징 적용 부분.
   @RequestMapping(method = RequestMethod.GET)
   public PageResponse<MessageDto> findAllByChannel_Id(
           @RequestParam UUID channelId,
-          @RequestParam(defaultValue = "0") int page
+          @RequestParam(required = false) Instant cursor,
+          @RequestParam(defaultValue = "50") int size
   ) {
-    Slice<MessageDto> slice = messageService.findAllByChannel_Id(channelId, page, 50)
-            .map(messageMapper::toDto);
+    List<Message> messages = messageService.findAllByChannel_Id(channelId, cursor, size);
 
-    return PageResponseMapper.fromSlice(slice);
+    boolean hasNext = messages.size() > size;
+    List<Message> pageContent = hasNext ? messages.subList(0, size) : messages;
+
+    List<MessageDto> content = pageContent.stream()
+            .map(messageMapper::toDto)
+            .toList();
+
+    Instant nextCursor = null;
+    if (!pageContent.isEmpty() && hasNext) {
+      nextCursor = pageContent.get(pageContent.size() - 1).getCreatedAt();
+    }
+
+    return new PageResponse<>(
+            content,
+            nextCursor,
+            size,
+            hasNext,
+            null
+    );
   }
 }

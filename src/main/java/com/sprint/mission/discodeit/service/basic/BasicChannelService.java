@@ -22,7 +22,6 @@ import java.util.*;
 @Service
 @Transactional
 public class BasicChannelService implements ChannelService {
-
   private final ChannelRepository channelRepository;
   private final ReadStatusRepository readStatusRepository;
   private final MessageRepository messageRepository;
@@ -42,18 +41,15 @@ public class BasicChannelService implements ChannelService {
     Channel channel = new Channel(ChannelType.PRIVATE, "", "");
     Channel createdChannel = channelRepository.save(channel);
 
-//    request.participantIds().stream()
-//        .map(userId -> new ReadStatus(userId, createdChannel.getId()))
-//        .forEach(readStatusRepository::save);
-//
-//    return createdChannel;
     List<User> participants = request.participantIds().stream()
             .map(userId -> userRepository.findById(userId)
                     .orElseThrow(()-> new NoSuchElementException("User with id " + userId +  "not found")))
             .toList();
+
     List<ReadStatus> readStatuses = participants.stream()
             .map(user->new ReadStatus(user, createdChannel, Instant.now()))
             .toList();
+
     readStatusRepository.saveAll(readStatuses);
     return createdChannel;
   }

@@ -25,6 +25,7 @@ spring:
     properties:
         hibernate:
           format_sql: true # SQL 포맷팅 가독성
+    open-in-view: false
 
 discodeit:
   storage:

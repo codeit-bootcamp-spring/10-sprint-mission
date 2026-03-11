@@ -20,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -75,14 +76,15 @@ public class BasicMessageService implements MessageService {
 
   @Transactional(readOnly = true)
   @Override
-  public Slice<Message> findAllByChannel_Id(UUID channelId, int page, int size) {
-    PageRequest pageRequest = PageRequest.of(
-            page,
-            size,
-            Sort.by(Sort.Direction.DESC, "createdAt")
-    );
+  public List<Message> findAllByChannel_Id(UUID channelId, Instant cursor, int size) {
+    PageRequest pageRequest = PageRequest.of(0, size + 1);
+    if (cursor == null) {
+      return messageRepository.findByChannel_IdOrderByCreatedAtDesc(channelId, pageRequest);
+    }
 
-    return messageRepository.findAllByChannel_Id(channelId, pageRequest);
+    return messageRepository.findByChannel_IdAndCreatedAtBeforeOrderByCreatedAtDesc(
+            channelId, cursor, pageRequest
+    );
   }
 
 

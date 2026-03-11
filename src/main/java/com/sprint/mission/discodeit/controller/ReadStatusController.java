@@ -9,8 +9,10 @@ import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.Reader;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,7 +45,7 @@ public class ReadStatusController {
 
   // GET /api/readStatuses?userId=...
   @RequestMapping(method = RequestMethod.GET)
-  public ResponseEntity<List<ReadStatusDto>> findAllByUser_Id(@RequestParam("userId") UUID userId) {
+  public ResponseEntity<List<ReadStatusDto>> findAllByUser_Id(@RequestParam("userId") UUID userId, Reader reader) {
     List<ReadStatus> readStatuses = readStatusService.findAllByUser_Id(userId);
 
     List<ReadStatusDto> dtos = readStatuses.stream()
