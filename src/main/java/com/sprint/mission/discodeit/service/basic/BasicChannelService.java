@@ -65,14 +65,14 @@ public class BasicChannelService implements ChannelService {
     @Override
     @Transactional(readOnly = true)
     public List<ChannelDto> findAllByUserId(UUID userId) {
-        // userId를 가진 user가 참여 중인 PRIVATE 채널들(ReadStatus는 private 채널에 참여 중인 유저에 대한 정보와 최근 읽은 시간에 대한 정보를 가지고 있음)
-        List<Channel> joinedChannels = readStatusRepository.findAllByUserId(userId)
+        // userId를 가진 user가 참여 중인 PRIVATE 채널 Id들(ReadStatus는 private 채널에 참여 중인 유저에 대한 정보와 최근 읽은 시간에 대한 정보를 가지고 있음)
+        List<UUID> joinedChannelIds = readStatusRepository.findAllByUserId(userId)
                 .stream()
-                .map(ReadStatus::getChannel)
+                .map(readStatus -> readStatus.getChannel().getId())
                 .toList();
 
-        return joinedChannels
-                .stream()
+        // joinedChannelIds를 포함하면서  PUBLIC 채널들도 반환을 해야함
+        return channelRepository.findAllByTypeOrIdIn(ChannelType.PUBLIC, joinedChannelIds).stream()
                 .map(channelMapper::toDto)
                 .toList();
     }
