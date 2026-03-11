@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.dto.response;
 
-import com.sprint.mission.discodeit.dto.message.MessageDto;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
+@Schema(name = "PageResponse")
 public record PageResponse(
-    List<MessageDto> content,
+    List<Object> content,
     int number,
     int size,
     boolean hasNext,

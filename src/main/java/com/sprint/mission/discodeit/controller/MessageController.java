@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.io.IOException;
@@ -58,9 +59,16 @@ public class MessageController {
   @Operation(summary = "Channel의 Message 목록 조회", operationId = "findAllByChannelId", tags = {
       "Message"})
   @ApiResponses({
-      @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공")
+      @ApiResponse(
+          responseCode = "200",
+          description = "Message 목록 조회 성공",
+          content = @Content(
+              mediaType = "*/*",
+              schema = @Schema(name = "PageResponse", implementation = PageResponse.class)
+          )
+      )
   })
-  @RequestMapping(method = RequestMethod.GET)
+  @RequestMapping(method = RequestMethod.GET, produces = "*/*")
   public ResponseEntity<PageResponse> findAllByChannelId(
       @Parameter(description = "조회할 Channel ID")
       @RequestParam UUID channelId,
@@ -72,7 +80,6 @@ public class MessageController {
   ) {
     Slice<MessageResponse> slice = messageService.findAllByChannelId(channelId, pageable);
     Slice<MessageDto> dtoSlice = slice.map(this::toDto);
-
     return ResponseEntity.ok(pageResponseMapper.fromSlice(dtoSlice));
   }
 
