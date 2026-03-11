@@ -13,6 +13,7 @@ import java.util.List;
 @Table(name = "MESSAGES")
 public class Message extends BaseUpdatableEntity {
 
+    @Column(nullable = false)
     private String content;
 
     @ManyToOne

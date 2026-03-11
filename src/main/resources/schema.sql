@@ -48,7 +48,7 @@ CREATE TABLE MESSAGES(
     id UUID PRIMARY KEY ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ,
-    content TEXT,
+    content TEXT NOT NULL,
     channel_id UUID NOT NULL,
     author_id UUID,
     FOREIGN KEY (channel_id) REFERENCES CHANNELS(id) ON DELETE CASCADE ,
