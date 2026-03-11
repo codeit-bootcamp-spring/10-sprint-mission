@@ -50,9 +50,10 @@ public class BasicUserStatusService implements UserStatusService {
 
   @Override
   @Transactional
-  public UserStatus updateByUserId(UUID id, Instant newLastActiveAt) {
-    UserStatus userStatus = getOrThrowUserStatus(id);
-    
+  public UserStatus updateByUserId(UUID userId, Instant newLastActiveAt) {
+    UserStatus userStatus = userStatusRepository.findByUserId(userId)
+        .orElseThrow(() -> new NoSuchElementException("해당 유저의 상태 정보를 찾을 수 없습니다."));
+
     if (newLastActiveAt != null) {
       userStatus.updateLastActiveAt(newLastActiveAt);
     }
