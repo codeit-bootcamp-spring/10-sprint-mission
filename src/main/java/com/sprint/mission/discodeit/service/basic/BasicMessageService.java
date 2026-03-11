@@ -1,110 +1,106 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.AttachmentCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.request.MessageCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.response.MessageResponseDTO;
-import com.sprint.mission.discodeit.dto.request.MessageUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.response.MessageDto;
+import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicMessageService implements MessageService {
     private final MessageRepository messageRepository;
     //
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
     private final BinaryContentRepository binaryContentRepository;
-
-//    @RequiredArgsConstructor로 대체
-//    public BasicMessageService(MessageRepository messageRepository, ChannelRepository channelRepository, UserRepository userRepository) {
-//        this.messageRepository = messageRepository;
-//        this.channelRepository = channelRepository;
-//        this.userRepository = userRepository;
-//    }
+    private final MessageMapper messageMapper;
+    private final BinaryContentStorage binaryContentStorage;
+    private final PageResponseMapper pageResponseMapper;
 
     @Override
-    public MessageResponseDTO create(MessageCreateRequestDTO messageCreateRequestDTO) {
-        String content = messageCreateRequestDTO.content();
-        UUID channelId= messageCreateRequestDTO.channelId();
-        UUID authorId= messageCreateRequestDTO.authorId();
-        List<AttachmentCreateRequestDTO> attachments = messageCreateRequestDTO.attachments();
-        if (!channelRepository.existsById(channelId)) {
-            throw new NoSuchElementException(channelId+"를 가진 채널이 없습니다");
+    public MessageDto create(MessageCreateRequest messageCreateRequest,
+                             Optional<List<BinaryContentCreateRequest>> binaryContentCreateRequestList) {
+        String content = messageCreateRequest.content();
+        List<BinaryContentCreateRequest> attachmentList = binaryContentCreateRequestList.orElse(new ArrayList<>());
+
+        UUID channelId = messageCreateRequest.channelId();
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException(channelId+"를 가진 채널이 없습니다"));
+        UUID authorId = messageCreateRequest.authorId();
+        User author = userRepository.findById(authorId)
+                .orElseThrow(() -> new NoSuchElementException(authorId+"를 가진 유저가 없습니다"));
+
+        List<BinaryContent> attachments = new ArrayList<>();
+        for (BinaryContentCreateRequest attachmentDto : attachmentList) {
+            BinaryContent attachment = new BinaryContent(
+                    attachmentDto.fileName(),
+                    (long)attachmentDto.bytes().length,
+                    attachmentDto.contentType()
+            );
+            attachments.add(attachment);
+            binaryContentRepository.save(attachment);
+            // attachment를 save해야 id가 생기게 되고 attachment.getId()를 할 수가 있음
+            binaryContentStorage.put(attachment.getId(), attachmentDto.bytes());
         }
-        if (!userRepository.existsById(authorId)) {
-            throw new NoSuchElementException(authorId+"를 가진 유저가 없습니다");
+        Message newMessage = new Message(content, channel, author, attachments);
+        return messageMapper.toDto(messageRepository.save(newMessage));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MessageDto find(UUID messageId) {
+        Message message = getMessageByIdOrThrow(messageId);
+        return messageMapper.toDto(message);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant createdAt, Pageable pageable) {
+        createdAt = Optional.ofNullable(createdAt).orElse(Instant.now());
+        Slice<MessageDto> messageSlice = messageRepository.findAllByChannelIdWithAuthor(channelId, createdAt, pageable)
+                .map(messageMapper::toDto);
+        Instant nextCursor = null;
+        if (messageSlice.hasNext()) {
+            int lastIndex = messageSlice.getContent().size() - 1;
+            nextCursor = messageSlice.getContent().get(lastIndex).createdAt();
         }
-        List<UUID> attachmentIds = toAttachmentIds(attachments);
-        Message newMessage = new Message(content, channelId, authorId, attachmentIds);
-        return toMessageResponseDTO(messageRepository.save(newMessage));
+        return pageResponseMapper.fromSlice(messageSlice, nextCursor);
     }
 
     @Override
-    public MessageResponseDTO find(UUID messageId) {
+    public MessageDto update(UUID messageId, MessageUpdateRequest messageUpdateRequest) {
         Message message = getMessageByIdOrThrow(messageId);
-        return toMessageResponseDTO(message);
-    }
-
-    @Override
-    public List<MessageResponseDTO> findAllByChannelId(UUID channelId) {
-        return messageRepository.findAllByChannelId(channelId).stream()
-                .map(this::toMessageResponseDTO)
-                .toList();
-    }
-
-    @Override
-    public MessageResponseDTO update(UUID messageId, MessageUpdateRequestDTO messageUpdateRequestDTO) {
-        Message message = getMessageByIdOrThrow(messageId);
-        List<UUID> newAttachmentIds = toAttachmentIds(messageUpdateRequestDTO.attachments());
-        message.update(messageUpdateRequestDTO.newContent(), newAttachmentIds);
-        return toMessageResponseDTO(messageRepository.save(message));
+        message.update(messageUpdateRequest.newContent(), message.getAttachments());
+        return messageMapper.toDto(messageRepository.save(message));
     }
 
     @Override
     public void delete(UUID messageId) {
         Message message = getMessageByIdOrThrow(messageId);
         // 관련 도메인 삭제 - 첨부파일(BinaryContent)
-        if (message.getAttachmentIds() != null && !message.getAttachmentIds().isEmpty()) {
-            message.getAttachmentIds()
-                    .forEach(binaryContentRepository::deleteById);
-        }
-        messageRepository.deleteById(messageId);
-    }
-    
-    // 간단한 응답용 DTO를 만드는 메서드
-    private MessageResponseDTO toMessageResponseDTO(Message message) {
-        return new MessageResponseDTO(
-                message.getId(),
-                message.getContent(),
-                message.getChannelId(),
-                message.getAuthorId(),
-                message.getAttachmentIds()
-        );
-    }
-    
-    // Message create,update요청시 List<AttachmentCreateRequestDTO> attachments를 통해 BinaryContent를 생성하고
-    // Message의 필드로 들어갈 List<UUID> attachmentIds를 반환하는 메서드
-    private List<UUID> toAttachmentIds(List<AttachmentCreateRequestDTO> attachments) {
-        List<UUID> attachmentIds = new ArrayList<>();
-        if (!attachments.isEmpty()) {
-            for (AttachmentCreateRequestDTO attachmentCreateRequestDTO : attachments) {
-                byte[] bytes = attachmentCreateRequestDTO.bytes();
-                String contentType = attachmentCreateRequestDTO.contentType();
-                BinaryContent attachment = binaryContentRepository.save(new BinaryContent(contentType, bytes));
-                attachmentIds.add(attachment.getId());
-            }
-        }
-        return attachmentIds;
+        messageRepository.deleteById(messageId);// 이때 binaryContent도 삭제가 되는지?
     }
 
     // MessageRepository.findById()를 통한 반복되는 Message 조회/예외처리를 중복제거 하기 위한 메서드

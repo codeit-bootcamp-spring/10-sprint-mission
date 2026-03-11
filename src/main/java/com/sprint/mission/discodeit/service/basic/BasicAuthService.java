@@ -1,8 +1,9 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.request.AuthLoginRequestDTO;
-import com.sprint.mission.discodeit.dto.response.AuthResponseDTO;
+import com.sprint.mission.discodeit.dto.request.LoginRequest;
+import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +15,10 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class BasicAuthService implements AuthService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Override
-    public AuthResponseDTO login(AuthLoginRequestDTO userLoginRequestDTO) {
-        // DTO 애너테이션으로 NotBlank 검증
+    public UserDto login(LoginRequest userLoginRequestDTO) {
         String username = userLoginRequestDTO.username();
         String password = userLoginRequestDTO.password();
         // username 일치하는 유저 있는지 확인 -> UserRepository에 메서드 정의
@@ -27,16 +28,6 @@ public class BasicAuthService implements AuthService {
         if (!user.getPassword().equals(password)) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다");
         }
-        return toAuthResponseDTO(user);
-    }
-    
-    // 간단한 응답용 DTO를 반환하는 메서드
-    private AuthResponseDTO toAuthResponseDTO(User user) {
-        return new AuthResponseDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getProfileId()
-        );
+        return userMapper.toDto(user);
     }
 }

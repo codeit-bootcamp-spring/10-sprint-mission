@@ -1,26 +1,28 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
-
-// 사용자의 프로필 이미지, 메시지에 첨부된 파일 저장하기 위해 활용하는
-// -> User가 참조할 수 있게 profileId 추가해야함
-// -> Message에 어떤 첨부파일들이 있는 지 참조할 수 있게 attatchmentIds라는 List를 추가해야함
 // 수정 불가능한 도메인(updatedAt 필드 정의 X)
 @Getter
-public class BinaryContent implements Serializable {
-    private UUID id;
-    private Instant createdAt;
-    private byte[] content;
+@NoArgsConstructor
+@Entity
+@Table(name = "binary_contents")
+public class BinaryContent extends BaseEntity {
+    @Column(nullable = false, length = 255)
+    private String fileName;
+    @Column(nullable = false)
+    private long size;
+    @Column(nullable = false, length = 100)
     private String contentType;
 
-    public BinaryContent(String contentType, byte[] content) {
-        this.id = UUID.randomUUID();
+    public BinaryContent(String fileName, long size, String contentType) {
+        this.fileName = fileName;
+        this.size = size;
         this.contentType = contentType;
-        this.content = content;
-        this.createdAt = Instant.now();
     }
 }
