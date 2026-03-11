@@ -19,6 +19,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -80,7 +82,8 @@ public class MessageController {
 
     @GetMapping
     public ResponseEntity<PageResponse<MessageDto>> getAllMessages(@RequestParam UUID channelId,
-                                                                Pageable pageable) { //Postman에서 page,size,sort를 보내면 자동으로 pageable로 들어옴.
+                                                                   @PageableDefault(size = 50, sort = "createdAt", direction = Sort.Direction.DESC)
+                                                                    Pageable pageable) { //Postman에서 page,size,sort를 보내면 자동으로 pageable로 들어옴.
 
         Page<Message> messages = messageService.findAllByChannelId(channelId,pageable);
         Page<MessageDto> messageDtos = messages.map(messageMapper::toDto);

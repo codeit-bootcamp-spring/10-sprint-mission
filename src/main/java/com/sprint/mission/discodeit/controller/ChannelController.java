@@ -46,7 +46,7 @@ public class ChannelController {
                     responseCode = "201",
                     description = "Channel created",
                     content = @Content(
-                            schema = @Schema(implementation = Channel.class)
+                            schema = @Schema(implementation = ChannelDto.class)
                     )
             )
     })
@@ -64,7 +64,7 @@ public class ChannelController {
                     responseCode = "201",
                     description = "Channel created",
                     content = @Content(
-                            schema = @Schema(implementation = Channel.class)
+                            schema = @Schema(implementation = ChannelDto.class)
                     )
             )
     })
@@ -80,6 +80,13 @@ public class ChannelController {
         List<ChannelDto> channels = channelService.findAllByUserId(userId);
         return ResponseEntity.ok(channels);
     }
+
+    @GetMapping("/{channelId}")
+    public ResponseEntity<ChannelDto> getChannelById(@PathVariable("channelId") UUID channelId) {
+        ChannelDto channelDto = channelService.find(channelId);
+        return ResponseEntity.ok(channelDto);
+    }
+
 
     @PatchMapping("/{channelId}")
     public ResponseEntity<ChannelDto> updatePublicChannel(@PathVariable UUID channelId,

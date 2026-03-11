@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -38,6 +40,7 @@ public class BasicChannelService implements ChannelService {
 
     @Override
     public ChannelDto create(PublicChannelCreateRequest request) {
+
         String name = request.name();
         String description = request.description();
 
@@ -45,11 +48,24 @@ public class BasicChannelService implements ChannelService {
         Channel savedChannel = channelRepository.save(channel);
 
         List<User> users = userRepository.findAll();
+
         for (User user : users) {
-            ReadStatus readStatus = new ReadStatus(user,channel, Instant.now());
+            ReadStatus readStatus = new ReadStatus(user, savedChannel, Instant.now());
             readStatusRepository.save(readStatus);
         }
-        return toDto(savedChannel);
+
+        // participants 생성
+        List<UserDto> participants = users.stream()
+                .map(userMapper::toDto)
+                .toList();
+
+        Map<UUID, List<UserDto>> participantsMap =
+                Map.of(savedChannel.getId(), participants);
+
+        Map<UUID, Instant> lastMessageMap =
+                Map.of(savedChannel.getId(), null);
+
+        return toDto(savedChannel, lastMessageMap, participantsMap);
     }
 
     @Override
@@ -58,71 +74,123 @@ public class BasicChannelService implements ChannelService {
         Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         Channel savedChannel = channelRepository.save(channel);
 
-        request.participantIds().stream()
+        List<UserDto> participants = request.participantIds().stream()
                 .map(userId -> userRepository.findById(userId)
                         .orElseThrow(() -> new UserNotFoundException(userId + "에 해당하는 User가 없습니다.")))
-                .map(user -> new ReadStatus(user, savedChannel, savedChannel.getCreatedAt()))
-                .forEach(readStatusRepository::save);
+                .peek(user -> {
+                    ReadStatus readStatus =
+                            new ReadStatus(user, savedChannel, savedChannel.getCreatedAt());
+                    readStatusRepository.save(readStatus);
+                })
+                .map(userMapper::toDto)
+                .toList();
 
-        return toDto(savedChannel);
+        Map<UUID, List<UserDto>> participantsMap =
+                Map.of(savedChannel.getId(), participants);
+
+        Map<UUID, Instant> lastMessageMap =
+                Map.of(savedChannel.getId(), null);
+
+        return toDto(savedChannel, lastMessageMap, participantsMap);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ChannelDto find(UUID channelId) {
-        return channelRepository.findById(channelId)
-                .map(this::toDto)
+
+        Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException(channelId + " 에 해당하는 채널이 없습니다."));
+
+        List<UserDto> participants =
+                readStatusRepository.findAllByChannelId(channelId).stream()
+                        .map(ReadStatus::getUser)
+                        .map(userMapper::toDto)
+                        .toList();
+
+        Map<UUID, List<UserDto>> participantsMap =
+                Map.of(channelId, participants);
+
+        Instant lastMessageAt =
+                messageRepository.findTopByChannelIdOrderByCreatedAtDesc(channelId)
+                        .map(Message::getCreatedAt)
+                        .orElse(null);
+
+        Map<UUID, Instant> lastMessageMap =
+                Map.of(channelId, lastMessageAt);
+
+        return toDto(channel, lastMessageMap, participantsMap);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ChannelDto> findAllByUserId(UUID userId) {
 
-        List<Channel> mySubscribedChannels = readStatusRepository.findAllByUserId(userId).stream()
-                .map(ReadStatus::getChannel)
+        List<Channel> channels = channelRepository.findAll();
+
+        List<UUID> channelIds = channels.stream()
+                .map(Channel::getId)
                 .toList();
 
-        return channelRepository.findAll().stream()
-                .filter(channel ->
-                        channel.getType().equals(ChannelType.PUBLIC)
-                                || mySubscribedChannels.contains(channel)
-                )
-                .map(channel -> {
+        Map<UUID, Instant> lastMessageMap = messageRepository.findLastMessageAtByChannelIds(channelIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (UUID) row[0],
+                        row-> (Instant) row[1]
+                ));
 
-                    ChannelDto baseDto = channelMapper.toDto(channel);
 
-                    List<UserDto> participants =
-                            readStatusRepository.findAllByChannelId(channel.getId()).stream()
-                                    .map(ReadStatus::getUser)
-                                    .map(userMapper::toDto)
-                                    .toList();
+        Map<UUID, List<UserDto>> participantsMap =
+                readStatusRepository.findAllByChannelIdIn(channelIds)
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                ReadStatus -> ReadStatus.getChannel().getId(),
+                                Collectors.mapping(
+                                        ReadStatus -> userMapper.toDto(ReadStatus.getUser()),
+                                        Collectors.toList()
+                                )
+                        ));
 
-                    return new ChannelDto(
-                            baseDto.id(),
-                            baseDto.type(),
-                            baseDto.name(),
-                            baseDto.description(),
-                            participants,
-                            null
-                    );
-                })
+        return channels.stream()
+                .map(channel -> toDto(channel, lastMessageMap, participantsMap))
                 .toList();
+
     }
 
     @Override
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
+
         String newName = request.newName();
         String newDescription = request.newDescription();
+
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new ChannelNotFoundException("Channel with " + channelId + " not found."));
 
         if (channel.getType() == ChannelType.PRIVATE) {
             throw new IllegalArgumentException("Private channel cannot be updated");
         }
-        channel.update(newName, newDescription);//JPA Dirty Checking 때문에 save 안해도 된다.
 
-        return toDto(channel);
+        channel.update(newName, newDescription); // Dirty Checking
+
+        // participants 조회
+        List<UserDto> participants =
+                readStatusRepository.findAllByChannelId(channelId).stream()
+                        .map(ReadStatus::getUser)
+                        .map(userMapper::toDto)
+                        .toList();
+
+        Map<UUID, List<UserDto>> participantsMap =
+                Map.of(channelId, participants);
+
+        // 마지막 메시지 조회
+        Instant lastMessageAt =
+                messageRepository
+                        .findTopByChannelIdOrderByCreatedAtDesc(channelId)
+                        .map(Message::getCreatedAt)
+                        .orElse(null);
+
+        Map<UUID, Instant> lastMessageMap =
+                Map.of(channelId, lastMessageAt);
+
+        return toDto(channel, lastMessageMap, participantsMap);
     }
 
     @Override
@@ -135,28 +203,11 @@ public class BasicChannelService implements ChannelService {
         channelRepository.deleteById(channelId);
     }
 
-    private ChannelDto toDto(Channel channel) {
+    private ChannelDto toDto(Channel channel,Map<UUID, Instant> lastMessageMap,Map<UUID,List<UserDto>> participantsMap) {
         ChannelDto baseDto = channelMapper.toDto(channel);
 
-        Instant lastMessageAt = messageRepository.
-                findAllByChannelId(channel.getId(), PageRequest.of(0, 50, Sort.by("createdAt").descending()))
-                .getContent()
-                .stream()
-                .sorted(Comparator.comparing(Message::getCreatedAt).reversed())
-                .map(Message::getCreatedAt)
-                .limit(1)
-                .findFirst()
-                .orElse(Instant.MIN);
-
-        List<UserDto> participants = new ArrayList<>();
-
-        if (channel.getType().equals(ChannelType.PRIVATE)) {
-            readStatusRepository.findAllByChannelId(channel.getId())
-                    .stream()
-                    .map(ReadStatus::getUser)
-                    .map(userMapper::toDto)
-                    .forEach(participants::add);
-        }
+        Instant lastMessageAt = lastMessageMap.getOrDefault(channel.getId(),null);
+        List<UserDto> participants = participantsMap.getOrDefault(channel.getId(),List.of());
 
         return new ChannelDto(
                 baseDto.id(),
