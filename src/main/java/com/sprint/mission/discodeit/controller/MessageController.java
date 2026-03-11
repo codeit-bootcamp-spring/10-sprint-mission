@@ -46,13 +46,13 @@ public class MessageController {
                     responseCode = "201",
                     description = "message created",
                     content = @Content(
-                            schema = @Schema(implementation = Message.class)
+                            schema = @Schema(implementation = MessageDto.class)
                     )
             )
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<MessageDto> sendMessage(@RequestPart MessageCreateRequest messageCreateRequest,
-                                                  @RequestPart(required = false) List<MultipartFile> attachments) throws IOException {
+    public ResponseEntity<MessageDto> sendMessage(@RequestPart(value = "messageCreateRequest") MessageCreateRequest messageCreateRequest,
+                                                  @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) throws IOException {
         List<BinaryContentCreateRequest> binaryContentCreateRequests = new ArrayList<>();
 
         if (attachments != null) {
