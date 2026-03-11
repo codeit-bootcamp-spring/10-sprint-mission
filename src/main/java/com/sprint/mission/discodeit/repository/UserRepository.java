@@ -6,13 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-  boolean existsByName(String name);
+  boolean existsByUsername(String username);
 
   boolean existsByEmail(String email);
 
-  User findByName(String name);
+  User findByUsername(String username);
 
-  default void delete(UUID id) {
-    deleteById(id);
-  }
 }

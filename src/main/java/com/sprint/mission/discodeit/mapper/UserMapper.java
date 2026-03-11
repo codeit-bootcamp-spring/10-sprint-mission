@@ -13,7 +13,7 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
 
   @Mapping(source = "user.id", target = "id")
-  @Mapping(source = "user.name", target = "userName")
+  @Mapping(source = "user.username", target = "userName")
   @Mapping(source = "user.email", target = "email")
   @Mapping(source = "status.online", target = "online")
   @Mapping(source = "status.lastActiveAt", target = "lastSeenAt")
@@ -21,7 +21,7 @@ public interface UserMapper {
   UserResponse toResponse(User user, UserStatus status, BinaryContent profileImage);
 
   @Mapping(source = "user.id", target = "id")
-  @Mapping(source = "user.name", target = "username")
+  @Mapping(source = "user.username", target = "username")
   @Mapping(source = "user.email", target = "email")
   @Mapping(source = "status.online", target = "online")
   @Mapping(source = "profile", target = "profile")

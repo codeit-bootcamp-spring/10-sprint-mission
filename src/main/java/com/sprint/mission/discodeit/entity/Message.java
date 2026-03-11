@@ -6,17 +6,17 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
 
-@Getter
 @Entity
 @Table(name = "messages")
+@Getter
 public class Message extends BaseUpdatableEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -30,7 +30,7 @@ public class Message extends BaseUpdatableEntity {
   @Column(name = "content")
   private String content;
 
-  @ManyToMany(fetch = FetchType.LAZY)
+  @OneToMany(fetch = FetchType.LAZY)
   @JoinTable(
       name = "message_attachments",
       joinColumns = @JoinColumn(name = "message_id"),
@@ -41,12 +41,7 @@ public class Message extends BaseUpdatableEntity {
   protected Message() {
   }
 
-  public Message(
-      Channel channel,
-      User author,
-      String content,
-      List<BinaryContent> attachments
-  ) {
+  public Message(Channel channel, User author, String content, List<BinaryContent> attachments) {
     this.channel = channel;
     this.author = author;
     this.content = content;
@@ -54,6 +49,7 @@ public class Message extends BaseUpdatableEntity {
       this.attachments.addAll(attachments);
     }
   }
+
 
   public UUID getChannelId() {
     return channel == null ? null : channel.getId();

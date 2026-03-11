@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,7 +20,7 @@ public class User extends BaseUpdatableEntity {
 
   @JsonIgnore
   @Column(name = "username", nullable = false, unique = true)
-  private String name;
+  private String username;
 
   @Column(name = "email", nullable = false, unique = true)
   private String email;
@@ -27,26 +28,27 @@ public class User extends BaseUpdatableEntity {
   @Column(name = "password", nullable = false)
   private String password;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY,
+      cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
   @JoinColumn(name = "profile_id")
   private BinaryContent profileImage;
 
   @OneToOne(mappedBy = "user", fetch = FetchType.LAZY,
-      cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+      cascade = CascadeType.ALL, orphanRemoval = true)
   private UserStatus status;
 
   protected User() {
   }
 
-  public User(String name, String email, String password) {
-    this.name = name;
+  public User(String username, String email, String password) {
+    this.username = username;
     this.email = email;
     this.password = password;
   }
 
   @JsonProperty("username")
   public String getUsername() {
-    return name;
+    return username;
   }
 
   @JsonProperty("profileId")
@@ -62,8 +64,8 @@ public class User extends BaseUpdatableEntity {
     this.status = status;
   }
 
-  public void updateName(String name) {
-    this.name = name;
+  public void updateName(String username) {
+    this.username = username;
     touch();
   }
 
@@ -84,6 +86,6 @@ public class User extends BaseUpdatableEntity {
 
   @Override
   public String toString() {
-    return "이름: " + name + "\n" + "email: " + email;
+    return "이름: " + username + "\n" + "email: " + email;
   }
 }

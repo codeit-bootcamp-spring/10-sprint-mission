@@ -4,8 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 @Schema(name = "PageResponse")
-public record PageResponse(
-    List<Object> content,
+public record PageResponse<T>(
+    List<T> content,
     int number,
     int size,
     boolean hasNext,

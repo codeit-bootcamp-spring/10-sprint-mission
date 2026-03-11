@@ -25,7 +25,7 @@ public class BasicAuthService implements AuthService {
       throw new BusinessLogicException(ErrorCode.WRONG_PASSWORD);
     }
 
-    User user = userRepository.findByName(request.userName());
+    User user = userRepository.findByUsername(request.userName());
     if (user == null) {
       throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
     }

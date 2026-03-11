@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.user.ProfileImageCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
@@ -18,7 +17,6 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import java.time.Instant;
 import java.util.List;
@@ -38,7 +36,6 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final UserMapper userMapper;
   private final BinaryContentMapper binaryContentMapper;
-  private final BinaryContentService binaryContentService;
 
   @Override
   public UserResponse create(UserCreateRequest request) {
@@ -51,7 +48,7 @@ public class BasicUserService implements UserService {
       throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
     }
 
-    if (userRepository.existsByName(request.userName())) {
+    if (userRepository.existsByUsername(request.userName())) {
       throw new BusinessLogicException(ErrorCode.DUPLICATION_USER);
     }
 
@@ -60,32 +57,22 @@ public class BasicUserService implements UserService {
     }
 
     User user = new User(request.userName(), request.email(), request.password());
-    userRepository.save(user);
-
-    UserStatus status = new UserStatus(user, Instant.now());
-    userStatusRepository.save(status);
+    new UserStatus(user, Instant.now());
 
     if (request.profileImage() != null) {
       ProfileImageCreateRequest imgReq = request.profileImage();
-
-      UUID imageId = binaryContentService.create(
-          new BinaryContentCreateRequest(
-              imgReq.fileName(),
-              imgReq.contentType(),
-              imgReq.data(),
-              user.getId(),
-              null
-          )
+      BinaryContent image = new BinaryContent(
+          imgReq.fileName(),
+          imgReq.data().length,
+          imgReq.contentType()
       );
-
-      BinaryContent image = binaryContentService.findEntity(imageId);
       user.updateProfileImage(image);
-      userRepository.save(user);
     }
 
-    BinaryContent profileImage = findProfileImageOrNull(user);
+    User savedUser = userRepository.save(user);
+    BinaryContent profileImage = savedUser.getProfileImage();
 
-    return userMapper.toResponse(user, status, profileImage);
+    return userMapper.toResponse(savedUser, savedUser.getStatus(), profileImage);
   }
 
   @Override
@@ -151,7 +138,7 @@ public class BasicUserService implements UserService {
         .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
 
     request.userName().ifPresent(newName -> {
-      if (!user.getName().equals(newName) && userRepository.existsByName(newName)) {
+      if (!user.getUsername().equals(newName) && userRepository.existsByUsername(newName)) {
         throw new BusinessLogicException(ErrorCode.DUPLICATION_USER);
       }
       user.updateName(newName);
@@ -172,34 +159,24 @@ public class BasicUserService implements UserService {
     });
 
     request.profileImage().ifPresent(imgReq -> {
-      if (user.getProfileImageId() != null) {
-        binaryContentService.delete(user.getProfileImageId());
-      }
-
-      UUID imageId = binaryContentService.create(
-          new BinaryContentCreateRequest(
-              imgReq.fileName(),
-              imgReq.contentType(),
-              imgReq.data(),
-              user.getId(),
-              null
-          )
+      BinaryContent newImage = new BinaryContent(
+          imgReq.fileName(),
+          imgReq.data().length,
+          imgReq.contentType()
       );
-
-      BinaryContent newImage = binaryContentService.findEntity(imageId);
       user.updateProfileImage(newImage);
     });
 
-    userRepository.save(user);
+    User savedUser = userRepository.save(user);
 
-    UserStatus status = userStatusRepository.findByUserId(user.getId());
+    UserStatus status = userStatusRepository.findByUserId(savedUser.getId());
     if (status == null) {
       throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
     }
 
-    BinaryContent profileImage = findProfileImageOrNull(user);
+    BinaryContent profileImage = findProfileImageOrNull(savedUser);
 
-    return userMapper.toResponse(user, status, profileImage);
+    return userMapper.toResponse(savedUser, status, profileImage);
   }
 
   @Override
@@ -209,13 +186,8 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
 
-    if (user.getProfileImageId() != null) {
-      binaryContentService.delete(user.getProfileImageId());
-    }
-
     readStatusRepository.deleteByUserId(userId);
-    userStatusRepository.deleteByUserId(userId);
-    userRepository.delete(userId);
+    userRepository.delete(user);
   }
 
   @Override

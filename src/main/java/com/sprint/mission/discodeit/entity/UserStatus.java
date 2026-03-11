@@ -29,8 +29,9 @@ public class UserStatus extends BaseUpdatableEntity {
   public UserStatus(User user, Instant lastActiveAt) {
     this.user = user;
     this.lastActiveAt = lastActiveAt;
+
     if (user != null) {
-      user.bindStatus(this);
+      user.bindStatus(this);   // cascade 연결
     }
   }
 
@@ -44,6 +45,7 @@ public class UserStatus extends BaseUpdatableEntity {
   }
 
   public boolean isOnline() {
-    return lastActiveAt != null && lastActiveAt.isAfter(Instant.now().minusSeconds(300));
+    return lastActiveAt != null &&
+        lastActiveAt.isAfter(Instant.now().minusSeconds(300));
   }
 }
