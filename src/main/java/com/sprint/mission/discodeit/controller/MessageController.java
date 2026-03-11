@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -130,10 +131,12 @@ public class MessageController {
     public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
             @Parameter(description = "조회할 Channel ID")
             @RequestParam UUID channelId,
+            @Parameter(description = "페이징 커서 정보")
+            @RequestParam(required = false) Instant cursor,
             @Parameter(description = "페이징 정보")
             @PageableDefault(page = 0, size = 50, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
-        PageResponse<MessageDto> response = messageService.findAllByChannelId(channelId, pageable);
+        PageResponse<MessageDto> response = messageService.findAllByChannelId(channelId, cursor, pageable);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
