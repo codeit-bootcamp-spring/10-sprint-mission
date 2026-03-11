@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +37,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentRepository binaryContentRepository;
   private final UserMapper userMapper;
   private final BinaryContentMapper binaryContentMapper;
+  private final BinaryContentStorage binaryContentStorage;
 
   @Override
   public UserResponse create(UserCreateRequest request) {
@@ -66,6 +68,8 @@ public class BasicUserService implements UserService {
           imgReq.data().length,
           imgReq.contentType()
       );
+      binaryContentStorage.put(image.getId(), imgReq.data());
+
       user.updateProfileImage(image);
     }
 
