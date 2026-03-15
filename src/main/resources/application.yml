@@ -19,6 +19,10 @@ spring:
       ddl-auto: update # 배포 시 변경 필요
     show-sql: true
 
+  sql:
+    init:
+      mode: always
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
