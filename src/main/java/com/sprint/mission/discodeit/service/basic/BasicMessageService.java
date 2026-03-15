@@ -73,17 +73,11 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
-  public Message update(UUID id, String newContent, List<UUID> attachmentIds) {
+  public Message update(UUID id, String newContent) {
     Message message = getOrThrowMessage(id);
 
-    // 텍스트 내용 수정
+    // 텍스트 내용만 수정
     Optional.ofNullable(newContent).ifPresent(message::updateContent);
-
-    // 첨부파일 수정
-    if (attachmentIds != null) {
-      List<BinaryContent> newAttachments = binaryContentRepository.findAllById(attachmentIds);
-      message.updateAttachments(newAttachments);
-    }
     return message;
   }
 

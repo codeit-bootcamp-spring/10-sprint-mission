@@ -72,8 +72,7 @@ public class MessageController implements MessageApi {
       @RequestBody MessageUpdateRequest request) {
     Message message = messageService.update(
         messageId,
-        request.newContent(),
-        request.attachmentIds()
+        request.newContent()
     );
 
     return ResponseEntity.ok(messageMapper.toDto(message));
