@@ -57,6 +57,9 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   @Override
   public InputStream get(UUID id) {
     Path targetPath = resolvePath(id);
+    if (!Files.exists(targetPath)) {
+      throw new java.util.NoSuchElementException("이미지 파일이 존재하지 않습니다: " + id);
+    }
     try {
       return Files.newInputStream(targetPath);
     } catch (IOException e) {
