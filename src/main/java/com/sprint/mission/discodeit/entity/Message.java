@@ -1,35 +1,55 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import lombok.Getter;
-import com.sprint.mission.discodeit.response.ErrorCode;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import com.sprint.mission.discodeit.response.ApiException;
-
+import com.sprint.mission.discodeit.response.ErrorCode;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
-@JsonPropertyOrder({"id", "createdAt", "updatedAt", "content", "channelId", "authorId",
-        "attachmentIds"})
-public class Message extends BaseEntity {
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "messages")
+public class Message extends BaseUpdatableEntity {
 
-    private final UUID authorId;
-    private final UUID channelId;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channel channel;
+
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private User author;
+
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
-    private List<UUID> attachmentIds;
 
-    public Message(UUID authorId, UUID channelId, String content) {
-        this.authorId = authorId;
-        this.channelId = channelId;
+    @OneToMany
+    @JoinTable(
+            name = "message_attachments",
+            joinColumns = @JoinColumn(name = "message_id"),
+            inverseJoinColumns = @JoinColumn(name = "attachment_id")
+    )
+    private List<BinaryContent> attachments;
+
+    public Message(User author, Channel channel, String content) {
         this.content = content;
-        this.attachmentIds = new ArrayList<>();
-    }
-
-    public void updateAttachments(List<UUID> attachmentIds) {
-        this.attachmentIds = new ArrayList<>(attachmentIds);
-        markUpdated();
+        this.attachments = new ArrayList<>();
+        assignAuthor(author);
+        assignChannel(channel);
     }
 
     public void updateContent(String content) {
@@ -38,10 +58,63 @@ public class Message extends BaseEntity {
         markUpdated();
     }
 
+    public void updateAttachments(List<BinaryContent> attachments) {
+        this.attachments = attachments;
+        markUpdated();
+    }
+
     public void validateSender(UUID userId) {
-        if (!authorId.equals(userId)) {
+        if (author == null || !author.getId().equals(userId)) {
             throw new ApiException(ErrorCode.MESSAGE_SENDER_MISMATCH,
                     "메세지의 sender가 아닙니다. userId: " + userId);
         }
     }
+
+    public void assignAuthor(User author) {
+        if (this.author == author) {
+            return;
+        }
+
+        User previousAuthor = this.author;
+        this.author = author;
+
+        if (previousAuthor != null) {
+            previousAuthor.removeMessage(this);
+        }
+        if (author != null && !author.getMessages().contains(this)) {
+            author.addMessage(this);
+        }
+    }
+
+    public void assignChannel(Channel channel) {
+        if (this.channel == channel) {
+            return;
+        }
+
+        Channel previousChannel = this.channel;
+        this.channel = channel;
+
+        if (previousChannel != null) {
+            previousChannel.removeMessage(this);
+        }
+        if (channel != null && !channel.getMessages().contains(this)) {
+            channel.addMessage(this);
+        }
+    }
+
+    public void clearAuthor() {
+        this.author = null;
+    }
+
+    public void clearChannel() {
+        this.channel = null;
+    }
+
+    @PrePersist
+    private void onPrePersist() {
+        if (channel != null) {
+            channel.updateLastMessageAt(getCreatedAt() == null ? Instant.now() : getCreatedAt());
+        }
+    }
+
 }

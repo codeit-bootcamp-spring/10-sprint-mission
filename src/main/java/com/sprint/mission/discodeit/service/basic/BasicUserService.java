@@ -1,36 +1,40 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
+import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.user.UserDto;
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.service.BinaryContentService;
-import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.response.ErrorCode;
 import com.sprint.mission.discodeit.response.ApiException;
+import com.sprint.mission.discodeit.response.ErrorCode;
+import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.UserStatusService;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class BasicUserService implements UserService {
 
     private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
     private final BinaryContentService binaryContentService;
+    private final ReadStatusService readStatusService;
+    private final UserStatusService userStatusService;
+    private final UserMapper userMapper;
 
     @Override
-    public User createUser(UserCreateRequest request, BinaryContentRequest profileImage) {
+    @Transactional
+    public UserDto createUser(UserCreateRequest request, BinaryContentRequest profileImage) {
         validateDuplicateUser(request);
 
         User user = new User(
@@ -39,13 +43,70 @@ public class BasicUserService implements UserService {
                 request.email()
         );
 
-        saveUserProfileImage(profileImage, user);
+        updateProfileImage(user, profileImage);
         userRepository.save(user);
+        userStatusService.createUserStatus(user);
 
-        UserStatus userStatus = new UserStatus(user.getId(), user.getUpdatedAt());
-        userStatusRepository.save(userStatus);
+        return userMapper.toDto(user);
+    }
 
-        return user;
+    @Override
+    @Transactional(readOnly = true)
+    public UserDto findUserByUserID(UUID userId) {
+        return userMapper.toDto(getUserOrThrow(userId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDto> findAllUsers() {
+        return userRepository.findAllWithStatusAndProfile().stream()
+                .map(userMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public UserDto updateUser(
+            UUID requestId,
+            UserUpdateRequest request,
+            BinaryContentRequest profileImage
+    ) {
+        User user = getUserOrThrow(requestId);
+        validateDuplicateUserOnUpdate(user, request);
+
+        user.update(
+                request.newUsername(),
+                request.newPassword(),
+                request.newEmail(),
+                null
+        );
+
+        updateProfileImage(user, profileImage);
+
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(UUID requestId) {
+        User user = getUserOrThrow(requestId);
+        UUID profileId = user.getProfile() == null ? null : user.getProfile().getId();
+
+        for (Message message : List.copyOf(user.getMessages())) {
+            message.assignAuthor(null);
+        }
+        for (ReadStatus readStatus : List.copyOf(user.getReadStatuses())) {
+            readStatusService.deleteReadStatus(readStatus.getId());
+        }
+        if (user.getStatus() != null) {
+            userStatusService.deleteUserStatus(user.getStatus().getId());
+        }
+        if (profileId != null) {
+            user.updateProfile(null);
+            binaryContentService.deleteBinaryContent(profileId);
+        }
+
+        userRepository.delete(user);
     }
 
     private void validateDuplicateUser(UserCreateRequest request) {
@@ -60,74 +121,26 @@ public class BasicUserService implements UserService {
         }
     }
 
-    private void saveUserProfileImage(BinaryContentRequest profileImage, User user) {
-        if (profileImage == null) {
+    private void updateProfileImage(User user, BinaryContentRequest profileImage) {
+        UUID previousProfileId = user.getProfile() == null ? null : user.getProfile().getId();
+        UUID profileId = binaryContentService.createBinaryContent(profileImage);
+
+        if (profileId == null) {
             return;
         }
 
-        UUID binaryContentId = binaryContentService.createBinaryContent(
-                user.getId(),
-                profileImage
-        );
-        user.updateProfileId(binaryContentId);
-    }
+        BinaryContent profile = binaryContentService.findBinaryContentEntity(profileId);
+        user.updateProfile(profile);
 
-    @Override
-    public User findUserByUserID(UUID userId) {
-        return getUserOrThrow(userId);
+        if (previousProfileId != null && !previousProfileId.equals(profileId)) {
+            binaryContentService.deleteBinaryContent(previousProfileId);
+        }
     }
 
     private User getUserOrThrow(UUID userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND,
                         "사용자를 찾을 수 없습니다 userId: " + userId));
-    }
-
-    private UserStatus getUserStatusOrThrow(UUID userId) {
-        return userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.USER_STATUS_NOT_FOUND,
-                        "UserStatus 찾을 수 없습니다 userId: " + userId));
-    }
-
-    @Override
-    public List<UserDto> findAllUsers() {
-        List<User> users = userRepository.findAll();
-        List<UserStatus> statuses = userStatusRepository.findAll();
-
-        Map<UUID, UserStatus> statusMap = statuses.stream()
-                .collect(Collectors.toMap(
-                        UserStatus::getUserId,
-                        Function.identity()
-                ));
-
-        return users.stream()
-                .map(user -> {
-                    UserStatus status = statusMap.get(user.getId());
-                    return UserDto.of(user, status.getOnlineStatus());
-                })
-                .toList();
-    }
-
-    @Override
-    public User updateUser(UUID requestId, UserUpdateRequest request, BinaryContentRequest profileImage) {
-        User user = getUserOrThrow(requestId);
-        validateDuplicateUserOnUpdate(user, request);
-
-        UUID profileId = binaryContentService.createBinaryContent(
-                user.getId(),
-                profileImage
-        );
-
-        user.update(
-                request.newUsername(),
-                request.newPassword(),
-                request.newEmail(),
-                profileId
-        );
-
-        userRepository.save(user);
-
-        return user;
     }
 
     private void validateDuplicateUserOnUpdate(User user, UserUpdateRequest request) {
@@ -145,22 +158,6 @@ public class BasicUserService implements UserService {
                 && userRepository.existsByEmail(newEmail)) {
             throw new ApiException(ErrorCode.EMAIL_ALREADY_EXISTS,
                     "이미 존재하는 email 입니다. email: " + newEmail);
-        }
-    }
-
-    @Override
-    public void deleteUser(UUID requestId) {
-        User user = getUserOrThrow(requestId);
-
-        deleteBinaryContentById(user.getProfileId());
-
-        userStatusRepository.deleteByUserId(user.getId());
-        userRepository.delete(user);
-    }
-
-    private void deleteBinaryContentById(UUID profileId) {
-        if (profileId != null) {
-            binaryContentService.deleteBinaryContent(profileId);
         }
     }
 }

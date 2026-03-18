@@ -1,7 +1,42 @@
 spring:
   application:
     name: discodeit
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/discodeit}
+    username: ${DB_USERNAME:discodeit_user}
+    password: ${DB_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        format_sql: true
+        highlight_sql: true
+        use_sql_comments: false
+  sql:
+    init:
+      mode: never
+      schema-locations: classpath:schema.sql
+      continue-on-error: false
+      encoding: UTF-8
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+logging:
+  level:
+    root: INFO
+    org.springframework.jdbc.datasource.init: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.springframework.orm.jpa: DEBUG
+    org.springframework.transaction: DEBUG
+
 discodeit:
-  repository:
-    type: file   # jcf | file
-    file-directory: data
+  storage:
+    type: local
+    local:
+      root-path: storage/binary-content

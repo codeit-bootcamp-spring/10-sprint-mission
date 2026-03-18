@@ -12,8 +12,8 @@ public class OpenApiConfig {
     public OpenAPI discodeitOpenApi() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Discodeit API")
-                        .version("v1")
-                        .description("Discodeit API 문서"));
+                        .title("Discodeit API 문서")
+                        .version("v1.2")
+                        .description("Discodeit 프로젝트의 Swagger API 문서입니다."));
     }
 }

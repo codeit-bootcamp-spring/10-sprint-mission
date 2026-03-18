@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentOwnerType;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +24,6 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/binaryContents")
 @RequiredArgsConstructor
@@ -37,14 +36,12 @@ public class BinaryContentController {
     @Operation(summary = "첨부 파일 생성")
     @ApiResponse(responseCode = "200", description = "첨부 파일 생성 성공")
     public ResponseEntity<UUID> createBinaryContent(
-            @Parameter(description = "파일 소유자 ID", example = "d2d837b7-acb8-4e6c-87ad-0f5841aa96b9")
-            @RequestParam UUID ownerId,
             @Parameter(description = "파일 소유 타입", example = "USER")
             @RequestParam BinaryContentOwnerType type,
             @RequestPart("file") MultipartFile file
     ) {
-        BinaryContentRequest request = BinaryContentRequest.of(type, file);
-        UUID id = binaryContentService.createBinaryContent(ownerId, request);
+        BinaryContentRequest request = new BinaryContentRequest(type, file);
+        UUID id = binaryContentService.createBinaryContent(request);
 
         return ResponseEntity.ok(id);
     }
@@ -55,11 +52,11 @@ public class BinaryContentController {
             @ApiResponse(responseCode = "200", description = "첨부 파일 조회 성공"),
             @ApiResponse(responseCode = "404", description = "첨부 파일을 찾을 수 없음")
     })
-    public ResponseEntity<BinaryContent> findBinaryContent(
+    public ResponseEntity<BinaryContentDto> findBinaryContent(
             @Parameter(description = "조회할 첨부 파일 ID", example = "a1636f5f-72ab-497f-a6ff-72e4eb6f9f54")
             @PathVariable UUID binaryContentId
     ) {
-        BinaryContent response = binaryContentService.findBinaryContent(binaryContentId);
+        BinaryContentDto response = binaryContentService.findBinaryContent(binaryContentId);
 
         return ResponseEntity.ok(response);
     }
@@ -67,16 +64,23 @@ public class BinaryContentController {
     @GetMapping
     @Operation(summary = "여러 첨부 파일 조회")
     @ApiResponse(responseCode = "200", description = "첨부 파일 목록 조회 성공")
-    public ResponseEntity<List<BinaryContent>> findAllBinaryContents(
+    public ResponseEntity<List<BinaryContentDto>> findAllBinaryContents(
             @Parameter(
                     description = "조회할 첨부 파일 ID 목록",
                     example = "a1636f5f-72ab-497f-a6ff-72e4eb6f9f54,af1645f1-94f3-4d62-867f-8827e4c5fa42"
             )
             @RequestParam("binaryContentIds") List<UUID> binaryContentIds
     ) {
-        List<BinaryContent> responses = binaryContentService.findAllByIdIn(binaryContentIds);
+        List<BinaryContentDto> responses = binaryContentService.findAllByIdIn(binaryContentIds);
 
         return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/{binaryContentId}/download")
+    public ResponseEntity<?> downloadBinaryContent(
+            @PathVariable UUID binaryContentId
+    ) {
+        return binaryContentService.downloadBinaryContent(binaryContentId);
     }
 
     @DeleteMapping("/{binaryContentId}")

@@ -4,10 +4,9 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContentOwnerType;
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,14 +57,14 @@ public class UserController {
                     }
             )
     )
-    public ResponseEntity<User> createUser(
+    public ResponseEntity<UserDto> createUser(
             @RequestPart(value = "userCreateRequest") UserCreateRequest userCreateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-        BinaryContentRequest profileImage = BinaryContentRequest.of(BinaryContentOwnerType.USER,
+        BinaryContentRequest profileImage = new BinaryContentRequest(BinaryContentOwnerType.USER,
                 profile);
 
-        User response = userService.createUser(userCreateRequest, profileImage);
+        UserDto response = userService.createUser(userCreateRequest, profileImage);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -76,11 +75,11 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User 조회 성공"),
             @ApiResponse(responseCode = "404", description = "User를 찾을 수 없음")
     })
-    public ResponseEntity<User> findUserByUserId(
+    public ResponseEntity<UserDto> findUserByUserId(
             @Parameter(description = "조회할 User ID", example = "d2d837b7-acb8-4e6c-87ad-0f5841aa96b9")
             @PathVariable UUID userId
     ) {
-        User response = userService.findUserByUserID(userId);
+        UserDto response = userService.findUserByUserID(userId);
 
         return ResponseEntity.ok(response);
     }
@@ -110,16 +109,16 @@ public class UserController {
                     }
             )
     )
-    public ResponseEntity<User> updateUser(
+    public ResponseEntity<UserDto> updateUser(
             @Parameter(description = "수정할 User ID", example = "d2d837b7-acb8-4e6c-87ad-0f5841aa96b9")
             @PathVariable UUID userId,
             @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
-        BinaryContentRequest profileImage = BinaryContentRequest.of(BinaryContentOwnerType.USER,
+        BinaryContentRequest profileImage = new BinaryContentRequest(BinaryContentOwnerType.USER,
                 profile);
 
-        User response = userService.updateUser(userId, userUpdateRequest, profileImage);
+        UserDto response = userService.updateUser(userId, userUpdateRequest, profileImage);
 
         return ResponseEntity.ok(response);
     }
@@ -145,12 +144,12 @@ public class UserController {
             @ApiResponse(responseCode = "200", description = "User 온라인 상태가 성공적으로 업데이트됨"),
             @ApiResponse(responseCode = "404", description = "해당 User의 UserStatus를 찾을 수 없음")
     })
-    public ResponseEntity<UserStatus> updateUserStatus(
+    public ResponseEntity<UserStatusDto> updateUserStatus(
             @Parameter(description = "상태를 변경할 User ID", example = "d2d837b7-acb8-4e6c-87ad-0f5841aa96b9")
             @PathVariable UUID userId,
             @RequestBody UserStatusUpdateRequest request
     ) {
-        UserStatus response = userStatusService.updateUserStatusByUserId(userId, request);
+        UserStatusDto response = userStatusService.updateUserStatusByUserId(userId, request);
 
         return ResponseEntity.ok(response);
     }

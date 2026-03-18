@@ -13,13 +13,15 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.response.ApiException;
-import com.sprint.mission.discodeit.utils.FileIOHelper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -29,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
+@Transactional
 public class BasicChannelServiceTest {
 
     @Autowired
@@ -46,12 +49,14 @@ public class BasicChannelServiceTest {
     @Autowired
     MessageRepository messageRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     UUID userId1;
     UUID userId2;
 
     @BeforeEach
     void setUp() {
-        FileIOHelper.flushData();
 
         User user1 = new User("user1", "1234", "u1@test.com");
         userRepository.save(user1);
@@ -60,21 +65,25 @@ public class BasicChannelServiceTest {
         User user2 = new User("user2", "1234", "u2@test.com");
         userRepository.save(user2);
         userId2 = user2.getId();
+
+        flushAndClear();
     }
 
     @Nested
     @DisplayName("PUBLIC 채널")
     class PublicChannelTest {
+
         @Test
         @DisplayName("PUBLIC 채널 생성 성공")
         void createPublicChannel_success() {
             PublicChannelCreateRequest request = new PublicChannelCreateRequest("공지", "공지 채널");
-            UUID channelId = channelService.createPublicChannel(request).getId();
+            UUID channelId = channelService.createPublicChannel(request).id();
+            flushAndClear();
 
             Channel channel = channelRepository.findById(channelId).orElseThrow();
             assertThat(channel.getName()).isEqualTo("공지");
             assertThat(channel.getDescription()).isEqualTo("공지 채널");
-            assertThat(channel.getMemberIds()).isEmpty();
+            assertThat(channel.getReadStatuses()).isEmpty();
             assertThat(channel.isPublic()).isTrue();
         }
     }
@@ -82,18 +91,23 @@ public class BasicChannelServiceTest {
     @Nested
     @DisplayName("PRIVATE 채널")
     class PrivateChannelTest {
+
         @Test
         @DisplayName("PRIVATE 채널 생성 성공")
         void createPrivateChannel_success() {
-            PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(Set.of(userId1, userId2));
-            UUID channelId = channelService.createPrivateChannel(request).getId();
+            PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(
+                    Set.of(userId1, userId2));
+            UUID channelId = channelService.createPrivateChannel(request).id();
+            flushAndClear();
 
             Channel channel = channelRepository.findById(channelId).orElseThrow();
             assertThat(channel.isPrivate()).isTrue();
-            assertThat(channel.getMemberIds()).containsExactlyInAnyOrder(userId1, userId2);
+            List<ReadStatus> readStatuses = readStatusRepository.findByChannelIn(List.of(channel));
+            assertThat(readStatuses).hasSize(2);
+            assertThat(readStatuses)
+                    .extracting(readStatus -> readStatus.getUser().getId())
+                    .containsExactlyInAnyOrder(userId1, userId2);
 
-//            List<ReadStatus> readStatuses = readStatusRepository.findAllByChannelId(channelId);
-//            assertThat(readStatuses).hasSize(2);
         }
 
         @Test
@@ -101,7 +115,7 @@ public class BasicChannelServiceTest {
         void updatePrivateChannel_fail() {
             UUID channelId = channelService.createPrivateChannel(
                     new PrivateChannelCreateRequest(Set.of(userId1))
-            ).getId();
+            ).id();
 
             PublicChannelUpdateRequest request = new PublicChannelUpdateRequest("수정", "설명");
 
@@ -115,11 +129,11 @@ public class BasicChannelServiceTest {
     void findVisibleChannel_success() {
         UUID publicChannelId = channelService.createPublicChannel(
                 new PublicChannelCreateRequest("공개", "desc")
-        ).getId();
+        ).id();
 
         UUID privateChannelId = channelService.createPrivateChannel(
                 new PrivateChannelCreateRequest(Set.of(userId1))
-        ).getId();
+        ).id();
 
         List<ChannelDto> visible = channelService.findAllChannelsByUserId(userId1);
 
@@ -129,30 +143,52 @@ public class BasicChannelServiceTest {
     }
 
     @Test
-    @DisplayName("채널 마지막 메시지 시간 채널의 최신 메시지 기준으로 반환")
-    void findChannel_lastMessageAt_success() {
+    @DisplayName("채널 단건 조회 성공")
+    void findChannelByChannelId_success() {
         UUID channelId = channelService.createPublicChannel(
-                new PublicChannelCreateRequest("공지", "공지 채널")
-        ).getId();
+                new PublicChannelCreateRequest("단건조회", "desc")
+        ).id();
 
-        Message first = new Message(userId1, channelId, "첫번째");
-        messageRepository.save(first);
+        ChannelDto response = channelService.findChannelByChannelId(channelId);
 
-        try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        assertThat(response.id()).isEqualTo(channelId);
+        assertThat(response.name()).isEqualTo("단건조회");
+    }
 
-        Message second = new Message(userId1, channelId, "두번째");
-        messageRepository.save(second);
+    @Test
+    @DisplayName("PUBLIC 채널 정보 수정 성공")
+    void updatePublicChannel_success() {
+        UUID channelId = channelService.createPublicChannel(
+                new PublicChannelCreateRequest("before", "before-desc")
+        ).id();
 
-        ChannelDto response = channelService.findAllChannelsByUserId(userId1).stream()
-                .filter(c -> c.id().equals(channelId))
-                .findFirst()
-                .orElseThrow();
+        ChannelDto response = channelService.updateChannelInfo(
+                channelId,
+                new PublicChannelUpdateRequest("after", "after-desc")
+        );
+        flushAndClear();
 
-        assertThat(response.lastMessageAt()).isEqualTo(second.getCreatedAt());
+        Channel channel = channelRepository.findById(channelId).orElseThrow();
+        assertThat(response.name()).isEqualTo("after");
+        assertThat(response.description()).isEqualTo("after-desc");
+        assertThat(channel.getName()).isEqualTo("after");
+        assertThat(channel.getDescription()).isEqualTo("after-desc");
+    }
+
+    @Test
+    @DisplayName("채널 조회 시 lastMessageAt 은 최신 메시지 시간으로 반환")
+    void findChannelByChannelId_returnsLatestLastMessageAt() {
+        Channel channel = channelRepository.save(Channel.buildPublic("메시지채널", "desc"));
+        User user = userRepository.findById(userId1).orElseThrow();
+
+        messageRepository.save(new Message(user, channel, "first"));
+        flushAndClear();
+
+        ChannelDto response = channelService.findChannelByChannelId(channel.getId());
+        Channel savedChannel = channelRepository.findById(channel.getId()).orElseThrow();
+
+        assertThat(savedChannel.getLastMessageAt()).isNotNull();
+        assertThat(response.lastMessageAt()).isEqualTo(savedChannel.getLastMessageAt());
     }
 
     @Test
@@ -167,13 +203,38 @@ public class BasicChannelServiceTest {
     @Test
     @DisplayName("채널 삭제 성공")
     void deleteChannel_success() {
-        UUID channelId = channelService.createPrivateChannel(
-                new PrivateChannelCreateRequest(Set.of(userId1))
-        ).getId();
+        UUID channelId = channelService.createPublicChannel(
+                new PublicChannelCreateRequest("삭제용", "삭제 테스트")
+        ).id();
 
         channelService.deleteChannel(channelId);
+        assertThat(channelRepository.existsById(channelId)).isFalse();
+    }
 
-        assertThat(channelRepository.findById(channelId)).isEmpty();
-//        assertThat(readStatusRepository.findAllByChannelId(channelId)).isEmpty();
+    @Test
+    @DisplayName("채널 삭제 시 메시지와 읽음 상태 양방향 참조도 함께 정리")
+    void deleteChannel_clearsBidirectionalReferences() {
+        User user = userRepository.findById(userId1).orElseThrow();
+        Channel channel = channelRepository.save(Channel.buildPrivate());
+
+        ReadStatus readStatus = readStatusRepository.save(new ReadStatus(user, channel, java.time.Instant.now()));
+        Message message = messageRepository.save(new Message(user, channel, "hello"));
+
+        assertThat(channel.getReadStatuses()).contains(readStatus);
+        assertThat(channel.getMessages()).contains(message);
+        assertThat(user.getReadStatuses()).contains(readStatus);
+        assertThat(user.getMessages()).contains(message);
+
+        channelService.deleteChannel(channel.getId());
+
+        assertThat(channel.getReadStatuses()).isEmpty();
+        assertThat(channel.getMessages()).isEmpty();
+        assertThat(user.getReadStatuses()).doesNotContain(readStatus);
+        assertThat(user.getMessages()).doesNotContain(message);
+    }
+
+    private void flushAndClear() {
+        entityManager.flush();
+        entityManager.clear();
     }
 }

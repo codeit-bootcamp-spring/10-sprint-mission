@@ -4,13 +4,14 @@ import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.UUID;
-
 @RestController
 @RequestMapping("/api/channels")
 @RequiredArgsConstructor
@@ -38,10 +36,10 @@ public class ChannelController {
     @PostMapping("/public")
     @Operation(summary = "Public Channel 생성")
     @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
-    public ResponseEntity<Channel> createPublicChannel(
+    public ResponseEntity<ChannelDto> createPublicChannel(
             @RequestBody PublicChannelCreateRequest request
     ) {
-        Channel response = channelService.createPublicChannel(request);
+        ChannelDto response = channelService.createPublicChannel(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -49,10 +47,10 @@ public class ChannelController {
     @PostMapping("/private")
     @Operation(summary = "Private Channel 생성")
     @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨")
-    public ResponseEntity<Channel> createPrivateChannel(
+    public ResponseEntity<ChannelDto> createPrivateChannel(
             @RequestBody PrivateChannelCreateRequest request
     ) {
-        Channel response = channelService.createPrivateChannel(request);
+        ChannelDto response = channelService.createPrivateChannel(request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -63,11 +61,11 @@ public class ChannelController {
             @ApiResponse(responseCode = "200", description = "Channel 조회 성공"),
             @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음")
     })
-    public ResponseEntity<Channel> findChannelByChannelId(
+    public ResponseEntity<ChannelDto> findChannelByChannelId(
             @Parameter(description = "조회할 Channel ID", example = "6e4be7c3-e196-447e-8b95-558e365fc01d")
             @PathVariable UUID channelId
     ) {
-        Channel response = channelService.findChannelByChannelId(channelId);
+        ChannelDto response = channelService.findChannelByChannelId(channelId);
 
         return ResponseEntity.ok(response);
     }
@@ -91,12 +89,12 @@ public class ChannelController {
             @ApiResponse(responseCode = "404", description = "Channel을 찾을 수 없음"),
             @ApiResponse(responseCode = "400", description = "Private Channel은 수정할 수 없음")
     })
-    public ResponseEntity<Channel> updateChannelInfo(
+    public ResponseEntity<ChannelDto> updateChannelInfo(
             @Parameter(description = "수정할 Channel ID", example = "6e4be7c3-e196-447e-8b95-558e365fc01d")
             @PathVariable UUID channelId,
             @RequestBody PublicChannelUpdateRequest request
     ) {
-        Channel response = channelService.updateChannelInfo(channelId, request);
+        ChannelDto response = channelService.updateChannelInfo(channelId, request);
 
         return ResponseEntity.ok(response);
     }

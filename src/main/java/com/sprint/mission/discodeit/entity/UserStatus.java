@@ -1,45 +1,37 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
-
-import java.io.Serializable;
+import lombok.NoArgsConstructor;
 import java.time.Instant;
-import java.util.UUID;
 
 @Getter
-@JsonPropertyOrder({"id", "createdAt", "updatedAt", "userId", "lastActiveAt", "online"})
-public class UserStatus implements Serializable {
-    private static final long serialVersionUID = 1L;
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "user_statuses")
+public class UserStatus extends BaseUpdatableEntity {
+
     private static final int ONLINE_TIMEOUT_SECONDS = 300;
 
-    private final UUID id;
-    private final Instant createdAt;
-    private Instant updatedAt;
-    private final UUID userId;
+    @OneToOne(optional = false)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
+    @Column(name = "last_active_at", nullable = false)
     private Instant lastActiveAt;
 
     public UserStatus(
-            UUID userId,
+            User user,
             Instant lastActiveAt
     ) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.updatedAt = this.createdAt;
-        this.userId = userId;
         this.lastActiveAt = lastActiveAt;
-    }
-
-    public void markActive() {
-        this.lastActiveAt = Instant.now();
-        this.updatedAt = this.lastActiveAt;
-    }
-
-    public void updateLastActiveAt(Instant newLastActiveAt) {
-        if (newLastActiveAt != null) {
-            this.lastActiveAt = newLastActiveAt;
-            this.updatedAt = Instant.now();
-        }
+        assignUser(user);
     }
 
     public UserOnlineStatus getOnlineStatus() {
@@ -53,5 +45,37 @@ public class UserStatus implements Serializable {
 
     public boolean isOnline() {
         return getOnlineStatus() == UserOnlineStatus.ONLINE;
+    }
+
+    public void markActive() {
+        this.lastActiveAt = Instant.now();
+        markUpdated();
+    }
+
+    public void updateLastActiveAt(Instant newLastActiveAt) {
+        if (newLastActiveAt != null) {
+            this.lastActiveAt = newLastActiveAt;
+            markUpdated();
+        }
+    }
+
+    public void assignUser(User user) {
+        if (this.user == user) {
+            return;
+        }
+
+        User previousUser = this.user;
+        this.user = user;
+
+        if (previousUser != null && previousUser.getStatus() == this) {
+            previousUser.assignStatus(null);
+        }
+        if (user != null && user.getStatus() != this) {
+            user.assignStatus(this);
+        }
+    }
+
+    public void clearUser() {
+        this.user = null;
     }
 }

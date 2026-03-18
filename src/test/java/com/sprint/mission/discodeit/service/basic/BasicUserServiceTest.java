@@ -6,14 +6,21 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentOwnerType;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserOnlineStatus;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.repository.ChannelRepository;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.response.ApiException;
-import com.sprint.mission.discodeit.utils.FileIOHelper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,6 +29,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.List;
@@ -29,9 +37,11 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
+@Transactional
 public class BasicUserServiceTest {
 
     @Autowired
@@ -46,39 +56,51 @@ public class BasicUserServiceTest {
     @Autowired
     private BinaryContentRepository binaryContentRepository;
 
+    @Autowired
+    private ChannelRepository channelRepository;
+
+    @Autowired
+    private MessageRepository messageRepository;
+
+    @Autowired
+    private ReadStatusRepository readStatusRepository;
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @BeforeEach
     void setup() {
-        FileIOHelper.flushData();
     }
 
     @ParameterizedTest
     @MethodSource("createUserBinaryContentRequestProvider")
     @DisplayName("User 생성 성공")
-    void testCreateUser(BinaryContentRequest binaryContentRequest) throws Exception {
+    void testCreateUser(BinaryContentRequest binaryContentRequest) {
         UserCreateRequest request = new UserCreateRequest(
                 "testUser" + UUID.randomUUID(),
                 UUID.randomUUID() + "@test.com",
                 "1234"
         );
 
-        UUID userId = basicUserService.createUser(request, binaryContentRequest).getId();
+        UUID userId = basicUserService.createUser(request, binaryContentRequest).id();
+        flushAndClear();
 
         User user = userRepository.findById(userId).orElseThrow();
         UserStatus status = userStatusRepository.findByUserId(userId).orElseThrow();
 
         assertThat(user.getUsername()).isEqualTo(request.username());
-        assertThat(status.getUserId()).isEqualTo(user.getId());
-        assertThat(status.getLastActiveAt()).isEqualTo(user.getUpdatedAt());
+        assertThat(status.getUser().getId()).isEqualTo(user.getId());
+        assertThat(status.getLastActiveAt()).isNotNull();
         assertThat(status.getOnlineStatus()).isEqualTo(UserOnlineStatus.ONLINE);
 
         if (binaryContentRequest == null) {
-            assertThat(user.getProfileId()).isNull();
+            assertThat(user.getProfile()).isNull();
         } else {
-            assertThat(user.getProfileId()).isNotNull();
-            BinaryContent binaryContent = binaryContentRepository.findById(user.getProfileId()).orElseThrow();
-            assertThat(binaryContent.getOwnerId()).isEqualTo(user.getId());
-            assertThat(binaryContent.getBinaryContentOwnerType()).isEqualTo(BinaryContentOwnerType.USER);
-            assertThat(binaryContent.getBytes()).isEqualTo(binaryContentRequest.file().getBytes());
+            assertThat(user.getProfile()).isNotNull();
+            BinaryContent binaryContent = binaryContentRepository.findById(user.getProfile().getId()).orElseThrow();
+            assertThat(binaryContent.getFileName()).isEqualTo(binaryContentRequest.file().getOriginalFilename());
+            assertThat(binaryContent.getContentType()).isEqualTo(binaryContentRequest.file().getContentType());
+            assertThat(binaryContent.getSize()).isEqualTo(binaryContentRequest.file().getSize());
         }
     }
 
@@ -113,11 +135,11 @@ public class BasicUserServiceTest {
         UUID userId = basicUserService.createUser(
                 new UserCreateRequest("findUser", "find@test.com", "1234"),
                 null
-        ).getId();
+        ).id();
 
-        User response = basicUserService.findUserByUserID(userId);
+        UserDto response = basicUserService.findUserByUserID(userId);
 
-        assertThat(response.getUsername()).isEqualTo("findUser");
+        assertThat(response.username()).isEqualTo("findUser");
     }
 
     @Test
@@ -134,11 +156,11 @@ public class BasicUserServiceTest {
 
     @Test
     @DisplayName("User 수정 성공 - 프로필 이미지 포함")
-    void testUpdateUserWithProfileImage() throws Exception {
+    void testUpdateUserWithProfileImage() {
         UUID userId = basicUserService.createUser(
                 new UserCreateRequest("beforeImg", "img@test.com", "1234"),
                 null
-        ).getId();
+        ).id();
 
         BinaryContentRequest imageRequest = new BinaryContentRequest(
                 BinaryContentOwnerType.USER,
@@ -147,15 +169,16 @@ public class BasicUserServiceTest {
 
         UserUpdateRequest updateRequest = new UserUpdateRequest("afterImg", "afterImg@test.com", "5678");
 
-        User response = basicUserService.updateUser(userId, updateRequest, imageRequest);
+        UserDto response = basicUserService.updateUser(userId, updateRequest, imageRequest);
+        flushAndClear();
 
         User user = userRepository.findById(userId).orElseThrow();
-        assertThat(user.getProfileId()).isNotNull();
+        assertThat(user.getProfile()).isNotNull();
 
-        BinaryContent content = binaryContentRepository.findById(user.getProfileId()).orElseThrow();
-        assertThat(content.getOwnerId()).isEqualTo(userId);
-        assertThat(content.getBytes()).isEqualTo(imageRequest.file().getBytes());
-        assertThat(response.getUsername()).isEqualTo("afterImg");
+        BinaryContent content = binaryContentRepository.findById(user.getProfile().getId()).orElseThrow();
+        assertThat(content.getFileName()).isEqualTo("update.png");
+        assertThat(content.getContentType()).isEqualTo("image/png");
+        assertThat(response.username()).isEqualTo("afterImg");
     }
 
     @Test
@@ -169,15 +192,16 @@ public class BasicUserServiceTest {
         UUID userId = basicUserService.createUser(
                 new UserCreateRequest("origUser", "orig@test.com", "1234"),
                 imageRequest
-        ).getId();
+        ).id();
 
-        UUID existingProfileId = userRepository.findById(userId).orElseThrow().getProfileId();
+        UUID existingProfileId = userRepository.findById(userId).orElseThrow().getProfile().getId();
 
         UserUpdateRequest updateRequest = new UserUpdateRequest("updatedUser", "updated@test.com", "5678");
         basicUserService.updateUser(userId, updateRequest, null);
+        flushAndClear();
 
         User after = userRepository.findById(userId).orElseThrow();
-        assertThat(after.getProfileId()).isEqualTo(existingProfileId);
+        assertThat(after.getProfile().getId()).isEqualTo(existingProfileId);
     }
 
     @Test
@@ -185,11 +209,11 @@ public class BasicUserServiceTest {
     void testUpdateUserDuplicateUsernameFail() {
         UUID userId1 = basicUserService.createUser(
                 new UserCreateRequest("dupUser1", "dup1@test.com", "1234"), null
-        ).getId();
+        ).id();
 
         UUID userId2 = basicUserService.createUser(
                 new UserCreateRequest("dupUser2", "dup2@test.com", "1234"), null
-        ).getId();
+        ).id();
 
         UserUpdateRequest updateRequest = new UserUpdateRequest("dupUser1", "new2@test.com", "5678");
 
@@ -197,5 +221,46 @@ public class BasicUserServiceTest {
                 .isInstanceOf(ApiException.class);
 
         assertThat(userRepository.findById(userId1)).isPresent();
+    }
+
+    @Test
+    @DisplayName("User 삭제 성공")
+    void testDeleteUser_success() {
+        UUID userId = basicUserService.createUser(
+                new UserCreateRequest("deleteUser", "delete@test.com", "1234"),
+                null
+        ).id();
+
+        assertThatCode(() -> basicUserService.deleteUser(userId))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("User 삭제 시 메시지 작성자, 읽음 상태, 상태 객체 참조도 함께 정리")
+    void testDeleteUser_clearsBidirectionalReferences() {
+        User user = new User("ref-user", "1234", "ref@test.com");
+        userRepository.save(user);
+        UserStatus userStatus = userStatusRepository.save(new UserStatus(user, java.time.Instant.now()));
+        Channel channel = channelRepository.save(Channel.buildPublic("ref-channel", "desc"));
+        ReadStatus readStatus = readStatusRepository.save(new ReadStatus(user, channel, java.time.Instant.now()));
+        Message message = messageRepository.save(new Message(user, channel, "message"));
+
+        assertThat(user.getStatus()).isEqualTo(userStatus);
+        assertThat(user.getReadStatuses()).contains(readStatus);
+        assertThat(user.getMessages()).contains(message);
+        assertThat(channel.getReadStatuses()).contains(readStatus);
+
+        basicUserService.deleteUser(user.getId());
+
+        assertThat(user.getStatus()).isNull();
+        assertThat(user.getReadStatuses()).doesNotContain(readStatus);
+        assertThat(user.getMessages()).doesNotContain(message);
+        assertThat(message.getAuthor()).isNull();
+        assertThat(channel.getReadStatuses()).doesNotContain(readStatus);
+    }
+
+    private void flushAndClear() {
+        entityManager.flush();
+        entityManager.clear();
     }
 }

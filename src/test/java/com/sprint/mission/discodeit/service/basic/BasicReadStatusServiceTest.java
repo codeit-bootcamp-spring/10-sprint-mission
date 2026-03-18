@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -9,21 +10,25 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.response.ApiException;
-import com.sprint.mission.discodeit.utils.FileIOHelper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
+@Transactional
 public class BasicReadStatusServiceTest {
 
     @Autowired
@@ -38,9 +43,11 @@ public class BasicReadStatusServiceTest {
     @Autowired
     private ReadStatusRepository readStatusRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @BeforeEach
     void setUp() {
-        FileIOHelper.flushData();
     }
 
     @Test
@@ -53,13 +60,15 @@ public class BasicReadStatusServiceTest {
         channelRepository.save(channel);
 
         Instant lastReadAt = Instant.now();
-        ReadStatusCreateRequest request = new ReadStatusCreateRequest(user.getId(), channel.getId(), lastReadAt);
+        ReadStatusCreateRequest request = new ReadStatusCreateRequest(user.getId(), channel.getId(),
+                lastReadAt);
 
-        UUID readStatusId = readStatusService.createReadStatus(request).getId();
+        UUID readStatusId = readStatusService.createReadStatus(request).id();
+        flushAndClear();
 
         ReadStatus readStatus = readStatusRepository.findById(readStatusId).orElseThrow();
-        assertThat(readStatus.getUserId()).isEqualTo(user.getId());
-        assertThat(readStatus.getChannelId()).isEqualTo(channel.getId());
+        assertThat(readStatus.getUser().getId()).isEqualTo(user.getId());
+        assertThat(readStatus.getChannel().getId()).isEqualTo(channel.getId());
         assertThat(readStatus.getLastReadAt()).isEqualTo(lastReadAt);
     }
 
@@ -72,7 +81,11 @@ public class BasicReadStatusServiceTest {
         Channel channel = Channel.buildPublic("c6", "d6");
         channelRepository.save(channel);
 
-        ReadStatusCreateRequest request = new ReadStatusCreateRequest(user.getId(), channel.getId(), null);
+        ReadStatusCreateRequest request = new ReadStatusCreateRequest(
+                user.getId(),
+                channel.getId(),
+                Instant.now()
+        );
         readStatusService.createReadStatus(request);
 
         assertThatThrownBy(() -> readStatusService.createReadStatus(request))
@@ -88,14 +101,15 @@ public class BasicReadStatusServiceTest {
         Channel channel = Channel.buildPublic("test2", "desc2");
         channelRepository.save(channel);
 
-        ReadStatus readStatus = new ReadStatus(user.getId(), channel.getId(), null);
+        ReadStatus readStatus = new ReadStatus(user, channel, Instant.now());
         readStatusRepository.save(readStatus);
+        flushAndClear();
 
-        ReadStatus response = readStatusService.findReadStatusByReadStatusId(readStatus.getId());
+        ReadStatusDto response = readStatusService.findReadStatusByReadStatusId(readStatus.getId());
 
-        assertThat(response.getId()).isEqualTo(readStatus.getId());
-        assertThat(response.getUserId()).isEqualTo(user.getId());
-        assertThat(response.getChannelId()).isEqualTo(channel.getId());
+        assertThat(response.id()).isEqualTo(readStatus.getId());
+        assertThat(response.userId()).isEqualTo(user.getId());
+        assertThat(response.channelId()).isEqualTo(channel.getId());
     }
 
     @Test
@@ -109,10 +123,11 @@ public class BasicReadStatusServiceTest {
         channelRepository.save(ch1);
         channelRepository.save(ch2);
 
-        readStatusRepository.save(new ReadStatus(user.getId(), ch1.getId(), null));
-        readStatusRepository.save(new ReadStatus(user.getId(), ch2.getId(), null));
+        readStatusRepository.save(new ReadStatus(user, ch1, Instant.now()));
+        readStatusRepository.save(new ReadStatus(user, ch2, Instant.now()));
+        flushAndClear();
 
-        List<ReadStatus> responses = readStatusService.findAllReadStatusesByUserId(user.getId());
+        List<ReadStatusDto> responses = readStatusService.findAllReadStatusesByUserId(user.getId());
         assertThat(responses).hasSize(2);
     }
 
@@ -125,16 +140,17 @@ public class BasicReadStatusServiceTest {
         Channel channel = Channel.buildPublic("c", "d");
         channelRepository.save(channel);
 
-        ReadStatus readStatus = new ReadStatus(user.getId(), channel.getId(), null);
+        ReadStatus readStatus = new ReadStatus(user, channel, Instant.now());
         readStatusRepository.save(readStatus);
 
         Instant newLastReadAt = Instant.now();
         ReadStatusUpdateRequest request = new ReadStatusUpdateRequest(newLastReadAt);
 
-        ReadStatus response = readStatusService.updateReadStatus(readStatus.getId(), request);
+        ReadStatusDto response = readStatusService.updateReadStatus(readStatus.getId(), request);
+        flushAndClear();
 
-        assertThat(response.getId()).isEqualTo(readStatus.getId());
-        assertThat(response.getLastReadAt()).isEqualTo(newLastReadAt);
+        assertThat(response.id()).isEqualTo(readStatus.getId());
+        assertThat(response.lastReadAt()).isEqualTo(newLastReadAt);
     }
 
     @Test
@@ -146,11 +162,60 @@ public class BasicReadStatusServiceTest {
         Channel channel = Channel.buildPublic("c5", "d5");
         channelRepository.save(channel);
 
-        ReadStatus readStatus = new ReadStatus(user.getId(), channel.getId(), null);
+        ReadStatus readStatus = new ReadStatus(user, channel, Instant.now());
         readStatusRepository.save(readStatus);
 
         readStatusService.deleteReadStatus(readStatus.getId());
+        flushAndClear();
 
         assertThat(readStatusRepository.findById(readStatus.getId())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("채널 참여자 초기 ReadStatus 생성 성공")
+    void createInitialReadStatuses_success() {
+        User user1 = new User("init-user1", "1234", "init1@test.com");
+        User user2 = new User("init-user2", "1234", "init2@test.com");
+        userRepository.save(user1);
+        userRepository.save(user2);
+
+        Channel channel = Channel.buildPrivate();
+        channelRepository.save(channel);
+
+        Instant lastReadAt = Instant.now();
+        readStatusService.createInitialReadStatuses(
+                channel.getId(),
+                Set.of(user1.getId(), user2.getId()),
+                lastReadAt
+        );
+        flushAndClear();
+
+        List<ReadStatus> readStatuses = readStatusRepository.findByChannelIn(List.of(channel));
+        assertThat(readStatuses).hasSize(2);
+        assertThat(readStatuses)
+                .extracting(rs -> rs.getUser().getId())
+                .containsExactlyInAnyOrder(user1.getId(), user2.getId());
+    }
+
+    @Test
+    @DisplayName("ReadStatus 생성 시 User, Channel 양방향 연관관계 일관성 유지")
+    void readStatus_bidirectionalConsistency() {
+        User user = new User("user-bidir", "1234", "user-bidir@test.com");
+        userRepository.save(user);
+
+        Channel channel = Channel.buildPublic("bidir", "desc");
+        channelRepository.save(channel);
+
+        ReadStatus readStatus = new ReadStatus(user, channel, Instant.now());
+
+        assertThat(readStatus.getUser()).isEqualTo(user);
+        assertThat(readStatus.getChannel()).isEqualTo(channel);
+        assertThat(user.getReadStatuses()).contains(readStatus);
+        assertThat(channel.getReadStatuses()).contains(readStatus);
+    }
+
+    private void flushAndClear() {
+        entityManager.flush();
+        entityManager.clear();
     }
 }

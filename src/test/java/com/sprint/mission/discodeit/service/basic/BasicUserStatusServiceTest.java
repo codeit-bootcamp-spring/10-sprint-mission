@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.userstatus.CreateUserStatusRequest;
+import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserOnlineStatus;
@@ -8,12 +9,14 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.response.ApiException;
-import com.sprint.mission.discodeit.utils.FileIOHelper;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -23,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
+@Transactional
 public class BasicUserStatusServiceTest {
 
     @Autowired
@@ -34,23 +38,27 @@ public class BasicUserStatusServiceTest {
     @Autowired
     private UserRepository userRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     private UUID userId;
 
     @BeforeEach
     void setUp() {
-        FileIOHelper.flushData();
 
         User user = new User("testUser", "password", "test@test.com");
         userRepository.save(user);
         userId = user.getId();
+        flushAndClear();
     }
 
     @Test
     @DisplayName("UserStatus 생성 성공")
     void createUserStatus_success() {
         UUID userStatusId = userStatusService.createUserStatus(new CreateUserStatusRequest(userId));
+        flushAndClear();
         UserStatus saved = userStatusRepository.findById(userStatusId).orElseThrow();
-        assertThat(saved.getUserId()).isEqualTo(userId);
+        assertThat(saved.getUser().getId()).isEqualTo(userId);
     }
 
     @Test
@@ -74,8 +82,8 @@ public class BasicUserStatusServiceTest {
     @DisplayName("userStatusId로 조회 성공")
     void findUserStatusById_success() {
         UUID id = userStatusService.createUserStatus(new CreateUserStatusRequest(userId));
-        UserStatus response = userStatusService.findUserStatusByUserStatusId(id);
-        assertThat(response.getId()).isEqualTo(id);
+        UserStatusDto response = userStatusService.findUserStatusByUserStatusId(id);
+        assertThat(response.id()).isEqualTo(id);
     }
 
     @Test
@@ -95,10 +103,10 @@ public class BasicUserStatusServiceTest {
 
         UUID id2 = userStatusService.createUserStatus(new CreateUserStatusRequest(user2.getId()));
 
-        List<UserStatus> responses = userStatusService.findAllUserStatus();
+        List<UserStatusDto> responses = userStatusService.findAllUserStatus();
 
         assertThat(responses).hasSize(2);
-        assertThat(responses).extracting(UserStatus::getId).containsExactlyInAnyOrder(id1, id2);
+        assertThat(responses).extracting(UserStatusDto::id).containsExactlyInAnyOrder(id1, id2);
     }
 
     @Test
@@ -106,12 +114,13 @@ public class BasicUserStatusServiceTest {
     void updateUserStatusByUserId_success() {
         userStatusService.createUserStatus(new CreateUserStatusRequest(userId));
 
-        UserStatus response = userStatusService.updateUserStatusByUserId(
+        UserStatusDto response = userStatusService.updateUserStatusByUserId(
                 userId,
                 new UserStatusUpdateRequest(Instant.now())
         );
 
-        assertThat(response.getOnlineStatus()).isEqualTo(UserOnlineStatus.ONLINE);
+        UserStatus entity = userStatusRepository.findById(response.id()).orElseThrow();
+        assertThat(entity.getOnlineStatus()).isEqualTo(UserOnlineStatus.ONLINE);
     }
 
     @Test
@@ -126,12 +135,16 @@ public class BasicUserStatusServiceTest {
     @Test
     @DisplayName("lastActiveAt 시간이 지나면 UserStatus 상태 OFFLINE 으로 변경")
     void userStatus_becomesOffline_afterTimeout() {
-        UserStatus tmp = new UserStatus(UUID.randomUUID(), Instant.now().minusSeconds(3600));
+        User user = new User("offline-user", "password", "offline@test.com");
+        userRepository.save(user);
+
+        UserStatus tmp = new UserStatus(user, Instant.now().minusSeconds(3600));
         userStatusRepository.save(tmp);
 
-        UserStatus response = userStatusService.findUserStatusByUserStatusId(tmp.getId());
+        UserStatusDto response = userStatusService.findUserStatusByUserStatusId(tmp.getId());
+        UserStatus saved = userStatusRepository.findById(response.id()).orElseThrow();
 
-        assertThat(response.getOnlineStatus()).isEqualTo(UserOnlineStatus.OFFLINE);
+        assertThat(saved.getOnlineStatus()).isEqualTo(UserOnlineStatus.OFFLINE);
     }
 
     @Test
@@ -139,6 +152,36 @@ public class BasicUserStatusServiceTest {
     void deleteUserStatus_success() {
         UUID id = userStatusService.createUserStatus(new CreateUserStatusRequest(userId));
         userStatusService.deleteUserStatus(id);
+        flushAndClear();
         assertThat(userStatusRepository.findById(id)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("User 엔티티로 UserStatus 생성 성공")
+    void createUserStatus_withUserEntity_success() {
+        User user = new User("entity-create-user", "password", "entity-create@test.com");
+        userRepository.save(user);
+
+        UUID userStatusId = userStatusService.createUserStatus(user);
+        flushAndClear();
+
+        UserStatus userStatus = userStatusRepository.findById(userStatusId).orElseThrow();
+        assertThat(userStatus.getUser().getId()).isEqualTo(user.getId());
+    }
+
+    @Test
+    @DisplayName("UserStatus 생성 시 User 양방향 연관관계 일관성 유지")
+    void userStatus_bidirectionalConsistency() {
+        User user = userRepository.findById(userId).orElseThrow();
+
+        UserStatus userStatus = new UserStatus(user, Instant.now());
+
+        assertThat(userStatus.getUser()).isEqualTo(user);
+        assertThat(user.getStatus()).isEqualTo(userStatus);
+    }
+
+    private void flushAndClear() {
+        entityManager.flush();
+        entityManager.clear();
     }
 }

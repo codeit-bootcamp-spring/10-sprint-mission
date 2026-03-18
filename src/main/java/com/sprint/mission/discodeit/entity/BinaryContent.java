@@ -1,47 +1,40 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.response.ApiException;
 import com.sprint.mission.discodeit.response.ErrorCode;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
-
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import lombok.NoArgsConstructor;
 
 @Getter
-@JsonPropertyOrder({"id", "createdAt", "fileName", "size", "contentType", "bytes"})
-public class BinaryContent implements Serializable {
-    private static final long serialVersionUID = 1L;
+@Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "binary_contents")
+public class BinaryContent extends BaseEntity {
 
-    private final UUID id;
-    @JsonIgnore
-    private final UUID ownerId;
-    @JsonIgnore
-    private final BinaryContentOwnerType binaryContentOwnerType;
-    private final byte[] bytes;
-    private final String contentType;
-    private final String fileName;
-    private final Instant createdAt;
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
+
+    @Column(name = "size", nullable = false)
+    private Long size;
+
+    @Column(name = "content_type", nullable = false, length = 100)
+    private String contentType;
 
     public BinaryContent(
-            UUID ownerId,
-            BinaryContentOwnerType binaryContentOwnerType,
-            byte[] bytes,
-            String contentType,
-            String fileName
+            String fileName,
+            Long size,
+            String contentType
     ) {
         validateContentType(contentType);
 
-        this.contentType = contentType;
         this.fileName = fileName;
-        this.id = UUID.randomUUID();
-        this.ownerId = ownerId;
-        this.binaryContentOwnerType = binaryContentOwnerType;
-        this.bytes = bytes;
-
-        this.createdAt = Instant.now();
+        this.size = size;
+        this.contentType = contentType;
     }
 
     private void validateContentType(String contentType) {
@@ -51,9 +44,5 @@ public class BinaryContent implements Serializable {
                     "이미지만 업로드 가능합니다"
             );
         }
-    }
-
-    public long getSize() {
-        return bytes.length;
     }
 }
