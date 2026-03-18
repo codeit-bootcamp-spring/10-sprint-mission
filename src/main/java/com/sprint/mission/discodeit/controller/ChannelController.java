@@ -5,6 +5,8 @@ import com.sprint.mission.discodeit.dto.channel.ChannelDto;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,13 +22,16 @@ import java.util.UUID;
 public class ChannelController implements ChannelApi {
 
   private final ChannelService channelService;
+  private final ChannelMapper channelMapper;
 
   @Override
   @PostMapping("/public")
   public ResponseEntity<ChannelDto> create(
       @RequestBody PublicChannelCreateRequest request) {
+    Channel channel = channelService.createPublicChannel(request.name(), request.description());
+
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(channelService.createPublicChannel(request));
+        .body(channelMapper.toDto(channel));
 
   }
 
@@ -34,8 +39,21 @@ public class ChannelController implements ChannelApi {
   @PostMapping("/private")
   public ResponseEntity<ChannelDto> create(
       @RequestBody PrivateChannelCreateRequest request) {
+    Channel channel = channelService.createPrivateChannel(request.participantIds());
+
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(channelService.createPrivateChannel(request));
+        .body(channelMapper.toDto(channel));
+  }
+
+  @Override
+  @GetMapping
+  public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
+    List<Channel> channels = channelService.findAllByUserId(userId);
+    List<ChannelDto> dtos = channels.stream()
+        .map(channelMapper::toDto)
+        .toList();
+
+    return ResponseEntity.ok(dtos);
   }
 
   @Override
@@ -43,13 +61,9 @@ public class ChannelController implements ChannelApi {
   public ResponseEntity<ChannelDto> update(
       @PathVariable UUID channelId,
       @RequestBody PublicChannelUpdateRequest request) {
-    return ResponseEntity.ok(channelService.update(channelId, request));
-  }
+    Channel channel = channelService.update(channelId, request.newName(), request.newDescription());
 
-  @Override
-  @GetMapping
-  public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
-    return ResponseEntity.ok(channelService.findAllByUserId(userId));
+    return ResponseEntity.ok(channelMapper.toDto(channel));
   }
 
   @Override

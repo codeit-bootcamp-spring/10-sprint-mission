@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,13 +21,31 @@ import java.util.UUID;
 public class ReadStatusController implements ReadStatusApi {
 
   private final ReadStatusService readStatusService;
+  private final ReadStatusMapper readStatusMapper;
 
   @Override
   @PostMapping
   public ResponseEntity<ReadStatusDto> create(
       @RequestBody ReadStatusCreateRequest request) {
+    ReadStatus readStatus = readStatusService.create(
+        request.userId(),
+        request.channelId(),
+        request.lastReadAt()
+    );
+
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(readStatusService.create(request));
+        .body(readStatusMapper.toDto(readStatus));
+  }
+
+  @Override
+  @GetMapping
+  public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@RequestParam UUID userId) {
+    List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
+    List<ReadStatusDto> dtos = readStatuses.stream()
+        .map(readStatusMapper::toDto)
+        .toList();
+
+    return ResponseEntity.ok(dtos);
   }
 
   @Override
@@ -33,12 +53,8 @@ public class ReadStatusController implements ReadStatusApi {
   public ResponseEntity<ReadStatusDto> update(
       @PathVariable UUID readStatusId,
       @RequestBody ReadStatusUpdateRequest request) {
-    return ResponseEntity.ok(readStatusService.update(readStatusId, request));
-  }
+    ReadStatus readStatus = readStatusService.update(readStatusId, request.newLastReadAt());
 
-  @Override
-  @GetMapping
-  public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@RequestParam UUID userId) {
-    return ResponseEntity.ok(readStatusService.findAllByUserId(userId));
+    return ResponseEntity.ok(readStatusMapper.toDto(readStatus));
   }
 }

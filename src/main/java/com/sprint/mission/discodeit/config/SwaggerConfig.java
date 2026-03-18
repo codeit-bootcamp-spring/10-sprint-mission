@@ -15,11 +15,11 @@ public class SwaggerConfig {
     return new OpenAPI()
         .info(new Info()
             .title("Discodeit API")
-            .description("스프린트 미션5 API 문서")
+            .description("스프린트 미션6 API 문서")
             .version("v1.0.0")
         )
         .servers(List.of(
-            new Server().url("http://localhost:8080").description("로컬 서버")
+            new Server().url("/").description("API 서버")
         ));
   }
 }

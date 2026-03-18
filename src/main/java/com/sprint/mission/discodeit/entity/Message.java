@@ -1,58 +1,72 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.io.Serial;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
+@Entity
+@Table(name = "messages")
 @Getter
-@ToString(exclude = {"user", "channel"})
-public class Message extends BaseEntity implements Serializable {
+@ToString(callSuper = true, exclude = {"author", "channel", "attachments"})
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Message extends BaseUpdatableEntity {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
-
+  @Column(columnDefinition = "TEXT")
   private String content;
-  private final User author;
-  private final Channel channel;
-  private boolean isEdited; // 수정 여부
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "author_id")
+  private User author;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "channel_id", nullable = false)
+  private Channel channel;
+
 
   @Getter(AccessLevel.NONE)
-  private List<UUID> attachmentIds = new ArrayList<>(); // 첨부파일 목록 (BinaryContent 참조 ID)
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinTable(
+      name = "message_attachments",
+      joinColumns = @JoinColumn(name = "message_id"),
+      inverseJoinColumns = @JoinColumn(name = "attachment_id")
+  )
+  private List<BinaryContent> attachments = new ArrayList<>();
 
-  public Message(String content, User author, Channel channel, List<UUID> attachmentIds) {
+  public Message(String content, User author, Channel channel, List<BinaryContent> attachments) {
     super();
     this.content = content;
     this.author = author;
     this.channel = channel;
-    this.attachmentIds =
-        (attachmentIds != null) ? new ArrayList<>(attachmentIds) : new ArrayList<>();
-    this.isEdited = false;
+    this.attachments =
+        (attachments != null) ? new ArrayList<>(attachments) : new ArrayList<>();
   }
 
-  // 메시지 글 수정
   public void updateContent(String content) {
     this.content = content;
-    this.isEdited = true;
-    this.updated();
   }
 
-  // 메시지 첨부파일 수정
-  public void updateAttachmentIds(List<UUID> attachmentIds) {
-    this.attachmentIds =
-        (attachmentIds != null) ? new ArrayList<>(attachmentIds) : new ArrayList<>();
-    this.isEdited = true;
-    this.updated();
+  public void updateAttachments(List<BinaryContent> attachmentIds) {
+    this.attachments =
+        (attachmentIds != null) ? new ArrayList<>(attachments) : new ArrayList<>();
   }
 
   // --- getter ---
-  public List<UUID> getAttachmentIds() {
-    return Collections.unmodifiableList(attachmentIds);
+  public List<BinaryContent> getAttachments() {
+    return Collections.unmodifiableList(attachments);
   }
 }

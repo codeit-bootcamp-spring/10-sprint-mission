@@ -1,24 +1,22 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
-import com.sprint.mission.discodeit.dto.message.MessageDto;
-import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
+import com.sprint.mission.discodeit.entity.Message;
 import java.util.UUID;
 import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.web.multipart.MultipartFile;
 
 
 public interface MessageService {
 
-  MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments);
+  Message create(String content, UUID authorId, UUID channelId, List<MultipartFile> attachments);
 
-  MessageDto findById(UUID id);
+  Message findById(UUID id);
 
-  List<MessageDto> findAllByChannelId(UUID channelId); // 특정 채널의 메시지 목록 조회
+  Slice<Message> findAllByChannelId(UUID channelId, Pageable pageable);
 
-  MessageDto update(UUID id, MessageUpdateRequest request);
+  Message update(UUID id, String newContent);
 
   void deleteById(UUID id);
-
-  MessageDto togglePin(UUID id); // 메시지 고정
 }

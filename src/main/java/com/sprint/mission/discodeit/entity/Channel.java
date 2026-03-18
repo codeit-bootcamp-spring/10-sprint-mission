@@ -1,31 +1,33 @@
 package com.sprint.mission.discodeit.entity;
 
+
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-
+@Entity
+@Table(name = "channels")
 @Getter
-@ToString(exclude = {"members", "messages"})
-public class Channel extends BaseEntity implements Serializable {
+@ToString(callSuper = true)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Channel extends BaseUpdatableEntity {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
-
+  @Column(length = 100)
   private String name;
+
+  @Column(length = 500)
   private String description;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 10)
   private ChannelType type;
-
-  @Getter(AccessLevel.NONE)
-  private final List<User> members = new ArrayList<>();
-
-  @Getter(AccessLevel.NONE)
-  private final List<Message> messages = new ArrayList<>();
 
   public Channel(String name, String description, ChannelType type) {
     super();
@@ -34,23 +36,11 @@ public class Channel extends BaseEntity implements Serializable {
     this.type = type;
   }
 
-  // 채널 이름 수정
   public void updateName(String name) {
     this.name = name;
-    this.updated();
   }
 
-  // 채널 설명 수정
   public void updateDescription(String description) {
     this.description = description;
-    this.updated();
-  }
-
-  // 채널 공개 여부 수정
-  public void updateType(ChannelType type) {
-    if (type != null) {
-      this.type = type;
-      this.updated();
-    }
   }
 }

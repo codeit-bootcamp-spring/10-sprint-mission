@@ -6,6 +6,10 @@ import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +29,34 @@ public class UserController implements UserApi {
 
   private final UserService userService;
   private final UserStatusService userStatusService;
+  private final UserMapper userMapper;
+  private final UserStatusMapper userStatusMapper;
 
   @Override
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserDto> create(
       @RequestPart("userCreateRequest") UserCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
+    User user = userService.create(
+        request.username(),
+        request.email(),
+        request.password(),
+        profile
+    );
+
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(userService.create(request, profile));
+        .body(userMapper.toDto(user));
+  }
+
+  @Override
+  @GetMapping
+  public ResponseEntity<List<UserDto>> findAll() {
+    List<User> users = userService.findAll();
+    List<UserDto> dtos = users.stream()
+        .map(userMapper::toDto)
+        .toList();
+
+    return ResponseEntity.ok(dtos);
   }
 
   @Override
@@ -41,20 +65,15 @@ public class UserController implements UserApi {
       @PathVariable UUID userId,
       @RequestPart("userUpdateRequest") UserUpdateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile) {
-    return ResponseEntity.ok(userService.update(userId, request, profile));
-  }
+    User user = userService.update(
+        userId,
+        request.newUsername(),
+        request.newEmail(),
+        request.newPassword(),
+        profile
+    );
 
-  @Override
-  @DeleteMapping("/{userId}")
-  public ResponseEntity<Void> delete(@PathVariable UUID userId) {
-    userService.deleteById(userId);
-    return ResponseEntity.noContent().build();
-  }
-
-  @Override
-  @GetMapping
-  public ResponseEntity<List<UserDto>> findAll() {
-    return ResponseEntity.ok(userService.findAll());
+    return ResponseEntity.ok(userMapper.toDto(user));
   }
 
   @Override
@@ -62,6 +81,15 @@ public class UserController implements UserApi {
   public ResponseEntity<UserStatusDto> updateStatus(
       @PathVariable UUID userId,
       @RequestBody UserStatusUpdateRequest request) {
-    return ResponseEntity.ok(userStatusService.updateByUserId(userId, request));
+    UserStatus status = userStatusService.updateByUserId(userId, request.newLastActiveAt());
+
+    return ResponseEntity.ok(userStatusMapper.toDto(status));
+  }
+
+  @Override
+  @DeleteMapping("/{userId}")
+  public ResponseEntity<Void> delete(@PathVariable UUID userId) {
+    userService.deleteById(userId);
+    return ResponseEntity.noContent().build();
   }
 }

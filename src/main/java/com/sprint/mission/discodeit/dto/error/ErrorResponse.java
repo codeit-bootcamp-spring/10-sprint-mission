@@ -1,14 +1,14 @@
 package com.sprint.mission.discodeit.dto.error;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record ErrorResponse(
     int status,
     String message,
-    LocalDateTime timestamp
+    Instant timestamp
 ) {
 
   public ErrorResponse(int status, String message) {
-    this(status, message, LocalDateTime.now());
+    this(status, message, Instant.now());
   }
 }

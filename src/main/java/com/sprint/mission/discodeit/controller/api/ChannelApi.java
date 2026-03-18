@@ -60,17 +60,6 @@ public interface ChannelApi {
           content = @Content(examples = @ExampleObject(value = "Private channel cannot be updated"))
       )
   })
-  ResponseEntity<ChannelDto> update(@PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateRequest request);
-
-  @Operation(summary = "User가 참여 중인 Channel 목록 조회")
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200",
-          description = "Channel 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChannelDto.class)))
-      )
-  })
   ResponseEntity<List<ChannelDto>> findAllByUserId(
       @Parameter(description = "조회할 User ID") UUID userId
   );
@@ -85,6 +74,17 @@ public interface ChannelApi {
           responseCode = "404",
           description = "Channel을 찾을 수 없음",
           content = @Content(examples = @ExampleObject(value = "Channel with id {channelId} not found"))
+      )
+  })
+  ResponseEntity<ChannelDto> update(@PathVariable UUID channelId,
+      @RequestBody PublicChannelUpdateRequest request);
+
+  @Operation(summary = "User가 참여 중인 Channel 목록 조회")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200",
+          description = "Channel 목록 조회 성공",
+          content = @Content(array = @ArraySchema(schema = @Schema(implementation = ChannelDto.class)))
       )
   })
   ResponseEntity<Void> delete(

@@ -41,3 +41,6 @@ out/
 
 ### Local data directory ###
 .discodeit/
+
+# Local storage for Discodeit
+/discodeit-storage/

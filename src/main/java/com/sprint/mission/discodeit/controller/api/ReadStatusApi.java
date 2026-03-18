@@ -42,6 +42,18 @@ public interface ReadStatusApi {
       @Parameter(description = "ReadStatus 생성 정보") ReadStatusCreateRequest request
   );
 
+  @Operation(summary = "User의 ReadStatus 목록 조회")
+  @ApiResponses(value = {
+      @ApiResponse(
+          responseCode = "200",
+          description = "ReadStatus 목록 조회 성공",
+          content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReadStatusDto.class)))
+      )
+  })
+  ResponseEntity<List<ReadStatusDto>> findAllByUserId(
+      @Parameter(description = "조회할 User ID") @RequestParam UUID userId
+  );
+
   @Operation(summary = "ReadStatus 수정")
   @ApiResponses(value = {
       @ApiResponse(
@@ -58,17 +70,5 @@ public interface ReadStatusApi {
   ResponseEntity<ReadStatusDto> update(
       @Parameter(description = "수정할 ReadStatus ID") UUID readStatusId,
       @Parameter(description = "수정할 ReadStatus 정보") ReadStatusUpdateRequest request
-  );
-
-  @Operation(summary = "User의 ReadStatus 목록 조회")
-  @ApiResponses(value = {
-      @ApiResponse(
-          responseCode = "200",
-          description = "ReadStatus 목록 조회 성공",
-          content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReadStatusDto.class)))
-      )
-  })
-  ResponseEntity<List<ReadStatusDto>> findAllByUserId(
-      @Parameter(description = "조회할 User ID") @RequestParam UUID userId
   );
 }
