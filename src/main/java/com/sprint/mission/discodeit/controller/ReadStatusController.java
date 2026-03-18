@@ -34,7 +34,7 @@ public class ReadStatusController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<ReadStatusDto.readStatusResponse> createReadStatus(@RequestBody ReadStatusDto.readStatusCreateRequest createReq) {
+    public ResponseEntity<ReadStatusDto> createReadStatus(@RequestBody ReadStatusDto.ReadStatusCreateRequest createReq) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(readStatusService.createReadStatus(createReq));
     }
@@ -43,7 +43,7 @@ public class ReadStatusController {
     @Operation(summary = "Message 읽음 상태 조회")
     @ApiResponse(responseCode = "200", description = "Message 읽음 상태 목록 조회 성공")
     @RequestMapping(value = "/{read-status-id}", method = RequestMethod.GET)
-    public ResponseEntity<ReadStatusDto.readStatusResponse> findReadStatus(@PathVariable("read-status-id") UUID readStatusId) {
+    public ResponseEntity<ReadStatusDto> findReadStatus(@PathVariable("read-status-id") UUID readStatusId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(readStatusService.findById(readStatusId));
     }
@@ -52,7 +52,7 @@ public class ReadStatusController {
     @Operation(summary = "User의 Message 읽음 상태 목록 조회")
     @ApiResponse(responseCode = "200", description = "Message 읽음 상태 목록 조회 성공")
     @RequestMapping(params = "userId", method = RequestMethod.GET)
-    public ResponseEntity<List<ReadStatusDto.readStatusResponse>> findAllByUserId(@RequestParam UUID userId) {
+    public ResponseEntity<List<ReadStatusDto>> findAllByUserId(@RequestParam UUID userId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(readStatusService.findAllByUserId(userId));
     }
@@ -65,8 +65,8 @@ public class ReadStatusController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(value = "/{read-status-id}", method = RequestMethod.PATCH)
-    public ResponseEntity<ReadStatusDto.readStatusResponse> updateReadStatus(@PathVariable("read-status-id") UUID readStatusId,
-                                                                             @RequestBody ReadStatusDto.readStatusUpdateRequest updateReq) {
+    public ResponseEntity<ReadStatusDto> updateReadStatus(@PathVariable("read-status-id") UUID readStatusId,
+                                                          @RequestBody ReadStatusDto.ReadStatusUpdateRequest updateReq) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(readStatusService.updateReadStatus(readStatusId, updateReq));
     }

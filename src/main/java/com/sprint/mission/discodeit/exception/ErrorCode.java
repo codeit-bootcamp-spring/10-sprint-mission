@@ -25,7 +25,6 @@ public enum ErrorCode {
     BINARYCONTENT_NOT_FOUND(404, "존재하지 않는 binaryContent입니다"),
 
     // Message
-    MESSAGE_WRITE_FORBIDDEN(403, "Message를 생성할 권한이 없습니다"),
     MESSAGE_NOT_FOUND(404, "존재하지 않는 메시지입니다"),
 
     // ReadStatus

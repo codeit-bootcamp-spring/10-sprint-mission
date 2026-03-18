@@ -1,71 +1,50 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.*;
 
+@Entity
+@NoArgsConstructor
+@Table(name = "channels")
 @Getter
-public class Channel extends MutableEntity {
-    private final Set<UUID> participants;
-    private final List<UUID> messages;
-    private String title;
-    private String description;
-    private final ChannelType channelType;
+public class Channel extends BaseUpdatableEntity {
+    @Column(nullable = false, length = 10)
+    @Enumerated(EnumType.STRING)
+    private ChannelType type;
 
-    private Channel(ChannelType channelType, String title, String description, List<UUID> participantIds) {
+    @Column(nullable = true, length = 100)
+    private String name;
+
+    @Column(nullable = true, length = 500)
+    private String description;
+
+
+    private Channel(ChannelType type, String name, String description) {
         super();
-        this.participants = participantIds == null ? new HashSet<>() : new HashSet<>(participantIds);
-        this.messages = new ArrayList<>();
-        this.channelType = channelType;
-        this.title = title;
+        this.type = type;
+        this.name = name;
         this.description = description;
     }
 
-    public static Channel of(String title, String description) {
-        return new Channel(ChannelType.PUBLIC, title, description, null);
+    public static Channel of(String name, String description) {
+        return new Channel(ChannelType.PUBLIC, name, description);
     }
 
     public static Channel of(List<UUID> participantIds) {
-        return new Channel(ChannelType.PRIVATE, null, null, participantIds);
+        return new Channel(ChannelType.PRIVATE, null, null);
     }
 
-    // participants
-    public Set<UUID> getParticipants() {
-        return Collections.unmodifiableSet(this.participants);
-    }
 
-    public void addParticipant(UUID userId) {
-        participants.add(userId);
-    }
-
-    public void removeParticipant(UUID userId) {
-        participants.remove(userId);
-    }
-
-    // messages
-    public List<UUID> getMessages() {
-        return Collections.unmodifiableList(this.messages);
-    }
-
-    public void addMessage(UUID messageId) {
-        this.messages.add(messageId);
-    }
-
-    public void removeMessage(UUID messageId) {
-        this.messages.remove(messageId);
-    }
-
-    public void updateTitle(String title) {
-        this.title = title;
+    public void updateName(String name) {
+        this.name = name;
     }
 
     public void updateDescription(String description) {
         this.description = description;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("'채널이름: %s / 채널설명:%s'", getTitle(), getDescription());
     }
 }
 

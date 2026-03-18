@@ -1,9 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
-import com.sprint.mission.discodeit.entity.BinaryContentType;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,16 +27,15 @@ import java.util.UUID;
 @RequestMapping("/api/binaryContents")
 public class BinaryContentController {
     private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
 
     // BinaryContent 생성
     @Operation(summary = "첨부 파일 생성")
     @ApiResponse(responseCode = "201", description = "첨부 파일이 성공적으로 생성됨")
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<BinaryContentDto.binaryContentResponse> createBinaryContent(@RequestPart("file") MultipartFile attachment) throws IOException {
-
-        BinaryContentDto.binaryContentCreateRequest createReq = toServiceDto(attachment);
+    public ResponseEntity<BinaryContentDto> createBinaryContent(@RequestPart("file") MultipartFile attachment) throws IOException {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(binaryContentService.create(createReq));
+                .body(binaryContentService.create(attachment));
     }
 
     // BinaryContent 조회
@@ -47,7 +46,7 @@ public class BinaryContentController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(value = "/{binary-content-id}", method = RequestMethod.GET)
-    public ResponseEntity<BinaryContentDto.binaryContentResponse> findById(@PathVariable("binary-content-id") UUID binaryContentId) {
+    public ResponseEntity<BinaryContentDto> findById(@PathVariable("binary-content-id") UUID binaryContentId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(binaryContentService.findById(binaryContentId));
     }
@@ -56,7 +55,7 @@ public class BinaryContentController {
     @Operation(summary = "여러 첨부 파일 조회")
     @ApiResponse(responseCode = "200", description = "첨부 파일 목록 조회 성공")
     @RequestMapping(params = "binaryContentIds", method = RequestMethod.GET)
-    public ResponseEntity<List<BinaryContentDto.binaryContentResponse>> findAllByIdIn(@RequestParam List<UUID> binaryContentIds) {
+    public ResponseEntity<List<BinaryContentDto>> findAllByIdIn(@RequestParam List<UUID> binaryContentIds) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(binaryContentService.findAllByIdIn(binaryContentIds));
     }
@@ -69,15 +68,18 @@ public class BinaryContentController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(value = "/{binary-content-id}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteById(@PathVariable("binary-content-id") UUID binaryContentId) {
+    public ResponseEntity<Void> deleteById(@PathVariable("binary-content-id") UUID binaryContentId) throws IOException {
         binaryContentService.deleteById(binaryContentId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    private BinaryContentDto.binaryContentCreateRequest toServiceDto(MultipartFile attachment) throws IOException {
-        if (attachment == null) return null;
-
-        return new BinaryContentDto.binaryContentCreateRequest(BinaryContentType.fromMimeType(attachment.getContentType()),
-                attachment.getOriginalFilename(), attachment.getBytes());
+    // BinaryContent 다운로드
+    @Operation(summary = "파일 다운로드")
+    @ApiResponse(responseCode = "200", description = "파일 다운로드 성공",
+            content = @Content(mediaType = "application/octet-stream", schema = @Schema(type = "string", format = "binary")
+    ))
+    @RequestMapping(value = "/{binary-content-id}/download", method = RequestMethod.GET)
+    public ResponseEntity<?> download(@PathVariable("binary-content-id") UUID binaryContentId) throws IOException {
+        return binaryContentStorage.download(binaryContentService.findById(binaryContentId));
     }
 }

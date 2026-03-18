@@ -6,14 +6,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ChannelService {
-    ChannelDto.channelResponse createChannel(ChannelDto.channelCreatePrivateRequest channelPrivateReq);
-    ChannelDto.channelResponse createChannel(ChannelDto.channelCreatePublicRequest channelPublicReq);
-    ChannelDto.channelResponse findChannel(UUID uuid);
-    ChannelDto.channelResponse findChannelByTitle(String title);
-    List<ChannelDto.channelResponse> findAllByUserId(UUID userId);
-    ChannelDto.channelResponse updateChannel(UUID uuid, ChannelDto.channelUpdatePublicRequest channelReq);
+    ChannelDto createChannel(ChannelDto.PrivateChannelCreateRequest channelPrivateReq);
+    ChannelDto createChannel(ChannelDto.PublicChannelCreateRequest channelPublicReq);
+    List<ChannelDto> findAllByUserId(UUID userId);
+    ChannelDto updateChannel(UUID uuid, ChannelDto.PublicChannelUpdateRequest channelReq);
     void deleteChannel(UUID uuid);
-
-//    void joinChannel(UUID channelId, UUID userId);
-//    void leaveChannel(UUID channelId, UUID userId);
 }

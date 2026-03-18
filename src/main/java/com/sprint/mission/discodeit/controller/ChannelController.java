@@ -28,7 +28,7 @@ public class ChannelController {
     @Operation(summary = "Public Channel 생성")
     @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
     @RequestMapping(value = "/public", method = RequestMethod.POST)
-    public ResponseEntity<ChannelDto.channelResponse> createPublicChannel(@RequestBody ChannelDto.channelCreatePublicRequest createReq) {
+    public ResponseEntity<ChannelDto> createPublicChannel(@RequestBody ChannelDto.PublicChannelCreateRequest createReq) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(channelService.createChannel(createReq));
     }
@@ -37,30 +37,16 @@ public class ChannelController {
     @Operation(summary = "Private Channel 생성")
     @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨")
     @RequestMapping(value = "/private", method = RequestMethod.POST)
-    public ResponseEntity<ChannelDto.channelResponse> createPrivateChannel(@RequestBody ChannelDto.channelCreatePrivateRequest createReq) {
+    public ResponseEntity<ChannelDto> createPrivateChannel(@RequestBody ChannelDto.PrivateChannelCreateRequest createReq) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(channelService.createChannel(createReq));
     }
-
-//    // 채널 단일 조회(UUID)
-//    @RequestMapping(value = "/{channel-id}", method = RequestMethod.GET)
-//    public ResponseEntity<ChannelDto.channelResponse> findChannel(@PathVariable("channel-id") UUID channelId) {
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(channelService.findChannel(channelId));
-//    }
-//
-//    // 채널 단일 조회(Title)
-//    @RequestMapping(params = "title", method = RequestMethod.GET)
-//    public ResponseEntity<ChannelDto.channelResponse> findChannelByTitle(@RequestParam String title) {
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(channelService.findChannelByTitle(title));
-//    }
 
     // 특정 사용자의 Public + Private 채널 조회
     @Operation(summary = "User가 참여 중인 Channel 목록 조회")
     @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공")
     @RequestMapping(params = "userId", method = RequestMethod.GET)
-    public ResponseEntity<List<ChannelDto.channelResponse>> findAllByUserId(@RequestParam UUID userId) {
+    public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(channelService.findAllByUserId(userId));
     }
@@ -75,8 +61,8 @@ public class ChannelController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(value = "/{channel-id}", method = RequestMethod.PATCH)
-    public ResponseEntity<ChannelDto.channelResponse> updatePublicChannel(@PathVariable("channel-id") UUID channelId,
-                                                                          @RequestBody ChannelDto.channelUpdatePublicRequest updateReq) {
+    public ResponseEntity<ChannelDto> updatePublicChannel(@PathVariable("channel-id") UUID channelId,
+                                                          @RequestBody ChannelDto.PublicChannelUpdateRequest updateReq) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(channelService.updateChannel(channelId, updateReq));
     }
@@ -93,20 +79,4 @@ public class ChannelController {
         channelService.deleteChannel(channelId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-
-//    // 채널 참가
-//    @RequestMapping(value = "/{channel-id}/join/{user-id}", method = RequestMethod.PATCH)
-//    public ResponseEntity<Void> joinChannel(@PathVariable("channel-id") UUID channelId,
-//                                            @PathVariable("user-id") UUID userId) {
-//        channelService.joinChannel(channelId, userId);
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-//    }
-//
-//    // 채널 퇴장
-//    @RequestMapping(value = "/{channel-id}/leave/{user-id}", method = RequestMethod.PATCH)
-//    public ResponseEntity<Void> leaveChannel(@PathVariable("channel-id") UUID channelId,
-//                                             @PathVariable("user-id") UUID userId) {
-//        channelService.leaveChannel(channelId, userId);
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-//    }
 }

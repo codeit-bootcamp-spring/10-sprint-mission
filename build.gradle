@@ -27,13 +27,19 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	compileOnly 'org.projectlombok:lombok'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'				// JPA
+	implementation 'org.postgresql:postgresql:42.7.3'                     				// Postgre SQL
+
+	compileOnly 'org.projectlombok:lombok'												// LomBock
 	annotationProcessor 'org.projectlombok:lombok'
+
+	implementation 'org.mapstruct:mapstruct:1.5.5.Final'								// MapStruct(Lombok이후)
+	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'			// Swagger
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-	// Swagger
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'
 }
 
 tasks.named('test') {

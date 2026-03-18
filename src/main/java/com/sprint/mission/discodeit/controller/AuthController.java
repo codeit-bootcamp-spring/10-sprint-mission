@@ -29,7 +29,7 @@ public class AuthController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public ResponseEntity<UserDto.userResponse> login(@RequestBody UserDto.userLoginRequest loginReq) {
+    public ResponseEntity<UserDto> login(@RequestBody UserDto.UserLoginRequest loginReq) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(authService.login(loginReq));
     }

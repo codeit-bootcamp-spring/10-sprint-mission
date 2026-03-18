@@ -1,20 +1,36 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
-import java.util.UUID;
 
+@Entity
+@NoArgsConstructor
+@Table(name = "read_statuses")
 @Getter
-public class ReadStatus extends MutableEntity {
-    private final UUID userId;
-    private final UUID channelId;
+public class ReadStatus extends BaseUpdatableEntity {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id")
+    private Channel channel;
+
+    @Column(nullable = false)
     private Instant lastReadAt;
 
-    public ReadStatus(UUID userId, UUID channelId) {
+    public ReadStatus(User user, Channel channel) {
         super();
-        this.userId = userId;
-        this.channelId = channelId;
+        this.user = user;
+        this.channel = channel;
+    }
+
+    @PrePersist
+    void init() {
         this.lastReadAt = Instant.now();
     }
 

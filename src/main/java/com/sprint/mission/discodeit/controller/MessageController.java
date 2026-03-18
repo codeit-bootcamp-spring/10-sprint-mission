@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
-import com.sprint.mission.discodeit.entity.BinaryContentType;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +11,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,27 +41,21 @@ public class MessageController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<MessageDto.messageResponse> createMessage(@RequestPart("messageCreateRequest") MessageDto.messageCreateRequest messageReq,
-                                                                    @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) throws IOException {
-        List<BinaryContentDto.binaryContentCreateRequest> contentReqs = toServiceDto(attachments);
+    public ResponseEntity<MessageDto> createMessage(@RequestPart("messageCreateRequest") MessageDto.MessageCreateRequest messageReq,
+                                                    @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments) throws IOException {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(messageService.createMessage(messageReq, contentReqs));
+                .body(messageService.createMessage(messageReq, attachments));
     }
-
-    // 메시지 단일 조회(UUID)
-//    @RequestMapping(value = "/{message-id}", method = RequestMethod.GET)
-//    public ResponseEntity<MessageDto.messageResponse> findMessage(@PathVariable("message-id") UUID messageId) {
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(messageService.findMessage(messageId));
-//    }
 
     // 메시지 채널 조회(UUID)
     @Operation(summary = "Channel의 Message 목록 조회")
     @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공")
     @RequestMapping(params = "channelId", method = RequestMethod.GET)
-    public ResponseEntity<List<MessageDto.messageResponse>> findAllByChannelId(@RequestParam UUID channelId) {
+    public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(@RequestParam UUID channelId,
+                                                                       @RequestParam(required = false) Instant cursor,
+                                                                       @PageableDefault(size = 50) Pageable pageable) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(messageService.findAllByChannelId(channelId));
+                .body(messageService.findAllByChannelId(channelId, cursor, pageable));
     }
 
     // 메시지 수정
@@ -71,8 +66,8 @@ public class MessageController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(value = "/{message-id}", method = RequestMethod.PATCH)
-    public ResponseEntity<MessageDto.messageResponse> updateMessage(@PathVariable("message-id") UUID messageId,
-                                                                    @RequestBody MessageDto.messageUpdateRequest messageReq) {
+    public ResponseEntity<MessageDto> updateMessage(@PathVariable("message-id") UUID messageId,
+                                                    @RequestBody MessageDto.MessageUpdateRequest messageReq) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(messageService.updateMessage(messageId, messageReq));
     }
@@ -85,20 +80,8 @@ public class MessageController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(value = "/{message-id}", method = RequestMethod.DELETE)
-    public ResponseEntity<Void> deleteMessage(@PathVariable("message-id") UUID messageId) {
+    public ResponseEntity<Void> deleteMessage(@PathVariable("message-id") UUID messageId) throws IOException {
         messageService.deleteMessage(messageId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    private List<BinaryContentDto.binaryContentCreateRequest> toServiceDto(List<MultipartFile> attachments) throws IOException {
-        if (attachments == null) return null;
-
-        List<BinaryContentDto.binaryContentCreateRequest> results = new ArrayList<>();
-        for (MultipartFile attachment : attachments) {
-            results.add(new BinaryContentDto.binaryContentCreateRequest(BinaryContentType.fromMimeType(attachment.getContentType()),
-                    attachment.getOriginalFilename(), attachment.getBytes()));
-        }
-
-        return results;
     }
 }

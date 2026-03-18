@@ -3,7 +3,6 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.UserStatusDto;
-import com.sprint.mission.discodeit.entity.BinaryContentType;
 import com.sprint.mission.discodeit.exception.ErrorResponse;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -42,40 +41,18 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserDto.userResponse> createUser(@Parameter(content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.userCreateRequest.class)))
-                                                           @RequestPart("userCreateRequest") @Valid UserDto.userCreateRequest userReq,
+    public ResponseEntity<UserDto> createUser(@Parameter(content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.UserCreateRequest.class)))
+                                                           @RequestPart("userCreateRequest") @Valid UserDto.UserCreateRequest userReq,
                                                            @RequestPart(value = "profile", required = false) MultipartFile profileImage) throws IOException {
-        BinaryContentDto.binaryContentCreateRequest profileReq = toServiceDto(profileImage);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userService.createUser(userReq, profileReq));
+                .body(userService.createUser(userReq, profileImage));
     }
-
-//    // 사용자 단일 조회(UUID)
-//    @RequestMapping(value = "/{user-id}", method = RequestMethod.GET)
-//    public ResponseEntity<UserDto.userResponse> findUser(@PathVariable("user-id") UUID userId) {
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(userService.findUser(userId));
-//    }
-
-//    // 사용자 단일 조회(Username)
-//    @RequestMapping(params = "username", method = RequestMethod.GET)
-//    public ResponseEntity<UserDto.userResponse> findUserByUsername(@RequestParam String username) {
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(userService.findUserByUsername(username));
-//    }
-
-//    // 사용자 단일 조회(Mail)
-//    @RequestMapping(params = "email", method = RequestMethod.GET)
-//    public ResponseEntity<UserDto.userResponse> findUserByMail(@RequestParam String email) {
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(userService.findUserByEmail(email));
-//    }
 
     // 사용자 다중 조회
     @Operation(summary = "전체 User 목록 조회")
     @ApiResponse(responseCode = "200", description = "User 목록 조회 성공")
     @RequestMapping(method = RequestMethod.GET)
-    public ResponseEntity<List<UserDto.userResponse>> findUsers() {
+    public ResponseEntity<List<UserDto>> findUsers() {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(userService.findAllUsers());
     }
@@ -88,13 +65,12 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(value = "/{user-id}", method = RequestMethod.PATCH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserDto.userResponse> updateUser(@PathVariable("user-id") UUID userId,
-                                                           @Parameter(content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.userUpdateRequest.class)))
-                                                           @RequestPart("userUpdateRequest") @Valid UserDto.userUpdateRequest userReq,
-                                                           @RequestPart(value = "profile", required = false) MultipartFile profileImage) throws IOException {
-        BinaryContentDto.binaryContentCreateRequest profileReq = toServiceDto(profileImage);
+    public ResponseEntity<UserDto> updateUser(@PathVariable("user-id") UUID userId,
+                                              @Parameter(content = @Content(mediaType = "application/json", schema = @Schema(implementation = UserDto.UserUpdateRequest.class)))
+                                              @RequestPart("userUpdateRequest") @Valid UserDto.UserUpdateRequest userReq,
+                                              @RequestPart(value = "profile", required = false) MultipartFile profileImage) throws IOException {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(userService.updateUser(userId, userReq, profileReq));
+                .body(userService.updateUser(userId, userReq, profileImage));
     }
 
     // 사용자 온라인 상태 업데이트
@@ -105,8 +81,8 @@ public class UserController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @RequestMapping(value = "/{user-id}/userStatus", method = RequestMethod.PATCH)
-    public ResponseEntity<UserStatusDto.userStatusResponse> updateLastActive(@PathVariable("user-id") UUID userId,
-                                                                             @RequestBody UserStatusDto.userStatusUpdateRequest updateReq) {
+    public ResponseEntity<UserStatusDto> updateLastActive(@PathVariable("user-id") UUID userId,
+                                                          @RequestBody UserStatusDto.UserStatusUpdateRequest updateReq) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(userStatusService.updateUserStatusByUserId(userId, updateReq));
     }
@@ -122,12 +98,5 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable("user-id") UUID userId) {
         userService.deleteUser(userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    private BinaryContentDto.binaryContentCreateRequest toServiceDto(MultipartFile profileImage) throws IOException {
-        if (profileImage == null) return null;
-
-        return new BinaryContentDto.binaryContentCreateRequest(BinaryContentType.fromMimeType(profileImage.getContentType()),
-                profileImage.getOriginalFilename(), profileImage.getBytes());
     }
 }
