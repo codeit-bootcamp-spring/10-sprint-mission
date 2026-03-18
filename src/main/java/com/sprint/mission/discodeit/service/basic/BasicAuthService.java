@@ -1,44 +1,40 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.auth.LoginRequest;
-import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.BusinessException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
 public class BasicAuthService implements AuthService {
-    private final UserRepository userRepository;
 
-    @Override
-    public UserDto login(LoginRequest loginRequest) {
-        String username = loginRequest.username();
-        String password = loginRequest.password();
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+  @Override
+  public UserDto login(LoginRequest loginRequest) {
+    String username = loginRequest.username();
+    String password = loginRequest.password();
 
-        if (!user.getPassword().equals(password)) {
-            throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
-        }
+    // 유저 검색
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(
+            () -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        return toDto(user);
+    // 비밀번호 확인
+    if (!user.getPassword().equals(password)) {
+      throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
     }
 
-    private UserDto toDto(User user) {
-        return new UserDto(
-                user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getUsername(),
-                user.getEmail(),
-                user.getProfileId(),
-                true
-        );
-    }
+    return userMapper.toDto(user);
+  }
 }

@@ -1,99 +1,93 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.response.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.BusinessException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 @RequiredArgsConstructor
 @Service
 public class BasicReadStatusService implements ReadStatusService {
-    private final ReadStatusRepository readStatusRepository;
-    private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
 
-    @Override
-    public ReadStatusDto create(UUID channelId, UUID userId) {
-        validateUserAndChannel(userId, channelId);
+  private final ReadStatusRepository readStatusRepository;
+  private final UserRepository userRepository;
+  private final ChannelRepository channelRepository;
+  private final ReadStatusMapper readStatusMapper;
 
-        if (readStatusRepository.findByChannelIdAndUserId(channelId, userId).isPresent()) {
-            throw new BusinessException(ErrorCode.READ_STATUS_ALREADY_EXISTS);
-        }
+  @Override
+  public ReadStatusDto create(ReadStatusCreateRequest readStatusCreateRequest) {
+    // 유저 검색
+    User user = userRepository.findById(readStatusCreateRequest.userId())
+        .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 
-        ReadStatus readStatus = new ReadStatus(userId, channelId, Instant.now());
-        readStatusRepository.save(readStatus);
+    // 채널 검색
+    Channel channel = channelRepository.findById(readStatusCreateRequest.channelId())
+        .orElseThrow(() -> new BusinessException(ErrorCode.CHANNEL_NOT_FOUND));
 
-        return toDto(readStatus);
+    // 유저가 해당 채널에 대한 메시지 읽음 상태가 이미 존재하면 400 예외 발생
+    boolean exists = readStatusRepository.existsByUserIdAndChannelId(user.getId(), channel.getId());
+    if (exists) {
+      throw new BusinessException(ErrorCode.READ_STATUS_ALREADY_EXISTS);
     }
 
-    @Override
-    public ReadStatusDto find(UUID readStatusId) {
-        ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.READ_STATUS_NOT_FOUND));
-        return toDto(readStatus);
-    }
+    Instant lastReadAt = readStatusCreateRequest.lastReadAt();
+    ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
 
-    @Override
-    public List<ReadStatusDto> findAllByUserId(UUID userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-        }
+    readStatusRepository.save(readStatus);
 
-        return readStatusRepository.findAllByUserId(userId)
-                .stream()
-                .map(this::toDto)
-                .toList();
-    }
+    return readStatusMapper.toDto(readStatus);
+  }
 
-    @Override
-    public ReadStatusDto update(UUID channelId, UUID userId) {
-        validateUserAndChannel(userId, channelId);
+  @Transactional(readOnly = true)
+  @Override
+  public ReadStatusDto find(UUID readStatusId) {
+    return readStatusRepository.findById(readStatusId)
+        .map(readStatusMapper::toDto)
+        .orElseThrow(() -> new BusinessException(ErrorCode.READ_STATUS_NOT_FOUND));
+  }
 
-        ReadStatus readStatus = readStatusRepository.findByChannelIdAndUserId(channelId, userId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.READ_STATUS_NOT_FOUND));
+  @Transactional(readOnly = true)
+  @Override
+  public List<ReadStatusDto> findAllByUserId(UUID userId) {
+    return readStatusRepository.findAllByUserId(userId).stream()
+        .map(readStatusMapper::toDto)
+        .toList();
+  }
 
-        readStatus.update(Instant.now());
-        readStatusRepository.save(readStatus);
+  @Override
+  public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest readStatusUpdateRequest) {
+    Instant newLastReadAt = readStatusUpdateRequest.newLastReadAt();
+    // 메시지 읽음 상태 조회
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(
+            () -> new BusinessException(ErrorCode.READ_STATUS_NOT_FOUND));
 
-        return toDto(readStatus);
-    }
+    readStatus.update(newLastReadAt);
 
-    @Override
-    public void delete(UUID readStatusId) {
-        if (!readStatusRepository.existsById(readStatusId)) {
-            throw new BusinessException(ErrorCode.READ_STATUS_NOT_FOUND);
-        }
+    return readStatusMapper.toDto(readStatus);
+  }
 
-        readStatusRepository.deleteById(readStatusId);
-    }
+  @Override
+  public void delete(UUID readStatusId) {
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(() -> new BusinessException(ErrorCode.READ_STATUS_NOT_FOUND));
 
-    private ReadStatusDto toDto(ReadStatus userStatus) {
-        return new ReadStatusDto(
-                userStatus.getId(),
-                userStatus.getCreatedAt(),
-                userStatus.getUpdatedAt(),
-                userStatus.getUserId(),
-                userStatus.getChannelId(),
-                userStatus.getLastReadAt()
-        );
-    }
-
-    private void validateUserAndChannel(UUID userId, UUID channelId) {
-        if (!userRepository.existsById(userId)) {
-            throw new BusinessException(ErrorCode.USER_NOT_FOUND);
-        }
-        if (!channelRepository.existsById(channelId)) {
-            throw new BusinessException(ErrorCode.CHANNEL_NOT_FOUND);
-        }
-    }
+    readStatusRepository.delete(readStatus);
+  }
 }

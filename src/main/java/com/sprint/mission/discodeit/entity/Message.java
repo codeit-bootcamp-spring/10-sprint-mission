@@ -1,41 +1,65 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-
-import java.io.Serializable;
-import java.time.Instant;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
-public class Message implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private String content;
-    private UUID channelId;
-    private UUID authorId;
-    private List<UUID> attachmentIds;
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(name = "messages")
+public class Message extends BaseUpdatableEntity {
 
-    public Message(String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.content = content;
-        this.channelId = channelId;
-        this.authorId = authorId;
-        this.attachmentIds = attachmentIds;
+  @Column(columnDefinition = "TEXT")
+  private String content;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "channel_id", nullable = false)
+  private Channel channel;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "author_id")
+  private User author;
+
+  @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST,
+      CascadeType.REMOVE}, orphanRemoval = true)
+  @JoinTable(
+      name = "message_attachments",
+      joinColumns = @JoinColumn(name = "message_id", nullable = false),
+      inverseJoinColumns = @JoinColumn(name = "attachment_id", nullable = false, unique = true)
+  )
+  private List<BinaryContent> attachments = new ArrayList<>();
+
+  public Message(String content, Channel channel, User author) {
+    this.content = content;
+    this.channel = channel;
+    this.author = author;
+  }
+
+  public void update(String newContent) {
+    if (newContent != null && !newContent.equals(this.content)) {
+      this.content = newContent;
     }
+  }
 
-    public void update(String newContent) {
-        boolean anyValueUpdated = false;
-        if (newContent != null && !newContent.equals(this.content)) {
-            this.content = newContent;
-            anyValueUpdated = true;
-        }
-
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
+  public void addAttachments(List<BinaryContent> attachments) {
+    if (attachments == null || attachments.isEmpty()) {
+      return;
     }
+    this.attachments.addAll(attachments);
+  }
 }
