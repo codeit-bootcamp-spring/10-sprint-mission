@@ -1,11 +1,19 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.ReadStatusService;
+import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,6 +35,10 @@ import java.util.UUID;
 public class ChannelController {
 
     private final ChannelService channelService;
+    private final ChannelMapper channelMapper;
+    private final UserService userService;
+    private final UserMapper userMapper;
+    private final ReadStatusService readStatusService;
 
     @Operation(summary = "Public channel 생성")
     @ApiResponses({
@@ -34,14 +46,15 @@ public class ChannelController {
                     responseCode = "201",
                     description = "Channel created",
                     content = @Content(
-                            schema = @Schema(implementation = Channel.class)
+                            schema = @Schema(implementation = ChannelDto.class)
                     )
             )
     })
     @PostMapping("/public")
-    public ResponseEntity<Channel> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
-        Channel channel = channelService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(channel);//201
+    public ResponseEntity<ChannelDto> createPublicChannel(@RequestBody PublicChannelCreateRequest request) {
+
+        ChannelDto channelDto = channelService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(channelDto);//201
 
     }
 
@@ -51,14 +64,15 @@ public class ChannelController {
                     responseCode = "201",
                     description = "Channel created",
                     content = @Content(
-                            schema = @Schema(implementation = Channel.class)
+                            schema = @Schema(implementation = ChannelDto.class)
                     )
             )
     })
     @PostMapping("/private")
-    public ResponseEntity<Channel> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
-        Channel channel = channelService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(channel);
+    public ResponseEntity<ChannelDto> createPrivateChannel(@RequestBody PrivateChannelCreateRequest request) {
+
+        ChannelDto channelDto = channelService.create(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(channelDto);
     }
 
     @GetMapping
@@ -67,12 +81,19 @@ public class ChannelController {
         return ResponseEntity.ok(channels);
     }
 
-    @PatchMapping("/{channelId}")
-    public ResponseEntity<Channel> updatePublicChannel(@PathVariable UUID channelId,
-                                       @RequestBody PublicChannelUpdateRequest request){
-        Channel channel = channelService.update(channelId, request);
+    @GetMapping("/{channelId}")
+    public ResponseEntity<ChannelDto> getChannelById(@PathVariable("channelId") UUID channelId) {
+        ChannelDto channelDto = channelService.find(channelId);
+        return ResponseEntity.ok(channelDto);
+    }
 
-        return ResponseEntity.ok(channel);
+
+    @PatchMapping("/{channelId}")
+    public ResponseEntity<ChannelDto> updatePublicChannel(@PathVariable UUID channelId,
+                                       @RequestBody PublicChannelUpdateRequest request){
+        ChannelDto channelDto = channelService.update(channelId, request);
+
+        return ResponseEntity.ok(channelDto);
 
     }
 

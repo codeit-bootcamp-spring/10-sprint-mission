@@ -13,6 +13,5 @@ public interface UserStatusService {
     UserStatus findByUserId(UUID userId);
     List<UserStatus> findAll();
     UserStatus update(UUID userStatusId, UserStatusUpdateRequest request);
-    UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request);
     void delete(UUID userStatusId);
 }

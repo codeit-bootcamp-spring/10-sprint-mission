@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.LoginRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserMapper userMapper;
 
     @Operation(summary = "로그인")
     @ApiResponses({
@@ -27,9 +30,10 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "비밀번호가 일치하지 않음")
     })
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<UserDto> login(@RequestBody LoginRequest loginRequest) {
         User user = authService.login(loginRequest);
-        return ResponseEntity.ok(user);
+        UserDto userDto = userMapper.toDto(user);
+        return ResponseEntity.ok(userDto);
     }
 
 

@@ -8,12 +8,15 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -23,46 +26,60 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
+@Transactional
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     //
     private final BinaryContentRepository binaryContentRepository;
     private final UserStatusRepository userStatusRepository;
+    private final BinaryContentStorage binaryContentStorage;
+    private final BinaryContentMapper binaryContentMapper;
 
     @Override
-    public User create(UserCreateRequest userCreateRequest) {
+    @Transactional
+    public UserDto create(UserCreateRequest userCreateRequest) {
+
         String username = userCreateRequest.username();
         String email = userCreateRequest.email();
+        String password = userCreateRequest.password();
 
-        if (userRepository.existsByEmail(email)) {//이메일 검증
+        if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("User with email " + email + " already exists");
         }
-        if (userRepository.existsByUsername(username)) {//사용자이름 검증
+
+        if (userRepository.existsByUsername(username)) {
             throw new IllegalArgumentException("User with username " + username + " already exists");
         }
 
-        UUID nullableProfileId = userCreateRequest.optionalProfileCreateRequest()
+        BinaryContent profile = userCreateRequest.optionalProfileCreateRequest()
                 .map(profileRequest -> {
-                    String fileName = profileRequest.fileName();
-                    String contentType = profileRequest.contentType();
-                    byte[] bytes = profileRequest.bytes();
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long)bytes.length, contentType, bytes);
-                    return binaryContentRepository.save(binaryContent).getId();
+
+                    BinaryContent binaryContent = new BinaryContent(
+                            profileRequest.fileName(),
+                            (long) profileRequest.bytes().length,
+                            profileRequest.contentType()
+                    );
+
+                    BinaryContent saved = binaryContentRepository.save(binaryContent);
+
+                    binaryContentStorage.put(saved.getId(), profileRequest.bytes());
+
+                    return saved;
                 })
                 .orElse(null);
-        String password = userCreateRequest.password();
 
-        User user = new User(username, email, password, nullableProfileId);
-        User createdUser = userRepository.save(user);
+        User user = new User(username, email, password, profile);
 
-        Instant now = Instant.now();
-        UserStatus userStatus = new UserStatus(createdUser.getId(), now);
-        userStatusRepository.save(userStatus);
+        UserStatus userStatus = new UserStatus(user);
+        user.setStatus(userStatus);
 
-        return createdUser;
+        User savedUser = userRepository.save(user);
+
+        return toDto(savedUser);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserDto find(UUID userId) {
         return userRepository.findById(userId)
                 .map(this::toDto)
@@ -70,6 +87,7 @@ public class BasicUserService implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserDto> findAll() {
         return userRepository.findAll()
                 .stream()
@@ -78,36 +96,41 @@ public class BasicUserService implements UserService {
     }
 
     @Override
-    public User update(UUID userId, UserUpdateRequest userUpdateRequest) {
+    public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId + "에 해당하는 사용자가 없습니다."));
 
         String newUsername = userUpdateRequest.newUsername();
         String newEmail = userUpdateRequest.newEmail();
-        if (userRepository.existsByEmail(newEmail)) {
+        String newPassword = userUpdateRequest.newPassword();
+
+        if (newEmail != null && !newEmail.equals(user.getEmail())
+                && userRepository.existsByEmail(newEmail)) {
             throw new IllegalArgumentException("User with email " + newEmail + " already exists");
         }
-        if (userRepository.existsByUsername(newUsername)) {
+        if (newUsername != null && !newUsername.equals(user.getUsername())
+                && userRepository.existsByUsername(newUsername)) {
             throw new IllegalArgumentException("User with username " + newUsername + " already exists");
         }
 
-        UUID nullableProfileId = userUpdateRequest.optionalProfileCreateRequest()
+        BinaryContent nullableProfile = userUpdateRequest.optionalProfileCreateRequest()
                 .map(profileRequest -> {
-                    Optional.ofNullable(user.getProfileId())
-                                    .ifPresent(binaryContentRepository::deleteById);
+                    BinaryContent binaryContent = new BinaryContent(
+                            profileRequest.fileName(),
+                            (long) profileRequest.bytes().length,
+                            profileRequest.contentType()
+                    );
+                    binaryContentRepository.save(binaryContent);
+                    binaryContentStorage.put(binaryContent.getId(),profileRequest.bytes());
+                    return binaryContent;
 
-                    String fileName = profileRequest.fileName();
-                    String contentType = profileRequest.contentType();
-                    byte[] bytes = profileRequest.bytes();
-                    BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType, bytes);
-                    return binaryContentRepository.save(binaryContent).getId();
                 })
                 .orElse(null);
 
-        String newPassword = userUpdateRequest.newPassword();
-        user.update(newUsername, newEmail, newPassword, nullableProfileId);
+//        binaryContentRepository.save(nullableProfile);//User Entity에 CascadeType.ALL 설정해서 BinaryContent도 자동 저장.
+        user.update(newUsername, newEmail, newPassword, nullableProfile);
 
-        return userRepository.save(user);
+        return toDto(user);
     }
 
     @Override
@@ -115,11 +138,7 @@ public class BasicUserService implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId + "에 해당하는 사용자가 없습니다."));
 
-        Optional.ofNullable(user.getProfileId())
-                        .ifPresent(binaryContentRepository::deleteById);
-        userStatusRepository.deleteByUserId(userId);
-
-        userRepository.deleteById(userId);
+        userRepository.delete(user);
     }
 
     private UserDto toDto(User user) {
@@ -129,11 +148,9 @@ public class BasicUserService implements UserService {
 
         return new UserDto(
                 user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getProfileId(),
+                binaryContentMapper.toDto(user.getProfile()),
                 online
         );
     }
