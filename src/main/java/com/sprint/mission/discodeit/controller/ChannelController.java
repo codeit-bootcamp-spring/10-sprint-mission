@@ -1,11 +1,9 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.channeldto.ChannelResponseDTO;
-import com.sprint.mission.discodeit.dto.channeldto.ChannelUpdateRequestDTO;
+import com.sprint.mission.discodeit.dto.channeldto.ChannelDto;
 import com.sprint.mission.discodeit.dto.channeldto.PrivateChannelCreateDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PublicChannelCreateDTO;
 import com.sprint.mission.discodeit.dto.channeldto.PublicChannelUpdateRequestDTO;
-import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,7 +15,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,16 +27,22 @@ public class ChannelController {
 
     private final ChannelService channelService;
 
+
+    @GetMapping(value = "/all")
+    public ResponseEntity<List<ChannelDto>> findAllChannel() {
+        return new ResponseEntity<>(channelService.findAll(), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/public", method = RequestMethod.POST)
     @ApiResponse(
         responseCode = "201",
         description = "Public Channel이 성공적으로 생성됨",
         content = @Content(
             mediaType = "application/json",
-            schema = @Schema(implementation = ChannelResponseDTO.class)
+            schema = @Schema(implementation = ChannelDto.class)
         )
     )
-    public ResponseEntity<ChannelResponseDTO> createPublicChannel(
+    public ResponseEntity<ChannelDto> createPublicChannel(
         @Valid @RequestBody PublicChannelCreateDTO req) {
         return new ResponseEntity<>(channelService.createPublicChannel(req), HttpStatus.CREATED);
     }
@@ -52,11 +55,11 @@ public class ChannelController {
         content =
         @Content(
             mediaType = "application/json",
-            schema = @Schema(implementation = ChannelResponseDTO.class)
+            schema = @Schema(implementation = ChannelDto.class)
         )
     )
-    public ResponseEntity<ChannelResponseDTO> createPrivateChannel(
-        @RequestBody PrivateChannelCreateDTO req) {
+    public ResponseEntity<ChannelDto> createPrivateChannel(
+        @Valid @RequestBody PrivateChannelCreateDTO req) {
         return new ResponseEntity<>(channelService.createPrivateChannel(req), HttpStatus.CREATED);
     }
 
@@ -67,11 +70,11 @@ public class ChannelController {
         description = "Channel 목록 조회 성공",
         content = @Content(
             array = @ArraySchema(
-                schema = @Schema(implementation = ChannelResponseDTO.class)
+                schema = @Schema(implementation = ChannelDto.class)
             )
         )
     )
-    public ResponseEntity<List<ChannelResponseDTO>> getChannels(@RequestParam UUID userId) {
+    public ResponseEntity<List<ChannelDto>> getChannels(@RequestParam UUID userId) {
         return new ResponseEntity<>(channelService.findAllByUserId(userId), HttpStatus.OK);
     }
 
@@ -101,11 +104,11 @@ public class ChannelController {
         content = @Content(
             mediaType = "application/json",
             schema = @Schema(
-                implementation = ChannelResponseDTO.class
+                implementation = ChannelDto.class
             )
         )
     )
-    public ResponseEntity<ChannelResponseDTO> updateChannel(@PathVariable UUID channelId,
+    public ResponseEntity<ChannelDto> updateChannel(@PathVariable UUID channelId,
         @RequestBody PublicChannelUpdateRequestDTO req) {
         return new ResponseEntity<>(channelService.update(channelId, req), HttpStatus.OK);
     }

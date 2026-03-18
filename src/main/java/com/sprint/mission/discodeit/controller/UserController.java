@@ -1,15 +1,13 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDTO;
+import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.userdto.UserCreateRequestDTO;
-import com.sprint.mission.discodeit.dto.userdto.UserResponseDTO;
+import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
-import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.entity.mapper.BinaryContentDTOMapper;
-import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -20,14 +18,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
-import javax.print.attribute.standard.Media;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -40,7 +34,7 @@ public class UserController {
 
     private final UserService userService;
     private final UserStatusService userStatusService;
-    private final AuthService authService;
+
 
     //전체 사용자 조회
     @RequestMapping(method = RequestMethod.GET)
@@ -51,13 +45,13 @@ public class UserController {
             content = @Content(
                 array = @ArraySchema(
                     schema = @Schema(
-                        implementation = UserResponseDTO.class
+                        implementation = UserDto.class
                     )
                 )
             )
         )
     })
-    public ResponseEntity<List<UserResponseDTO>> getUsers() {
+    public ResponseEntity<List<UserDto>> getUsers() {
         return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }
 
@@ -69,7 +63,7 @@ public class UserController {
             description = "User가 성공적으로 생성됨",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = UserResponseDTO.class)
+                schema = @Schema(implementation = UserDto.class)
             )
         ),
         @ApiResponse(
@@ -81,13 +75,24 @@ public class UserController {
                 examples = @ExampleObject("User with email {email} already exists")
             ))
     })
-    public ResponseEntity<UserResponseDTO> create(
+    public ResponseEntity<UserDto> create(
         @RequestPart("userCreateRequest") UserCreateRequestDTO userCreateRequestDTO,
-        @RequestPart(value = "profile", required = false) MultipartFile profileImage) {
-        Optional<BinaryContentDTO> profileDto = BinaryContentDTOMapper.multipartToResponseDto(
-            profileImage);
-        UserResponseDTO response = userService.create(userCreateRequestDTO,
-            profileDto.orElse(null));
+        @RequestPart(value = "profile", required = false) MultipartFile profileImage)
+        throws IOException {
+
+        BinaryContentDto profileSaved = null;
+
+        if (profileImage != null && !profileImage.isEmpty()) {
+            profileSaved = new BinaryContentDto(
+                UUID.randomUUID(),
+                profileImage.getOriginalFilename(),
+                profileImage.getSize(),
+                profileImage.getContentType(),
+                profileImage.getBytes()
+            );
+        }
+
+        UserDto response = userService.create(userCreateRequestDTO, profileSaved);
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -139,14 +144,23 @@ public class UserController {
             )
         )
     })
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID userId,
+    public ResponseEntity<UserDto> updateUser(@PathVariable UUID userId,
         @RequestPart("userUpdateRequest") UserUpdateDTO req,
         @RequestPart(value = "profile", required = false) MultipartFile profile
-    ) {
-        Optional<BinaryContentDTO> profileDto = BinaryContentDTOMapper.multipartToResponseDto(
-            profile);
+    ) throws IOException {
 
-        return new ResponseEntity<>(userService.update(userId, req, profileDto.orElse(null)),
+        BinaryContentDto profileDto = null;
+        if (profile != null && !profile.isEmpty()) {
+            profileDto = new BinaryContentDto(
+                UUID.randomUUID(),
+                profile.getOriginalFilename(),
+                profile.getSize(),
+                profile.getContentType(),
+                profile.getBytes()
+            );
+        }
+
+        return new ResponseEntity<>(userService.update(userId, req, profileDto),
             HttpStatus.OK);
     }
 
@@ -170,7 +184,7 @@ public class UserController {
         )
     }
     )
-    public ResponseEntity<UserStatusResponseDTO> updateUserOnline(
+    public ResponseEntity<UserStatusDto> updateUserOnline(
         @PathVariable UUID userId,
         @RequestBody UserStatusUpdateRequestDTO req) {
         return new ResponseEntity<>(userStatusService.activateUserOnline(userId, req),

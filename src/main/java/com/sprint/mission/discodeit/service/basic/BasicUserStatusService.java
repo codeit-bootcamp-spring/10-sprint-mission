@@ -1,114 +1,55 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusRequestDTO;
-import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusDto;
 import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.entity.mapper.UserStatusDTOMapper;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.mapper.UserStatusDTOMapper;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class BasicUserStatusService implements UserStatusService {
 
-    private final UserStatusDTOMapper userStatusDTOMapper;
     private final UserStatusRepository userStatusRepository;
-    private final UserRepository userRepository;
-
-
-    @Override
-    public UserStatusResponseDTO create(UserStatusRequestDTO req) {
-        Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
-
-        if (userRepository.findById(req.userId()).isEmpty()) {
-            throw new IllegalStateException("해당 유저는 존재하지 않습니다.");
-        }
-
-        if ((userRepository.findById(req.userId()).isPresent()) && (userStatusRepository.findById(
-            req.userId()).isPresent())) {
-            throw new IllegalStateException("해당 유저의 ReadStatus 객체가 이미 존재합니다.");
-        }
-        UserStatus userStatus = userStatusDTOMapper.userStatusRequestToUS(req);
-        UserStatus saved = userStatusRepository.save(userStatus);
-
-        return userStatusDTOMapper.userStatusToResponse(saved);
-    }
+    private final UserStatusDTOMapper userStatusDTOMapper;
 
     @Override
     public UserStatus find(UUID id) {
-        Objects.requireNonNull(id, "유효하지 않은 ID입니다!");
+        Objects.requireNonNull(id, "???レ챺???? ??? ID????낇돲??");
         return userStatusRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("해당 User Status는 존재하지 않습니다!"));
+            .orElseThrow(() -> new NoSuchElementException("?????UserStatus???釉뚰????? ?????????덊렡!"));
     }
 
     @Override
-    public List<UserStatusResponseDTO> findAll() {
-
-        return userStatusRepository.findAll()
-            .stream()
-            .map(userStatusDTOMapper::userStatusToResponse
-            ).toList();
-    }
-
-    @Override
-    public UserStatusResponseDTO update(UserStatusRequestDTO req) {
-        Objects.requireNonNull(req, "유효하지 않은 요청입니다.");
-        userRepository.findById(req.userId())
-            .orElseThrow(() -> new IllegalStateException("해당 유저가 존재하지 않습니다!"));
-        UserStatus userStatus = userStatusRepository.findById(req.userId())
-            .orElseThrow(() -> new NoSuchElementException("해당 User Status는 존재하지 않습니다!"));
-        userStatus.update(Instant.now());
-        UserStatus saved = userStatusRepository.save(userStatus);
-
-        return userStatusDTOMapper.userStatusToResponse(saved);
-
-    }
-
-    @Override
-    public UserStatusResponseDTO updateByUserId(UUID userId) {
-        Objects.requireNonNull(userId, "유효하지 않은 ID 입니다!");
-
-        if (userRepository.findById(userId).stream().noneMatch(u -> userId.equals(u.getId()))) {
-            throw new IllegalStateException("존재하지 않는 유저 ID 입니다!");
+    @Transactional
+    public UserStatusDto activateUserOnline(UUID userId, UserStatusUpdateRequestDTO req) {
+        Objects.requireNonNull(userId, "???レ챺???? ??? userStatus ??筌뤿걩?????????덊렡!");
+        Objects.requireNonNull(req, "???レ챺???? ??? ??釉먯뒜?????낇돲??");
+        Optional<UserStatus> optUserStatus = userStatusRepository.findByUserId(userId);
+        if (optUserStatus.isEmpty()) {
+            throw new NoSuchElementException("?????UserStatus 癲ル슓??젆???????⑤챶苡?");
         }
-
-        UserStatus userStatus = userStatusRepository.findAll()
-            .stream()
-            .filter(us -> userId.equals(us.getUserID()))
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("유저의 Read Status가 존재하지 않습니다!"));
-
-        userStatus.update(Instant.now());
-        UserStatus saved = userStatusRepository.save(userStatus);
-
-        return userStatusDTOMapper.userStatusToResponse(saved);
-    }
-
-    @Override
-    public UserStatusResponseDTO activateUserOnline(UUID userId, UserStatusUpdateRequestDTO req) {
-        Objects.requireNonNull(userId, "유효하지 않은 User ID 입니다!");
-        Objects.requireNonNull(req, "유효하지 않은 요청입니다!");
-
-        UserStatus userStatus = find(userId);
+        UserStatus userStatus = optUserStatus.get();
         userStatus.update(req.newLastActiveAt());
-        UserStatus saved = userStatusRepository.save(userStatus);
 
-        return userStatusDTOMapper.userStatusToResponse(saved);
+        return userStatusDTOMapper.toDto(userStatus);
     }
 
     @Override
+    @Transactional
     public void delete(UUID id) {
-        Objects.requireNonNull(id, "유효하지 않은 ID 입니다!");
+        Objects.requireNonNull(id, "???レ챺???? ??? ID ????낇돲??");
+        userStatusRepository.findById(id)
+            .orElseThrow(() -> new NoSuchElementException("?????UserStatus??癲ル슓??젆???????⑤챶苡?"));
         userStatusRepository.deleteById(id);
     }
+
 }

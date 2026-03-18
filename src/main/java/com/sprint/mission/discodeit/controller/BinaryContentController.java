@@ -1,10 +1,8 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDTO;
-import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentResponseDTO;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
 import com.sprint.mission.discodeit.service.BinaryContentService;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -14,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +23,7 @@ import java.util.UUID;
 public class BinaryContentController {
 
     private final BinaryContentService binaryContentService;
+    private final BinaryContentStorage binaryContentStorage;
 
     @RequestMapping(method = RequestMethod.GET)
     @ApiResponse(
@@ -34,11 +32,11 @@ public class BinaryContentController {
         content = @Content(
             mediaType = "application/json",
             array = @ArraySchema(
-                schema = @Schema(implementation = BinaryContentResponseDTO.class)
+                schema = @Schema(implementation = BinaryContentDto.class)
             )
         )
     )
-    public ResponseEntity<List<BinaryContentResponseDTO>> getBinaryContents(
+    public ResponseEntity<List<BinaryContentDto>> getBinaryContents(
         @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
 
         return new ResponseEntity<>(binaryContentService.findAllByIdIn(binaryContentIds),
@@ -53,7 +51,7 @@ public class BinaryContentController {
             content = @Content(
                 mediaType = "application/json",
                 schema = @Schema(
-                    implementation = BinaryContentResponseDTO.class
+                    implementation = BinaryContentDto.class
                 )
             )
         ),
@@ -65,9 +63,16 @@ public class BinaryContentController {
             )
         )
     })
-    public ResponseEntity<BinaryContentResponseDTO> getBinaryContent(
+    public ResponseEntity<BinaryContentDto> getBinaryContent(
         @PathVariable UUID binaryContentId) {
         return new ResponseEntity<>(binaryContentService.find(binaryContentId), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{binaryContentId}/download")
+    public ResponseEntity<?> downloadBinaryContent(
+        @PathVariable UUID binaryContentId) {
+
+        return binaryContentStorage.download(binaryContentService.find(binaryContentId));
     }
 
 }

@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.authdto.LoginRequestDTO;
-import com.sprint.mission.discodeit.dto.userdto.UserResponseDTO;
-import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.service.AuthService;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -10,11 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -25,14 +22,14 @@ public class AuthController {
 
     private final AuthService authService;
 
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    @PostMapping(value = "/login")
     @ApiResponses({
         @ApiResponse(
             responseCode = "200",
             description = "로그인 성공",
             content = @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = UserResponseDTO.class)
+                schema = @Schema(implementation = UserDto.class)
             )
         ),
         @ApiResponse(
@@ -54,7 +51,7 @@ public class AuthController {
     }
 
     )
-    public UserResponseDTO userLogin(@RequestBody LoginRequestDTO req) {
+    public UserDto userLogin(@RequestBody LoginRequestDTO req) {
         return authService.login(req); // 일단 Response DTO만 보내는걸로
         // 추후 로그인 기능을 서비스에서 구현?
     }

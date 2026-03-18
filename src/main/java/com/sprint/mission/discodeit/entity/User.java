@@ -1,62 +1,53 @@
 package com.sprint.mission.discodeit.entity;
 
+
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 
-import java.io.Serializable;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 @Getter
-public class User extends BaseEntity implements Serializable {
+@Entity
+@Table(name = "users")
+public class User extends BaseUpdatableEntity {
 
-    private static final long serialVersionUID = 1L;
-
+    @Column(nullable = false)
     private String username;
-    private String email;
-    private String password;
-    private UUID profileID; // BinaryContent의 id
-    private List<UUID> channelIds;
 
-    public User(String username, String email, String password, UUID profileID) {
-        super();
+    @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    @OneToOne
+    @JoinColumn(name = "profile_id")
+    private BinaryContent profile; // BinaryContent의 id
+
+    @OneToOne(mappedBy = "user")
+    private UserStatus userStatus;
+
+
+    public User(String username, String email, String password, BinaryContent profile) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.profileID = profileID;
-        this.channelIds = new ArrayList<>();
+        this.profile = profile;
     }
 
-    public void joinChannel(UUID channelId) {
-        if (channelId == null) {
-            throw new IllegalArgumentException("Invalid channel id");
-        }
-        if (channelIds == null) {
-            channelIds = new ArrayList<>();
-        }
-        if (channelIds.stream().anyMatch(channelId::equals)) {
-            throw new IllegalStateException("User already joined channel");
-        }
-        channelIds.add(channelId);
-        this.setUpdatedAt(Instant.now());
+    public User() {
+
     }
 
-    public void leaveChannel(UUID channelId) {
-        if (channelId == null) {
-            throw new IllegalArgumentException("Invalid channel id");
-        }
-        if (channelIds == null) {
-            channelIds = new ArrayList<>();
-        }
-        if (channelIds.stream().noneMatch(channelId::equals)) {
-            throw new IllegalStateException("User is not in channel");
-        }
-        channelIds.remove(channelId);
-        this.setUpdatedAt(Instant.now());
-    }
 
-    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
+    public void update(String newUsername, String newEmail, String newPassword,
+        BinaryContent binaryContent) {
         boolean anyValueUpdated = false;
         if (newUsername != null && !newUsername.equals(this.username)) {
             this.username = newUsername;
@@ -70,13 +61,13 @@ public class User extends BaseEntity implements Serializable {
             this.password = newPassword;
             anyValueUpdated = true;
         }
-        if (newProfileId != null && !newProfileId.equals(this.profileID)) {
-            this.profileID = newProfileId;
+        if (binaryContent != null && !binaryContent.getId().equals(this.profile.getId())) {
+            this.profile = binaryContent;
             anyValueUpdated = true;
         }
 
         if (anyValueUpdated) {
-            this.setUpdatedAt(Instant.now());
+            this.updatedAt = Instant.now();
         }
     }
 }

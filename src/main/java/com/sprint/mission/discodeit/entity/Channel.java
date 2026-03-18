@@ -1,47 +1,57 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-import lombok.Setter;
-
-import java.io.Serializable;
-import java.time.Instant;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
+import java.time.Instant;
+
 
 @Getter
 @Setter
-public class Channel extends BaseEntity implements Serializable {
-    private static final long serialVersionUID = 1L;
+@Entity
+@Table(name = "channels")
+@RequiredArgsConstructor
+public class Channel extends BaseUpdatableEntity {
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private ChannelType type;
+
+    @Column(nullable = false, unique = true)
     private String name;
+
+    @Column(nullable = false)
     private String description;
-    private List<UUID> userList;
+
+    @OneToMany(mappedBy = "channel")
+    private List<ReadStatus> readStatuses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "channel")
+    private List<Message> messages = new ArrayList<>();
+
 
     public Channel(ChannelType type, String name, String description) {
         this.type = type;
         this.name = name;
         this.description = description;
-        this.userList = new ArrayList<>();
     }
 
-    public void userJoin(UUID userID){
-        Objects.requireNonNull(userID, "유효하지 않은 User 입니다.");
-        if(userList.stream().anyMatch(userID::equals)){
-            throw new IllegalStateException("이미 유저가 채널에 가입되어 있습니다.");
-        }
-        userList.add(userID);
+    public Channel(ChannelType type) {
+        this.type = type;
+        this.name = null;
+        this.description = null;
     }
 
-    public void userLeave(UUID userID){
-        Objects.requireNonNull(userID, "유효하지 않은 User 입니다.");
-        if(userList.stream().noneMatch(userID::equals)){
-            throw new IllegalStateException("해당 채널에 유저가 존재하지 않습니다.");
-        }
-        userList.remove(userID);
-    }
 
     public void update(String newName, String newDescription) {
         boolean anyValueUpdated = false;
@@ -55,7 +65,7 @@ public class Channel extends BaseEntity implements Serializable {
         }
 
         if (anyValueUpdated) {
-            this.setUpdatedAt(Instant.now());
+            this.updatedAt = Instant.now();
         }
     }
 }
