@@ -5,146 +5,107 @@ import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
 import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
-import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-import java.util.ArrayList;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BasicChannelService implements ChannelService {
 
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
-  private final MessageRepository messageRepository;
   private final ReadStatusRepository readStatusRepository;
+  private final ChannelMapper channelMapper;
 
   @Override
   public UUID createPrivate(PrivateChannelCreateRequest req) {
     requireNonNull(req, "privateChReq");
     requireNonNull(req.participantIds(), "participantIds");
+
     if (req.participantIds().isEmpty()) {
       throw new IllegalArgumentException("PRIVATE 채널은 최소 1명 이상의 참여자가 필요합니다.");
     }
 
     List<User> participants = req.participantIds().stream()
-        .map(id -> {
-          User u = userRepository.findById(id);
-          if (u == null) {
-            throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
-          }
-          return u;
-        })
+        .map(id -> userRepository.findById(id)
+            .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND)))
         .toList();
 
-    Channel channel = new Channel(participants);
-    UUID channelId = channelRepository.createChannel(channel);
+    Channel savedChannel = channelRepository.save(new Channel(ChannelType.PRIVATE, null, null));
 
-    participants.forEach(user -> {
-      ReadStatus rs = new ReadStatus(user.getId(), channelId);
-      rs.updateLastReadAt(Instant.now());
+    Instant now = Instant.now();
+    for (User user : participants) {
+      ReadStatus rs = new ReadStatus(user, savedChannel);
+      rs.updateLastReadAt(now);
       readStatusRepository.save(rs);
-    });
+    }
 
-    return channelId;
+    return savedChannel.getId();
   }
 
   @Override
   public UUID createPublic(PublicChannelCreateRequest req) {
     requireNonNull(req, "publicChReq");
     requireNonNull(req.name(), "name");
+
     if (req.name().isBlank()) {
       throw new IllegalArgumentException("PUBLIC 채널은 이름이 필요합니다.");
     }
 
     Channel channel = new Channel(req.name(), req.description());
-
-    List<User> users = userRepository.findAll();
-
-    for (User u : users) {
-      boolean alreadyJoined = channel.getParticipants().stream()
-          .anyMatch(p -> p.getId().equals(u.getId()));
-      if (!alreadyJoined) {
-        channel.getParticipants().add(u);
-      }
-    }
-
     return channelRepository.createChannel(channel);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ChannelResponse find(UUID channelId) {
     requireNonNull(channelId, "channelId");
 
     Channel channel = findChannelOrThrow(channelId);
-
-    Instant lastMessageTime = messageRepository.findAllByChannelId(channelId).stream()
-        .map(Message::getCreatedAt)
-        .max(Instant::compareTo)
-        .orElse(null);
-
+    Instant lastMessageTime = findLastMessageTime(channel);
     List<UUID> participantIds = channel.isPrivate()
-        ? channel.getParticipants().stream().map(User::getId).toList()
+        ? findParticipantIds(channel)
         : List.of();
 
-    return new ChannelResponse(
-        channel.getId(),
-        channel.getChannelName(),
-        channel.getDescription(),
-        channel.isPrivate(),
-        lastMessageTime,
-        participantIds
-    );
+    return channelMapper.toResponse(channel, lastMessageTime, participantIds);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<ChannelResponse> findAllByUserId(UUID userId) {
     requireNonNull(userId, "userId");
 
-    if (userRepository.findById(userId) == null) {
-      throw new BusinessLogicException(ErrorCode.USER_NOT_FOUND);
-    }
+    userRepository.findById(userId)
+        .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
 
     return channelRepository.findAllChannel().stream()
         .filter(channel ->
             !channel.isPrivate()
-                || channel.getParticipants().stream().anyMatch(u -> u.getId().equals(userId))
+                || channel.getReadStatuses().stream()
+                .anyMatch(readStatus -> readStatus.getUserId().equals(userId))
         )
-        .map(channel -> {
-          Instant lastMessageTime = messageRepository.findAllByChannelId(channel.getId()).stream()
-              .map(Message::getCreatedAt)
-              .max(Instant::compareTo)
-              .orElse(null);
-
-          List<UUID> participantIds = channel.getParticipants().stream()
-              .map(User::getId)
-              .toList();
-
-          return new ChannelResponse(
-              channel.getId(),
-              channel.getChannelName(),
-              channel.getDescription(),
-              channel.isPrivate(),
-              lastMessageTime,
-              participantIds
-          );
-        })
+        .map(channel -> channelMapper.toResponse(
+            channel,
+            findLastMessageTime(channel),
+            channel.isPrivate() ? findParticipantIds(channel) : List.of()
+        ))
         .toList();
   }
-
 
   @Override
   public ChannelResponse update(ChannelUpdateRequest req) {
@@ -166,28 +127,35 @@ public class BasicChannelService implements ChannelService {
   @Override
   public void delete(UUID channelId) {
     requireNonNull(channelId, "channelId");
-
-    findChannelOrThrow(channelId);
-
-    messageRepository.findAllByChannelId(channelId)
-        .forEach(m -> messageRepository.delete(m.getId()));
-
-    readStatusRepository.deleteByChannelId(channelId);
-    channelRepository.deleteChannel(channelId);
+    Channel channel = findChannelOrThrow(channelId);
+    channelRepository.delete(channel);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public Channel findEntity(UUID channelId) {
+    requireNonNull(channelId, "channelId");
+
     return channelRepository.findById(channelId)
         .orElseThrow(() -> new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND));
   }
 
   private Channel findChannelOrThrow(UUID channelId) {
-    Channel channel = channelRepository.findChannel(channelId);
-    if (channel == null) {
-      throw new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND);
-    }
-    return channel;
+    return channelRepository.findById(channelId)
+        .orElseThrow(() -> new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND));
+  }
+
+  private Instant findLastMessageTime(Channel channel) {
+    return channel.getMessages().stream()
+        .map(message -> message.getCreatedAt())
+        .max(Instant::compareTo)
+        .orElse(null);
+  }
+
+  private List<UUID> findParticipantIds(Channel channel) {
+    return channel.getReadStatuses().stream()
+        .map(ReadStatus::getUserId)
+        .toList();
   }
 
   private static <T> void requireNonNull(T value, String name) {

@@ -1,46 +1,51 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
 
 @Getter
-public class UserStatus extends BaseEntity implements Serializable {
+@Entity
+@Table(name = "user_statuses")
+public class UserStatus extends BaseUpdatableEntity {
 
-    private static final long serialVersionUID = 1L;
+  @OneToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "user_id", nullable = false, unique = true)
+  private User user;
 
-    private final UUID userId;
-    private Instant lastSeenAt;
-    private Boolean onlineOverride;
+  @Column(name = "last_active_at", nullable = false)
+  private Instant lastActiveAt;
 
-    public UserStatus(UUID userId, Instant lastSeenAt) {
-        super();
-        this.userId = userId;
-        this.lastSeenAt = lastSeenAt;
-        this.onlineOverride = null;
+  protected UserStatus() {
+  }
+
+  public UserStatus(User user, Instant lastActiveAt) {
+    this.user = user;
+    this.lastActiveAt = lastActiveAt;
+
+    if (user != null) {
+      user.bindStatus(this);   // cascade 연결
     }
+  }
 
-    public void updateLastSeenAt(Instant lastSeenAt) {
-        this.lastSeenAt = lastSeenAt;
-        this.onlineOverride = null;
-        touch();
-    }
+  public UUID getUserId() {
+    return user == null ? null : user.getId();
+  }
 
-    public void updateOnline(boolean online) {
-        if (online) {
-            this.lastSeenAt = Instant.now();
-            this.onlineOverride = null;
-        } else {
-            this.onlineOverride = false;
-        }
-        touch();
-    }
+  public void updateLastSeenAt(Instant lastActiveAt) {
+    this.lastActiveAt = lastActiveAt;
+    touch();
+  }
 
-    public boolean isOnline() {
-        if (onlineOverride != null) {
-            return onlineOverride;
-        }
-        return lastSeenAt.isAfter(Instant.now().minusSeconds(300));
-    }
+  public boolean isOnline() {
+    return lastActiveAt != null &&
+        lastActiveAt.isAfter(Instant.now().minusSeconds(300));
+  }
 }

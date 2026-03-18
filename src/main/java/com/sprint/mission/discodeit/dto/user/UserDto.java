@@ -1,19 +1,13 @@
 package com.sprint.mission.discodeit.dto.user;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.Instant;
+import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import java.util.UUID;
 
 public record UserDto(
     UUID id,
-    Instant createdAt,
-    Instant updatedAt,
-
-    @JsonProperty("username")
-    String userName,
-
+    String username,
     String email,
-    UUID profileId,
+    BinaryContentDto profile,
     Boolean online
 ) {
 
