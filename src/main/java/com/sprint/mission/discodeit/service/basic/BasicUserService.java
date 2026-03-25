@@ -38,7 +38,7 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public UserDto create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-    log.info("회원가입 시작: 회원이름={}, 이메일={}", userCreateRequest.username(), userCreateRequest.email());
+    log.info("회원가입 시작: 회원이름= {}, 이메일= {}", userCreateRequest.username(), userCreateRequest.email());
     String username = userCreateRequest.username();
     String email = userCreateRequest.email();
 
@@ -74,7 +74,7 @@ public class BasicUserService implements UserService {
 
     //3. 회원 생성
     userRepository.save(user);
-    log.info("회원생성 완료: 이름={}, 이메일={}", username, email);
+    log.info("회원생성 완료: 이름= {}, 이메일= {}", username, email);
     return userMapper.toDto(user);
   }
 
