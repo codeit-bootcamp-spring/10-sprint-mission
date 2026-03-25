@@ -1,11 +1,7 @@
-#spring:
-#  profiles:
-#    active:   # dev | prod
+server:
+  port: 8080
 
 spring:
-  application:
-    name: discodeit
-
   datasource:
     url: jdbc:postgresql://localhost:5432/discodeit
     username: discodeit_user
@@ -17,13 +13,9 @@ spring:
       mode: always
 
   jpa:
+    hibernate:
+      ddl-auto: none
     open-in-view: false
-
-discodeit:
-  storage:
-    type: local   # local | remote
-    local:
-      root-path: "${user.dir}/data"
 
 logging:
   level:
