@@ -18,4 +18,10 @@ spring:
 
 logging:
   level:
-    root: DEBUG
+    root: INFO
+    com.sprint.mission.discodeit: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+    org.hibernate.SQL: OFF
+    org.hibernate.orm.jdbc.bind: OFF
+
