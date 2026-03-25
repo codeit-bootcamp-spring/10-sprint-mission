@@ -24,9 +24,10 @@ discodeit:
     local:
       root-path: storage
 
-#logging:
-#  level:
-#    root: INFO
+logging:
+  level:
+    root: WARN
+    com.sprint.mission: INFO
 ##  file:
 ##    name: logs/myapp.log
 ##  logback:
