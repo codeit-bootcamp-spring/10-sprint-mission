@@ -16,7 +16,7 @@ import lombok.ToString;
 @Entity
 @Table(name = "users")
 @Getter
-@ToString(callSuper = true, exclude = {"profile", "status"})
+@ToString(callSuper = true, exclude = {"profile", "userStatus"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseUpdatableEntity {
 
