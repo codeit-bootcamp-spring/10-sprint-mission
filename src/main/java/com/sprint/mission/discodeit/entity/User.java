@@ -35,7 +35,7 @@ public class User extends BaseUpdatableEntity {
 
 
   //user_statuses.user_id -> user.id
-  //User가 status를 갖.
+  //User <-> UserStatus 양방향 매핑
   @OneToOne(mappedBy = "user",
           optional = false, cascade = CascadeType.ALL,
           orphanRemoval = true)
