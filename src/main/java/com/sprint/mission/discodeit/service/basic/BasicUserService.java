@@ -132,10 +132,15 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public void delete(UUID userId) {
+    log.info("회원 삭제 시작: userId = {}", userId);
+
     if (userRepository.existsById(userId)) {
+      log.warn("삭제하려는 회원 없음: userId = {}", userId);
       throw new NoSuchElementException("User with id " + userId + " not found");
     }
 
+
     userRepository.deleteById(userId);
+    log.info("회원삭제완료: userId = {}", userId);
   }
 }
