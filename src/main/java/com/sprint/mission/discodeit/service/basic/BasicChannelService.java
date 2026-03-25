@@ -33,11 +33,7 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public ChannelDto createPublic(PublicChannelCreateRequest createRequest) {
-    Channel channel = new Channel(
-        ChannelType.PUBLIC,
-        createRequest.name(),
-        createRequest.description()
-    );
+    Channel channel = channelMapper.toEntity(createRequest);
     channelRepository.save(channel);
 
     return channelMapper.toDto(channel);
@@ -46,11 +42,7 @@ public class BasicChannelService implements ChannelService {
   @Override
   public ChannelDto createPrivate(PrivateChannelCreateRequest createRequest) {
     //채널 생성 후 저장
-    Channel channel = new Channel(
-        ChannelType.PRIVATE,
-        null,
-        null
-    );
+    Channel channel = channelMapper.toEntity(createRequest);
     channelRepository.save(channel);
 
     //읽음 상태 생성 후 저장
@@ -91,8 +83,7 @@ public class BasicChannelService implements ChannelService {
     if (channel.getType() == ChannelType.PRIVATE) {
       throw new BusinessLogicException(ExceptionCode.CANNOT_UPDATE_PRIVATE_CHANNEL);
     }
-    Optional.ofNullable(request.newName()).ifPresent(channel::updateChannelName);
-    Optional.ofNullable(request.newDescription()).ifPresent(channel::updateDescription);
+    channel.update(request);
 
     return channelMapper.toDto(channel);
   }

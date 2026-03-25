@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.channel.ChannelDto;
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
@@ -26,6 +28,16 @@ public abstract class ChannelMapper {
   @Mapping(target = "lastMessageAt", expression = "java(getLastMessageAt(channel))")
   @Mapping(target = "participants", expression = "java(getParticipants(channel))")
   public abstract ChannelDto toDto(Channel channel);
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "type", constant = "PUBLIC")
+  public abstract Channel toEntity(PublicChannelCreateRequest request);
+
+  @Mapping(target = "id", ignore = true)
+  @Mapping(target = "type", constant = "PRIVATE")
+  @Mapping(target = "name", ignore = true)
+  @Mapping(target = "description", ignore = true)
+  public abstract Channel toEntity(PrivateChannelCreateRequest request);
 
   protected Instant getLastMessageAt(Channel channel) {
     return messageRepository.findFirstByChannelOrderByCreatedAtDesc(channel)

@@ -55,13 +55,7 @@ public class BasicUserService implements UserService {
       }
     }
 
-    User user = new User(
-        request.username(),
-        request.email(),
-        request.password(),
-        profile
-    );
-
+    User user = userMapper.toEntity(request, profile);
     UserStatus userStatus = new UserStatus(user);
 
     user.setStatus(userStatus); // 편의 메서드
@@ -91,15 +85,8 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
-    if (request.newUsername() != null && !request.newUsername().equals(user.getUsername())) {
-      existsByUsername(request.newUsername());
-      user.updateUsername(request.newUsername());
-    }
-    if (request.newEmail() != null && !request.newEmail().equals(user.getEmail())) {
-      existsByEmail(request.newEmail());
-      user.updateEmail(request.newEmail());
-    }
-    Optional.ofNullable(request.newPassword()).ifPresent(user::updatePassword);
+    validateUpdate(user, request);
+    user.update(request);
 
     if (file != null && !file.isEmpty()) { //요청에 프로필 파일이 있는지 확인
       try {
@@ -140,6 +127,17 @@ public class BasicUserService implements UserService {
     boolean exist = userRepository.existsByEmail(email);
     if (exist) {
       throw new BusinessLogicException(ExceptionCode.DUPLICATE_EMAIL);
+    }
+  }
+
+  private void validateUpdate(User user, UserUpdateRequest request) {
+    // 유저네임이 변경되었다면 중복 체크
+    if (request.newUsername() != null && !request.newUsername().equals(user.getUsername())) {
+      existsByUsername(request.newUsername());
+    }
+    // 이메일이 변경되었다면 중복 체크
+    if (request.newEmail() != null && !request.newEmail().equals(user.getEmail())) {
+      existsByEmail(request.newEmail());
     }
   }
 }

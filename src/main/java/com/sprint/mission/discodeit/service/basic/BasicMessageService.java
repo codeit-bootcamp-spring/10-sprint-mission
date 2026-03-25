@@ -60,11 +60,7 @@ public class BasicMessageService implements MessageService {
           .orElseThrow(() -> new BusinessLogicException(ExceptionCode.NOT_A_CHANNEL_PARTICIPANT));
     }
 
-    Message message = new Message(
-        request.content(),
-        channel,
-        user
-    );
+    Message message = messageMapper.toEntity(request, channel, user);
 
     //요청에 첨부파일이 있다면 for-loop를 통해 객체 생성 후 저장
     if (multipartFiles != null && !multipartFiles.isEmpty()) {

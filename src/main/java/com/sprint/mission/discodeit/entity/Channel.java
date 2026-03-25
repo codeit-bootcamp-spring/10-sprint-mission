@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,7 +22,7 @@ public class Channel extends BaseUpdatableEntity {
   private ChannelType type;
 
   private String name;
-  
+
   private String description;
 
   public Channel(ChannelType type, String name, String description) {
@@ -30,11 +31,8 @@ public class Channel extends BaseUpdatableEntity {
     this.description = description;
   }
 
-  public void updateChannelName(String channelName) {
-    this.name = channelName;
-  }
-
-  public void updateDescription(String description) {
-    this.description = description;
+  public void update(PublicChannelUpdateRequest request) {
+    updateIfChanged(this.name, request.newName(), val -> this.name = val);
+    updateIfChanged(this.description, request.newDescription(), val -> this.description = val);
   }
 }

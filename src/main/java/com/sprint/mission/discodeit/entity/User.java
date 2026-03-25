@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -47,16 +48,10 @@ public class User extends BaseUpdatableEntity {
     }
   }
 
-  public void updateUsername(String username) {
-    this.username = username;
-  }
-
-  public void updateEmail(String email) {
-    this.email = email;
-  }
-
-  public void updatePassword(String newPassword) {
-    this.password = newPassword;
+  public void update(UserUpdateRequest request) {
+    updateIfChanged(this.username, request.newUsername(), val -> this.username = val);
+    updateIfChanged(this.email, request.newEmail(), val -> this.email = val);
+    updateIfChanged(this.password, request.newPassword(), val -> this.password = val);
   }
 
   public void updateProfile(BinaryContent newProfile) {
