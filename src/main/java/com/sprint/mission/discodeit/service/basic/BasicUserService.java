@@ -95,23 +95,27 @@ public class BasicUserService implements UserService {
 
   @Transactional
   @Override
-  public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
-      Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+  public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
+      log.info("사용자 수정 시작: userId= {}", userId);
+
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
-    if (userRepository.existsByEmail(newEmail)) {
-      throw new IllegalArgumentException("User with email " + newEmail + " already exists");
-    }
-    if (userRepository.existsByUsername(newUsername)) {
-      throw new IllegalArgumentException("User with username " + newUsername + " already exists");
-    }
+
+      if (newEmail != null && !newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
+          log.warn("중복되는 이메일: {}", newEmail);
+          throw new IllegalArgumentException("User with email " + newEmail + " already exists");
+      }
+      if (newUsername != null && !newUsername.equals(user.getUsername()) && userRepository.existsByUsername(newUsername)) {
+          log.warn("중복되는 이름: {}", newUsername);
+          throw new IllegalArgumentException("User with username " + newUsername + " already exists");
+      }
 
     BinaryContent nullableProfile = optionalProfileCreateRequest
         .map(profileRequest -> {
-
+            log.debug("변경되는 프로필: fileName= {}", profileRequest.fileName());
           String fileName = profileRequest.fileName();
           String contentType = profileRequest.contentType();
           byte[] bytes = profileRequest.bytes();
@@ -124,7 +128,10 @@ public class BasicUserService implements UserService {
         .orElse(null);
 
     String newPassword = userUpdateRequest.newPassword();
+    String profileName = nullableProfile != null ? nullableProfile.getFileName() : "기존유지";
+
     user.update(newUsername, newEmail, newPassword, nullableProfile);
+    log.info("사용자 수정완료: 이름= {},이메일= {},프로필={} ", newUsername, newEmail, profileName);
 
     return userMapper.toDto(user);
   }
