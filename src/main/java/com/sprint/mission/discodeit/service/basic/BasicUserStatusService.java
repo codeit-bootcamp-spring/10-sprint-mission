@@ -62,6 +62,7 @@ public class BasicUserStatusService implements UserStatusService {
   }
 
   @Override
+  @Transactional
   public void deleteById(UUID id) {
     UserStatus userStatus = getOrThrowUserStatus(id);
     userStatusRepository.delete(userStatus);
