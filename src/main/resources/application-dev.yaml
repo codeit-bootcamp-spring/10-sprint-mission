@@ -9,8 +9,6 @@ discodeit:
       root-path: .discodeit
 
 spring:
-  profile:
-    active: dev
   datasource:
     url: jdbc:postgresql://localhost:5432/discodeit
     username: discodeit_user
@@ -18,7 +16,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true
@@ -27,5 +25,4 @@ spring:
 
 logging:
   level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
+    root: INFO

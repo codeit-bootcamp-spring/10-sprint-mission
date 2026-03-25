@@ -48,12 +48,7 @@ CREATE TABLE binary_contents
     file_name    VARCHAR(255) NOT NULL,
     size         BIGINT       NOT NULL,
     content_type VARCHAR(100) NOT NULL,
-    bytes        BYTEA        NOT NULL,
-    message_id   UUID,
-    CONSTRAINT fk_binary_content_message
-        FOREIGN KEY (message_id)
-            REFERENCES messages (id)
-            ON DELETE CASCADE
+    bytes        BYTEA        NOT NULL
 );
 
 ALTER TABLE users
@@ -68,9 +63,9 @@ CREATE TABLE user_statuses
     id             UUID PRIMARY KEY,
     created_at     timestamptz NOT NULL,
     updated_at     timestamptz,
-    user_id        UUID NOT NULL UNIQUE,
+    user_id        UUID        NOT NULL UNIQUE,
     last_active_at timestamptz NOT NULL,
-    online         BOOLEAN NOT NULL DEFAULT FALSE,
+    online         BOOLEAN     NOT NULL DEFAULT FALSE,
     CONSTRAINT fk_user_status_user
         FOREIGN KEY (user_id)
             REFERENCES users (id)

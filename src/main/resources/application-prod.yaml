@@ -3,14 +3,7 @@ discodeit:
     type: file # jcf | file
     file-directory: .discodeit
 
-  storage:
-    type: local
-    local:
-      root-path: .discodeit
-
 spring:
-  profile:
-    active: dev
   datasource:
     url: jdbc:postgresql://localhost:5432/discodeit
     username: discodeit_user
@@ -23,9 +16,6 @@ spring:
       hibernate:
         format_sql: true
 
-    open-in-view: false
-
 logging:
   level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.orm.jdbc.bind: TRACE
+    root: DEBUG

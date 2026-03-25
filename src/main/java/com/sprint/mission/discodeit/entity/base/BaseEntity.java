@@ -14,6 +14,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
+// 각 엔티티마다 id, createdAt, updatedAt을 상속받게 끔 함.
 @Getter
 @Setter
 @MappedSuperclass
