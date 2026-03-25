@@ -26,7 +26,7 @@ public class ChannelController implements ChannelApi {
 
   @Override
   @PostMapping("/public")
-  public ResponseEntity<ChannelDto> create(
+  public ResponseEntity<ChannelDto> createPublicChannel(
       @RequestBody PublicChannelCreateRequest request) {
     Channel channel = channelService.createPublicChannel(request.name(), request.description());
 
@@ -37,7 +37,7 @@ public class ChannelController implements ChannelApi {
 
   @Override
   @PostMapping("/private")
-  public ResponseEntity<ChannelDto> create(
+  public ResponseEntity<ChannelDto> createPrivateChannel(
       @RequestBody PrivateChannelCreateRequest request) {
     Channel channel = channelService.createPrivateChannel(request.participantIds());
 
