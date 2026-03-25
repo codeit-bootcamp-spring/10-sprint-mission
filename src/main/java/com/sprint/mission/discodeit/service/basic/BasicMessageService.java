@@ -33,7 +33,7 @@ public class BasicMessageService implements MessageService {
       List<MultipartFile> attachments) {
     User author = getOrThrowUser(authorId);
     Channel channel = getOrThrowChannel(channelId);
-    validateAccess(authorId, channelId);
+    validateAccess(authorId, channel);
 
     List<BinaryContent> binaryContents = new ArrayList<>();
     if (attachments != null && !attachments.isEmpty()) {
@@ -91,10 +91,9 @@ public class BasicMessageService implements MessageService {
   // --- Helper Methods ---
 
   // 비공개 채널 접근 권한 확인
-  private void validateAccess(UUID userId, UUID channelId) {
-    Channel channel = getOrThrowChannel(channelId);
+  private void validateAccess(UUID userId, Channel channel) {
     if (channel.getType() == ChannelType.PRIVATE) {
-      readStatusRepository.findByUserIdAndChannelId(userId, channelId)
+      readStatusRepository.findByUserIdAndChannelId(userId, channel.getId())
           .orElseThrow(() -> new IllegalArgumentException("채널 접근 권한이 없습니다."));
     }
   }
