@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class BasicBinaryContentService implements BinaryContentService {
     private final BinaryContentRepository binaryContentRepository;
 
@@ -33,6 +35,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent binaryContent = binaryContentMapper.toEntity(payload);
         binaryContentRepository.save(binaryContent);
 
+        log.info("[BINARYCONTENT_CREATE_SUCCESS] 파일 생성 성공: binaryContentId={}", binaryContent.getId());
         return binaryContentMapper.toDto(binaryContent);
     }
 
@@ -55,6 +58,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         List<BinaryContent> binaryContents = binaryContentRepository.findAllById(ids);
 
         if (ids.size() != binaryContents.size()) {
+            log.warn("[BINARYCONTENT_NOT_FOUND] 요청한 파일 id 중 일부가 존재하지 않음: binaryContentIdsSize={}", ids.size());
             throw new NoSuchElementException(
                     "요청한 BinaryContent id 중 일부가 존재하지 않습니다. 요청: " + ids.size()
                             + "건, 조회: " + binaryContents.size() + "건"
@@ -76,6 +80,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     public void delete(UUID binaryContentId) {
         findBinaryContentOrThrow(binaryContentId);
 
+        log.info("[BINARYCONTENT_DELETE_SUCCESS] 파일 삭제 성공: binaryContentId={}", binaryContentId);
         binaryContentRepository.deleteById(binaryContentId);
     }
 
@@ -83,7 +88,10 @@ public class BasicBinaryContentService implements BinaryContentService {
         Objects.requireNonNull(binaryContentId, "binaryContentId는 null값일 수 없습니다.");
 
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new NoSuchElementException("해당 id에 binaryContent가 존재하지 않습니다."));
+                .orElseThrow(() -> {
+                    log.warn("[BINARYCONTENT_NOT_FOUND] 파일이 존재하지 않음: binaryContentId={}", binaryContentId);
+                    return new NoSuchElementException("해당 id에 binaryContent가 존재하지 않습니다.");
+                });
 
         return binaryContent;
     }
@@ -92,18 +100,22 @@ public class BasicBinaryContentService implements BinaryContentService {
         Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
 
         if (dto.userId() == null) {
+            log.warn("[BINARYCONTENT_CREATE_FAIL_BY_USERID] 유저 id가 null값으로 파일 생성 실패");
             throw new IllegalArgumentException("userId는 null값일 수 없습니다.");
         }
 
         if (dto.data() == null || dto.data().length == 0) {
+            log.warn("[BINARYCONTENT_CREATE_FAIL_BY_DATA] data값이 null/empty로 파일 생성 실패");
             throw new IllegalArgumentException("data는 null/empty값일 수 없습니다.");
         }
 
         if (dto.contentType() == null || dto.contentType().isBlank()) {
+            log.warn("[BINARYCONTENT_CREATE_FAIL_BY_CONTENT_TYPE] contentType값이 null/empty로 파일 생성 실패");
             throw new IllegalArgumentException("contentType은 null/empty값일 수 없습니다.");
         }
 
         if (dto.filename() == null || dto.filename().isBlank()) {
+            log.warn("[BINARYCONTENT_CREATE_FAIL_BY_FILENAME] 파일명이 null/empty로 파일 생성 실패");
             throw new IllegalArgumentException("filename은 null/empty값일 수 없습니다.");
         }
     }

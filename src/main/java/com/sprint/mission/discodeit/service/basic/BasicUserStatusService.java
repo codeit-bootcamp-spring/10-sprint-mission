@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class BasicUserStatusService implements UserStatusService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
@@ -60,11 +62,15 @@ public class BasicUserStatusService implements UserStatusService {
         findUserByIdOrThrow(userId);
         UserStatus status = userStatusRepository.findByUser_Id(userId)
                 .orElseThrow(() ->
-                        new NoSuchElementException(
-                                "해당 userId에 대한 UserStatus가 존재하지 않습니다 userId=" + userId
-                        ));
+                {
+                    log.warn("[USERSTATUS_NOT_FOUND] 유저 상태가 존재하지 않음: userId={}", userId);
+                    return new NoSuchElementException(
+                            "해당 userId에 대한 UserStatus가 존재하지 않습니다 userId=" + userId);
+                });
 
         status.updateLastActiveAt(dto.newLastActiveAt());
+
+        log.info("[USERSTATUS_UPDATE_SUCCESS] 유저 상태 수정 성공: userStatusId={}", status.getId());
         return userStatusMapper.toDto(status);
     }
 
@@ -73,6 +79,7 @@ public class BasicUserStatusService implements UserStatusService {
     public void deleteStatus(UUID userStatusId) {
         findStatusByIdOrThrow(userStatusId);
 
+        log.info("[USERSTATUS_DELETE_SUCCESS] 유저 상태 삭제 성공: userStatusId={}", userStatusId);
         userStatusRepository.deleteById(userStatusId);
     }
 
@@ -80,13 +87,19 @@ public class BasicUserStatusService implements UserStatusService {
         Objects.requireNonNull(statusId, "userStatusId는 null값일 수 없습니다.");
 
         return userStatusRepository.findById(statusId)
-                .orElseThrow(() -> new NoSuchElementException("해당 id에 userStatus가 존재하지 않습니다."));
+                .orElseThrow(() -> {
+                    log.warn("[USERSTATUS_NOT_FOUND] 유저 상태가 존재하지 않음: userStatusId={}", statusId);
+                    return new NoSuchElementException("해당 id에 userStatus가 존재하지 않습니다.");
+                });
     }
 
     private User findUserByIdOrThrow(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null값일 수 없습니다.");
 
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 id에 사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> {
+                    log.warn("[USER_NOT_FOUND] 유저가 존재하지 않음: userId={}", userId);
+                    return new NoSuchElementException("해당 id에 사용자가 존재하지 않습니다.");
+                });
     }
 }

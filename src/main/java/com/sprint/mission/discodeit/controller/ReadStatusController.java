@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.UpdateReadStatusRequestDTO;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -16,6 +17,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/readStatuses")
 @RequiredArgsConstructor
+@Slf4j
 public class ReadStatusController {
 
     private final ReadStatusService readStatusService;
@@ -24,6 +26,7 @@ public class ReadStatusController {
     public ResponseEntity createReadStatus(
             @RequestBody CreateReadStatusRequestDTO dto
     ) {
+        log.debug("[READSTATUS_CREATE_REQUEST] 읽음 상태 생성 요청: userId={}, channelId={}", dto.userId(), dto.channelId());
         ReadStatusDto created = readStatusService.createReadStatus(dto);
 
         URI location = ServletUriComponentsBuilder
@@ -41,6 +44,7 @@ public class ReadStatusController {
             @PathVariable UUID readStatusId,
             @RequestBody UpdateReadStatusRequestDTO dto
     ) {
+        log.debug("[READSTATUS_UPDATE_REQUEST] 읽음 상태 수정 요청: readStatusId={}", readStatusId);
         ReadStatusDto updated = readStatusService.updateReadStatus(readStatusId, dto);
 
         return ResponseEntity.ok(updated);

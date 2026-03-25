@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
+@Slf4j
 public class MessageController {
 
     private final MessageService messageService;
@@ -36,6 +38,7 @@ public class MessageController {
             @RequestPart("messageCreateRequest") CreateMessageRequestDTO dto,
             @RequestPart(value = "attachments", required = false) MultipartFile[] attachments
     ) {
+        log.debug("[MESSAGE_CREATE_REQUEST] 메시지 생성 요청: authorId={}, channelId={}", dto.authorId(), dto.channelId());
         List<CreateBinaryContentPayloadDTO> payloads = List.of();
 
         if (attachments != null && attachments.length > 0) {
@@ -50,6 +53,8 @@ public class MessageController {
                                     file.getSize()
                             );
                         } catch (IOException e) {
+                            log.warn("[MESSAGE_CREATE_REQUEST_FAIL] 첨부 파일 읽기 실패로 메시지 생성 요청 실패: authorId={}, channelId={}, filename={}",
+                                    dto.authorId(), dto.channelId(), file.getOriginalFilename());
                             throw new IllegalArgumentException("첨부 파일을 읽을 수 없습니다.", e);
                         }
                     })
@@ -72,6 +77,7 @@ public class MessageController {
             @PathVariable UUID messageId,
             @RequestBody UpdateMessageRequestDTO dto
     ) {
+        log.debug("[MESSAGE_UPDATE_REQUEST] 메시지 수정 요청: messageId={}", messageId);
         MessageDto updated = messageService.updateMessage(messageId, dto);
 
         return ResponseEntity.ok(updated);
@@ -81,6 +87,7 @@ public class MessageController {
     public ResponseEntity deleteMessage(
             @PathVariable UUID messageId
             ) {
+        log.debug("[MESSAGE_DELETE_REQUEST] 메시지 삭제 요청: messageId={}", messageId);
         messageService.deleteMessage(messageId);
 
         return ResponseEntity.noContent().build();

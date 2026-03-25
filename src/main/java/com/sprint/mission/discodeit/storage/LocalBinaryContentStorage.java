@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
@@ -19,12 +20,15 @@ import java.util.UUID;
 
 @Component
 @ConditionalOnProperty(prefix = "discodeit.storage", name = "type", havingValue = "local")
+@Slf4j
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     private final Path root;
+    private final BinaryContentStorage binaryContentStorage;
 
-    public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") String rootPath) {
+    public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") String rootPath, BinaryContentStorage binaryContentStorage) {
         this.root = Path.of(rootPath);
+        this.binaryContentStorage = binaryContentStorage;
     }
 
     @Override
@@ -35,9 +39,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         try {
             Files.write(path, bytes);
         } catch (IOException e) {
+            log.error("[BINARYCONTENT_SAVE_FAIL] 파일 저장 실패: binaryContentId={}", binaryContentId);
             throw new IllegalStateException("파일 저장에 실패했습니다.", e);
         }
 
+        log.info("[BINARYCONTENT_SAVE_SUCCESS] 파일 저장 성공: binaryContentId={}", binaryContentId);
         return binaryContentId;
     }
 
@@ -48,6 +54,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         try {
             return Files.newInputStream(path);
         } catch (IOException e) {
+            log.warn("[BINARYCONTENT_GET_FILE_FAIL] 파일 불러오기 실패: binaryContentId={}", binaryContentId);
             throw new IllegalStateException("파일 불러오기에 실패했습니다.", e);
         }
     }
@@ -62,9 +69,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         try {
             mediaType = MediaType.parseMediaType(dto.contentType());
         } catch (Exception e) {
+            log.warn("[BINARYCONTENT_CONTENT_TYPE_PARSING_FAIL] 파일 contentType 파싱 실패: binaryContentId={}", dto.id());
             mediaType = MediaType.APPLICATION_OCTET_STREAM;
         }
 
+        log.info("[BINARYCONTENT_DOWNLOAD_SUCCESS] 파일 다운로드 성공: binaryContentId={}", dto.id());
         return ResponseEntity.ok()
                 .contentType(mediaType)
                 .contentLength(dto.size())
@@ -83,12 +92,14 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             try {
                 Files.createDirectories(root);
             } catch (IOException e) {
+                log.error("[BINARYCONTENT_STORAGE_SAVE_FAIL] root 디렉토리 생성 실패로 파일 storage 저장 실패");
                 throw new IllegalStateException("storage 저장 실패", e);
             }
         }
 
         // root가 이미 존재하지만 디렉토리가 아닌 경우
         if (Files.exists(root) && !Files.isDirectory(root)) {
+            log.error("[BINARYCONTENT_STORAGE_SAVE_FAIL] root가 디렉토리가 아닌 이유로 파일 storage 저장 실패");
             throw new IllegalStateException("storage 저장 실패");
         }
 

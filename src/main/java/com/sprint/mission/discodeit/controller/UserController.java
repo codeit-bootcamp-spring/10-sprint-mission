@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayload
 import com.sprint.mission.discodeit.dto.user.*;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,13 +13,13 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
     private final UserService userService;
@@ -30,6 +31,7 @@ public class UserController {
             @RequestPart("userCreateRequest") CreateUserRequestDTO dto,
             @RequestPart(value = "profile", required = false) MultipartFile profile
             ) {
+        log.debug("[USER_CREATE_REQUEST] 유저 생성 요청: username={}", dto.username());
         CreateBinaryContentPayloadDTO payload = null;
 
         if (profile != null && !profile.isEmpty()) {
@@ -41,6 +43,7 @@ public class UserController {
                         profile.getSize()
                 );
             } catch (IOException e) {
+                log.warn("[USER_CREATE_REQUEST_FAIL] 프로필 파일 읽기 실패로 유저 생성 요청 실패: username={}", dto.username());
                 throw new IllegalArgumentException("프로필 파일을 읽을 수 없습니다.", e);
             }
         }
@@ -68,6 +71,7 @@ public class UserController {
             @RequestPart("userUpdateRequest") UpdateUserRequestDTO dto,
             @RequestPart(value = "profile", required = false) MultipartFile profile
             ) {
+        log.debug("[USER_UPDATE_REQUEST] 유저 정보 수정 요청: userId={}", userId);
         CreateBinaryContentPayloadDTO payload = null;
 
         if (profile != null && !profile.isEmpty()) {
@@ -79,6 +83,7 @@ public class UserController {
                         profile.getSize()
                 );
             } catch (IOException e) {
+                log.warn("[USER_UPDATE_REQUEST_FAIL] 프로필 파일 읽기 실패로 유저 정보 수정 요청 실패: userId={}", userId);
                 throw new IllegalArgumentException("프로필 파일을 읽을 수 없습니다.", e);
             }
         }
@@ -93,6 +98,7 @@ public class UserController {
             @PathVariable UUID userId,
             @RequestBody UpdateUserStatusRequestDTO dto
     ) {
+        log.debug("[USER_STATUS_UPDATE_REQUEST] 유저 상태 수정 요청: userId={}", userId);
         UserDto updated = userService.updateUserStatus(userId, dto);
 
         return ResponseEntity.ok(updated);
@@ -102,6 +108,7 @@ public class UserController {
     public ResponseEntity deleteUser(
             @PathVariable UUID userId
             ) {
+        log.debug("[USER_DELETE_REQUEST] 유저 삭제 요청: userId={}", userId);
         userService.deleteUser(userId);
 
         return ResponseEntity.noContent().build();

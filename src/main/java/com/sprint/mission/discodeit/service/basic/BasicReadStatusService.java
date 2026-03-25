@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class BasicReadStatusService implements ReadStatusService {
     private final ReadStatusRepository readStatusRepository;
     private final UserRepository userRepository;
@@ -32,6 +34,9 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatusDto createReadStatus(CreateReadStatusRequestDTO dto) {
+        Objects.requireNonNull(dto.userId(), "userId는 null값일 수 없습니다.");
+        Objects.requireNonNull(dto.channelId(), "channelId는 null값일 수 없습니다.");
+
         // 객체 검증
         User user = findUserOrThrow(dto.userId());
         Channel channel = findChannelOrThrow(dto.channelId());
@@ -42,6 +47,7 @@ public class BasicReadStatusService implements ReadStatusService {
         ReadStatus status = new ReadStatus(user, channel);
         readStatusRepository.save(status);
 
+        log.info("[READSTATUS_CREATE_SUCCESS] 읽음 상태 생성 성공: readStatusId={}", status.getId());
         return readStatusMapper.toDto(status);
     }
 
@@ -67,12 +73,14 @@ public class BasicReadStatusService implements ReadStatusService {
         Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
 
         if (dto.newLastReadAt() == null) {
+            log.warn("[READSTATUS_UPDATE_FAIL_BY_LAST_READ_AT] lastReadAt이 null값으로 읽음 상태 수정 실패: readStatusId={}", statusId);
             throw new IllegalArgumentException("lastReadAt은 null값일 수 없습니다.");
         }
 
         ReadStatus status = findReadStatusOrThrow(statusId);
         status.updateLastReadAt(dto.newLastReadAt());
 
+        log.info("[READSTATUS_UPDATE_SUCCESS] 읽음 상태 수정 성공: readStatusId={}", statusId);
         return readStatusMapper.toDto(status);
     }
 
@@ -80,6 +88,7 @@ public class BasicReadStatusService implements ReadStatusService {
     public void deleteById(UUID statusId) {
         findReadStatusOrThrow(statusId);
 
+        log.info("[READSTATUS_DELETE_SUCCESS] 읽음 상태 삭제 성공: readStatusId={}", statusId);
         readStatusRepository.deleteById(statusId);
     }
 
@@ -87,25 +96,35 @@ public class BasicReadStatusService implements ReadStatusService {
         Objects.requireNonNull(statusId, "readStatusId는 null값일 수 없습니다.");
 
         return readStatusRepository.findById(statusId)
-                .orElseThrow(() -> new NoSuchElementException("해당 id에 readStatus가 존재하지 않습니다."));
+                .orElseThrow(() -> {
+                    log.warn("[READSTATUS_NOT_FOUND] 읽음 상태가 존재하지 않음: readStatusId={}", statusId);
+                    return new NoSuchElementException("해당 id에 readStatus가 존재하지 않습니다.");
+                });
     }
 
     private User findUserOrThrow(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null값일 수 없습니다.");
 
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 id에 사용자가 존재하지 않습니다."));
+                .orElseThrow(() -> {
+                    log.warn("[USER_NOT_FOUND] 유저가 존재하지 않음: userId={}", userId);
+                    return new NoSuchElementException("해당 id에 사용자가 존재하지 않습니다.");
+                });
     }
 
     private Channel findChannelOrThrow(UUID channelId) {
         Objects.requireNonNull(channelId, "channelId는 null값일 수 없습니다.");
 
         return channelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("해당 id에 채널이 존재하지 않습니다."));
+                .orElseThrow(() -> {
+                    log.warn("[CHANNEL_NOT_FOUND] 채널이 존재하지 않음: channelId={}", channelId);
+                    return new NoSuchElementException("해당 id에 채널이 존재하지 않습니다.");
+                });
     }
 
     private void checkStatusAlreadyExists(UUID userId, UUID channelId) {
         if (readStatusRepository.existsByUser_IdAndChannel_Id(userId, channelId)) {
+            log.warn("[READSTATUS_ALREADY_EXISTS] 읽음 상태가 이미 존재함: userId={}, channelId={}", userId, channelId);
             throw new IllegalArgumentException("이미 ReadStatus가 존재합니다.");
         }
     }

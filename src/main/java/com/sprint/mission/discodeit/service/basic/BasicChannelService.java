@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class BasicChannelService implements ChannelService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
@@ -41,6 +43,7 @@ public class BasicChannelService implements ChannelService {
             readStatusRepository.save(readStatus);
         }
 
+        log.info("[PUBLIC_CHANNEL_CREATE_SUCCESS] 공개 채널 생성 성공: channelId={}", channel.getId());
         return buildSingleChannelDto(channel);
     }
 
@@ -63,6 +66,7 @@ public class BasicChannelService implements ChannelService {
             readStatusRepository.save(readStatus);
         }
 
+        log.info("[PRIVATE_CHANNEL_CREATE_SUCCESS] 비공개 채널 생성 성공: channelId={}", channel.getId());
         return buildSingleChannelDto(channel);
     }
 
@@ -106,6 +110,7 @@ public class BasicChannelService implements ChannelService {
         Channel channel = findChannelOrThrow(channelId);
 
         if (channel.getType() == ChannelType.PRIVATE) {
+            log.warn("[CHANNEL_UPDATE_FAIL_BY_CHANNEL_TYPE] 비공개 채널로 채널 정보 수정 실패: channelId={}", channelId);
             throw new IllegalArgumentException("비공개 채널은 수정할 수 없습니다.");
         }
 
@@ -116,6 +121,7 @@ public class BasicChannelService implements ChannelService {
             updateChannelDescription(dto, channel);
         }
 
+        log.info("[CHANNEL_UPDATE_SUCCESS] 채널 정보 수정 성공: channelId={}", channelId);
         return buildSingleChannelDto(channel);
     }
 
@@ -123,6 +129,7 @@ public class BasicChannelService implements ChannelService {
     public void deleteChannel(UUID channelId) {
         findChannelOrThrow(channelId);
 
+        log.info("[CHANNEL_DELETE_SUCCESS] 채널 삭제 성공: channelId={}", channelId);
         messageRepository.deleteAllByChannel_Id(channelId);
         channelRepository.deleteById(channelId);
     }
@@ -132,19 +139,26 @@ public class BasicChannelService implements ChannelService {
 
         return channelRepository.findById(channelId)
                 .orElseThrow(() ->
-                        new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다."));
+                {
+                    log.warn("[CHANNEL_NOT_FOUND] 채널이 존재하지 않음: channelId={}", channelId);
+                    return new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
+                });
     }
 
     private User findUserOrThrow(UUID userId) {
         Objects.requireNonNull(userId, "userId는 null 값일 수 없습니다.");
 
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다."));
+                .orElseThrow(() -> {
+                    log.warn("[USER_NOT_FOUND] 유저가 존재하지 않음: userId={}", userId);
+                    return new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
+                });
     }
 
     private void updateChannelName(UpdateChannelRequestDTO dto, Channel channel) {
         if (!dto.newName().equals(channel.getName())) {
             if (channelRepository.existsByName(dto.newName())) {
+                log.warn("[CHANNEL_UPDATE_FAIL_BY_CHANNELNAME] 이미 사용중인 채널 이름으로 수정 시도로 채널 정보 수정 실패: channelId={}", channel.getId());
                 throw new IllegalArgumentException("이미 사용중인 channelName입니다.");
             }
         }
@@ -154,6 +168,7 @@ public class BasicChannelService implements ChannelService {
 
     private void updateChannelDescription(UpdateChannelRequestDTO dto, Channel channel) {
         if (dto.newDescription().equals(channel.getDescription())) {
+            log.warn("[CHANNEL_UPDATE_FAIL_BY_DESCRIPTION] 같은 설명으로 수정 시도로 채널 정보 수정 실패: channelId={}", channel.getId());
             throw new IllegalArgumentException("같은 description으로 바꿀 수 없습니다.");
         }
 

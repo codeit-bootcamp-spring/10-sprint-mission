@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -30,6 +31,7 @@ import java.util.*;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
@@ -69,6 +71,7 @@ public class BasicMessageService implements MessageService {
             }
         }
 
+        log.info("[MESSAGE_CREATE_SUCCESS] 메시지 생성 성공: messageId={}", message.getId());
         return messageMapper.toDto(savedMessage);
     }
 
@@ -135,11 +138,13 @@ public class BasicMessageService implements MessageService {
         Message message = findMessageOrThrow(messageId);
 
         if (dto.newContent() == null) {
+            log.warn("[MESSAGE_UPDATE_FAIL_BY_CONTENT] 내용이 비어있어서 메시지 수정 실패: messageId={}", messageId);
             throw new IllegalArgumentException("content는 null값일 수 없습니다.");
         }
 
         message.updateContent(dto.newContent());
 
+        log.info("[MESSAGE_UPDATE_SUCCESS] 메시지 수정 성공: messageId={}", messageId);
         return messageMapper.toDto(message);
     }
 
@@ -147,6 +152,7 @@ public class BasicMessageService implements MessageService {
     public void deleteMessage(UUID messageId) {
         findMessageOrThrow(messageId).getAttachments();
 
+        log.info("[MESSAGE_DELETE_SUCCESS] 메시지 삭제 성공: messageId={}", messageId);
         messageRepository.deleteById(messageId);
     }
 
@@ -155,7 +161,10 @@ public class BasicMessageService implements MessageService {
 
         return messageRepository.findById(messageId)
                 .orElseThrow(() ->
-                        new NoSuchElementException("해당 id를 가진 메시지가 존재하지 않습니다."));
+                {
+                    log.warn("[MESSAGE_NOT_FOUND] 메시지가 존재하지 않음: messageId={}", messageId);
+                    return new NoSuchElementException("해당 id를 가진 메시지가 존재하지 않습니다.");
+                });
     }
 
     private Channel findChannelOrThrow(UUID channelId) {
@@ -163,7 +172,10 @@ public class BasicMessageService implements MessageService {
 
         return channelRepository.findById(channelId)
                 .orElseThrow(() ->
-                        new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다."));
+                {
+                    log.warn("[CHANNEL_NOT_FOUND] 채널이 존재하지 않음: channelId={}", channelId);
+                    return new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
+                });
     }
 
     private User findUserOrThrow(UUID userId) {

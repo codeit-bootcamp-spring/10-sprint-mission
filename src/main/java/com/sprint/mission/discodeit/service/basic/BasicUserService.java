@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import java.util.*;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class BasicUserService implements UserService {
     private final UserRepository userRepository;
     private final UserStatusRepository userStatusRepository;
@@ -35,10 +37,12 @@ public class BasicUserService implements UserService {
     @Override
     public UserDto createUser(CreateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
         if (userRepository.existsByUsername(dto.username())) {
+            log.warn("[USER_CREATE_FAIL_BY_USERNAME] 이미 사용중인 이름으로 유저 생성 실패: username={}", dto.username());
             throw new IllegalArgumentException("이미 사용중인 username입니다.");
         }
 
         if (userRepository.existsByEmail(dto.email())) {
+            log.warn("[USER_CREATE_FAIL_BY_EMAIL] 이미 사용중인 이메일로 유저 생성 실패: email={}", dto.email());
             throw new IllegalArgumentException("이미 사용중인 email입니다.");
         }
 
@@ -61,6 +65,7 @@ public class BasicUserService implements UserService {
             binaryContentStorage.put(savedUser.getProfile().getId(), profileImage.bytes());
         }
 
+        log.info("[USER_CREATE_SUCCESS] 유저 생성 성공: userId={}", savedUser.getId());
         return userMapper.toDto(savedUser);
     }
 
@@ -102,6 +107,7 @@ public class BasicUserService implements UserService {
             binaryContentStorage.put(savedProfile.getId(), profileImage.bytes());
         }
 
+        log.info("[USER_UPDATE_SUCCESS] 유저 정보 수정 성공: userId={}", user.getId());
         return userMapper.toDto(user);
     }
 
@@ -116,6 +122,7 @@ public class BasicUserService implements UserService {
         // 갱신
         status.updateLastActiveAt(dto.newLastActiveAt());
 
+        log.info("[USER_STATUS_UPDATE_SUCCESS] 유저 상태 수정 성공: userId={}", user.getId());
         return userMapper.toDto(user);
     }
 
@@ -127,6 +134,8 @@ public class BasicUserService implements UserService {
         if (profile != null && profile.getId() != null) {
             binaryContentRepository.deleteById(profile.getId());
         }
+
+        log.info("[USER_DELETE_SUCCESS] 유저 삭제 성공: userId={}", user.getId());
         userRepository.deleteById(userId);
     }
 
@@ -136,15 +145,20 @@ public class BasicUserService implements UserService {
         Objects.requireNonNull(userId, "userId는 null 값일 수 없습니다.");
 
         return userRepository.findById(userId)
-                .orElseThrow(() -> new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다."));
+                .orElseThrow(() -> {
+                    log.warn("[USER_NOT_FOUND] 유저가 존재하지 않음: userId={}", userId);
+                    return new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
+                });
     }
 
     private void updateUserName(UpdateUserRequestDTO dto, User user) {
         if (user.getUsername().equals(dto.newUsername())){
+            log.warn("[USER_UPDATE_FAIL_BY_USERNAME] 동일한 이름으로 수정 시도로 유저 정보 수정 실패: userId={}, newUsername={}", user.getId(), dto.newUsername());
             throw new IllegalArgumentException("현재 사용중인 username과 동일합니다.");
         }
 
         if (userRepository.existsByUsername(dto.newUsername())) {
+            log.warn("[USER_UPDATE_FAIL_BY_USERNAME] 이미 사용중인 이름으로 수정 시도로 유저 정보 수정 실패: userId={}, newUsername={}", user.getId(), dto.newUsername());
             throw new IllegalArgumentException("이미 사용중인 username입니다.");
         }
 
@@ -154,10 +168,12 @@ public class BasicUserService implements UserService {
 
     private void updateEmail(UpdateUserRequestDTO dto, User user) {
         if (user.getEmail().equals(dto.newEmail())){
+            log.warn("[USER_UPDATE_FAIL_BY_EMAIL] 동일한 이메일로 수정 시도로 유저 정보 수정 실패: userId={}, newEmail={}", user.getId(), dto.newEmail());
             throw new IllegalArgumentException("현재 사용중인 email과 동일합니다.");
         }
 
         if (userRepository.existsByEmail(dto.newEmail())) {
+            log.warn("[USER_UPDATE_FAIL_BY_EMAIL] 이미 사용중인 이메일로 수정 시도로 유저 정보 수정 실패: userId={}, newEmail={}", user.getId(), dto.newEmail());
             throw new IllegalArgumentException("이미 사용중인 email입니다.");
         }
 
