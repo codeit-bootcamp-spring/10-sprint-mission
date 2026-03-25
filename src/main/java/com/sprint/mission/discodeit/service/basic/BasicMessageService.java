@@ -23,6 +23,7 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -103,34 +104,16 @@ public class BasicMessageService implements MessageService {
   public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor,
       Pageable pageable) {
 
-    Slice<Message> messages;
+    Slice<MessageDto> slice = messageRepository.findAllByChannelIdAndCreatedAtLessThan(channelId,
+            Optional.ofNullable(cursor).orElse(Instant.now()),
+            pageable)
+        .map(messageMapper::toDto);
 
-    if (cursor == null) {
-      messages = messageRepository.findAllByChannelId(channelId, pageable);
-    } else {
-      messages = messageRepository.findAllByChannelIdAndCreatedAtLessThan(channelId, cursor,
-          pageable);
+    Instant nextCursor = null;
+    if (!slice.getContent().isEmpty() && slice.hasNext()) {
+      nextCursor = slice.getContent().get(slice.getContent().size() - 1).createdAt();
     }
-
-    Slice<MessageDto> messageDtos = messages.map(messageMapper::toDto);
-    Instant nextCursor = getNextCursor(messageDtos);
-    return pageMapper.fromSlice(messageDtos, nextCursor);
-  }
-
-  private static Instant getNextCursor(Slice<MessageDto> messageDtos) {
-    // 다음 페이지가 더 이상 없다면 무한 스크롤을 종료하기 위해 null 반환
-    if (!messageDtos.hasNext()) {
-      return null;
-    }
-
-    List<MessageDto> content = messageDtos.getContent();
-
-    // 리스트가 비어있지 않은지 확인 후, 실제 데이터 리스트의 크기(size)를 기준으로 마지막 요소 추출
-    if (!content.isEmpty()) {
-      return content.get(content.size() - 1).createdAt();
-    }
-
-    return null;
+    return pageMapper.fromSlice(slice, nextCursor);
   }
 
   @Override
