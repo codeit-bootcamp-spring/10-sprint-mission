@@ -7,6 +7,9 @@ import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.EmailAlreadyExistException;
+import com.sprint.mission.discodeit.exception.user.UserNameAlreadyExistException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -14,10 +17,8 @@ import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,10 +44,10 @@ public class BasicUserService implements UserService {
 
     //1.이메일 중복 검증
     if (userRepository.existsByEmail(email)) {
-      throw new IllegalArgumentException("User with email " + email + " already exists");
+      throw new EmailAlreadyExistException(Map.of("중복 검증하려는 이메일 정보",email));
     }
     if (userRepository.existsByUsername(username)) {
-      throw new IllegalArgumentException("User with username " + username + " already exists");
+      throw new UserNameAlreadyExistException(Map.of("중복 검증하려는 사용자 이름 정보",username));
     }
 
     //2.프로필 저장
@@ -79,7 +80,7 @@ public class BasicUserService implements UserService {
   public UserDto find(UUID userId) {
     return userRepository.findById(userId)
         .map(userMapper::toDto)
-        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        .orElseThrow(() -> new UserNotFoundException(Map.of("조회 시도한 사용자 id 정보",userId)));
   }
 
   @Override
@@ -94,16 +95,16 @@ public class BasicUserService implements UserService {
   @Override
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
+        .orElseThrow(() -> new UserNotFoundException(Map.of("조회 시도한 사용자 id 정보",userId)));
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
 
       if (newEmail != null && !newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
-          throw new IllegalArgumentException("User with email " + newEmail + " already exists");
+          throw new EmailAlreadyExistException(Map.of("중복 검증하려는 이메일 정보",newEmail));
       }
       if (newUsername != null && !newUsername.equals(user.getUsername()) && userRepository.existsByUsername(newUsername)) {
-          throw new IllegalArgumentException("User with username " + newUsername + " already exists");
+          throw new UserNameAlreadyExistException(Map.of("중복 검증하려는 사용자 이름 정보",newUsername));
       }
 
     BinaryContent nullableProfile = optionalProfileCreateRequest
@@ -134,7 +135,7 @@ public class BasicUserService implements UserService {
   public void delete(UUID userId) {
 
     if (!userRepository.existsById(userId)) {
-      throw new NoSuchElementException("User with id " + userId + " not found");
+      throw new UserNotFoundException(Map.of("조회 시도한 사용자 id 정보",userId));
     }
 
     userRepository.deleteById(userId);
