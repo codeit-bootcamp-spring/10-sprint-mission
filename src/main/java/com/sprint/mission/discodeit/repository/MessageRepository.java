@@ -12,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface MessageRepository extends JpaRepository<Message, UUID> {
 
-  // 커서 기반 페이지네이션 및  메시지 조회 시 N+1 문제 해결을 위한 쿼리
+  // 커서 기반 페이지네이션 및  메시지 조회 시 연관 객체도 함께 가져오기 위한 쿼리
   @Query("SELECT m FROM Message m "
       + "LEFT JOIN FETCH m.author a " // 작성자 정보도 함께 가져오기 (없을 수도 있으니 LEFT JOIN)
       + "JOIN FETCH a.userStatus " // 작성자의 상태 정보도 함께 가져오기

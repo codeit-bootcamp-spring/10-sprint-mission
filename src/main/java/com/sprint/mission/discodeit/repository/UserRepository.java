@@ -18,7 +18,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
 
   boolean existsByUsername(String username);
 
-  // 유저 목록 조회 시 N+1 문제 해결을 위한 쿼리
+  // 유저 목록 조회 시 연관 객체도 함께 가져오기 위한 쿼리
   @Query("SELECT u FROM User u "
       + "LEFT JOIN FETCH u.profile " // 프로필도 함께 가져오기 (없을 수도 있으니 LEFT JOIN)
       + "JOIN FETCH u.userStatus")
