@@ -90,7 +90,6 @@ public class BasicUserStatusService implements UserStatusService {
         return userStatusRepository.findById(statusId)
                 .orElseThrow(() -> {
                     log.warn("[USERSTATUS_NOT_FOUND] 유저 상태가 존재하지 않음: userStatusId={}", statusId);
-                    // Todo..
                     return new UserStatusNotFoundException(statusId);
                 });
     }
