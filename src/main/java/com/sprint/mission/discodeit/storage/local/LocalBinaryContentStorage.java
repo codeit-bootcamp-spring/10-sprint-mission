@@ -10,6 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
@@ -19,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
 @Component
 public class LocalBinaryContentStorage implements BinaryContentStorage {
@@ -44,13 +47,17 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   }
 
   public UUID put(UUID binaryContentId, byte[] bytes) {
+    log.debug("파일 업로드 시작: binaryContentId={}, size={}", binaryContentId, bytes.length);
     Path filePath = resolvePath(binaryContentId);
     if (Files.exists(filePath)) {
+      log.warn("파일 업로드 실패 binarContent 존재: binaryContentId={}", binaryContentId);
       throw new IllegalArgumentException("File with key " + binaryContentId + " already exists");
     }
     try (OutputStream outputStream = Files.newOutputStream(filePath)) {
       outputStream.write(bytes);
+      log.info("파일 업로드 완료:binaryContentId={}, size={}", binaryContentId, bytes.length);
     } catch (IOException e) {
+      log.error("파일 업로드 실패: id={}", binaryContentId, e);
       throw new RuntimeException(e);
     }
     return binaryContentId;
@@ -75,8 +82,12 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   @Override
   public ResponseEntity<Resource> download(BinaryContentDto metaData) {
+    log.debug("파일 다운로드 시작: binaryContentId= {},fileName= {}",metaData.id(),metaData.fileName());
     InputStream inputStream = get(metaData.id());
     Resource resource = new InputStreamResource(inputStream);
+
+    log.info("파일 다운로드 응답 생성: id={}, fileName={}, size={}",
+            metaData.id(), metaData.fileName(), metaData.size());
 
     return ResponseEntity
         .status(HttpStatus.OK)
