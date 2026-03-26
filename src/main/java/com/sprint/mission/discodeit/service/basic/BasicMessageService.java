@@ -1,10 +1,12 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -67,8 +69,11 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  public Slice<Message> findAllByChannelId(UUID channelId, Pageable pageable) {
-    return messageRepository.findAllByChannelId(channelId, pageable);
+  public Slice<Message> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
+
+    // 커서가 없을 시, 현재가 기준 (최신 메시지부터 조회)
+    Instant targetTime = Optional.ofNullable(cursor).orElse(Instant.now());
+    return messageRepository.findAllByChannelIdWithAuthor(channelId, targetTime, pageable);
   }
 
   @Override

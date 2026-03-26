@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -30,6 +31,7 @@ public class MessageController implements MessageApi {
 
   private final MessageService messageService;
   private final MessageMapper messageMapper;
+  private final PageResponseMapper pageResponseMapper;
 
   @Override
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -51,16 +53,23 @@ public class MessageController implements MessageApi {
   @GetMapping
   public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @RequestParam UUID channelId,
+      @RequestParam(required = false) Instant cursor,
       @PageableDefault(page = 0, size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
     // 페이징 처리된 객체 받아옴
-    Slice<Message> messageSlice = messageService.findAllByChannelId(channelId, pageable);
+    Slice<Message> messageSlice = messageService.findAllByChannelId(channelId, cursor, pageable);
 
     // 엔티티를 dto로 변환
     Slice<MessageDto> dtoSlice = messageSlice.map(messageMapper::toDto);
 
+    // 다음 커서 추출
+    Instant nextCursor = null;
+    if (!dtoSlice.getContent().isEmpty()) {
+      nextCursor = dtoSlice.getContent().get(dtoSlice.getContent().size() - 1).createdAt();
+    }
+
     // PageResponse dto로 변환
-    PageResponse<MessageDto> response = PageResponseMapper.fromSlice(dtoSlice);
+    PageResponse<MessageDto> response = pageResponseMapper.fromSlice(dtoSlice, nextCursor);
 
     return ResponseEntity.ok(response);
   }

@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Message;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.List;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +15,7 @@ public interface MessageService {
 
   Message findById(UUID id);
 
-  Slice<Message> findAllByChannelId(UUID channelId, Pageable pageable);
+  Slice<Message> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable);
 
   Message update(UUID id, String newContent);
 
