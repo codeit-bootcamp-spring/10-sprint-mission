@@ -17,9 +17,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BasicChannelService implements ChannelService {
@@ -31,20 +33,26 @@ public class BasicChannelService implements ChannelService {
   private final UserRepository userRepository;
   private final ChannelMapper channelMapper;
 
+
   @Transactional
   @Override
   public ChannelDto create(PublicChannelCreateRequest request) {
+    log.debug("PUBLIC 채널생성 시작: channelName= {}, description= {}", request.name(), request.description());
     String name = request.name();
     String description = request.description();
     Channel channel = new Channel(ChannelType.PUBLIC, name, description);
-
     channelRepository.save(channel);
+    log.info("PUBLIC 채널생성 완료: channelId= {}, channelName= {}", channel.getId(), channel.getName());
     return channelMapper.toDto(channel);
   }
 
   @Transactional
   @Override
   public ChannelDto create(PrivateChannelCreateRequest request) {
+
+    List<UUID> participantIds = request.participantIds();
+    log.debug("PRIVATE 채널생성 시작, 참여자 수 = {}", participantIds.size());
+
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
     channelRepository.save(channel);
 
@@ -53,6 +61,7 @@ public class BasicChannelService implements ChannelService {
         .toList();
     readStatusRepository.saveAll(readStatuses);
 
+    log.info("PRIVATE 채널생성 완료, channelId = {},참여자 수 = {}", channel.getId(),readStatuses.size());
     return channelMapper.toDto(channel);
   }
 
@@ -82,22 +91,27 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @Override
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
+    log.debug("PUBLIC 채널 수정 시작 channelId= {} newName= {}, newDescription= {}", channelId,request.newName(),request.newDescription());
     String newName = request.newName();
     String newDescription = request.newDescription();
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
             () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     if (channel.getType().equals(ChannelType.PRIVATE)) {
+      log.warn("채널 수정 불가: channelId= {}, channelType= {}", channelId, channel.getType());
       throw new IllegalArgumentException("Private channel cannot be updated");
     }
     channel.update(newName, newDescription);
+    log.info("PUBLIC 채널 수정완료 channelId= {}, channelName= {}", channelId,channel.getName());
     return channelMapper.toDto(channel);
   }
 
   @Transactional
   @Override
   public void delete(UUID channelId) {
+    log.debug("채널 삭제 시작 channelId= {}", channelId);
     if (!channelRepository.existsById(channelId)) {
+      log.warn("채널 삭제 불가: channelId= {}", channelId);
       throw new NoSuchElementException("Channel with id " + channelId + " not found");
     }
 
@@ -105,5 +119,6 @@ public class BasicChannelService implements ChannelService {
     readStatusRepository.deleteAllByChannelId(channelId);
 
     channelRepository.deleteById(channelId);
+    log.info("채널 삭제 완료: channelId= {}", channelId);
   }
 }
