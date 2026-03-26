@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.user.*;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
 import com.sprint.mission.discodeit.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -44,7 +47,10 @@ public class UserController {
                 );
             } catch (IOException e) {
                 log.warn("[USER_CREATE_REQUEST_FAIL] 프로필 파일 읽기 실패로 유저 생성 요청 실패: username={}", dto.username());
-                throw new IllegalArgumentException("프로필 파일을 읽을 수 없습니다.", e);
+                throw new BinaryContentException(
+                        ErrorCode.BINARY_CONTENT_CAN_NOT_READ,
+                        Map.of("username", dto.username(), "filename", profile.getOriginalFilename())
+                );
             }
         }
 
@@ -84,7 +90,10 @@ public class UserController {
                 );
             } catch (IOException e) {
                 log.warn("[USER_UPDATE_REQUEST_FAIL] 프로필 파일 읽기 실패로 유저 정보 수정 요청 실패: userId={}", userId);
-                throw new IllegalArgumentException("프로필 파일을 읽을 수 없습니다.", e);
+                throw new BinaryContentException(
+                        ErrorCode.BINARY_CONTENT_CAN_NOT_READ,
+                        Map.of("userId", userId, "filename", profile.getOriginalFilename())
+                );
             }
         }
 

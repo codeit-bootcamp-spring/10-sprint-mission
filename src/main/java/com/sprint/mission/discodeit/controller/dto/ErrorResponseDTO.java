@@ -1,11 +1,12 @@
 package com.sprint.mission.discodeit.controller.dto;
 
 import java.time.Instant;
+import java.util.Map;
 
 public record ErrorResponseDTO(
         Instant timestamp,
         int status,
-        String error,
+        String errorType,
         String message,
-        String path
+        Map<String, Object> details
 ) { }

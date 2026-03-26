@@ -9,6 +9,11 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.global.InvalidInputException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
@@ -139,7 +144,9 @@ public class BasicMessageService implements MessageService {
 
         if (dto.newContent() == null) {
             log.warn("[MESSAGE_UPDATE_FAIL_BY_CONTENT] 내용이 비어있어서 메시지 수정 실패: messageId={}", messageId);
-            throw new IllegalArgumentException("content는 null값일 수 없습니다.");
+            throw new InvalidInputException(
+                    ErrorCode.MESSAGE_CONTENT_IS_BLANK, Map.of("messageId", messageId)
+            );
         }
 
         message.updateContent(dto.newContent());
@@ -163,7 +170,7 @@ public class BasicMessageService implements MessageService {
                 .orElseThrow(() ->
                 {
                     log.warn("[MESSAGE_NOT_FOUND] 메시지가 존재하지 않음: messageId={}", messageId);
-                    return new NoSuchElementException("해당 id를 가진 메시지가 존재하지 않습니다.");
+                    return new MessageNotFoundException(messageId);
                 });
     }
 
@@ -174,7 +181,7 @@ public class BasicMessageService implements MessageService {
                 .orElseThrow(() ->
                 {
                     log.warn("[CHANNEL_NOT_FOUND] 채널이 존재하지 않음: channelId={}", channelId);
-                    return new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
+                    return new ChannelNotFoundException(channelId);
                 });
     }
 
@@ -183,6 +190,6 @@ public class BasicMessageService implements MessageService {
 
         return userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new NoSuchElementException("해당 id를 가진 사용자가 존재하지 않습니다."));
+                        new UserNotFoundException(userId));
     }
 }

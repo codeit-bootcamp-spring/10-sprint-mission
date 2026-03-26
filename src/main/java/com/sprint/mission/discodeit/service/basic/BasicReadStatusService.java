@@ -6,6 +6,12 @@ import com.sprint.mission.discodeit.dto.readstatus.UpdateReadStatusRequestDTO;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.global.DuplicateResourceException;
+import com.sprint.mission.discodeit.exception.global.InvalidInputException;
+import com.sprint.mission.discodeit.exception.status.read.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -16,10 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Transactional
@@ -74,7 +77,9 @@ public class BasicReadStatusService implements ReadStatusService {
 
         if (dto.newLastReadAt() == null) {
             log.warn("[READSTATUS_UPDATE_FAIL_BY_LAST_READ_AT] lastReadAt이 null값으로 읽음 상태 수정 실패: readStatusId={}", statusId);
-            throw new IllegalArgumentException("lastReadAt은 null값일 수 없습니다.");
+            throw new InvalidInputException(
+                    ErrorCode.LAST_READ_AT_IS_NULL, Map.of("readStatusId", statusId)
+            );
         }
 
         ReadStatus status = findReadStatusOrThrow(statusId);
@@ -98,7 +103,7 @@ public class BasicReadStatusService implements ReadStatusService {
         return readStatusRepository.findById(statusId)
                 .orElseThrow(() -> {
                     log.warn("[READSTATUS_NOT_FOUND] 읽음 상태가 존재하지 않음: readStatusId={}", statusId);
-                    return new NoSuchElementException("해당 id에 readStatus가 존재하지 않습니다.");
+                    return new ReadStatusNotFoundException(statusId);
                 });
     }
 
@@ -108,7 +113,7 @@ public class BasicReadStatusService implements ReadStatusService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("[USER_NOT_FOUND] 유저가 존재하지 않음: userId={}", userId);
-                    return new NoSuchElementException("해당 id에 사용자가 존재하지 않습니다.");
+                    return new UserNotFoundException(userId);
                 });
     }
 
@@ -118,14 +123,16 @@ public class BasicReadStatusService implements ReadStatusService {
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> {
                     log.warn("[CHANNEL_NOT_FOUND] 채널이 존재하지 않음: channelId={}", channelId);
-                    return new NoSuchElementException("해당 id에 채널이 존재하지 않습니다.");
+                    return new ChannelNotFoundException(channelId);
                 });
     }
 
     private void checkStatusAlreadyExists(UUID userId, UUID channelId) {
         if (readStatusRepository.existsByUser_IdAndChannel_Id(userId, channelId)) {
             log.warn("[READSTATUS_ALREADY_EXISTS] 읽음 상태가 이미 존재함: userId={}, channelId={}", userId, channelId);
-            throw new IllegalArgumentException("이미 ReadStatus가 존재합니다.");
+            throw new DuplicateResourceException(
+                    ErrorCode.READ_STATUS_ALREADY_EXISTS, Map.of("userId", userId, "channelId", channelId)
+            );
         }
     }
 }

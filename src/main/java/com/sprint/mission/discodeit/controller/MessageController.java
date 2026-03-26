@@ -5,6 +5,8 @@ import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.UpdateMessageRequestDTO;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
 import com.sprint.mission.discodeit.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -55,7 +58,10 @@ public class MessageController {
                         } catch (IOException e) {
                             log.warn("[MESSAGE_CREATE_REQUEST_FAIL] 첨부 파일 읽기 실패로 메시지 생성 요청 실패: authorId={}, channelId={}, filename={}",
                                     dto.authorId(), dto.channelId(), file.getOriginalFilename());
-                            throw new IllegalArgumentException("첨부 파일을 읽을 수 없습니다.", e);
+                            throw new BinaryContentException(
+                                    ErrorCode.BINARY_CONTENT_CAN_NOT_READ,
+                                    Map.of("authorId", dto.authorId(), "channelId", dto.channelId(), "filename", file.getOriginalFilename())
+                            );
                         }
                     })
                     .toList();

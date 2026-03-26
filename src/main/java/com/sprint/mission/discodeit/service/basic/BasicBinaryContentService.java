@@ -4,6 +4,10 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.global.InvalidInputException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -12,10 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Transactional
@@ -59,7 +60,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
         if (ids.size() != binaryContents.size()) {
             log.warn("[BINARYCONTENT_NOT_FOUND] 요청한 파일 id 중 일부가 존재하지 않음: binaryContentIdsSize={}", ids.size());
-            throw new NoSuchElementException(
+            throw new BinaryContentNotFoundException(
                     "요청한 BinaryContent id 중 일부가 존재하지 않습니다. 요청: " + ids.size()
                             + "건, 조회: " + binaryContents.size() + "건"
                     );
@@ -90,7 +91,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
                 .orElseThrow(() -> {
                     log.warn("[BINARYCONTENT_NOT_FOUND] 파일이 존재하지 않음: binaryContentId={}", binaryContentId);
-                    return new NoSuchElementException("해당 id에 binaryContent가 존재하지 않습니다.");
+                    return new BinaryContentNotFoundException(binaryContentId);
                 });
 
         return binaryContent;
@@ -101,22 +102,28 @@ public class BasicBinaryContentService implements BinaryContentService {
 
         if (dto.userId() == null) {
             log.warn("[BINARYCONTENT_CREATE_FAIL_BY_USERID] 유저 id가 null값으로 파일 생성 실패");
-            throw new IllegalArgumentException("userId는 null값일 수 없습니다.");
+            throw new UserNotFoundException("userId는 null값일 수 없습니다.");
         }
 
         if (dto.data() == null || dto.data().length == 0) {
             log.warn("[BINARYCONTENT_CREATE_FAIL_BY_DATA] data값이 null/empty로 파일 생성 실패");
-            throw new IllegalArgumentException("data는 null/empty값일 수 없습니다.");
+            throw new InvalidInputException(
+                    ErrorCode.BINARY_CONTENT_DATA_IS_NULL, Map.of("data", "data값은 null/empty값일 수 없습니다.")
+            );
         }
 
         if (dto.contentType() == null || dto.contentType().isBlank()) {
             log.warn("[BINARYCONTENT_CREATE_FAIL_BY_CONTENT_TYPE] contentType값이 null/empty로 파일 생성 실패");
-            throw new IllegalArgumentException("contentType은 null/empty값일 수 없습니다.");
+            throw new InvalidInputException(
+                    ErrorCode.BINARY_CONTENT_CONTENT_TYPE_IS_NULL, Map.of("contentType", "contentType값은 null/empty값일 수 없습니다.")
+            );
         }
 
         if (dto.filename() == null || dto.filename().isBlank()) {
             log.warn("[BINARYCONTENT_CREATE_FAIL_BY_FILENAME] 파일명이 null/empty로 파일 생성 실패");
-            throw new IllegalArgumentException("filename은 null/empty값일 수 없습니다.");
+            throw new InvalidInputException(
+                    ErrorCode.BINARY_CONTENT_FILENAME_IS_NULL, Map.of("filename", "filename값은 null/empty값일 수 없습니다.")
+            );
         }
     }
 }

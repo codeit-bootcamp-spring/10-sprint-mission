@@ -5,6 +5,8 @@ import com.sprint.mission.discodeit.dto.userstatus.UpdateStatusByUserIdRequestDT
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.status.user.UserStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -64,8 +66,7 @@ public class BasicUserStatusService implements UserStatusService {
                 .orElseThrow(() ->
                 {
                     log.warn("[USERSTATUS_NOT_FOUND] 유저 상태가 존재하지 않음: userId={}", userId);
-                    return new NoSuchElementException(
-                            "해당 userId에 대한 UserStatus가 존재하지 않습니다 userId=" + userId);
+                    return new UserStatusNotFoundException(userId);
                 });
 
         status.updateLastActiveAt(dto.newLastActiveAt());
@@ -89,7 +90,8 @@ public class BasicUserStatusService implements UserStatusService {
         return userStatusRepository.findById(statusId)
                 .orElseThrow(() -> {
                     log.warn("[USERSTATUS_NOT_FOUND] 유저 상태가 존재하지 않음: userStatusId={}", statusId);
-                    return new NoSuchElementException("해당 id에 userStatus가 존재하지 않습니다.");
+                    // Todo..
+                    return new UserStatusNotFoundException(statusId);
                 });
     }
 
@@ -99,7 +101,7 @@ public class BasicUserStatusService implements UserStatusService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("[USER_NOT_FOUND] 유저가 존재하지 않음: userId={}", userId);
-                    return new NoSuchElementException("해당 id에 사용자가 존재하지 않습니다.");
+                    return new UserNotFoundException(userId);
                 });
     }
 }

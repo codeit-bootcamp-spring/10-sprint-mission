@@ -3,6 +3,12 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.channel.*;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.global.DuplicateResourceException;
+import com.sprint.mission.discodeit.exception.global.UnchangedValueException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -57,7 +63,7 @@ public class BasicChannelService implements ChannelService {
         List<User> users = userRepository.findAllById(dto.participantIds());
         // dto의 리스트와 실제 db 리스트가 맞지 않는 경우 -> 존재하지 않는 사용자가 있는 경우 처리
         if (users.size() != dto.participantIds().size()) {
-            throw new NoSuchElementException("존재하지 않는 사용자가 포함되어 있습니다.");
+            throw new UserNotFoundException("존재하지 않는 사용자가 있습니다.");
         }
 
         for (User user: users) {
@@ -111,7 +117,7 @@ public class BasicChannelService implements ChannelService {
 
         if (channel.getType() == ChannelType.PRIVATE) {
             log.warn("[CHANNEL_UPDATE_FAIL_BY_CHANNEL_TYPE] 비공개 채널로 채널 정보 수정 실패: channelId={}", channelId);
-            throw new IllegalArgumentException("비공개 채널은 수정할 수 없습니다.");
+            throw new PrivateChannelUpdateException(channelId);
         }
 
         if (dto.newName() != null) {
@@ -141,7 +147,7 @@ public class BasicChannelService implements ChannelService {
                 .orElseThrow(() ->
                 {
                     log.warn("[CHANNEL_NOT_FOUND] 채널이 존재하지 않음: channelId={}", channelId);
-                    return new NoSuchElementException("해당 id를 가진 채널이 존재하지 않습니다.");
+                    return new ChannelNotFoundException(channelId);
                 });
     }
 
@@ -151,7 +157,7 @@ public class BasicChannelService implements ChannelService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("[USER_NOT_FOUND] 유저가 존재하지 않음: userId={}", userId);
-                    return new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
+                    return new UserNotFoundException(userId);
                 });
     }
 
@@ -159,7 +165,9 @@ public class BasicChannelService implements ChannelService {
         if (!dto.newName().equals(channel.getName())) {
             if (channelRepository.existsByName(dto.newName())) {
                 log.warn("[CHANNEL_UPDATE_FAIL_BY_CHANNELNAME] 이미 사용중인 채널 이름으로 수정 시도로 채널 정보 수정 실패: channelId={}", channel.getId());
-                throw new IllegalArgumentException("이미 사용중인 channelName입니다.");
+                throw new DuplicateResourceException(
+                        ErrorCode.CHANNEL_NAME_ALREADY_EXISTS, Map.of("channelId", channel.getId())
+                );
             }
         }
 
@@ -169,7 +177,9 @@ public class BasicChannelService implements ChannelService {
     private void updateChannelDescription(UpdateChannelRequestDTO dto, Channel channel) {
         if (dto.newDescription().equals(channel.getDescription())) {
             log.warn("[CHANNEL_UPDATE_FAIL_BY_DESCRIPTION] 같은 설명으로 수정 시도로 채널 정보 수정 실패: channelId={}", channel.getId());
-            throw new IllegalArgumentException("같은 description으로 바꿀 수 없습니다.");
+            throw new UnchangedValueException(
+                    ErrorCode.CHANNEL_DESCRIPTION_UNCHANGED, Map.of("channelId", channel.getId())
+            );
         }
 
         channel.updateDescription(dto.newDescription());

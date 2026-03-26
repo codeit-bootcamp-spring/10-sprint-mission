@@ -8,6 +8,11 @@ import com.sprint.mission.discodeit.dto.user.UpdateUserRequestDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.global.DuplicateResourceException;
+import com.sprint.mission.discodeit.exception.global.UnchangedValueException;
+import com.sprint.mission.discodeit.exception.status.user.UserStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.*;
@@ -38,12 +43,16 @@ public class BasicUserService implements UserService {
     public UserDto createUser(CreateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
         if (userRepository.existsByUsername(dto.username())) {
             log.warn("[USER_CREATE_FAIL_BY_USERNAME] 이미 사용중인 이름으로 유저 생성 실패: username={}", dto.username());
-            throw new IllegalArgumentException("이미 사용중인 username입니다.");
+            throw new DuplicateResourceException(
+                    ErrorCode.USERNAME_ALREADY_EXISTS, Map.of("username", dto.username())
+            );
         }
 
         if (userRepository.existsByEmail(dto.email())) {
             log.warn("[USER_CREATE_FAIL_BY_EMAIL] 이미 사용중인 이메일로 유저 생성 실패: email={}", dto.email());
-            throw new IllegalArgumentException("이미 사용중인 email입니다.");
+            throw new DuplicateResourceException(
+                    ErrorCode.EMAIL_ALREADY_EXISTS, Map.of("email", dto.email())
+            );
         }
 
         // userId를 받아오기 위해 우선 객체 생성
@@ -115,9 +124,7 @@ public class BasicUserService implements UserService {
     public UserDto updateUserStatus(UUID userId, UpdateUserStatusRequestDTO dto) {
         User user = findUserOrThrow(userId);
         UserStatus status = userStatusRepository.findByUser_Id(userId)
-                .orElseThrow(() -> new NoSuchElementException(
-                        "해당 userId에 대한 UserStatus가 존재하지 않습니다. userId=" + userId
-                ));
+                .orElseThrow(() -> new UserStatusNotFoundException(user.getUserStatus().getId()));
 
         // 갱신
         status.updateLastActiveAt(dto.newLastActiveAt());
@@ -147,19 +154,23 @@ public class BasicUserService implements UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
                     log.warn("[USER_NOT_FOUND] 유저가 존재하지 않음: userId={}", userId);
-                    return new NoSuchElementException("해당 id를 가진 유저가 존재하지 않습니다.");
+                    return new UserNotFoundException(userId);
                 });
     }
 
     private void updateUserName(UpdateUserRequestDTO dto, User user) {
         if (user.getUsername().equals(dto.newUsername())){
             log.warn("[USER_UPDATE_FAIL_BY_USERNAME] 동일한 이름으로 수정 시도로 유저 정보 수정 실패: userId={}, newUsername={}", user.getId(), dto.newUsername());
-            throw new IllegalArgumentException("현재 사용중인 username과 동일합니다.");
+            throw new UnchangedValueException(
+                    ErrorCode.USERNAME_UNCHANGED, Map.of("username", dto.newUsername())
+            );
         }
 
         if (userRepository.existsByUsername(dto.newUsername())) {
             log.warn("[USER_UPDATE_FAIL_BY_USERNAME] 이미 사용중인 이름으로 수정 시도로 유저 정보 수정 실패: userId={}, newUsername={}", user.getId(), dto.newUsername());
-            throw new IllegalArgumentException("이미 사용중인 username입니다.");
+            throw new DuplicateResourceException(
+                    ErrorCode.USERNAME_ALREADY_EXISTS, Map.of("username", dto.newUsername())
+            );
         }
 
         user.updateUsername(dto.newUsername());     // 객체를 수정하면 JPA가 트랜잭션 커밋되는 순간에 update를 실행해줌
@@ -169,12 +180,16 @@ public class BasicUserService implements UserService {
     private void updateEmail(UpdateUserRequestDTO dto, User user) {
         if (user.getEmail().equals(dto.newEmail())){
             log.warn("[USER_UPDATE_FAIL_BY_EMAIL] 동일한 이메일로 수정 시도로 유저 정보 수정 실패: userId={}, newEmail={}", user.getId(), dto.newEmail());
-            throw new IllegalArgumentException("현재 사용중인 email과 동일합니다.");
+            throw new UnchangedValueException(
+                    ErrorCode.EMAIL_UNCHANGED, Map.of("email", dto.newEmail())
+            );
         }
 
         if (userRepository.existsByEmail(dto.newEmail())) {
             log.warn("[USER_UPDATE_FAIL_BY_EMAIL] 이미 사용중인 이메일로 수정 시도로 유저 정보 수정 실패: userId={}, newEmail={}", user.getId(), dto.newEmail());
-            throw new IllegalArgumentException("이미 사용중인 email입니다.");
+            throw new DuplicateResourceException(
+                    ErrorCode.EMAIL_ALREADY_EXISTS, Map.of("email", dto.newEmail())
+            );
         }
 
         user.updateEmail(dto.newEmail());

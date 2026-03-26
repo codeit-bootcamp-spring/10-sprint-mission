@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.auth.LoginRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.AuthMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
@@ -26,9 +27,7 @@ public class BasicAuthService implements AuthService {
         User user = userRepository.findAll().stream()
                 .filter(u -> u.getUsername().equals(dto.username()))
                 .findFirst()
-                .orElseThrow(() -> new NoSuchElementException(
-                        "해당 이름으로 사용자가 존재하지 않습니다."
-                ));
+                .orElseThrow(() -> new UserNotFoundException(dto.username()));
 
         if (!dto.password().equals(user.getPassword())) {
             log.warn("[LOGIN_FAIL] 로그인 실패: username={}", user.getUsername());
