@@ -13,6 +13,12 @@
         </encoder>
     </appender>
 
+    <!-- 기본 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
 <!--    dev: DEBUG-->
     <springProfile name="dev">
         <root level="DEBUG">
