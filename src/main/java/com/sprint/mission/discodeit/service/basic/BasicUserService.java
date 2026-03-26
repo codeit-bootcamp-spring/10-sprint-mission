@@ -38,7 +38,7 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public UserDto create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-    log.info("회원가입 시작: 회원이름= {}, 이메일= {}", userCreateRequest.username(), userCreateRequest.email());
+    log.debug("회원가입 시작: 회원이름= {}, 이메일= {}", userCreateRequest.username(), userCreateRequest.email());
     String username = userCreateRequest.username();
     String email = userCreateRequest.email();
 
@@ -96,7 +96,7 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-      log.info("사용자 수정 시작: userId= {}", userId);
+      log.debug("사용자 수정 시작: userId= {}", userId);
 
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
