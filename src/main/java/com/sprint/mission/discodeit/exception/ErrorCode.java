@@ -3,8 +3,7 @@ package com.sprint.mission.discodeit.exception;
 import lombok.Getter;
 
 @Getter
-public enum ExceptionCode {
-
+public enum ErrorCode {
   USER_NOT_FOUND(404, "유저를 찾을 수 없습니다."),
   DUPLICATE_USERNAME(409, "이미 사용중인 유저 이름입니다."),
   DUPLICATE_EMAIL(409, "이미 사용중인 이메일입니다."),
@@ -27,7 +26,7 @@ public enum ExceptionCode {
   private final int statusCode;
   private final String message;
 
-  ExceptionCode(int statusCode, String message) {
+  ErrorCode(int statusCode, String message) {
     this.statusCode = statusCode;
     this.message = message;
   }

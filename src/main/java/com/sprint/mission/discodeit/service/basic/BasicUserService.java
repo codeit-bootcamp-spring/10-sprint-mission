@@ -6,8 +6,12 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.BusinessLogicException;
-import com.sprint.mission.discodeit.exception.ExceptionCode;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadException;
+import com.sprint.mission.discodeit.exception.user.DuplicateEmailException;
+import com.sprint.mission.discodeit.exception.user.DuplicateUsernameException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -15,7 +19,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +60,7 @@ public class BasicUserService implements UserService {
         binaryContentStorage.put(profile.getId(), file.getBytes());
         log.info("프로필 사진 저장 성공: profileId={}", profile.getId());
       } catch (IOException e) {
-        throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
+        throw new BinaryContentUploadException(e);
       }
     }
 
@@ -74,7 +78,7 @@ public class BasicUserService implements UserService {
   public UserDto findById(UUID userId) {
     log.debug("유저 조회 시작: userId={}", userId);
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
     log.debug("유저 조회 완료: user={}, username={}", user.getId(), user.getUsername());
     return userMapper.toDto(user);
   }
@@ -94,7 +98,7 @@ public class BasicUserService implements UserService {
   public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile file) {
     log.debug("유저 수정 시작: userId={}", userId);
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
 
     validateUpdate(user, request);
     user.update(request);
@@ -113,7 +117,7 @@ public class BasicUserService implements UserService {
         user.updateProfile(newProfile);
         log.info("새로운 프로필 사진 저장 성공: profileId={}", newProfile.getId());
       } catch (IOException e) {
-        throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
+        throw new BinaryContentUploadException(e);
       }
     }
     log.info("유저 수정 완료: userId={}", user.getId());
@@ -124,7 +128,7 @@ public class BasicUserService implements UserService {
   public void delete(UUID userId) {
     log.debug("유저 삭제 시작: userId={}", userId);
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
     userRepository.delete(user);
     log.info("유저 삭제 완료: userId={}", userId);
   }
@@ -133,7 +137,7 @@ public class BasicUserService implements UserService {
   private void existsByUsername(String username) {
     boolean exist = userRepository.existsByUsername(username);
     if (exist) {
-      throw new BusinessLogicException(ExceptionCode.DUPLICATE_USERNAME);
+      throw new DuplicateUsernameException(Map.of("username", username));
     }
   }
 
@@ -141,7 +145,7 @@ public class BasicUserService implements UserService {
   private void existsByEmail(String email) {
     boolean exist = userRepository.existsByEmail(email);
     if (exist) {
-      throw new BusinessLogicException(ExceptionCode.DUPLICATE_EMAIL);
+      throw new DuplicateEmailException(Map.of("email", email));
     }
   }
 

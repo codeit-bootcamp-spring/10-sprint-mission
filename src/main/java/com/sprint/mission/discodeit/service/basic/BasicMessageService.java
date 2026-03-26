@@ -9,8 +9,13 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.BusinessLogicException;
-import com.sprint.mission.discodeit.exception.ExceptionCode;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.ChannelParticipantException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -23,6 +28,7 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -53,14 +59,15 @@ public class BasicMessageService implements MessageService {
     log.debug("메시지 생성 시작: authorId={}, channelId={}, attachmentCount={}", request.authorId(),
         request.channelId(), multipartFiles.size());
     User user = userRepository.findById(request.authorId())
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(Map.of("authorId", request.authorId())));
 
     Channel channel = channelRepository.findById(request.channelId())
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
+        .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", request.channelId())));
 
     if (channel.getType() == ChannelType.PRIVATE) {
       readStatusRepository.findByUserIdAndChannelId(request.authorId(), request.channelId())
-          .orElseThrow(() -> new BusinessLogicException(ExceptionCode.NOT_A_CHANNEL_PARTICIPANT));
+          .orElseThrow(() -> new ChannelParticipantException(Map.of(
+              "authorId", request.authorId(), "channelId", request.channelId())));
     }
 
     Message message = messageMapper.toEntity(request, channel, user);
@@ -83,7 +90,7 @@ public class BasicMessageService implements MessageService {
           message.addAttachment(attachment); //편의 메서드 사용
           log.info("첨부 파일 저장 성공: attachmentId={}", attachment.getId());
         } catch (IOException e) {
-          throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
+          throw new BinaryContentUploadException(e);
         }
       }
     }
@@ -97,7 +104,7 @@ public class BasicMessageService implements MessageService {
   public MessageDto findById(UUID messageId) {
     log.debug("메시지 조회 시작: messageId={}", messageId);
     Message message = messageRepository.findById(messageId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
+        .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
     log.debug("메시지 조회 완료: messageId={}, content={}", message.getId(), message.getContent());
     return messageMapper.toDto(message);
   }
@@ -126,7 +133,7 @@ public class BasicMessageService implements MessageService {
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
     log.debug("메시지 수정 시작: messageId={}", messageId);
     Message message = messageRepository.findById(messageId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
+        .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
 
     message.update(request.newContent());
     log.info("메시지 수정 완료: messageId={}", message.getId());
@@ -137,7 +144,7 @@ public class BasicMessageService implements MessageService {
   public void delete(UUID messageId) {
     log.debug("메시지 삭제 시작: messageId={}", messageId);
     Message message = messageRepository.findById(messageId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
+        .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
     messageRepository.delete(message);
     log.info("메시지 삭제 완료: messageId={}", message.getId());
   }

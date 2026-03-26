@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.storage.local;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
-import com.sprint.mission.discodeit.exception.BusinessLogicException;
-import com.sprint.mission.discodeit.exception.ExceptionCode;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
       try {
         Files.createDirectories(root);
       } catch (IOException e) {
-        throw new BusinessLogicException(ExceptionCode.STORAGE_INITIALIZATION_FAILED);
+        throw new DiscodeitException(ErrorCode.STORAGE_INITIALIZATION_FAILED);
       }
     }
   }
@@ -56,7 +56,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
       Files.write(path, bytes);
       return id;
     } catch (IOException e) {
-      throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
+      throw new DiscodeitException(ErrorCode.BINARY_CONTENT_UPLOAD_FAILED);
     }
   }
 
@@ -64,12 +64,12 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   public InputStream get(UUID id) {
     Path path = resolvePath(id);
     if (!Files.exists(path)) {
-      throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_NOT_FOUND);
+      throw new DiscodeitException(ErrorCode.BINARY_CONTENT_NOT_FOUND);
     }
     try {
       return Files.newInputStream(path);
     } catch (IOException e) {
-      throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_DOWNLOAD_FAILED);
+      throw new DiscodeitException(ErrorCode.BINARY_CONTENT_DOWNLOAD_FAILED);
     }
   }
 

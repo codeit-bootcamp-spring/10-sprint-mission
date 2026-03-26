@@ -6,14 +6,19 @@ import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.BusinessLogicException;
-import com.sprint.mission.discodeit.exception.ExceptionCode;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,14 +42,15 @@ public class BasicReadStatusService implements ReadStatusService {
         request.channelId(), request.lastReadAt());
 
     User user = userRepository.findById(request.userId())
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(Map.of("userId", request.userId())));
 
     Channel channel = channelRepository.findById(request.channelId())
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND));
+        .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", request.channelId())));
 
     readStatusRepository.findByUserIdAndChannelId(request.userId(), request.channelId())
         .ifPresent(status -> {
-          throw new BusinessLogicException(ExceptionCode.READ_STATUS_ALREADY_EXISTS);
+          throw new ReadStatusAlreadyExistsException(Map.of(
+              "userId", request.userId(), "channelId", request.channelId()));
         });
 
     ReadStatus readStatus = new ReadStatus(user, channel, request.lastReadAt());
@@ -55,10 +61,10 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   @Transactional(readOnly = true)
-  public ReadStatusDto findById(UUID statusId) {
-    log.debug("ReadStatus 조회 시작: readStatusId={}", statusId);
-    ReadStatus readStatus = readStatusRepository.findById(statusId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
+  public ReadStatusDto findById(UUID readStatusId) {
+    log.debug("ReadStatus 조회 시작: readStatusId={}", readStatusId);
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("readStatusId", readStatusId)));
     log.debug("ReadStatus 조회 완료: readStatusId={}", readStatus.getId());
     return readStatusMapper.toDto(readStatus);
   }
@@ -79,18 +85,18 @@ public class BasicReadStatusService implements ReadStatusService {
     log.debug("ReadStatus 수정 시작: readStatusId={}, newLastReadAt={}", readStatusId,
         request.newLastReadAt());
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
+        .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("readStatusId", readStatusId)));
     readStatus.updateLastReadAt(request.newLastReadAt());
     log.info("ReadStatus 수정 완료: readStatusId={}", readStatus.getId());
     return readStatusMapper.toDto(readStatus);
   }
 
   @Override
-  public void delete(UUID statusId) {
-    log.debug("ReadStatus 삭제 시작: readStatusId={}", statusId);
-    ReadStatus readStatus = readStatusRepository.findById(statusId)
-        .orElseThrow(() -> new BusinessLogicException(ExceptionCode.READ_STATUS_NOT_FOUND));
+  public void delete(UUID readStatusId) {
+    log.debug("ReadStatus 삭제 시작: readStatusId={}", readStatusId);
+    ReadStatus readStatus = readStatusRepository.findById(readStatusId)
+        .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("readStatusId", readStatusId)));
     readStatusRepository.delete(readStatus);
-    log.info("ReadStatus 삭제 완료: readStatusId={}", statusId);
+    log.info("ReadStatus 삭제 완료: readStatusId={}", readStatusId);
   }
 }
