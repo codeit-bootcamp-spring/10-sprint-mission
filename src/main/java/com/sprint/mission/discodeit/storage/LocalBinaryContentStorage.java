@@ -24,11 +24,9 @@ import java.util.UUID;
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     private final Path root;
-    private final BinaryContentStorage binaryContentStorage;
 
-    public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") String rootPath, BinaryContentStorage binaryContentStorage) {
+    public LocalBinaryContentStorage(@Value("${discodeit.storage.local.root-path}") String rootPath) {
         this.root = Path.of(rootPath);
-        this.binaryContentStorage = binaryContentStorage;
     }
 
     @Override
