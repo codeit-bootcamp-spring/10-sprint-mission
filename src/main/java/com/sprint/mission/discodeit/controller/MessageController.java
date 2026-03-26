@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -35,6 +37,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/messages")
+@Validated
 @Tag(name = "Message")
 @Slf4j
 public class MessageController {
@@ -67,7 +70,7 @@ public class MessageController {
   })
   public ResponseEntity<MessageDto> update(
       @Parameter(description = "수정할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
-      @PathVariable UUID messageId,
+      @NotNull @PathVariable UUID messageId,
       @Valid @RequestBody MessageUpdateRequest request
   ) {
     log.info("메시지 수정 요청: messageId={}", messageId);
@@ -85,7 +88,7 @@ public class MessageController {
   })
   public ResponseEntity<MessageDto> delete(
       @Parameter(description = "삭제할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
-      @PathVariable UUID messageId
+      @NotNull @PathVariable UUID messageId
   ) {
     log.info("메시지 삭제 요청: messageId={}", messageId);
     messageService.delete(messageId);
@@ -98,7 +101,7 @@ public class MessageController {
   @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공")
   public ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @Parameter(description = "조회할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
-      @RequestParam("channelId") UUID channelId,
+      @NotNull @RequestParam("channelId") UUID channelId,
       @Parameter(description = "페이징 커서 정보")
       @RequestParam(value = "cursor", required = false) Instant cursor,
       Pageable pageable

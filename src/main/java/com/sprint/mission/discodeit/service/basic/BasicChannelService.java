@@ -48,10 +48,8 @@ public class BasicChannelService implements ChannelService {
   @Override
   public ChannelDto createPrivate(PrivateChannelCreateRequest request) {
     log.debug("Private 채널 생성 시작: participantIdCount={}", request.participantIds().size());
-    //채널 생성 후 저장
     Channel channel = channelMapper.toEntity(request);
     channelRepository.save(channel);
-    //읽음 상태 생성 후 저장
     request.participantIds().stream()
         .map(userRepository::findById)
         .flatMap(Optional::stream)

@@ -11,12 +11,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/channels")
+@Validated
 @Tag(name = "Channel")
 @Slf4j
 public class ChannelController {
@@ -70,7 +73,7 @@ public class ChannelController {
 
   public ResponseEntity<ChannelDto> update(
       @Parameter(description = "수정할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
-      @PathVariable UUID channelId,
+      @NotNull @PathVariable UUID channelId,
       @Valid @RequestBody PublicChannelUpdateRequest request
   ) {
     log.info("Public 채널 수정 요청: id={}", channelId);
@@ -88,7 +91,7 @@ public class ChannelController {
   })
   public ResponseEntity<ChannelDto> delete(
       @Parameter(description = "삭제할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
-      @PathVariable UUID channelId
+      @NotNull @PathVariable UUID channelId
   ) {
     log.info("채널 삭제 요청: id={}", channelId);
     channelService.delete(channelId);
@@ -101,7 +104,7 @@ public class ChannelController {
   @ApiResponse(responseCode = "200", description = "Channel 목록 조회 성공")
   public ResponseEntity<List<ChannelDto>> findAll(
       @Parameter(description = "조회할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
-      @RequestParam("userId") UUID userId
+      @NotNull @RequestParam("userId") UUID userId
   ) {
     log.debug("유저가 참여 중인 채널 목록 조회 요청: userId={}", userId);
     List<ChannelDto> responses = channelService.findAllByUserId(userId);
