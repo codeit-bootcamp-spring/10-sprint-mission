@@ -28,4 +28,10 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
       // 특정 유저의 읽음 상태만 조회
       + "WHERE rs.user.id = :userId")
   List<ReadStatus> findAllByUserIdWithChannel(@Param("userId") UUID userId);
+
+  // ReadStatus와 연관된 유저도 함께 가져오기 위한 쿼리
+  @Query("SELECT rs FROM ReadStatus rs "
+      + "JOIN FETCH rs.user "
+      + "WHERE rs.channel.id = :channelId")
+  List<ReadStatus> findAllByChannelIdWithUser(@Param("channelId") UUID channelId);
 }

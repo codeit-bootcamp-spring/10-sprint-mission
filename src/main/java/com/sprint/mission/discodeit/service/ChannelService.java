@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.User;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.List;
 
@@ -18,4 +20,8 @@ public interface ChannelService {
   Channel update(UUID id, String newName, String newDescription);
 
   void deleteById(UUID id);
+
+  Instant getLastMessageAt(UUID channelId); //  채널 DTO 변환 시, 마지막 메시지 작성 시간 필드(lastMessageAt)를 위한 메서드
+
+  List<User> getParticipants(UUID channelId); // 채널 DTO 변환 시, 참여자 정보 필드(participants)를 위한 메서드
 }
