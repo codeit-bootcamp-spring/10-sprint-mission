@@ -55,7 +55,7 @@ public class BasicChannelService implements ChannelService {
     // PUBLIC 채널 조회
     List<Channel> publicChannels = channelRepository.findByType(ChannelType.PUBLIC);
     // PRIVATE 채널 조회
-    List<Channel> privateChannels = readStatusRepository.findAllByUserId(userId).stream()
+    List<Channel> privateChannels = readStatusRepository.findAllByUserIdWithChannel(userId).stream()
         .map(ReadStatus::getChannel)
         .filter(channel -> channel.getType() == ChannelType.PRIVATE)
         .toList();
