@@ -9,7 +9,7 @@ discodeit:
 
 spring:
   profiles:
-    active: dev
+    active: prod
     datasource:
       url: jdbc:postgresql://localhost:5432/discodeit
       username: discodeit_user

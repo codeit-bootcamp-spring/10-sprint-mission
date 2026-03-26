@@ -31,7 +31,8 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
         @Param("publicType") ChannelType publicType);
 
     @EntityGraph(attributePaths = {
-        "readStatuses", "readStatuses.user", "readStatuses.user.userStatus", "readStatuses.user.profile"
+        "readStatuses", "readStatuses.user", "readStatuses.user.userStatus",
+        "readStatuses.user.profile"
     })
     Optional<Channel> findWithParticipantsById(UUID id);
 

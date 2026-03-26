@@ -17,6 +17,10 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
+### 로컬 로그 및 첨부 파일 ###
+.discodeit/
+*.log
+
 ### IntelliJ IDEA ###
 .idea
 *.iws

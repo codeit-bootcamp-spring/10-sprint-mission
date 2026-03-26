@@ -23,19 +23,20 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatus find(UUID id) {
-        Objects.requireNonNull(id, "???レ챺???? ??? ID????낇돲??");
+        Objects.requireNonNull(id, "유효하지 않은 ID 입니다!");
         return userStatusRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("?????UserStatus???釉뚰????? ?????????덊렡!"));
+            .orElseThrow(
+                () -> new NoSuchElementException("해당 UserStatus를 찾을 수 없습니다!"));
     }
 
     @Override
     @Transactional
     public UserStatusDto activateUserOnline(UUID userId, UserStatusUpdateRequestDTO req) {
-        Objects.requireNonNull(userId, "???レ챺???? ??? userStatus ??筌뤿걩?????????덊렡!");
-        Objects.requireNonNull(req, "???レ챺???? ??? ??釉먯뒜?????낇돲??");
+        Objects.requireNonNull(userId, "유효하지 않은 사용자 ID!");
+        Objects.requireNonNull(req, "유효하지 않은 생성 요청!");
         Optional<UserStatus> optUserStatus = userStatusRepository.findByUserId(userId);
         if (optUserStatus.isEmpty()) {
-            throw new NoSuchElementException("?????UserStatus 癲ル슓??젆???????⑤챶苡?");
+            throw new NoSuchElementException("해당 UserStatus 찾을 수 없습니다!");
         }
         UserStatus userStatus = optUserStatus.get();
         userStatus.update(req.newLastActiveAt());
@@ -46,9 +47,9 @@ public class BasicUserStatusService implements UserStatusService {
     @Override
     @Transactional
     public void delete(UUID id) {
-        Objects.requireNonNull(id, "???レ챺???? ??? ID ????낇돲??");
+        Objects.requireNonNull(id, "유효하지 않은 ID 입니다!");
         userStatusRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("?????UserStatus??癲ル슓??젆???????⑤챶苡?"));
+            .orElseThrow(() -> new NoSuchElementException("해당 UserStatus를 찾을 수 없습니다!"));
         userStatusRepository.deleteById(id);
     }
 

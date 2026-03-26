@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +77,7 @@ public class UserController {
             ))
     })
     public ResponseEntity<UserDto> create(
-        @RequestPart("userCreateRequest") UserCreateRequestDTO userCreateRequestDTO,
+        @Valid @RequestPart("userCreateRequest") UserCreateRequestDTO userCreateRequestDTO,
         @RequestPart(value = "profile", required = false) MultipartFile profileImage)
         throws IOException {
 
