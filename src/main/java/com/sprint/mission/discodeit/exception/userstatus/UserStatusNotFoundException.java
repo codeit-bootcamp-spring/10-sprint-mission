@@ -3,9 +3,9 @@ package com.sprint.mission.discodeit.exception.userstatus;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import java.util.Map;
 
-public class UserStatusNotFoundException extends UserStatusException{
+public class UserStatusNotFoundException extends UserStatusException {
 
-  private static final ErrorCode DEFAULT_CODE = ErrorCode.USER_NOT_FOUND;
+  private static final ErrorCode DEFAULT_CODE = ErrorCode.USER_STATUS_NOT_FOUND;
 
   public UserStatusNotFoundException(Map<String, Object> details, Throwable cause) {
     super(DEFAULT_CODE, details, cause);

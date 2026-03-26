@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.channel.ChannelException;
 import java.util.Map;
 
-public class BinaryContentDownloadException extends ChannelException {
+public class BinaryContentDownloadException extends BinaryContentException {
 
   private static final ErrorCode DEFAULT_CODE = ErrorCode.BINARY_CONTENT_DOWNLOAD_FAILED;
 

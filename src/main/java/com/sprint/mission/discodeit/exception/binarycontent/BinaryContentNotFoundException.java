@@ -4,7 +4,7 @@ import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.channel.ChannelException;
 import java.util.Map;
 
-public class BinaryContentNotFoundException extends ChannelException {
+public class BinaryContentNotFoundException extends BinaryContentException {
 
   private static final ErrorCode DEFAULT_CODE = ErrorCode.BINARY_CONTENT_NOT_FOUND;
 
