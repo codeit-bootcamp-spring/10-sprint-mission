@@ -37,7 +37,6 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @Override
   public ChannelDto create(PublicChannelCreateRequest request) {
-    log.debug("PUBLIC 채널생성 시작: channelName= {}, description= {}", request.name(), request.description());
     String name = request.name();
     String description = request.description();
     Channel channel = new Channel(ChannelType.PUBLIC, name, description);
@@ -51,8 +50,6 @@ public class BasicChannelService implements ChannelService {
   public ChannelDto create(PrivateChannelCreateRequest request) {
 
     List<UUID> participantIds = request.participantIds();
-    log.debug("PRIVATE 채널생성 시작, 참여자 수 = {}", participantIds.size());
-
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
     channelRepository.save(channel);
 
@@ -91,14 +88,12 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @Override
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
-    log.debug("PUBLIC 채널 수정 시작 channelId= {} newName= {}, newDescription= {}", channelId,request.newName(),request.newDescription());
     String newName = request.newName();
     String newDescription = request.newDescription();
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
             () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     if (channel.getType().equals(ChannelType.PRIVATE)) {
-      log.warn("채널 수정 불가: channelId= {}, channelType= {}", channelId, channel.getType());
       throw new IllegalArgumentException("Private channel cannot be updated");
     }
     channel.update(newName, newDescription);
@@ -109,12 +104,10 @@ public class BasicChannelService implements ChannelService {
   @Transactional
   @Override
   public void delete(UUID channelId) {
-    log.debug("채널 삭제 시작 channelId= {}", channelId);
+
     if (!channelRepository.existsById(channelId)) {
-      log.warn("채널 삭제 불가: channelId= {}", channelId);
       throw new NoSuchElementException("Channel with id " + channelId + " not found");
     }
-
     messageRepository.deleteAllByChannelId(channelId);
     readStatusRepository.deleteAllByChannelId(channelId);
 
