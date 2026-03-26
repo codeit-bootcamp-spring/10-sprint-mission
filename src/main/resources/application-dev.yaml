@@ -18,6 +18,6 @@ spring:
 
 logging:
   level:
-    root: debug
+    root: info # debug 설정시 너무 많은 정보 보여짐... 나중에 설정.
     org.hibernate.SQL: debug
-    org.hibernate.type.descriptor.sql: trace
+    org.hibernate.type.descriptor.sql: off

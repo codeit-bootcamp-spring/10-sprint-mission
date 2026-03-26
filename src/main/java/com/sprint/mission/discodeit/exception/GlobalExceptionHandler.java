@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  //커스텀 예외 적용
   @ExceptionHandler(DiscodeitException.class)
   public ResponseEntity<ErrorResponse> handleDiscodeitException(DiscodeitException e) {
     log.warn(
@@ -19,7 +20,7 @@ public class GlobalExceptionHandler {
 
     return ResponseEntity.status(e.getErrorCode().getStatus()).body(ErrorResponse.fromException(e));
   }
-
+  // 일반 예외 적용
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleException(Exception e) {
     log.error("서버 내부 예외 발생", e);

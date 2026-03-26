@@ -7,6 +7,9 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -51,8 +54,7 @@ public class BasicMessageService implements MessageService {
             .orElseThrow(
                 () -> {
                   log.warn("메세지 생성 실패 - 채널 없음 channelId={}, authorId={}", channelId, authorId);
-                  return new NoSuchElementException(
-                      "Channel with id " + channelId + " does not exist");
+                  return new ChannelNotFoundException(channelId);
                 });
     User author =
         userRepository
@@ -60,7 +62,7 @@ public class BasicMessageService implements MessageService {
             .orElseThrow(
                 () -> {
                   log.warn("메시지 생성 실패 - 사용자 없음 userId={}", authorId);
-                  return new NoSuchElementException("User with id " + authorId + " does not exist");
+                  return new UserNotFoundException(authorId);
                 });
 
     List<BinaryContentCreateRequest> attachmentRequests =
@@ -92,7 +94,7 @@ public class BasicMessageService implements MessageService {
         .orElseThrow(
             () -> {
               log.warn("메시지 조회 실패 - 존재하지 않음 messageId={}", messageId);
-              return new NoSuchElementException("Message with id " + messageId + " not found");
+              return new MessageNotFoundException(messageId);
             });
   }
 
@@ -119,7 +121,7 @@ public class BasicMessageService implements MessageService {
             .orElseThrow(
                 () -> {
                   log.warn("메시지 수정 실패 - 존재하지 않음 messageId={}", messageId);
-                  return new NoSuchElementException("Message with id " + messageId + " not found");
+                  return new MessageNotFoundException(messageId);
                 });
 
     message.update(request.newContent());
@@ -140,7 +142,7 @@ public class BasicMessageService implements MessageService {
             .orElseThrow(
                 () -> {
                   log.warn("메시지 삭제 실패 - 존재하지 않음 messageId={}", messageId);
-                  return new NoSuchElementException("Message with id " + messageId + " not found");
+                  return new MessageNotFoundException(messageId);
                 });
 
     messageRepository.delete(message);

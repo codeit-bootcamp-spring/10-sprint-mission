@@ -4,6 +4,9 @@ import com.sprint.mission.discodeit.dto.request.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -30,7 +33,7 @@ public class BasicUserStatusService implements UserStatusService {
 
     // User 객체로 받기 참조.
     User user = userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " does not exist"));
+            .orElseThrow(() -> new UserNotFoundException(userId));
 
     if (userStatusRepository.findByUser_Id(userId).isPresent()) {
       throw new IllegalArgumentException("UserStatus with id " + userId + " already exists");
@@ -47,7 +50,7 @@ public class BasicUserStatusService implements UserStatusService {
   public UserStatus find(UUID userStatusId) {
     return userStatusRepository.findById(userStatusId)
         .orElseThrow(
-            () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
+            () -> new UserStatusNotFoundException(userStatusId));
   }
 
   @Transactional(readOnly = true)
@@ -61,7 +64,7 @@ public class BasicUserStatusService implements UserStatusService {
   public UserStatus update(UUID userStatusId, UserStatusUpdateRequest request) {
     UserStatus userStatus = userStatusRepository.findById(userStatusId)
         .orElseThrow(
-            () -> new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
+            () -> new UserStatusNotFoundException(userStatusId));
     userStatus.update(request.newLastActiveAt());
     //Dirty Checking
     return userStatus;
@@ -71,7 +74,7 @@ public class BasicUserStatusService implements UserStatusService {
   public UserStatus updateByUserId(UUID userId, UserStatusUpdateRequest request) {
     UserStatus userStatus = userStatusRepository.findByUser_Id(userId)
         .orElseThrow(
-            () -> new NoSuchElementException("UserStatus with userId " + userId + " not found"));
+            () -> new UserNotFoundException(userId));
 
     userStatus.update(request.newLastActiveAt());
     return userStatus;
@@ -81,7 +84,7 @@ public class BasicUserStatusService implements UserStatusService {
   public void delete(UUID userStatusId) {
     UserStatus userStatus = userStatusRepository.findById(userStatusId)
             .orElseThrow(() ->
-                    new NoSuchElementException("UserStatus with id " + userStatusId + " not found"));
+                    new UserStatusNotFoundException(userStatusId));
 
     userStatusRepository.delete(userStatus);
 }
