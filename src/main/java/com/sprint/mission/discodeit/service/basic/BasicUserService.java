@@ -38,17 +38,14 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public UserDto create(UserCreateRequest userCreateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-    log.debug("[USER_CREATE]회원가입 시작: userName= {}, email= {}", userCreateRequest.username(), userCreateRequest.email());
     String username = userCreateRequest.username();
     String email = userCreateRequest.email();
 
     //1.이메일 중복 검증
     if (userRepository.existsByEmail(email)) {
-        log.warn("[USER_FAIL]중복되는 이메일: {}", email);
       throw new IllegalArgumentException("User with email " + email + " already exists");
     }
     if (userRepository.existsByUsername(username)) {
-        log.warn("[USER_FAIL]중복되는 이름: {}", username);
       throw new IllegalArgumentException("User with username " + username + " already exists");
     }
 
@@ -96,8 +93,6 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest, Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
-      log.debug("[USER_UPDATE]사용자 수정 시작: userId= {}", userId);
-
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
@@ -105,11 +100,9 @@ public class BasicUserService implements UserService {
     String newEmail = userUpdateRequest.newEmail();
 
       if (newEmail != null && !newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
-          log.warn("[USER_FAIL] 중복되는 이메일: {}", newEmail);
           throw new IllegalArgumentException("User with email " + newEmail + " already exists");
       }
       if (newUsername != null && !newUsername.equals(user.getUsername()) && userRepository.existsByUsername(newUsername)) {
-          log.warn("[USER_FAIL] 중복되는 이름: {}", newUsername);
           throw new IllegalArgumentException("User with username " + newUsername + " already exists");
       }
 
@@ -139,13 +132,10 @@ public class BasicUserService implements UserService {
   @Transactional
   @Override
   public void delete(UUID userId) {
-    log.info("[USER_DELETE]회원 삭제 시작: userId = {}", userId);
 
-    if (userRepository.existsById(userId)) {
-      log.warn("[USER_FAIL] 삭제하려는 회원 없음: userId = {}", userId);
+    if (!userRepository.existsById(userId)) {
       throw new NoSuchElementException("User with id " + userId + " not found");
     }
-
 
     userRepository.deleteById(userId);
     log.info("[USER_DELETE]회원삭제완료: userId = {}", userId);
