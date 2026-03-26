@@ -22,7 +22,7 @@ public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
   void deleteByChannelId(UUID channelId);
 
-  // N+1 문제 해결을 위한 쿼리
+  // 유저별 참여 채널 목록 조회 시 N+1 문제 해결을 위한 쿼리
   @Query("SELECT rs FROM ReadStatus rs "
       + "JOIN FETCH rs.channel " // 채널 정보 함께 가져오기
       // 특정 유저의 읽음 상태만 조회

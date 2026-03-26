@@ -21,7 +21,7 @@ public class BasicAuthService implements AuthService {
   @Override
   public User login(String username, String password) {
     // 유저 확인
-    User user = userRepository.findByUsername(username)
+    User user = userRepository.findByUsernameWithProfileAndStatus(username)
         .orElseThrow(() -> new NoSuchElementException("일치하는 유저가 없습니다."));
 
     // 비밀번호 확인
