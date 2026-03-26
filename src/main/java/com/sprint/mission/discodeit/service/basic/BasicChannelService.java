@@ -1,11 +1,13 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.channel.ChannelLastMessageQueryDto;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,18 +92,45 @@ public class BasicChannelService implements ChannelService {
 
   // --- Helper Methods ---
 
-  // 채널 DTO 변환 시, 마지막 메시지 작성 시간 필드(lastMessageAt)를 위한 메서드
+  // 채널 DTO 변환 시, 마지막 메시지 작성 시간 필드(lastMessageAt)를 위한 메서드 - 단건 조회용
   @Override
   public Instant getLastMessageAt(UUID channelId) {
     return messageRepository.findLastMessageAtByChannelId(channelId).orElse(null);
   }
 
-  // 채널 DTO 변환 시, 참여자 정보 필드(participants)를 위한 메서드
+  // 채널 DTO 변환 시, 참여자 정보 필드(participants)를 위한 메서드 - 단건 조회용
   @Override
   public List<User> getParticipants(UUID channelId) {
     return readStatusRepository.findAllByChannelIdWithUser(channelId).stream()
         .map(ReadStatus::getUser)
         .toList();
+  }
+
+  // 채널 DTO 변환 시, 마지막 메시지 작성 시간 필드(lastMessageAt)를 위한 메서드 - 일괄 조회용
+  @Override
+  public Map<UUID, Instant> getLastMessagesAtMap(List<UUID> channelIds) {
+    List<ChannelLastMessageQueryDto> results = messageRepository.findLastMessagesByChannelIds(
+        channelIds);
+
+    // 리스트를 {채널ID:시간} 형태의 Map으로 변환
+    return results.stream()
+        .collect(Collectors.toMap(
+            ChannelLastMessageQueryDto::channelId,
+            ChannelLastMessageQueryDto::lastMessageAt
+        ));
+  }
+
+  // 채널 DTO 변환 시, 참여자 정보 필드(participants)를 위한 메서드 - 일괄 조회용
+  @Override
+  public Map<UUID, List<User>> getParticipantsMap(List<UUID> channelIds) {
+    List<ReadStatus> allReadStatuses = readStatusRepository.findAllByChannelIdsWithUser(channelIds);
+
+    // 리스트를 {채널ID:유저리스트} 형태의 Map으로 변환
+    return allReadStatuses.stream()
+        .collect(Collectors.groupingBy(
+            rs -> rs.getChannel().getId(),
+            Collectors.mapping(ReadStatus::getUser, Collectors.toList())
+        ));
   }
 
   // 채널 검증
