@@ -44,3 +44,7 @@ out/
 
 # Local storage for Discodeit
 /discodeit-storage/
+
+# Logs
+.logs/
+*.log
