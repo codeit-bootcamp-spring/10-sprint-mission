@@ -8,6 +8,10 @@ spring:
     password: discodeit1234
     driver-class-name: org.postgresql.Driver
 
+  sql:
+    init:
+      mode: always
+
   jpa:
     hibernate:
       ddl-auto: none
@@ -20,4 +24,11 @@ spring:
 
 logging:
   level:
-    root: DEBUG
+    root: INFO
+    com.sprint.mission.discodeit: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health, info, metrics, loggers"

@@ -54,8 +54,8 @@ public class MessageController {
       @Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
-    log.info("메시지 생성 요청: authorId={}, channelId={}, attachmentCount={}", request.authorId(),
-        request.channelId(), attachments.size());
+    log.info("메시지 생성 요청: authorId={}, channelId={}", request.authorId(),
+        request.channelId());
     MessageDto response = messageService.create(request, attachments);
     log.info("메시지 생성 성공: messageId={}", response.id());
     log.debug("메시지 본문: content={}", response.content());

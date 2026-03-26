@@ -56,8 +56,8 @@ public class BasicMessageService implements MessageService {
 
   @Override
   public MessageDto create(MessageCreateRequest request, List<MultipartFile> multipartFiles) {
-    log.debug("메시지 생성 시작: authorId={}, channelId={}, attachmentCount={}", request.authorId(),
-        request.channelId(), multipartFiles.size());
+    log.debug("메시지 생성 시작: authorId={}, channelId={}", request.authorId(),
+        request.channelId());
     User user = userRepository.findById(request.authorId())
         .orElseThrow(() -> new UserNotFoundException(Map.of("authorId", request.authorId())));
 
