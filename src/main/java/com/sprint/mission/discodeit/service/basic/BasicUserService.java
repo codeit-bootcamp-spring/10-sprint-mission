@@ -67,7 +67,7 @@ public class BasicUserService implements UserService {
 
   @Override
   public List<User> findAll() {
-    return userRepository.findAll();
+    return userRepository.findAllWithProfileAndStatus();
   }
 
   @Override
@@ -109,7 +109,7 @@ public class BasicUserService implements UserService {
             profileFile.getContentType()
         );
         binaryContentRepository.save(newImage);
-        
+
         binaryContentStorage.put(newImage.getId(), profileFile.getBytes());
 
         user.updateProfileImage(newImage);
