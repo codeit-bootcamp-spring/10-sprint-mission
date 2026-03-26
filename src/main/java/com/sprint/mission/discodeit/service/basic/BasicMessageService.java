@@ -73,7 +73,19 @@ public class BasicMessageService implements MessageService {
 
     // 커서가 없을 시, 현재가 기준 (최신 메시지부터 조회)
     Instant targetTime = Optional.ofNullable(cursor).orElse(Instant.now());
-    return messageRepository.findAllByChannelIdWithAuthor(channelId, targetTime, pageable);
+
+    // 메시지와 작성자 정보 가져옴
+    Slice<Message> messageSlice = messageRepository.findAllByChannelIdWithAuthor(
+        channelId, targetTime, pageable);
+
+    // 트랜잭션이 끝나기 전 컬렉션 호출 -> 설정된 Batch Size에 따라 메시지별 첨부파일을 한 번에 조회
+    messageSlice.getContent().forEach(message -> {
+      if (message.getAttachments() != null) {
+        message.getAttachments().size();
+      }
+    });
+
+    return messageSlice;
   }
 
   @Override

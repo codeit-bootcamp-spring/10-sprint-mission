@@ -19,6 +19,9 @@ spring:
       ddl-auto: none
     show-sql: true
     open-in-view: false
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
 
   sql:
     init:
