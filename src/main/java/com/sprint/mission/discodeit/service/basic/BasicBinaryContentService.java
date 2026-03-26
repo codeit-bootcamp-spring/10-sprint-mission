@@ -2,6 +2,9 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.binarycontent.InvalidBinaryContentException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -34,7 +37,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     if (bytes == null) {
       log.warn("파일 업로드 실패 - bytes가 null임 fileName={}", fileName);
-      throw new IllegalArgumentException("Bytes must not be null");
+      throw new InvalidBinaryContentException("Bytes must not be null");
     }
 
     BinaryContent meta = new BinaryContent(
@@ -56,11 +59,12 @@ public class BasicBinaryContentService implements BinaryContentService {
   public BinaryContent find(UUID binaryContentId) {
     log.debug("파일 조회 요청 - binaryContentId={}", binaryContentId);
 
-    return binaryContentRepository.findById(binaryContentId)
-            .orElseThrow(() -> {
+    return binaryContentRepository
+        .findById(binaryContentId)
+        .orElseThrow(
+            () -> {
               log.warn("파일 조회 실패 - 존재하지 않음 binaryContentId={}", binaryContentId);
-              return new NoSuchElementException(
-                      "BinaryContent with id " + binaryContentId + " not found");
+              return new BinaryContentNotFoundException(binaryContentId);
             });
   }
 
@@ -76,11 +80,14 @@ public class BasicBinaryContentService implements BinaryContentService {
   public void delete(UUID binaryContentId) {
     log.info("파일 삭제 요청 - binaryContentId={}", binaryContentId);
 
-    BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-            .orElseThrow(() -> {
-              log.warn("파일 삭제 실패 - 존재하지 않음 binaryContentId={}", binaryContentId);
-              return new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
-            });
+    BinaryContent binaryContent =
+        binaryContentRepository
+            .findById(binaryContentId)
+            .orElseThrow(
+                () -> {
+                  log.warn("파일 삭제 실패 - 존재하지 않음 binaryContentId={}", binaryContentId);
+                  return new BinaryContentNotFoundException(binaryContentId);
+                });
 
     binaryContentRepository.delete(binaryContent);
 
