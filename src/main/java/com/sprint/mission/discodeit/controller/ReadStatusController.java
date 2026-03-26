@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.readstatus.CreateReadStatusRequestDTO;
 import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.dto.readstatus.UpdateReadStatusRequestDTO;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class ReadStatusController {
 
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity createReadStatus(
-            @RequestBody CreateReadStatusRequestDTO dto
+            @RequestBody @Valid CreateReadStatusRequestDTO dto
     ) {
         log.debug("[READSTATUS_CREATE_REQUEST] 읽음 상태 생성 요청: userId={}, channelId={}", dto.userId(), dto.channelId());
         ReadStatusDto created = readStatusService.createReadStatus(dto);

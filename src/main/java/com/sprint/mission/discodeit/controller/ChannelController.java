@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.channel.*;
 import com.sprint.mission.discodeit.service.ChannelService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +23,7 @@ public class ChannelController {
 
     @RequestMapping(value = "/public", method = RequestMethod.POST)
     public ResponseEntity createPublicChannel(
-            @RequestBody CreatePublicChannelRequestDTO dto
+            @RequestBody @Valid CreatePublicChannelRequestDTO dto
     ) {
         log.debug("[PUBLIC_CHANNEL_CREATE_REQUEST] 공개 채널 생성 요청: channelName={}", dto.name());
         ChannelDto created = channelService.createPublicChannel(dto);
@@ -39,7 +40,7 @@ public class ChannelController {
 
     @RequestMapping(value = "/private", method = RequestMethod.POST)
     public ResponseEntity createPrivateChannel(
-            @RequestBody CreatePrivateChannelRequestDTO dto
+            @RequestBody @Valid CreatePrivateChannelRequestDTO dto
             ) {
         log.debug("[PRIVATE_CHANNEL_CREATE_REQUEST] 비공개 채널 생성 요청: participantsNumber={}", dto.participantIds().size());
         ChannelDto created = channelService.createPrivateChannel(dto);
@@ -57,7 +58,7 @@ public class ChannelController {
     @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH)
     public ResponseEntity updateChannel(
             @PathVariable UUID channelId,
-            @RequestBody UpdateChannelRequestDTO dto
+            @RequestBody @Valid UpdateChannelRequestDTO dto
             ) {
         log.debug("[CHANNEL_UPDATE_REQUEST] 채널 정보 수정 요청: channelId={}", channelId);
         ChannelDto response = channelService.updateChannel(channelId, dto);

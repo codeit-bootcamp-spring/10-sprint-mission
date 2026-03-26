@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.userstatus.UpdateStatusByStatusIdRequest
 import com.sprint.mission.discodeit.dto.userstatus.UpdateStatusByUserIdRequestDTO;
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class UserStatusController {
 
     @RequestMapping(method = RequestMethod.PATCH)
     public ResponseEntity updateUserStatusById(
-            @RequestBody UpdateStatusByStatusIdRequestDTO dto
+            @RequestBody @Valid UpdateStatusByStatusIdRequestDTO dto
             ) {
         log.debug("[USERSTATUS_UPDATE_REQUEST] 유저 상태 수정 요청: userStatusId={}", dto.userStatusId());
         UserStatusDto updated = userStatusService.updateUserStatus(dto);
@@ -29,7 +30,7 @@ public class UserStatusController {
 
     @RequestMapping(value = "/by-user", method = RequestMethod.PATCH)
     public ResponseEntity updateUserStatusByUserId(
-            @RequestBody UpdateStatusByUserIdRequestDTO dto
+            @RequestBody @Valid UpdateStatusByUserIdRequestDTO dto
     ) {
         log.debug("[USERSTATUS_UPDATE_REQUEST] 유저 상태 수정 요청: userId={}", dto.userId());
         UserStatusDto updated = userStatusService.updateStatusByUserId(dto.userId(), dto);

@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
 import com.sprint.mission.discodeit.service.MessageService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +39,7 @@ public class MessageController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     public ResponseEntity<MessageDto> createMessage(
-            @RequestPart("messageCreateRequest") CreateMessageRequestDTO dto,
+            @RequestPart("messageCreateRequest") @Valid CreateMessageRequestDTO dto,
             @RequestPart(value = "attachments", required = false) MultipartFile[] attachments
     ) {
         log.debug("[MESSAGE_CREATE_REQUEST] 메시지 생성 요청: authorId={}, channelId={}", dto.authorId(), dto.channelId());
@@ -81,7 +82,7 @@ public class MessageController {
     @RequestMapping(value = "/{messageId}", method = RequestMethod.PATCH)
     public ResponseEntity updateMessage(
             @PathVariable UUID messageId,
-            @RequestBody UpdateMessageRequestDTO dto
+            @RequestBody @Valid UpdateMessageRequestDTO dto
     ) {
         log.debug("[MESSAGE_UPDATE_REQUEST] 메시지 수정 요청: messageId={}", messageId);
         MessageDto updated = messageService.updateMessage(messageId, dto);

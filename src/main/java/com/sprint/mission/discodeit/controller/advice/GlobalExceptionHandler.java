@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.controller.advice;
 import com.sprint.mission.discodeit.controller.dto.ErrorResponseDTO;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -23,6 +24,20 @@ public class GlobalExceptionHandler {
                         e.getErrorCode().getErrorType(),
                         e.getErrorCode().getMessage(),
                         e.getDetails()
+                ));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMethodArgumentValidException(
+            MethodArgumentNotValidException e
+    ) {
+        return ResponseEntity.status(e.getStatusCode())
+                .body(new ErrorResponseDTO(
+                        Instant.now(),
+                        400,
+                        "MethodArgumentValidException",
+                        e.getMessage(),
+                        Map.of("validation", e.getMessage())
                 ));
     }
 
