@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/channels")
 @Tag(name = "Channel")
+@Slf4j
 public class ChannelController {
 
   private final ChannelService channelService;
@@ -39,7 +41,10 @@ public class ChannelController {
   @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
   public ResponseEntity<ChannelDto> createPublic(
       @Valid @RequestBody PublicChannelCreateRequest request) {
+    log.info("Public 채널 생성 요청: name={}", request.name());
     ChannelDto response = channelService.createPublic(request);
+    log.info("Public 채널 생성 성공: id={}, type={}, name={}", response.id(),
+        response.type(), response.name());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -48,7 +53,10 @@ public class ChannelController {
   @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨")
   public ResponseEntity<ChannelDto> createPrivate(
       @Valid @RequestBody PrivateChannelCreateRequest request) {
+    log.info("Private 채널 생성 요청: participantIdCount={}", request.participantIds().size());
     ChannelDto response = channelService.createPrivate(request);
+    log.info("Private 채널 생성 성공: id={}, type={}, participantCount={}", response.id(),
+        response.type(), response.participants().size());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -65,7 +73,10 @@ public class ChannelController {
       @PathVariable UUID channelId,
       @Valid @RequestBody PublicChannelUpdateRequest request
   ) {
+    log.info("Public 채널 수정 요청: id={}", channelId);
     ChannelDto response = channelService.update(channelId, request);
+    log.info("Public 채널 수정 성공: id={}", response.id());
+    log.debug("수정 후 데이터: name={}, description={}", response.name(), response.description());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -79,7 +90,9 @@ public class ChannelController {
       @Parameter(description = "삭제할 Channel ID", example = "0ad06ce5-bdfb-4304-b6eb-a133a4b49fb8")
       @PathVariable UUID channelId
   ) {
+    log.info("채널 삭제 요청: id={}", channelId);
     channelService.delete(channelId);
+    log.info("채널 삭제 성공: id={}", channelId);
     return ResponseEntity.noContent().build();
   }
 
@@ -90,7 +103,9 @@ public class ChannelController {
       @Parameter(description = "조회할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @RequestParam("userId") UUID userId
   ) {
+    log.debug("유저가 참여 중인 채널 목록 조회 요청: userId={}", userId);
     List<ChannelDto> responses = channelService.findAllByUserId(userId);
+    log.debug("유저가 참여 중인 채널 목록 조회 성공: channelCount={}", responses.size());
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 }

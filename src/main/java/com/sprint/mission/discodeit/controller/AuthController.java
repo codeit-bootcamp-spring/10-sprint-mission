@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
 @Tag(name = "Auth")
+@Slf4j
 public class AuthController {
 
   private final AuthService authService;
@@ -34,7 +36,9 @@ public class AuthController {
   public ResponseEntity<UserDto> login(
       @Valid @RequestBody LoginRequest request
   ) {
+    log.info("유저 로그인 요청: username={}", request.username());
     UserDto response = authService.login(request);
+    log.info("유저 로그인 성공: userId={}", response.id());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

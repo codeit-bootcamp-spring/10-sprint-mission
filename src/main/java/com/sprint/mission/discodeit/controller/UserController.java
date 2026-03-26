@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 @Tag(name = "User")
+@Slf4j
 public class UserController {
 
   private final UserService userService;
@@ -50,7 +52,9 @@ public class UserController {
       @Valid @RequestPart("userCreateRequest") UserCreateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
+    log.info("유저 생성 요청: username={}, email={}", request.username(), request.email());
     UserDto response = userService.create(request, profile);
+    log.info("유저 생성 성공: userId={}", response.id());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -62,7 +66,9 @@ public class UserController {
       @Valid @RequestPart("userUpdateRequest") UserUpdateRequest request,
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
+    log.info("유저 수정 요청: userId={}", userId);
     UserDto response = userService.update(userId, request, profile);
+    log.info("유저 수정 성공: userId={}", response.id());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -76,7 +82,9 @@ public class UserController {
       @Parameter(description = "삭제할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @PathVariable UUID userId
   ) {
+    log.info("유저 삭제 요청: userId={}", userId);
     userService.delete(userId);
+    log.info("유저 삭제 성공: userId={}", userId);
     return ResponseEntity.noContent().build();
   }
 
@@ -84,7 +92,9 @@ public class UserController {
   @Operation(summary = "전체 User 목록 조회")
   @ApiResponse(responseCode = "200", description = "User 목록 조회 성공")
   public ResponseEntity<List<UserDto>> findAll() {
+    log.debug("유저 목록 조회 요청");
     List<UserDto> responses = userService.findAll();
+    log.debug("유저 목록 조회 성공: userCount={}", responses.size());
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 
@@ -98,7 +108,9 @@ public class UserController {
       @Parameter(description = "업데이트할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @PathVariable UUID userId,
       @Valid @RequestBody UserStatusUpdateRequest request) {
+    log.info("유저 온라인 상태 업데이트 요청: userId={}", userId);
     UserStatusDto response = userStatusService.updateByUserId(userId, request);
+    log.info("유저 온라인 상태 업데이트 성공: lastActiveAt={}", response.lastActiveAt());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class BasicMessageService implements MessageService {
 
   private final ChannelRepository channelRepository;
@@ -48,7 +50,8 @@ public class BasicMessageService implements MessageService {
 
   @Override
   public MessageDto create(MessageCreateRequest request, List<MultipartFile> multipartFiles) {
-
+    log.debug("메시지 생성 시작: authorId={}, channelId={}, attachmentCount={}", request.authorId(),
+        request.channelId(), multipartFiles.size());
     User user = userRepository.findById(request.authorId())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
@@ -69,6 +72,7 @@ public class BasicMessageService implements MessageService {
           continue;
         }
         try {
+          log.debug("첨부 파일 업로드 시작: name={}, size={}", file.getOriginalFilename(), file.getSize());
           BinaryContent attachment = new BinaryContent(
               file.getOriginalFilename(),
               file.getSize(),
@@ -77,21 +81,24 @@ public class BasicMessageService implements MessageService {
           binaryContentRepository.save(attachment);
           binaryContentStorage.put(attachment.getId(), file.getBytes());
           message.addAttachment(attachment); //편의 메서드 사용
+          log.info("첨부 파일 저장 성공: attachmentId={}", attachment.getId());
         } catch (IOException e) {
           throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
         }
       }
     }
     messageRepository.save(message); //cascade로 attachment들도 같이 INSERT
-
+    log.info("메시지 생성 완료: messageId={}", message.getId());
     return messageMapper.toDto(message);
   }
 
   @Override
   @Transactional(readOnly = true)
   public MessageDto findById(UUID messageId) {
+    log.debug("메시지 조회 시작: messageId={}", messageId);
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
+    log.debug("메시지 조회 완료: messageId={}, content={}", message.getId(), message.getContent());
     return messageMapper.toDto(message);
   }
 
@@ -99,7 +106,8 @@ public class BasicMessageService implements MessageService {
   @Transactional(readOnly = true)
   public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor,
       Pageable pageable) {
-
+    log.debug("메시지 목록 조회 시작: channelId={}, cursor={}, size={}", channelId, cursor,
+        pageable.getPageSize());
     Slice<MessageDto> slice = messageRepository.findAllByChannelIdAndCreatedAtLessThan(channelId,
             Optional.ofNullable(cursor).orElse(Instant.now()),
             pageable)
@@ -109,22 +117,28 @@ public class BasicMessageService implements MessageService {
     if (!slice.getContent().isEmpty() && slice.hasNext()) {
       nextCursor = slice.getContent().get(slice.getContent().size() - 1).createdAt();
     }
+    log.debug("메시지 목록 조회 완료: channelId={}, count={}, hasNext={}, nextCursor={}",
+        channelId, slice.getContent().size(), slice.hasNext(), nextCursor);
     return pageMapper.fromSlice(slice, nextCursor);
   }
 
   @Override
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
+    log.debug("메시지 수정 시작: messageId={}", messageId);
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
 
     message.update(request.newContent());
+    log.info("메시지 수정 완료: messageId={}", message.getId());
     return messageMapper.toDto(message);
   }
 
   @Override
   public void delete(UUID messageId) {
+    log.debug("메시지 삭제 시작: messageId={}", messageId);
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.MESSAGE_NOT_FOUND));
     messageRepository.delete(message);
+    log.info("메시지 삭제 완료: messageId={}", message.getId());
   }
 }

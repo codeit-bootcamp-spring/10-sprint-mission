@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -35,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 @RequestMapping("/api/messages")
 @Tag(name = "Message")
+@Slf4j
 public class MessageController {
 
   private final MessageService messageService;
@@ -49,7 +51,11 @@ public class MessageController {
       @Valid @RequestPart("messageCreateRequest") MessageCreateRequest request,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) {
+    log.info("메시지 생성 요청: authorId={}, channelId={}, attachmentCount={}", request.authorId(),
+        request.channelId(), attachments.size());
     MessageDto response = messageService.create(request, attachments);
+    log.info("메시지 생성 성공: messageId={}", response.id());
+    log.debug("메시지 본문: content={}", response.content());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -64,7 +70,10 @@ public class MessageController {
       @PathVariable UUID messageId,
       @Valid @RequestBody MessageUpdateRequest request
   ) {
+    log.info("메시지 수정 요청: messageId={}", messageId);
     MessageDto response = messageService.update(messageId, request);
+    log.info("메시지 수정 성공: messageId={}", response.id());
+    log.debug("메시지 본문: content={}", response.content());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -78,7 +87,9 @@ public class MessageController {
       @Parameter(description = "삭제할 Message ID", example = "4e23cb1a-e2ae-4171-811f-ccc4c13fc577")
       @PathVariable UUID messageId
   ) {
+    log.info("메시지 삭제 요청: messageId={}", messageId);
     messageService.delete(messageId);
+    log.info("메시지 삭제 성공: messageId={}", messageId);
     return ResponseEntity.noContent().build();
   }
 
@@ -92,8 +103,10 @@ public class MessageController {
       @RequestParam(value = "cursor", required = false) Instant cursor,
       Pageable pageable
   ) {
+    log.debug("메시지 목록 조회 요청: channelId={}", channelId);
     PageResponse<MessageDto> response = messageService.findAllByChannelId(channelId, cursor,
         pageable);
+    log.debug("메시지 목록 조회 성공: channelId={}, count={}", channelId, response.content().size());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

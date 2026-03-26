@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/binaryContents")
 @Tag(name = "BinaryContent")
+@Slf4j
 public class BinaryContentController {
 
   private final BinaryContentService binaryContentService;
@@ -39,7 +41,9 @@ public class BinaryContentController {
       @Parameter(description = "조회할 첨부 파일 ID", example = "0b71409f-f489-40a2-a075-c2c93640351c")
       @PathVariable UUID binaryContentId
   ) {
+    log.debug("파일 조회 요청: binaryContentId={}", binaryContentId);
     BinaryContentDto response = binaryContentService.findById(binaryContentId);
+    log.debug("파일 조회 성공: binaryContentId={}", binaryContentId);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -53,7 +57,9 @@ public class BinaryContentController {
       )
       @RequestParam("binaryContentIds") List<UUID> binaryContentIds
   ) {
+    log.debug("파일 목록 조회 요청: binaryContentIdCount={}", binaryContentIds.size());
     List<BinaryContentDto> response = binaryContentService.findAllByIdIn(binaryContentIds);
+    log.debug("파일 목록 조회 성공: binaryContentIdCount={}", binaryContentIds.size());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -64,7 +70,10 @@ public class BinaryContentController {
       @Parameter(description = "다운로드할 파일 ID")
       @PathVariable UUID binaryContentId
   ) {
-    BinaryContentDto binaryContentDto = binaryContentService.findById(binaryContentId);
-    return binaryContentStorage.download(binaryContentDto);
+    log.info("파일 다운로드 요청: binaryContentId={}", binaryContentId);
+    BinaryContentDto response = binaryContentService.findById(binaryContentId);
+    log.info("파일 다운로드 성공: binaryContentId={}, fileName={}, size={}, contentType={}", response.id(),
+        response.fileName(), response.size(), response.contentType());
+    return binaryContentStorage.download(response);
   }
 }

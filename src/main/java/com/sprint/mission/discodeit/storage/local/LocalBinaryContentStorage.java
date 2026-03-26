@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
+@Slf4j
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   private Path root;
@@ -73,11 +75,12 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   @Override
   public ResponseEntity<?> download(BinaryContentDto binaryContentDto) {
+    log.info("파일 다운로드 시작: binaryContentId={}", binaryContentDto.id());
     InputStream inputStream = get(binaryContentDto.id());
     Resource resource = new InputStreamResource(inputStream);
 
     String headerContent = "attachment; filename=\"" + binaryContentDto.fileName() + "\"";
-
+    log.info("파일 다운로드 완료: binaryContentId={}", binaryContentDto.id());
     return ResponseEntity
         .status(HttpStatus.OK)
         .header(HttpHeaders.CONTENT_DISPOSITION, headerContent)

@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/readStatuses")
 @Tag(name = "ReadStatus")
+@Slf4j
 public class ReadStatusController {
 
   private final ReadStatusService readStatusService;
@@ -42,7 +44,9 @@ public class ReadStatusController {
   public ResponseEntity<ReadStatusDto> create(
       @Valid @RequestBody ReadStatusCreateRequest request
   ) {
+    log.info("ReadStatus 생성 요청: userId={}, channelId={}", request.userId(), request.channelId());
     ReadStatusDto response = readStatusService.create(request);
+    log.info("ReadStatus 생성 성공: readStatusId={}", response.id());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -56,7 +60,9 @@ public class ReadStatusController {
       @Parameter(description = "수정할 읽음 상태 ID", example = "0d56555c-7d86-4fa7-b5d6-3170a70909e1")
       @PathVariable UUID readStatusId,
       @Valid @RequestBody ReadStatusUpdateRequest request) {
+    log.info("ReadStatus 수정 요청: readStatusId={}", readStatusId);
     ReadStatusDto response = readStatusService.update(readStatusId, request);
+    log.info("ReadStatus 수정 성공: readStatusId={}", response.id());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -67,7 +73,9 @@ public class ReadStatusController {
       @Parameter(description = "조회할 User ID", example = "5cd294e0-4cde-4a67-8d5c-3f054927c595")
       @RequestParam("userId") UUID userId
   ) {
+    log.debug("유저의 ReadStatus 목록 조회 요청: userId={}", userId);
     List<ReadStatusDto> responses = readStatusService.findAllByUserId(userId);
+    log.debug("유저의 ReadStatus 목록 조회 성공: readStatusCount={}", responses.size());
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 }

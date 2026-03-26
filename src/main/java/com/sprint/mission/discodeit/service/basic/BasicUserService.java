@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
@@ -34,6 +36,7 @@ public class BasicUserService implements UserService {
 
   @Override
   public UserDto create(UserCreateRequest request, MultipartFile file) {
+    log.debug("유저 생성 시작: username={}, email={}", request.username(), request.email());
     existsByUsername(request.username());
     existsByEmail(request.email());
 
@@ -43,6 +46,7 @@ public class BasicUserService implements UserService {
     //요청에 프로필이 있다면 binaryContent 객체 생성 후 저장
     if (file != null && !file.isEmpty()) {
       try {
+        log.debug("프로필 사진 업로드 시작: name={}, size={}", file.getOriginalFilename(), file.getSize());
         profile = new BinaryContent(
             file.getOriginalFilename(),
             file.getSize(),
@@ -50,6 +54,7 @@ public class BasicUserService implements UserService {
         );
         binaryContentRepository.save(profile);
         binaryContentStorage.put(profile.getId(), file.getBytes());
+        log.info("프로필 사진 저장 성공: profileId={}", profile.getId());
       } catch (IOException e) {
         throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
       }
@@ -60,28 +65,34 @@ public class BasicUserService implements UserService {
 
     user.setStatus(userStatus); // 편의 메서드
     userRepository.save(user); //cascade로 UserStatus도 같이 INSERT
-
+    log.info("유저 생성 완료: userId={}", user.getId());
     return userMapper.toDto(user);
   }
 
   @Override
   @Transactional(readOnly = true)
   public UserDto findById(UUID userId) {
+    log.debug("유저 조회 시작: userId={}", userId);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
+    log.debug("유저 조회 완료: user={}, username={}", user.getId(), user.getUsername());
     return userMapper.toDto(user);
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<UserDto> findAll() {
-    return userRepository.findAll().stream()
+    log.debug("유저 목록 조회 시작");
+    List<User> users = userRepository.findAll();
+    log.debug("유저 목록 조회 완료: userCount={}", users.size());
+    return users.stream()
         .map(userMapper::toDto)
         .toList();
   }
 
   @Override
   public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile file) {
+    log.debug("유저 수정 시작: userId={}", userId);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
 
@@ -90,6 +101,8 @@ public class BasicUserService implements UserService {
 
     if (file != null && !file.isEmpty()) { //요청에 프로필 파일이 있는지 확인
       try {
+        log.debug("새로운 프로필 사진 업로드 시작: name={}, size={}", file.getOriginalFilename(),
+            file.getSize());
         BinaryContent newProfile = new BinaryContent(
             file.getOriginalFilename(),
             file.getSize(),
@@ -98,20 +111,22 @@ public class BasicUserService implements UserService {
         binaryContentRepository.save(newProfile);
         binaryContentStorage.put(newProfile.getId(), file.getBytes());
         user.updateProfile(newProfile);
+        log.info("새로운 프로필 사진 저장 성공: profileId={}", newProfile.getId());
       } catch (IOException e) {
         throw new BusinessLogicException(ExceptionCode.BINARY_CONTENT_UPLOAD_FAILED);
       }
-
     }
-
+    log.info("유저 수정 완료: userId={}", user.getId());
     return userMapper.toDto(user);
   }
 
   @Override
   public void delete(UUID userId) {
+    log.debug("유저 삭제 시작: userId={}", userId);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
     userRepository.delete(user);
+    log.info("유저 삭제 완료: userId={}", userId);
   }
 
   //유저명 중복체크

@@ -15,12 +15,14 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class BasicUserStatusService implements UserStatusService {
 
   private final UserStatusRepository userStatusRepository;
@@ -29,7 +31,7 @@ public class BasicUserStatusService implements UserStatusService {
 
   @Override
   public UserStatusDto create(UserStatusCreateRequest request) {
-
+    log.debug("유저 상태 생성 시작: userId={}", request.userId());
     //유저가 존재하지 않으면 예외
     User user = userRepository.findById(request.userId())
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND));
@@ -40,54 +42,63 @@ public class BasicUserStatusService implements UserStatusService {
           throw new BusinessLogicException(ExceptionCode.USER_STATUS_ALREADY_EXISTS);
         });
 
-    UserStatus status = new UserStatus(user);
-    userStatusRepository.save(status);
-
-    return userStatusMapper.toDto(status);
+    UserStatus userStatus = new UserStatus(user);
+    userStatusRepository.save(userStatus);
+    log.info("유저 상태 생성 완료: userId={}", userStatus.getId());
+    return userStatusMapper.toDto(userStatus);
   }
 
   @Override
   @Transactional(readOnly = true)
   public UserStatusDto findById(UUID userStatusId) {
-    UserStatus status = userStatusRepository.findById(userStatusId)
+    log.debug("유저 상태 조회 시작: userId={}", userStatusId);
+    UserStatus userStatus = userStatusRepository.findById(userStatusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
-    return userStatusMapper.toDto(status);
+    log.debug("유저 상태 조회 완료: userStatusId={}", userStatusId);
+    return userStatusMapper.toDto(userStatus);
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<UserStatusDto> findAll() {
-    return userStatusRepository.findAll().stream()
+    log.debug("유저 상태 목록 조회 시작");
+    List<UserStatus> userStatuses = userStatusRepository.findAll();
+    log.debug("유저 상태 목록 조회 완료: userStatusCount={}", userStatuses.size());
+    return userStatuses.stream()
         .map(userStatusMapper::toDto)
         .toList();
   }
 
   @Override
   public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
+    log.debug("유저 상태 수정 시작: userStatusId={}", userStatusId);
     Instant newLastActiveAt = request.newLastActiveAt();
-
-    UserStatus status = userStatusRepository.findById(userStatusId)
+    UserStatus userStatus = userStatusRepository.findById(userStatusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
-    status.updateOnline(newLastActiveAt);
-    userStatusRepository.save(status);
-    return userStatusMapper.toDto(status);
+    userStatus.updateOnline(newLastActiveAt);
+    userStatusRepository.save(userStatus);
+    log.info("유저 상태 수정 완료: userStatusId={}", userStatus.getId());
+    return userStatusMapper.toDto(userStatus);
   }
 
   @Override
   public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+    log.debug("유저 상태 수정 시작: userId={}", userId);
     Instant newLastActiveAt = request.newLastActiveAt();
-
-    UserStatus status = userStatusRepository.findByUserId(userId)
+    UserStatus userStatus = userStatusRepository.findByUserId(userId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
-    status.updateOnline(newLastActiveAt);
-    userStatusRepository.save(status);
-    return userStatusMapper.toDto(status);
+    userStatus.updateOnline(newLastActiveAt);
+    userStatusRepository.save(userStatus);
+    log.info("유저 상태 수정 완료: userStatusId={}", userStatus.getId());
+    return userStatusMapper.toDto(userStatus);
   }
 
   @Override
   public void delete(UUID userStatusId) {
-    UserStatus status = userStatusRepository.findById(userStatusId)
+    log.debug("유저 상태 삭제 시작: userStatusId={}", userStatusId);
+    UserStatus userStatus = userStatusRepository.findById(userStatusId)
         .orElseThrow(() -> new BusinessLogicException(ExceptionCode.USER_STATUS_NOT_FOUND));
-    userStatusRepository.delete(status);
+    log.info("유저 상태 삭제 완료: userStatusId={}", userStatusId);
+    userStatusRepository.delete(userStatus);
   }
 }
