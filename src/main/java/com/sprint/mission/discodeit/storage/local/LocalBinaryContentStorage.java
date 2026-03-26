@@ -82,12 +82,8 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   @Override
   public ResponseEntity<Resource> download(BinaryContentDto metaData) {
-    log.debug("파일 다운로드 시작: binaryContentId= {},fileName= {}",metaData.id(),metaData.fileName());
     InputStream inputStream = get(metaData.id());
     Resource resource = new InputStreamResource(inputStream);
-
-    log.info("파일 다운로드 응답 생성: id={}, fileName={}, size={}",
-            metaData.id(), metaData.fileName(), metaData.size());
 
     return ResponseEntity
         .status(HttpStatus.OK)
