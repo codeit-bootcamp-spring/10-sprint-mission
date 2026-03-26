@@ -1,36 +1,33 @@
 spring:
   application:
     name: discodeit
+
+  profiles:
+    active: dev
+
   servlet:
     multipart:
-      maxFileSize: 10MB # 파일 하나의 최대 크기
-      maxRequestSize: 30MB  # 한 번에 최대 업로드 가능 용량
+      maxFileSize: 10MB
+      maxRequestSize: 30MB
+
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
 
-  datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit # DB이름 설정 필요
-    username: discodeit_user
-    password: discodeit1234
-    driver-class-name: org.postgresql.Driver
   sql:
     init:
-      mode: always        # schema.sql 실행
+      mode: always
       encoding: UTF-8
+
   jpa:
-    hibernate:
-        ddl-auto: none # 개발 단계는 update, 운영은 none 권장 , 검증은 validate
-    show-sql: true       # 실행 쿼리 확인
-    properties:
-        hibernate:
-          format_sql: true # SQL 포맷팅 가독성
     open-in-view: false
 
 discodeit:
   storage:
-    type: local # jcf | file
+    type: local
     local:
       root-path: ./storage
 
-
+logging:
+  level:
+    root: info

@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RequiredArgsConstructor
 @Service
 @Transactional
@@ -23,20 +26,27 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public BinaryContent create(BinaryContentCreateRequest request) {
+    String fileName = request.fileName();
+    String contentType = request.contentType();
     byte[] bytes = request.bytes();
-    if(bytes == null) throw new IllegalArgumentException("Bytes must not be null");
 
-    // bytes 뺀 메타만 저장.
+    log.info("파일 업로드 요청 - fileName={}, contentType={}", fileName, contentType);
+
+    if (bytes == null) {
+      log.warn("파일 업로드 실패 - bytes가 null임 fileName={}", fileName);
+      throw new IllegalArgumentException("Bytes must not be null");
+    }
+
     BinaryContent meta = new BinaryContent(
-            request.fileName(),
+            fileName,
             (long) bytes.length,
-            request.contentType()
+            contentType
     );
-    // 메타 저장 후.
-    BinaryContent saved = binaryContentRepository.save(meta);
 
-    // 실제 bytes는 storage 에 저장.
+    BinaryContent saved = binaryContentRepository.save(meta);
     binaryContentStorage.put(saved.getId(), bytes);
+
+    log.info("파일 업로드 완료 - binaryContentId={}, size={}", saved.getId(), bytes.length);
 
     return saved;
   }
@@ -44,24 +54,36 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Transactional(readOnly = true)
   @Override
   public BinaryContent find(UUID binaryContentId) {
+    log.debug("파일 조회 요청 - binaryContentId={}", binaryContentId);
+
     return binaryContentRepository.findById(binaryContentId)
-        .orElseThrow(() -> new NoSuchElementException(
-            "BinaryContent with id " + binaryContentId + " not found"));
+            .orElseThrow(() -> {
+              log.warn("파일 조회 실패 - 존재하지 않음 binaryContentId={}", binaryContentId);
+              return new NoSuchElementException(
+                      "BinaryContent with id " + binaryContentId + " not found");
+            });
   }
 
   @Transactional(readOnly = true)
   @Override
   public List<BinaryContent> findAllByIdIn(List<UUID> binaryContentIds) {
+    log.debug("파일 다건 조회 요청 - count={}", binaryContentIds.size());
     return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
-        .toList();
+            .toList();
   }
 
   @Override
   public void delete(UUID binaryContentId) {
+    log.info("파일 삭제 요청 - binaryContentId={}", binaryContentId);
+
     BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-            .orElseThrow(() ->
-                    new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found"));
+            .orElseThrow(() -> {
+              log.warn("파일 삭제 실패 - 존재하지 않음 binaryContentId={}", binaryContentId);
+              return new NoSuchElementException("BinaryContent with id " + binaryContentId + " not found");
+            });
 
     binaryContentRepository.delete(binaryContent);
+
+    log.info("파일 삭제 완료 - binaryContentId={}", binaryContentId);
   }
 }
