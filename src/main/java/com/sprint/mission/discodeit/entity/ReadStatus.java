@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -16,6 +17,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 @Getter
 @Setter
@@ -25,7 +27,7 @@ import lombok.Setter;
 
 public class ReadStatus extends BaseUpdatableEntity {
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

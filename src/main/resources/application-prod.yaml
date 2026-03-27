@@ -21,7 +21,8 @@ logging:
     root: INFO
     com.sprint.mission.discodeit: INFO
     org.springframework: WARN
+    org.springframework.transaction: DEBUG
     org.hibernate: WARN
-    org.hibernate.SQL: OFF
+    org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: OFF
 

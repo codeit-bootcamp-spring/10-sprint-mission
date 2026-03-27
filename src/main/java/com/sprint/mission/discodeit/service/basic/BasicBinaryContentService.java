@@ -56,7 +56,13 @@ public class BasicBinaryContentService implements BinaryContentService {
             .map(binaryContentMapper::toDto)
             .toList();
 
-        log.info("조회 성공");
+        // 첫 번째 첨부파일의 Id만 로그로 찍음.
+        log.info("[BinaryContent] 조회 성공: binaryContentId={}",
+            result
+                .stream()
+                .filter(Objects::nonNull)
+                .findFirst()
+                .get().id());
 
         return result;
     }

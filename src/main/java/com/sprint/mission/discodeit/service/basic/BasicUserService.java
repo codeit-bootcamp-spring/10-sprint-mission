@@ -7,6 +7,9 @@ import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserEmailDuplicateException;
+import com.sprint.mission.discodeit.exception.user.UserNameDuplicateException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -15,8 +18,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -34,6 +35,7 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final BinaryContentStorage binaryContentStorage;
 
+
     // 유저 생성 요청 DTO를 받아 유저 도메인 객체를 생성하고, 해당 객체 정보를 바탕으로 UserResponseDTO를 만들어 반환한다.
     @Override
     public UserDto create(UserCreateRequestDTO req, BinaryContentDto profileDto) {
@@ -45,11 +47,11 @@ public class BasicUserService implements UserService {
         log.trace("사용자 생성 요청 검증 시작");
 
         // 유저 레포지토리 내에서 유저 요청으로 들어온 이름과 이메일이 중복되는지 확인하고 중복 시 예외를 던진다.
-        if (
-            userRepository.existsByUsername(req.username())
-                || userRepository.existsByEmail(req.email())) {
-            // 예외 관련 로그는 ExceptionHandler 쪽에서 해결
-            throw new IllegalStateException("중복되는 유저 정보입니다.");
+        if (userRepository.existsByUsername(req.username())) {
+            throw new UserNameDuplicateException(req.username());
+        }
+        if (userRepository.existsByEmail(req.email())) {
+            throw new UserEmailDuplicateException(req.email());
         }
 
         BinaryContent saved = null;
@@ -76,8 +78,7 @@ public class BasicUserService implements UserService {
         );
 
         // 생성된 사용자 디버깅 로그
-        log.debug("생성된 사용자 정보: userId={}, username={}, email={}",
-            user.getId(), user.getUsername(), user.getEmail());
+        log.debug("생성된 사용자 정보: userId={}", user.getId());
 
         User savedUser = userRepository.save(user); // user 레포지토리의 save로 해당 유저 객체를 영속화한다.
         userStatusRepository.save(new UserStatus(savedUser));
@@ -86,8 +87,7 @@ public class BasicUserService implements UserService {
         log.trace("사용자 생성 메서드 종료");
 
         // 사용자 생성 성공 로그
-        log.info("사용자 생성 및 영속화 완료: userId={}, userName={}, email={}",
-            savedUser.getId(), savedUser.getUsername(), savedUser.getEmail());
+        log.info("사용자 생성 및 영속화 완료: userId={}", savedUser.getId());
 
         return userMapper.toDto(savedUser); // entities -> DTO
     }
@@ -100,10 +100,7 @@ public class BasicUserService implements UserService {
         log.trace("user find 메소드 시작: userId={}", userId);
 
         // 유저 레포에 해당 유저가 존재하는지 확인하고 미존재시 예외 던짐.
-        User user = userRepository.findById(userId)
-            .orElseThrow(
-                () -> new IllegalStateException("유저 ID가 존재하지 않습니다.")
-            );
+        User user = getUser(userId);
 
         // 유저 조회 성공 관련 로그
         log.info("user 조회 성공: username={}", user.getUsername());
@@ -142,10 +139,7 @@ public class BasicUserService implements UserService {
         log.trace("user update 메서드 시작: userId={}", userId);
 
         // 유저 레포지토리에서 요청에 담긴 userID를 통해 유저를 찾고 없으면 예외를 던짐
-        User user = userRepository.findById(userId)
-            .orElseThrow(
-                () -> new NoSuchElementException("User with id " + userId + " not found")
-            );
+        User user = getUser(userId);
 
         // 유저 조회 성공 관련 로그
         log.debug("조회된 user 정보: userId={}", user.getId());
@@ -184,14 +178,18 @@ public class BasicUserService implements UserService {
         log.trace("사용자 삭제 메서드 시작: userId={}", userId);
 
         // 해당 유저 ID가 레포지토리 내에 존재하는지 확인하고 없으면 예외 던짐.
-        userRepository.findById(userId)
-            .orElseThrow(() -> new NoSuchElementException("해당 유저가 존재하지 않음"));
         userRepository.deleteById(userId);
+        userRepository.flush();
+        log.info("DELETE FLUSH OK {}", userId);
 
-        // 삭제 성공 로그
-        log.info("사용자 삭제 성공");
 
-        // 메서드 종료 로그
-        log.trace("사용자 삭제 메서드 종료: userId={}", userId);
     }
+
+    private User getUser(UUID id) {
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+
 }
+
+

@@ -43,10 +43,10 @@ public class BasicChannelService implements ChannelService {
     public ChannelDto createPublicChannel(PublicChannelCreateDTO req) {
 
         // 채널 생성 메서드 시작 로그
-        log.trace("공개 채널 생성 메서드 시작: channelname={}", req.name());
+        log.trace("[Channel] 공개 채널 생성 메서드 시작: channelname={}", req.name());
 
         if (channelRepository.existsByName(req.name())) {
-            log.warn("채널 이름 중복: channelName={}", req.name());
+            log.warn("[Channel] 채널 이름 중복: channelName={}", req.name());
             throw new IllegalStateException("채널명이 중복됩니다.");
         }
 
@@ -54,17 +54,17 @@ public class BasicChannelService implements ChannelService {
         Channel channel = new Channel(ChannelType.PUBLIC, req.name(), req.description());
 
         // 생성된 채널 객체 정보 로그
-        log.debug("생성된 공개 채널 객체 정보: channelId={}", channel.getId());
+        log.debug("[Channel] 생성된 공개 채널 객체 정보: channelId={}", channel.getId());
 
         // 생성된 채널 객체 영속화 및 dto 변환 리턴 시도
-        log.trace("생성된 공개 채널 영속화 시도: channelId={}", channel.getId());
+        log.trace("[Channel] 생성된 공개 채널 영속화 시도: channelId={}", channel.getId());
         try {
             Channel saved = channelRepository.save(channel);
-            log.info("공개 채널 생성 및 영속화 완료: channelName={}", channel.getName());
+            log.info("[Channel] 공개 채널 생성 및 영속화 완료: channelId={}", channel.getId());
             return channelMapper.toDto(saved, null);
         } catch (DataIntegrityViolationException e) {
-            log.warn("채널 영속화 실패: channelName={}", channel.getName());
-            throw new IllegalStateException("채널이 DB 제약을 해칩니다.");
+            log.warn("[Channel] 채널 영속화 실패: channelId={}", channel.getId(), e);
+            throw new IllegalStateException("채널이 DB 제약을 해칩니다.", e);
         }
     }
 
@@ -72,7 +72,7 @@ public class BasicChannelService implements ChannelService {
     @Override
     public ChannelDto createPrivateChannel(PrivateChannelCreateDTO req) {
         // 사설 채널 생성 메서드 시작 로그
-        log.trace("사설 채널 생성 메서드 시작");
+        log.trace("[Channel] 사설 채널 생성 메서드 시작");
 
         if (req == null || req.users() == null) {
             throw new IllegalStateException("사설 채널 생성 요청이 유효하지 않습니다.");

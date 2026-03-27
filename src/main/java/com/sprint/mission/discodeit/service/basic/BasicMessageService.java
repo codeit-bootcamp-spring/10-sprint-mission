@@ -86,7 +86,7 @@ public class BasicMessageService implements MessageService {
         log.debug("생성된 메시지 객체 정보: messageId={}, channelId={}, userId={}",
             message.getId(), message.getChannel().getId(), message.getAuthor().getId());
         Message saved = messageRepository.save(message);
-        log.info("메시지 생성 및 영속화 성공: content={}", saved.getContent());
+        log.info("메시지 생성 및 영속화 성공: messageId={}", saved.getId());
 
         return messageMapper.toDto(saved);
     }
@@ -107,7 +107,7 @@ public class BasicMessageService implements MessageService {
             );
 
         // 조회 성공 INFO 로그
-        log.info("메시지 조회 성공: messageContent={}", message.getContent());
+        log.info("메시지 조회 성공: messageId={}", message.getId());
 
         // Dto로 변환 후 리턴
         return messageMapper.toDto(message);
@@ -172,7 +172,7 @@ public class BasicMessageService implements MessageService {
     @Override
     public MessageDto update(UUID messageId, MessageUpdateRequestDto req) {
         // 메시지 수정 메서드 시작 로그
-        log.trace("메시지 수정 메서드 시작: messageId={}, newContent={}", messageId, req.newContent());
+        log.trace("메시지 수정 메서드 시작: messageId={}", messageId);
 
         // 파라미터 null 체크
         Objects.requireNonNull(req, "메시지 수정 요청이 유효하지 않습니다!");
@@ -192,7 +192,7 @@ public class BasicMessageService implements MessageService {
             message.setContent(req.newContent()); // dirty-checking
         }
         // 메시지 수정 성공 INFO 로그
-        log.info("메시지 수정 성공: messageContent={}", message.getContent());
+        log.info("[Message] 메시지 수정 성공: messageId={}", message.getId());
 
         // DTO로 변환 후 리턴
         return messageMapper.toDto(message);
