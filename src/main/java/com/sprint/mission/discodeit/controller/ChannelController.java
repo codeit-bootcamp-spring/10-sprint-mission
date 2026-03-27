@@ -35,7 +35,6 @@ public class ChannelController implements ChannelApi {
     log.debug("[CHANNEL_CREATE] PUBLIC 채널 생성 요청: channelName={}",request.name());
     ChannelDto createdChannel = channelService.create(request);
 
-    log.info("[CHANNEL_CREATE] PUBLIC 채널 생성 응답: channelId={},channelName={}",createdChannel.id(), request.name());
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createdChannel);
@@ -46,7 +45,6 @@ public class ChannelController implements ChannelApi {
     log.debug("[CHANNEL_CREATE] PRIVATE 채널 생성 요청: participantCount={}",request.participantIds().size());
     ChannelDto createdChannel = channelService.create(request);
 
-    log.info("[CHANNEL_CREATE] PRIVATE 채널 생성 응답: channelId={},participantCount={}",createdChannel.id(), request.participantIds().size());
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createdChannel);
@@ -59,7 +57,6 @@ public class ChannelController implements ChannelApi {
     log.debug("[CHANNEL_UPDATE] 채널 수정 요청: channelId={}", channelId);
     ChannelDto updatedChannel = channelService.update(channelId, request);
 
-    log.info("[CHANNEL_UPDATE] 채널 수정 응답: channelId={}, channelName={}, channelDescription={}",channelId,updatedChannel.name(), updatedChannel.description());
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(updatedChannel);
@@ -70,7 +67,6 @@ public class ChannelController implements ChannelApi {
     log.debug("[CHANNEL_DELETE] 채널 삭제 요청: channelId={}", channelId);
     channelService.delete(channelId);
 
-    log.info("[CHANNEL_DELETE] 채널 삭제 응답: channelId={}", channelId);
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .build();

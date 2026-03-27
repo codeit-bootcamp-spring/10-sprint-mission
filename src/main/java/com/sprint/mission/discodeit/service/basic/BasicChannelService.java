@@ -61,7 +61,7 @@ public class BasicChannelService implements ChannelService {
         .toList();
     readStatusRepository.saveAll(readStatuses);
 
-    log.info("PRIVATE 채널생성 완료, channelId = {},참여자 수 = {}", channel.getId(),readStatuses.size());
+    log.debug("PRIVATE 채널생성 완료, channelId = {},참여자 수 = {}", channel.getId(),readStatuses.size());
     return channelMapper.toDto(channel);
   }
 
@@ -99,7 +99,7 @@ public class BasicChannelService implements ChannelService {
       throw new PrivateChannelUpdateException(Map.of("생성 시도한 채널 타입 정보", channel.getType()));
     }
     channel.update(newName, newDescription);
-    log.info("PUBLIC 채널 수정완료 channelId= {}, channelName= {}", channelId,channel.getName());
+    log.debug("PUBLIC 채널 수정완료 channelId= {}, channelName= {}", channelId,channel.getName());
     return channelMapper.toDto(channel);
   }
 
@@ -114,6 +114,6 @@ public class BasicChannelService implements ChannelService {
     readStatusRepository.deleteAllByChannelId(channelId);
 
     channelRepository.deleteById(channelId);
-    log.info("채널 삭제 완료: channelId= {}", channelId);
+    log.debug("채널 삭제 완료: channelId= {}", channelId);
   }
 }
