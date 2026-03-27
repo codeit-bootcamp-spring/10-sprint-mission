@@ -119,7 +119,6 @@ public class BasicMessageService implements MessageService {
             Optional.ofNullable(cursor).orElse(Instant.now()),
             pageable)
         .map(messageMapper::toDto);
-
     Instant nextCursor = null;
     if (!slice.getContent().isEmpty() && slice.hasNext()) {
       nextCursor = slice.getContent().get(slice.getContent().size() - 1).createdAt();
@@ -134,7 +133,6 @@ public class BasicMessageService implements MessageService {
     log.debug("메시지 수정 시작: messageId={}", messageId);
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
-
     message.update(request.newContent());
     log.info("메시지 수정 완료: messageId={}", message.getId());
     return messageMapper.toDto(message);
