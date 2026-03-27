@@ -15,6 +15,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
@@ -46,6 +48,9 @@ public class UserController {
           @RequestPart("userCreateRequest") String userCreateRequestJson,
           @RequestPart(value = "profile", required = false) MultipartFile profile
   ) throws Exception {
+
+    log.info("HTTP 요청 - 유저 생성");
+
     // Postman octet error로 이 부분 수정.
     UserCreateRequest userCreateRequest =
             objectMapper.readValue(userCreateRequestJson, UserCreateRequest.class);
@@ -54,6 +59,9 @@ public class UserController {
             Optional.ofNullable(profile).flatMap(this::resolveProfileRequest);
 
     User createdUser = userService.create(userCreateRequest, profileRequest);
+
+    log.info("HTTP 응답 - 유저 생성 완료 userId={}", createdUser.getId());
+
     // Entity -> Dto mapper
     UserDto dto = userMapper.toDto(createdUser);
 
@@ -68,12 +76,17 @@ public class UserController {
           @RequestPart("userUpdateRequest") String userUpdateRequestJson,
           @RequestPart(value = "profile", required = false) MultipartFile profile
   ) throws Exception {
+
+    log.info("HTTP 요청 - 유저 수정 userId={}", userId);
+
     UserUpdateRequest userUpdateRequest =
             objectMapper.readValue(userUpdateRequestJson, UserUpdateRequest.class);
     Optional<BinaryContentCreateRequest> profileRequest =
             Optional.ofNullable(profile).flatMap(this::resolveProfileRequest);
 
     User updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
+
+    log.info("HTTP 응답 = 유저 수정 완료 userId={}", userId);
 
     UserDto dto = userMapper.toDto(updatedUser);
     return ResponseEntity.ok(dto);
@@ -82,13 +95,22 @@ public class UserController {
   // DELETE /api/users/{userId} -> 204
   @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
   public ResponseEntity<Void> delete(@PathVariable UUID userId) {
+
+    log.info("HTTP 요청 - 유저 삭제 userId={}", userId);
+
     userService.delete(userId);
+
+    log.info("HTTP 응답 - 유저 삭제 완료 userId={}", userId);
+
     return ResponseEntity.noContent().build();
   }
 
   // GET /api/users
   @RequestMapping(method = RequestMethod.GET)
   public ResponseEntity<List<UserDto>> findAll() {
+
+    log.debug("HTTP 요청 - 유저 전체 조회");
+
     List<User> users = userService.findAll();
     List<UserDto> dtos = users.stream()
             .map(userMapper::toDto)
@@ -102,10 +124,15 @@ public class UserController {
           @PathVariable UUID userId,
           @Valid @RequestBody UserStatusUpdateRequest request
   ) {
+
+    log.info("HTTP 요청 - 유저 상태 수정 userId={}", userId);
+
     UserStatus updatedUserStatus = userStatusService.updateByUserId(userId, request);
 
     // userStatus도 그대로 반환 대신 dto로 변환.
     UserStatusDto dto = userStatusMapper.toDto(updatedUserStatus);
+
+    log.info("HTTP 응답 - 유저 상태 수정 완료 userId={}", userId);
 
     return ResponseEntity.ok(dto);
   }

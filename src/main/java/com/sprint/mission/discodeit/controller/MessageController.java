@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/messages")
@@ -36,7 +38,7 @@ public class MessageController {
   private final MessageService messageService;
   private final ObjectMapper objectMapper;
 
-  // mapper 추가'
+  // mapper 추가
   private final MessageMapper messageMapper;
 
   // POST /api/messages -> 201
@@ -45,6 +47,8 @@ public class MessageController {
           @RequestPart("messageCreateRequest") String messageCreateRequestJson,
           @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
   ) throws Exception {
+    log.info("HTTP 요청 - 메세지 생성");
+
     MessageCreateRequest messageCreateRequest =
             objectMapper.readValue(messageCreateRequestJson, MessageCreateRequest.class);
 
@@ -66,6 +70,7 @@ public class MessageController {
 
     Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
 
+    log.info("HTTP 응답 - 메세지 생성 완료 messeageId={}", createdMessage.getId());
     // Entity -> Dto로
     MessageDto dto = messageMapper.toDto(createdMessage);
     return ResponseEntity.status(HttpStatus.CREATED).body(dto);
@@ -77,15 +82,21 @@ public class MessageController {
           @PathVariable UUID messageId,
           @Valid @RequestBody MessageUpdateRequest request
   ) {
+    log.info("HTTP 요청 - 메시지 수정 messageId={}", messageId);
+
     Message updatedMessage = messageService.update(messageId, request);
     MessageDto dto = messageMapper.toDto(updatedMessage);
+    log.info("HTTP 응답 - 메시지 수정 완료 messageId={}", messageId);
     return ResponseEntity.ok(dto);
   }
 
   // DELETE /api/messages/{messageId} -> 204
   @RequestMapping(value = "/{messageId}", method = RequestMethod.DELETE)
   public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
+    log.info("HTTP 요청 - 메시지 삭제 messageId={}", messageId);
     messageService.delete(messageId);
+
+    log.info("HTTP 응답 - 메시지 삭제 완료 messageId={}", messageId);
     return ResponseEntity.noContent().build();
   }
 
@@ -97,6 +108,9 @@ public class MessageController {
           @RequestParam(required = false) Instant cursor,
           @RequestParam(defaultValue = "50") int size
   ) {
+
+    log.debug("HTTP 요청 - 메시지 조회 channelId={}, cursor={}, size={}", channelId, cursor, size);
+
     List<Message> messages = messageService.findAllByChannel_Id(channelId, cursor, size);
 
     boolean hasNext = messages.size() > size;
