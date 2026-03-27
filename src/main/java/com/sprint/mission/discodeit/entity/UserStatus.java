@@ -21,7 +21,7 @@ import lombok.Setter;
 @Table(name = "user_statuses")
 public class UserStatus extends BaseUpdatableEntity {
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 

@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.FieldNotValidException;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 
@@ -10,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -27,31 +28,35 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Transactional
     @Override
     public BinaryContentDto find(UUID id) {
-        // Id로 BinaryContent 조회 메서드 시작 로그
-        log.trace("BinaryContent 조회 메서드 시작: id={}", id);
-
         // id null 체크
-        Objects.requireNonNull(id, "유효하지 않은 ID 입니다!");
+        if (id == null) {
+            throw new FieldNotValidException("id");
+        }
+
+        // Id로 BinaryContent 조회 메서드 시작 로그
+        log.trace("[BinaryContent] BinaryContent 조회 메서드 시작: id={}", id);
 
         // BinaryContent 레포지토리에서 BinaryContent 조회
-        BinaryContent binaryContent = binaryContentRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("해당 첨부파일을 찾지 못했습니다."));
+        BinaryContent binaryContent = getBinaryContent(id);
 
-        log.debug("조회된 BinaryContent 정보: id={}, fileName={}, size={}",
+        log.debug("[BinaryContent] 조회된 BinaryContent 정보: id={}, fileName={}, size={}",
             binaryContent.getId(), binaryContent.getFileName(), binaryContent.getSize());
 
-        log.info("BinaryContent 조회 성공");
+        log.info("[BinaryContent] BinaryContent 조회 성공");
         return binaryContentMapper.toDto(binaryContent);
     }
 
     @Transactional
     @Override
     public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
-        log.trace("ID 리스트로 BinaryContent 조회 메서드 시작: ids={}", ids);
+        // id 리스트 null 체킹
+        if (ids == null) {
+            throw new FieldNotValidException("ids");
+        }
 
-        // id 리스트 null 체크
-        Objects.requireNonNull(ids, "유효하지 않은 식별자 목록!");
+        log.trace("[BinaryContent] ID 리스트로 BinaryContent 조회 메서드 시작: ids={}", ids);
 
+        // 첨부 파일 ID 리스트 기반으로 첨부 파일 DTO 생성
         List<BinaryContentDto> result = binaryContentRepository.findAllByIdIn(ids).stream()
             .map(binaryContentMapper::toDto)
             .toList();
@@ -70,11 +75,24 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Transactional
     @Override
     public void delete(UUID id) {
-        log.trace("첨부 파일 삭제 메서드 시작: id={}", id);
-        Objects.requireNonNull(id, "해당 ID는 유효하지 않습니다!");
+        if (id == null) {
+            throw new FieldNotValidException("id");
+        }
+
+        log.trace("[BinaryContent] 첨부 파일 삭제 메서드 시작: id={}", id);
+
+        BinaryContent binaryContent = getBinaryContent(id);
+
+        log.info("[BinaryContent] 삭제 될 첨부 파일 정보: id={}", binaryContent.getId());
+
         binaryContentRepository.deleteById(id);
 
-        log.info("첨부 파일 삭제 성공");
+        log.info("[BinaryContent] 첨부 파일 삭제 성공: id={}", id);
+    }
+
+    public BinaryContent getBinaryContent(UUID id) {
+        return binaryContentRepository.findById(id)
+            .orElseThrow(() -> new BinaryContentNotFoundException(id));
     }
 
 }

@@ -25,11 +25,19 @@ public class ErrorResponse {
         this.status = status;
     }
 
+    // 커스텀 예외를 받고 반환함.
     public static ErrorResponse of(DiscodeitException exception) {
         ErrorCode errorCode = exception.getErrorCode();
 
         return new ErrorResponse(exception.getTimestamp(), errorCode.toString(),
             exception.getMessage(), exception.getDetails(), exception.getClass().getSimpleName(),
+            errorCode.getStatus().value());
+    }
+
+    // 커스텀 예외를 제외한 다른 예외일 경우
+    public static ErrorResponse of(Exception e, ErrorCode errorCode, Map<String, Object> details) {
+        return new ErrorResponse(Instant.now(), errorCode.toString(),
+            errorCode.getMessage(), details, e.getClass().getSimpleName(),
             errorCode.getStatus().value());
     }
 

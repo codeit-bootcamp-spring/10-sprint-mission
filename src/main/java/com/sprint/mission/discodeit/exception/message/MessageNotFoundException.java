@@ -5,10 +5,11 @@ import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 
 public class MessageNotFoundException extends MessageException {
 
-    public MessageNotFoundException(Map<String, Object> details) {
-        super(ErrorCode.MESSAGE_NOT_FOUND, Instant.now(), details);
+    public MessageNotFoundException(UUID id) {
+        super(ErrorCode.MESSAGE_NOT_FOUND, Instant.now(), Map.of("id", id));
     }
 }

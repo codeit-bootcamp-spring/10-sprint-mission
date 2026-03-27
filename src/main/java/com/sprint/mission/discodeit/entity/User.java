@@ -31,7 +31,7 @@ public class User extends BaseUpdatableEntity {
     @JoinColumn(name = "profile_id")
     private BinaryContent profile; // BinaryContent의 id
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "user")
     private UserStatus userStatus;
 
 

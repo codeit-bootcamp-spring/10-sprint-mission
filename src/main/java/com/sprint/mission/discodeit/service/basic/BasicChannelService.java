@@ -8,6 +8,12 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.exception.FieldNotValidException;
+import com.sprint.mission.discodeit.exception.RequestNullException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNameDuplicationException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.ChannelParticipantListEmptyException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -16,13 +22,11 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,12 +46,16 @@ public class BasicChannelService implements ChannelService {
     @Transactional
     public ChannelDto createPublicChannel(PublicChannelCreateDTO req) {
 
+        if (req == null) {
+            throw new RequestNullException();
+        }
+
         // 채널 생성 메서드 시작 로그
         log.trace("[Channel] 공개 채널 생성 메서드 시작: channelname={}", req.name());
 
+        // 채널명 중복 검증 및 예외 던지기
         if (channelRepository.existsByName(req.name())) {
-            log.warn("[Channel] 채널 이름 중복: channelName={}", req.name());
-            throw new IllegalStateException("채널명이 중복됩니다.");
+            throw new ChannelNameDuplicationException(req.name());
         }
 
         // 채널 객체 생성 (영속화는 아직)
@@ -58,14 +66,11 @@ public class BasicChannelService implements ChannelService {
 
         // 생성된 채널 객체 영속화 및 dto 변환 리턴 시도
         log.trace("[Channel] 생성된 공개 채널 영속화 시도: channelId={}", channel.getId());
-        try {
-            Channel saved = channelRepository.save(channel);
-            log.info("[Channel] 공개 채널 생성 및 영속화 완료: channelId={}", channel.getId());
-            return channelMapper.toDto(saved, null);
-        } catch (DataIntegrityViolationException e) {
-            log.warn("[Channel] 채널 영속화 실패: channelId={}", channel.getId(), e);
-            throw new IllegalStateException("채널이 DB 제약을 해칩니다.", e);
-        }
+
+        Channel saved = channelRepository.save(channel);
+        log.info("[Channel] 공개 채널 생성 및 영속화 완료: channelId={}", saved.getId());
+
+        return channelMapper.toDto(saved, null);
     }
 
     @Transactional
@@ -75,7 +80,7 @@ public class BasicChannelService implements ChannelService {
         log.trace("[Channel] 사설 채널 생성 메서드 시작");
 
         if (req == null || req.users() == null) {
-            throw new IllegalStateException("사설 채널 생성 요청이 유효하지 않습니다.");
+            throw new RequestNullException();
         }
 
         // 사설 채널 유저 리스트를 생성 (Null 요소 제외 및 중복 유저 제거)
@@ -86,7 +91,7 @@ public class BasicChannelService implements ChannelService {
 
         // 유저 리스트가 비어있으면 예외 발생
         if (participantIds.isEmpty()) {
-            throw new IllegalStateException("유저 리스트가 비어있음");
+            throw new ChannelParticipantListEmptyException();
         }
 
         log.trace("사설 채널 객체 생성 시도");
@@ -101,7 +106,7 @@ public class BasicChannelService implements ChannelService {
         log.trace("유저 리스트 순회하며 ReadStatus 최신화 시도");
         participantIds.forEach(u -> {
             ReadStatus rs = new ReadStatus(userRepository.findById(u)
-                .orElseThrow(() -> new NoSuchElementException("User not found")), saved);
+                .orElseThrow(() -> new UserNotFoundException(u)), saved);
             readStatusRepository.save(rs);
         });
 
@@ -117,10 +122,12 @@ public class BasicChannelService implements ChannelService {
     @Transactional(readOnly = true)
     @Override
     public ChannelDto find(UUID channelId) {
-        log.trace("채널 조회 메서드 시작: channelId={}", channelId);
+        // 채널 조회 메서드 시작 TRACE 로그
+        log.trace("[Channel] 채널 조회 메서드 시작: channelId={}", channelId);
 
-        Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(() -> new NoSuchElementException("찾을 수 없는 유저"));
+        // 채널 조회 유틸 메서드 호출
+        Channel channel = getChannel(channelId);
+
         Message lastMessage = messageRepository.findTopByChannelIdOrderByCreatedAtDesc(channelId);
 
         log.info("채널 조회 성공: channelName={}", channel.getName());
@@ -130,9 +137,12 @@ public class BasicChannelService implements ChannelService {
     @Transactional(readOnly = true)
     @Override
     public List<ChannelDto> findAllByUserId(UUID userId) {
-        log.trace("유저 ID를 통해 채널 조회 메서드 시작: userId={}", userId);
 
-        Objects.requireNonNull(userId, "유효하지 않은 사용자 ID 입니다!");
+        if (userId == null) {
+            throw new FieldNotValidException("userId");
+        }
+
+        log.trace("유저 ID를 통해 채널 조회 메서드 시작: userId={}", userId);
 
         List<Channel> channels = channelRepository.findAllVisibleWithParticipants(
             userId, ChannelType.PUBLIC);
@@ -168,18 +178,20 @@ public class BasicChannelService implements ChannelService {
     @Override
     @Transactional
     public ChannelDto update(UUID channelId, PublicChannelUpdateRequestDTO req) {
-        Objects.requireNonNull(channelId, "유효하지 않은 채널 ID 입니다!");
-        Objects.requireNonNull(req, "유효하지 않은 채널 수정 요청입니다!");
+        if (channelId == null) {
+            throw new FieldNotValidException("channelId");
+        }
+
+        if (req == null) {
+            throw new RequestNullException();
+        }
 
         // 채널 업데이트 메서드 시작 로그
         log.trace("채널 업데이트 메서드 시작: channelId={}, newName={}, newDescription={}",
             channelId, req.newName(), req.newDescription());
 
         // 채널 레포지토리에서 수정하고자 하는 채널이 존재하는지 조회
-        Channel channel = channelRepository
-            .findById(channelId)
-            .orElseThrow(
-                () -> new NoSuchElementException("해당 채널이 존재하지 않습니다!"));
+        Channel channel = getChannel(channelId);
 
         // 채널 엔티티의 update 메서드를 통해 수정
         channel.update(req.newName(), req.newDescription()); // dirty-checking
@@ -200,9 +212,6 @@ public class BasicChannelService implements ChannelService {
 
         // 채널 레포지토리에서 전체 채널 조회
         List<Channel> channels = channelRepository.findAll();
-
-        // 조회한 채널 리스트에서 id만 추출하여 리스트화
-        List<UUID> channelIds = channels.stream().map(Channel::getId).toList();
 
         // 메세지 레포지토리에서 채널 ID를 사용하여 각 채널 당 최신 메시지를 추출 및 리스트화
         List<Message> lastMessages = messageRepository.findLastMessageByChannelIds(
@@ -233,9 +242,21 @@ public class BasicChannelService implements ChannelService {
         // 채널 삭제 메서드 시작 로그
         log.trace("채널 삭제 메서드 시작: channelId={}", channelId);
 
-        Channel channel = channelRepository.findById(channelId)
-            .orElseThrow(() -> new NoSuchElementException("해당 채널을 찾을 수 없습니다!"));
+        // 채널 조회
+        Channel channel = getChannel(channelId);
+
+        log.debug("[Channel] 삭제 할 채널 정보: channelId={}", channelId);
+
+        // 채널 삭제
         channelRepository.delete(channel);
+
         log.info("채널 삭제 성공: channelName={}", channel.getName());
+    }
+
+    // 채널 ID로 채널을 반환하고 없으면 예외를 반환하는 유틸 메서드
+    private Channel getChannel(UUID id) {
+        return channelRepository.findById(id).orElseThrow(
+            () -> new ChannelNotFoundException(id)
+        );
     }
 }

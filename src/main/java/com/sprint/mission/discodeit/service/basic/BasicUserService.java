@@ -7,6 +7,8 @@ import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.FieldNotValidException;
+import com.sprint.mission.discodeit.exception.RequestNullException;
 import com.sprint.mission.discodeit.exception.user.UserEmailDuplicateException;
 import com.sprint.mission.discodeit.exception.user.UserNameDuplicateException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -39,6 +41,10 @@ public class BasicUserService implements UserService {
     // 유저 생성 요청 DTO를 받아 유저 도메인 객체를 생성하고, 해당 객체 정보를 바탕으로 UserResponseDTO를 만들어 반환한다.
     @Override
     public UserDto create(UserCreateRequestDTO req, BinaryContentDto profileDto) {
+
+        if (req == null) {
+            throw new RequestNullException();
+        }
 
         // 메서드 시작 trace 로그
         log.trace("user create 메서드 시작: username={}", req.username());
@@ -135,6 +141,14 @@ public class BasicUserService implements UserService {
     // 유저 업데이트 DTO를 받아 해당 객체를 업데이트하고 UserResponseDTO를 반환하는 메소드
     @Override
     public UserDto update(UUID userId, UserUpdateDTO req, BinaryContentDto profileDto) {
+
+        if (userId == null) {
+            throw new FieldNotValidException("userId");
+        }
+        if (req == null) {
+            throw new RequestNullException();
+        }
+
         // 메서드 시작 trace 로그
         log.trace("user update 메서드 시작: userId={}", userId);
 
@@ -160,6 +174,16 @@ public class BasicUserService implements UserService {
 
         // 유저 도메인 객체의 update 메소드를 통해 업데이트.
         log.trace("user 엔티티의 update 메소드 실행");
+
+        if (userRepository.existsByEmailAndIdNot(req.newEmail(), user.getId())) {
+            throw new UserEmailDuplicateException(req.newEmail());
+        }
+
+        if (userRepository.existsByUsernameAndIdNot(req.newUsername(), user.getId())) {
+            throw new UserNameDuplicateException(req.newUsername());
+        }
+
+        // 검증을 마치고 나서 요청 값들을 조회한 user 엔티티에 update로 반영
         user.update(req.newUsername(), req.newEmail(), req.newPassword(), saved);
 
         User savedUser = userRepository.save(user); // 영속화
@@ -174,13 +198,20 @@ public class BasicUserService implements UserService {
     @Transactional
     public void delete(UUID userId) {
 
+        if (userId == null) {
+            throw new FieldNotValidException("userId");
+        }
         // 메서드 시작 로그
         log.trace("사용자 삭제 메서드 시작: userId={}", userId);
 
+        // 존재 검증 후 예외 처리 결정
+        getUser(userId);
+
         // 해당 유저 ID가 레포지토리 내에 존재하는지 확인하고 없으면 예외 던짐.
         userRepository.deleteById(userId);
-        userRepository.flush();
-        log.info("DELETE FLUSH OK {}", userId);
+
+        // 삭제 성공 로그
+        log.info("[User] 유저 삭제 성공: userId={}", userId);
 
 
     }

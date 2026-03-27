@@ -6,10 +6,10 @@ import java.util.Map;
 public class UserNameDuplicateException extends UserException {
 
     public UserNameDuplicateException() {
-        super(ErrorCode.DUPLICATE_USER_NAME);
+        super(ErrorCode.USER_NAME_DUPLICATE);
     }
 
     public UserNameDuplicateException(String name) {
-        super(ErrorCode.DUPLICATE_USER_NAME, Map.of("username", name));
+        super(ErrorCode.USER_NAME_DUPLICATE, Map.of("username", name));
     }
 }

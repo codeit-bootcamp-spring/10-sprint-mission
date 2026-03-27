@@ -7,8 +7,13 @@ import java.util.Map;
 
 public class ChannelException extends DiscodeitException {
 
-    public ChannelException(ErrorCode errorCode,
-        Instant timestamp, Map<String, Object> details) {
-        super(errorCode, timestamp, details);
+    protected ChannelException(ErrorCode errorCode) {
+        super(errorCode, Instant.now(), Map.of());
     }
+
+    protected ChannelException(ErrorCode errorCode, Map<String, Object> details) {
+        super(errorCode, Instant.now(), details);
+    }
+
+
 }

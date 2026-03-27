@@ -31,7 +31,7 @@ public class ReadStatus extends BaseUpdatableEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "channel_id", nullable = false)
     private Channel channel;
 
@@ -58,8 +58,8 @@ public class ReadStatus extends BaseUpdatableEntity {
         return lastReadAt.isAfter(Instant.EPOCH);
     }
 
-    public void update() {
-        this.lastReadAt = Instant.now();
+    public void update(Instant lastReadAt) {
+        this.lastReadAt = lastReadAt;
         this.updatedAt = Instant.now();
     }
 

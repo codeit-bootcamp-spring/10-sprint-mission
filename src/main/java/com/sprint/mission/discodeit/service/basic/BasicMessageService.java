@@ -8,6 +8,12 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.FieldNotValidException;
+import com.sprint.mission.discodeit.exception.InternalServiceException;
+import com.sprint.mission.discodeit.exception.RequestNullException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -44,7 +50,9 @@ public class BasicMessageService implements MessageService {
     @Transactional
     @Override
     public MessageDto create(List<MultipartFile> profiles, MessageCreateRequestDTO req) {
-        Objects.requireNonNull(req, "유효하지 않은 요청입니다!");
+        if (req == null) {
+            throw new RequestNullException();
+        }
 
         // 메시지 생성 로그
         log.trace("메시지 생성 메서드 시작");
@@ -55,9 +63,9 @@ public class BasicMessageService implements MessageService {
             req.channelId(), req.authorId());
 
         Channel channel = channelRepository.findById(req.channelId())
-            .orElseThrow(() -> new NoSuchElementException("채널 ID를 찾을 수 없습니다!"));
+            .orElseThrow(() -> new ChannelNotFoundException(req.channelId()));
         User user = userRepository.findById(req.authorId())
-            .orElseThrow(() -> new NoSuchElementException("작성자 ID를 찾을 수 없습니다!"));
+            .orElseThrow(() -> new UserNotFoundException(req.authorId()));
 
         // 업로드 파일들을 BinaryContent로 변환하여 담아놓을 profileList를 빈 ArrayList로 초기화.
         List<BinaryContent> profileList = new ArrayList<>();
@@ -67,7 +75,7 @@ public class BasicMessageService implements MessageService {
             for (MultipartFile profile : profiles) {
                 BinaryContent saved = binaryContentRepository.save(
                     new BinaryContent(
-                        profile.getName(),
+                        profile.getOriginalFilename(),
                         profile.getSize(),
                         profile.getContentType()
                     )
@@ -77,7 +85,8 @@ public class BasicMessageService implements MessageService {
                 try {
                     binaryContentStorage.put(saved.getId(), profile.getBytes());
                 } catch (IOException e) {
-                    throw new RuntimeException("Byte가 유효하지 않음.");
+                    log.error("IO 예외 발생!: {} ", e.getMessage(), e);
+                    throw new InternalServiceException();
                 }
             }
         }
@@ -94,17 +103,16 @@ public class BasicMessageService implements MessageService {
     @Transactional(readOnly = true)
     @Override
     public MessageDto find(UUID messageId) {
+        // messageId null 체크
+        if (messageId == null) {
+            throw new FieldNotValidException("messageId");
+        }
+
         // 메시지 조회 메서드 시작 로그
         log.trace("메시지 조회 메서드 시작: messageId={}", messageId);
 
-        // messageId null 체크
-        Objects.requireNonNull(messageId, "유효하지 않은 메시지 ID 입니다!");
-
         // 메시지 레포지토리에서 messageId를 통해 메시지 추출
-        Message message = messageRepository.findById(messageId)
-            .orElseThrow(
-                () -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다!")
-            );
+        Message message = getMessage(messageId);
 
         // 조회 성공 INFO 로그
         log.info("메시지 조회 성공: messageId={}", message.getId());
@@ -120,7 +128,9 @@ public class BasicMessageService implements MessageService {
         log.trace("채널 ID로 메시지 리스트 조회 메서드 시작: channelId={}", channelId);
 
         // channelId null 체크
-        Objects.requireNonNull(channelId, "channelId가 유효하지 않습니다!");
+        if (channelId == null) {
+            throw new FieldNotValidException("channelId");
+        }
 
         // 메시지 레포지토리에서 채널 ID에 해당하는 메시지들을 리스트로 추출
         List<Message> messages = messageRepository.findByChannelId(channelId);
@@ -135,12 +145,6 @@ public class BasicMessageService implements MessageService {
             ).toList();
     }
 
-//    @Override
-//    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor,
-//        Pageable pageable) {
-//        return null;
-//    }
-
     @Override
     @Transactional(readOnly = true)
     public PageResponse<MessageDto> findAllByChannelId(UUID channelId,
@@ -151,9 +155,12 @@ public class BasicMessageService implements MessageService {
         log.trace("채널 내 모든 메시지 조회 메서드 시작: channelId={}", channelId);
 
         // 파라미터 null 체크
-        Objects.requireNonNull(channelId, "채널 ID가 유효하지 않습니다!");
-        Objects.requireNonNull(cursor, "유효하지 않은 cursor 값 입니다!");
-        Objects.requireNonNull(pageable, "유효하지 않은 pageable 객체입니다!");
+        if (channelId == null) {
+            throw new FieldNotValidException("channelId");
+        }
+        if (pageable == null) {
+            throw new FieldNotValidException("pageable");
+        }
 
         // cursor 값과 pageable 정보를 통해 slice<message> 객체를 추출한다.
         Slice<Message> slice = cursor
@@ -171,17 +178,19 @@ public class BasicMessageService implements MessageService {
     @Transactional
     @Override
     public MessageDto update(UUID messageId, MessageUpdateRequestDto req) {
+        // 파라미터 null 체크
+        if (messageId == null) {
+            throw new FieldNotValidException("messageId");
+        }
+        if (req == null) {
+            throw new RequestNullException();
+        }
+
         // 메시지 수정 메서드 시작 로그
         log.trace("메시지 수정 메서드 시작: messageId={}", messageId);
 
-        // 파라미터 null 체크
-        Objects.requireNonNull(req, "메시지 수정 요청이 유효하지 않습니다!");
-        Objects.requireNonNull(messageId, "메시지 ID가 유효하지 않습니다!");
-
         // 수정할 메시지를 메시지 레포지토리에서 조회
-        Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new NoSuchElementException(
-                "Message with id " + messageId + " not found"));
+        Message message = getMessage(messageId);
 
         // Target 메시지 정보 디버그 로그
         log.debug("target 메시지 정보: id={}, content={}",
@@ -201,18 +210,24 @@ public class BasicMessageService implements MessageService {
     @Transactional
     @Override
     public void delete(UUID messageId) {
+
+        if (messageId == null) {
+            throw new FieldNotValidException("messageId");
+        }
         log.trace("메시지 삭제 메서드 시작: messageId={}", messageId);
-        Objects.requireNonNull(messageId, "메시지 ID가 유효하지 않습니다!");
 
         // 메시지 레포지토리에서 메시지 조회
-        Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new NoSuchElementException("해당 메시지를 찾을 수 없습니다!"));
+        Message message = getMessage(messageId);
         // 디버깅 로그
         log.debug("삭제할 메시지 정보: id={}", message.getId());
         // 메시지 삭제
         messageRepository.delete(message);
         // 메시지 삭제 성공 INFO 로그
-        log.info("메시지 삭제 성공: messageContent={}", message.getContent());
+        log.info("메시지 삭제 성공: messageId={}", message.getId());
+    }
+
+    public Message getMessage(UUID id) {
+        return messageRepository.findById(id).orElseThrow(() -> new MessageNotFoundException(id));
     }
 }
 
