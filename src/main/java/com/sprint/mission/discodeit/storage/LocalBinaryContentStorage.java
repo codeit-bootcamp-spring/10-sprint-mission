@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentException;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -38,7 +41,10 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             Files.write(path, bytes);
         } catch (IOException e) {
             log.error("[BINARYCONTENT_SAVE_FAIL] 파일 저장 실패: binaryContentId={}", binaryContentId);
-            throw new IllegalStateException("파일 저장에 실패했습니다.", e);
+            throw new BinaryContentException(
+                    ErrorCode.BINARY_CONTENT_CAN_NOT_SAVE,
+                    Map.of("binaryContentId", binaryContentId)
+            );
         }
 
         log.info("[BINARYCONTENT_SAVE_SUCCESS] 파일 저장 성공: binaryContentId={}", binaryContentId);
@@ -53,7 +59,10 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             return Files.newInputStream(path);
         } catch (IOException e) {
             log.warn("[BINARYCONTENT_GET_FILE_FAIL] 파일 불러오기 실패: binaryContentId={}", binaryContentId);
-            throw new IllegalStateException("파일 불러오기에 실패했습니다.", e);
+            throw new BinaryContentException(
+                    ErrorCode.BINARY_CONTENT_CAN_NOT_READ,
+                    Map.of("binaryContentId", binaryContentId)
+            );
         }
     }
 
@@ -91,14 +100,20 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
                 Files.createDirectories(root);
             } catch (IOException e) {
                 log.error("[BINARYCONTENT_STORAGE_SAVE_FAIL] root 디렉토리 생성 실패로 파일 storage 저장 실패");
-                throw new IllegalStateException("storage 저장 실패", e);
+                throw new BinaryContentException(
+                        ErrorCode.BINARY_CONTENT_FAIL_TO_SAVE_STORAGE,
+                        Map.of("storage", "root 디렉토리 생성 실패로 파일 storage 저장 실패")
+                );
             }
         }
 
         // root가 이미 존재하지만 디렉토리가 아닌 경우
         if (Files.exists(root) && !Files.isDirectory(root)) {
             log.error("[BINARYCONTENT_STORAGE_SAVE_FAIL] root가 디렉토리가 아닌 이유로 파일 storage 저장 실패");
-            throw new IllegalStateException("storage 저장 실패");
+            throw new BinaryContentException(
+                    ErrorCode.BINARY_CONTENT_FAIL_TO_SAVE_STORAGE,
+                    Map.of("storage", "root가 디렉토리가 아닌 이유로 파일 storage 저장 실패")
+            );
         }
 
         // root가 이미 존재하며 디렉토리인 경우

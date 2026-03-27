@@ -7,6 +7,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorCode {
 
+    // Auth
+    LOGIN_FAIL(400, "A400", "로그인에 실패했습니다."),
+
     // User
     USER_NOT_FOUND(404, "U100", "유저를 찾을 수 없습니다."),
     USER_ALREADY_EXISTS(400, "U200", "이미 존재하는 유저입니다."),
@@ -31,6 +34,8 @@ public enum ErrorCode {
     BINARY_CONTENT_CONTENT_TYPE_IS_NULL(400, "B202", "contentType은 null/empty값일 수 없습니다."),
     BINARY_CONTENT_FILENAME_IS_NULL(400, "B203", "filename은 null/empty값일 수 없습니다."),
     BINARY_CONTENT_CAN_NOT_READ(500, "B300", "파일을 읽을 수 없습니다."),
+    BINARY_CONTENT_CAN_NOT_SAVE(500, "B401", "파일을 저장할 수 없습니다."),
+    BINARY_CONTENT_FAIL_TO_SAVE_STORAGE(500, "B402", "파일을 storage에 저장하기에 실패했습니다."),
 
     // ReadStatus
     READ_STATUS_NOT_FOUND(404, "RS100", "ReadStatus를 찾을 수 없습니다."),
