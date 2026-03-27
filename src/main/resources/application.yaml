@@ -20,6 +20,36 @@ spring:
 
     open-in-view: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers
+
+  endpoint:
+    health:
+      show-details: always
+
+
+
 logging:
   level:
     root: INFO
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    java-version: 17
+    spring-boot-version: 3.4.0
+  config:
+    datasource:
+      url: ${spring.datasource.url}
+      driver-class-name: ${spring.datasource.driver-class-name}
+    jpa:
+      ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+    storage:
+      type: ${discodeit.storage.type}
+      path: ${discodeit.storage.local.root-path}
+    multipart:
+      max-file-size: ${spring.servlet.multipart.max-file-size}
+      max-request-size: ${spring.servlet.multipart.max-request-size}
