@@ -57,8 +57,6 @@ public class MessageController {
     log.info("메시지 생성 요청: authorId={}, channelId={}", request.authorId(),
         request.channelId());
     MessageDto response = messageService.create(request, attachments);
-    log.info("메시지 생성 성공: messageId={}", response.id());
-    log.debug("메시지 본문: content={}", response.content());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -75,8 +73,6 @@ public class MessageController {
   ) {
     log.info("메시지 수정 요청: messageId={}", messageId);
     MessageDto response = messageService.update(messageId, request);
-    log.info("메시지 수정 성공: messageId={}", response.id());
-    log.debug("메시지 본문: content={}", response.content());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -92,7 +88,6 @@ public class MessageController {
   ) {
     log.info("메시지 삭제 요청: messageId={}", messageId);
     messageService.delete(messageId);
-    log.info("메시지 삭제 성공: messageId={}", messageId);
     return ResponseEntity.noContent().build();
   }
 
@@ -109,7 +104,6 @@ public class MessageController {
     log.debug("메시지 목록 조회 요청: channelId={}", channelId);
     PageResponse<MessageDto> response = messageService.findAllByChannelId(channelId, cursor,
         pageable);
-    log.debug("메시지 목록 조회 성공: channelId={}, count={}", channelId, response.content().size());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

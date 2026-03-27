@@ -49,7 +49,6 @@ public class ReadStatusController {
   ) {
     log.info("ReadStatus 생성 요청: userId={}, channelId={}", request.userId(), request.channelId());
     ReadStatusDto response = readStatusService.create(request);
-    log.info("ReadStatus 생성 성공: readStatusId={}", response.id());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -65,7 +64,6 @@ public class ReadStatusController {
       @Valid @RequestBody ReadStatusUpdateRequest request) {
     log.info("ReadStatus 수정 요청: readStatusId={}", readStatusId);
     ReadStatusDto response = readStatusService.update(readStatusId, request);
-    log.info("ReadStatus 수정 성공: readStatusId={}", response.id());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -78,7 +76,6 @@ public class ReadStatusController {
   ) {
     log.debug("유저의 ReadStatus 목록 조회 요청: userId={}", userId);
     List<ReadStatusDto> responses = readStatusService.findAllByUserId(userId);
-    log.debug("유저의 ReadStatus 목록 조회 성공: readStatusCount={}", responses.size());
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 }

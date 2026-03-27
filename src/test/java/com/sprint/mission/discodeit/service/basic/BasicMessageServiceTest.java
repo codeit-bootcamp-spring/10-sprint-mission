@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.ChannelParticipantException;
 import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
@@ -134,7 +135,7 @@ class BasicMessageServiceTest {
   }
 
   @Test
-  @DisplayName("비공개 채널에 비참여자가 글을 쓰면 예외를 던져야 한다.")
+  @DisplayName("비공개 채널에 비참여자가 글을 쓰려고 하면 예외를 던져야 한다.")
   void should_fail_create_message_when_non_participant_sends_to_private_channel() {
     // given
     UUID fixedUuid = UUID.randomUUID();
@@ -176,6 +177,7 @@ class BasicMessageServiceTest {
     MessageDto messageDto2 = new MessageDto(fixedUuid, msg2Time, msg2Time, "두 번째 메시지", fixedUuid,
         fixedUserDto, null);
 
+    given(channelRepository.existsById(fixedUuid)).willReturn(true);
     given(messageRepository.findAllByChannelIdAndCreatedAtLessThan(any(UUID.class),
         any(Instant.class),
         any(Pageable.class)))
@@ -207,6 +209,7 @@ class BasicMessageServiceTest {
     MessageDto messageDto2 = new MessageDto(fixedUuid, msg2Time, msg2Time, "두 번째 메시지", fixedUuid,
         fixedUserDto, null);
 
+    given(channelRepository.existsById(fixedUuid)).willReturn(true);
     given(messageRepository.findAllByChannelIdAndCreatedAtLessThan(any(UUID.class),
         any(Instant.class),
         any(Pageable.class)))
@@ -217,6 +220,23 @@ class BasicMessageServiceTest {
     basicMessageService.findAllByChannelId(fixedUuid, Instant.now(), pageable);
     // then
     then(pageMapper).should(times(1)).fromSlice(any(Slice.class), isNull());
+  }
+
+  @Test
+  @DisplayName("채널이 존재하지 않으면 메시지 목록 조회가 실패해야 한다.")
+  void should_fail_find_all_message_by_channel_id_when_channel_not_found() {
+    // given
+    UUID fixedUuid = UUID.randomUUID();
+    Instant cursor = Instant.now();
+    Pageable pageable = PageRequest.of(0, 2);
+
+    given(channelRepository.existsById(fixedUuid)).willReturn(false);
+    // when, then
+    assertThrows(ChannelNotFoundException.class, () -> {
+      basicMessageService.findAllByChannelId(fixedUuid, cursor, pageable);
+    });
+    then(messageRepository).should(never())
+        .findAllByChannelIdAndCreatedAtLessThan(fixedUuid, cursor, pageable);
   }
 
   @Test

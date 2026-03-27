@@ -40,7 +40,6 @@ public class BasicUserService implements UserService {
 
   @Override
   public UserDto create(UserCreateRequest request, MultipartFile file) {
-    log.debug("유저 생성 시작: username={}, email={}", request.username(), request.email());
     existsByUsername(request.username());
     existsByEmail(request.email());
 
@@ -76,7 +75,6 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional(readOnly = true)
   public UserDto findById(UUID userId) {
-    log.debug("유저 조회 시작: userId={}", userId);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
     log.debug("유저 조회 완료: user={}, username={}", user.getId(), user.getUsername());
@@ -86,7 +84,6 @@ public class BasicUserService implements UserService {
   @Override
   @Transactional(readOnly = true)
   public List<UserDto> findAll() {
-    log.debug("유저 목록 조회 시작");
     List<User> users = userRepository.findAll();
     log.debug("유저 목록 조회 완료: userCount={}", users.size());
     return users.stream()
@@ -96,7 +93,6 @@ public class BasicUserService implements UserService {
 
   @Override
   public UserDto update(UUID userId, UserUpdateRequest request, MultipartFile file) {
-    log.debug("유저 수정 시작: userId={}", userId);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
 
@@ -126,7 +122,6 @@ public class BasicUserService implements UserService {
 
   @Override
   public void delete(UUID userId) {
-    log.debug("유저 삭제 시작: userId={}", userId);
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", userId)));
     userRepository.delete(user);

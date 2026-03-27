@@ -27,7 +27,6 @@ public class BasicAuthService implements AuthService {
   @Override
   @Transactional(readOnly = true)
   public UserDto login(LoginRequest request) {
-    log.debug("유저 로그인 시작: username={}", request.username());
     User user = userRepository.findByUsername(request.username())
         .orElseThrow(() -> new DiscodeitException(ErrorCode.USER_NOT_FOUND));
 

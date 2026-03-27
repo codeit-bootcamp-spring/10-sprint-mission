@@ -34,8 +34,6 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Override
   public BinaryContentDto create(MultipartFile multipartFile) {
     try {
-      log.debug("파일 업로드 시작: name={}, size={}", multipartFile.getOriginalFilename(),
-          multipartFile.getSize());
       BinaryContent binaryContent = new BinaryContent(
           multipartFile.getOriginalFilename(),
           multipartFile.getSize(),
@@ -55,7 +53,6 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Override
   @Transactional(readOnly = true)
   public BinaryContentDto findById(UUID binaryContentId) {
-    log.debug("파일 조회 시작: binaryContentId={}", binaryContentId);
     BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
         .orElseThrow(() -> new BinaryContentNotFoundException(
             Map.of("binaryContentId", binaryContentId)));
@@ -68,7 +65,6 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Override
   @Transactional(readOnly = true)
   public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
-    log.debug("파일 목록 조회 시작: binaryContentIdCount={}", ids.size());
     List<BinaryContent> allByIdIn = binaryContentRepository.findAllByIdIn(ids);
     log.debug("파일 목록 조회 완료: binaryContentCount={}", allByIdIn.size());
     return allByIdIn.stream()
@@ -78,7 +74,6 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   @Override
   public void delete(UUID binaryContentId) {
-    log.debug("파일 삭제 시작: binaryContentId={}", binaryContentId);
     BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
         .orElseThrow(() -> new BinaryContentNotFoundException(
             Map.of("binaryContentId", binaryContentId)));

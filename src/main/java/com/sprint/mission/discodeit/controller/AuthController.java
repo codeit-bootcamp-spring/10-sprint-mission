@@ -40,7 +40,6 @@ public class AuthController {
   ) {
     log.info("유저 로그인 요청: username={}", request.username());
     UserDto response = authService.login(request);
-    log.info("유저 로그인 성공: userId={}", response.id());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 }

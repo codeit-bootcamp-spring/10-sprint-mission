@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler
   public ResponseEntity<ErrorResponse> handleBusinessLogicException(DiscodeitException e) {
-    log.error("비즈니스 예외 발생 - code: {}, message: {}, details: {}",
+    log.warn("비즈니스 예외 발생 - code: {}, message: {}, details: {}",
         e.getErrorCode().name(), e.getMessage(), e.getDetails(), e);
     return ResponseEntity
         .status(e.getErrorCode().getStatusCode())
@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler
   public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
       MethodArgumentNotValidException e) {
-    log.error("DTO 유효성 검증 실패", e);
+    log.warn("DTO 유효성 검증 실패", e);
     Map<String, Object> details = new HashMap<>();
     e.getBindingResult().getFieldErrors().forEach(
         fieldError -> details.put(fieldError.getField(), fieldError.getDefaultMessage())
@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler
   public ResponseEntity<ErrorResponse> handleConstraintViolationException(
       ConstraintViolationException e) {
-    log.error("Parameter 유효성 검증 실패", e);
+    log.warn("Parameter 유효성 검증 실패", e);
     Map<String, Object> details = new HashMap<>();
     e.getConstraintViolations().forEach(violation -> {
       String propertyPath = violation.getPropertyPath().toString();

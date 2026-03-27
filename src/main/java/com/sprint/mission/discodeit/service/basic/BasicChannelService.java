@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -36,7 +37,6 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public ChannelDto createPublic(PublicChannelCreateRequest request) {
-    log.debug("Public 채널 생성 시작: name={}, description={}", request.name(), request.description());
     Channel channel = channelMapper.toEntity(request);
     channelRepository.save(channel);
     log.info("Public 채널 생성 완료: channelId={}", channel.getId());
@@ -45,12 +45,11 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public ChannelDto createPrivate(PrivateChannelCreateRequest request) {
-    log.debug("Private 채널 생성 시작: participantIdCount={}", request.participantIds().size());
     Channel channel = channelMapper.toEntity(request);
     channelRepository.save(channel);
     request.participantIds().stream()
-        .map(userRepository::findById)
-        .flatMap(Optional::stream)
+        .map(userId -> userRepository.findById(userId)
+            .orElseThrow(UserNotFoundException::new))
         .forEach(user -> readStatusRepository.save(
             new ReadStatus(user, channel, channel.getCreatedAt())));
     log.debug("ReadStatus 생성 완료: readStatusCount={}", request.participantIds().size());
@@ -61,7 +60,6 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional(readOnly = true)
   public ChannelDto findById(UUID channelId) {
-    log.debug("채널 조회 시작: channelId={}", channelId);
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId)));
     log.debug("채널 조회 완료: channelId={}, channelType={}", channel.getId(), channel.getType());
@@ -72,7 +70,6 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional(readOnly = true)
   public List<ChannelDto> findAllByUserId(UUID userId) {
-    log.debug("유저가 참여 중인 채널 목록 조회 시작: userId={}", userId);
     List<Channel> channels = channelRepository.findAllByUserId(userId); //쿼리튜닝
     log.debug("유저가 참여 중인 채널 목록 조회 완료: channelCount={}", channels.size());
     return channels.stream()
@@ -82,7 +79,6 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public ChannelDto update(UUID channelId, PublicChannelUpdateRequest request) {
-    log.debug("Public 채널 수정 시작: channelId={}", channelId);
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId)));
 
@@ -96,7 +92,6 @@ public class BasicChannelService implements ChannelService {
 
   @Override
   public void delete(UUID channelId) {
-    log.debug("채널 삭제 시작: channelId={}", channelId);
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> new ChannelNotFoundException(Map.of("channelId", channelId)));
     channelRepository.delete(channel);

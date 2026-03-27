@@ -38,9 +38,6 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   public ReadStatusDto create(ReadStatusCreateRequest request) {
-    log.debug("ReadStatus 생성 시작: userId={}, channelId={}, lastReadAt={}", request.userId(),
-        request.channelId(), request.lastReadAt());
-
     User user = userRepository.findById(request.userId())
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", request.userId())));
 
@@ -62,7 +59,6 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   @Transactional(readOnly = true)
   public ReadStatusDto findById(UUID readStatusId) {
-    log.debug("ReadStatus 조회 시작: readStatusId={}", readStatusId);
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("readStatusId", readStatusId)));
     log.debug("ReadStatus 조회 완료: readStatusId={}", readStatus.getId());
@@ -72,7 +68,6 @@ public class BasicReadStatusService implements ReadStatusService {
   @Override
   @Transactional(readOnly = true)
   public List<ReadStatusDto> findAllByUserId(UUID userId) {
-    log.debug("유저의 ReadStatus 목록 조회 시작: userId={}", userId);
     List<ReadStatus> readStatuses = readStatusRepository.findAllByUserId(userId);
     log.debug("유저의 ReadStatus 목록 조회 완료: readStatusCount={}", readStatuses.size());
     return readStatuses.stream()
@@ -82,8 +77,6 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
-    log.debug("ReadStatus 수정 시작: readStatusId={}, newLastReadAt={}", readStatusId,
-        request.newLastReadAt());
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("readStatusId", readStatusId)));
     readStatus.updateLastReadAt(request.newLastReadAt());
@@ -93,7 +86,6 @@ public class BasicReadStatusService implements ReadStatusService {
 
   @Override
   public void delete(UUID readStatusId) {
-    log.debug("ReadStatus 삭제 시작: readStatusId={}", readStatusId);
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("readStatusId", readStatusId)));
     readStatusRepository.delete(readStatus);

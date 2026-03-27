@@ -56,8 +56,6 @@ public class BasicMessageService implements MessageService {
 
   @Override
   public MessageDto create(MessageCreateRequest request, List<MultipartFile> multipartFiles) {
-    log.debug("메시지 생성 시작: authorId={}, channelId={}", request.authorId(),
-        request.channelId());
     User user = userRepository.findById(request.authorId())
         .orElseThrow(() -> new UserNotFoundException(Map.of("authorId", request.authorId())));
 
@@ -102,7 +100,6 @@ public class BasicMessageService implements MessageService {
   @Override
   @Transactional(readOnly = true)
   public MessageDto findById(UUID messageId) {
-    log.debug("메시지 조회 시작: messageId={}", messageId);
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
     log.debug("메시지 조회 완료: messageId={}, content={}", message.getId(), message.getContent());
@@ -113,8 +110,9 @@ public class BasicMessageService implements MessageService {
   @Transactional(readOnly = true)
   public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor,
       Pageable pageable) {
-    log.debug("메시지 목록 조회 시작: channelId={}, cursor={}, size={}", channelId, cursor,
-        pageable.getPageSize());
+    if (!channelRepository.existsById(channelId)) {
+      throw new ChannelNotFoundException(Map.of("channelId", channelId));
+    }
     Slice<MessageDto> slice = messageRepository.findAllByChannelIdAndCreatedAtLessThan(channelId,
             Optional.ofNullable(cursor).orElse(Instant.now()),
             pageable)
@@ -130,7 +128,6 @@ public class BasicMessageService implements MessageService {
 
   @Override
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
-    log.debug("메시지 수정 시작: messageId={}", messageId);
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
     message.update(request.newContent());
@@ -140,7 +137,6 @@ public class BasicMessageService implements MessageService {
 
   @Override
   public void delete(UUID messageId) {
-    log.debug("메시지 삭제 시작: messageId={}", messageId);
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("messageId", messageId)));
     messageRepository.delete(message);

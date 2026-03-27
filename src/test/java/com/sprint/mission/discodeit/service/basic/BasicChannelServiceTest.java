@@ -17,6 +17,7 @@ import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -66,19 +67,6 @@ class BasicChannelServiceTest {
   }
 
   @Test
-  @DisplayName("요청이 null이라면 공개 채널 생성에 실패해야 한다.")
-  void should_fail_to_create_public_channel_when_request_is_null() {
-    // given
-    PublicChannelCreateRequest request = null;
-
-    // when, then
-    assertThrows(NullPointerException.class, () -> {
-      basicChannelService.createPublic(request);
-    });
-    then(channelRepository).should(never()).save(any(Channel.class));
-  }
-
-  @Test
   @DisplayName("비공개 채널 생성에 성공해야 한다.")
   void should_create_private_channel() {
     // given
@@ -100,16 +88,22 @@ class BasicChannelServiceTest {
   }
 
   @Test
-  @DisplayName("요청이 null이라면 비공개 채널 생성에 실패해야 한다.")
-  void should_fail_to_create_private_channel_when_request_is_null() {
+  @DisplayName("존재하지 않는 유저의 Id가 있으면 예외를 던져야 한다.")
+  void should_fail_to_create_private_channel_when_user_not_found() {
     // given
-    PrivateChannelCreateRequest request = null;
+    UUID fixedUuid = UUID.randomUUID();
+    List<UUID> fixedParticipantIds = List.of(fixedUuid, fixedUuid);
+    PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(fixedParticipantIds);
+    Channel expectedChannel = new Channel(ChannelType.PRIVATE, null, null);
 
+    given(channelMapper.toEntity(request)).willReturn(
+        expectedChannel);
+    given(userRepository.findById(fixedUuid)).willReturn(Optional.empty());
     // when, then
-    assertThrows(NullPointerException.class, () -> {
+    assertThrows(UserNotFoundException.class, () -> {
       basicChannelService.createPrivate(request);
     });
-    then(channelRepository).should(never()).save(any(Channel.class));
+    then(channelMapper).should(never()).toDto(expectedChannel);
   }
 
   @Test

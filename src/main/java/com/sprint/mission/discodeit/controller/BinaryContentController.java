@@ -46,7 +46,6 @@ public class BinaryContentController {
   ) {
     log.debug("파일 조회 요청: binaryContentId={}", binaryContentId);
     BinaryContentDto response = binaryContentService.findById(binaryContentId);
-    log.debug("파일 조회 성공: binaryContentId={}", binaryContentId);
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -62,7 +61,6 @@ public class BinaryContentController {
   ) {
     log.debug("파일 목록 조회 요청: binaryContentIdCount={}", binaryContentIds.size());
     List<BinaryContentDto> response = binaryContentService.findAllByIdIn(binaryContentIds);
-    log.debug("파일 목록 조회 성공: binaryContentIdCount={}", binaryContentIds.size());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -75,8 +73,6 @@ public class BinaryContentController {
   ) {
     log.info("파일 다운로드 요청: binaryContentId={}", binaryContentId);
     BinaryContentDto response = binaryContentService.findById(binaryContentId);
-    log.info("파일 다운로드 성공: binaryContentId={}, fileName={}, size={}, contentType={}", response.id(),
-        response.fileName(), response.size(), response.contentType());
     return binaryContentStorage.download(response);
   }
 }

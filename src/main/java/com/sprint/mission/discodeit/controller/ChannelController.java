@@ -46,8 +46,6 @@ public class ChannelController {
       @Valid @RequestBody PublicChannelCreateRequest request) {
     log.info("Public 채널 생성 요청: name={}", request.name());
     ChannelDto response = channelService.createPublic(request);
-    log.info("Public 채널 생성 성공: id={}, type={}, name={}", response.id(),
-        response.type(), response.name());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -58,8 +56,6 @@ public class ChannelController {
       @Valid @RequestBody PrivateChannelCreateRequest request) {
     log.info("Private 채널 생성 요청: participantIdCount={}", request.participantIds().size());
     ChannelDto response = channelService.createPrivate(request);
-    log.info("Private 채널 생성 성공: id={}, type={}, participantCount={}", response.id(),
-        response.type(), response.participants().size());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -78,8 +74,6 @@ public class ChannelController {
   ) {
     log.info("Public 채널 수정 요청: id={}", channelId);
     ChannelDto response = channelService.update(channelId, request);
-    log.info("Public 채널 수정 성공: id={}", response.id());
-    log.debug("수정 후 데이터: name={}, description={}", response.name(), response.description());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -95,7 +89,6 @@ public class ChannelController {
   ) {
     log.info("채널 삭제 요청: id={}", channelId);
     channelService.delete(channelId);
-    log.info("채널 삭제 성공: id={}", channelId);
     return ResponseEntity.noContent().build();
   }
 
@@ -108,7 +101,6 @@ public class ChannelController {
   ) {
     log.debug("유저가 참여 중인 채널 목록 조회 요청: userId={}", userId);
     List<ChannelDto> responses = channelService.findAllByUserId(userId);
-    log.debug("유저가 참여 중인 채널 목록 조회 성공: channelCount={}", responses.size());
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 }

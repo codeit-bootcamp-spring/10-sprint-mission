@@ -57,7 +57,6 @@ public class UserController {
   ) {
     log.info("유저 생성 요청: username={}, email={}", request.username(), request.email());
     UserDto response = userService.create(request, profile);
-    log.info("유저 생성 성공: userId={}", response.id());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -71,7 +70,6 @@ public class UserController {
   ) {
     log.info("유저 수정 요청: userId={}", userId);
     UserDto response = userService.update(userId, request, profile);
-    log.info("유저 수정 성공: userId={}", response.id());
     return ResponseEntity.status(HttpStatus.OK).body(response);
   }
 
@@ -87,7 +85,6 @@ public class UserController {
   ) {
     log.info("유저 삭제 요청: userId={}", userId);
     userService.delete(userId);
-    log.info("유저 삭제 성공: userId={}", userId);
     return ResponseEntity.noContent().build();
   }
 
@@ -97,7 +94,6 @@ public class UserController {
   public ResponseEntity<List<UserDto>> findAll() {
     log.debug("유저 목록 조회 요청");
     List<UserDto> responses = userService.findAll();
-    log.debug("유저 목록 조회 성공: userCount={}", responses.size());
     return ResponseEntity.status(HttpStatus.OK).body(responses);
   }
 
@@ -113,7 +109,6 @@ public class UserController {
       @Valid @RequestBody UserStatusUpdateRequest request) {
     log.info("유저 온라인 상태 업데이트 요청: userId={}", userId);
     UserStatusDto response = userStatusService.updateByUserId(userId, request);
-    log.info("유저 온라인 상태 업데이트 성공: lastActiveAt={}", response.lastActiveAt());
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
   }
 }
