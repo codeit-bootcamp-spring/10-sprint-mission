@@ -111,7 +111,7 @@ public class ChannelController {
         )
     )
     public ResponseEntity<ChannelDto> updateChannel(@PathVariable UUID channelId,
-        @RequestBody PublicChannelUpdateRequestDTO req) {
+        @Valid @RequestBody PublicChannelUpdateRequestDTO req) {
         return new ResponseEntity<>(channelService.update(channelId, req), HttpStatus.OK);
     }
 

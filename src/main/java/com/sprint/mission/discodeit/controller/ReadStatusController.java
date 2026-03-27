@@ -68,7 +68,7 @@ ReadStatusController {
     }
     )
     public ResponseEntity<ReadStatusDto> createReadStatus(
-        @RequestBody ReadStatusCreateRequestDTO req) {
+        @Valid @RequestBody ReadStatusCreateRequestDTO req) {
         return new ResponseEntity<>(readStatusService.create(req), HttpStatus.CREATED);
     }
 

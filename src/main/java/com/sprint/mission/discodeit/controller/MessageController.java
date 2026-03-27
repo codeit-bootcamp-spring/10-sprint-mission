@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +56,7 @@ public class MessageController {
     })
     public ResponseEntity<MessageDto> createMessage(
         @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments,
-        @RequestPart("messageCreateRequest") MessageCreateRequestDTO req) {
+        @Valid @RequestPart("messageCreateRequest") MessageCreateRequestDTO req) {
         return new ResponseEntity<>(messageService.create(attachments, req), HttpStatus.CREATED);
 
     }
@@ -79,7 +80,7 @@ public class MessageController {
         )
     })
     public MessageDto editMessage(@PathVariable UUID messageId,
-        @RequestBody MessageUpdateRequestDto req) {
+        @Valid @RequestBody MessageUpdateRequestDto req) {
         return messageService.update(messageId, req);
     }
 

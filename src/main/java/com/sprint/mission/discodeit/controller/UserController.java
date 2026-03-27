@@ -146,7 +146,7 @@ public class UserController {
         )
     })
     public ResponseEntity<UserDto> updateUser(@PathVariable UUID userId,
-        @RequestPart("userUpdateRequest") UserUpdateDTO req,
+        @Valid @RequestPart("userUpdateRequest") UserUpdateDTO req,
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) throws IOException {
 
@@ -187,7 +187,7 @@ public class UserController {
     )
     public ResponseEntity<UserStatusDto> updateUserOnline(
         @PathVariable UUID userId,
-        @RequestBody UserStatusUpdateRequestDTO req) {
+        @Valid @RequestBody UserStatusUpdateRequestDTO req) {
         return new ResponseEntity<>(userStatusService.activateUserOnline(userId, req),
             HttpStatus.OK);
     }
