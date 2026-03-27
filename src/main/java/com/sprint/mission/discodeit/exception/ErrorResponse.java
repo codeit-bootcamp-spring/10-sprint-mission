@@ -22,6 +22,23 @@ public record ErrorResponse(
                 e.getErrorCode().getStatus().value()
         );
     }
+    public static ErrorResponse of(
+            String code,
+            String message,
+            int status,
+            String exceptionType,
+            Map<String, Object> details
+    ) {
+        return new ErrorResponse(
+                Instant.now(),
+                code,
+                message,
+                details,
+                exceptionType,
+                status
+        );
+                }
+
     // 나머지 일반 예외 -> 500 에러
     public static ErrorResponse fromInternalServerError(Exception e) {
         return new ErrorResponse(

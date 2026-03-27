@@ -6,10 +6,10 @@ import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.service.ReadStatusService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.Reader;
@@ -27,7 +27,7 @@ public class ReadStatusController {
 
   // POST /api/readStatuses -> 201
   @RequestMapping(method = RequestMethod.POST)
-  public ResponseEntity<ReadStatusDto> create(@RequestBody ReadStatusCreateRequest request) {
+  public ResponseEntity<ReadStatusDto> create(@Valid @RequestBody ReadStatusCreateRequest request) {
     ReadStatus createdReadStatus = readStatusService.create(request);
     return ResponseEntity.status(HttpStatus.CREATED).body(readStatusMapper.toDto(createdReadStatus));
   }
@@ -37,7 +37,7 @@ public class ReadStatusController {
   @RequestMapping(value = "/{readStatusId}", method = RequestMethod.PATCH)
   public ResponseEntity<ReadStatusDto> update(
           @PathVariable UUID readStatusId,
-          @RequestBody ReadStatusUpdateRequest request
+          @Valid @RequestBody ReadStatusUpdateRequest request
   ) {
     ReadStatus updatedReadStatus = readStatusService.update(readStatusId, request);
     return ResponseEntity.ok(readStatusMapper.toDto(updatedReadStatus));

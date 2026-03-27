@@ -46,14 +46,14 @@ public class BasicMessageService implements MessageService {
     UUID channelId = messageCreateRequest.channelId();
     UUID authorId = messageCreateRequest.authorId();
 
-    log.debug("메세지 생성 요청- channelId={}, authorId={}", channelId, authorId);
+    log.info("메세지 생성 요청- channelId={}, authorId={}", channelId, authorId);
 
     Channel channel =
         channelRepository
             .findById(channelId)
             .orElseThrow(
                 () -> {
-                  log.warn("메세지 생성 실패 - 채널 없음 channelId={}, authorId={}", channelId, authorId);
+                  log.info("메세지 생성 실패 - 채널 없음 channelId={}, authorId={}", channelId, authorId);
                   return new ChannelNotFoundException(channelId);
                 });
     User author =
@@ -113,7 +113,7 @@ public class BasicMessageService implements MessageService {
   @Override
   public Message update(UUID messageId, MessageUpdateRequest request) {
 
-    log.debug("메시지 수정 요청 - messageId={}", messageId);
+    log.info("메시지 수정 요청 - messageId={}", messageId);
 
     Message message =
         messageRepository
@@ -126,7 +126,7 @@ public class BasicMessageService implements MessageService {
 
     message.update(request.newContent());
 
-    log.debug("메시지 수정 완료 - messageId={}", messageId);
+    log.info("메시지 수정 완료 - messageId={}", messageId);
 
     return message;
   }

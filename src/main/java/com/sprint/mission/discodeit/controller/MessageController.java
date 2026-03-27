@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentProcessingException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -52,20 +53,23 @@ public class MessageController {
     MessageCreateRequest messageCreateRequest =
             objectMapper.readValue(messageCreateRequestJson, MessageCreateRequest.class);
 
-    List<BinaryContentCreateRequest> attachmentRequests = Optional.ofNullable(attachments)
-            .map(files -> files.stream()
-                    .map(file -> {
-                      try {
-                        return new BinaryContentCreateRequest(
-                                file.getOriginalFilename(),
-                                file.getContentType(),
-                                file.getBytes()
-                        );
-                      } catch (IOException e) {
-                        throw new RuntimeException(e);
-                      }
-                    })
-                    .toList())
+    List<BinaryContentCreateRequest> attachmentRequests =
+        Optional.ofNullable(attachments)
+            .map(
+                files ->
+                    files.stream()
+                        .map(
+                            file -> {
+                              try {
+                                return new BinaryContentCreateRequest(
+                                    file.getOriginalFilename(),
+                                    file.getContentType(),
+                                    file.getBytes());
+                              } catch (IOException e) {
+                                throw new BinaryContentProcessingException("JSON parsing failed");
+                              }
+                            })
+                        .toList())
             .orElse(new ArrayList<>());
 
     Message createdMessage = messageService.create(messageCreateRequest, attachmentRequests);

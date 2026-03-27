@@ -9,6 +9,7 @@ import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentProcessingException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
 import com.sprint.mission.discodeit.service.UserService;
@@ -45,15 +46,12 @@ public class UserController {
   // POST /api/users -> 201
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserDto> create(
-          @RequestPart("userCreateRequest") String userCreateRequestJson,
+          @RequestPart("userCreateRequest") @Valid UserCreateRequest userCreateRequest,
           @RequestPart(value = "profile", required = false) MultipartFile profile
   ) throws Exception {
 
     log.info("HTTP 요청 - 유저 생성");
 
-    // Postman octet error로 이 부분 수정.
-    UserCreateRequest userCreateRequest =
-            objectMapper.readValue(userCreateRequestJson, UserCreateRequest.class);
     // resolveProfile -> 없으면 empty 있으면 변환 시도
     Optional<BinaryContentCreateRequest> profileRequest =
             Optional.ofNullable(profile).flatMap(this::resolveProfileRequest);
@@ -73,14 +71,12 @@ public class UserController {
   @RequestMapping(value = "/{userId}", method = RequestMethod.PATCH, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserDto> update(
           @PathVariable UUID userId,
-          @RequestPart("userUpdateRequest") String userUpdateRequestJson,
+          @RequestPart("userUpdateRequest") @Valid UserUpdateRequest userUpdateRequest, //String userUpdateRequestJson,
           @RequestPart(value = "profile", required = false) MultipartFile profile
   ) throws Exception {
 
     log.info("HTTP 요청 - 유저 수정 userId={}", userId);
 
-    UserUpdateRequest userUpdateRequest =
-            objectMapper.readValue(userUpdateRequestJson, UserUpdateRequest.class);
     Optional<BinaryContentCreateRequest> profileRequest =
             Optional.ofNullable(profile).flatMap(this::resolveProfileRequest);
 
@@ -146,7 +142,7 @@ public class UserController {
               profileFile.getBytes()
       ));
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new BinaryContentProcessingException("JSON parsing failed");
     }
   }
 }

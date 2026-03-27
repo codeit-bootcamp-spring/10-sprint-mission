@@ -15,6 +15,7 @@ public enum ErrorCode {
     // Binary
     BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND, "BINARY_CONTENT_NOT_FOUND", "파일을 찾을 수 없습니다."),
     INVALID_BINARY_CONTENT(HttpStatus.BAD_REQUEST, "INVALID_BINARY_CONTENT", "잘못된 파일 요청입니다."),
+    BINARY_CONTENT_PROCESSING_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "BINARY_CONTENT_PROCESSING_ERROR", "파일 처리 중 오류가 발생했습니다."),
     // Message, ReadStatus, UserStatus
     MESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "MESSAGE_NOT_FOUND", "메시지를 찾을 수 없습니다."),
     READ_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "READ_STATUS_NOT_FOUND", "읽음 상태를 찾을 수 없습니다."),
