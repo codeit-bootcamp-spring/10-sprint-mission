@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -23,7 +24,8 @@ public class GlobalExceptionHandler {
                         e.getErrorCode().getStatus(),
                         e.getErrorCode().getErrorType(),
                         e.getErrorCode().getMessage(),
-                        e.getDetails()
+                        e.getDetails(),
+                        e.getClass().getSimpleName()
                 ));
     }
 
@@ -31,13 +33,23 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleMethodArgumentValidException(
             MethodArgumentNotValidException e
     ) {
+        Map<String, Object> details = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(
+                        fieldError -> fieldError.getField(),
+                        fieldError -> fieldError.getDefaultMessage(),
+                        (existing, replacement) -> existing
+                ));
+
         return ResponseEntity.status(e.getStatusCode())
                 .body(new ErrorResponseDTO(
                         Instant.now(),
                         400,
-                        "MethodArgumentValidException",
-                        e.getMessage(),
-                        Map.of("validation", e.getMessage())
+                        "VALIDATION_ERROR",
+                        "요청 값이 올바르지 않습니다.",
+                        details,
+                        e.getClass().getSimpleName()
                 ));
     }
 
@@ -49,7 +61,8 @@ public class GlobalExceptionHandler {
                         500,
                         "INTERNAL_SERVER_ERROR",
                         "서버 내부 오류가 발생했습니다.",
-                        Map.of()
+                        Map.of(),
+                        "INTERNAL_SERVER_ERROR"
                 ));
     }
 }

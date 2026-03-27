@@ -6,7 +6,8 @@ import java.util.Map;
 public record ErrorResponseDTO(
         Instant timestamp,
         int status,
-        String errorType,
+        String code,
         String message,
-        Map<String, Object> details
+        Map<String, Object> details,
+        String exceptionType
 ) { }
