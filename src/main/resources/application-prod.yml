@@ -8,6 +8,10 @@ spring:
     web:
       pageable:
         one-indexed-parameters: true #page = 1로 요청 들어오면 실제 pageNumber = 0으로 처리
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   #    url: jdbc:h2:mem:test
   jpa:
     hibernate:
@@ -36,7 +40,10 @@ logging:
 ##      max-history: 30                 # 보관 기간: 30일
 ##      total-size-cap: 10GB            # 최대 저장 용량: 10GB
 ##      clean-history-on-start: true    # 애플리케이션 시작 시 오래된 로그 삭제
-
+management:   #/actuator/health 출력 설정
+  endpoint:
+    health:
+      show-details: always
 
 
 server:
