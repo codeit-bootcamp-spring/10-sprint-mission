@@ -13,7 +13,8 @@ public enum ErrorCode {
     PASSWORD_WRONG("패스워드가 일치하지 않습니다."),
     READSTATUS_NOT_FOUND("읽음 상태를 찾을 수 없습니다."),
     BINARYCONTENT_ALREADY_EXISTS("파일이 이미 존재합니다."),
-    FILE_STORAGE_ERROR("파일 저장 중 오류가 발생했습니다.");
+    FILE_STORAGE_ERROR("파일 저장 중 오류가 발생했습니다."),
+    INVALID_INPUT("입력값이 올바르지 않습니다.");
 
 
     private final String message;
