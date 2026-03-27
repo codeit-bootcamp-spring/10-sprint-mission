@@ -80,7 +80,7 @@ public class BasicMessageService implements MessageService {
     );
 
     messageRepository.save(message);
-    log.info("메시지 전송 완료: messageId ={}, fileCount= {}", message.getId(), message.getAttachments().size());
+    log.debug("메시지 전송 완료: messageId ={}, fileCount= {}", message.getId(), message.getAttachments().size());
     return messageMapper.toDto(message);
   }
 
@@ -117,7 +117,7 @@ public class BasicMessageService implements MessageService {
     Message message = messageRepository.findById(messageId)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("조회시도한 메시지 id정보",messageId)));
     message.update(newContent);
-    log.info("메시지 수정 완료: messageId= {}", messageId);
+    log.debug("메시지 수정 완료: messageId= {}", messageId);
     return messageMapper.toDto(message);
   }
 
@@ -129,6 +129,6 @@ public class BasicMessageService implements MessageService {
       throw new MessageNotFoundException(Map.of("조회시도한 메시지 id정보",messageId));
     }
     messageRepository.deleteById(messageId);
-    log.info("메시지 삭제 완료: messageId= {}", messageId);
+    log.debug("메시지 삭제 완료: messageId= {}", messageId);
   }
 }

@@ -64,7 +64,6 @@ public class MessageController implements MessageApi {
         .orElse(new ArrayList<>());
     MessageDto createdMessage = messageService.create(messageCreateRequest, attachmentRequests);
 
-    log.info("[MESSAGE_CREATE]메시지 생성 응답: messageId={},authorId={},channelId={}",createdMessage.id(), messageCreateRequest.authorId(), messageCreateRequest.channelId());
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createdMessage);
@@ -76,7 +75,6 @@ public class MessageController implements MessageApi {
     log.debug("[MESSAGE_UPDATE] 메시지 수정 요청: messageId={}",messageId);
     MessageDto updatedMessage = messageService.update(messageId, request);
 
-    log.debug("[MESSAGE_UPDATE] 메시지 수정 응답: messageId={} ",updatedMessage.id());
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(updatedMessage);
@@ -87,7 +85,6 @@ public class MessageController implements MessageApi {
     log.debug("[MESSAGE_DELETE] 메시지 삭제 요청: messageId={}",messageId);
     messageService.delete(messageId);
 
-    log.info("[MESSAGE_DELETE] 메시지 삭제 응답: messageId={}",messageId);
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .build();
