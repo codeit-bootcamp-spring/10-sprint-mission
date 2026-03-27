@@ -7,12 +7,14 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -24,6 +26,9 @@ public class AuthController implements AuthApi {
   @Override
   @PostMapping("/login")
   public ResponseEntity<UserDto> login(@RequestBody LoginRequest request) {
+    log.info("Received POST /api/auth/login request - username: {}",
+        request.username()); // 로그인 요청 로그
+
     User user = authService.login(request.username(), request.password());
 
     return ResponseEntity.ok(userMapper.toDto(user));

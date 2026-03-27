@@ -14,6 +14,7 @@ import com.sprint.mission.discodeit.service.ChannelService;
 import java.time.Instant;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/channels")
 @RequiredArgsConstructor
@@ -34,6 +36,9 @@ public class ChannelController implements ChannelApi {
   @PostMapping("/public")
   public ResponseEntity<ChannelDto> createPublicChannel(
       @RequestBody PublicChannelCreateRequest request) {
+    log.info("Received POST /api/channels/public request - name: {}",
+        request.name()); // 공개 채널 생성 요청 로그
+
     Channel channel = channelService.createPublicChannel(request.name(), request.description());
 
     ChannelDto response = channelMapper.toDto(
@@ -49,6 +54,8 @@ public class ChannelController implements ChannelApi {
   @PostMapping("/private")
   public ResponseEntity<ChannelDto> createPrivateChannel(
       @RequestBody PrivateChannelCreateRequest request) {
+    log.info("Received POST /api/channels/private request"); // 비공개 채널 생성 요청 로그
+
     Channel channel = channelService.createPrivateChannel(request.participantIds());
 
     Instant lastMessageAt = channelService.getLastMessageAt(channel.getId());
@@ -63,6 +70,8 @@ public class ChannelController implements ChannelApi {
   @Override
   @GetMapping
   public ResponseEntity<List<ChannelDto>> findAllByUserId(@RequestParam UUID userId) {
+    log.info("Received GET /api/channels request - userId: {}", userId); // 특정 유저가 속한 채널 조회 요청 로그
+
     // 해당 유저가 속한 채널 리스트를 가져옴
     List<Channel> channels = channelService.findAllByUserId(userId);
     List<UUID> channelIds = channels.stream().map(Channel::getId).toList();
@@ -89,6 +98,8 @@ public class ChannelController implements ChannelApi {
   public ResponseEntity<ChannelDto> update(
       @PathVariable UUID channelId,
       @RequestBody PublicChannelUpdateRequest request) {
+    log.info("Received PATCH /api/channels/{} request", channelId); // 채널 정보 수정 요청 로그
+
     Channel channel = channelService.update(channelId, request.newName(), request.newDescription());
 
     Instant lastMessage = channelService.getLastMessageAt(channel.getId());
@@ -102,6 +113,8 @@ public class ChannelController implements ChannelApi {
   @Override
   @DeleteMapping("/{channelId}")
   public ResponseEntity<Void> delete(@PathVariable UUID channelId) {
+    log.info("Received DELETE /api/channels/{} request", channelId); // 채널 삭제 요청 로그
+
     channelService.deleteById(channelId);
     return ResponseEntity.noContent().build();
   }
