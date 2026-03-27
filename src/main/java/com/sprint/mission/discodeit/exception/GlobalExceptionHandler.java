@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.exception;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 import com.sprint.mission.discodeit.dto.response.ErrorResponse;
@@ -19,6 +21,7 @@ import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundExcep
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -27,21 +30,59 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<String> handleException(IllegalArgumentException e) {
-    e.printStackTrace();
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+  public ResponseEntity<ErrorResponse> handleException(IllegalArgumentException e) {
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+    ErrorResponse error = new ErrorResponse(
+            "INVALID_INPUT",                    // code (직접 정의)
+            e.getMessage(),                     // message
+            Map.of(),                           // details 없음 → 빈 map
+            e.getClass().getSimpleName(),       // exceptionType
+            status.value()                      // status
+    );
+    return ResponseEntity.status(status).body(error);
   }
 
   @ExceptionHandler(NoSuchElementException.class)
-  public ResponseEntity<String> handleException(NoSuchElementException e) {
-    e.printStackTrace();
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+  public ResponseEntity<ErrorResponse> handleException(NoSuchElementException e) {
+
+    HttpStatus status = HttpStatus.NOT_FOUND;
+    log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
+
+    ErrorResponse error = new ErrorResponse(
+            "RESOURCE_NOT_FOUND",
+            e.getMessage(),
+            Map.of(),
+            e.getClass().getSimpleName(),
+            status.value()
+    );
+
+    return ResponseEntity.status(status).body(error);
   }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleException(Exception e) {
+
     HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-    ErrorResponse error = new ErrorResponse((DiscodeitException) e, status.value());
+    log.error("[UNEXPECTED_ERROR]", e);
+    ErrorResponse error = new ErrorResponse(
+            "INTERNAL_SERVER_ERROR",
+            "서버 내부 오류가 발생했습니다.",
+            Map.of("error", e.getClass().getSimpleName()),
+            e.getClass().getSimpleName(),
+            status.value()
+    );
+    return ResponseEntity.status(status).body(error);
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorResponse> handleException(MethodArgumentNotValidException e) {
+    HttpStatus status = HttpStatus.BAD_REQUEST;
+    Map<String, Object> details = new HashMap<>();
+    e.getBindingResult().getFieldErrors().forEach((fieldError) -> {
+      details.put(fieldError.getField(), fieldError.getDefaultMessage());
+    });
+
+    ErrorResponse error = new ErrorResponse(ErrorCode.INVALID_INPUT.name(),ErrorCode.INVALID_INPUT.getMessage(), details, e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
 
   }
@@ -50,7 +91,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleException(DiscodeitException e) {
     HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse((DiscodeitException) e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -58,7 +99,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException e) {
     HttpStatus status = HttpStatus.NOT_FOUND;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(),e.getErrorCode().getMessage(),e.getDetails(),e.getClass().getSimpleName(),status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -66,7 +107,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleUserAlreadyExist(UserAlreadyExistException e) {
     HttpStatus status = HttpStatus.CONFLICT;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -74,7 +115,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleChannelNotFound(ChannelNotFoundException e) {
     HttpStatus status = HttpStatus.NOT_FOUND;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -82,7 +123,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handlePrivateChannelUpdateException(PrivateChannelUpdateException e) {
     HttpStatus status = HttpStatus.BAD_REQUEST;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -90,7 +131,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleEmailAlreadyExistException(EmailAlreadyExistException e) {
     HttpStatus status = HttpStatus.CONFLICT;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -98,7 +139,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleUserNameAlreadyExistException(UserNameAlreadyExistException e) {
     HttpStatus status = HttpStatus.CONFLICT;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -106,7 +147,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleMessageNotFound(MessageNotFoundException e) {
     HttpStatus status = HttpStatus.NOT_FOUND;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -114,7 +155,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleBinaryContentNotFound(BinaryContentNotFoundException e) {
     HttpStatus status = HttpStatus.NOT_FOUND;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -122,7 +163,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleUserStatusNotFound(UserStatusNotFoundException e) {
     HttpStatus status = HttpStatus.NOT_FOUND;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -130,7 +171,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleInvalidPasswordException(InvalidPasswordException e) {
     HttpStatus status = HttpStatus.BAD_REQUEST;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -138,7 +179,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleReadStatusNotFound(ReadStatusNotFoundException e) {
     HttpStatus status = HttpStatus.NOT_FOUND;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
 
   }
@@ -147,7 +188,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleBinaryContentAlreadyExists(BinaryContentAlreadyExistsException e) {
     HttpStatus status = HttpStatus.CONFLICT;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 
@@ -155,7 +196,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleFileStorageException(FileStorageException e) {
     HttpStatus status = HttpStatus.BAD_REQUEST;
     log.warn("[EXCEPTION] {}: {}", e.getClass().getSimpleName(), e.getMessage());
-    ErrorResponse error = new ErrorResponse(e, status.value());
+    ErrorResponse error = new ErrorResponse(e.getErrorCode().name(), e.getMessage(), e.getDetails(), e.getClass().getSimpleName(), status.value());
     return ResponseEntity.status(status).body(error);
   }
 }
