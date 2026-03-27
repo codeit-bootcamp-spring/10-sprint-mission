@@ -49,7 +49,6 @@ public class UserController implements UserApi {
         .flatMap(this::resolveProfileRequest);
     UserDto createdUser = userService.create(userCreateRequest, profileRequest);
 
-    log.info("[USER_CREATE] 사용자 생성 응답: userId={}, username={}", createdUser.id(), createdUser.username());
     return ResponseEntity
         .status(HttpStatus.CREATED)
         .body(createdUser);
@@ -70,7 +69,6 @@ public class UserController implements UserApi {
         .flatMap(this::resolveProfileRequest);
     UserDto updatedUser = userService.update(userId, userUpdateRequest, profileRequest);
 
-    log.info("[USER_UPDATE]사용자 수정 응답: userId={}, userName={}, email={}", updatedUser.id(), updatedUser.username(), updatedUser.email());
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(updatedUser);
@@ -82,7 +80,6 @@ public class UserController implements UserApi {
     log.debug("[USER_DELETE] 사용자 삭제 요청: userId={}", userId);
     userService.delete(userId);
 
-    log.info("[USER_DELETE] 사용자 삭제 응답: userId={}", userId);
     return ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .build();

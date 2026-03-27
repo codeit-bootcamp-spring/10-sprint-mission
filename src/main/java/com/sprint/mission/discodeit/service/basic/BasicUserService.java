@@ -72,7 +72,7 @@ public class BasicUserService implements UserService {
 
     //3. 회원 생성
     userRepository.save(user);
-    log.info("[USER_CREATE] 사용자 생성 완료: userName= {}, email= {}", username, email);
+    log.debug("[USER_CREATE] 사용자 생성 완료: userId={}", user.getId());
     return userMapper.toDto(user);
   }
 
@@ -125,7 +125,7 @@ public class BasicUserService implements UserService {
     String profileName = nullableProfile != null ? nullableProfile.getFileName() : "기존유지";
 
     user.update(newUsername, newEmail, newPassword, nullableProfile);
-    log.info("[USER_UPDATE]사용자 수정완료: userName= {},email= {},profile={} ", newUsername, newEmail, profileName);
+    log.debug("[USER_UPDATE]사용자 수정완료: userId={},profile={} ", user.getId(), profileName);
 
     return userMapper.toDto(user);
   }
@@ -139,6 +139,6 @@ public class BasicUserService implements UserService {
     }
 
     userRepository.deleteById(userId);
-    log.info("[USER_DELETE]회원삭제완료: userId = {}", userId);
+    log.debug("[USER_DELETE]회원삭제완료: userId = {}", userId);
   }
 }
