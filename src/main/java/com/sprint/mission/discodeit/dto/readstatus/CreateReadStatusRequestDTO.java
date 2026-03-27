@@ -10,5 +10,6 @@ public record CreateReadStatusRequestDTO(
         UUID userId,
         @NotNull(message = "channelId는 null일 수 없습니다.")
         UUID channelId,
+        @NotNull(message = "lastReadAt은 null일 수 없습니다.")
         Instant lastReadAt
 ) { }

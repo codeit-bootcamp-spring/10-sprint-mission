@@ -75,7 +75,7 @@ public class UserController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity updateUser(
             @PathVariable UUID userId,
-            @RequestPart("userUpdateRequest") UpdateUserRequestDTO dto,
+            @RequestPart("userUpdateRequest") @Valid UpdateUserRequestDTO dto,
             @RequestPart(value = "profile", required = false) MultipartFile profile
             ) {
         log.debug("[USER_UPDATE_REQUEST] 유저 정보 수정 요청: userId={}", userId);
@@ -106,7 +106,7 @@ public class UserController {
     @RequestMapping(value = "/{userId}/userStatus", method = RequestMethod.PATCH)
     public ResponseEntity updateUserStatus(
             @PathVariable UUID userId,
-            @RequestBody UpdateUserStatusRequestDTO dto
+            @RequestBody @Valid UpdateUserStatusRequestDTO dto
     ) {
         log.debug("[USER_STATUS_UPDATE_REQUEST] 유저 상태 수정 요청: userId={}", userId);
         UserDto updated = userService.updateUserStatus(userId, dto);

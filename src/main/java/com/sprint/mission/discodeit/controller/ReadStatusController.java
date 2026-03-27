@@ -43,7 +43,7 @@ public class ReadStatusController {
     @RequestMapping(value = "/{readStatusId}", method = RequestMethod.PATCH)
     public ResponseEntity updateReadStatus(
             @PathVariable UUID readStatusId,
-            @RequestBody UpdateReadStatusRequestDTO dto
+            @RequestBody @Valid UpdateReadStatusRequestDTO dto
     ) {
         log.debug("[READSTATUS_UPDATE_REQUEST] 읽음 상태 수정 요청: readStatusId={}", readStatusId);
         ReadStatusDto updated = readStatusService.updateReadStatus(readStatusId, dto);
