@@ -40,7 +40,7 @@ public class BinaryContentController {
     )
     public ResponseEntity<List<BinaryContentDto>> getBinaryContents(
         @RequestParam("binaryContentIds") List<UUID> binaryContentIds) {
-
+        log.trace("[BinaryContent] 컨트롤러에서 전체 목록 조회 요청 받음");
         return new ResponseEntity<>(binaryContentService.findAllByIdIn(binaryContentIds),
             HttpStatus.OK);
     }
@@ -67,12 +67,14 @@ public class BinaryContentController {
     })
     public ResponseEntity<BinaryContentDto> getBinaryContent(
         @PathVariable UUID binaryContentId) {
+        log.trace("[BinaryContent] 컨트롤러에서 단일 조회 요청 받음.");
         return new ResponseEntity<>(binaryContentService.find(binaryContentId), HttpStatus.OK);
     }
 
     @GetMapping(value = "/{binaryContentId}/download")
     public ResponseEntity<?> downloadBinaryContent(
         @PathVariable UUID binaryContentId) {
+        log.trace("[BinaryContent] 컨트롤러에서 다운로드 요청 받음");
 
         return binaryContentStorage.download(binaryContentService.find(binaryContentId));
     }

@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/messages")
@@ -57,6 +59,7 @@ public class MessageController {
     public ResponseEntity<MessageDto> createMessage(
         @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments,
         @Valid @RequestPart("messageCreateRequest") MessageCreateRequestDTO req) {
+        log.trace("[Message] 컨트롤러에서 메시지 생성 요청 받음");
         return new ResponseEntity<>(messageService.create(attachments, req), HttpStatus.CREATED);
 
     }
@@ -81,6 +84,7 @@ public class MessageController {
     })
     public MessageDto editMessage(@PathVariable UUID messageId,
         @Valid @RequestBody MessageUpdateRequestDto req) {
+        log.trace("[Message] 컨트롤러에서 메시지 수정 요청 받음");
         return messageService.update(messageId, req);
     }
 
@@ -102,7 +106,9 @@ public class MessageController {
     })
     public ResponseEntity<Void> deleteMessage(
         @PathVariable UUID messageId) {
+        log.trace("[Message] 컨트롤러에서 메시지 삭제 요청 받음");
         messageService.delete(messageId);
+        log.info("[Message] 컨트롤러에서 서비스 계층의 삭제 메서드 수행을 확인");
         return ResponseEntity.noContent().build();
     }
 
@@ -121,6 +127,8 @@ public class MessageController {
         @RequestParam(required = false) Optional<Instant> cursor,
         @ParameterObject
         @PageableDefault(page = 0, size = 50, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        log.trace("[Message] 컨트롤러에서 채널 별 메시지 조회 요청 받음");
+
         return ResponseEntity.ok(
             messageService.findAllByChannelId(
                 channelId,

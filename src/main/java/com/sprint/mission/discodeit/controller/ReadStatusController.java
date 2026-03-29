@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/readStatuses")
@@ -38,6 +40,7 @@ ReadStatusController {
         )
     )
     public ResponseEntity<List<ReadStatusDto>> getReadStatus(@RequestParam UUID userId) {
+        log.trace("[ReadStatus] 컨트롤러에서 유저 ID 별 ReadStatus 목록 조회 요청 받음");
         return new ResponseEntity<>(readStatusService.findAllByUserId(userId), HttpStatus.OK);
     }
 
@@ -69,6 +72,7 @@ ReadStatusController {
     )
     public ResponseEntity<ReadStatusDto> createReadStatus(
         @Valid @RequestBody ReadStatusCreateRequestDTO req) {
+        log.trace("[ReadStatus] 컨트롤러에서 ReadStatus 생성 요청 받음");
         return new ResponseEntity<>(readStatusService.create(req), HttpStatus.CREATED);
     }
 
@@ -94,6 +98,7 @@ ReadStatusController {
     public ResponseEntity<ReadStatusDto> editReadStatus(
         @Valid @RequestBody ReadStatusUpdateRequestDTO req,
         @PathVariable UUID readStatusId) {
+        log.trace("[ReadStatus] 컨트롤러에서 ReadStatus 수정 요청 받음");
         return new ResponseEntity<>(readStatusService.update(readStatusId, req), HttpStatus.OK);
     }
 

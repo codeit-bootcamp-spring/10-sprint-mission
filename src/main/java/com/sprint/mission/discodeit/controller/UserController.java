@@ -20,6 +20,7 @@ import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/users")
@@ -53,6 +55,7 @@ public class UserController {
         )
     })
     public ResponseEntity<List<UserDto>> getUsers() {
+        log.trace("[User] 컨트롤러에서 사용자 목록 전체 조회 요청 받음");
         return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }
 
@@ -80,6 +83,8 @@ public class UserController {
         @Valid @RequestPart("userCreateRequest") UserCreateRequestDTO userCreateRequestDTO,
         @RequestPart(value = "profile", required = false) MultipartFile profileImage)
         throws IOException {
+
+        log.trace("[User] 컨트롤러에서 사용자 생성 요청 받음");
 
         BinaryContentDto profileSaved = null;
 
@@ -115,7 +120,9 @@ public class UserController {
         )
     })
     public ResponseEntity<Void> deleteUser(@PathVariable UUID userId) {
+        log.trace("[User] 컨트롤러에서 사용자 삭제 요청 받음");
         userService.delete(userId);
+        log.info("[User] 컨트롤러에서 서비스 계층의 삭제 메소드가 수행된 것을 확인.");
         return (ResponseEntity.noContent().build());
     }
 
@@ -150,8 +157,13 @@ public class UserController {
         @RequestPart(value = "profile", required = false) MultipartFile profile
     ) throws IOException {
 
+        log.trace("[User] 컨트롤러에서 사용자의 수정 요청을 받음.");
+
+        log.trace("[User] 컨트롤러에서 MultiFile로 들어온 첨부 파일을 확인하고 BinaryContentDto 객체 생성 시도");
+
         BinaryContentDto profileDto = null;
         if (profile != null && !profile.isEmpty()) {
+            log.debug("[User] profile 존재. BinaryContentDto 객체를 생성합니다.");
             profileDto = new BinaryContentDto(
                 UUID.randomUUID(),
                 profile.getOriginalFilename(),
@@ -159,6 +171,7 @@ public class UserController {
                 profile.getContentType(),
                 profile.getBytes()
             );
+            log.debug("[User] BinaryContentDto 정보: id={}", profileDto.id());
         }
 
         return new ResponseEntity<>(userService.update(userId, req, profileDto),
@@ -188,6 +201,7 @@ public class UserController {
     public ResponseEntity<UserStatusDto> updateUserOnline(
         @PathVariable UUID userId,
         @Valid @RequestBody UserStatusUpdateRequestDTO req) {
+        log.trace("[User] 컨트롤러에서 유저의 활동중 상태 수정 요청을 받음");
         return new ResponseEntity<>(userStatusService.activateUserOnline(userId, req),
             HttpStatus.OK);
     }
