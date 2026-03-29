@@ -63,7 +63,7 @@ CREATE TABLE user_statuses
     created_at     timestamp with time zone NOT NULL,
     updated_at     timestamp with time zone,
     user_id        UUID UNIQUE NOT NULL,
-    last_active_at TIMESTAMPTZ NOT NULL,
+    last_active_at timestamp with time zone NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
