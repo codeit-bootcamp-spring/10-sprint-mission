@@ -17,6 +17,11 @@ spring:
       ddl-auto: none
     open-in-view: false
 
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
 logging:
   level:
     root: INFO

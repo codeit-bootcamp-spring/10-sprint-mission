@@ -5,6 +5,12 @@ spring:
   application:
     name: discodeit
 
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
+
 discodeit:
   storage:
     type: local   # local | remote
