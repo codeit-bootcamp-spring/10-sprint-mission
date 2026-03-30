@@ -3,8 +3,10 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.exception.user.EmailAlreadyExistException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
@@ -77,10 +79,63 @@ class BasicUserServiceTest {
     }
 
     @Test
-    void update() {
+    @DisplayName("프로필 없는 회원 수정 성공")
+    void update_username() {
+        // given
+        User mockUser = mock(User.class); //원래 있었던 User라고 가정.
+        UUID userId = UUID.randomUUID();
+        UserUpdateRequest updateRequest = new UserUpdateRequest("new곽인성","new@naver.com", "12345");
+        when(userRepository.findById(any(UUID.class))).thenReturn(Optional.of(mockUser));
+        when(mockUser.getEmail()).thenReturn("kis2690@naver.com");
+        when(mockUser.getUsername()).thenReturn("곽인성");
+        when(userRepository.existsByEmail("new@naver.com")).thenReturn(false);
+        when(userRepository.existsByUsername("new곽인성")).thenReturn(false);
+        when(userMapper.toDto(mockUser)).thenReturn(mock(UserDto.class));
+
+        //when
+        UserDto updatedUser = userService.update(userId, updateRequest, Optional.empty());
+
+        // then
+        verify(mockUser).update("new곽인성", "new@naver.com", "12345", null);
+        verify(binaryContentRepository, never()).save(any());
     }
 
     @Test
-    void delete() {
+    @DisplayName("존재하지 않는 회원일시 수정에 실패해야한다.")
+    void update_fail_when_not_exist_user() {
+        // given
+        User mockUser = mock(User.class);
+        when(userRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+        // when,then
+        assertThrows(UserNotFoundException.class,() -> userService.update(UUID.randomUUID(),null,Optional.empty()));
+        verify(mockUser, never()).update(anyString(),anyString(),anyString(),any());
+        verify(userRepository, never()).save(any(User.class));
+        verify(binaryContentRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("회원 삭제를 진행할 수 있어야한다.")
+    void delete_user() {
+        // given
+        UUID userId = UUID.randomUUID();
+        when(userRepository.existsById(any(UUID.class))).thenReturn(true);
+
+        // when
+        userService.delete(userId);
+
+        // then
+        verify(userRepository).deleteById(userId);
+    }
+
+    @Test
+    @DisplayName("삭제하려는 userId가 없을때 회원 삭제에 실패해야합니다. ")
+    void delete_fail_when_user_not_found() {
+        // given
+        UUID userId = UUID.randomUUID();
+        when(userRepository.existsById(any(UUID.class))).thenReturn(false);
+
+        // when, then
+        assertThrows(UserNotFoundException.class,() -> userService.delete(userId));
+        verify(userRepository,never()).deleteById(userId);
     }
 }
