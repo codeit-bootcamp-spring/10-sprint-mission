@@ -13,15 +13,15 @@ public enum ErrorCode {
     // User
     USER_NOT_FOUND(404, "U100", "유저를 찾을 수 없습니다."),
     USER_ALREADY_EXISTS(400, "U200", "이미 존재하는 유저입니다."),
-    USERNAME_ALREADY_EXISTS(400, "U201", "이미 사용중인 username입니다."),
-    EMAIL_ALREADY_EXISTS(400, "U202", "이미 사용중인 email입니다."),
+    USERNAME_ALREADY_EXISTS(409, "U201", "이미 사용중인 username입니다."),
+    EMAIL_ALREADY_EXISTS(409, "U202", "이미 사용중인 email입니다."),
     USERNAME_UNCHANGED(400, "U301", "현재 사용중인 username과 동일합니다."),
     EMAIL_UNCHANGED(400, "U302", "현재 사용중인 email과 동일합니다."),
 
     // Channel
     CHANNEL_NOT_FOUND(404, "C100", "채널을 찾을 수 없습니다."),
     PRIVATE_CHANNEL_UPDATE(400, "C200", "비공개 채널은 수정할 수 없습니다."),
-    CHANNEL_NAME_ALREADY_EXISTS(400, "C301", "이미 사용중인 channelName입니다."),
+    CHANNEL_NAME_ALREADY_EXISTS(409, "C301", "이미 사용중인 channelName입니다."),
     CHANNEL_DESCRIPTION_UNCHANGED(400, "C401", "현재 사용중인 description과 동일합니다."),
 
     // Message
