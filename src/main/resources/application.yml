@@ -10,6 +10,11 @@ spring:
   profiles:
     active: dev # 기본적으로 dev 환경 활성화
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
   jpa:
     open-in-view: false
     properties:
@@ -26,3 +31,37 @@ logging:
     org.springframework.transaction.support.AbstractPlatformTransactionManager: TRACE
     org.springframework.orm.jpa.JpaTransactionManager: TRACE
     org.springframework.orm.jpa: DEBUG
+
+# Actuator 엔드포인트 노출 설정
+management:
+  info:
+    env:
+      enabled: true
+
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics,loggers"
+
+  endpoint:
+    health:
+      show-details: always # 상세한 DB 연결 상태 등을 보고 싶을 때 사용
+
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    java-version: 17
+    spring-boot-version: 3.4.0
+  config:
+    datasource:
+      url: ${spring.datasource.url}
+      driver-class-name: ${spring.datasource.driver-class-name}
+    jpa:
+      ddl-auto: ${spring.jpa.hibernate.ddl-auto}
+    storage:
+      type: ${discodeit.storage.type}
+      path: ${discodeit.storage.local.root-path}
+    multipart:
+      max-file-size: ${spring.servlet.multipart.max-file-size}
+      max-request-size: ${spring.servlet.multipart.max-request-size}
