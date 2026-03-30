@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 
@@ -27,11 +27,11 @@ public class BasicUserStatusService implements UserStatusService {
   public UserStatus create(UUID userId) {
     // 관련 유저가 존재하는지 확인
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
+        .orElseThrow(UserNotFoundException::new);
 
     // 해당 유저의 UserStatus가 존재하는지 확인
     if (userStatusRepository.existsByUserId(userId)) {
-      throw new IllegalStateException("이미 상태 정보가 존재합니다.");
+      throw new UserStatusAlreadyExistsException();
     }
 
     UserStatus userStatus = new UserStatus(user, Instant.now());
@@ -52,7 +52,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Transactional
   public UserStatus updateByUserId(UUID userId, Instant newLastActiveAt) {
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
-        .orElseThrow(() -> new NoSuchElementException("해당 유저의 상태 정보를 찾을 수 없습니다."));
+        .orElseThrow(UserStatusNotFoundException::new);
 
     if (newLastActiveAt != null) {
       userStatus.updateLastActiveAt(newLastActiveAt);
@@ -72,6 +72,6 @@ public class BasicUserStatusService implements UserStatusService {
 
   private UserStatus getOrThrowUserStatus(UUID id) {
     return userStatusRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("해당 상태 정보를 찾을 수 없습니다."));
+        .orElseThrow(UserStatusNotFoundException::new);
   }
 }

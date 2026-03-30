@@ -1,6 +1,10 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.binarycontent.*;
+import com.sprint.mission.discodeit.exception.channel.*;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -61,9 +65,7 @@ public class BasicMessageService implements MessageService {
               log.debug("Attachment saved successfully: {}",
                   file.getOriginalFilename()); // 단일 파일 저장 성공 로그
             } catch (IOException e) {
-              log.error("Failed to save attachment file: {}", file.getOriginalFilename(),
-                  e); // 파일 저장 실패 로그
-              throw new RuntimeException("파일 저장 오류", e);
+              throw new FileUploadException(e);
             }
           });
     }
@@ -143,38 +145,22 @@ public class BasicMessageService implements MessageService {
   private void validateAccess(UUID userId, Channel channel) {
     if (channel.getType() == ChannelType.PRIVATE) {
       readStatusRepository.findByUserIdAndChannelId(userId, channel.getId())
-          .orElseThrow(() -> {
-            log.warn("Access denied: User {} does not have permission for PRIVATE channel {}",
-                userId, channel.getId()); // 비공개 채널 접근 불가 로그
-            return new IllegalArgumentException("채널 접근 권한이 없습니다.");
-          });
+          .orElseThrow(ChannelAccessDeniedException::new);
     }
   }
 
   // 유저 검증
   private User getOrThrowUser(UUID id) {
-    return userRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("User not found in MessageService with ID: {}", id); // 유저 조회 실패 로그
-          return new NoSuchElementException("해당 유저를 찾을 수 없습니다.");
-        });
+    return userRepository.findById(id).orElseThrow(UserNotFoundException::new);
   }
 
   // 채널 검증
   private Channel getOrThrowChannel(UUID id) {
-    return channelRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("Channel not found in MessageService with ID: {}", id); // 채널 조회 실패 로그
-          return new NoSuchElementException("해당 채널을 찾을 수 없습니다.");
-        });
+    return channelRepository.findById(id).orElseThrow(ChannelNotFoundException::new);
   }
 
   // 메시지 검증
   private com.sprint.mission.discodeit.entity.Message getOrThrowMessage(UUID id) {
-    return messageRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("Message not found with ID: {}", id); // 메시지 조회 실패 로그
-          return new NoSuchElementException("해당 메시지를 찾을 수 없습니다.");
-        });
+    return messageRepository.findById(id).orElseThrow(MessageNotFoundException::new);
   }
 }

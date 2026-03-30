@@ -2,6 +2,8 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.channel.ChannelLastMessageQueryDto;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.channel.*;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -98,8 +100,7 @@ public class BasicChannelService implements ChannelService {
 
     // PRIVATE 채널은 수정할 수 없음
     if (channel.getType() == ChannelType.PRIVATE) {
-      log.warn("Update failed: PRIVATE channel {} cannot be updated", id); // PRIVATE 채널 수정 시도 로그
-      throw new IllegalStateException("PRIVATE 채널은 수정할 수 없습니다.");
+      throw new PrivateChannelUpdateException();
     }
 
     Optional.ofNullable(newName).ifPresent(name -> {
@@ -181,18 +182,12 @@ public class BasicChannelService implements ChannelService {
   // 채널 검증
   private Channel getOrThrowChannel(UUID id) {
     return channelRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("Channel not found with ID: {}", id); // 채널 조회 실패 로그
-          return new NoSuchElementException("해당 채널을 찾을 수 없습니다.");
-        });
+        .orElseThrow(ChannelNotFoundException::new);
   }
 
   // 유저 검증
   private User getOrThrowUser(UUID id) {
     return userRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("User not found in ChannelService with ID: {}", id); // 유저 조회 실패 로그
-          return new NoSuchElementException("해당 유저를 찾을 수 없습니다.");
-        });
+        .orElseThrow(UserNotFoundException::new);
   }
 }

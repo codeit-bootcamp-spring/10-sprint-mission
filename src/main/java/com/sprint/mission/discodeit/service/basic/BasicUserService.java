@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.binarycontent.FileUploadException;
+import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
@@ -32,12 +34,10 @@ public class BasicUserService implements UserService {
 
     // username, email 중복 체크
     if (userRepository.existsByUsername(username)) {
-      log.warn("User creation failed: Username {} already exists", username); // username 중복 로그
-      throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
+      throw new UserAlreadyExistsException();
     }
     if (userRepository.existsByEmail(email)) {
-      log.warn("User creation failed: Email already exists"); // email 중복 로그
-      throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
+      throw new EmailAlreadyExistsException();
     }
 
     // 프로필 사진 설정
@@ -53,9 +53,7 @@ public class BasicUserService implements UserService {
 
         binaryContentStorage.put(profile.getId(), profileFile.getBytes());
       } catch (IOException e) {
-        log.error("Profile image upload failed for file: {}", profileFile.getOriginalFilename(),
-            e); // 프로필 사진 설정 실패 로그
-        throw new RuntimeException("프로필 사진 설정 중 오류가 발생했습니다", e);
+        throw new FileUploadException(e);
       }
     }
 
@@ -102,8 +100,7 @@ public class BasicUserService implements UserService {
         .filter(username -> !username.equals(user.getUsername()))
         .ifPresent(username -> {
           if (userRepository.existsByUsername(username)) {
-            log.warn("Update failed: Username {} already exists", username); // username 수정 실패 로그
-            throw new IllegalArgumentException("이미 사용 중인 사용자명입니다.");
+            throw new UserAlreadyExistsException();
           }
           user.updateName(username);
         });
@@ -113,8 +110,7 @@ public class BasicUserService implements UserService {
         .filter(email -> !email.equals(user.getEmail()))
         .ifPresent(email -> {
           if (userRepository.existsByEmail(email)) {
-            log.warn("Update failed: Email already exists"); // 이메일 수정 실패 로그
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+            throw new EmailAlreadyExistsException();
           }
           user.updateEmail(email);
         });
@@ -137,8 +133,7 @@ public class BasicUserService implements UserService {
 
         user.updateProfileImage(newImage);
       } catch (IOException e) {
-        log.error("Failed to update profile image for user ID: {}", id, e); // 프로필 사진 업데이트 실패 로그
-        throw new RuntimeException("프로필 사진 업데이트 중 오류가 발생했습니다.", e);
+        throw new FileUploadException(e);
       }
     }
 
@@ -161,10 +156,6 @@ public class BasicUserService implements UserService {
 
   // 유저 검증
   private User getOrThrowUser(UUID id) {
-    return userRepository.findById(id)
-        .orElseThrow(() -> {
-          log.warn("User not found with ID: {}", id); // 유저 조회 실패 로그
-          return new NoSuchElementException("해당 유저를 찾을 수 없습니다.");
-        });
+    return userRepository.findById(id).orElseThrow(UserNotFoundException::new);
   }
 }

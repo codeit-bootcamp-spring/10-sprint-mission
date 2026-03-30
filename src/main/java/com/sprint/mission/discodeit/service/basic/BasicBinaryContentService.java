@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.binarycontent.*;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 
@@ -26,7 +26,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Transactional
   public BinaryContent create(MultipartFile file) {
     if (file == null || file.isEmpty()) {
-      throw new IllegalArgumentException("파일이 비어있습니다.");
+      throw new FileEmptyException();
     }
 
     try {
@@ -41,7 +41,7 @@ public class BasicBinaryContentService implements BinaryContentService {
       return binaryContent;
 
     } catch (IOException e) {
-      throw new RuntimeException("파일 저장 오류", e);
+      throw new FileUploadException(e);
     }
   }
 
@@ -67,6 +67,6 @@ public class BasicBinaryContentService implements BinaryContentService {
   // 바이너리 컨텐츠 검증
   private BinaryContent getOrThrowBinaryContent(UUID id) {
     return binaryContentRepository.findById(id)
-        .orElseThrow(() -> new NoSuchElementException("해당 바이너리 콘텐츠를 찾을 수 없습니다."));
+        .orElseThrow(BinaryContentNotFoundException::new);
   }
 }
