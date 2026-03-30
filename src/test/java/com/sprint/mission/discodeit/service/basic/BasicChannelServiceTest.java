@@ -51,7 +51,7 @@ class BasicChannelServiceTest {
   BasicChannelService basicChannelService;
 
   @Test
-  @DisplayName("공개 채널 생성에 성공해야 한다.")
+  @DisplayName("PUBLIC 채널 생성에 성공해야 한다.")
   void should_create_public_channel() {
     // given
     PublicChannelCreateRequest request = new PublicChannelCreateRequest("일반 채널", "일반 채널입니다.");
@@ -67,7 +67,7 @@ class BasicChannelServiceTest {
   }
 
   @Test
-  @DisplayName("비공개 채널 생성에 성공해야 한다.")
+  @DisplayName("PRIVATE 채널 생성에 성공해야 한다.")
   void should_create_private_channel() {
     // given
     List<UUID> fixedParticipantIds = List.of(UUID.randomUUID(), UUID.randomUUID());
@@ -141,7 +141,7 @@ class BasicChannelServiceTest {
   }
 
   @Test
-  @DisplayName("Public 채널은 수정사항이 반영되어야 한다.")
+  @DisplayName("PUBLIC 채널은 수정사항이 반영되어야 한다.")
   void should_update_channel() {
     // given
     UUID fixedUuid = UUID.randomUUID();
@@ -157,7 +157,7 @@ class BasicChannelServiceTest {
   }
 
   @Test
-  @DisplayName("Private 채널은 수정에 실패해야 한다.")
+  @DisplayName("PRIVATE 채널은 수정에 실패해야 한다.")
   void should_fail_update_channel_when_type_is_private() {
     // given
     UUID fixedUuid = UUID.randomUUID();

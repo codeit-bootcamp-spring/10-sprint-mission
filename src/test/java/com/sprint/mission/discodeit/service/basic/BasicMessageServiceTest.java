@@ -135,7 +135,7 @@ class BasicMessageServiceTest {
   }
 
   @Test
-  @DisplayName("비공개 채널에 비참여자가 글을 쓰려고 하면 예외를 던져야 한다.")
+  @DisplayName("PRIVATE 채널에 비참여자가 글을 쓰려고 하면 예외를 던져야 한다.")
   void should_fail_create_message_when_non_participant_sends_to_private_channel() {
     // given
     UUID fixedUuid = UUID.randomUUID();
