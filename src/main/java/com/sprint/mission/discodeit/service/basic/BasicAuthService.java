@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import java.time.Instant;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,17 +26,17 @@ public class BasicAuthService implements AuthService {
 
     // 유저 확인
     User user = userRepository.findByUsernameWithProfileAndStatus(username)
-        .orElseThrow(UserNotFoundException::new);
+        .orElseThrow(() -> new UserNotFoundException(Map.of("requestedUsername", username)));
 
     // 비밀번호 확인
     if (!user.getPassword().equals(password)) {
-      throw new InvalidPasswordException();
+      throw new InvalidPasswordException(Map.of("loginId", username));
     }
 
     // 유저 상태 조회 및 업데이트
     UserStatus status = user.getUserStatus();
     if (status == null) {
-      throw new UserStatusNotFoundException();
+      throw new UserStatusNotFoundException(Map.of("userId", user.getId()));
     }
 
     status.updateLastActiveAt(Instant.now());

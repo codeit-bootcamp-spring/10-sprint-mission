@@ -5,10 +5,6 @@ import java.util.Map;
 
 public class UserStatusNotFoundException extends UserException {
 
-  public UserStatusNotFoundException() {
-    super(ErrorCode.USER_STATUS_NOT_FOUND);
-  }
-
   public UserStatusNotFoundException(Map<String, Object> details) {
     super(ErrorCode.USER_STATUS_NOT_FOUND, details);
   }

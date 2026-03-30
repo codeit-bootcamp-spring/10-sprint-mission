@@ -65,7 +65,12 @@ public class BasicMessageService implements MessageService {
               log.debug("Attachment saved successfully: {}",
                   file.getOriginalFilename()); // 단일 파일 저장 성공 로그
             } catch (IOException e) {
-              throw new FileUploadException(e);
+              throw new FileUploadException(Map.of(
+                  "authorId", authorId,
+                  "channelId", channelId,
+                  "fileName",
+                  Objects.requireNonNullElse(file.getOriginalFilename(), "unknown")
+              ), e);
             }
           });
     }
@@ -145,22 +150,29 @@ public class BasicMessageService implements MessageService {
   private void validateAccess(UUID userId, Channel channel) {
     if (channel.getType() == ChannelType.PRIVATE) {
       readStatusRepository.findByUserIdAndChannelId(userId, channel.getId())
-          .orElseThrow(ChannelAccessDeniedException::new);
+          .orElseThrow(() -> new ChannelAccessDeniedException(Map.of(
+              "userId", userId,
+              "channelId", channel.getId(),
+              "reason", "PRIVATE 채널에 참여 중이지 않은 유저입니다."
+          )));
     }
   }
 
   // 유저 검증
   private User getOrThrowUser(UUID id) {
-    return userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+    return userRepository.findById(id)
+        .orElseThrow(() -> new UserNotFoundException(Map.of("requestedUserId", id)));
   }
 
   // 채널 검증
   private Channel getOrThrowChannel(UUID id) {
-    return channelRepository.findById(id).orElseThrow(ChannelNotFoundException::new);
+    return channelRepository.findById(id)
+        .orElseThrow(() -> new ChannelNotFoundException(Map.of("requestedChannelId", id)));
   }
 
   // 메시지 검증
   private com.sprint.mission.discodeit.entity.Message getOrThrowMessage(UUID id) {
-    return messageRepository.findById(id).orElseThrow(MessageNotFoundException::new);
+    return messageRepository.findById(id)
+        .orElseThrow(() -> new MessageNotFoundException(Map.of("requestedMessageId", id)));
   }
 }

@@ -100,7 +100,11 @@ public class BasicChannelService implements ChannelService {
 
     // PRIVATE 채널은 수정할 수 없음
     if (channel.getType() == ChannelType.PRIVATE) {
-      throw new PrivateChannelUpdateException();
+      throw new PrivateChannelUpdateException(Map.of(
+          "channelId", id,
+          "channelType", channel.getType(),
+          "reason", "PRIVATE 채널은 수정할 수 없습니다."
+      ));
     }
 
     Optional.ofNullable(newName).ifPresent(name -> {
@@ -182,12 +186,12 @@ public class BasicChannelService implements ChannelService {
   // 채널 검증
   private Channel getOrThrowChannel(UUID id) {
     return channelRepository.findById(id)
-        .orElseThrow(ChannelNotFoundException::new);
+        .orElseThrow(() -> new ChannelNotFoundException(Map.of("requestedChannelId", id)));
   }
 
   // 유저 검증
   private User getOrThrowUser(UUID id) {
     return userRepository.findById(id)
-        .orElseThrow(UserNotFoundException::new);
+        .orElseThrow(() -> new UserNotFoundException(Map.of("requestedUserId", id)));
   }
 }

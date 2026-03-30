@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.exception.user.*;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserStatusService;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,11 +28,11 @@ public class BasicUserStatusService implements UserStatusService {
   public UserStatus create(UUID userId) {
     // 관련 유저가 존재하는지 확인
     User user = userRepository.findById(userId)
-        .orElseThrow(UserNotFoundException::new);
+        .orElseThrow(() -> new UserNotFoundException(Map.of("requestedUserId", userId)));
 
     // 해당 유저의 UserStatus가 존재하는지 확인
     if (userStatusRepository.existsByUserId(userId)) {
-      throw new UserStatusAlreadyExistsException();
+      throw new UserStatusAlreadyExistsException(Map.of("userId", userId));
     }
 
     UserStatus userStatus = new UserStatus(user, Instant.now());
@@ -52,7 +53,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Transactional
   public UserStatus updateByUserId(UUID userId, Instant newLastActiveAt) {
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
-        .orElseThrow(UserStatusNotFoundException::new);
+        .orElseThrow(() -> new UserStatusNotFoundException(Map.of("requestedUserId", userId)));
 
     if (newLastActiveAt != null) {
       userStatus.updateLastActiveAt(newLastActiveAt);
@@ -72,6 +73,6 @@ public class BasicUserStatusService implements UserStatusService {
 
   private UserStatus getOrThrowUserStatus(UUID id) {
     return userStatusRepository.findById(id)
-        .orElseThrow(UserStatusNotFoundException::new);
+        .orElseThrow(() -> new UserStatusNotFoundException(Map.of("requestedUserStatusId", id)));
   }
 }

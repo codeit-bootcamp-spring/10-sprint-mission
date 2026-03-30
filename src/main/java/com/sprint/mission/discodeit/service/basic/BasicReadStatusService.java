@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import java.time.Instant;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,7 +36,10 @@ public class BasicReadStatusService implements ReadStatusService {
     // 해당 채널에 참여 중인지 확인
     readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
         .ifPresent(rs -> {
-          throw new AlreadyParticipatingException();
+          throw new AlreadyParticipatingException(Map.of(
+              "UserId", user.getId(),
+              "ChannelId", channel.getId(),
+              "reason", "이미 해당 채널에 참여 중인 유저입니다."));
         });
 
     ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
@@ -75,16 +79,19 @@ public class BasicReadStatusService implements ReadStatusService {
 
   // 유저 검증
   private User getOrThrowUser(UUID id) {
-    return userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+    return userRepository.findById(id)
+        .orElseThrow(() -> new UserNotFoundException(Map.of("requestedUserId", id)));
   }
 
   // 채널 검증
   private Channel getOrThrowChannel(UUID id) {
-    return channelRepository.findById(id).orElseThrow(ChannelNotFoundException::new);
+    return channelRepository.findById(id)
+        .orElseThrow(() -> new ChannelNotFoundException(Map.of("requestedChannelId", id)));
   }
 
   // 참여 정보 검증
   private ReadStatus getOrThrowReadStatus(UUID id) {
-    return readStatusRepository.findById(id).orElseThrow(ReadStatusNotFoundException::new);
+    return readStatusRepository.findById(id)
+        .orElseThrow(() -> new ReadStatusNotFoundException(Map.of("requestedReadStatusId", id)));
   }
 }

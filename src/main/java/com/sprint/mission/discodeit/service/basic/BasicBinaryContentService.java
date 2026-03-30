@@ -2,10 +2,13 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.exception.binarycontent.*;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +29,9 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Transactional
   public BinaryContent create(MultipartFile file) {
     if (file == null || file.isEmpty()) {
-      throw new FileEmptyException();
+      throw new FileEmptyException(Map.of(
+          "parameterName", "file",
+          "reason", "전송된 파일이 없거나 내용이 비어있습니다."));
     }
 
     try {
@@ -41,7 +46,11 @@ public class BasicBinaryContentService implements BinaryContentService {
       return binaryContent;
 
     } catch (IOException e) {
-      throw new FileUploadException(e);
+      throw new FileUploadException(Map.of(
+          "fileName", Objects.requireNonNullElse(file.getOriginalFilename(), "unknown"),
+          "fileSize", file.getSize(),
+          "contentType", Objects.requireNonNullElse(file.getContentType(), "unknown")
+      ), e);
     }
   }
 
@@ -67,6 +76,7 @@ public class BasicBinaryContentService implements BinaryContentService {
   // 바이너리 컨텐츠 검증
   private BinaryContent getOrThrowBinaryContent(UUID id) {
     return binaryContentRepository.findById(id)
-        .orElseThrow(BinaryContentNotFoundException::new);
+        .orElseThrow(
+            () -> new BinaryContentNotFoundException(Map.of("requestedBinaryContentId", id)));
   }
 }

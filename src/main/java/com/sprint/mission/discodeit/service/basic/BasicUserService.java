@@ -34,10 +34,10 @@ public class BasicUserService implements UserService {
 
     // username, email 중복 체크
     if (userRepository.existsByUsername(username)) {
-      throw new UserAlreadyExistsException();
+      throw new UserAlreadyExistsException(Map.of("username", username));
     }
     if (userRepository.existsByEmail(email)) {
-      throw new EmailAlreadyExistsException();
+      throw new EmailAlreadyExistsException(Map.of("field", "email"));
     }
 
     // 프로필 사진 설정
@@ -53,7 +53,11 @@ public class BasicUserService implements UserService {
 
         binaryContentStorage.put(profile.getId(), profileFile.getBytes());
       } catch (IOException e) {
-        throw new FileUploadException(e);
+        throw new FileUploadException(Map.of(
+            "username", username,
+            "profileFileName",
+            Objects.requireNonNullElse(profileFile.getOriginalFilename(), "unknown")
+        ), e);
       }
     }
 
@@ -100,7 +104,7 @@ public class BasicUserService implements UserService {
         .filter(username -> !username.equals(user.getUsername()))
         .ifPresent(username -> {
           if (userRepository.existsByUsername(username)) {
-            throw new UserAlreadyExistsException();
+            throw new UserAlreadyExistsException(Map.of("targetUserId", id));
           }
           user.updateName(username);
         });
@@ -110,7 +114,7 @@ public class BasicUserService implements UserService {
         .filter(email -> !email.equals(user.getEmail()))
         .ifPresent(email -> {
           if (userRepository.existsByEmail(email)) {
-            throw new EmailAlreadyExistsException();
+            throw new EmailAlreadyExistsException(Map.of("targetUserId", id));
           }
           user.updateEmail(email);
         });
@@ -133,7 +137,11 @@ public class BasicUserService implements UserService {
 
         user.updateProfileImage(newImage);
       } catch (IOException e) {
-        throw new FileUploadException(e);
+        throw new FileUploadException(Map.of(
+            "targetUserId", id,
+            "profileFileName",
+            Objects.requireNonNullElse(profileFile.getOriginalFilename(), "unknown")
+        ), e);
       }
     }
 
@@ -156,6 +164,7 @@ public class BasicUserService implements UserService {
 
   // 유저 검증
   private User getOrThrowUser(UUID id) {
-    return userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+    return userRepository.findById(id)
+        .orElseThrow(() -> new UserNotFoundException(Map.of("requestedUserId", id)));
   }
 }
