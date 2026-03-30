@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.service.ChannelService;
+import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class ChannelController implements ChannelApi {
   @Override
   @PostMapping("/public")
   public ResponseEntity<ChannelDto> createPublicChannel(
-      @RequestBody PublicChannelCreateRequest request) {
+      @Valid @RequestBody PublicChannelCreateRequest request) {
     log.info("Received POST /api/channels/public request - name: {}",
         request.name()); // 공개 채널 생성 요청 로그
 
@@ -97,7 +98,7 @@ public class ChannelController implements ChannelApi {
   @PatchMapping("/{channelId}")
   public ResponseEntity<ChannelDto> update(
       @PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateRequest request) {
+      @Valid @RequestBody PublicChannelUpdateRequest request) {
     log.info("Received PATCH /api/channels/{} request", channelId); // 채널 정보 수정 요청 로그
 
     Channel channel = channelService.update(channelId, request.newName(), request.newDescription());

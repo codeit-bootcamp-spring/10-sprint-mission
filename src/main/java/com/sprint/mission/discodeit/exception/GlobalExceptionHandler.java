@@ -2,8 +2,11 @@ package com.sprint.mission.discodeit.exception;
 
 import com.sprint.mission.discodeit.dto.error.ErrorResponse;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -29,7 +32,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleRemainingException(Exception e) {
     log.error("Unexpected Internal Server Error: ", e);
 
-    // ErrorCode에 정의한 INTERNAL_SERVER_ERROR 활용 (status: 500)
+    // ErrorCode에 정의한 INTERNAL_SERVER_ERROR 활용
     ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
 
     ErrorResponse response = new ErrorResponse(
@@ -42,5 +45,31 @@ public class GlobalExceptionHandler {
     );
 
     return ResponseEntity.status(500).body(response);
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorResponse> handleValidationException(
+      MethodArgumentNotValidException e) {
+    // 어떤 필드에서 어떤 에러가 났는지 상세 정보(details) 생성
+    Map<String, Object> details = new HashMap<>();
+    e.getBindingResult().getFieldErrors().forEach(error ->
+        details.put(error.getField(), error.getDefaultMessage())
+    );
+
+    log.warn("Validation failed: {}", details);
+
+    // ErrorCode에 정의한 INVALID_INPUT_VALUE 활용
+    ErrorCode errorCode = ErrorCode.INVALID_INPUT_VALUE;
+
+    ErrorResponse response = new ErrorResponse(
+        Instant.now(),
+        errorCode.getCode(),
+        errorCode.getMessage(),
+        details,
+        e.getClass().getSimpleName(),
+        errorCode.getStatus().value()
+    );
+
+    return ResponseEntity.status(errorCode.getStatus()).body(response);
   }
 }
