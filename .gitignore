@@ -6,7 +6,9 @@ build/
 .kotlin
 .idea
 data/
+.logs
 *.ser
+api-docs.json
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

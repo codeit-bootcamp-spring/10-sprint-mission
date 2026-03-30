@@ -1,27 +1,38 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.channel.PublicChannelUpdateRequest;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Channel extends BaseEntity {
+@Entity
+@Table(name = "CHANNELS")
+public class Channel extends BaseUpdatableEntity {
 
-    private final ChannelType type;
-    private String name;
-    private String description;
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private ChannelType type;
 
-    public Channel(ChannelType type, String name, String description) {
-        this.type = type;
-        this.name = name;
-        this.description = description;
-    }
+  private String name;
 
-    public void updateChannelName(String channelName) {
-        this.name = channelName;
-        setUpdatedAt();
-    }
+  private String description;
 
-    public void updateDescription(String description) {
-        this.description = description;
-        setUpdatedAt();
-    }
+  public Channel(ChannelType type, String name, String description) {
+    this.type = type;
+    this.name = name;
+    this.description = description;
+  }
+
+  public void update(PublicChannelUpdateRequest request) {
+    updateIfChanged(this.name, request.newName(), val -> this.name = val);
+    updateIfChanged(this.description, request.newDescription(), val -> this.description = val);
+  }
 }

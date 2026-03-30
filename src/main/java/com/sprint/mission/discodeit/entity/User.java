@@ -1,41 +1,60 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.util.*;
-
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class User extends BaseEntity {
+@Entity
+@Table(name = "USERS")
+public class User extends BaseUpdatableEntity {
 
-    private String username;
-    private String email;
-    private String password;
-    private UUID profileId;
+  @Column(nullable = false, unique = true)
+  private String username;
 
-    public User(String username, String email, String password, UUID profileId) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.profileId = profileId;
+  @Column(nullable = false, unique = true)
+  private String email;
+
+  @Column(nullable = false)
+  private String password;
+
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "PROFILE_ID")
+  private BinaryContent profile;
+
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus status;
+
+  public User(String username, String email, String password, BinaryContent profile) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profile = profile;
+  }
+
+  public void setStatus(UserStatus status) {
+    this.status = status;
+    if (status.getUser() != this) {
+      status.setUser(this);
     }
+  }
 
-    public void updateUsername(String username) {
-        this.username = username;
-        setUpdatedAt();
-    }
+  public void update(UserUpdateRequest request) {
+    updateIfChanged(this.username, request.newUsername(), val -> this.username = val);
+    updateIfChanged(this.email, request.newEmail(), val -> this.email = val);
+    updateIfChanged(this.password, request.newPassword(), val -> this.password = val);
+  }
 
-    public void updateEmail(String email) {
-        this.email = email;
-        setUpdatedAt();
-    }
-
-    public void updatePassword(String newPassword) {
-        this.password = newPassword;
-        setUpdatedAt();
-    }
-
-    public void updateProfileId(UUID profileId) {
-        this.profileId = profileId;
-        setUpdatedAt();
-    }
+  public void updateProfile(BinaryContent newProfile) {
+    this.profile = newProfile;
+  }
 }
