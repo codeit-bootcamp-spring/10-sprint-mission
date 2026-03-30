@@ -25,11 +25,13 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug          # 실행되는 SQL 쿼리 출력
-    org.hibernate.orm.jdbc.bind: trace # SQL에 들어가는 실제 파라미터 값 확인
     com.sprint.mission.discodeit: debug # 내 코드의 디버그 로그 출력
 
 discodeit:
   storage:
     type: local   # local | remote
     local:
-      root-path: "${user.dir}/data"
+      root-path: "${user.dir}/data/test"
+
+server:
+  port: 0  # RANDOM_PORT와 조합해 충돌 방지
