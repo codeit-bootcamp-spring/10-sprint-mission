@@ -1,9 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +16,8 @@ import java.util.UUID;
 public class Channel extends BaseUpdatableEntity {
     private String name;
     private String description;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "channel_type")
     private ChannelType type;
 
     public Channel(String name, String description, ChannelType type) {
