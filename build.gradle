@@ -35,6 +35,9 @@ dependencies {
     //actuator
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    //prometheus
+    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.12.3'
+
     //h2
     runtimeOnly 'com.h2database:h2'
     testImplementation 'com.h2database:h2'

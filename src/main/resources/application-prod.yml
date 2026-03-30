@@ -22,6 +22,12 @@ spring:
     init:
       mode: always
 
+  security:
+    user:
+      name: actuator
+      password: actuator
+      roles: ACTUATOR_ADMIN
+
 discodeit:
   storage:
     type: local
