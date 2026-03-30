@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.dto;
 
-import java.util.UUID;
+import jakarta.validation.constraints.NotNull;
+import java.time.Instant;
 
 public record ReadStatusPatchDto(
-	UUID readStatusId,
-	UUID userId,
-	UUID channelId
+    @NotNull
+    Instant newLastReadAt
 ) {
+
 }

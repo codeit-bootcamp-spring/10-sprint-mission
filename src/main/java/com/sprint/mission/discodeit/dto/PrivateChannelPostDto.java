@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record PrivateChannelPostDto(
-	List<UUID> userIds
+    List<UUID> participantIds
 ) {
+
 }

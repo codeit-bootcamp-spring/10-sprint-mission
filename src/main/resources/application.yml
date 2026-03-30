@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: discodeit
+  # DB 연결 설정
+  datasource:
+    url: jdbc:postgresql://localhost:5432/discodeit
+    username: discodeit_user
+    password: discodeit1234
+    drifver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: always
+  # JPA, sql script 파일 설정
+  jpa:
+    hibernate:
+      ddl-auto: update # schema.sql 실행 후 코드 기반으로 테이블이 생성되지 않도록 한다.
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+    open-in-view: false
+
+# SQL 로그 설정
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.orm.jdbc.extract: trace
+
+
+discodeit:
+  repository:
+    type: file
+    file-directory: .discodeit
+  static:
+
+  storage:
+    type: local
+    local:
+      root-path: .attachments
