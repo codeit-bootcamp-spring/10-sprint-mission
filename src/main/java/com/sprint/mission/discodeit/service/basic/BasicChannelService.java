@@ -8,8 +8,12 @@ import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.BusinessLogicException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.channel.ChannelDuplicateNameException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.PrivateChannelCannotBeUpdatedException;
+import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -19,9 +23,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -38,12 +44,15 @@ public class BasicChannelService implements ChannelService {
     requireNonNull(req.participantIds(), "participantIds");
 
     if (req.participantIds().isEmpty()) {
-      throw new IllegalArgumentException("PRIVATE 채널은 최소 1명 이상의 참여자가 필요합니다.");
+      throw new InvalidParameterException(
+          "participantIds",
+          "PRIVATE 채널은 최소 1명 이상의 참여자가 필요합니다."
+      );
     }
 
     List<User> participants = req.participantIds().stream()
         .map(id -> userRepository.findById(id)
-            .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND)))
+            .orElseThrow(() -> new UserNotFoundException(id)))
         .toList();
 
     Channel savedChannel = channelRepository.save(new Channel(ChannelType.PRIVATE, null, null));
@@ -64,10 +73,18 @@ public class BasicChannelService implements ChannelService {
     requireNonNull(req.name(), "name");
 
     if (req.name().isBlank()) {
-      throw new IllegalArgumentException("PUBLIC 채널은 이름이 필요합니다.");
+      throw new InvalidParameterException(
+          "name",
+          "PUBLIC 채널은 이름이 필요합니다."
+      );
+    }
+
+    if (channelRepository.existsByName(req.name())) {
+      throw new ChannelDuplicateNameException();
     }
 
     Channel channel = new Channel(req.name(), req.description());
+
     return channelRepository.createChannel(channel);
   }
 
@@ -91,7 +108,7 @@ public class BasicChannelService implements ChannelService {
     requireNonNull(userId, "userId");
 
     userRepository.findById(userId)
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(userId));
 
     return channelRepository.findAllChannel().stream()
         .filter(channel ->
@@ -115,7 +132,7 @@ public class BasicChannelService implements ChannelService {
     Channel channel = findChannelOrThrow(req.channelId());
 
     if (channel.isPrivate()) {
-      throw new BusinessLogicException(ErrorCode.PRIVATE_CHANNEL_CANNOT_BE_UPDATED);
+      throw new PrivateChannelCannotBeUpdatedException();
     }
 
     channel.updateChannel(req.name(), req.description());
@@ -137,12 +154,12 @@ public class BasicChannelService implements ChannelService {
     requireNonNull(channelId, "channelId");
 
     return channelRepository.findById(channelId)
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND));
+        .orElseThrow(() -> new ChannelNotFoundException(channelId));
   }
 
   private Channel findChannelOrThrow(UUID channelId) {
     return channelRepository.findById(channelId)
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND));
+        .orElseThrow(() -> new ChannelNotFoundException(channelId));
   }
 
   private Instant findLastMessageTime(Channel channel) {
@@ -160,7 +177,7 @@ public class BasicChannelService implements ChannelService {
 
   private static <T> void requireNonNull(T value, String name) {
     if (value == null) {
-      throw new IllegalArgumentException(name + " null이 될 수 없습니다.");
+      throw new InvalidParameterException(name);
     }
   }
 }

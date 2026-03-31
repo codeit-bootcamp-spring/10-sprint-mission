@@ -10,8 +10,7 @@ import com.sprint.mission.discodeit.dto.user.UserStatusDto;
 import com.sprint.mission.discodeit.dto.user.UserStatusResponse;
 import com.sprint.mission.discodeit.dto.user.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.exception.BusinessLogicException;
-import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.FileIOException;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
@@ -21,10 +20,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -78,7 +80,7 @@ public class UserController {
   })
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<UserDto> create(
-      @RequestPart("userCreateRequest") UserCreateRequest request,
+      @Valid @RequestPart("userCreateRequest") UserCreateRequest request,
       @Parameter(description = "User 프로필 이미지")
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
@@ -99,11 +101,12 @@ public class UserController {
             image
         );
       } catch (IOException e) {
-        throw new BusinessLogicException(ErrorCode.FILE_IO_ERROR);
+        throw new FileIOException();
       }
     }
 
     UserResponse created = userService.create(createRequest);
+    log.info("사용자가 성공적으로 생성되었습니다. id = {}", created.id());
     return ResponseEntity.status(HttpStatus.CREATED).body(toUserDto(created.id()));
   }
 
@@ -131,7 +134,7 @@ public class UserController {
   public ResponseEntity<UserDto> update(
       @Parameter(description = "수정할 User ID")
       @PathVariable UUID userId,
-      @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+      @Valid @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
       @Parameter(description = "수정할 User 프로필 이미지")
       @RequestPart(value = "profile", required = false) MultipartFile profile
   ) {
@@ -142,9 +145,11 @@ public class UserController {
         userUpdateRequest.password(),
         Optional.ofNullable(readProfile(profile))
     );
-
     UserResponse updated = userService.update(request);
-    return ResponseEntity.ok(toUserDto(updated.id()));
+    UserDto userDto = toUserDto(updated.id());
+
+    log.info("사용자정보가 성공적으로 수정되었습니다. id = {}", updated.id());
+    return ResponseEntity.ok(userDto);
   }
 
   @Operation(summary = "User 삭제", operationId = "delete", tags = {"User"})
@@ -166,6 +171,7 @@ public class UserController {
       @PathVariable UUID userId
   ) {
     userService.delete(userId);
+    log.info("사용자가 정상적으로 삭제되었습니다. id = {}", userId);
   }
 
   @Operation(summary = "User 온라인 상태 업데이트", operationId = "updateUserStatusByUserId", tags = {
@@ -185,7 +191,7 @@ public class UserController {
   public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
       @Parameter(description = "상태를 변경할 User ID")
       @PathVariable UUID userId,
-      @RequestBody UserStatusUpdateRequest request
+      @Valid @RequestBody UserStatusUpdateRequest request
   ) {
     return ResponseEntity.ok(
         toUserStatusDto(userStatusService.updateByUserId(userId, request.newLastActiveAt()))
@@ -234,7 +240,7 @@ public class UserController {
           profile.getBytes()
       );
     } catch (IOException e) {
-      throw new BusinessLogicException(ErrorCode.FILE_IO_ERROR);
+      throw new FileIOException();
     }
   }
 }

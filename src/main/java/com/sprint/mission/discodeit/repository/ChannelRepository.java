@@ -23,6 +23,8 @@ public interface ChannelRepository extends JpaRepository<Channel, UUID> {
     return findAll();
   }
 
+  boolean existsByName(String name);
+
   default void deleteChannel(UUID channelId) {
     deleteById(channelId);
   }

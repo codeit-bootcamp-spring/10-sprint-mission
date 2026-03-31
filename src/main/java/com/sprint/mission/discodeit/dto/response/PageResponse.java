@@ -6,7 +6,7 @@ import java.util.List;
 @Schema(name = "PageResponse")
 public record PageResponse<T>(
     List<T> content,
-    int number,
+    Object nextCursor,
     int size,
     boolean hasNext,
     Long totalElements

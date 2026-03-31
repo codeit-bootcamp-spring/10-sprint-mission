@@ -11,11 +11,15 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
+@Slf4j
 @RestController
 @RequestMapping(value = "/api/readStatuses")
 public class ReadStatusController {
@@ -49,7 +53,7 @@ public class ReadStatusController {
       )
   })
   @RequestMapping(method = RequestMethod.POST)
-  public ResponseEntity<ReadStatusDto> create(@RequestBody ReadStatusCreateRequest dto) {
+  public ResponseEntity<ReadStatusDto> create(@Valid @RequestBody ReadStatusCreateRequest dto) {
     UUID id = readStatusService.create(dto);
     return ResponseEntity.status(201).body(toDto(readStatusService.find(id)));
   }
@@ -87,7 +91,7 @@ public class ReadStatusController {
   public ResponseEntity<ReadStatusDto> update(
       @Parameter(description = "수정할 읽음 상태 ID")
       @PathVariable UUID readStatusId,
-      @RequestBody ReadStatusUpdateRequest body
+      @Valid @RequestBody ReadStatusUpdateRequest body
   ) {
     return ResponseEntity.ok(toDto(readStatusService.update(readStatusId, body)));
   }

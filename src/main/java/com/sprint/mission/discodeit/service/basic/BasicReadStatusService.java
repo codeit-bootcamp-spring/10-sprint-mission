@@ -6,8 +6,11 @@ import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.BusinessLogicException;
-import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.StatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -17,8 +20,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicReadStatusService implements ReadStatusService {
@@ -35,17 +40,17 @@ public class BasicReadStatusService implements ReadStatusService {
     requireNonNull(request.channelId(), "channelId");
 
     User user = userRepository.findById(request.userId())
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(request.userId()));
 
     Channel channel = channelRepository.findById(request.channelId())
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.CHANNEL_NOT_FOUND));
+        .orElseThrow(() -> new ChannelNotFoundException(request.channelId()));
 
-    ReadStatus duplicated =
-        readStatusRepository.findByUserIdAndChannelId(
-            request.userId(), request.channelId());
+    ReadStatus duplicated = readStatusRepository.findByUserIdAndChannelId(
+        request.userId(), request.channelId()
+    );
 
     if (duplicated != null) {
-      throw new BusinessLogicException(ErrorCode.DUPLICATION_READ_STATUS);
+      throw new ReadStatusAlreadyExistsException();
     }
 
     ReadStatus readStatus = new ReadStatus(user, channel);
@@ -61,7 +66,7 @@ public class BasicReadStatusService implements ReadStatusService {
     requireNonNull(id, "id");
 
     ReadStatus readStatus = readStatusRepository.findById(id)
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND));
+        .orElseThrow(() -> new StatusNotFoundException(id));
 
     return readStatusMapper.toResponse(readStatus);
   }
@@ -71,7 +76,7 @@ public class BasicReadStatusService implements ReadStatusService {
     requireNonNull(userId, "userId");
 
     userRepository.findById(userId)
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(userId));
 
     return readStatusRepository.findAllByUserId(userId).stream()
         .map(readStatusMapper::toResponse)
@@ -84,7 +89,7 @@ public class BasicReadStatusService implements ReadStatusService {
     requireNonNull(req, "request");
 
     ReadStatus rs = readStatusRepository.findById(readStatusId)
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND));
+        .orElseThrow(() -> new StatusNotFoundException(readStatusId));
 
     Instant newLastReadAt = (req.newLastReadAt() == null) ? Instant.now() : req.newLastReadAt();
     rs.updateLastReadAt(newLastReadAt);
@@ -99,14 +104,14 @@ public class BasicReadStatusService implements ReadStatusService {
     requireNonNull(id, "id");
 
     ReadStatus existing = readStatusRepository.findById(id)
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND));
+        .orElseThrow(() -> new StatusNotFoundException(id));
 
     readStatusRepository.delete(existing.getId());
   }
 
   private static <T> void requireNonNull(T value, String name) {
     if (value == null) {
-      throw new IllegalArgumentException(name + " null이 될 수 없습니다.");
+      throw new InvalidParameterException(name);
     }
   }
 }

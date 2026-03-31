@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,7 +59,7 @@ public class AuthController {
       )
   })
   @RequestMapping(value = "/login", method = RequestMethod.POST)
-  public ResponseEntity<UserDto> postLogin(@RequestBody LoginRequest dto) {
+  public ResponseEntity<UserDto> postLogin(@Valid @RequestBody LoginRequest dto) {
     var user = authService.login(dto);
     UserResponse userResponse = userService.find(user.getId());
 
