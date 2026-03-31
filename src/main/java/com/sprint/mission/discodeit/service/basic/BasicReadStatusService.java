@@ -37,8 +37,16 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatusDto createReadStatus(CreateReadStatusRequestDTO dto) {
-        Objects.requireNonNull(dto.userId(), "userId는 null값일 수 없습니다.");
-        Objects.requireNonNull(dto.channelId(), "channelId는 null값일 수 없습니다.");
+        if (dto.userId() == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("userId", "userId is null")
+            );
+        }
+        if (dto.channelId() == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("channelId", "channelId is null")
+            );
+        }
 
         // 객체 검증
         User user = findUserOrThrow(dto.userId());
@@ -73,7 +81,11 @@ public class BasicReadStatusService implements ReadStatusService {
 
     @Override
     public ReadStatusDto updateReadStatus(UUID statusId, UpdateReadStatusRequestDTO dto) {
-        Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
+        if (dto == null) {
+            throw new InvalidInputException(
+                    ErrorCode.DTO_CAN_NOT_BE_NULL, Map.of("dto", "dto is null")
+            );
+        }
 
         if (dto.newLastReadAt() == null) {
             log.warn("[READSTATUS_UPDATE_FAIL_BY_LAST_READ_AT] lastReadAt이 null값으로 읽음 상태 수정 실패: readStatusId={}", statusId);
@@ -98,7 +110,11 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     private ReadStatus findReadStatusOrThrow(UUID statusId) {
-        Objects.requireNonNull(statusId, "readStatusId는 null값일 수 없습니다.");
+        if (statusId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("statusId", "statusId is null")
+            );
+        }
 
         return readStatusRepository.findById(statusId)
                 .orElseThrow(() -> {
@@ -108,7 +124,11 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     private User findUserOrThrow(UUID userId) {
-        Objects.requireNonNull(userId, "userId는 null값일 수 없습니다.");
+        if (userId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("userId", "userId is null")
+            );
+        }
 
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -118,7 +138,11 @@ public class BasicReadStatusService implements ReadStatusService {
     }
 
     private Channel findChannelOrThrow(UUID channelId) {
-        Objects.requireNonNull(channelId, "channelId는 null값일 수 없습니다.");
+        if (channelId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("channelId", "channelId is null")
+            );
+        }
 
         return channelRepository.findById(channelId)
                 .orElseThrow(() -> {

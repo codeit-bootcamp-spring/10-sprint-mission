@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
 import com.sprint.mission.discodeit.exception.channel.PrivateChannelUpdateException;
 import com.sprint.mission.discodeit.exception.global.DuplicateResourceException;
+import com.sprint.mission.discodeit.exception.global.InvalidInputException;
 import com.sprint.mission.discodeit.exception.global.UnchangedValueException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
@@ -141,7 +142,11 @@ public class BasicChannelService implements ChannelService {
     }
 
     private Channel findChannelOrThrow(UUID channelId) {
-        Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
+        if (channelId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("channelId", "channelId is null")
+            );
+        }
 
         return channelRepository.findById(channelId)
                 .orElseThrow(() ->
@@ -152,7 +157,11 @@ public class BasicChannelService implements ChannelService {
     }
 
     private User findUserOrThrow(UUID userId) {
-        Objects.requireNonNull(userId, "userId는 null 값일 수 없습니다.");
+        if (userId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("userId", "userId is null")
+            );
+        }
 
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -171,6 +180,12 @@ public class BasicChannelService implements ChannelService {
             }
         }
 
+        if (dto.newName().isBlank()) {
+            throw new InvalidInputException(
+                    ErrorCode.CHANNEL_NAME_IS_BLANK, Map.of("channelName", "")
+            );
+        }
+
         channel.updateChannelName(dto.newName());
     }
 
@@ -179,6 +194,12 @@ public class BasicChannelService implements ChannelService {
             log.warn("[CHANNEL_UPDATE_FAIL_BY_DESCRIPTION] 같은 설명으로 수정 시도로 채널 정보 수정 실패: channelId={}", channel.getId());
             throw new UnchangedValueException(
                     ErrorCode.CHANNEL_DESCRIPTION_UNCHANGED, Map.of("channelId", channel.getId())
+            );
+        }
+
+        if (dto.newDescription().isBlank()) {
+            throw new InvalidInputException(
+                    ErrorCode.CHANNEL_DESCRIPTION_IS_BLANK, Map.of("description", "")
             );
         }
 

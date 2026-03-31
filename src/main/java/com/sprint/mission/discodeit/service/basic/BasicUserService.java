@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.global.DuplicateResourceException;
+import com.sprint.mission.discodeit.exception.global.InvalidInputException;
 import com.sprint.mission.discodeit.exception.global.UnchangedValueException;
 import com.sprint.mission.discodeit.exception.status.user.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
@@ -149,7 +150,11 @@ public class BasicUserService implements UserService {
     // === 여기부터 내부 메서드 ===
 
     private User findUserOrThrow(UUID userId) {
-        Objects.requireNonNull(userId, "userId는 null 값일 수 없습니다.");
+        if (userId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("userId", "userId is null")
+            );
+        }
 
         return userRepository.findById(userId)
                 .orElseThrow(() -> {

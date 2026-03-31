@@ -50,7 +50,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     @Transactional(readOnly = true)
     public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
-        Objects.requireNonNull(ids, "id 리스트는 null값일 수 없습니다.");
+        if (ids == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("ids", "ids is null")
+            );
+        }
 
         if (ids.isEmpty()) {
             return List.of();
@@ -86,7 +90,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     private BinaryContent findBinaryContentOrThrow(UUID binaryContentId) {
-        Objects.requireNonNull(binaryContentId, "binaryContentId는 null값일 수 없습니다.");
+        if (binaryContentId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("binaryContentId", "binaryContentId is null")
+            );
+        }
 
         BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
                 .orElseThrow(() -> {
@@ -98,7 +106,11 @@ public class BasicBinaryContentService implements BinaryContentService {
     }
 
     private void validateCreateRequest(CreateBinaryContentRequestDTO dto) {
-        Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
+        if (dto == null) {
+            throw new InvalidInputException(
+                    ErrorCode.DTO_CAN_NOT_BE_NULL, Map.of("dto", "dto is null")
+            );
+        }
 
         if (dto.userId() == null) {
             log.warn("[BINARYCONTENT_CREATE_FAIL_BY_USERID] 유저 id가 null값으로 파일 생성 실패");

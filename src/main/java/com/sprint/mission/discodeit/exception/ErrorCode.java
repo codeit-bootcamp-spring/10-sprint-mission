@@ -23,6 +23,8 @@ public enum ErrorCode {
     PRIVATE_CHANNEL_UPDATE(400, "C200", "비공개 채널은 수정할 수 없습니다."),
     CHANNEL_NAME_ALREADY_EXISTS(409, "C301", "이미 사용중인 channelName입니다."),
     CHANNEL_DESCRIPTION_UNCHANGED(400, "C401", "현재 사용중인 description과 동일합니다."),
+    CHANNEL_NAME_IS_BLANK(400, "C501", "채널 이름은 공백일 수 없습니다."),
+    CHANNEL_DESCRIPTION_IS_BLANK(400, "C502", "채널 설명은 공백일 수 없습니다."),
 
     // Message
     MESSAGE_NOT_FOUND(404, "M100", "메시지를 찾을 수 없습니다."),
@@ -44,6 +46,10 @@ public enum ErrorCode {
 
     // UserStatus
     USER_STATUS_NOT_FOUND(404, "US100", "UserStatus를 찾을 수 없습니다."),
+
+    // Invalid input
+    ID_CAN_NOT_BE_NULL(400, "I100", "id값은 null일 수 없습니다."),
+    DTO_CAN_NOT_BE_NULL(400, "I101", "dto는 null일 수 없습니다."),
     ;
 
     private final int status;

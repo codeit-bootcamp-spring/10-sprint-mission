@@ -5,6 +5,8 @@ import com.sprint.mission.discodeit.dto.userstatus.UpdateStatusByUserIdRequestDT
 import com.sprint.mission.discodeit.dto.userstatus.UserStatusDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.global.InvalidInputException;
 import com.sprint.mission.discodeit.exception.status.user.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserStatusMapper;
@@ -16,10 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Transactional
@@ -47,7 +46,11 @@ public class BasicUserStatusService implements UserStatusService {
 
     @Override
     public UserStatusDto updateUserStatus(UpdateStatusByStatusIdRequestDTO dto) {
-        Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
+        if (dto == null) {
+            throw new InvalidInputException(
+                    ErrorCode.DTO_CAN_NOT_BE_NULL, Map.of("dto", "dto is null")
+            );
+        }
 
         UserStatus status = findStatusByIdOrThrow(dto.userStatusId());
         status.updateLastActiveAt(status.getLastActiveAt());
@@ -59,7 +62,11 @@ public class BasicUserStatusService implements UserStatusService {
     public UserStatusDto updateStatusByUserId(
             UUID userId, UpdateStatusByUserIdRequestDTO dto
             ) {
-        Objects.requireNonNull(dto, "dto는 null값일 수 없습니다.");
+        if (dto == null) {
+            throw new InvalidInputException(
+                    ErrorCode.DTO_CAN_NOT_BE_NULL, Map.of("dto", "dto is null")
+            );
+        }
 
         findUserByIdOrThrow(userId);
         UserStatus status = userStatusRepository.findByUser_Id(userId)
@@ -85,7 +92,11 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     private UserStatus findStatusByIdOrThrow(UUID statusId) {
-        Objects.requireNonNull(statusId, "userStatusId는 null값일 수 없습니다.");
+        if (statusId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("statusId", "statusId is null")
+            );
+        }
 
         return userStatusRepository.findById(statusId)
                 .orElseThrow(() -> {
@@ -95,7 +106,11 @@ public class BasicUserStatusService implements UserStatusService {
     }
 
     private User findUserByIdOrThrow(UUID userId) {
-        Objects.requireNonNull(userId, "userId는 null값일 수 없습니다.");
+        if (userId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("userId", "userId is null")
+            );
+        }
 
         return userRepository.findById(userId)
                 .orElseThrow(() -> {

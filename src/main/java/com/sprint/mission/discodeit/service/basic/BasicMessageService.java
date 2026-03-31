@@ -164,7 +164,11 @@ public class BasicMessageService implements MessageService {
     }
 
     private Message findMessageOrThrow(UUID messageId) {
-        Objects.requireNonNull(messageId, "messageId는 null값일 수 없습니다.");
+        if (messageId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("messageId", "messageId is null")
+            );
+        }
 
         return messageRepository.findById(messageId)
                 .orElseThrow(() ->
@@ -175,7 +179,11 @@ public class BasicMessageService implements MessageService {
     }
 
     private Channel findChannelOrThrow(UUID channelId) {
-        Objects.requireNonNull(channelId, "channelId는 null일 수 없습니다.");
+        if (channelId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("channelId", "channelId is null")
+            );
+        }
 
         return channelRepository.findById(channelId)
                 .orElseThrow(() ->
@@ -186,7 +194,11 @@ public class BasicMessageService implements MessageService {
     }
 
     private User findUserOrThrow(UUID userId) {
-        Objects.requireNonNull(userId, "userId는 null 값일 수 없습니다.");
+        if (userId == null) {
+            throw new InvalidInputException(
+                    ErrorCode.ID_CAN_NOT_BE_NULL, Map.of("userId", "userId is null")
+            );
+        }
 
         return userRepository.findById(userId)
                 .orElseThrow(() ->
