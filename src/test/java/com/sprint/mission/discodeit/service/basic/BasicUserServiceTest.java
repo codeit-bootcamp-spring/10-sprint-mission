@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
@@ -208,7 +207,7 @@ class BasicUserServiceTest {
       // given
       UUID userId = UUID.randomUUID();
       User existingUser = new User("tester", "test@test.com", "pw", null);
-      
+
       given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
 
       // mock 설정으로 가짜 MultipartFile 객체 생성

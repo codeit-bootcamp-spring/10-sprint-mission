@@ -46,13 +46,17 @@ public class BasicChannelService implements ChannelService {
   public Channel createPrivateChannel(List<UUID> participantIds) {
     log.info("Creating new PRIVATE channel"); // 비공개 채널 생성 시작 로그
 
+    // 유저 검증 및 엔티티 조회
+    List<User> participants = participantIds.stream()
+        .map(this::getOrThrowUser)
+        .toList();
+
+    // 비공개 채널 생성
     Channel channel = new Channel(null, null, ChannelType.PRIVATE);
     channelRepository.save(channel);
 
     // 참여 유저별 ReadStatu 생성
-    participantIds.forEach(userId -> {
-      User user = getOrThrowUser(userId);
-
+    participants.forEach(user -> {
       ReadStatus readStatus = new ReadStatus(user, channel, Instant.now());
       readStatusRepository.save(readStatus);
     });
