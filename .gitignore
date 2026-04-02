@@ -10,7 +10,7 @@ build/
 .classpath
 .factorypath
 .project
-.settings
+.settingsg
 .springBeans
 .sts4-cache
 bin/
@@ -19,7 +19,7 @@ bin/
 
 ### 로컬 로그 및 첨부 파일 ###
 .discodeit/
-*.log
+*.logs
 
 ### IntelliJ IDEA ###
 .idea
