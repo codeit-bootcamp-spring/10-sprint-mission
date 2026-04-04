@@ -201,7 +201,7 @@ public class UserController {
     public ResponseEntity<UserStatusDto> updateUserOnline(
         @PathVariable UUID userId,
         @Valid @RequestBody UserStatusUpdateRequestDTO req) {
-        log.trace("[User] 컨트롤러에서 유저의 활동중 상태 수정 요청을 받음");
+        log.trace("[User] 컨트롤러에서 유저의 활동 중 상태 수정 요청을 받음");
         return new ResponseEntity<>(userStatusService.activateUserOnline(userId, req),
             HttpStatus.OK);
     }

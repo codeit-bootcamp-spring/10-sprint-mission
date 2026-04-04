@@ -86,7 +86,7 @@ class UserRepositoryTest {
         // existsByEmailAndIdNot -> ID가 같지 않으면서 이메일이 중복되는지 확인하는 메서드
         // when + then
 
-        // alice@test.com 이라는 이메일은 존재하면서 randomid는 존재하지 않음 -> true 반환
+        // alice@test.com 이라는 이메일은 존재하면서 randomId는 존재하지 않음 -> true 반환
         assertThat(
             userRepository.existsByEmailAndIdNot("alice@test.com", UUID.randomUUID())).isTrue();
         // alice@test.com 이메일이 존재하면서 alice의 id도 존재 -> false 반환
