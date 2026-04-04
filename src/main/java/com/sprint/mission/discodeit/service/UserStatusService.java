@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface UserStatusService {
 
 
-    UserStatus find(UUID id);
+    UserStatusDto find(UUID id);
 
     UserStatusDto activateUserOnline(UUID userId, UserStatusUpdateRequestDTO req);
 

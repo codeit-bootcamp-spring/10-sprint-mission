@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+  <!-- 콘솔 로그 어펜더 : 콘솔에 로그를 어떻게 출력할 것인지 설정하고 결정한다. -->
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- 파일 로그 어펜더 : 파일을 어떻게 저장할 것인지 그 형태를 설정하고 결정한다. -->
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/myapp.logs</file>
+
+
+    <!-- 시간 기반 롤링 정책. -->
+    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <!-- 여기서는 파일 네임 패턴이 {yyyy-MM-dd}이므로 일별로 롤링한다. -->
+      <fileNamePattern>logs/myapp.%d{yyyy-MM-dd}.logs</fileNamePattern>
+      <!-- 로그 파일을 30일동안 보관한다 -->
+      <maxHistory>30</maxHistory>
+    </rollingPolicy>
+
+    <encoder>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+
+  <root level="INFO">
+    <!--<appender-ref ref="CONSOLE"/>-->
+    <appender-ref ref="FILE"/>
+  </root>
+
+  <logger name="com.example.myapp" level="DEBUG" additivity="false">
+    <appender-ref ref="CONSOLE"/>
+    <appender-ref ref="FILE"/>
+  </logger>
+
+</configuration>
