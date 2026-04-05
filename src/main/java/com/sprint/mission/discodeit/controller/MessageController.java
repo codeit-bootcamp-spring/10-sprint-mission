@@ -92,6 +92,7 @@ public class MessageController implements MessageApi {
 
     Message message = messageService.update(
         messageId,
+        request.requesterId(),
         request.newContent()
     );
 
@@ -100,10 +101,12 @@ public class MessageController implements MessageApi {
 
   @Override
   @DeleteMapping("/{messageId}")
-  public ResponseEntity<Void> delete(@PathVariable UUID messageId) {
+  public ResponseEntity<Void> delete(
+      @PathVariable UUID messageId,
+      @RequestParam UUID requesterId) {
     log.info("Received DELETE /api/messages/{} request", messageId); // 메시지 삭제 요청 로그
 
-    messageService.deleteById(messageId);
+    messageService.deleteById(messageId, requesterId);
     return ResponseEntity.noContent().build();
   }
 }

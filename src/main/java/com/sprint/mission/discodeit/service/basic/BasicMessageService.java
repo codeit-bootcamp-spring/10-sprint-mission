@@ -3,7 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.exception.binarycontent.*;
 import com.sprint.mission.discodeit.exception.channel.*;
-import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.message.*;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.MessageService;
@@ -118,10 +118,12 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
-  public Message update(UUID id, String newContent) {
+  public Message update(UUID id, UUID requesterId, String newContent) {
     log.info("Updating message with ID: {}", id); // 메시지 수정 시작 로그
 
     Message message = getOrThrowMessage(id);
+
+    validateMessageAuthor(message, requesterId);
 
     // 텍스트 내용만 수정
     Optional.ofNullable(newContent).ifPresent(content -> {
@@ -135,10 +137,11 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional
-  public void deleteById(UUID id) {
+  public void deleteById(UUID id, UUID requesterId) {
     log.info("Deleting message with ID: {}", id); // 메시지 삭제 시작 로그
 
     Message message = getOrThrowMessage(id);
+    validateMessageAuthor(message, requesterId);
     messageRepository.delete(message);
 
     log.info("Message ID {} deleted successfully", id); // 메시지 삭제 성공 로그
@@ -171,8 +174,19 @@ public class BasicMessageService implements MessageService {
   }
 
   // 메시지 검증
-  private com.sprint.mission.discodeit.entity.Message getOrThrowMessage(UUID id) {
+  private Message getOrThrowMessage(UUID id) {
     return messageRepository.findById(id)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("requestedMessageId", id)));
+  }
+
+  // 메시지 작성자 검증
+  private void validateMessageAuthor(Message message, UUID requesterId) {
+    if (!message.getAuthor().getId().equals(requesterId)) {
+      throw new MessageAccessDeniedException(Map.of(
+          "messageId", message.getId(),
+          "requesterId", requesterId,
+          "reason", "메시지 작성자만 수정/삭제할 수 있습니다."
+      ));
+    }
   }
 }

@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,10 +15,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -72,14 +72,19 @@ public interface MessageApi {
           content = @Content(schema = @Schema(implementation = MessageDto.class))
       ),
       @ApiResponse(
+          responseCode = "403",
+          description = "수정 권한 없음 (본인이 작성하지 않은 메시지)",
+          content = @Content(examples = @ExampleObject(value = "Only the author of the message can edit or delete it."))
+      ),
+      @ApiResponse(
           responseCode = "404",
           description = "Message를 찾을 수 없음",
           content = @Content(examples = @ExampleObject(value = "Message with id {messageId} not found"))
       ),
   })
   ResponseEntity<MessageDto> update(
-      @Parameter(description = "수정할 Message ID") UUID messageId,
-      @Parameter(description = "수정할 Message 내용") MessageUpdateRequest request
+      @Parameter(description = "수정할 Message ID") @PathVariable UUID messageId,
+      @Parameter(description = "수정 요청 정보 (요청자 ID, 새로운 내용)") @RequestBody MessageUpdateRequest request
   );
 
   @Operation(summary = "Message 삭제")
@@ -89,12 +94,18 @@ public interface MessageApi {
           description = "Message 삭제 성공"
       ),
       @ApiResponse(
+          responseCode = "403",
+          description = "삭제 권한 없음 (본인이 작성하지 않은 메시지)",
+          content = @Content(examples = @ExampleObject(value = "Only the author of the message can edit or delete it."))
+      ),
+      @ApiResponse(
           responseCode = "404",
           description = "Message를 찾을 수 없음",
           content = @Content(examples = @ExampleObject(value = "Message with id {messageId} not found"))
       ),
   })
   ResponseEntity<Void> delete(
-      @Parameter(description = "삭제할 Message ID") UUID messageId
+      @Parameter(description = "삭제할 Message ID") @PathVariable UUID messageId,
+      @Parameter(description = "삭제를 요청하는 유저의 ID") @RequestParam UUID requesterId
   );
 }

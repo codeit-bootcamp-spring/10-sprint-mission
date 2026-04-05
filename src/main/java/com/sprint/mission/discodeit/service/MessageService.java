@@ -17,7 +17,7 @@ public interface MessageService {
 
   Slice<Message> findAllByChannelId(UUID channelId, Instant cursor, Pageable pageable);
 
-  Message update(UUID id, String newContent);
+  Message update(UUID id, UUID requesterId, String newContent);
 
-  void deleteById(UUID id);
+  void deleteById(UUID id, UUID requesterId);
 }
