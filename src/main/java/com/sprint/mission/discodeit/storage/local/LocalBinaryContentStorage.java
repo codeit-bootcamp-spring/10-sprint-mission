@@ -1,9 +1,6 @@
 package com.sprint.mission.discodeit.storage.local;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
-import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentAlreadyExistsException;
-import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
-import com.sprint.mission.discodeit.exception.storage.FileStorageException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -11,11 +8,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
@@ -25,7 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
 @Component
 public class LocalBinaryContentStorage implements BinaryContentStorage {
@@ -51,18 +44,14 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   }
 
   public UUID put(UUID binaryContentId, byte[] bytes) {
-    log.debug("파일 업로드 시작: binaryContentId={}, size={}", binaryContentId, bytes.length);
     Path filePath = resolvePath(binaryContentId);
     if (Files.exists(filePath)) {
-      log.warn("파일 업로드 실패 binarContent 존재: binaryContentId={}", binaryContentId);
-      throw new BinaryContentAlreadyExistsException(Map.of("조회 시도한 binaryContentId 정보", binaryContentId));
+      throw new IllegalArgumentException("File with key " + binaryContentId + " already exists");
     }
     try (OutputStream outputStream = Files.newOutputStream(filePath)) {
       outputStream.write(bytes);
-      log.info("파일 업로드 완료:binaryContentId={}, size={}", binaryContentId, bytes.length);
     } catch (IOException e) {
-      log.error("파일 업로드 실패: id={}", binaryContentId, e);
-      throw new FileStorageException(Map.of("파일 저장 실패",e));
+      throw new RuntimeException(e);
     }
     return binaryContentId;
   }
@@ -70,13 +59,13 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   public InputStream get(UUID binaryContentId) {
     Path filePath = resolvePath(binaryContentId);
     if (Files.notExists(filePath)) {
-      throw new BinaryContentNotFoundException(Map.of("조회 시도한 binaryContentId 정보", binaryContentId));
+      throw new NoSuchElementException("File with key " + binaryContentId + " does not exist");
     }
     try {
       return Files.newInputStream(filePath);
     } catch (IOException e) {
       e.printStackTrace();
-      throw new FileStorageException(Map.of("파일 조회 실패",e));
+      throw new RuntimeException(e);
     }
   }
 
