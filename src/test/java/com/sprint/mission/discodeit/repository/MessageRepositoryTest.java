@@ -15,6 +15,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
@@ -34,8 +35,11 @@ class MessageRepositoryTest {
   @Autowired
   private ChannelRepository channelRepository;
 
+  @Autowired
+  private TestEntityManager entityManager;
+
   @Test
-  @DisplayName("성공: 특정 시간 이전의 메시지들을 Slice로 페이징하여 가져온다 (Fetch Join 포함)")
+  @DisplayName("성공: 특정 시간 이전의 메시지들을 Slice로 페이징하여 가져온다")
   void findAllByChannelIdWithAuthor_Success() {
     // given
     User author = userRepository.save(new User("tester", "test@test.com", "pw", null));
@@ -55,6 +59,29 @@ class MessageRepositoryTest {
 
     // then
     assertThat(messages).isNotNull();
+  }
+
+  @Test
+  @DisplayName("성공: 메시지 ID로 단건 조회 시 연관된 엔티티를 한 번에 가져온다")
+  void findByIdWithDetails_Success() {
+    // given
+    User author = userRepository.save(new User("tester", "test@test.com", "pw", null));
+    Channel channel = channelRepository.save(new Channel("상세 방", "설명", ChannelType.PUBLIC));
+    Message savedMessage = messageRepository.save(new Message("상세조회 테스트", author, channel, null));
+
+    // 진짜 쿼리가 나가는지 확인하기 위해 영속성 컨텍스트 비우기
+    entityManager.flush();
+    entityManager.clear();
+
+    // when
+    Optional<Message> foundMessage = messageRepository.findByIdWithDetails(savedMessage.getId());
+
+    // then
+    assertThat(foundMessage).isPresent();
+    assertThat(foundMessage.get().getContent()).isEqualTo("상세조회 테스트");
+
+    // Fetch Join으로 가져온 작성자 정보가 잘 들어있는지 확인
+    assertThat(foundMessage.get().getAuthor().getUsername()).isEqualTo("tester");
   }
 
   @Test

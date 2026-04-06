@@ -75,15 +75,20 @@ class BasicMessageServiceTest {
       // given
       UUID authorId = UUID.randomUUID();
       UUID channelId = UUID.randomUUID();
+      UUID messageId = UUID.randomUUID();
       String content = "공개 채널 메시지";
 
       User mockUser = new User("tester", "test@test.com", "pw", null);
       Channel mockChannel = new Channel("공개 채널", "공개 채널 설명", ChannelType.PUBLIC);
       Message mockMessage = new Message(content, mockUser, mockChannel, null);
 
+      org.springframework.test.util.ReflectionTestUtils.setField(mockMessage, "id", messageId);
+
       given(userRepository.findById(authorId)).willReturn(Optional.of(mockUser));
       given(channelRepository.findById(channelId)).willReturn(Optional.of(mockChannel));
+
       given(messageRepository.save(any(Message.class))).willReturn(mockMessage);
+      given(messageRepository.findByIdWithDetails(messageId)).willReturn(Optional.of(mockMessage));
 
       // when
       Message result = messageService.create(content, authorId, channelId, null);
@@ -99,6 +104,7 @@ class BasicMessageServiceTest {
       // given
       UUID authorId = UUID.randomUUID();
       UUID channelId = UUID.randomUUID();
+      UUID messageId = UUID.randomUUID();
       String content = "비공개 채널 메시지";
 
       MultipartFile mockFile = new MockMultipartFile("file", "test.png", "image/png",
@@ -116,6 +122,8 @@ class BasicMessageServiceTest {
       Message mockMessage = new Message(content, mockUser, mockChannel,
           List.of(new BinaryContent("test.png", 10L, "image/png")));
 
+      org.springframework.test.util.ReflectionTestUtils.setField(mockMessage, "id", messageId);
+
       given(userRepository.findById(authorId)).willReturn(Optional.of(mockUser));
       given(channelRepository.findById(channelId)).willReturn(Optional.of(mockChannel));
       // PRIVATE 권한 체크 통과 설정
@@ -126,6 +134,7 @@ class BasicMessageServiceTest {
       given(binaryContentRepository.save(any(BinaryContent.class))).willReturn(
           new BinaryContent("test.png", 10L, "image/png"));
       given(messageRepository.save(any(Message.class))).willReturn(mockMessage);
+      given(messageRepository.findByIdWithDetails(messageId)).willReturn(Optional.of(mockMessage));
 
       // when
       Message result = messageService.create(content, authorId, channelId, attachments);
@@ -208,7 +217,8 @@ class BasicMessageServiceTest {
           authorId); // 엔티티에 ID 세팅
 
       Message existingMessage = new Message("원래 내용", author, null, null);
-      given(messageRepository.findById(messageId)).willReturn(Optional.of(existingMessage));
+      given(messageRepository.findByIdWithDetails(messageId)).willReturn(
+          Optional.of(existingMessage));
 
       // when
       Message result = messageService.update(messageId, authorId, newContent);
@@ -222,7 +232,7 @@ class BasicMessageServiceTest {
     void update_Fail_NotFound() {
       UUID messageId = UUID.randomUUID();
       UUID requesterId = UUID.randomUUID();
-      given(messageRepository.findById(messageId)).willReturn(Optional.empty());
+      given(messageRepository.findByIdWithDetails(messageId)).willReturn(Optional.empty());
 
       assertThrows(MessageNotFoundException.class, () -> {
         messageService.update(messageId, requesterId, "새 내용");
@@ -242,7 +252,8 @@ class BasicMessageServiceTest {
           authorId); // 엔티티에 ID 세팅
 
       Message existingMessage = new Message("원본 내용", author, null, null);
-      given(messageRepository.findById(messageId)).willReturn(Optional.of(existingMessage));
+      given(messageRepository.findByIdWithDetails(messageId)).willReturn(
+          Optional.of(existingMessage));
 
       // when & then
       assertThrows(MessageAccessDeniedException.class, () -> {
@@ -268,7 +279,8 @@ class BasicMessageServiceTest {
           authorId); // 엔티티에 ID 세팅
 
       Message existingMessage = new Message("삭제할 내용", author, null, null);
-      given(messageRepository.findById(messageId)).willReturn(Optional.of(existingMessage));
+      given(messageRepository.findByIdWithDetails(messageId)).willReturn(
+          Optional.of(existingMessage));
 
       // when
       messageService.deleteById(messageId, authorId);
@@ -282,7 +294,7 @@ class BasicMessageServiceTest {
     void delete_Fail_NotFound() {
       UUID messageId = UUID.randomUUID();
       UUID requesterId = UUID.randomUUID();
-      given(messageRepository.findById(messageId)).willReturn(Optional.empty());
+      given(messageRepository.findByIdWithDetails(messageId)).willReturn(Optional.empty());
 
       assertThrows(MessageNotFoundException.class, () -> {
         messageService.deleteById(messageId, requesterId);
@@ -302,7 +314,8 @@ class BasicMessageServiceTest {
       org.springframework.test.util.ReflectionTestUtils.setField(author, "id", authorId);
 
       Message existingMessage = new Message("원본 내용", author, null, null);
-      given(messageRepository.findById(messageId)).willReturn(Optional.of(existingMessage));
+      given(messageRepository.findByIdWithDetails(messageId)).willReturn(
+          Optional.of(existingMessage));
 
       // when & then
       assertThrows(MessageAccessDeniedException.class, () -> {

@@ -20,6 +20,7 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import jakarta.persistence.EntityManager;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,6 +60,9 @@ public class MessageIntegrationTest {
   @Autowired
   private ChannelRepository channelRepository;
 
+  @Autowired
+  private EntityManager entityManager;
+
   private User savedUser;
   private Channel savedChannel;
 
@@ -78,27 +82,34 @@ public class MessageIntegrationTest {
     @Test
     @DisplayName("성공: DB에 메시지가 성공적으로 저장된다")
     void success() throws Exception {
+      // given
       MessageCreateRequest requestDto = new MessageCreateRequest("메시지", savedChannel.getId(),
           savedUser.getId());
       MockMultipartFile requestPart = new MockMultipartFile("messageCreateRequest",
           "messageCreateRequest", MediaType.APPLICATION_JSON_VALUE,
           objectMapper.writeValueAsString(requestDto).getBytes(StandardCharsets.UTF_8));
 
+      // when & then
       mockMvc.perform(
               multipart("/api/messages").file(requestPart).contentType(MediaType.MULTIPART_FORM_DATA))
-          .andExpect(status().isCreated());
+          .andExpect(status().isCreated())
+          .andExpect(jsonPath("$.content").value("메시지"))
+          .andExpect(jsonPath("$.author.username").value("author"));
+
       assertThat(messageRepository.findAll()).hasSize(1);
     }
 
     @Test
     @DisplayName("실패: 존재하지 않는 채널에 작성 시도 시 예외가 발생한다")
     void fail_channelNotFound() throws Exception {
+      // given
       MessageCreateRequest requestDto = new MessageCreateRequest("메시지", UUID.randomUUID(),
           savedUser.getId());
       MockMultipartFile requestPart = new MockMultipartFile("messageCreateRequest",
           "messageCreateRequest", MediaType.APPLICATION_JSON_VALUE,
           objectMapper.writeValueAsString(requestDto).getBytes(StandardCharsets.UTF_8));
 
+      // when & then
       mockMvc.perform(
               multipart("/api/messages").file(requestPart).contentType(MediaType.MULTIPART_FORM_DATA))
           .andExpect(status().is4xxClientError());
@@ -112,16 +123,30 @@ public class MessageIntegrationTest {
     @Test
     @DisplayName("성공: 채널 내의 메시지를 반환한다")
     void success() throws Exception {
-      messageRepository.save(new Message("메시지 1", savedUser, savedChannel, null));
-      mockMvc.perform(get("/api/messages").param("channelId", savedChannel.getId().toString())
+      // given
+      Message message = new Message("메시지 1", savedUser, savedChannel, null);
+      messageRepository.save(message);
+
+      // 캐시를 비워서 API가 강제로 쿼리를 날리도록 세팅
+      entityManager.flush();
+      entityManager.clear();
+
+      // when & then
+      mockMvc.perform(get("/api/messages")
+              .param("channelId", savedChannel.getId().toString())
               .accept(MediaType.APPLICATION_JSON))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.content.length()").value(1));
+          .andExpect(jsonPath("$.content.length()").value(1))
+          .andExpect(jsonPath("$.content[0].content").value("메시지 1"))
+          .andExpect(jsonPath("$.content[0].author.username").value("author")); // 작성자 정보가 잘 왔나?
     }
 
     @Test
     @DisplayName("성공: 채널에 메시지가 없으면 빈 배열을 반환한다")
     void success_empty() throws Exception {
+      // given: 메시지가 없는 상태
+
+      // when & then
       mockMvc.perform(get("/api/messages").param("channelId", savedChannel.getId().toString())
               .accept(MediaType.APPLICATION_JSON))
           .andExpect(status().isOk())
@@ -136,10 +161,12 @@ public class MessageIntegrationTest {
     @Test
     @DisplayName("성공: 메시지 내용이 DB에서 업데이트된다")
     void success() throws Exception {
+      // given
       Message savedMessage = messageRepository.save(
           new Message("수정 전", savedUser, savedChannel, null));
       MessageUpdateRequest requestDto = new MessageUpdateRequest(savedUser.getId(), "수정 후");
 
+      // when & then
       mockMvc.perform(patch("/api/messages/{messageId}", savedMessage.getId()).contentType(
               MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(requestDto)))
           .andExpect(status().isOk());
@@ -151,10 +178,12 @@ public class MessageIntegrationTest {
     @Test
     @DisplayName("실패: 작성자가 아닌 유저가 수정 요청 시 예외가 발생한다")
     void fail_notAuthor() throws Exception {
+      // given
       Message savedMessage = messageRepository.save(
           new Message("수정 전", savedUser, savedChannel, null));
       MessageUpdateRequest requestDto = new MessageUpdateRequest(UUID.randomUUID(), "수정 후");
 
+      // when & then
       mockMvc.perform(patch("/api/messages/{messageId}", savedMessage.getId()).contentType(
               MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(requestDto)))
           .andExpect(status().is4xxClientError());
@@ -168,8 +197,11 @@ public class MessageIntegrationTest {
     @Test
     @DisplayName("성공: 메시지가 DB에서 지워진다")
     void success() throws Exception {
+      // given
       Message savedMessage = messageRepository.save(
           new Message("삭제 대상", savedUser, savedChannel, null));
+
+      // when & then
       mockMvc.perform(delete("/api/messages/{messageId}", savedMessage.getId()).param("requesterId",
               savedUser.getId().toString()))
           .andExpect(status().isNoContent());
@@ -179,8 +211,11 @@ public class MessageIntegrationTest {
     @Test
     @DisplayName("실패: 작성자가 아닌 유저가 삭제 요청 시 예외가 발생한다")
     void fail_notAuthor() throws Exception {
+      // given
       Message savedMessage = messageRepository.save(
           new Message("삭제 대상", savedUser, savedChannel, null));
+
+      // when & then
       mockMvc.perform(delete("/api/messages/{messageId}", savedMessage.getId()).param("requesterId",
               UUID.randomUUID().toString()))
           .andExpect(status().is4xxClientError());

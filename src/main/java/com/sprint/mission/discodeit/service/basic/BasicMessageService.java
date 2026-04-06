@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -79,7 +80,7 @@ public class BasicMessageService implements MessageService {
     Message savedMessage = messageRepository.save(newMessage);
 
     log.info("Message created successfully. ID: {}", savedMessage.getId()); // 메시지 생성 성공 로그
-    return savedMessage;
+    return getOrThrowMessage(savedMessage.getId());
   }
 
   @Override
@@ -104,10 +105,10 @@ public class BasicMessageService implements MessageService {
     Slice<Message> messageSlice = messageRepository.findAllByChannelIdWithAuthor(
         channelId, targetTime, pageable);
 
-    // 트랜잭션이 끝나기 전 컬렉션 호출 -> 설정된 Batch Size에 따라 메시지별 첨부파일을 한 번에 조회
+    // 트랜잭션이 끝나기 전 컬렉션 호출 -> 설정된 Batch Size에 따라 메시지별 첨부파일을 순회하며 조회
     messageSlice.getContent().forEach(message -> {
       if (message.getAttachments() != null) {
-        message.getAttachments().size();
+        message.getAttachments().forEach(attachment -> attachment.getId());
       }
     });
 
@@ -175,7 +176,7 @@ public class BasicMessageService implements MessageService {
 
   // 메시지 검증
   private Message getOrThrowMessage(UUID id) {
-    return messageRepository.findById(id)
+    return messageRepository.findByIdWithDetails(id)
         .orElseThrow(() -> new MessageNotFoundException(Map.of("requestedMessageId", id)));
   }
 

@@ -54,12 +54,14 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("성공: 정상 데이터로 요청 시 DB에 저장된다")
     void success() throws Exception {
+      // given
       UserCreateRequest requestDto = new UserCreateRequest("integUser", "integ@test.com",
           "Password123");
       MockMultipartFile requestPart = new MockMultipartFile("userCreateRequest",
           "userCreateRequest", MediaType.APPLICATION_JSON_VALUE,
           objectMapper.writeValueAsString(requestDto).getBytes(StandardCharsets.UTF_8));
 
+      // when
       mockMvc.perform(
               multipart("/api/users").file(requestPart).contentType(MediaType.MULTIPART_FORM_DATA))
           .andExpect(status().isCreated());
@@ -72,12 +74,14 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("실패: 이메일 형식이 틀리면 400 에러가 발생한다")
     void fail_invalidEmail() throws Exception {
+      // given
       UserCreateRequest requestDto = new UserCreateRequest("integUser", "invalid-email",
           "Password123");
       MockMultipartFile requestPart = new MockMultipartFile("userCreateRequest",
           "userCreateRequest", MediaType.APPLICATION_JSON_VALUE,
           objectMapper.writeValueAsString(requestDto).getBytes(StandardCharsets.UTF_8));
 
+      // when & then
       mockMvc.perform(
               multipart("/api/users").file(requestPart).contentType(MediaType.MULTIPART_FORM_DATA))
           .andExpect(status().isBadRequest());
@@ -87,6 +91,7 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("실패: 비밀번호가 조건(영문, 숫자 포함 8자 이상)을 만족하지 않으면 400 에러가 발생한다")
     void fail_invalidPassword() throws Exception {
+      // given
       // 비밀번호 "123" (길이 부족, 영문 없음)
       UserCreateRequest requestDto = new UserCreateRequest("integUser", "integ@test.com", "123");
       MockMultipartFile requestPart = new MockMultipartFile(
@@ -94,6 +99,7 @@ public class UserIntegrationTest {
           objectMapper.writeValueAsString(requestDto).getBytes(StandardCharsets.UTF_8)
       );
 
+      // when & then
       mockMvc.perform(
               multipart("/api/users").file(requestPart).contentType(MediaType.MULTIPART_FORM_DATA))
           .andExpect(status().isBadRequest()); // 400 Bad Request 검증
@@ -110,10 +116,12 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("성공: DB에 저장된 유저 목록을 반환한다")
     void success() throws Exception {
+      // given
       User savedUser = userRepository.save(
           new User("userA", "a@test.com", "Password123", null));
       userStatusRepository.save(new UserStatus(savedUser, java.time.Instant.now()));
 
+      // when & then
       mockMvc.perform(get("/api/users").accept(MediaType.APPLICATION_JSON))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.length()").value(1));
@@ -122,6 +130,9 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("성공: DB가 비어있으면 빈 배열을 반환한다")
     void success_empty() throws Exception {
+      // given: DB가 비어있는 상태
+
+      // when & then
       mockMvc.perform(get("/api/users").accept(MediaType.APPLICATION_JSON))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.length()").value(0));
@@ -135,6 +146,7 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("성공: 정보 수정 시 DB 값이 변경된다")
     void success() throws Exception {
+      // given
       User savedUser = userRepository.save(
           new User("oldName", "old@test.com", "Password123", null));
       UserUpdateRequest requestDto = new UserUpdateRequest("newName", "new@test.com", "NewPass123");
@@ -142,6 +154,7 @@ public class UserIntegrationTest {
           "userUpdateRequest", MediaType.APPLICATION_JSON_VALUE,
           objectMapper.writeValueAsString(requestDto).getBytes(StandardCharsets.UTF_8));
 
+      // when & then
       mockMvc.perform(
               multipart("/api/users/{userId}", savedUser.getId()).file(requestPart).with(request -> {
                 request.setMethod("PATCH");
@@ -156,6 +169,7 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("실패: 유효하지 않은 이메일로 수정 시도 시 400 에러가 발생한다")
     void fail_invalidEmail() throws Exception {
+      // given
       User savedUser = userRepository.save(
           new User("oldName", "old@test.com", "Password123", null));
       UserUpdateRequest requestDto = new UserUpdateRequest("newName", "invalid", "NewPass123");
@@ -163,6 +177,7 @@ public class UserIntegrationTest {
           "userUpdateRequest", MediaType.APPLICATION_JSON_VALUE,
           objectMapper.writeValueAsString(requestDto).getBytes(StandardCharsets.UTF_8));
 
+      // when & then
       mockMvc.perform(
               multipart("/api/users/{userId}", savedUser.getId()).file(requestPart).with(request -> {
                 request.setMethod("PATCH");
@@ -174,6 +189,7 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("실패: 유효하지 않은 비밀번호로 수정 시도 시 400 에러가 발생한다")
     void fail_invalidPassword() throws Exception {
+      // given
       User savedUser = userRepository.save(
           new User("oldName", "old@test.com", "Password123", null));
 
@@ -185,6 +201,7 @@ public class UserIntegrationTest {
           objectMapper.writeValueAsString(requestDto).getBytes(StandardCharsets.UTF_8)
       );
 
+      // when & then
       mockMvc.perform(multipart("/api/users/{userId}", savedUser.getId())
               .file(requestPart)
               .with(request -> {
@@ -203,8 +220,11 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("성공: 유저 삭제 시 DB에서 지워진다")
     void success() throws Exception {
+      // given
       User savedUser = userRepository.save(
           new User("deleteMe", "del@test.com", "Password123", null));
+
+      // when & then
       mockMvc.perform(delete("/api/users/{userId}", savedUser.getId()))
           .andExpect(status().isNoContent());
       assertThat(userRepository.findById(savedUser.getId())).isEmpty();
@@ -213,6 +233,9 @@ public class UserIntegrationTest {
     @Test
     @DisplayName("실패: 존재하지 않는 유저 ID로 요청 시 에러가 발생한다")
     void fail_notFound() throws Exception {
+      // given: 존재하지 않는 ID
+
+      // when & then
       mockMvc.perform(delete("/api/users/{userId}", UUID.randomUUID()))
           .andExpect(status().is4xxClientError());
     }
