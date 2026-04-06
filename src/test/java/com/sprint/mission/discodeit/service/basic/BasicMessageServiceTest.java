@@ -207,7 +207,7 @@ class BasicMessageServiceTest {
       org.springframework.test.util.ReflectionTestUtils.setField(author, "id",
           authorId); // 엔티티에 ID 세팅
 
-      Message existingMessage = new Message("원래 내용", null, null, null);
+      Message existingMessage = new Message("원래 내용", author, null, null);
       given(messageRepository.findById(messageId)).willReturn(Optional.of(existingMessage));
 
       // when
@@ -267,7 +267,7 @@ class BasicMessageServiceTest {
       org.springframework.test.util.ReflectionTestUtils.setField(author, "id",
           authorId); // 엔티티에 ID 세팅
 
-      Message existingMessage = new Message("삭제할 내용", null, null, null);
+      Message existingMessage = new Message("삭제할 내용", author, null, null);
       given(messageRepository.findById(messageId)).willReturn(Optional.of(existingMessage));
 
       // when
