@@ -9,6 +9,7 @@ data/
 .logs
 *.ser
 api-docs.json
+.env
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

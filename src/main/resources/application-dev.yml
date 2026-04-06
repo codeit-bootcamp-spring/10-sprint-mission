@@ -22,12 +22,12 @@ spring:
         highlight_sql: true
     open-in-view: false
 
-  boot:
-    admin:
-      client:
-        url: http://localhost:9090
-        instance:
-          service-base-url: http://localhost:8080
+#  boot:
+#    admin:
+#      client:
+#        url: http://localhost:9090
+#        instance:
+#          service-base-url: http://localhost:8080
 
 logging:
   level:
