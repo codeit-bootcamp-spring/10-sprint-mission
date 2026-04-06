@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.util;
 
-import com.sprint.mission.discodeit.dto.ReadStatus.ReadStatusRequestCreateDto;
-import com.sprint.mission.discodeit.dto.message.MessageRequestCreateDto;
+import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 
 import java.util.List;
 import java.util.Objects;
@@ -24,13 +24,13 @@ public class Validators {
         requireNotBlank(content, "content");
     }
 
-    public static void validateCreateMessageRequest(MessageRequestCreateDto request) {
+    public static void validateCreateMessageRequest(MessageCreateRequest request) {
         requireNonNull(request, "request");
         requireNonNull(request.channelId(), "channelId");
         requireNonNull(request.authorId(), "authorId");
     }
 
-    public static void validateCreateReadStatusRequest(ReadStatusRequestCreateDto request) {
+    public static void validateCreateReadStatusRequest(ReadStatusCreateRequest request) {
         requireNonNull(request, "request");
         requireNonNull(request.channelId(), "channelId");
         requireNonNull(request.userId(), "userId");

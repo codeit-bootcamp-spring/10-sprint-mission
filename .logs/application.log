@@ -1,0 +1,28 @@
+26-03-24 13:31:55.439 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - Starting DiscodeitApplicationTests using Java 17.0.12 with PID 20044 (started by ckdgu in C:\codeit\10-sprint-mission)
+26-03-24 13:31:55.440 [Test worker] DEBUG c.s.m.d.DiscodeitApplicationTests - Running with Spring Boot v3.4.0, Spring v6.2.0
+26-03-24 13:31:55.442 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - The following 1 profile is active: "dev"
+26-03-24 13:31:56.501 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-03-24 13:31:56.589 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 76 ms. Found 6 JPA repository interfaces.
+26-03-24 13:31:57.114 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+26-03-24 13:31:57.373 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@559fd5ec
+26-03-24 13:31:57.374 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+26-03-24 13:31:57.508 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+26-03-24 13:31:57.616 [Test worker] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.2.Final
+26-03-24 13:31:57.674 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+26-03-24 13:31:57.979 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+26-03-24 13:31:58.060 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 18.2
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+26-03-24 13:31:58.984 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+26-03-24 13:31:59.061 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+26-03-24 13:31:59.353 [Test worker] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+26-03-24 13:32:00.737 [Test worker] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+26-03-24 13:32:01.632 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - Started DiscodeitApplicationTests in 6.627 seconds (process running for 7.728)
+26-03-24 13:32:02.040 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+26-03-24 13:32:02.044 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+26-03-24 13:32:02.049 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.

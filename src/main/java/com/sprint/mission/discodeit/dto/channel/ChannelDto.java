@@ -1,7 +1,7 @@
 package com.sprint.mission.discodeit.dto.channel;
 
 import com.sprint.mission.discodeit.dto.user.UserDto;
-import com.sprint.mission.discodeit.entity.base.ChannelType;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import lombok.Builder;
 
 import java.time.Instant;

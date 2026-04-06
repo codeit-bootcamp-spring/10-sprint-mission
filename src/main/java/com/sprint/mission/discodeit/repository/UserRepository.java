@@ -1,22 +1,22 @@
 package com.sprint.mission.discodeit.repository;
 
-import com.sprint.mission.discodeit.entity.base.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
+import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-    boolean existsByEmail(String userEmail);
+  Optional<User> findByUsername(String username);
 
-    boolean existsByUsername(String username);
+  boolean existsByEmail(String email);
 
-    @Query("SELECT r.user FROM ReadStatus r WHERE r.channel.id = :channelId")
-    List<User> findUsersByChannelId(@Param("channelId") UUID channelId);
+  boolean existsByUsername(String username);
 
-    Optional<User> findByUsername(String username);
+  @Query("SELECT u FROM User u "
+      + "LEFT JOIN FETCH u.profile "
+      + "JOIN FETCH u.status")
+  List<User> findAllWithProfileAndStatus();
 }
