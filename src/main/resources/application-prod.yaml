@@ -20,6 +20,11 @@ spring:
     init:
       mode: never
 
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+
 logging:
   level:
     com.sprint.mission.discodeit: info # 운영 환경은 info

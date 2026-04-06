@@ -8,6 +8,11 @@ spring:
     password: discodeit1234
     driver-class-name: org.postgresql.Driver
 
+  boot:
+    admin:
+      client:
+        url: http://localhost:9090
+
   jpa:
     hibernate:
       ddl-auto: validate
