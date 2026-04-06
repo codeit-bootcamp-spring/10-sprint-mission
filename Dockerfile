@@ -1,0 +1,12 @@
+FROM amazoncorretto:17
+
+WORKDIR /app
+
+
+EXPOSE 80
+
+ENV PROJECT_NAME=discodeit
+ENV PROJECT_VERSION=1.2-m8
+ENV JVM_OPTS=""
+
+ENTRYPOINT ["top", "-b"]
