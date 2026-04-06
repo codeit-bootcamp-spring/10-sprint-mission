@@ -41,10 +41,10 @@ ENV PROJECT_VERSION=1.2-M8
 ENV JVM_OPTS=""
 
 # 빌더 단계에서 생성된 jar 파일만 복사
-COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar /app/${PROJECT_NAME}-${PROJECT_VERSION}.jar
+COPY --from=builder /app/build/libs/app.jar /app/app.jar
 
 # 애플리케이션이 사용할 포트 노출
 EXPOSE 80
 
 # 컨테이너 시작 시 jar 실행
-ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -jar /app/${PROJECT_NAME}-${PROJECT_VERSION}.jar --server.port=80"]
+ENTRYPOINT ["sh", "-c", "java ${JVM_OPTS} -jar /app/app.jar --server.port=80"]
