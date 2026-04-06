@@ -44,3 +44,7 @@ out/
 ## 파일들
 .ser
 /file-data-map
+.env
+.env.example
+.env.*
+!.env.example
