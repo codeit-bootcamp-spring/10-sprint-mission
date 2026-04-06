@@ -1,0 +1,17 @@
+server:
+  port: 80
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://[실제 서버 IP]:5432/discodeit
+    username: [실제 계정]
+    password: [실제 비밀번호]
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+logging:
+  level:
+    com.discodeit: INFO
+    org.hibernate.SQL: INFO
