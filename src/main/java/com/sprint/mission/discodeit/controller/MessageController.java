@@ -14,10 +14,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +28,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Tag(name = "Message")
 @RestController
 @RequestMapping("/api/messages")
@@ -42,29 +46,31 @@ public class MessageController {
           content = @Content(examples = @ExampleObject(value = "Channel | Author with id {channelId | authorId} not found")))
   })
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @ResponseStatus(HttpStatus.CREATED)
-  public MessageDto createMessage(
+  public ResponseEntity<MessageDto> createMessage(
       @Parameter(description = "Message 생성 정보", required = true, content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
-      @RequestPart("messageCreateRequest") MessageCreateRequest request,
+      @RequestPart("messageCreateRequest") @Valid MessageCreateRequest request,
       @Parameter(description = "Message 첨부 파일들")
       @RequestPart(value = "attachments", required = false) List<MultipartFile> files) {
-    return messageService.createMessage(request, files);
+    log.info("REST request to create Message: channelId={}, authorId={}", request.getChannelId(),
+        request.getAuthorId());
+    return ResponseEntity.status(HttpStatus.CREATED).body(messageService.createMessage(request, files));
   }
 
   @Operation(summary = "Channel의 Message 목록 조회", operationId = "findAllByChannelId")
   @ApiResponse(responseCode = "200", description = "Message 목록 조회 성공",
       content = @Content(schema = @Schema(implementation = MessageDto.class)))
   @GetMapping
-  @ResponseStatus(HttpStatus.OK)
-  public PageResponse<MessageDto> getMessages(
+  public ResponseEntity<PageResponse<MessageDto>> getMessages(
       @Parameter(description = "조회할 Channel ID", required = true)
       @RequestParam UUID channelId,
       @Parameter(description = "마지막으로 본 메시지의 생성 시간 (커서)")
       @RequestParam(required = false) Instant cursor,
       @Parameter(description = "페이지 크기")
       @RequestParam(defaultValue = "50") int size) {
+    log.debug("REST request to get Messages: channelId={}, cursor={}, size={}", channelId, cursor,
+        size);
     Slice<MessageDto> messageSlice = messageService.findAllByChannelId(channelId, cursor, size);
-    return pageResponseMapper.fromSlice(messageSlice, MessageDto::createdAt);
+    return ResponseEntity.ok(pageResponseMapper.fromSlice(messageSlice, MessageDto::createdAt));
   }
 
   @Operation(summary = "Message 내용 수정", operationId = "update_2")
@@ -75,12 +81,12 @@ public class MessageController {
           content = @Content(examples = @ExampleObject(value = "Message with id {messageId} not found")))
   })
   @PatchMapping("/{messageId}")
-  @ResponseStatus(HttpStatus.OK)
-  public MessageDto updateMessage(
+  public ResponseEntity<MessageDto> updateMessage(
       @Parameter(description = "수정할 Message ID", required = true)
       @PathVariable UUID messageId,
-      @RequestBody MessageUpdateRequest request) {
-    return messageService.updateMessage(messageId, request);
+      @RequestBody @Valid MessageUpdateRequest request) {
+    log.info("REST request to update Message: id={}", messageId);
+    return ResponseEntity.ok(messageService.updateMessage(messageId, request));
   }
 
   @Operation(summary = "Message 삭제", operationId = "delete_1")
@@ -90,28 +96,29 @@ public class MessageController {
           content = @Content(examples = @ExampleObject(value = "Message with id {messageId} not found")))
   })
   @DeleteMapping("/{messageId}")
-  @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteMessage(
+  public ResponseEntity<Void> deleteMessage(
       @Parameter(description = "삭제할 Message ID", required = true)
       @PathVariable UUID messageId) {
+    log.info("REST request to delete Message: id={}", messageId);
     messageService.deleteMessage(messageId);
+    return ResponseEntity.noContent().build();
   }
 
-  @RequestMapping(value = "/all", method = RequestMethod.GET)
-  @ResponseStatus(HttpStatus.OK)
-  public List<MessageDto> getAllMessages() {
-    return messageService.getAllMessages();
+  @GetMapping(value = "/all")
+  public ResponseEntity<List<MessageDto>> getAllMessages() {
+    log.debug("REST request to get all Messages");
+    return ResponseEntity.ok(messageService.getAllMessages());
   }
 
-  @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-  @ResponseStatus(HttpStatus.OK)
-  public MessageDto getMessage(@PathVariable UUID id) {
-    return messageService.getMessage(id);
+  @GetMapping(value = "/{id}")
+  public ResponseEntity<MessageDto> getMessage(@PathVariable UUID id) {
+    log.debug("REST request to get Message: id={}", id);
+    return ResponseEntity.ok(messageService.getMessage(id));
   }
 
-  @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
-  @ResponseStatus(HttpStatus.OK)
-  public List<MessageDto> getMessagesByUser(@PathVariable UUID userId) {
-    return messageService.getMessagesByUserId(userId);
+  @GetMapping(value = "/user/{userId}")
+  public ResponseEntity<List<MessageDto>> getMessagesByUser(@PathVariable UUID userId) {
+    log.debug("REST request to get Messages by user: id={}", userId);
+    return ResponseEntity.ok(messageService.getMessagesByUserId(userId));
   }
 }

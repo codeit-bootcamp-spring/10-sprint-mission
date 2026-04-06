@@ -10,8 +10,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Auth")
@@ -32,8 +33,7 @@ public class AuthController {
       @ApiResponse(responseCode = "400", description = "비밀번호가 일치하지 않음",
           content = @Content(examples = @ExampleObject(value = "Wrong password")))
   })
-  @ResponseStatus(HttpStatus.OK)
-  public UserDto login(@RequestBody LoginRequest request) {
-    return authService.login(request);
+  public ResponseEntity<UserDto> login(@RequestBody @Valid LoginRequest request) {
+    return ResponseEntity.ok(authService.login(request));
   }
 }
