@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"/>
+  <title>S3 파일 관리</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      max-width: 980px;
+      margin: 24px auto;
+      padding: 0 12px;
+    }
+
+    h1 {
+      margin: 0 0 16px;
+    }
+
+    form, .toolbar, .grid {
+      margin: 12px 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+    }
+
+    .thumb {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #f3f4f6;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 12px;
+    }
+
+    input[type="text"] {
+      padding: 8px 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      width: 280px;
+    }
+
+    input[type="file"] {
+      padding: 6px;
+    }
+
+    button {
+      padding: 8px 12px;
+      border: 1px solid #e5e7eb;
+      background: #111827;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #fff;
+      color: #111827;
+    }
+
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      background: #111827;
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 8px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<h1>S3 파일 업로드 / 다운로드</h1>
+
+<!-- 업로드 폼 -->
+<form id="uploadForm" class="card" onsubmit="return false;">
+  <div class="row" style="justify-content: space-between;">
+    <div>
+      <input type="file" id="fileInput" name="file" required/>
+      <button id="btnUpload">업로드</button>
+    </div>
+    <div class="row">
+      <input type="text" id="prefix" placeholder="prefix (예: images/2025/08)"/>
+      <button class="secondary" id="btnReload" type="button">새로고침</button>
+    </div>
+  </div>
+  <div class="muted">업로드 성공 시 서버가 <code>201 Created</code> + <code>Location</code> 헤더(퍼블릭 URL)를
+    반환합니다.
+  </div>
+</form>
+
+<!-- 파일 목록 / 갤러리 -->
+<div class="grid" id="grid"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const grid = document.getElementById('grid');
+  const toast = document.getElementById('toast');
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    setTimeout(() => toast.style.display = 'none', 1800);
+  }
+
+  function humanSize(bytes) {
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let i = 0, n = bytes;
+    while (n >= 1024 && i < units.length - 1) {
+      n /= 1024;
+      i++;
+    }
+    return (Math.round(n * 10) / 10) + ' ' + units[i];
+  }
+
+  async function loadList() {
+    const prefix = document.getElementById('prefix').value.trim();
+    const url = new URL(location.origin + '/files/list');
+    if (prefix) {
+      url.searchParams.set('prefix', prefix);
+    }
+    url.searchParams.set('max', '100');
+
+    const res = await fetch(url, {headers: {'Accept': 'application/json'}});
+    const items = await res.json();
+    render(items);
+  }
+
+  function render(items) {
+    grid.innerHTML = '';
+    items.forEach(it => {
+      const isImage = /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(it.key);
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+          ${isImage ? `<img class="thumb" src="${it.url}" alt="${it.key}"/>`
+          : `<div class="thumb" style="display:flex;align-items:center;justify-content:center;">${it.key.split(
+              '/').pop()}</div>`}
+          <div style="margin-top:8px;">
+            <div style="font-weight:600; font-size:14px; word-break:break-all;">${it.key}</div>
+            <div class="muted">${humanSize(it.size)} · ${new Date(it.lastModified).toLocaleString()}</div>
+          </div>
+          <div class="row" style="margin-top:8px;">
+            <a href="/files/download?key=${encodeURIComponent(
+          it.key)}&filename=${encodeURIComponent(it.key.split('/').pop())}">
+  다운로드
+</a>
+            <a href="${it.url}" target="_blank" class="secondary">원본열기</a>
+            <button type="button" class="secondary" data-url="${it.url}">링크복사</button>
+          </div>
+        `;
+      const copyBtn = card.querySelector('button[data-url]');
+      copyBtn.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(copyBtn.getAttribute('data-url'));
+        showToast('URL 복사 완료');
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  document.getElementById('btnReload').addEventListener('click', loadList);
+
+  // 업로드: /files/upload (201 + Location 헤더)
+  document.getElementById('btnUpload').addEventListener('click', async () => {
+    const file = document.getElementById('fileInput').files[0];
+    if (!file) {
+      return showToast('파일을 선택하세요');
+    }
+
+    const fd = new FormData();
+    fd.append('file', file);
+
+    const res = await fetch('/files/upload', {method: 'POST', body: fd});
+    if (res.status === 201) {
+      const url = res.headers.get('Location');
+      showToast('업로드 성공');
+      await loadList();
+      window.scrollTo({top: 0, behavior: 'instant'});
+    } else {
+      const msg = await res.text().catch(() => '업로드 실패');
+      showToast('업로드 실패: ' + msg);
+    }
+  });
+
+  // 초기 로드
+  loadList();
+</script>
+</body>
+</html>

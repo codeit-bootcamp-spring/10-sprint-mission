@@ -46,5 +46,6 @@ out/
 /file-data-map
 .env
 .env.example
+
 .env.*
 !.env.example
