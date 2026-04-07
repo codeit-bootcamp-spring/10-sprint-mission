@@ -8,7 +8,6 @@ import lombok.Getter;
 
 @Getter
 public class DiscodeitException extends RuntimeException {
-
     private final Instant timestamp;
     private final ErrorCode errorCode;
     private final Map<String, Object> details;
