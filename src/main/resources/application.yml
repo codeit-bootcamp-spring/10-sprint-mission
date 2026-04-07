@@ -48,7 +48,7 @@ discodeit:
   storage:
     type: local
     local:
-      root-path: .discodeit/storage
+      root-path: ${BINARY_CONTENT_STORAGE_PATH}
 
 logging:
   level:
