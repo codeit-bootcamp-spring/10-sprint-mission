@@ -1,44 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.UUID;
 
-
-//userStatus 는 유저 접속시간... 현재 접속중인지 관리
 @Getter
-public class UserStatus extends Basic implements Serializable {
-    private static final long serialVersionUID = 1L;
+@Entity
+@Table(name="user_statuses")
+@NoArgsConstructor
+public class UserStatus extends BaseUpdatableEntity {
 
-    private final UUID userId;
+  @OneToOne(optional = false)
+  @JoinColumn(name="user_id", nullable = false, unique = true) //FK user_id
+  private User user;
 
-    //마지막으로 확인된 접속 시간.
-    private Instant lastLoginAt;
+  @Column(name="last_active_at", nullable = false)
+  private Instant lastActiveAt;
 
-    public UserStatus(UUID userId) {
-        super();
-        if(userId == null) {
-            throw new IllegalArgumentException("UserId는 null일수 없습니다.");
-        }
-        this.userId = userId;
-        // 최초 생성
-        this.lastLoginAt = this.createdAt;
-        // 유저 최초 접속 시간
+  public UserStatus(User user, Instant lastActiveAt) {
+    this.user = user;
+    this.lastActiveAt = (lastActiveAt!=null)?lastActiveAt:Instant.now();
+  }
+
+  public void update(Instant lastActiveAt) {
+    if (lastActiveAt != null && !lastActiveAt.equals(this.lastActiveAt)) {
+      this.lastActiveAt = lastActiveAt;
     }
+  }
 
-    // 유저가 활동했을 때 호출 (메세지 전송, 채널 입장)
-    public void refreshLogin() {
-        this.lastLoginAt = Instant.now();
-        update();
-    }
-
-    // 현재 온라인 상태 여부!
-    // 유저가 활동한지 5분 이후 -> false
-    public boolean isOnline() {
-        return Duration.between(lastLoginAt, Instant.now()).toMinutes() < 5;
-    }
-
+  public boolean isOnline() {
+    Instant instantFiveMinutesAgo = Instant.now().minus(Duration.ofMinutes(5));
+    return lastActiveAt.isAfter(instantFiveMinutesAgo);
+  }
 }

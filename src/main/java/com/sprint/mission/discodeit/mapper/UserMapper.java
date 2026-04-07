@@ -1,32 +1,32 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
-import com.sprint.mission.discodeit.dto.user.UserResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import org.springframework.stereotype.Component;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Component
-public class UserMapper {
+//BinaryContent  추가
+@Mapper(componentModel = "spring", uses = {BinaryContentMapper.class})
+public abstract class UserMapper {
 
-    public BinaryContent toBinaryContent(BinaryContentCreateRequest request) {
-        return new BinaryContent(request.fileName(),
-                request.contentType(),
-                request.bytes()
-        );
-    }
+    //online 계산에 필요/
+    @Autowired
+    protected UserStatusRepository userStatusRepository;
 
-    // 생성, 수정 시 reponse DTO 반영하는
-    public UserResponse toResponse(User user, boolean online){
-        return new UserResponse(
-                user.getId(),
-                user.getCreatedAt(),
-                user.getUpdatedAt(),
-                user.getUserName(),
-                user.getAlias(),
-                user.getEmail(),
-                user.getProfileId(),
-                online
-        );
+    @Mapping(target = "profile", source = "profile")
+    @Mapping(target = "online", expression = "java(mapOnline(user))")
+    public abstract UserDto toDto(User user);
+
+
+    // IsOnline 계산
+    protected Boolean mapOnline(User user) {
+        if(user == null) return false;
+
+        return userStatusRepository.findByUser_Id(user.getId())
+                .map(UserStatus::isOnline)
+                .orElse(false);
     }
 }

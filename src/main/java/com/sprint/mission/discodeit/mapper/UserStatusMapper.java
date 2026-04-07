@@ -1,17 +1,13 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusResponse;
+import com.sprint.mission.discodeit.dto.data.UserStatusDto;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
-@Component
-public class UserStatusMapper {
-    public UserStatusResponse toResponse(UserStatus us){
-        return new UserStatusResponse(
-                us.getId(),
-                us.getUserId(),
-                us.getLastLoginAt(),
-                us.isOnline()
-        );
-    }
+@Mapper(componentModel = "spring")
+public interface UserStatusMapper {
+    // user 엔티티에서 id꺼내서 DTO의 userId로 매핑
+    @Mapping(target="userId", source = "user.id")
+    UserStatusDto toDto(UserStatus userStatus);
 }

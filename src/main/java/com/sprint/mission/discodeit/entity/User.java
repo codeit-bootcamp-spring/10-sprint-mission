@@ -1,104 +1,69 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
-public class User extends Basic implements Serializable {
+@Entity
+@Table(name="users")
+@NoArgsConstructor
+public class User extends BaseUpdatableEntity {
+//  private static final long serialVersionUID = 1L;
+//
+//  private UUID id;
+//  private Instant createdAt;
+//  private Instant updatedAt;
+  //
+  @Column(nullable = false, length = 50)
+  private String username;
+  @Column(nullable = false, length = 100)
+  private String email;
+  @Column(nullable = false, length = 60)
+  private String password;
 
-    private static final long serialVersionUID = 1L;
-    private UUID profileId;
-
-    private String userName; // 동명이인가능 (중복 허용)
-
-    public String alias; // 닉네임(중복 x)
-    private String email;
-    private String password;
-
-    //내가 작성한 메세지 리스트.....추가!!!?? 유지가 메세지를 작성하면.... -> 메세지에 리스트항목에도 동시에 추가되어야한다...
-    private List<UUID> messageIds = new ArrayList<>();
-    private List<Channel> joinedChannels = new ArrayList<>();
+  // BinaryContent 단방향 참조
+  //0..1 (on delete set null)
+  @OneToOne(optional = true)
+  @JoinColumn(name="profile_id") // FK 지정 ->
+  private BinaryContent profile;     // BinaryContent 참조.
 
 
+  //user_statuses.user_id -> user.id
+  //User <-> UserStatus 양방향 매핑
+  @OneToOne(mappedBy = "user",
+          optional = false, cascade = CascadeType.ALL,
+          orphanRemoval = true)
+  private UserStatus status;
 
+  public User(String username, String email, String password, BinaryContent profile) {
+//    this.id = UUID.randomUUID();
+//    this.createdAt = Instant.now();
 
-    // user 생성자
-    public User(String userName, String alias, String email, String password) {
-        super(); // user 만드는 메소드 ... -> ID 와 CreatedAt 할당.
-        this.userName = userName;
-        this.alias = alias;
-        this.email = email;
-        this.password = password;
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profile = profile;
+  }
+
+  public void update(String newUsername, String newEmail, String newPassword, BinaryContent newProfile) {
+    if (newUsername != null && !newUsername.equals(this.username)) {
+      this.username = newUsername;
+    }
+    if (newEmail != null && !newEmail.equals(this.email)) {
+      this.email = newEmail;
+    }
+    if (newPassword != null && !newPassword.equals(this.password)) {
+      this.password = newPassword;
+    }
+    if (newProfile != null && !newProfile.equals(this.profile)) {
+      this.profile = newProfile;
     }
 
-    // 필드별 수정 메서드 분리
-    public void changeUserName(String newUserName) {
-        this.userName = newUserName;
-        super.update(); // Basic의 update()를 명시적으로 호출
-    }
-
-    public void changeAlias(String newAlias) {
-        this.alias = newAlias;
-        super.update();
-    }
-    // 메세지 관련!!!!
-    // public List<Message> getMessages() {
-//        return messages;
-//    }
-
-    public void addMessage(UUID messageId) {
-        // 중복 방지
-        if(messageId == null) throw new IllegalArgumentException("messageId이 null");
-        if (!messageIds.contains(messageId)) {
-            messageIds.add(messageId); // list 에 mesaage add하고,
-            super.update();
-        }
-    }
-
-    // 채널 관련!!
-    // public List<Channel> getJoinedChannels() {
-//        return joinedChannels;
-//    }
-
-    // 채널 참가
-    public void joinChannel(Channel channel){
-        if(!joinedChannels.contains(channel)){
-            joinedChannels.add(channel);
-            channel.addParticipant(this);
-        }
-    }
-    // 채널 탈퇴
-    public void leaveChannel(Channel channel) {
-        if (joinedChannels.contains(channel)) {
-            joinedChannels.remove(channel);
-            channel.removeParticipant(this); // 반대쪽에서도 제거
-        }
-    }
-
-    // 프로필 아이디 //
-    public void changeProfileId(UUID profileId) {
-        this.profileId = profileId;
-        super.update();
-    }
-
-    // Email&Password 변경
-    public void changeEmail(String newEmail) {
-        this.email = newEmail;
-        super.update();
-    }
-    public void changePassword(String newPassword) {
-        this.password = newPassword;
-        super.update();
-    }
-
-
-    @Override
-    public String toString() {
-        return userName;
-    }
-
+  }
 }

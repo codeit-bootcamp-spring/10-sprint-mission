@@ -1,30 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.time.Instant;
+import java.util.UUID;
 
 @Getter
-public class BinaryContent extends Basic implements Serializable {
-    private static final long serialVersionUID = 1L;
+@Entity
+@Table(name="binary_contents")
+@NoArgsConstructor
+public class BinaryContent extends BaseEntity{
 
-    private final String fileName;
-    private final String contentTYpe;
-    private final byte[] bytes;
+  //private static final long serialVersionUID = 1L;
+  //private UUID id;
+  @Column(name="file_name", nullable = false, length=255)
+  private String fileName;
 
-    public BinaryContent(String fileName, String contentTYpe, byte[] bytes) {
-        super();
-        if (bytes == null) {
-            throw new IllegalArgumentException("bytes는 null이 될 수 없습니다.");
-        }
-        this.fileName = fileName;
-        this.contentTYpe = contentTYpe;
-        this.bytes = bytes.clone();
-    }
-    public byte[] getBytes() {
-        return bytes.clone();
-    }
-    public long getSize(){
-        return bytes.length;
-    }
+  @Column(nullable = false)
+  private Long size;
+
+  @Column(name="content_type", nullable = false, length=100)
+  private String contentType;
+
+
+  // 생성자(id/createdAt 은 BaseEntity 상속)
+  public BinaryContent(String fileName, Long size, String contentType) {
+    this.fileName = fileName;
+    this.size = size;
+    this.contentType = contentType;
+  }
 }

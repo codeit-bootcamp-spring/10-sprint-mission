@@ -1,37 +1,40 @@
 package com.sprint.mission.discodeit.entity;
 
-
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
-
-import java.io.Serializable;
+import lombok.NoArgsConstructor;
 import java.time.Instant;
-import java.util.UUID;
+
 
 @Getter
-public class ReadStatus extends Basic implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private final UUID userId;
-    private final UUID channelId;
+@Entity
+@Table(name="read_statuses")
+@NoArgsConstructor
+public class ReadStatus extends BaseUpdatableEntity {
 
+  // User 단방향 참조
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
+  // Channel 단방향 참조
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "channel_id", nullable = false)
+  private Channel channel;
 
-    // 유저가 해당 채널에서 "마지막으로 읽은 시각"
-    private Instant lastReadAt;
+  @Column(name = "last_read_at", nullable = false)
+  private Instant lastReadAt;
 
-    // 마지막으로 읽은 메세지 -> lastReadMessageId 추가?
+  public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+    this.user = user;
+    this.channel = channel;
+    // 없으면 현재값 반환
+    this.lastReadAt = (lastReadAt != null) ? lastReadAt : Instant.now();
+  }
 
-
-    public ReadStatus(UUID userId, UUID channelId) {
-        super(); // id, 생성시간 발급.
-        if(userId == null || channelId == null) throw new IllegalArgumentException("userId/channelId는 null일수 없습니다.");
-        this.userId = userId;
-        this.channelId = channelId;
-        this.lastReadAt = this.createdAt;
+  public void update(Instant lastReadAt) {
+    if (lastReadAt != null && !lastReadAt.equals(this.lastReadAt)) {
+      this.lastReadAt = lastReadAt;
     }
-
-    // 유저가 채널을 확인했을때 호출.
-    public void readNow(){
-        this.lastReadAt = Instant.now();
-        update();
-    }
-
+  }
 }
