@@ -1,67 +1,86 @@
 package com.sprint.mission.discodeit.user.service;
 
+import com.sprint.mission.discodeit.user.dto.UserStatusDto;
 import com.sprint.mission.discodeit.user.entity.UserStatus;
 import com.sprint.mission.discodeit.user.dto.UserStatusCreateRequest;
 import com.sprint.mission.discodeit.user.dto.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.user.entity.User;
-import com.sprint.mission.discodeit.user.repository.UserRepository;
-import com.sprint.mission.discodeit.user.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.user.mapper.UserStatusMapper;
+import com.sprint.mission.discodeit.user.repository.JPAUserRepository;
+import com.sprint.mission.discodeit.user.repository.JPAUserStatusRepository;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 public class BasicUserStatusService implements UserStatusService {
-    private final UserStatusRepository userStatusRepository;
-    private final UserRepository userRepository;
 
-    @Override
-    public void create(UserStatusCreateRequest request) {
-        User user = userRepository.findById(request.userId())
-                .orElseThrow(() ->new IllegalArgumentException("존재하지 않는 유저입니다."));
+  private final JPAUserStatusRepository jpaUserStatusRepository;
+  private final JPAUserRepository userRepository;
+  private final UserStatusMapper userStatusMapper;
 
-        userStatusRepository.findByUserId(request.userId())
-                .ifPresent(status -> {
-                    throw new IllegalArgumentException("해당 유저의 접속 상태 객체가 이미 존재합니다.");
-                });
-        UserStatus userStatus = new UserStatus(request.userId());
-        userStatusRepository.save(userStatus);
-    }
+  @Override
+  @Transactional
+  public UserStatusDto create(UserStatusCreateRequest request) {
+    User user = userRepository.findById(request.userId())
+        .orElseThrow(() -> new NoSuchElementException("존재하지 않는 유저입니다."));
 
-    @Override
-    public UserStatus find(UUID userStatusID) {
-        return userStatusRepository.findById(userStatusID)
-                .orElseThrow(()-> new IllegalArgumentException("해당 접속 상태 객체를 찾을 수 없습니다."));
-    }
+    jpaUserStatusRepository.findByUser(user)
+        .ifPresent(status -> {
+          throw new IllegalArgumentException("해당 유저의 접속 상태 객체가 이미 존재합니다.");
+        });
 
-    @Override
-    public List<UserStatus> findAll() {
-        return userStatusRepository.findAll();
-    }
+    UserStatus userStatus = jpaUserStatusRepository.save(new UserStatus(user));
+    return userStatusMapper.toDto(userStatus);
+  }
 
-    @Override
-    public void update(UserStatusUpdateRequest request) {
-        UserStatus userStatus = this.find(request.id());
-        userStatus.updateConnection();
-        userStatusRepository.save(userStatus);
-    }
+  @Override
+  @Transactional(readOnly = true)
+  public UserStatusDto find(UUID userStatusID) {
+    return jpaUserStatusRepository.findById(userStatusID)
+        .map(userStatusMapper::toDto)
+        .orElseThrow(() -> new NoSuchElementException("해당 접속 상태 객체를 찾을 수 없습니다."));
+  }
 
-    @Override
-    public void updateByUserId(UUID userId) {
-        UserStatus userStatus = userStatusRepository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저의 접속 상태 객체를 찾을 수 없습니다."));
+  @Override
+  @Transactional(readOnly = true)
+  public List<UserStatusDto> findAll() {
+    return jpaUserStatusRepository.findAll()
+        .stream()
+        .map(userStatusMapper::toDto)
+        .toList();
+  }
 
-        userStatus.updateConnection();
-        userStatusRepository.save(userStatus);
-    }
+  @Override
+  @Transactional
+  public UserStatusDto update(UUID userStatusId, UserStatusUpdateRequest request) {
+    UserStatus userStatus = jpaUserStatusRepository.findById(userStatusId)
+        .orElseThrow(() -> new NoSuchElementException(("해당 유저의 접속 상태 객체를 찾을 수 없습니다.")));
+    userStatus.updateConnection(request.newLastActiveAt());
+    return userStatusMapper.toDto(userStatus);
+  }
 
-    @Override
-    public void delete(UUID userStatusId) {
-        this.find(userStatusId);
-        userStatusRepository.deleteById(userStatusId);
-    }
+  @Override
+  @Transactional
+  public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
+    UserStatus userStatus = jpaUserStatusRepository.findByUserId(userId)
+        .orElseThrow(() -> new NoSuchElementException(("해당 유저의 접속 상태 객체를 찾을 수 없습니다.")));
+
+    userStatus.updateConnection(request.newLastActiveAt());
+    return userStatusMapper.toDto(userStatus);
+  }
+
+  @Override
+  @Transactional
+  public void delete(UUID userStatusId) {
+    UserStatus userStatus = jpaUserStatusRepository.findById(userStatusId)
+        .orElseThrow(() -> new NoSuchElementException(("해당 접속 상태 객체를 찾을 수 없습니다.")));
+    jpaUserStatusRepository.delete(userStatus);
+  }
 }
 

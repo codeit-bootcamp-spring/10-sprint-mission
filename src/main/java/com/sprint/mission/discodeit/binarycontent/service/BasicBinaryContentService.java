@@ -1,49 +1,74 @@
 package com.sprint.mission.discodeit.binarycontent.service;
 
-import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentResponse;
+import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentDto;
 import com.sprint.mission.discodeit.binarycontent.mapper.BinaryContentMapper;
-import com.sprint.mission.discodeit.binarycontent.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.binarycontent.repository.JPABinaryContentRepository;
 import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.binarycontent.entity.BinaryContent;
+import com.sprint.mission.discodeit.common.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BasicBinaryContentService implements BinaryContentService {
-    private final BinaryContentRepository binaryContentRepository;
-    private final BinaryContentMapper binaryContentMapper;
 
+  private final JPABinaryContentRepository jpaBinaryContentRepository;
+  private final BinaryContentStorage binaryContentStorage;
+  private final BinaryContentMapper binaryContentMapper;
 
-    @Override
-    public BinaryContentResponse create(BinaryContentCreateRequest request) {
-        BinaryContent binaryContent = new BinaryContent(request.bytes(), request.userId(),request.messageId());
-        binaryContentRepository.save(binaryContent);
-        return binaryContentMapper.convertToResponse(binaryContent);
-    }
+  @Override
+  @Transactional
+  public BinaryContentDto create(BinaryContentCreateRequest request) {
 
-    @Override
-    public BinaryContentResponse find(UUID binaryContentId) {
-        BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new IllegalArgumentException("바이너리컨텐트 객체를 찾을 수 없습니다."));
-        return binaryContentMapper.convertToResponse(binaryContent);
-    }
+    log.info("[BINARY_CONTENT_CREATE] 파일 저장 시작 : fileName={}, size={}, contentType={}",
+        request.fileName(), request.bytes().length, request.contentType());
 
-    @Override
-    public List<BinaryContentResponse> findAllByIdIn(List<UUID> ids) {
-        return ids.stream()
-                .map(binaryContentRepository::findById)
-                .flatMap(Optional::stream)
-                .map(binaryContentMapper::convertToResponse)
-                .toList();
-    }
+    String fileName = request.fileName();
+    byte[] bytes = request.bytes();
+    String contentType = request.contentType();
 
-    @Override
-    public void delete(UUID id) {
-        binaryContentRepository.deleteById(id);
-    }
+    BinaryContent binaryContent = new BinaryContent(
+        fileName,
+        (long) bytes.length,
+        contentType);
+    BinaryContent savedBinaryContent = jpaBinaryContentRepository.save(binaryContent);
+    binaryContentStorage.put(savedBinaryContent.getId(), bytes);
+
+    log.info("[BINARY_CONTENT_CREATE] 파일 저장 완료 : binaryContentId={}", savedBinaryContent.getId());
+
+    return binaryContentMapper.toDto(savedBinaryContent);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public BinaryContentDto find(UUID binaryContentId) {
+    return jpaBinaryContentRepository.findById(binaryContentId)
+        .map(binaryContentMapper::toDto)
+        .orElseThrow(
+            () -> new BinaryContentNotFoundException(Map.of("binaryContentId", binaryContentId)));
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<BinaryContentDto> findAllByIdIn(List<UUID> ids) {
+    return jpaBinaryContentRepository.findAllById(ids)
+        .stream()
+        .map(binaryContentMapper::toDto)
+        .toList();
+  }
+
+  @Override
+  @Transactional
+  public void delete(UUID id) {
+    jpaBinaryContentRepository.deleteById(id);
+  }
 }

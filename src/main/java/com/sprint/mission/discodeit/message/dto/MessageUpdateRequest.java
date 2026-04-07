@@ -1,14 +1,10 @@
 package com.sprint.mission.discodeit.message.dto;
 
-import com.sprint.mission.discodeit.binarycontent.dto.BinaryContentResponse;
-
-import java.util.List;
-import java.util.UUID;
+import jakarta.validation.constraints.NotBlank;
 
 public record MessageUpdateRequest(
-        UUID messageId,
-        String content,
-        List<BinaryContentResponse> attachments
-
+    @NotBlank(message = "메시지 내용 은 비어 있을 수 없습니다.")
+    String newContent
 ) {
+
 }

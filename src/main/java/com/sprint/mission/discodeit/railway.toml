@@ -1,0 +1,8 @@
+[build]
+buildCommand = "./gradlew bootJar"
+
+[deploy]
+startCommand = "java -jar build/libs/10-sprint-mission-0.0.1-SNAPSHOT.jar"
+
+[build.env]
+JAVA_VERSION = "17"

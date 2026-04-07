@@ -16,8 +16,8 @@ public class JavaApplication {
 //        System.out.println("메시지 생성: " + message.getId());
 //    }
 
-    public static void main(String[] args) {
-        // 레포지토리 초기화
+  public static void main(String[] args) {
+    // 레포지토리 초기화
 //        UserRepository userRepository = new FileUserRepository();
 //        ChannelRepository channelRepository = new FileChannelRepository();
 //        MessageRepository messageRepository = new FileMessageRepository();
@@ -32,5 +32,5 @@ public class JavaApplication {
 //        Channel channel = setupChannel(channelService);
 //        // 테스트
 //        messageCreateTest(messageService, channel, user); 임시 주석
-    }
+  }
 }

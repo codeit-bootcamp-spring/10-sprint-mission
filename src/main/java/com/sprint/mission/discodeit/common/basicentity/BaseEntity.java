@@ -1,32 +1,31 @@
 package com.sprint.mission.discodeit.common.basicentity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-public class BaseEntity {
-    private UUID id;
-    private Long createdAt;
-    private Long updatedAt;
+@Getter
+@MappedSuperclass
+@NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
+public abstract class BaseEntity {
 
-    public BaseEntity() {
-        this.id = UUID.randomUUID();
-        this.createdAt = System.currentTimeMillis();
-        this.updatedAt = System.currentTimeMillis();
-    }
+  @Id
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(nullable = false, updatable = false)
+  protected UUID id;
 
-    public Long getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Long updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Long getCreatedAt() {
-        return createdAt;
-    }
-
-    public UUID getId() {
-        return id;
-    }
+  @CreatedDate
+  @Column(nullable = false, updatable = false)
+  protected Instant createdAt;
 
 }

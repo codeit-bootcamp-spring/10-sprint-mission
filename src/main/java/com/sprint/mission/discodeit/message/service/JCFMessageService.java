@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.message.service;
 
-
 //public class JCFMessageService implements MessageService {
 //    private final Map<UUID, Message> messageMap;
 //    private final UserService userService;

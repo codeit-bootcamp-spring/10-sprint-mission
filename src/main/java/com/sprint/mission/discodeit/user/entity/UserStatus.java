@@ -1,38 +1,43 @@
 package com.sprint.mission.discodeit.user.entity;
 
+import com.sprint.mission.discodeit.common.basicentity.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 
-import java.io.Serializable;
 import java.time.Instant;
-import java.util.UUID;
+import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "user_statuses")
 @Getter
-public class UserStatus implements Serializable {
-    private static final long serialVersionUID = 1L;
+@NoArgsConstructor
+public class UserStatus extends BaseUpdatableEntity {
 
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
+  @OneToOne
+  @JoinColumn(name = "user_id", unique = true, nullable = false)
+  private User user;
 
-    private UUID userId;
-    private Instant lastConnectedAt;
+  @Column(nullable = false)
+  private Instant lastActiveAt;
 
-    public UserStatus(UUID userId) {
-        this.id = UUID.randomUUID();
-        this.userId = userId;
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-        this.lastConnectedAt = Instant.now();
-    }
 
-    public void updateConnection() {
-        this.lastConnectedAt = Instant.now();
-        this.updatedAt = Instant.now();
-    }
+  public UserStatus(User user) {
+    this.user = user;
+    this.lastActiveAt = Instant.now();
+  }
 
-    public boolean isConnected(){
-        return lastConnectedAt != null &&
-                (Instant.now().getEpochSecond() - lastConnectedAt.getEpochSecond() <= 300);
-    }
+  public void updateConnection(Instant newLastReadAt) {
+    this.lastActiveAt = newLastReadAt;
+    this.updatedAt = lastActiveAt;
+  }
+
+  public boolean isOnline() {
+    return lastActiveAt != null &&
+        (Instant.now().getEpochSecond() - lastActiveAt.getEpochSecond() <= 300);
+  }
 
 }
