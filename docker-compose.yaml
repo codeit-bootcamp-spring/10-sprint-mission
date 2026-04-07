@@ -15,7 +15,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       JVM_OPTS: ${JVM_OPTS}
     volumes:
-      - binary-content-data:/app/.discodeit
+      - binary-content-data:/app/storage
 
   # Postgres 서비스
   postgres:
