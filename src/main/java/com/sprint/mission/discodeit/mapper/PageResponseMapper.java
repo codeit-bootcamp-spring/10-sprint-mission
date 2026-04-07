@@ -18,10 +18,10 @@ public interface PageResponseMapper {
         );
     }
 
-    default <T> PageResponse<T> fromPage(Page<T> page) {
+    default <T> PageResponse<T> fromPage(Page<T> page, Object nextCursor) {
         return new PageResponse<>(
                 page.getContent(),
-                null,
+                nextCursor,
                 page.getSize(),
                 page.hasNext(),
                 page.getTotalElements()

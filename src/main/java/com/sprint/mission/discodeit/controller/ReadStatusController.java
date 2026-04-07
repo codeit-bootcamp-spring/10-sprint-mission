@@ -1,18 +1,15 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusUpdateRequest;
+import com.sprint.mission.discodeit.controller.api.ReadStatusApi;
+import com.sprint.mission.discodeit.dto.data.ReadStatusDto;
+import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
+import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.ReadStatusService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,54 +21,44 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@Slf4j
 @RequiredArgsConstructor
+@RestController
 @RequestMapping("/api/readStatuses")
-@Tag(name = "ReadStatus", description = "Message 읽음 상태 API")
-public class ReadStatusController {
+public class ReadStatusController implements ReadStatusApi {
 
     private final ReadStatusService readStatusService;
 
     @PostMapping
-    @Operation(summary = "Message 읽음 상태 생성")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Message 읽음 상태가 성공적으로 생성됨"),
-            @ApiResponse(responseCode = "404", description = "Channel 또는 User를 찾을 수 없음"),
-            @ApiResponse(responseCode = "400", description = "이미 읽음 상태가 존재함")
-    })
-    public ResponseEntity<ReadStatusDto> createReadStatus(
-            @Valid @RequestBody ReadStatusCreateRequest request
-    ) {
-        ReadStatusDto response = readStatusService.createReadStatus(request);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<ReadStatusDto> create(
+            @RequestBody @Valid ReadStatusCreateRequest request) {
+        log.info("읽음 상태 생성 요청: {}", request);
+        ReadStatusDto createdReadStatus = readStatusService.create(request);
+        log.debug("읽음 상태 생성 응답: {}", createdReadStatus);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(createdReadStatus);
     }
 
-    @PatchMapping("/{readStatusId}")
-    @Operation(summary = "Message 읽음 상태 수정")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Message 읽음 상태가 성공적으로 수정됨"),
-            @ApiResponse(responseCode = "404", description = "Message 읽음 상태를 찾을 수 없음")
-    })
-    public ResponseEntity<ReadStatusDto> updateReadStatus(
-            @Parameter(description = "수정할 읽음 상태 ID", example = "0f9238f3-cd81-4f82-8611-3a22b16da66d")
-            @PathVariable UUID readStatusId,
-            @Valid @RequestBody ReadStatusUpdateRequest request
-    ) {
-        ReadStatusDto response = readStatusService.updateReadStatus(readStatusId, request);
-
-        return ResponseEntity.ok(response);
+    @PatchMapping(path = "{readStatusId}")
+    public ResponseEntity<ReadStatusDto> update(@PathVariable("readStatusId") UUID readStatusId,
+            @RequestBody @Valid ReadStatusUpdateRequest request) {
+        log.info("읽음 상태 수정 요청: id={}, request={}", readStatusId, request);
+        ReadStatusDto updatedReadStatus = readStatusService.update(readStatusId, request);
+        log.debug("읽음 상태 수정 응답: {}", updatedReadStatus);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(updatedReadStatus);
     }
 
     @GetMapping
-    @Operation(summary = "User의 Message 읽음 상태 목록 조회")
-    @ApiResponse(responseCode = "200", description = "Message 읽음 상태 목록 조회 성공")
     public ResponseEntity<List<ReadStatusDto>> findAllByUserId(
-            @Parameter(description = "조회할 User ID", example = "d2d837b7-acb8-4e6c-87ad-0f5841aa96b9")
-            @RequestParam UUID userId
-    ) {
-        List<ReadStatusDto> responses = readStatusService.findAllReadStatusesByUserId(userId);
-
-        return ResponseEntity.ok(responses);
+            @RequestParam("userId") UUID userId) {
+        log.info("사용자별 읽음 상태 목록 조회 요청: userId={}", userId);
+        List<ReadStatusDto> readStatuses = readStatusService.findAllByUserId(userId);
+        log.debug("사용자별 읽음 상태 목록 조회 응답: count={}", readStatuses.size());
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(readStatuses);
     }
 }
