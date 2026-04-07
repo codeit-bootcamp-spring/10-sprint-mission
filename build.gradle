@@ -43,7 +43,7 @@ dependencies {
 
     //aws
     implementation 'software.amazon.awssdk:s3:2.31.7'
-    implementation 'software.amazon.awssdk:auth:2.20.70'
+    implementation 'software.amazon.awssdk:auth:2.31.7'
 }
 
 tasks.named('test') {
