@@ -8,6 +8,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface UserStatusMapper {
 
-    @Mapping(source = "user.id",target = "userId") //UserStatusDto.userId ← UserStatus.user.id 값을 넣어라
-    UserStatusDto toDto(UserStatus userStatus);
+  @Mapping(target = "userId", source = "user.id")
+  UserStatusDto toDto(UserStatus userStatus);
 }

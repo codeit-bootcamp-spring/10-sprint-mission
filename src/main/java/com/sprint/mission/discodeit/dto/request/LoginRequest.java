@@ -1,9 +1,16 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-@Schema(description = "로그인 정보")
 public record LoginRequest(
-        String username,
-        String password
-) {}
+    @NotBlank
+    @Size(max = 50)
+    String username,
+
+    @NotBlank
+    @Size(max = 60)
+    String password
+) {
+
+}

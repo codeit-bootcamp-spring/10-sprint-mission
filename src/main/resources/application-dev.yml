@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb  # 인메모리 DB
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console  # 브라우저 접속 경로
+
+  jpa:
+    hibernate:
+      ddl-auto: create  # create / update / none 상황에 따라 선택
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  sql:
+    init:
+      mode: always
+
+discodeit:
+  storage:
+    type: local
+    local:
+      root-path: storage
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.sprint.mission: DEBUG #특정 패키지의 로그 레벨 설정
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+server:
+  port: 8081
