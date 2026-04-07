@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
-import com.sprint.mission.discodeit.exception.BusinessLogicException;
-import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.binarycontent.FileIOException;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,7 +36,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     try {
       Files.createDirectories(root);
     } catch (IOException e) {
-      throw new BusinessLogicException(ErrorCode.FILE_IO_ERROR);
+      throw new FileIOException();
     }
   }
 
@@ -46,7 +46,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
       Files.write(resolvePath(id), data);
       return id;
     } catch (IOException e) {
-      throw new BusinessLogicException(ErrorCode.FILE_IO_ERROR);
+      throw new FileIOException();
     }
   }
 
@@ -55,11 +55,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     try {
       Path path = resolvePath(id);
       if (!Files.exists(path)) {
-        throw new BusinessLogicException(ErrorCode.BINARY_CONTENT_NOT_FOUND);
+        throw new BinaryContentNotFoundException();
       }
       return Files.newInputStream(path);
     } catch (IOException e) {
-      throw new BusinessLogicException(ErrorCode.FILE_IO_ERROR);
+      throw new FileIOException();
     }
   }
 
@@ -90,7 +90,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     try {
       Files.deleteIfExists(resolvePath(id));
     } catch (IOException e) {
-      throw new BusinessLogicException(ErrorCode.FILE_IO_ERROR);
+      throw new FileIOException();
     }
   }
 

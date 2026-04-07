@@ -20,11 +20,14 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/channels")
 public class ChannelController {
@@ -48,9 +51,12 @@ public class ChannelController {
       @ApiResponse(responseCode = "201", description = "Public Channel이 성공적으로 생성됨")
   })
   @RequestMapping(value = "/public", method = RequestMethod.POST)
-  public ResponseEntity<ChannelDto> createPublic(@RequestBody PublicChannelCreateRequest dto) {
+  public ResponseEntity<ChannelDto> createPublic(
+      @Valid @RequestBody PublicChannelCreateRequest dto) {
     UUID id = channelService.createPublic(dto);
+    log.info("공개 채널을 정상적으로 생성하였습니다. id = {}", id);
     return ResponseEntity.status(201).body(toDto(channelService.find(id)));
+
   }
 
   @Operation(summary = "Private Channel 생성", operationId = "create_4", tags = {"Channel"})
@@ -58,8 +64,10 @@ public class ChannelController {
       @ApiResponse(responseCode = "201", description = "Private Channel이 성공적으로 생성됨")
   })
   @RequestMapping(value = "/private", method = RequestMethod.POST)
-  public ResponseEntity<ChannelDto> createPrivate(@RequestBody PrivateChannelCreateRequest dto) {
+  public ResponseEntity<ChannelDto> createPrivate(
+      @Valid @RequestBody PrivateChannelCreateRequest dto) {
     UUID id = channelService.createPrivate(dto);
+    log.info("비공개 채널을 정상적으로 생성하였습니다. id = {}", id);
     return ResponseEntity.status(201).body(toDto(channelService.find(id)));
   }
 
@@ -103,12 +111,16 @@ public class ChannelController {
   public ResponseEntity<ChannelDto> update(
       @Parameter(description = "수정할 Channel ID")
       @PathVariable UUID channelId,
-      @RequestBody PublicChannelUpdateRequest dto
+      @Valid @RequestBody PublicChannelUpdateRequest dto
   ) {
     ChannelUpdateRequest request =
         new ChannelUpdateRequest(channelId, dto.newName(), dto.newDescription());
 
-    return ResponseEntity.ok(toDto(channelService.update(request)));
+    ChannelResponse updated = channelService.update(request);
+    ChannelDto dtoResult = toDto(updated);
+
+    log.info("채널을 성공적으로 수정하였습니다. id = {}", request.channelId());
+    return ResponseEntity.ok(dtoResult);
   }
 
   @Operation(summary = "Channel 삭제", operationId = "delete_2", tags = {"Channel"})
@@ -129,6 +141,7 @@ public class ChannelController {
       @PathVariable UUID channelId
   ) {
     channelService.delete(channelId);
+    log.info("채널이 성공적으로 삭제되었습니다. id = {}", channelId);
     return ResponseEntity.noContent().build();
   }
 

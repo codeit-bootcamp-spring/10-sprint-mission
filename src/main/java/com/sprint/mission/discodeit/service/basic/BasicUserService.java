@@ -9,8 +9,13 @@ import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
-import com.sprint.mission.discodeit.exception.BusinessLogicException;
-import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.auth.PasswordEmptyException;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
+import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.user.UserEmailAlreadyExistsException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.StatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -23,9 +28,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -47,15 +54,15 @@ public class BasicUserService implements UserService {
     requireNonNull(request.password(), "password");
 
     if (request.password().isEmpty()) {
-      throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
+      throw new PasswordEmptyException();
     }
 
     if (userRepository.existsByUsername(request.userName())) {
-      throw new BusinessLogicException(ErrorCode.DUPLICATION_USER);
+      throw new UserAlreadyExistsException(request.userName());
     }
 
     if (userRepository.existsByEmail(request.email())) {
-      throw new BusinessLogicException(ErrorCode.DUPLICATION_EMAIL);
+      throw new UserEmailAlreadyExistsException();
     }
 
     User user = new User(request.userName(), request.email(), request.password());
@@ -69,7 +76,6 @@ public class BasicUserService implements UserService {
           imgReq.contentType()
       );
       binaryContentStorage.put(image.getId(), imgReq.data());
-
       user.updateProfileImage(image);
     }
 
@@ -85,11 +91,11 @@ public class BasicUserService implements UserService {
     requireNonNull(userId, "userId");
 
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(userId));
 
     UserStatus status = userStatusRepository.findByUserId(userId);
     if (status == null) {
-      throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+      throw new StatusNotFoundException(userId);
     }
 
     BinaryContent profileImage = findProfileImageOrNull(user);
@@ -104,7 +110,7 @@ public class BasicUserService implements UserService {
         .map(user -> {
           UserStatus status = userStatusRepository.findByUserId(user.getId());
           if (status == null) {
-            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+            throw new StatusNotFoundException(user.getId());
           }
 
           BinaryContent profileImage = findProfileImageOrNull(user);
@@ -121,7 +127,7 @@ public class BasicUserService implements UserService {
         .map(user -> {
           UserStatus status = userStatusRepository.findByUserId(user.getId());
           if (status == null) {
-            throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+            throw new StatusNotFoundException(user.getId());
           }
 
           BinaryContent profileImage = findProfileImageOrNull(user);
@@ -139,25 +145,25 @@ public class BasicUserService implements UserService {
     requireNonNull(request.userId(), "userId");
 
     User user = userRepository.findById(request.userId())
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(request.userId()));
 
     request.userName().ifPresent(newName -> {
       if (!user.getUsername().equals(newName) && userRepository.existsByUsername(newName)) {
-        throw new BusinessLogicException(ErrorCode.DUPLICATION_USER);
+        throw new UserAlreadyExistsException(request.userId());
       }
       user.updateName(newName);
     });
 
     request.email().ifPresent(newEmail -> {
       if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
-        throw new BusinessLogicException(ErrorCode.DUPLICATION_EMAIL);
+        throw new UserEmailAlreadyExistsException();
       }
       user.updateEmail(newEmail);
     });
 
     request.password().ifPresent(newPassword -> {
       if (newPassword.isEmpty()) {
-        throw new BusinessLogicException(ErrorCode.PASSWORD_EMPTY);
+        throw new PasswordEmptyException();
       }
       user.updatePassword(newPassword);
     });
@@ -175,7 +181,7 @@ public class BasicUserService implements UserService {
 
     UserStatus status = userStatusRepository.findByUserId(savedUser.getId());
     if (status == null) {
-      throw new BusinessLogicException(ErrorCode.STATUS_NOT_FOUND);
+      throw new StatusNotFoundException(savedUser.getId());
     }
 
     BinaryContent profileImage = findProfileImageOrNull(savedUser);
@@ -188,7 +194,7 @@ public class BasicUserService implements UserService {
     requireNonNull(userId, "userId");
 
     User user = userRepository.findById(userId)
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(userId));
 
     readStatusRepository.deleteByUserId(userId);
     userRepository.delete(user);
@@ -200,7 +206,7 @@ public class BasicUserService implements UserService {
     requireNonNull(userId, "userId");
 
     return userRepository.findById(userId)
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.USER_NOT_FOUND));
+        .orElseThrow(() -> new UserNotFoundException(userId));
   }
 
   private BinaryContent findProfileImageOrNull(User user) {
@@ -209,12 +215,12 @@ public class BasicUserService implements UserService {
     }
 
     return binaryContentRepository.findById(user.getProfileImageId())
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.BINARY_CONTENT_NOT_FOUND));
+        .orElseThrow(BinaryContentNotFoundException::new);
   }
 
   private static <T> void requireNonNull(T value, String name) {
     if (value == null) {
-      throw new IllegalArgumentException(name + " null이 될 수 없습니다.");
+      throw new InvalidParameterException(name);
     }
   }
 }

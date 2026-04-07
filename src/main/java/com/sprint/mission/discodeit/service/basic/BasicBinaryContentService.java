@@ -3,8 +3,8 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.exception.BusinessLogicException;
-import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.common.InvalidParameterException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
@@ -12,9 +12,11 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -39,7 +41,6 @@ public class BasicBinaryContentService implements BinaryContentService {
 
     BinaryContent saved = binaryContentRepository.save(entity);
     binaryContentStorage.put(saved.getId(), request.bytes());
-
     return saved.getId();
   }
 
@@ -68,6 +69,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     findEntityOrThrow(id);
     binaryContentStorage.delete(id);
     binaryContentRepository.delete(id);
+    log.info("첨부파일을 성공적으로 삭제하였습니다. id = {} ", id);
   }
 
   @Override
@@ -86,12 +88,13 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   private BinaryContent findEntityOrThrow(UUID id) {
     return binaryContentRepository.findById(id)
-        .orElseThrow(() -> new BusinessLogicException(ErrorCode.BINARY_CONTENT_NOT_FOUND));
+        .orElseThrow(() -> new BinaryContentNotFoundException()
+        );
   }
 
   private static <T> void requireNonNull(T value, String name) {
     if (value == null) {
-      throw new IllegalArgumentException(name + " null이 될 수 없습니다.");
+      throw new InvalidParameterException(name);
     }
   }
 }
