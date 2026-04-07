@@ -43,6 +43,12 @@ dependencies {
 
 	// Lombok + MapStruct 조합 보정(권장)
 	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+	// AWS S3 SDK 의존성
+	implementation 'software.amazon.awssdk:s3:2.31.7'
+
+	// .env 파일 읽는 라이브러리
+	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
 
 tasks.named('test') {
