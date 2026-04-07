@@ -1,15 +1,18 @@
 package com.sprint.mission.discodeit.exception.readstatus;
 
 import com.sprint.mission.discodeit.exception.ErrorCode;
-import java.util.Map;
+
+import java.util.UUID;
 
 public class ReadStatusNotFoundException extends ReadStatusException {
 
-    public ReadStatusNotFoundException(String message) {
-        super(ErrorCode.READ_STATUS_NOT_FOUND, message);
+    public ReadStatusNotFoundException() {
+        super(ErrorCode.READ_STATUS_NOT_FOUND);
     }
 
-    public ReadStatusNotFoundException(String message, Map<String, Object> details) {
-        super(ErrorCode.READ_STATUS_NOT_FOUND, message, details);
+    public static ReadStatusNotFoundException withId(UUID readStatusId) {
+        ReadStatusNotFoundException exception = new ReadStatusNotFoundException();
+        exception.addDetail("readStatusId", readStatusId);
+        return exception;
     }
-}
+} 
