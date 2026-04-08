@@ -138,7 +138,7 @@ class BasicMessageServiceTest {
     // then
     assertThat(result).isEqualTo(messageDto);
     verify(messageRepository).save(any(Message.class));
-    verify(binaryContentStorage).put(eq(attachment.getId()), any(byte[].class));
+    verify(binaryContentStorage).put(eq(attachment.getId()), any(byte[].class), attachment.getContentType());
   }
 
   @Test

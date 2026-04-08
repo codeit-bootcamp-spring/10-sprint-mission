@@ -87,7 +87,7 @@ class BasicBinaryContentServiceTest {
     // then
     assertThat(result).isEqualTo(binaryContentDto);
     verify(binaryContentRepository).save(any(BinaryContent.class));
-    verify(binaryContentStorage).put(binaryContentId, bytes);
+    verify(binaryContentStorage).put(binaryContentId, bytes, contentType);
   }
 
   @Test
