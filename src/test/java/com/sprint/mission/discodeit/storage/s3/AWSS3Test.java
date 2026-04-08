@@ -31,7 +31,7 @@ class AWSS3Test {
 
         // then
         assertThat(url).isNotNull();
-        assertThat(url).contains(props.getS3().getBucket());
+        assertThat(url).contains(props.getBucket());
         assertThat(url).startsWith("https://");
     }
 }
