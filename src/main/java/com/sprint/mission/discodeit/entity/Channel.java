@@ -1,84 +1,44 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.util.TimeConverter;
-import com.sprint.mission.discodeit.dto.ChannelServiceDTO.ChannelResponse;
-import lombok.Getter;
-
-import java.io.Serial;
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public class Channel extends BaseEntity implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(name = "channels")
+public class Channel extends BaseUpdatableEntity {
 
-    @Getter
-    private final UUID id;
-    private final Instant createdAt = Instant.now();
-    private Instant updatedAt = Instant.now();
-    private ChannelType type;
-    private String channelName;
-    private String description;
-    private Set<UUID> participantIds;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private ChannelType type;
 
-    private Channel(UUID id) {
-        this.id = id;
-        this.participantIds = new HashSet<>();
-    }
+  @Column
+  private String name;
 
-    public Channel(UUID id, List<UUID> participantIds) {
-        this(id);
-        this.type = ChannelType.PRIVATE;
-        this.channelName = null;
-        this.description = null;
-        this.participantIds = Set.copyOf(participantIds);
-    }
+  @Column
+  private String description;
 
-    public Channel(UUID id, String channelName, String description) {
-        this(id);
-        this.type = ChannelType.PUBLIC;
-        this.channelName = channelName;
-        this.description = description;
-    }
+  @Transient
+  private Instant lastMessageAt;
 
-    public boolean matchChannelType(ChannelType type) {
-        return this.type == type;
-    }
+  @Builder
+  public Channel(ChannelType type, String name, String description) {
+    this.type = type;
+    this.name = name;
+    this.description = description;
+  }
 
-    public boolean isPrivateMember(UUID userId) {
-        if (type == ChannelType.PUBLIC) {
-            return false;
-        }
-        return participantIds.contains(userId);
-    }
-
-    public ChannelResponse toResponse() {
-        return ChannelResponse.builder()
-                .id(id)
-                .name(channelName)
-                .description(description)
-                .type(type)
-                .participantIds(List.copyOf(participantIds))
-                .createdAt(TimeConverter.toDateTime(createdAt))
-                .updatedAt(TimeConverter.toDateTime(updatedAt))
-                .build();
-    }
-
-    public void update(String newName, String newDescription) {
-        boolean hasUpdated = false;
-        hasUpdated |= updateIfChanged(this.channelName, newName, val -> this.channelName = val);
-        hasUpdated |= updateIfChanged(this.description, newDescription, val -> this.description = val);
-
-        if (hasUpdated) {
-            this.updatedAt = Instant.now();
-        }
-    }
-
-    public boolean isVisibleTo(UUID userId) {
-        return this.matchChannelType(ChannelType.PUBLIC) || this.isPrivateMember(userId);
-    }
 }

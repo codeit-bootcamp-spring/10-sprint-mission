@@ -1,8 +1,8 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.AuthServiceDTO.LoginRequest;
-import com.sprint.mission.discodeit.dto.user.UserServiceDTO.UserResponse;
+import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.request.LoginRequest;
 
 public interface AuthService {
-    UserResponse login(LoginRequest request);
+    UserDto login(LoginRequest request);
 }

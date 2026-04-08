@@ -1,70 +1,65 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.util.TimeConverter;
-import com.sprint.mission.discodeit.dto.user.UserServiceDTO.UserResponse;
-import com.sprint.mission.discodeit.dto.user.UserServiceDTO.UserUpdateDto;
-import lombok.Getter;
-
-import java.io.Serial;
-import java.io.Serializable;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public class User extends BaseEntity implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
-    @Getter
-    private final UUID id;
-    private final Instant createdAt = Instant.now();
-    private Instant updatedAt = Instant.now();
-    private String username;
-    private String email;
-    private String password;
-    private UUID profileId;
-    // todo: add message, channel id list
-    // todo: add parameters of update, which is messageId, channelId
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(name = "users")
+public class User extends BaseUpdatableEntity {
 
-    public User(UUID id, String username, String email,
-                String password, UUID profileId) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.profileId = profileId;
-    }
+  @Column(unique = true, nullable = false, length = 50)
+  private String username;
 
-    public boolean matchPassword(String password) {
-        return this.password.equals(password);
-    }
+  @Column(unique = true, nullable = false, length = 100)
+  private String email;
 
-    public boolean matchUsername(String username) {
-        return this.username.equals(username);
-    }
+  @Column(nullable = false, length = 60)
+  private String password;
 
-    public boolean matchEmail(String email) {
-        return this.email.equals(email);
-    }
+  @OneToOne(
+      fetch = FetchType.LAZY,
+      cascade = {CascadeType.PERSIST, CascadeType.REMOVE, CascadeType.MERGE},
+      orphanRemoval = true)
+  @JoinColumn(name = "profile_id")
+  private BinaryContent profile;
 
-    public void update(UserUpdateDto dto) {
-        boolean hasUpdated = false;
-        hasUpdated |= updateIfChanged(this.username, dto.username(), val -> this.username = val);
-        hasUpdated |= updateIfChanged(this.email, dto.email(), val -> this.email = val);
-        hasUpdated |= updateIfChanged(this.password, dto.password(), val -> this.password = val);
-        hasUpdated |= updateIfChanged(this.profileId, dto.profileId(), val -> this.profileId = val);
-        if (hasUpdated) {
-            this.updatedAt = Instant.now();
-        }
-    }
+  @OneToOne(
+      mappedBy = "user",
+      cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+      orphanRemoval = true)
+  private UserStatus status;
 
-    public UserResponse toResponse(boolean isActive) {
-        return UserResponse.builder()
-                .id(id)
-                .username(username)
-                .email(email)
-                .online(isActive)
-                .profileId(profileId)
-                .createdAt(TimeConverter.toDateTime(createdAt))
-                .updatedAt(TimeConverter.toDateTime(updatedAt))
-                .build();
-    }
+  @Builder
+  public User(String username, String email, String password,
+      BinaryContent profile, UserStatus status) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profile = profile;
+    this.status = status;
+  }
+
+  public boolean isOnline() {
+    return status.isOnline(Instant.now());
+  }
+
+  public void setStatus(UserStatus status) {
+    this.status = status;
+    status.setUser(this);
+  }
 }

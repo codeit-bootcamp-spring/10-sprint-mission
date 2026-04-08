@@ -1,11 +1,10 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.userstatus.request.UserStatusCreateRequest;
-import com.sprint.mission.discodeit.dto.userstatus.UserStatusServiceDTO.UserStatusResponse;
-import com.sprint.mission.discodeit.dto.userstatus.command.UserStatusUpdateCommand;
+import com.sprint.mission.discodeit.dto.UserStatusDto;
+import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
+import java.util.UUID;
 
-import java.util.List;
+public interface UserStatusService {
 
-public interface UserStatusService extends DomainService<UserStatusResponse, UserStatusCreateRequest, UserStatusUpdateCommand> {
-    List<UserStatusResponse> findAll();
+  UserStatusDto update(UUID userId, UserStatusUpdateRequest request);
 }

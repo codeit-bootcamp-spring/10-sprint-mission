@@ -1,0 +1,66 @@
+# 10-spring-mission
+
+- mission-7
+  - custom exception
+  - logging
+  - entity
+    - unit test
+    - ex) UserStatus.isOnline()
+  - repository
+    - slice test
+    - custom queries
+  - service
+    - unit test
+    - business logics
+  - controller
+    - slice test
+    - custom validator test
+  - controller ~ repository
+    - integrated test(SpringBootTest)
+
+# 구현
+
+- 기능별로 package 를 구성했다.
+- `controller`
+  - `UserController`
+  - `AuthController`
+  - `ChannelController`
+  - `MessageController`
+- `service`
+    - `AuthService`
+    - `BinaryContentService`
+    - `DomainService`
+    - `UserService`
+    - `ChannelService`
+    - `MessageService`
+    - `ReadStatusService`
+    - `UserStatusService`
+- `repository`
+    - `DomainRepository`
+    - `UserRepository`
+    - `ChannelRepository`
+    - `MessageRepository`
+    - `UserStatusRepository`
+    - `ReadStatusRepository`
+    - `BinaryContentRepository`
+- `entity`
+    - `User`
+    - `UserStatus`
+    - `Channel`
+    - `ChannelType`
+    - `ReadStatus`
+    - `ReadType`
+    - `Message`
+    - `BinaryContent`
+- `dto`
+    - `UserServiceDTO`
+    - `AuthServiceDTO`
+    - `BinaryContentServiceDTO`
+    - `ChannelServiceDTO`
+    - `MessageServiceDTO`
+    - `ReadStatusServiceDTO`
+    - `UserStatusServiceDTO`
+- `test`
+  - `controller`
+    - `BaseControllerTest`
+    - `UserControllerTest`

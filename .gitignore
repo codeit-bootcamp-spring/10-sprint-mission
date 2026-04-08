@@ -1,3 +1,12 @@
+### env ###
+.env
+
+### log ###
+.logs/
+
+### file storage ###
+.discodeit/
+
 ### postman ###
 .postman
 postman/

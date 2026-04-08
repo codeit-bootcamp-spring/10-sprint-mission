@@ -1,78 +1,58 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.util.TimeConverter;
-import com.sprint.mission.discodeit.dto.MessageServiceDTO.MessageResponse;
-import lombok.Getter;
-
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.List;
+import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public class Message extends BaseEntity implements Serializable, Comparable<Message> {
-    @Serial
-    private static final long serialVersionUID = 1L;
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(name = "messages")
+public class Message extends BaseUpdatableEntity {
 
-    @Getter
-    private final UUID id;
-    private final Instant createdAt = Instant.now();
-    private Instant updatedAt = Instant.now();
-    private String content;
-    private final UUID channelId;
-    private final UUID authorId;
-    private final Set<UUID> attachmentIds = new HashSet<>();
+  @Column(nullable = false)
+  private String content;
 
-    public Message(UUID id, String content, UUID channelId, UUID authorId, List<UUID> attachmentIds) {
-        this.id = id;
-        this.content = content;
-        this.channelId = channelId;
-        this.authorId = authorId;
-        this.attachmentIds.addAll(attachmentIds);
-    }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "channel_id")
+  private Channel channel;
 
-    public boolean isAuthor(UUID userId) {
-        return this.authorId.equals(userId);
-    }
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "author_id")
+  private User author;
 
-    public boolean isInChannel(UUID channelId) {
-        return this.channelId.equals(channelId);
-    }
+  @OneToMany(orphanRemoval = true, cascade = CascadeType.PERSIST)
+  @JoinTable(
+      name = "message_attachments",
+      joinColumns = @JoinColumn(name = "message_id"),
+      inverseJoinColumns = @JoinColumn(name = "attachment_id")
+  )
+  private Set<BinaryContent> attachments = new LinkedHashSet<>();
 
-    public void update(String newContent, List<UUID> attachmentIds) {
-        boolean hasUpdated = false;
-        hasUpdated |= updateIfChanged(this.content, newContent, val -> this.content = newContent);
-        hasUpdated |= addAttachments(attachmentIds);
+  @Builder
+  public Message(String content, Channel channel, User author, Collection<BinaryContent> attachments) {
+    this.content = content;
+    this.channel = channel;
+    this.author = author;
+    this.attachments.addAll(attachments);
+  }
 
-        if (hasUpdated) {
-            this.updatedAt = Instant.now();
-        }
-    }
-
-    @Override
-    public int compareTo(Message m) {
-        return createdAt.compareTo(m.createdAt);
-    }
-
-    public MessageResponse toResponse() {
-        return MessageResponse.builder()
-                .id(id)
-                .content(content)
-                .channelId(channelId)
-                .authorId(authorId)
-                .attachmentIds(List.copyOf(attachmentIds))
-                .createdAt(TimeConverter.toDateTime(createdAt))
-                .updatedAt(TimeConverter.toDateTime(updatedAt))
-                .build();
-    }
-
-    private boolean addAttachments(List<UUID> attachmentIds) {
-        if (attachmentIds.isEmpty()) {
-            return false;
-        }
-        this.attachmentIds.addAll(attachmentIds);
-        return true;
-    }
 }

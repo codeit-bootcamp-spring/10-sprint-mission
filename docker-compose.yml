@@ -1,0 +1,11 @@
+services:
+  db:
+    image: postgres
+    container_name: discodeit-A
+    restart: always
+    environment:
+      POSTGRES_USER: discodeit_user
+      POSTGRES_PASSWORD: discodeit1234
+      POSTGRES_DB: discodeit
+    ports:
+      - "5433:5432"

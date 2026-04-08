@@ -1,37 +1,39 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.common.util.TimeConverter;
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentServiceDTO.BinaryContentResponse;
-import com.sprint.mission.discodeit.dto.binarycontent.request.BinaryContentCreateRequest;
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Immutable;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(name = "binary_contents")
+@Immutable
+public class BinaryContent extends BaseEntity {
 
-@RequiredArgsConstructor
-public class BinaryContent implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+  @Column(nullable = false)
+  private String fileName;
 
-    @Getter
-    private final UUID id = UUID.randomUUID();
-    private final Instant createdAt = Instant.now();
-    private final String fileName;
-    private final byte[] data;
+  @Column(nullable = false)
+  private Long size;
 
-    public BinaryContent(BinaryContentCreateRequest model) {
-        this(model.fileName(), model.data());
-    }
+  @Column(nullable = false, length = 100)
+  private String contentType;
 
-    public BinaryContentResponse toResponse() {
-        return BinaryContentResponse.builder()
-                .id(id)
-                .fileName(fileName)
-                .data(data)
-                .createdAt(TimeConverter.toDateTime(createdAt))
-                .build();
-    }
+  @Column(nullable = false)
+  private byte[] bytes;
+
+  @Builder
+  public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+    this.fileName = fileName;
+    this.size = size;
+    this.contentType = contentType;
+    this.bytes = bytes;
+  }
 }

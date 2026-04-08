@@ -1,0 +1,11 @@
+package com.sprint.mission.discodeit.exception.auth;
+
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.common.ErrorCode;
+
+public class AuthException extends DiscodeitException {
+
+  public AuthException(ErrorCode errorCode) {
+    super(errorCode);
+  }
+}
