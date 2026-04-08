@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: test-practice
+  sql:
+    init:
+      mode: never #main에 있는 schema.sql 읽기 방지용
+
+  datasource:
+    # jdbc:h2:mem:test-practice는 h2로 접속을 하는데, in-memory(mem)모드로 생성될 DB(test-practice)이름
+    # DB_CLOSE_DELAY = -1은 JVM이 살아있는 동안 커넥션이 하나도 없어도 DB삭제하지 말고 유지
+    # DB_CLOSE_ON_EXIT = FALSE은 스프링이 완전히 종료될 때까지 DB를 열어둠
+    url: jdbc:h2:mem:test-practice;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
