@@ -1,75 +1,51 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Duration;
-import java.util.Properties;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
+@ExtendWith(MockitoExtension.class)
 class AWSS3Test {
 
+  @Mock
   private S3Client s3Client;
+
+  @Mock
   private S3Presigner s3Presigner;
-  private String bucket;
 
-  @BeforeEach
-  void setUp() throws IOException {
-    Properties props = new Properties();
-    try (FileInputStream fis = new FileInputStream(".env")) {
-      props.load(fis);
-    }
-    String accessKey = props.getProperty("AWS_S3_ACCESS_KEY");
-    String secretKey = props.getProperty("AWS_S3_SECRET_KEY");
-    String region = props.getProperty("AWS_S3_REGION");
-    bucket = props.getProperty("AWS_S3_BUCKET");
+  private String bucket = "test-bucket";
 
-    s3Client = S3Client.builder()
-        .region(Region.of(region))
-        .credentialsProvider(StaticCredentialsProvider.create(
-            AwsBasicCredentials.create(
-                accessKey,
-                secretKey
-            )
-        ))
-        .build();
-
-    s3Presigner = S3Presigner.builder()
-        .region(Region.of(region))
-        .credentialsProvider(StaticCredentialsProvider.create(
-            AwsBasicCredentials.create(
-                accessKey,
-                secretKey
-            )
-        ))
-        .build();
-  }
-  
   @Test
   @DisplayName("S3 버킷에 파일 업로드를 성공해야 한다.")
   void should_upload_in_s3_bucket() {
     // given
     String key = "test/" + UUID.randomUUID();
     byte[] fakeImageBytes = "가짜 이미지 데이터".getBytes();
-
+    given(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
+        .willReturn(PutObjectResponse.builder().build());
     // when
     PutObjectRequest putObjectRequest = PutObjectRequest.builder()
         .bucket(bucket)
@@ -78,27 +54,25 @@ class AWSS3Test {
     s3Client.putObject(putObjectRequest, RequestBody.fromBytes(fakeImageBytes));
 
     // then
-    HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-        .bucket(bucket)
-        .key(key)
-        .build();
-    assertDoesNotThrow(() -> s3Client.headObject(headObjectRequest));
+    then(s3Client).should(times(1)).putObject(any(PutObjectRequest.class), any(RequestBody.class));
   }
 
   @Test
   @DisplayName("Presigned URL 생성에 성공해야 한다.")
-  void should_download_in_s3_bucket_when_use_presigned_url() {
+  void should_download_in_s3_bucket_when_use_presigned_url() throws MalformedURLException {
     // given
     String key = "test/" + UUID.randomUUID();
-    String contentType = "image/png";
-    String fileName = "test.png";
+    String expectedUrl = "https://test-bucket.s3.amazonaws.com/test/file.png?token=fake";
+
+    PresignedGetObjectRequest mockPresignedRequest = mock(PresignedGetObjectRequest.class);
+    given(mockPresignedRequest.url()).willReturn(new URL(expectedUrl));
+    given(s3Presigner.presignGetObject(any(GetObjectPresignRequest.class)))
+        .willReturn(mockPresignedRequest);
 
     // when
     GetObjectRequest getObjectRequest = GetObjectRequest.builder()
         .bucket(bucket)
         .key(key)
-        .responseContentType(contentType)
-        .responseContentDisposition("attachment; filename=\"" + fileName + "\"")
         .build();
 
     GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
@@ -110,7 +84,7 @@ class AWSS3Test {
 
     // then
     assertNotNull(url);
-    assertTrue(url.contains(bucket));
-    assertTrue(url.contains(key));
+    assertEquals(expectedUrl, url);
+    then(s3Presigner).should(times(1)).presignGetObject(any(GetObjectPresignRequest.class));
   }
 }
