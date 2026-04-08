@@ -1,95 +1,115 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
-
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
+
+@Entity
+@Table(name = "users")
 @Getter
-public class User extends Base {
-	private final List<UUID> channelIds; // 특정 유저의 채널 소속
-	private final List<UUID> messageIds; // 특정 유저가 생성한 모든 메시지
+@Setter
+@RequiredArgsConstructor
+public class User extends BaseUpdatableEntity {
 
-	// 유저 프로필 사진 만든다 -> binary content 추가 -> 사진 데이터 -> 바이트코드로 들고있기 -> 바이트배열 형태로 들어왔다고 가정하기
-	private UUID profileId; // 프로필 이미지의 id
-	private String nickName;
-	private String userName;
-	private String email;
-	private String phoneNumber;
-	private String password;
 
-	public User(String nickName, String userName, String email, String phoneNumber, String password) {
-		this.nickName = nickName;
-		this.userName = userName;
-		this.email = email;
-		this.phoneNumber = phoneNumber;
-		this.password = password;
+    @Column(length = 50, nullable = false, unique = true)
+    private String username;
 
-		this.channelIds = new ArrayList<>();
-		this.messageIds = new ArrayList<>();
-	}
+    @Column(length = 100, nullable = false, unique = true)
+    private String email;
 
-	public void updateProfileId(UUID profileId) {
-		this.profileId = profileId;
-		updateUpdatedAt(Instant.now());
-	}
+    @Column(length = 60, nullable = false)
+    private String password;
 
-	public void updateNickName(String nickName) {
-		this.nickName = nickName;
-		updateUpdatedAt(Instant.now());
-	}
+    @OneToOne
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "profile_id", unique = true)
+    private BinaryContent profile;
 
-	public void updateUserName(String userName) {
-		this.userName = userName;
-		updateUpdatedAt(Instant.now());
-	}
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<ReadStatus> readStatusList = new ArrayList<>();
 
-	public void updateEmail(String email) {
-		this.email = email;
-		updateUpdatedAt(Instant.now());
-	}
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
+    private List<Message> messageList = new ArrayList<>(); // 특정 유저가 생성한 모든 메시지
 
-	public void updatePhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
-		updateUpdatedAt(Instant.now());
-	}
 
-	public void updatePassword(String password) {
-		this.password = password;
-		updateUpdatedAt(Instant.now());
-	}
+    @OneToOne(mappedBy = "user", orphanRemoval = true)
+    private UserStatus status;
 
-	public void addChannelId(UUID channelId) {
-		this.channelIds.add(channelId);
-	}
+    public void updateProfile(BinaryContent profile) {
+        this.profile = profile;
+        updateUpdatedAt(Instant.now());
+    }
 
-	public void addMessageId(UUID messageId) {
-		this.messageIds.add(messageId);
-	}
+    public void updateUsername(String username) {
+        this.username = username;
+        updateUpdatedAt(Instant.now());
+    }
 
-	@Override
-	public String toString() {
-		return "{" +
-			nickName + "(" + userName + ") / " +
-			"email: " + email + " / " +
-			"phoneNumber: " + phoneNumber +
-			"}";
-	}
+    public void updateEmail(String email) {
+        this.email = email;
+        updateUpdatedAt(Instant.now());
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (!(o instanceof User user))
-			return false;
-		return Objects.equals(getId(), user.getId());
-	}
+    public void updatePassword(String password) {
+        this.password = password;
+        updateUpdatedAt(Instant.now());
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hashCode(getId());
-	}
+    public void updateStatus(UserStatus status) {
+        this.status = status;
+        if (status.getUser() == null) {
+            status.updateUser(this);
+        }
+    }
+
+
+    public void addMessage(Message message) {
+        this.messageList.add(message);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+            "username='" + username + '\'' +
+            ", email='" + email + '\'' +
+            ", password='" + password + '\'' +
+            ", readStatusList=" + readStatusList +
+            ", messageList=" + messageList +
+            ", profile=" + profile +
+            ", status=" + status +
+            '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof User user)) {
+            return false;
+        }
+        return Objects.equals(getId(), user.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(getId());
+    }
 }

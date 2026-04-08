@@ -1,32 +1,26 @@
 package com.sprint.mission.discodeit.mapper;
 
-import org.springframework.stereotype.Component;
-
+import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.UserPostDto;
-import com.sprint.mission.discodeit.dto.UserResponseDto;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
-@Component
-public class UserMapper {
-	public User toUser(UserPostDto userPostDTO) {
-		return new User(
-			userPostDTO.nickName(),
-			userPostDTO.userName(),
-			userPostDTO.email(),
-			userPostDTO.phoneNumber(),
-			userPostDTO.password()
-		);
-	}
 
-	public UserResponseDto toUserResponseDto(User user, boolean online) {
-		return new UserResponseDto(
-			user.getId(),
-			user.getCreatedAt(),
-			user.getUpdatedAt(),
-			user.getUserName(),
-			user.getEmail(),
-			user.getProfileId(),
-			online
-		);
-	}
+@Mapper(
+    componentModel = "spring", // MapStruct가 생성한 구현체를 Spring Bean으로 등록
+    imports = {UserStatus.class},
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public interface UserMapper {
+
+    User toEntity(UserDto userDto);
+
+    User toEntity(UserPostDto userPostDto);
+
+    @Mapping(target = "online", expression = "java(user.getStatus().isLoggedIn())")
+    UserDto toDto(User user);
+
 }

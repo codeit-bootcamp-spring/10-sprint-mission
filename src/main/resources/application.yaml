@@ -1,8 +1,36 @@
 spring:
+  profiles:
+    active: dev
   application:
     name: discodeit
+  sql:
+    init:
+      mode: always
+  # JPA, sql script 파일 설정
+  jpa:
+    hibernate:
+      ddl-auto: update # schema.sql 실행 후 코드 기반으로 테이블이 생성되지 않도록 한다.
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    defer-datasource-initialization: true
+    open-in-view: false
+
+# SQL 로그 설정
+logging:
+  level:
+    root: info
+    org.hibernate.SQL: info
+
 
 discodeit:
   repository:
     type: file
     file-directory: .discodeit
+  static:
+
+  storage:
+    type: local
+    local:
+      root-path: .attachments

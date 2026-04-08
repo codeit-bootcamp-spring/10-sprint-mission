@@ -1,236 +1,178 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-
+import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.ChannelPatchDto;
-import com.sprint.mission.discodeit.dto.ChannelResponseDto;
 import com.sprint.mission.discodeit.dto.PrivateChannelPostDto;
 import com.sprint.mission.discodeit.dto.PublicChannelPostDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
-import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.BusinessLogicException;
+import com.sprint.mission.discodeit.exception.ExceptionCode;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
-
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class BasicChannelService implements ChannelService {
-	private final ChannelRepository channelRepository;
-	private final UserRepository userRepository;
-	private final MessageRepository messageRepository;
-	private final ReadStatusRepository readStatusRepository;
 
-	private final ChannelMapper channelMapper;
+    private final ChannelRepository channelRepository;
+    private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
+    private final ReadStatusRepository readStatusRepository;
 
-	@Override
-	public ChannelResponseDto createPublicChannel(PublicChannelPostDto publicChannelPostDto) {
-		return channelMapper.fromChannel(
-			channelRepository.save(channelMapper.toChannel(publicChannelPostDto)),
-			null
-		);
-	}
+    private final ChannelMapper channelMapper;
 
-	@Override
-	public ChannelResponseDto createPrivateChannel(PrivateChannelPostDto privateChannelPostDto) {
-		List<User> users = privateChannelPostDto.userIds().stream()
-			.map(userRepository::findById)
-			.flatMap(Optional::stream)
-			.toList();
+    @Override
+    public ChannelDto createPublicChannel(PublicChannelPostDto publicChannelPostDto) {
+        log.trace("[CHANNEL] createPublicChannel 메서드 호출: name = {}, description = {}",
+            publicChannelPostDto.name(), publicChannelPostDto.description());
 
-		Channel channel = channelRepository.save(
-			channelMapper.toChannel(privateChannelPostDto)
-		);
+        Channel newPublicChannel = channelRepository.save(
+            channelMapper.toEntity(publicChannelPostDto));
 
-		// 채널에 참여하는 User의 정보를 받아 User 별 ReadStatus 정보를 생성
-		privateChannelPostDto.userIds().forEach(userId -> {
-				readStatusRepository.save(
-					new ReadStatus(userId, channel.getId(), Instant.now())
-				);
-			}
-		);
+        log.info("[CHANNEL] public 채널 생성 완료: id = {}", newPublicChannel.getId());
 
-		// 유저의 채널 리스트에 채널 id 추가 및 저장
-		for (User user : users) {
-			user.addChannelId(channel.getId());
-			userRepository.save(user);
-		}
+        return channelMapper.toDto(newPublicChannel);
+    }
 
-		return channelMapper.fromChannel(channel, null);
-	}
+    @Override
+    public ChannelDto createPrivateChannel(PrivateChannelPostDto privateChannelPostDto) {
+        log.trace("[CHANNEL] createPrivateChannel 메서드 호출: participantIds = {}",
+            privateChannelPostDto.participantIds());
 
-	@Override
-	public ChannelResponseDto findById(UUID channelId) {
-		Channel channel = channelRepository.findById(channelId).orElseThrow(
-			() -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
-		);
+        List<User> users = privateChannelPostDto.participantIds().stream()
+            .map(userRepository::findById)
+            .flatMap(Optional::stream)
+            .toList();
 
-		Instant lastMessageTime = channel.getMessageIds().stream()
-			.map(messageRepository::findById)
-			.flatMap(Optional::stream)
-			.map(Message::getCreatedAt)
-			.max(Instant::compareTo)
-			.orElse(null);
+        Channel channel = channelMapper.toEntity(privateChannelPostDto);
 
-		return channelMapper.fromChannel(
-			channel,
-			lastMessageTime
-		);
-	}
+        for (User user : users) {
+            log.trace("[CHANNEL] 새로운 private 채널에 유저 추가 중: userId = {}", user.getId());
+            channel.addUser(user);
+        }
 
-	@Override
-	public List<ChannelResponseDto> findAllByUserId(UUID userId) {
-		return channelRepository.findAll().stream()
-			.filter(
-				channel -> channel.getChannelType() == ChannelType.PUBLIC || (
-					channel.getChannelType() == ChannelType.PRIVATE &&
-						channel.getUserIds().contains(userId)
-				)
-			)
-			.map(channel -> {
-					Instant lastMessageTime = channel.getMessageIds().stream()
-						.map(messageRepository::findById)
-						.flatMap(Optional::stream)
-						.map(Message::getCreatedAt)
-						.max(Instant::compareTo)
-						.orElse(null);
+        channelRepository.save(channel);
 
-					return channelMapper.fromChannel(
-						channel,
-						lastMessageTime
-					);
-				}
-			).collect(Collectors.toList());
-	}
+        log.info("[CHANNEL] private 채널 생성 완료: id = {}", channel.getId());
 
-	@Override
-	public ChannelResponseDto update(UUID channelId, ChannelPatchDto channelPatchDto) {
-		Channel updateChannel = channelRepository.findById(channelId)
-			.orElseThrow(
-				() -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
-			);
+        return channelMapper.toDto(channel);
+    }
 
-		// PRIVATE 채널은 수정할 수 없음
-		if (updateChannel.getChannelType() == ChannelType.PRIVATE)
-			throw new RuntimeException("private 채널은 수정할 수 없습니다.");
+    @Override
+    @Transactional(readOnly = true)
+    public ChannelDto findById(UUID channelId) {
+        log.trace("[CHANNEL] findById 메서드 호출: id = {}", channelId);
 
-		// 수정
-		Optional.ofNullable(channelPatchDto.name())
-			.ifPresent(updateChannel::updateName);
-		Optional.ofNullable(channelPatchDto.description())
-			.ifPresent(updateChannel::updateDescription);
+        Channel channel = channelRepository.findById(channelId).orElseThrow(
+            () -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND)
+        );
 
-		channelRepository.save(updateChannel);
+        return channelMapper.toDto(channel);
+    }
 
-		return channelMapper.fromChannel(updateChannel, findLastMessageTime(channelId));
-	}
+    // 특정 유저가 속해있는 채널 목록을 조회
+    @Override
+    @Transactional(readOnly = true)
+    public List<ChannelDto> findAllByUserId(UUID userId) {
+        log.trace("[CHANNEL] findAllByUserId 메서드 호출: userId = {}", userId);
 
-	@Override
-	public ChannelResponseDto addUser(UUID channelId, UUID userId) {
-		Channel channel = channelRepository.findById(channelId)
-			.orElseThrow(
-				() -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
-			);
-		User user = userRepository.findById(userId)
-			.orElseThrow(
-				() -> new NoSuchElementException("id가 " + userId + "인 유저를 찾을 수 없습니다.")
-			);
+        return channelRepository.findByUserId(userId).stream()
+            .map(channelMapper::toDto)
+            .toList();
+    }
 
-		channel.addUserId(userId);
-		user.addChannelId(channelId);
+    @Override
+    public ChannelDto update(UUID channelId, ChannelPatchDto channelPatchDto) {
+        log.trace("[CHANNEL] update 메서드 호출: id = {}, newName = {}, newDescription = {}", channelId,
+            channelPatchDto.newName(), channelPatchDto.newDescription());
 
-		channelRepository.save(channel);
-		userRepository.save(user);
+        Channel updateChannel = channelRepository.findById(channelId)
+            .orElseThrow(
+                () -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND)
+            );
 
-		return channelMapper.fromChannel(channel, findLastMessageTime(channelId));
-	}
+        // PRIVATE 채널은 수정할 수 없음
+        if (updateChannel.getType() == ChannelType.PRIVATE) {
+            throw new BusinessLogicException(ExceptionCode.PRIVATE_CHANNEL_MODIFY_EXCEPTION);
+        }
 
-	@Override
-	public boolean deleteUser(UUID channelId, UUID userId) {
-		// 채널 객체를 찾는다.
-		Channel channel = channelRepository.findById(channelId)
-			.orElseThrow(
-				() -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
-			);
-		User user = userRepository.findById(userId)
-			.orElseThrow(
-				() -> new NoSuchElementException("id가 " + userId + "인 유저를 찾을 수 없습니다.")
-			);
+        // 수정
+        Optional.ofNullable(channelPatchDto.newName())
+            .ifPresent(updateChannel::updateName);
+        Optional.ofNullable(channelPatchDto.newDescription())
+            .ifPresent(updateChannel::updateDescription);
 
-		// 해당 채널에 유저가 속해있는지 확인한 후 내보낸다.
-		// 유저쪽도 참여한 채녈 목록에서 삭제한다.
-		if (this.isUserInvolved(channelId, userId)) {
-			channel.getUserIds().remove(user);
-			user.getChannelIds().remove(channel);
+        log.info("[CHANNEL] 채널 수정 완료: id = {}, newName = {}, newDescription = {}", channelId,
+            channelPatchDto.newName(), channelPatchDto.newDescription());
 
-			channelRepository.save(channel);
-			userRepository.save(user);
+        return channelMapper.toDto(updateChannel);
+    }
 
-			return true;
-		}
+    @Override
+    public ChannelDto addUser(UUID channelId, UUID userId) {
+        log.trace("[CHANNEL] addUser 메서드 호출: channelId = {}, userId = {}", channelId, userId);
 
-		return false;
-	}
+        Channel channel = channelRepository.findById(channelId)
+            .orElseThrow(
+                () -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND)
+            );
+        User user = userRepository.findById(userId)
+            .orElseThrow(
+                () -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND)
+            );
 
-	@Override
-	public void delete(UUID channelId) {
-		Channel channel = channelRepository.findById(channelId)
-			.orElseThrow(
-				() -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
-			);
+        // todo: addUser 메서드 수정
+//        channel.addUser(user);
+//        user.addChannel(channel);
 
-		// message와 readStatus도 삭제한다.
-		channel.getMessageIds().forEach(messageRepository::delete);
-		readStatusRepository.findByChannelId(channelId).forEach(readStatus -> {
-				readStatusRepository.delete(readStatus.getId());
-			}
-		);
+        channelRepository.save(channel);
+        userRepository.save(user);
 
-		// 채널 삭제
-		channelRepository.delete(channelId);
-	}
+        log.info("[CHANNEL] 유저 추가 완료: channelId = {}, userId = {}", channelId, userId);
 
-	@Override
-	public boolean isUserInvolved(UUID channelId, UUID userId) {
-		// 채널과 유저 객체를 찾는다.
-		Channel channel = channelRepository.findById(channelId)
-			.orElseThrow(
-				() -> new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
-			);
-		User user = userRepository.findById(userId)
-			.orElseThrow(
-				() -> new NoSuchElementException("id가 " + userId + "인 유저를 찾을 수 없습니다.")
-			);
+        return channelMapper.toDto(channel);
+    }
 
-		return channel.getUserIds().contains(user);
-	}
+    @Override
+    public boolean deleteUser(UUID channelId, UUID userId) {
+        log.trace("[CHANNEL] deleteUser 메서드 호출: channelId = {}, userId = {}", channelId, userId);
+//        Channel channel = channelRepository.findById(channelId)
+//            .orElseThrow(
+//                () -> new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND)
+//            );
+//        User user = userRepository.findById(userId)
+//            .orElseThrow(
+//                () -> new BusinessLogicException(ExceptionCode.USER_NOT_FOUND)
+//            );
 
-	@Override
-	public Instant findLastMessageTime(UUID channelId) {
-		Channel channel = channelRepository.findById(channelId)
-			.orElseThrow(() ->
-				new NoSuchElementException("id가 " + channelId + "인 채널을 찾을 수 없습니다.")
-			);
+        return false;
+    }
 
-		return channel.getMessageIds().stream()
-			.map(messageRepository::findById)
-			.flatMap(Optional::stream)
-			.map(Message::getCreatedAt)
-			.max(Instant::compareTo)
-			.orElse(null);
-	}
+    @Override
+    public void delete(UUID channelId) {
+        log.trace("[CHANNEL] delete 메서드 호출: id = {}", channelId);
+
+        if (!channelRepository.existsById(channelId)) {
+            throw new BusinessLogicException(ExceptionCode.CHANNEL_NOT_FOUND, channelId);
+        }
+
+        log.info("[CHANNEL] 채널 삭제 완료: id = {}", channelId);
+
+        channelRepository.deleteById(channelId);
+    }
 }

@@ -1,51 +1,55 @@
 package com.sprint.mission.discodeit.mapper;
 
-import java.time.Instant;
-import java.util.UUID;
-
-import org.springframework.stereotype.Component;
-
-import com.sprint.mission.discodeit.dto.ChannelResponseDto;
+import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.PrivateChannelPostDto;
 import com.sprint.mission.discodeit.dto.PublicChannelPostDto;
+import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import java.time.Instant;
+import java.util.List;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@Component
-public class ChannelMapper {
-	public Channel toChannel(PublicChannelPostDto publicChannelPostDto) {
-		return new Channel(
-			ChannelType.PUBLIC,
-			publicChannelPostDto.name(),
-			publicChannelPostDto.description()
-		);
-	}
+@Mapper(
+    componentModel = "spring",
+    uses = {UserMapper.class},
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public abstract class ChannelMapper {
 
-	public Channel toChannel(PrivateChannelPostDto privateChannelPostDto) {
-		Channel channel = new Channel(
-			ChannelType.PRIVATE,
-			"",
-			""
-		);
+    @Autowired
+    private UserMapper userMapper;
 
-		for (UUID userId : privateChannelPostDto.userIds()) {
-			channel.addUserId(userId);
-		}
+    @Autowired
+    private MessageRepository messageRepository;
 
-		return channel;
-	}
+    @Mapping(target = "type", constant = "PUBLIC")
+    public abstract Channel toEntity(PublicChannelPostDto publicChannelPostDto);
 
-	// public Channel toChannel(Private)
+    @Mapping(target = "type", constant = "PRIVATE")
+    public abstract Channel toEntity(PrivateChannelPostDto privateChannelPostDto);
 
-	public ChannelResponseDto fromChannel(Channel channel, Instant lastMessageTime) {
-		return new ChannelResponseDto(
-			channel.getId(),
-			channel.getChannelType(),
-			channel.getName(),
-			channel.getDescription(),
-			lastMessageTime,
-			channel.getChannelType() == ChannelType.PRIVATE ? channel.getUserIds() : null
-		);
-	}
+    @Mapping(target = "participants", expression = "java(getParticipants(channel))")
+    @Mapping(target = "lastMessageAt", expression = "java(getLastMessageAt(channel))")
+    public abstract ChannelDto toDto(Channel channel);
+
+    Instant getLastMessageAt(Channel channel) {
+        return channel.getMessageList().stream()
+            .map(Message::getCreatedAt)
+            .max(Instant::compareTo)
+            .orElse(null);
+    }
+
+    public List<UserDto> getParticipants(Channel channel) {
+        return channel.getReadStatusList().stream()
+            .map(ReadStatus::getUser)
+            .map(userMapper::toDto)
+            .toList();
+    }
 
 }

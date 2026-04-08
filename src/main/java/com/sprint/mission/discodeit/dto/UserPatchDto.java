@@ -1,10 +1,14 @@
 package com.sprint.mission.discodeit.dto;
 
+import jakarta.validation.constraints.Email;
+
 public record UserPatchDto(
-	String nickName,
-	String email,
-	String phoneNumber,
-	String password,
-	BinaryContentDto binaryContentDto
+    String newUsername,
+
+    @Email
+    String newEmail,
+    
+    String newPassword
 ) {
+
 }

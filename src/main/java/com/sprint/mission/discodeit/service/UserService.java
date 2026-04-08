@@ -1,24 +1,24 @@
 package com.sprint.mission.discodeit.service;
 
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.web.multipart.MultipartFile;
-
+import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.UserPatchDto;
 import com.sprint.mission.discodeit.dto.UserPostDto;
-import com.sprint.mission.discodeit.dto.UserResponseDto;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
-	UserResponseDto create(UserPostDto userPostDTO, MultipartFile profileImage);
 
-	UserResponseDto findById(UUID userId);
+    UserDto create(UserPostDto userPostDTO, MultipartFile profile);
 
-	UserResponseDto findByUserName(String userName); // 이름으로 조회(단건)
+    UserDto findById(UUID userId);
 
-	List<UserResponseDto> findAll(); // 전체 조회(다건)
+    UserDto findByUsername(String username); // 이름으로 조회(단건)
 
-	UserResponseDto updateUser(UUID userId, UserPatchDto userPatchDTO); // 수정하고 싶은 필드에 null 이외의 값을 넣는다.
+    List<UserDto> findAll(); // 전체 조회(다건)
 
-	void delete(UUID userId);
+    UserDto updateUser(UUID userId,
+        UserPatchDto userPatchDTO, MultipartFile profile);
+
+    void delete(UUID userId);
 }
