@@ -2,6 +2,8 @@
   "family": "${ECS_TASK_DEFINITION}",
   "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsTaskExecutionRole",
   "networkMode": "bridge",
+  "cpu": "512",
+  "memory": "819",
   "containerDefinitions": [
     {
       "name": "discodeit-app",
