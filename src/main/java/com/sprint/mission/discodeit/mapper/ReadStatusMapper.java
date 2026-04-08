@@ -1,36 +1,23 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.readstatus.CreateReadStatusRequestDTO;
-import com.sprint.mission.discodeit.dto.readstatus.ReadStatusResponseDTO;
+import com.sprint.mission.discodeit.dto.readstatus.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.ReadStatus;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReadStatusMapper {
-    public static ReadStatus toEntity(CreateReadStatusRequestDTO dto) {
-        return new ReadStatus(
-                dto.userId(),
-                dto.channelId()
-        );
-    }
+@Mapper(
+        componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.ERROR
+)
+public interface ReadStatusMapper {
 
-    public static ReadStatusResponseDTO toResponse(ReadStatus status) {
-        return new ReadStatusResponseDTO(
-                status.getId(),
-                status.getUserId(),
-                status.getChannelId(),
-                status.getLastReadAt()
-        );
-    }
+    @Mapping(target = "userId", source = "status.user.id")
+    @Mapping(target = "channelId", source = "status.channel.id")
+    ReadStatusDto toDto(ReadStatus status);
 
-    public static List<ReadStatusResponseDTO> toResponseList(List<ReadStatus> statuses) {
-        List<ReadStatusResponseDTO> dtos = new ArrayList<>();
-
-        for (ReadStatus status: statuses) {
-            dtos.add(ReadStatusMapper.toResponse(status));
-        }
-
-        return dtos;
-    }
+    List<ReadStatusDto> toDtoList(List<ReadStatus> statuses);
 }

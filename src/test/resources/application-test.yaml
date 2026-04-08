@@ -1,0 +1,27 @@
+# 테스트 전용 설정입니다.
+spring:
+  # 각 테스트는 독립적인 H2 메모리 DB를 사용해 언제 실행해도 같은 결과가 나오도록 합니다.
+  datasource:
+    url: jdbc:h2:mem:test-practice-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  sql:
+    init:
+      mode: never
+
+  # 테스트가 시작될 때 테이블을 만들고, 끝나면 정리하도록 설정해 테스트 간 간섭을 막습니다.
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop     # test가 끝나면 테이블 삭제
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace

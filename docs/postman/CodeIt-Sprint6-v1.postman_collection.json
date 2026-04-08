@@ -1,0 +1,685 @@
+{
+  "info": {
+    "_postman_id": "de1bfbcd-9722-4206-bf90-27e72377be6f",
+    "name": "CodeIt-Sprint6-v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "34138836"
+  },
+  "item": [
+    {
+      "name": "회원 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "userCreateRequest",
+              "type": "text",
+              "uuid": "63753d62-0af8-4f9a-8bbe-0cbb03c02c00",
+              "value": "{\"email\": \"test3@gmail.com\",\"username\": \"test3\",\"password\": \"test1234\"}",
+              "contentType": "application/json"
+            },
+            {
+              "key": "profile",
+              "type": "file",
+              "uuid": "d4aff4f2-88ea-4009-990e-7882dac0ad58",
+              "src": "postman-cloud:///1f1186a8-d92b-4c80-a9c4-db11290aff38"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/users",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 정보 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "userUpdateRequest",
+              "value": "{\n    \"newUsername\": \"updated\",\n    \"newEmail\": \"update@cat.house\",\n    \"newPassword\": \"newPassword\"\n}",
+              "type": "text",
+              "uuid": "75a19d46-1fd1-48a1-9232-c88c5b38944c",
+              "contentType": "application/json"
+            },
+            {
+              "key": "profile",
+              "type": "file",
+              "uuid": "c62fe89f-8a8a-4932-9166-5a4dd2a9412b",
+              "value": null
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/users/{{userId}}?userUpdateRequest=",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users",
+            "{{userId}}"
+          ],
+          "query": [
+            {
+              "key": "userUpdateRequest",
+              "value": "",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/users/{{userId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users",
+            "{{userId}}"
+          ],
+          "query": [
+            {
+              "key": "",
+              "value": null,
+              "type": "text",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 리스트 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/users",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "특정 회원 정보 조회",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/users/{{userId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "users",
+            "{{userId}}"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "b713ee43-694f-4c0a-b76f-f6f9ceec9659",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "로그인",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"username\": \"test\",\n    \"password\": \"test1234\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "b713ee43-694f-4c0a-b76f-f6f9ceec9659",
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널(공개) 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Test channel\",\n    \"description\": \"This is test channel\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/channels/public",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels",
+            "public"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널(비공개) 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"participantIds\": [\n        \"5099dd8b-adcb-4b81-a265-89b524eb5389\",\n        \"3c708a1c-b1a9-482f-95a2-c292a9f59929\"\n    ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/channels/private",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels",
+            "private"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 정보 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"newName\": \"Update\",\n    \"newDescription\": \"Channel is updated\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/channels/{{channelId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels",
+            "{{channelId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/channels/{{channelId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels",
+            "{{channelId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 id로 참여한 채널 조회",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": ""
+        },
+        "url": {
+          "raw": "{{base_url}}/channels?userId={{userId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 id로 입장한 유저 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/channels/{{channelId}}/users",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "channels",
+            "{{channelId}}",
+            "users"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "메시지 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "messageCreateRequest",
+              "value": "{\"content\": \"This is test message\",\"channelId\": \"{{channelId}}\",\"authorId\": \"{{userId}}\"}",
+              "type": "text",
+              "uuid": "b70cc0a2-0ba2-44ea-8794-2477b256ea3f",
+              "contentType": "application/json"
+            },
+            {
+              "key": "attachments",
+              "type": "file",
+              "uuid": "5d2ea760-8efd-4bd6-8556-ed89459efba9",
+              "src": "/private/var/folders/18/555nxl8560jf2bl537_s5v3c0000gn/T/com.apple.Photos.NSItemProvider/uuid=F45B67E8-41AA-4A9D-889E-E79D117E818B&code=001&library=1&type=1&mode=1&loc=true&cap=true.jpeg/IMG_3579.jpeg"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/messages",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "messages"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "메시지 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"newContent\": \"Update message\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/messages/{{messageId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "messages",
+            "{{messageId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 id로 메시지 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/messages/by-user?userId={{userId}}&cursor=&size=50",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "messages",
+            "by-user"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            },
+            {
+              "key": "cursor",
+              "value": ""
+            },
+            {
+              "key": "size",
+              "value": "50",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "채널 id로 메시지 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/messages?channelId={{channelId}}&cursor=&size=50",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "messages"
+          ],
+          "query": [
+            {
+              "key": "channelId",
+              "value": "{{channelId}}"
+            },
+            {
+              "key": "cursor",
+              "value": ""
+            },
+            {
+              "key": "size",
+              "value": "50",
+              "type": "text"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "메시지 삭제",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/messages/{{messageId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "messages",
+            "{{messageId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "읽음 상태 생성",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"userId\": \"{{userId}}\",\n    \"channelId\": \"{{channelId}}\",\n    \"lastReadAt\": \"2026-02-20T01:19:00.217488Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/readStatuses",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "readStatuses"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "읽음 상태 수정",
+      "request": {
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"newLastReadAt\": \"2026-02-20T01:19:00.217488Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/readStatuses/{{statusId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "readStatuses",
+            "{{statusId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "회원 id로 읽음 상태 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/readStatuses?userId={{userId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "readStatuses"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "{{userId}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/binaryContents?binaryContentIds={{binaryId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "binaryContents"
+          ],
+          "query": [
+            {
+              "key": "binaryContentIds",
+              "value": "{{binaryId}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 단건 조회",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/binaryContents/{{binaryId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "binaryContents",
+            "{{binaryId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "바이너리 파일 다운로드",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/binaryContents/{{binaryId}}/download",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "binaryContents",
+            "{{binaryId}}",
+            "download"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "channelId",
+      "value": ""
+    },
+    {
+      "key": "messageId",
+      "value": ""
+    },
+    {
+      "key": "statusId",
+      "value": ""
+    },
+    {
+      "key": "binaryId",
+      "value": ""
+    },
+    {
+      "key": "userStatusId",
+      "value": ""
+    }
+  ]
+}

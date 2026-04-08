@@ -1,82 +1,68 @@
 package com.sprint.mission.discodeit.controller.advice;
 
 import com.sprint.mission.discodeit.controller.dto.ErrorResponseDTO;
-import jakarta.servlet.http.HttpServletRequest;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
-import java.util.NoSuchElementException;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity handleIllegalArgument(
-            IllegalArgumentException e,
-            HttpServletRequest request
+    @ExceptionHandler(DiscodeitException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDiscodeitException(
+            DiscodeitException e
     ) {
-        return ResponseEntity.badRequest()
-                .body(
-                        new ErrorResponseDTO(
-                                Instant.now(),
-                                400,
-                                "잘못된 요청입니다.",
-                                e.getMessage(),
-                                request.getRequestURI()
-                        )
-                );
-    }
-
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponseDTO> handleTypeMismatch(
-            MethodArgumentTypeMismatchException e,
-            HttpServletRequest request
-    ) {
-        return ResponseEntity
-                .badRequest()
+        return ResponseEntity.status(e.getErrorCode().getStatus())
                 .body(new ErrorResponseDTO(
-                        Instant.now(),
-                        400,
-                        "잘못된 요청입니다.",
-                        e.getMessage(),
-                        request.getRequestURI()
+                        e.getTimestamp(),
+                        e.getErrorCode().getStatus(),
+                        e.getErrorCode().getErrorType(),
+                        e.getErrorCode().getMessage(),
+                        e.getDetails(),
+                        e.getClass().getSimpleName()
                 ));
     }
 
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity handleNoSuchElement(
-            NoSuchElementException e,
-            HttpServletRequest request
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMethodArgumentValidException(
+            MethodArgumentNotValidException e
     ) {
-        return ResponseEntity.badRequest()
-                .body(
-                        new ErrorResponseDTO(
-                                Instant.now(),
-                                404,
-                                "데이터가 존재하지 않습니다.",
-                                e.getMessage(),
-                                request.getRequestURI()
-                        )
-                );
+        Map<String, Object> details = e.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(
+                        fieldError -> fieldError.getField(),
+                        fieldError -> fieldError.getDefaultMessage(),
+                        (existing, replacement) -> existing
+                ));
+
+        return ResponseEntity.status(e.getStatusCode())
+                .body(new ErrorResponseDTO(
+                        Instant.now(),
+                        400,
+                        "VALIDATION_ERROR",
+                        "요청 값이 올바르지 않습니다.",
+                        details,
+                        e.getClass().getSimpleName()
+                ));
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity handleException(
-            Exception e,
-            HttpServletRequest request
-    ) {
-        return ResponseEntity.badRequest()
-                .body(
-                        new ErrorResponseDTO(
-                                Instant.now(),
-                                500,
-                                "내부 서버 오류입니다.",
-                                e.getMessage(),
-                                request.getRequestURI()
-                        )
-                );
+    public ResponseEntity<ErrorResponseDTO> handleException(Exception e) {
+        return ResponseEntity.internalServerError()
+                .body(new ErrorResponseDTO(
+                        Instant.now(),
+                        500,
+                        "INTERNAL_SERVER_ERROR",
+                        "서버 내부 오류가 발생했습니다.",
+                        Map.of(),
+                        "INTERNAL_SERVER_ERROR"
+                ));
     }
 }

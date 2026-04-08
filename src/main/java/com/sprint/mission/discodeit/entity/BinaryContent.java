@@ -1,58 +1,41 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.UUID;
 
 @Getter
-public class BinaryContent {
-    private final UUID id;
-    private final Instant createdAt;
-    private final UUID userId;
-    private final UUID messageId;
-    private final byte[] data;
-    private final String contentType;   // image/png, image/jpeg
-    private final String filename;      // 원본 파일명
-    private final long size;            // 바이트 크기
+@Entity
+@Table(name = "binary_contents")
+@Setter     // 매퍼가 못 찾아서 setter 설정
+@NoArgsConstructor
+public class BinaryContent extends BaseEntity {
+
+    private String contentType;   // image/png, image/jpeg
+    private String fileName;      // 원본 파일명
+    private long size;            // 바이트 크기
 
     // 사용자 프로필 사진용
-    public BinaryContent(UUID userId, byte[] data, String contentType, String filename) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.userId = userId;
-        this.messageId = null;
-
-        this.data = data;
+    public BinaryContent(String contentType, String fileName, long size) {
         this.contentType = contentType;
-        this.filename = filename;
-        this.size = data.length;
-    }
-
-    public BinaryContent(UUID userId, UUID messageId, byte[] data, String contentType, String filename) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.userId = userId;
-        this.messageId = messageId;
-
-        this.data = data;
-        this.contentType = contentType;
-        this.filename = filename;
-        this.size = data.length;
+        this.fileName = fileName;
+        this.size = size;
     }
 
     @Override
     public String toString() {
         return "BinaryContent{" +
-                "id=" + id +
-                ", createdAt=" + createdAt +
-                ", userId=" + userId +
-                ", messageId=" + messageId +
-                ", data=" + data.length +
+                "id=" + super.getId() +
+                ", createdAt=" + super.getCreatedAt() +
                 ", contentType='" + contentType + '\'' +
-                ", filename='" + filename + '\'' +
+                ", fileName='" + fileName + '\'' +
                 ", size=" + size +
                 '}';
     }

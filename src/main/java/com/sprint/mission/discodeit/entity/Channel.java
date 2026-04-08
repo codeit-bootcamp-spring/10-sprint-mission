@@ -1,63 +1,53 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
-public class Channel extends BaseEntity {
-    private String channelName;
+@Entity
+@Table(name = "channels")
+@NoArgsConstructor
+public class Channel extends BaseUpdatableEntity {
+    private String name;
     private String description;
-    private ChannelType channelType;
-    private List<UUID> joinedUserIds;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "channel_type")
+    private ChannelType type;
 
-    public Channel(String channelName, String description, ChannelType channelType) {
+    public Channel(String name, String description, ChannelType type) {
         super();
         // 필드 초기화
-        this.channelName = channelName;
+        this.name = name;
         this.description = description;
-        this.channelType = channelType;
-        this.joinedUserIds = new ArrayList<>();
+        this.type = type;
     }
 
-    public void updateChannelName(String channelName) {
-        this.channelName = channelName;
-        setUpdatedAt();
+    public void updateChannelName(String name) {
+        this.name = name;
     }
 
     public void updateDescription(String description) {
         this.description = description;
-        setUpdatedAt();
     }
 
     public void updateChannelType(ChannelType channelType) {
-        this.channelType = channelType;
-        setUpdatedAt();
-    }
-
-    public void updateUser(UUID userId) {
-        if (!joinedUserIds.contains(userId)) {
-            joinedUserIds.add(userId);
-            setUpdatedAt();
-        }
-    }
-
-    public void removeUser(UUID userId) {
-        joinedUserIds.remove(userId);
-        setUpdatedAt();
+        this.type = channelType;
     }
 
     @Override
     public String toString() {
         return "Channel{" +
-                "id='" + id + '\'' +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
-                ", channelName='" + channelName + '\'' +
+                "id='" + super.getId() + '\'' +
+                ", createdAt=" + super.getCreatedAt() +
+                ", updatedAt=" + super.getUpdatedAt() +
+                ", channelName='" + name + '\'' +
                 ", description=" + description +
-                ", joinedUsers=" + joinedUserIds +
                 '}';
     }
 }

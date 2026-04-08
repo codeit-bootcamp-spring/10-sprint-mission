@@ -1,28 +1,25 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Repository
-public interface ReadStatusRepository {
+public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
-    ReadStatus save(ReadStatus readStatus);
+    // 참조하는 user는 결국 한 명이라 n개가 생기지 않음 -> 그래서 channel만 attributePaths로 추가한 것
+    @EntityGraph(attributePaths = "channel")
+    List<ReadStatus> findAllByUser_Id(UUID userId);
 
-    Optional<ReadStatus> findById(UUID readStatusId);
+    List<ReadStatus> findAllByChannel_Id(UUID channelId);
 
-    List<ReadStatus> findByUserId(UUID userId);
+    @EntityGraph(attributePaths = {"user", "channel"})      // n+1 문제 해결
+    List<ReadStatus> findAllByChannel_IdIn(List<UUID> channelIds);
 
-    List<ReadStatus> findAll();
+    Optional<ReadStatus> findByUser_IdAndChannel_Id(UUID userId, UUID channelId);
 
-    boolean existsByUserIdAndChannelId(UUID userId, UUID channelId);
-
-    void deleteById(UUID readStatusId);
-
-    void deleteByChannelId(UUID channelId);
-
-    void deleteByUserIdAndChannelId(UUID userId, UUID channelId);
+    boolean existsByUser_IdAndChannel_Id(UUID userId, UUID channelId);
 }

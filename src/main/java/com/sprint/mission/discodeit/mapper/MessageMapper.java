@@ -1,39 +1,46 @@
 package com.sprint.mission.discodeit.mapper;
 
-import com.sprint.mission.discodeit.dto.message.MessageResponseDTO;
-import com.sprint.mission.discodeit.dto.message.CreateMessageRequestDTO;
+import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.entity.Message;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.ReportingPolicy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public class MessageMapper {
-    public static Message toEntity(CreateMessageRequestDTO dto, List<UUID> attachments) {
-        return new Message(
-                dto.sentUserId(),
-                dto.sentChannelId(),
-                dto.content(),
-                attachments
-        );
-    }
+@Mapper(
+        componentModel = "spring",
+        unmappedTargetPolicy = ReportingPolicy.ERROR
+)
+public abstract class MessageMapper {
 
-    public static MessageResponseDTO toResponse(Message message) {
-        return new MessageResponseDTO(
+    @Autowired
+    protected BinaryContentMapper binaryContentMapper;
+
+    @Autowired
+    protected UserMapper userMapper;
+
+    @Mapping(target = "channelId", source = "message.channel.id")
+    public MessageDto toDto(Message message) {
+        return new MessageDto(
                 message.getId(),
                 message.getCreatedAt(),
-                message.getSentUserId(),
-                message.getSentChannelId(),
+                message.getUpdatedAt(),
                 message.getContent(),
-                message.getAttachmentIds()
+                message.getChannel().getId(),
+                userMapper.toDto(message.getAuthor()),
+                binaryContentMapper.toDtoList(message.getAttachments())
         );
     }
 
-    public static List<MessageResponseDTO> toResponseList(List<Message> messages) {
-        List<MessageResponseDTO> dtos = new ArrayList<>();
+    public List<MessageDto> toDtoList(List<Message> messages) {
+        List<MessageDto> dtos = new ArrayList<>();
 
-        for (Message message : messages) {
-            dtos.add(MessageMapper.toResponse(message));
+        for (Message message: messages) {
+            dtos.add(toDto(message));
         }
 
         return dtos;

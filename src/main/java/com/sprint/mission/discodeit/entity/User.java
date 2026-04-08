@@ -1,69 +1,74 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
-public class User extends BaseEntity {
+@Entity
+@Table(name = "users")
+@NoArgsConstructor
+public class User extends BaseUpdatableEntity {
+    @Column(nullable = false, unique = true)
     private String username;
-    private String email;
-    private final String password;
-    // 채널 참여 내역과 메시지 전송 내역을 기록하는 필드
-    private List<UUID> joinedChannelIds;
-    private List<UUID> sentMessageIds;
-    // 사용자의 프로필 이미지
-    private UUID profileImageId;
 
-    public User(String username, String email, String password, UUID profileImageId) {
+    @Column(nullable = false, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String password;
+
+    // 사용자의 프로필 이미지
+    @OneToOne(optional = true, fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private BinaryContent profile;
+
+    // 사용자 상태 -> userStatus는 자식 엔티티
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserStatus userStatus;
+
+    public User(String username, String email, String password, BinaryContent profile) {
         // id 자동생성 및 초기화
         super();
         // 필드 초기화
         this.username = username;
         this.email = email;
         this.password = password;
-        // 참여한 채널들과 보낸 메세지들
-        this.joinedChannelIds = new ArrayList<>();
-        this.sentMessageIds = new ArrayList<>();
         // 사용자의 프로필 이미지
-        this.profileImageId = profileImageId;
+        this.profile = profile;
     }
 
     // username 수정 메서드
     public void updateUsername(String username) {
         this.username = username;
-        super.setUpdatedAt();
     }
 
-    public void updateJoinedChannels(UUID channelId) {
-        joinedChannelIds.add(channelId);
+    public void updateEmail(String email) {
+        this.email = email;
     }
 
-    public void removeChannel(UUID channelId) {
-        joinedChannelIds.remove(channelId);
+    public void updatePassword(String password) {
+        this.password = password;
     }
 
-    public void updateSentMessages(UUID messageId) {
-        sentMessageIds.add(messageId);
+    public void updateProfile(BinaryContent profile) {
+        this.profile = profile;
     }
 
-    public void removeSentMessage(UUID messageId) {
-        sentMessageIds.remove(messageId);
-    }
-
-    public void updateProfileImage(UUID profileImageId) {
-        this.profileImageId = profileImageId;
-        super.setUpdatedAt();
+    public void updateStatus(UserStatus userStatus) {
+        this.userStatus = userStatus;
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "id='" + id +
-                ", createdAt=" + createdAt +
-                ", updatedAt=" + updatedAt +
+                "id='" + super.getId() +
+                ", createdAt=" + super.getCreatedAt() +
+                ", updatedAt=" + super.getUpdatedAt() +
                 ", username='" + username + '\'' +
                 ", email=" + email +
                 '}';

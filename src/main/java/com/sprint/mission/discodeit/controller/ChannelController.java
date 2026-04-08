@@ -1,65 +1,67 @@
 package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.dto.channel.*;
-import com.sprint.mission.discodeit.dto.user.UserResponseDTO;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/channel")
+@RequestMapping("/api/channels")
 @RequiredArgsConstructor
+@Slf4j
 public class ChannelController {
 
-    private final UserService userService;
     private final ChannelService channelService;
 
-    @RequestMapping(value = "/create/public", method = RequestMethod.POST)
+    @RequestMapping(value = "/public", method = RequestMethod.POST)
     public ResponseEntity createPublicChannel(
-            @RequestBody CreatePublicChannelRequestDTO dto
+            @RequestBody @Valid CreatePublicChannelRequestDTO dto
     ) {
-        ChannelResponseDTO created = channelService.createPublicChannel(dto);
+        log.debug("[PUBLIC_CHANNEL_CREATE_REQUEST] 공개 채널 생성 요청: channelName={}", dto.name());
+        ChannelDto created = channelService.createPublicChannel(dto);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(created.channelId())
+                .buildAndExpand(created.id())
                 .toUri();
 
         return ResponseEntity.created(location)
                 .body(created);
     }
 
-    @RequestMapping(value = "/create/private", method = RequestMethod.POST)
+    @RequestMapping(value = "/private", method = RequestMethod.POST)
     public ResponseEntity createPrivateChannel(
-            @RequestBody CreatePrivateChannelRequestDTO dto
+            @RequestBody @Valid CreatePrivateChannelRequestDTO dto
             ) {
-        ChannelResponseDTO created = channelService.createPrivateChannel(dto);
+        log.debug("[PRIVATE_CHANNEL_CREATE_REQUEST] 비공개 채널 생성 요청: participantsNumber={}", dto.participantIds().size());
+        ChannelDto created = channelService.createPrivateChannel(dto);
 
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
-                .buildAndExpand(created.channelId())
+                .buildAndExpand(created.id())
                 .toUri();
 
         return ResponseEntity.created(location)
                 .body(created);
     }
 
-    @RequestMapping(value = "/update/{channelId}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH)
     public ResponseEntity updateChannel(
             @PathVariable UUID channelId,
-            @RequestBody UpdateChannelRequestDTO dto
+            @RequestBody @Valid UpdateChannelRequestDTO dto
             ) {
-        ChannelWithLastMessageDTO response = channelService.updateChannel(channelId, dto);
+        log.debug("[CHANNEL_UPDATE_REQUEST] 채널 정보 수정 요청: channelId={}", channelId);
+        ChannelDto response = channelService.updateChannel(channelId, dto);
 
         return ResponseEntity.ok(response);
     }
@@ -68,50 +70,18 @@ public class ChannelController {
     public ResponseEntity deleteChannel(
             @PathVariable UUID channelId
     ) {
+        log.debug("[CHANNEL_DELETE_REQUEST] 채널 삭제 요청: channelId={}", channelId);
         channelService.deleteChannel(channelId);
 
-        return ResponseEntity.ok(
-                new DeleteOrLeaveChannelResponseDTO(
-                        Instant.now(),
-                        200,
-                        "채널이 삭제되었습니다."
-                )
-        );
+        return ResponseEntity.noContent().build();
     }
 
-    @RequestMapping(value = "/{channelId}/users", method = RequestMethod.GET)
-    public ResponseEntity findAllUsersByChannelId(
-            @PathVariable UUID channelId
+    @RequestMapping(method = RequestMethod.GET)
+    public ResponseEntity findChannelsByUserId(
+            @RequestParam("userId") UUID userId
     ) {
-        List<UserResponseDTO> users = userService.findAllByChannel(channelId);
+        List<ChannelDto> channels = channelService.findAllByUserId(userId);
 
-        return ResponseEntity.ok(users);
-    }
-
-    @RequestMapping(value = "/{channelId}/join/{userId}", method = RequestMethod.POST)
-    public ResponseEntity joinChannel(
-            @PathVariable UUID channelId,
-            @PathVariable UUID userId
-    ) {
-        channelService.joinChannel(channelId, userId);
-        ChannelWithLastMessageDTO response = channelService.findByChannelId(channelId);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @RequestMapping(value = "/{channelId}/leave/{userId}", method = RequestMethod.POST)
-    public ResponseEntity leaveChannel(
-            @PathVariable UUID channelId,
-            @PathVariable UUID userId
-    ) {
-        channelService.leaveChannel(channelId, userId);
-
-        return ResponseEntity.ok(
-                new DeleteOrLeaveChannelResponseDTO(
-                        Instant.now(),
-                        200,
-                        "채널을 떠났습니다."
-                )
-        );
+        return ResponseEntity.ok(channels);
     }
 }
