@@ -33,6 +33,11 @@ jobs:
       # Step 4: 코드를 빌드하고 테스트 실행
       - name: 애플리케이션 빌드 및 테스트 실행
         run: ./gradlew build
+        env:
+          AWS_S3_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY }}
+          AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
+          AWS_S3_REGION: ${{ secrets.AWS_S3_REGION }}
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
 
       # Step 5: 테스트가 끝나면 Codecov로 커버리지(테스트 통과율) 리포트 전송
       - name: Codecov에 테스트 커버리지 결과 업로드

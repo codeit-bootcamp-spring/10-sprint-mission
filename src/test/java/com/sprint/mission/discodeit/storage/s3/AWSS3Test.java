@@ -26,17 +26,12 @@ public class AWSS3Test {
   private String bucketName;
 
   @BeforeEach
-  void setUp() throws IOException {
-    // 1. 순수 Java Properties로 .env 파일 로드
-    Properties props = new Properties();
-    try (FileInputStream fis = new FileInputStream(".env")) {
-      props.load(fis);
-    }
-
-    String accessKey = props.getProperty("AWS_S3_ACCESS_KEY");
-    String secretKey = props.getProperty("AWS_S3_SECRET_KEY");
-    String regionStr = props.getProperty("AWS_S3_REGION");
-    bucketName = props.getProperty("AWS_S3_BUCKET");
+  void setUp() {
+    // 1. 환경 변수 설정 세팅
+    String accessKey = System.getenv("AWS_S3_ACCESS_KEY");
+    String secretKey = System.getenv("AWS_S3_SECRET_KEY");
+    String regionStr = System.getenv("AWS_S3_REGION");
+    bucketName = System.getenv("AWS_S3_BUCKET");
 
     // 2. 자격 증명 및 리전 설정
     StaticCredentialsProvider credentialsProvider = StaticCredentialsProvider.create(
