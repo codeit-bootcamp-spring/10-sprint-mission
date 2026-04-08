@@ -45,5 +45,7 @@ bin/
 .*
 !.gitignore
 !.dockerignore
+!.github
 
 .env
+*.env
