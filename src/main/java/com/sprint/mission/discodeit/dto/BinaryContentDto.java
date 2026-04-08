@@ -1,23 +1,19 @@
 package com.sprint.mission.discodeit.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@Getter
-@AllArgsConstructor
-public class BinaryContentDto {
-    @NotBlank(message = "파일 이름이 존재하지 않습니다.")
-    private String fileName;
+import java.util.UUID;
 
-    @NotBlank(message = "파일 타입은 필수입니다.")
-    private String contentType;
+public record BinaryContentDto(
+        UUID id,
+        String fileName,
+        String contentType,
+        Long size,
 
-    @Min(value = 1, message = "파일 크기는 0보다 커야 합니다.")
-    private long size;
-
-    @NotEmpty(message = "파일 내용이 비어있습니다.")
-    private byte[] contents;
+        @JsonIgnore
+        byte[] bytes
+) {
+    public BinaryContentDto(String fileName, String contentType, Long size, byte[] bytes) {
+        this(null, fileName, contentType, size, bytes);
+    }
 }

@@ -1,39 +1,34 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sprint.mission.discodeit.entity.base.BaseEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.util.Assert;
 
-import java.io.Serial;
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
-
+@Entity
+@Table(name = "binary_contents")
 @Getter
-public class BinaryContent implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+@NoArgsConstructor
+public class BinaryContent extends BaseEntity {
 
-    private UUID id;
-    private Instant createdAt;
+    @Column(name = "file_name", nullable = false)
     private String fileName;
+
+    @Column(nullable = false)
+    private Long size;
+
+    @Column(name = "content_type", nullable = false, length = 100)
     private String contentType;
-    private long size;
 
-    @JsonProperty("bytes")
-    private byte[] contents;
-
-    public BinaryContent(String fileName, String contentType, long size, byte[] contents) {
+    public BinaryContent(String fileName, String contentType, Long size) {
         Assert.hasText(fileName, "파일 이름이 없습니다!");
         Assert.isTrue(size > 0, "파일의 크기가 유효하지 않습니다!");
-        Assert.notNull(contents, "첨부할 파일이 없습니다!");
-        Assert.isTrue(contents.length > 0, "첨부할 파일이 비어있습니다!");
 
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
         this.fileName = fileName;
         this.contentType = contentType;
         this.size = size;
-        this.contents = contents;
     }
 }

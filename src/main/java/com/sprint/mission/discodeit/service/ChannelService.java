@@ -4,7 +4,6 @@ import com.sprint.mission.discodeit.dto.ChannelDto;
 import com.sprint.mission.discodeit.dto.CreatePrivateChannelRequestDto;
 import com.sprint.mission.discodeit.dto.CreatePublicChannelRequestDto;
 import com.sprint.mission.discodeit.dto.UpdateChannelRequestDto;
-import com.sprint.mission.discodeit.entity.Channel;
 
 import java.util.List;
 import java.util.UUID;

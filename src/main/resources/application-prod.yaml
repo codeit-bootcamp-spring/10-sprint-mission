@@ -1,0 +1,30 @@
+server:
+  port: 80 # 운영 환경 서버 포트
+
+spring:
+  application:
+    name: discodeit
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+  datasource:
+    url: jdbc:postgresql://prod-db-server:5432/discodeit # 운영 데이터베이스 URL
+    username: prod_user
+    password: prod_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate # [중요] 운영 환경에서는 데이터 유실 방지를 위해 validate 또는 none 사용
+    show-sql: false
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: false
+        highlight_sql: false
+
+logging:
+  level:
+    org.hibernate.SQL: ERROR # 운영 환경에서는 불필요한 로그를 줄이기 위해 ERROR로 설정
+    org.hibernate.orm.jdbc.bind: ERROR
+    com.sprint.mission.discodeit: INFO

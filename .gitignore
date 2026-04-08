@@ -5,6 +5,8 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 .discodeit/
+.DS_Store
+rootPath/
 
 ### STS ###
 .apt_generated
@@ -36,3 +38,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Logs
+.logs/
+*.log

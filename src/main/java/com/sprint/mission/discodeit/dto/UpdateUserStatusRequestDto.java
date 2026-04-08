@@ -1,10 +1,11 @@
 package com.sprint.mission.discodeit.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@Getter
-@AllArgsConstructor
-public class UpdateUserStatusRequestDto {
-    // 통일성, 확장성을 위해 생성
+import java.time.Instant;
+
+@Schema(name = "UserStatusUpdateRequest", description = "변경할 User 온라인 상태 정보")
+public record UpdateUserStatusRequestDto(
+        Instant newLastActiveAt
+) {
 }
