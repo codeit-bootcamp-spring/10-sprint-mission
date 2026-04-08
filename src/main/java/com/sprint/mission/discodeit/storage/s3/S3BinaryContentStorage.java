@@ -100,6 +100,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
         return ResponseEntity
                 .status(HttpStatus.FOUND)   // 302 리다이렉트
+                //서버가 직접처리하지않고 presignedUrl을 통해 S3의 주소를 알려줘서 거기서 처리하라고 한다.
                 .header(HttpHeaders.LOCATION, presignedUrl)
                 .build();
     }
