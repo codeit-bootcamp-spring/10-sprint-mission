@@ -67,6 +67,13 @@ jobs:
         run: |
           aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --desired-count 0
 
+      - name: Wait for service to stop
+        env:
+          ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+          ECS_SERVICE: ${{ vars.ECS_SERVICE }}
+        run: |
+          aws ecs wait services-stable --cluster $ECS_CLUSTER --services $ECS_SERVICE
+
       - name: Update ECS service
         env:
           ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
