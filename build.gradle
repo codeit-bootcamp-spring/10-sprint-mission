@@ -47,7 +47,7 @@ dependencies {
 	// AWS S3 SDK 의존성
 	implementation 'software.amazon.awssdk:s3:2.31.7'
 
-	// .env 파일 읽는 라이브러리
+	// discodeit.env 파일 읽는 라이브러리
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
 
