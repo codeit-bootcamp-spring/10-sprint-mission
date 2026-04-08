@@ -1,11 +1,11 @@
 {
-  "family": "discodeit-task",
-  "executionRoleArn": "arn:aws:iam::546854094309:role/ecsTaskExecutionRole",
+  "family": "${ECS_TASK_DEFINITION}",
+  "executionRoleArn": "arn:aws:iam::${AWS_ACCOUNT_ID}:role/ecsTaskExecutionRole",
   "networkMode": "bridge",
   "containerDefinitions": [
     {
       "name": "discodeit-app",
-      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_S3_REGION}.amazonaws.com/discodeit:${IMAGE_TAG}",
+      "image": "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/discodeit:${IMAGE_TAG}",
       "cpu": 512,
       "memory": 819,
       "memoryReservation": 410,
@@ -29,7 +29,7 @@
         "options": {
           "awslogs-group": "/ecs/discodeit-task",
           "awslogs-create-group": "true",
-          "awslogs-region": "ap-northeast-2",
+          "awslogs-region": "${AWS_REGION}",
           "awslogs-stream-prefix": "ecs"
         }
       }
