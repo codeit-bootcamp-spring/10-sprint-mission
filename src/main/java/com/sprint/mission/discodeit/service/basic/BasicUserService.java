@@ -19,6 +19,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +35,7 @@ public class BasicUserService implements UserService {
   private final UserStatusRepository userStatusRepository;
   private final UserMapper userMapper;
   private final BinaryContentRepository binaryContentRepository;
-  private final BinaryContentStorage binaryContentStorage;
+  private final S3BinaryContentStorage s3BinaryContentStorage;
 
   @Transactional
   @Override
@@ -56,10 +58,12 @@ public class BasicUserService implements UserService {
           String fileName = profileRequest.fileName();
           String contentType = profileRequest.contentType();
           byte[] bytes = profileRequest.bytes();
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType);
+          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
           binaryContentRepository.save(binaryContent);
-          binaryContentStorage.put(binaryContent.getId(), bytes);
+            log.info("프로필 메타데이터 저장 완료: id={}, fileName={}", binaryContent.getId(), fileName);
+          s3BinaryContentStorage.put(binaryContent.getId(), bytes, contentType);
+            log.info("프로필 S3 업로드 완료: id={}, contentType={}, size={}bytes",
+                    binaryContent.getId(), contentType, bytes.length);
           return binaryContent;
         })
         .orElse(null);
@@ -69,8 +73,10 @@ public class BasicUserService implements UserService {
     Instant now = Instant.now();
     UserStatus userStatus = new UserStatus(user, now);
 
+
     userRepository.save(user);
     log.info("사용자 생성 완료: id={}, username={}", user.getId(), username);
+    userStatusRepository.save(userStatus);
     return userMapper.toDto(user);
   }
 
@@ -127,7 +133,7 @@ public class BasicUserService implements UserService {
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
               contentType);
           binaryContentRepository.save(binaryContent);
-          binaryContentStorage.put(binaryContent.getId(), bytes);
+          s3BinaryContentStorage.put(binaryContent.getId(), bytes, contentType);
           return binaryContent;
         })
         .orElse(null);

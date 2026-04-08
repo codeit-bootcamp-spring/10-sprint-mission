@@ -10,6 +10,8 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.UUID;
+
+import com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,13 +24,12 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentMapper binaryContentMapper;
-  private final BinaryContentStorage binaryContentStorage;
+  private final S3BinaryContentStorage  s3BinaryContentStorage;
 
   @Transactional
   @Override
   public BinaryContentDto create(BinaryContentCreateRequest request) {
-    log.debug("바이너리 컨텐츠 생성 시작: fileName={}, size={}, contentType={}", 
-        request.fileName(), request.bytes().length, request.contentType());
+    log.debug("바이너리 컨텐츠 생성 시작: fileName={}, size={}, contentType={}", request.fileName(), request.bytes().length, request.contentType());
 
     String fileName = request.fileName();
     byte[] bytes = request.bytes();
@@ -39,10 +40,9 @@ public class BasicBinaryContentService implements BinaryContentService {
         contentType
     );
     binaryContentRepository.save(binaryContent);
-    binaryContentStorage.put(binaryContent.getId(), bytes);
+    UUID uploadId = s3BinaryContentStorage.put(binaryContent.getId(), bytes, contentType);
 
-    log.info("바이너리 컨텐츠 생성 완료: id={}, fileName={}, size={}", 
-        binaryContent.getId(), fileName, bytes.length);
+    log.info("바이너리 컨텐츠 생성 완료: id={}", uploadId);
     return binaryContentMapper.toDto(binaryContent);
   }
 

@@ -6,6 +6,8 @@ import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.util.List;
 import java.util.UUID;
+
+import com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BinaryContentController implements BinaryContentApi {
 
   private final BinaryContentService binaryContentService;
-  private final BinaryContentStorage binaryContentStorage;
+  private final S3BinaryContentStorage s3BinaryContentStorage;
 
   @GetMapping(path = "{binaryContentId}")
   public ResponseEntity<BinaryContentDto> find(
@@ -52,7 +54,7 @@ public class BinaryContentController implements BinaryContentApi {
       @PathVariable("binaryContentId") UUID binaryContentId) {
     log.info("바이너리 컨텐츠 다운로드 요청: id={}", binaryContentId);
     BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
-    ResponseEntity<?> response = binaryContentStorage.download(binaryContentDto);
+    ResponseEntity<?> response = s3BinaryContentStorage.download(binaryContentDto);
     log.debug("바이너리 컨텐츠 다운로드 응답: contentType={}, contentLength={}", 
         response.getHeaders().getContentType(), response.getHeaders().getContentLength());
     return response;
