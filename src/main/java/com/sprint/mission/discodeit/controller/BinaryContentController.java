@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/binaryContents")
 @RequiredArgsConstructor
@@ -40,8 +42,10 @@ public class BinaryContentController {
             @RequestParam BinaryContentOwnerType type,
             @RequestPart("file") MultipartFile file
     ) {
+        log.info("파일 업로드 요청: type={}, fileName={}", type, file.getOriginalFilename());
         BinaryContentRequest request = new BinaryContentRequest(type, file);
         UUID id = binaryContentService.createBinaryContent(request);
+        log.info("파일 업로드 완료: binaryContentId={}", id);
 
         return ResponseEntity.ok(id);
     }
@@ -56,6 +60,7 @@ public class BinaryContentController {
             @Parameter(description = "조회할 첨부 파일 ID", example = "a1636f5f-72ab-497f-a6ff-72e4eb6f9f54")
             @PathVariable UUID binaryContentId
     ) {
+        log.debug("파일 조회 요청: binaryContentId={}", binaryContentId);
         BinaryContentDto response = binaryContentService.findBinaryContent(binaryContentId);
 
         return ResponseEntity.ok(response);
@@ -71,6 +76,7 @@ public class BinaryContentController {
             )
             @RequestParam("binaryContentIds") List<UUID> binaryContentIds
     ) {
+        log.debug("파일 목록 조회 요청: count={}", binaryContentIds.size());
         List<BinaryContentDto> responses = binaryContentService.findAllByIdIn(binaryContentIds);
 
         return ResponseEntity.ok(responses);
@@ -80,6 +86,7 @@ public class BinaryContentController {
     public ResponseEntity<?> downloadBinaryContent(
             @PathVariable UUID binaryContentId
     ) {
+        log.info("파일 다운로드 요청: binaryContentId={}", binaryContentId);
         return binaryContentService.downloadBinaryContent(binaryContentId);
     }
 
@@ -89,7 +96,9 @@ public class BinaryContentController {
     public ResponseEntity<Void> deleteBinaryContent(
             @PathVariable UUID binaryContentId
     ) {
+        log.info("파일 삭제 요청: binaryContentId={}", binaryContentId);
         binaryContentService.deleteBinaryContent(binaryContentId);
+        log.info("파일 삭제 완료: binaryContentId={}", binaryContentId);
 
         return ResponseEntity.noContent().build();
     }

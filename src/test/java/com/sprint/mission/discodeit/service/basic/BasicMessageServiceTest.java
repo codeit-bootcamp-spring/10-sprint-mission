@@ -1,249 +1,239 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
 import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageDto;
 import com.sprint.mission.discodeit.dto.message.MessageUpdateRequest;
 import com.sprint.mission.discodeit.dto.response.PageResponse;
-import com.sprint.mission.discodeit.entity.BinaryContent;
-import com.sprint.mission.discodeit.entity.BinaryContentOwnerType;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.MessageMapper;
+import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.sprint.mission.discodeit.service.BinaryContentService;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.mock.web.MockMultipartFile;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 
-@SpringBootTest
-@Transactional
-public class BasicMessageServiceTest {
+@ExtendWith(MockitoExtension.class)
+class BasicMessageServiceTest {
 
-    @Autowired
-    BasicMessageService messageService;
+    @Mock
+    private UserRepository userRepository;
 
-    @Autowired
-    UserRepository userRepository;
+    @Mock
+    private ChannelRepository channelRepository;
 
-    @Autowired
-    ChannelRepository channelRepository;
+    @Mock
+    private MessageRepository messageRepository;
 
-    @Autowired
-    MessageRepository messageRepository;
+    @Mock
+    private BinaryContentService binaryContentService;
 
-    @Autowired
-    BinaryContentRepository binaryContentRepository;
+    @Mock
+    private MessageMapper messageMapper;
 
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final PageResponseMapper pageResponseMapper = new PageResponseMapper() {
+    };
 
-    UUID userId;
-    UUID channelId;
+    private BasicMessageService messageService;
 
     @BeforeEach
     void setUp() {
-
-        User user = new User("testUser", "1234", "test@test.com");
-        userRepository.save(user);
-        userId = user.getId();
-
-        Channel channel = Channel.buildPublic("test-channel", "test-desc");
-        channelRepository.save(channel);
-        channelId = channel.getId();
-
-        flushAndClear();
-    }
-
-    @ParameterizedTest
-    @MethodSource("createMessageProvider")
-    @DisplayName("메시지 생성 성공")
-    void createMessage_success(List<BinaryContentRequest> attachments) {
-        MessageCreateRequest request = new MessageCreateRequest("hello world", channelId, userId);
-
-        UUID messageId = messageService.createMessage(userId, request, attachments).id();
-        flushAndClear();
-
-        Message message = messageRepository.findById(messageId).orElseThrow();
-
-        assertThat(message.getContent()).isEqualTo("hello world");
-        assertThat(message.getAuthor().getId()).isEqualTo(userId);
-        assertThat(message.getChannel().getId()).isEqualTo(channelId);
-
-        if (attachments == null || attachments.isEmpty()) {
-            assertThat(message.getAttachments()).isEmpty();
-        } else {
-            assertThat(message.getAttachments()).hasSize(1);
-
-            UUID attachmentId = message.getAttachments().get(0).getId();
-            BinaryContent binaryContent = binaryContentRepository.findById(attachmentId).orElseThrow();
-
-            assertThat(binaryContent.getFileName()).isEqualTo("image.png");
-            assertThat(binaryContent.getContentType()).isEqualTo("image/png");
-        }
-    }
-
-    static Stream<Arguments> createMessageProvider() {
-        return Stream.of(
-                Arguments.of((List<BinaryContentRequest>) null),
-                Arguments.of(List.of()),
-                Arguments.of(List.of(
-                        new BinaryContentRequest(
-                                BinaryContentOwnerType.MESSAGE,
-                                new MockMultipartFile("file", "image.png", "image/png", "image".getBytes())
-                        )
-                ))
+        messageService = new BasicMessageService(
+                userRepository,
+                channelRepository,
+                messageRepository,
+                binaryContentService,
+                messageMapper,
+                pageResponseMapper
         );
     }
 
     @Test
-    @DisplayName("채널별 메시지 조회")
-    void findMessagesByChannel() {
-        messageService.createMessage(
-                userId,
-                new MessageCreateRequest("hello", channelId, userId),
-                List.of()
-        );
+    @DisplayName("메시지 생성 성공")
+    void createMessage_success() {
+        UUID requesterId = UUID.randomUUID();
+        UUID channelId = UUID.randomUUID();
+        UUID messageId = UUID.randomUUID();
 
-        PageResponse<MessageDto> responses = messageService.findAllMessagesByChannelId(
-                channelId,
-                null,
-                PageRequest.of(0, 50)
-        );
+        User user = new User("dustle", "1234", "dustle@test.com");
+        Channel channel = Channel.buildPublic("general", "desc");
+        setId(user, requesterId);
+        setId(channel, channelId);
 
-        assertThat(responses.content()).hasSize(1);
-        assertThat(responses.content().get(0).content()).isEqualTo("hello");
+        Message savedMessage = new Message(user, channel, "hello");
+        setId(savedMessage, messageId);
+        setCreatedAt(savedMessage, Instant.parse("2026-04-01T00:00:00Z"));
+
+        MessageCreateRequest request = new MessageCreateRequest("hello", channelId, requesterId);
+        MessageDto expected = new MessageDto(messageId, savedMessage.getCreatedAt(), null, "hello", channelId, null, List.of());
+
+        given(userRepository.findById(requesterId)).willReturn(java.util.Optional.of(user));
+        given(channelRepository.findById(channelId)).willReturn(java.util.Optional.of(channel));
+        given(binaryContentService.createBinaryContents(List.of())).willReturn(List.of());
+        given(messageRepository.save(any(Message.class))).willReturn(savedMessage);
+        given(messageMapper.toDto(savedMessage)).willReturn(expected);
+
+        MessageDto result = messageService.createMessage(requesterId, request, List.of());
+
+        assertThat(result).isEqualTo(expected);
+        assertThat(channel.getLastMessageAt()).isEqualTo(savedMessage.getCreatedAt());
+        then(messageRepository).should().save(any(Message.class));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 사용자로 메시지 생성 실패")
+    void createMessage_fail_whenUserNotFound() {
+        UUID requesterId = UUID.randomUUID();
+        UUID channelId = UUID.randomUUID();
+        MessageCreateRequest request = new MessageCreateRequest("hello", channelId, requesterId);
+        given(userRepository.findById(requesterId)).willReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> messageService.createMessage(requesterId, request, List.of()))
+                .isInstanceOf(UserNotFoundException.class);
     }
 
     @Test
     @DisplayName("메시지 수정 성공")
     void updateMessage_success() {
-        UUID messageId = messageService.createMessage(
-                userId,
-                new MessageCreateRequest("old", channelId, userId),
-                List.of()
-        ).id();
+        UUID messageId = UUID.randomUUID();
+        User user = new User("dustle", "1234", "dustle@test.com");
+        Channel channel = Channel.buildPublic("general", "desc");
+        Message message = new Message(user, channel, "before");
+        setId(message, messageId);
 
-        MessageUpdateRequest request = new MessageUpdateRequest("new content");
+        MessageDto expected = new MessageDto(messageId, null, null, "after", null, null, List.of());
+        given(messageRepository.findById(messageId)).willReturn(java.util.Optional.of(message));
+        given(messageMapper.toDto(message)).willReturn(expected);
 
-        MessageDto response = messageService.updateMessage(messageId, request);
-        flushAndClear();
+        MessageDto result = messageService.updateMessage(messageId, new MessageUpdateRequest("after"));
 
-        Message message = messageRepository.findById(messageId).orElseThrow();
-        assertThat(message.getContent()).isEqualTo("new content");
-        assertThat(response.content()).isEqualTo("new content");
+        assertThat(result).isEqualTo(expected);
+        assertThat(message.getContent()).isEqualTo("after");
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 메시지 수정 실패")
+    void updateMessage_fail_whenMessageNotFound() {
+        UUID messageId = UUID.randomUUID();
+        given(messageRepository.findById(messageId)).willReturn(java.util.Optional.empty());
+
+        assertThatThrownBy(() -> messageService.updateMessage(messageId, new MessageUpdateRequest("after")))
+                .isInstanceOf(MessageNotFoundException.class);
     }
 
     @Test
     @DisplayName("메시지 삭제 성공")
     void deleteMessage_success() {
-        UUID messageId = messageService.createMessage(
-                userId,
-                new MessageCreateRequest("delete me", channelId, userId),
-                List.of(
-                        new BinaryContentRequest(
-                                BinaryContentOwnerType.MESSAGE,
-                                new MockMultipartFile("file", "img.png", "image/png", "img".getBytes())
-                        )
-                )
-        ).id();
+        UUID messageId = UUID.randomUUID();
+        User user = new User("dustle", "1234", "dustle@test.com");
+        Channel channel = Channel.buildPublic("general", "desc");
+        Message message = new Message(user, channel, "hello");
+        setId(message, messageId);
 
-        Message message = messageRepository.findById(messageId).orElseThrow();
-        List<UUID> attachmentIds = message.getAttachments().stream()
-                .map(BinaryContent::getId)
-                .toList();
+        given(messageRepository.findById(messageId)).willReturn(java.util.Optional.of(message));
 
         messageService.deleteMessage(messageId);
-        flushAndClear();
 
-        assertThat(messageRepository.findById(messageId)).isEmpty();
-
-        for (UUID attachmentId : attachmentIds) {
-            assertThat(binaryContentRepository.findById(attachmentId)).isPresent();
-        }
+        then(messageRepository).should().delete(message);
+        assertThat(message.getAuthor()).isNull();
+        assertThat(message.getChannel()).isNull();
+        assertThat(message.getAttachments()).isEmpty();
     }
 
     @Test
-    @DisplayName("Message 생성 시 User, Channel 양방향 연관관계 일관성 유지")
-    void message_bidirectionalConsistency() {
-        User user = userRepository.findById(userId).orElseThrow();
-        Channel channel = channelRepository.findById(channelId).orElseThrow();
+    @DisplayName("존재하지 않는 메시지 삭제 실패")
+    void deleteMessage_fail_whenMessageNotFound() {
+        UUID messageId = UUID.randomUUID();
+        given(messageRepository.findById(messageId)).willReturn(java.util.Optional.empty());
 
-        Message message = new Message(user, channel, "bidirectional");
-
-        assertThat(message.getAuthor()).isEqualTo(user);
-        assertThat(message.getChannel()).isEqualTo(channel);
-        assertThat(user.getMessages()).contains(message);
-        assertThat(channel.getMessages()).contains(message);
+        assertThatThrownBy(() -> messageService.deleteMessage(messageId))
+                .isInstanceOf(MessageNotFoundException.class);
     }
 
     @Test
     @DisplayName("메시지 커서 페이지네이션 조회 성공")
-    void findMessagesByChannel_withCursor() {
-        for (int i = 1; i <= 130; i++) {
-            messageService.createMessage(
-                    userId,
-                    new MessageCreateRequest("m" + i, channelId, userId),
-                    List.of()
-            );
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
+    void findAllMessagesByChannelId_success() {
+        UUID channelId = UUID.randomUUID();
+        UUID firstId = UUID.randomUUID();
+        UUID secondId = UUID.randomUUID();
 
-        PageResponse<MessageDto> firstPage = messageService.findAllMessagesByChannelId(
-                channelId,
-                null,
-                PageRequest.of(0, 50)
+        User user = new User("dustle", "1234", "dustle@test.com");
+        Channel channel = Channel.buildPublic("general", "desc");
+        setId(channel, channelId);
+
+        Message first = new Message(user, channel, "first");
+        Message second = new Message(user, channel, "second");
+        setId(first, firstId);
+        setId(second, secondId);
+
+        Slice<Message> messageSlice = new SliceImpl<>(
+                List.of(first, second),
+                PageRequest.of(0, 2),
+                true
         );
+        MessageDto firstDto = new MessageDto(firstId, null, null, "first", channelId, null, List.of());
+        MessageDto secondDto = new MessageDto(secondId, null, null, "second", channelId, null, List.of());
 
-        assertThat(firstPage.content()).hasSize(50);
-        assertThat(firstPage.hasNext()).isTrue();
-        assertThat(firstPage.nextCursor()).isInstanceOf(UUID.class);
+        given(messageRepository.findByChannel_IdOrderByCreatedAtDescIdDesc(eq(channelId), any()))
+                .willReturn(messageSlice);
+        given(messageMapper.toDto(first)).willReturn(firstDto);
+        given(messageMapper.toDto(second)).willReturn(secondDto);
 
-        PageResponse<MessageDto> secondPage = messageService.findAllMessagesByChannelId(
-                channelId,
-                (UUID) firstPage.nextCursor(),
-                PageRequest.of(0, 50)
-        );
+        PageResponse<MessageDto> result = messageService.findAllMessagesByChannelId(channelId, null, PageRequest.of(0, 2));
 
-        assertThat(secondPage.content()).hasSize(50);
-        assertThat(secondPage.hasNext()).isTrue();
-        assertThat(secondPage.nextCursor()).isInstanceOf(UUID.class);
-
-        PageResponse<MessageDto> thirdPage = messageService.findAllMessagesByChannelId(
-                channelId,
-                (UUID) secondPage.nextCursor(),
-                PageRequest.of(0, 50)
-        );
-
-        assertThat(thirdPage.content()).hasSize(30);
-        assertThat(thirdPage.hasNext()).isFalse();
-        assertThat(thirdPage.nextCursor()).isNull();
+        assertThat(result.content()).containsExactly(firstDto, secondDto);
+        assertThat(result.nextCursor()).isEqualTo(secondId);
+        assertThat(result.hasNext()).isTrue();
     }
 
-    private void flushAndClear() {
-        entityManager.flush();
-        entityManager.clear();
+    @Test
+    @DisplayName("다른 채널의 커서 메시지로 조회 실패")
+    void findAllMessagesByChannelId_fail_whenCursorBelongsToAnotherChannel() {
+        UUID requestedChannelId = UUID.randomUUID();
+        UUID cursorId = UUID.randomUUID();
+        Channel anotherChannel = Channel.buildPublic("another", "desc");
+        setId(anotherChannel, UUID.randomUUID());
+        User user = new User("dustle", "1234", "dustle@test.com");
+        Message cursorMessage = new Message(user, anotherChannel, "cursor");
+        setId(cursorMessage, cursorId);
+
+        given(messageRepository.findById(cursorId)).willReturn(java.util.Optional.of(cursorMessage));
+
+        assertThatThrownBy(() -> messageService.findAllMessagesByChannelId(
+                requestedChannelId,
+                cursorId,
+                PageRequest.of(0, 20)
+        )).isInstanceOf(MessageNotFoundException.class);
+    }
+
+    private static void setId(Object target, UUID id) {
+        ReflectionTestUtils.setField(target, "id", id);
+    }
+
+    private static void setCreatedAt(Object target, Instant createdAt) {
+        ReflectionTestUtils.setField(target, "createdAt", createdAt);
     }
 }

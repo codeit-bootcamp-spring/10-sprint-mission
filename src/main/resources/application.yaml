@@ -1,11 +1,13 @@
 spring:
   application:
     name: discodeit
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/discodeit}
-    username: ${DB_USERNAME:discodeit_user}
-    password: ${DB_PASSWORD:}
-    driver-class-name: org.postgresql.Driver
+  profiles:
+    active: dev
+  boot:
+    admin:
+      client:
+        instance:
+          name: discodeit
   jpa:
     open-in-view: false
     hibernate:
@@ -26,6 +28,37 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 50MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,loggers
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: Discodeit
+    version: 1.7.0
+    java-version: 17
+    spring-boot-version: 3.4.0
+    datasource:
+      url: ${spring.datasource.url:}
+      driver-class-name: ${spring.datasource.driver-class-name:}
+    jpa:
+      ddl-auto: ${spring.jpa.hibernate.ddl-auto:}
+    storage:
+      type: ${discodeit.storage.type:}
+      path: ${discodeit.storage.local.root-path:}
+    multipart:
+      max-file-size: ${spring.servlet.multipart.max-file-size:}
+      max-request-size: ${spring.servlet.multipart.max-request-size:}
 logging:
   level:
     root: INFO

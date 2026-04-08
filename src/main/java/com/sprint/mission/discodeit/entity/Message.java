@@ -1,8 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
-import com.sprint.mission.discodeit.response.ApiException;
-import com.sprint.mission.discodeit.response.ErrorCode;
+import com.sprint.mission.discodeit.exception.message.MessageSenderMismatchException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -14,6 +13,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -65,8 +65,15 @@ public class Message extends BaseUpdatableEntity {
 
     public void validateSender(UUID userId) {
         if (author == null || !author.getId().equals(userId)) {
-            throw new ApiException(ErrorCode.MESSAGE_SENDER_MISMATCH,
-                    "메세지의 sender가 아닙니다. userId: " + userId);
+            Map<String, Object> details = new java.util.LinkedHashMap<>();
+            details.put("userId", userId);
+            if (getId() != null) {
+                details.put("messageId", getId());
+            }
+            throw new MessageSenderMismatchException(
+                    "메세지의 sender가 아닙니다. userId: " + userId,
+                    details
+            );
         }
     }
 

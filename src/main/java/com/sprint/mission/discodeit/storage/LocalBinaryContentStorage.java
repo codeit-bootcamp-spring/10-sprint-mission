@@ -1,13 +1,14 @@
 package com.sprint.mission.discodeit.storage;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
-import com.sprint.mission.discodeit.response.ApiException;
-import com.sprint.mission.discodeit.response.ErrorCode;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.InternalDiscodeitException;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -36,8 +37,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         try {
             Files.createDirectories(root);
         } catch (IOException e) {
-            throw new ApiException(ErrorCode.INTERNAL_ERROR,
-                    "스토리지 디렉터리 생성에 실패했습니다. path: " + root);
+            throw new InternalDiscodeitException(
+                    "스토리지 디렉터리 생성에 실패했습니다. path: " + root,
+                    Map.of("path", root.toString()),
+                    e
+            );
         }
     }
 
@@ -49,8 +53,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
             Files.write(path, bytes);
             return id;
         } catch (IOException e) {
-            throw new ApiException(ErrorCode.INTERNAL_ERROR,
-                    "바이너리 저장에 실패했습니다. binaryContentId: " + id);
+            throw new InternalDiscodeitException(
+                    "바이너리 저장에 실패했습니다. binaryContentId: " + id,
+                    Map.of("binaryContentId", id, "path", path.toString()),
+                    e
+            );
         }
     }
 
@@ -59,15 +66,20 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
         Path path = resolvePath(id);
 
         if (!Files.exists(path)) {
-            throw new ApiException(ErrorCode.BINARY_CONTENT_NOT_FOUND,
-                    "바이너리 파일을 찾을 수 없습니다. binaryContentId: " + id);
+            throw new BinaryContentNotFoundException(
+                    "바이너리 파일을 찾을 수 없습니다. binaryContentId: " + id,
+                    Map.of("binaryContentId", id, "path", path.toString())
+            );
         }
 
         try {
             return Files.newInputStream(path);
         } catch (IOException e) {
-            throw new ApiException(ErrorCode.INTERNAL_ERROR,
-                    "바이너리 로드에 실패했습니다. binaryContentId: " + id);
+            throw new InternalDiscodeitException(
+                    "바이너리 로드에 실패했습니다. binaryContentId: " + id,
+                    Map.of("binaryContentId", id, "path", path.toString()),
+                    e
+            );
         }
     }
 
@@ -88,8 +100,11 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
                     .contentLength(binaryContentDto.size())
                     .body(resource);
         } catch (IOException e) {
-            throw new ApiException(ErrorCode.INTERNAL_ERROR,
-                    "다운로드 스트림 처리에 실패했습니다. binaryContentId: " + binaryContentDto.id());
+            throw new InternalDiscodeitException(
+                    "다운로드 스트림 처리에 실패했습니다. binaryContentId: " + binaryContentDto.id(),
+                    Map.of("binaryContentId", binaryContentDto.id()),
+                    e
+            );
         }
     }
 

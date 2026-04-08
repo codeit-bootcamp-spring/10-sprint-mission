@@ -8,7 +8,7 @@ import com.sprint.mission.discodeit.entity.UserOnlineStatus;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
-import com.sprint.mission.discodeit.response.ApiException;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,8 +64,9 @@ public class BasicUserStatusServiceTest {
     @Test
     @DisplayName("존재하지 않는 유저면 UserStatus 생성 실패")
     void createUserStatus_fail_user_not_exist() {
-        assertThatThrownBy(() -> userStatusService.createUserStatus(new CreateUserStatusRequest(UUID.randomUUID())))
-                .isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> userStatusService.createUserStatus(
+                new CreateUserStatusRequest(UUID.randomUUID())))
+                .isInstanceOf(DiscodeitException.class);
     }
 
     @Test
@@ -75,7 +76,7 @@ public class BasicUserStatusServiceTest {
         userStatusService.createUserStatus(request);
 
         assertThatThrownBy(() -> userStatusService.createUserStatus(request))
-                .isInstanceOf(ApiException.class);
+                .isInstanceOf(DiscodeitException.class);
     }
 
     @Test
@@ -90,7 +91,7 @@ public class BasicUserStatusServiceTest {
     @DisplayName("존재하지 않는 userStatusId 조회 실패")
     void findUserStatusById_fail() {
         assertThatThrownBy(() -> userStatusService.findUserStatusByUserStatusId(UUID.randomUUID()))
-                .isInstanceOf(ApiException.class);
+                .isInstanceOf(DiscodeitException.class);
     }
 
     @Test
@@ -129,7 +130,7 @@ public class BasicUserStatusServiceTest {
         assertThatThrownBy(() -> userStatusService.updateUserStatusByUserId(
                 UUID.randomUUID(),
                 new UserStatusUpdateRequest(Instant.now())
-        )).isInstanceOf(ApiException.class);
+        )).isInstanceOf(DiscodeitException.class);
     }
 
     @Test

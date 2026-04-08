@@ -9,18 +9,21 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.response.ApiException;
-import com.sprint.mission.discodeit.response.ErrorCode;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.service.MessageService;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -28,6 +31,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
@@ -48,6 +52,7 @@ public class BasicMessageService implements MessageService {
             MessageCreateRequest request,
             List<BinaryContentRequest> attachments
     ) {
+        log.debug("메시지 생성 처리 시작: channelId={}, authorId={}", request.channelId(), requesterId);
         User user = getUserOrThrow(requesterId);
         Channel channel = getChannelOrThrow(request.channelId());
 
@@ -60,6 +65,8 @@ public class BasicMessageService implements MessageService {
 
         Message savedMessage = messageRepository.save(message);
         channel.updateLastMessageAt(savedMessage.getCreatedAt());
+        log.info("메시지 생성 완료: messageId={}, channelId={}, 첨부파일 수={}", savedMessage.getId(),
+                request.channelId(), attachmentEntities.size());
 
         return messageMapper.toDto(savedMessage);
     }
@@ -71,6 +78,7 @@ public class BasicMessageService implements MessageService {
             UUID cursor,
             Pageable pageable
     ) {
+        log.debug("메시지 목록 조회: channelId={}, cursor={}", channelId, cursor);
         Pageable cursorPageable = buildCursorPageable(pageable);
         Slice<MessageDto> messageSlice = getMessageSlice(channelId, cursor, cursorPageable)
                 .map(messageMapper::toDto);
@@ -82,8 +90,10 @@ public class BasicMessageService implements MessageService {
     @Override
     @Transactional
     public MessageDto updateMessage(UUID messageId, MessageUpdateRequest request) {
+        log.debug("메시지 수정 처리 시작: messageId={}", messageId);
         Message message = getMessageOrThrow(messageId);
         message.updateContent(request.newContent());
+        log.info("메시지 수정 완료: messageId={}", messageId);
 
         return messageMapper.toDto(message);
     }
@@ -91,30 +101,38 @@ public class BasicMessageService implements MessageService {
     @Override
     @Transactional
     public void deleteMessage(UUID messageId) {
+        log.debug("메시지 삭제 처리 시작: messageId={}", messageId);
         Message message = getMessageOrThrow(messageId);
         message.getAttachments().clear();
         message.assignAuthor(null);
         message.assignChannel(null);
 
         messageRepository.delete(message);
+        log.info("메시지 삭제 완료: messageId={}", messageId);
     }
 
     private User getUserOrThrow(UUID userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND,
-                        "사용자를 찾을 수 없습니다 userId: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(
+                        "사용자를 찾을 수 없습니다 userId: " + userId,
+                        Map.of("userId", userId)
+                ));
     }
 
     private Channel getChannelOrThrow(UUID id) {
         return channelRepository.findById(id)
-                .orElseThrow(() -> new ApiException(ErrorCode.CHANNEL_NOT_FOUND,
-                        "채널을 찾을 수 없습니다 channelId: " + id));
+                .orElseThrow(() -> new ChannelNotFoundException(
+                        "채널을 찾을 수 없습니다 channelId: " + id,
+                        Map.of("channelId", id)
+                ));
     }
 
     private Message getMessageOrThrow(UUID messageId) {
         return messageRepository.findById(messageId)
-                .orElseThrow(() -> new ApiException(ErrorCode.MESSAGE_NOT_FOUND,
-                        "메세지를 찾을 수 없습니다 messageId: " + messageId));
+                .orElseThrow(() -> new MessageNotFoundException(
+                        "메세지를 찾을 수 없습니다 messageId: " + messageId,
+                        Map.of("messageId", messageId)
+                ));
     }
 
     private Slice<Message> getMessageSlice(UUID channelId, UUID cursor, Pageable pageable) {
@@ -162,10 +180,10 @@ public class BasicMessageService implements MessageService {
 
     private void validateCursorChannel(Message cursorMessage, UUID channelId) {
         if (!cursorMessage.getChannel().getId().equals(channelId)) {
-            throw new ApiException(
-                    ErrorCode.MESSAGE_NOT_FOUND,
+            throw new MessageNotFoundException(
                     "커서 메시지가 채널에 속하지 않습니다. messageId: " + cursorMessage.getId()
-                            + ", channelId: " + channelId
+                            + ", channelId: " + channelId,
+                    Map.of("messageId", cursorMessage.getId(), "channelId", channelId)
             );
         }
     }

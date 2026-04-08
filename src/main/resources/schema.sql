@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS binary_contents CASCADE;
 
 CREATE TABLE binary_contents (
     id UUID PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL,
+    created_at timestamp with time zone NOT NULL,
     file_name VARCHAR(255) NOT NULL,
     size BIGINT NOT NULL,
     content_type VARCHAR(100) NOT NULL
@@ -16,8 +16,8 @@ CREATE TABLE binary_contents (
 
 CREATE TABLE users (
     id UUID PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     username VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL,
     password VARCHAR(60) NOT NULL,
@@ -33,9 +33,9 @@ CREATE TABLE users (
 
 CREATE TABLE channels (
     id UUID PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ,
-    last_message_at TIMESTAMPTZ,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
+    last_message_at timestamp with time zone,
     name VARCHAR(100),
     description VARCHAR(500),
     type VARCHAR(10) NOT NULL,
@@ -44,10 +44,10 @@ CREATE TABLE channels (
 
 CREATE TABLE user_statuses (
     id UUID PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     user_id UUID NOT NULL,
-    last_active_at TIMESTAMPTZ NOT NULL,
+    last_active_at timestamp with time zone NOT NULL,
     CONSTRAINT uk_user_statuses_user_id UNIQUE (user_id),
     CONSTRAINT fk_user_statuses_user_id
         FOREIGN KEY (user_id)
@@ -57,11 +57,11 @@ CREATE TABLE user_statuses (
 
 CREATE TABLE read_statuses (
     id UUID PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     user_id UUID NOT NULL,
     channel_id UUID NOT NULL,
-    last_read_at TIMESTAMPTZ NOT NULL,
+    last_read_at timestamp with time zone NOT NULL,
     CONSTRAINT uk_read_statuses_user_channel UNIQUE (user_id, channel_id),
     CONSTRAINT fk_read_statuses_user_id
         FOREIGN KEY (user_id)
@@ -75,8 +75,8 @@ CREATE TABLE read_statuses (
 
 CREATE TABLE messages (
     id UUID PRIMARY KEY,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     content TEXT,
     channel_id UUID NOT NULL,
     author_id UUID,

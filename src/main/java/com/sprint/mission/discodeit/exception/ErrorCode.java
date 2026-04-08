@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.response;
+package com.sprint.mission.discodeit.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

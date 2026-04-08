@@ -9,7 +9,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.response.ApiException;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,7 +89,7 @@ public class BasicReadStatusServiceTest {
         readStatusService.createReadStatus(request);
 
         assertThatThrownBy(() -> readStatusService.createReadStatus(request))
-                .isInstanceOf(ApiException.class);
+                .isInstanceOf(DiscodeitException.class);
     }
 
     @Test

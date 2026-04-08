@@ -18,6 +18,14 @@ spring:
     init:
       mode: never
 
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
+    org.springframework.orm.jpa: DEBUG
+    org.springframework.transaction: DEBUG
+
 discodeit:
   storage:
     type: local

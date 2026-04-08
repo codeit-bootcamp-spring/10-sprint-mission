@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class ReadStatusController {
             @ApiResponse(responseCode = "400", description = "이미 읽음 상태가 존재함")
     })
     public ResponseEntity<ReadStatusDto> createReadStatus(
-            @RequestBody ReadStatusCreateRequest request
+            @Valid @RequestBody ReadStatusCreateRequest request
     ) {
         ReadStatusDto response = readStatusService.createReadStatus(request);
 
@@ -55,7 +56,7 @@ public class ReadStatusController {
     public ResponseEntity<ReadStatusDto> updateReadStatus(
             @Parameter(description = "수정할 읽음 상태 ID", example = "0f9238f3-cd81-4f82-8611-3a22b16da66d")
             @PathVariable UUID readStatusId,
-            @RequestBody ReadStatusUpdateRequest request
+            @Valid @RequestBody ReadStatusUpdateRequest request
     ) {
         ReadStatusDto response = readStatusService.updateReadStatus(readStatusId, request);
 

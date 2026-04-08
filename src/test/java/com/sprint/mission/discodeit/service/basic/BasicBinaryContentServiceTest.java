@@ -5,7 +5,7 @@ import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.BinaryContentOwnerType;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.response.ApiException;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -85,7 +85,7 @@ public class BasicBinaryContentServiceTest {
     @DisplayName("존재하지 않는 BinaryContent 조회시 예외 발생")
     void findBinaryContent_fail_notFound() {
         assertThatThrownBy(() -> binaryContentService.findBinaryContent(UUID.randomUUID()))
-                .isInstanceOf(ApiException.class);
+                .isInstanceOf(DiscodeitException.class);
     }
 
     @Test
@@ -138,7 +138,8 @@ public class BasicBinaryContentServiceTest {
         UUID id = binaryContentService.createBinaryContent(
                 new BinaryContentRequest(
                         BinaryContentOwnerType.USER,
-                        new MockMultipartFile("file", "entity.png", "image/png", "entity".getBytes())
+                        new MockMultipartFile("file", "entity.png", "image/png",
+                                "entity".getBytes())
                 )
         );
 
@@ -163,7 +164,8 @@ public class BasicBinaryContentServiceTest {
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(response.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE)).isEqualTo("image/png");
-        assertThat(response.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION)).contains("download.png");
+        assertThat(response.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION)).contains(
+                "download.png");
 
         Resource body = (Resource) response.getBody();
         assertThat(body).isNotNull();

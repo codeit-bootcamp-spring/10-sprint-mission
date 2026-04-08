@@ -16,9 +16,11 @@ import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -58,13 +61,15 @@ public class UserController {
             )
     )
     public ResponseEntity<UserDto> createUser(
-            @RequestPart(value = "userCreateRequest") UserCreateRequest userCreateRequest,
+            @Valid @RequestPart(value = "userCreateRequest") UserCreateRequest userCreateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
+        log.info("사용자 생성 요청: username={}, email={}", userCreateRequest.username(), userCreateRequest.email());
         BinaryContentRequest profileImage = new BinaryContentRequest(BinaryContentOwnerType.USER,
                 profile);
 
         UserDto response = userService.createUser(userCreateRequest, profileImage);
+        log.info("사용자 생성 완료: userId={}", response.id());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -79,6 +84,7 @@ public class UserController {
             @Parameter(description = "조회할 User ID", example = "d2d837b7-acb8-4e6c-87ad-0f5841aa96b9")
             @PathVariable UUID userId
     ) {
+        log.debug("사용자 단건 조회 요청: userId={}", userId);
         UserDto response = userService.findUserByUserID(userId);
 
         return ResponseEntity.ok(response);
@@ -88,6 +94,7 @@ public class UserController {
     @Operation(summary = "전체 User 목록 조회", description = "전체 User 목록을 조회합니다.")
     @ApiResponse(responseCode = "200", description = "User 목록 조회 성공")
     public ResponseEntity<List<UserDto>> findAllUsers() {
+        log.debug("전체 사용자 목록 조회 요청");
         List<UserDto> responses = userService.findAllUsers();
 
         return ResponseEntity.ok(responses);
@@ -112,13 +119,15 @@ public class UserController {
     public ResponseEntity<UserDto> updateUser(
             @Parameter(description = "수정할 User ID", example = "d2d837b7-acb8-4e6c-87ad-0f5841aa96b9")
             @PathVariable UUID userId,
-            @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
+            @Valid @RequestPart("userUpdateRequest") UserUpdateRequest userUpdateRequest,
             @RequestPart(value = "profile", required = false) MultipartFile profile
     ) {
+        log.info("사용자 수정 요청: userId={}", userId);
         BinaryContentRequest profileImage = new BinaryContentRequest(BinaryContentOwnerType.USER,
                 profile);
 
         UserDto response = userService.updateUser(userId, userUpdateRequest, profileImage);
+        log.info("사용자 수정 완료: userId={}", userId);
 
         return ResponseEntity.ok(response);
     }
@@ -133,7 +142,9 @@ public class UserController {
             @Parameter(description = "삭제할 User ID", example = "d2d837b7-acb8-4e6c-87ad-0f5841aa96b9")
             @PathVariable UUID userId
     ) {
+        log.info("사용자 삭제 요청: userId={}", userId);
         userService.deleteUser(userId);
+        log.info("사용자 삭제 완료: userId={}", userId);
 
         return ResponseEntity.noContent().build();
     }
@@ -147,8 +158,9 @@ public class UserController {
     public ResponseEntity<UserStatusDto> updateUserStatus(
             @Parameter(description = "상태를 변경할 User ID", example = "d2d837b7-acb8-4e6c-87ad-0f5841aa96b9")
             @PathVariable UUID userId,
-            @RequestBody UserStatusUpdateRequest request
+            @Valid @RequestBody UserStatusUpdateRequest request
     ) {
+        log.debug("사용자 상태 업데이트 요청: userId={}", userId);
         UserStatusDto response = userStatusService.updateUserStatusByUserId(userId, request);
 
         return ResponseEntity.ok(response);

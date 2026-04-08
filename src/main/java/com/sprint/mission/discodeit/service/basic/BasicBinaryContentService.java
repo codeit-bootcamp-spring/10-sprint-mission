@@ -3,21 +3,24 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentNotFoundException;
+import com.sprint.mission.discodeit.exception.InternalDiscodeitException;
 import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
-import com.sprint.mission.discodeit.response.ApiException;
-import com.sprint.mission.discodeit.response.ErrorCode;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import com.sprint.mission.discodeit.utils.ImageBinaryConverter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicBinaryContentService implements BinaryContentService {
@@ -33,6 +36,8 @@ public class BasicBinaryContentService implements BinaryContentService {
             return null;
         }
 
+        log.debug("파일 저장 처리 시작: fileName={}, size={}", request.file().getOriginalFilename(),
+                request.file().getSize());
         BinaryContent binaryContent = new BinaryContent(
                 request.file().getOriginalFilename(),
                 request.file().getSize(),
@@ -43,6 +48,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         byte[] bytes = ImageBinaryConverter.convert(request.file());
         UUID storedId = binaryContentStorage.put(saved.getId(), bytes);
         validateStoredId(saved.getId(), storedId);
+        log.info("파일 저장 완료: binaryContentId={}, fileName={}", saved.getId(), saved.getFileName());
 
         return saved.getId();
     }
@@ -54,6 +60,7 @@ public class BasicBinaryContentService implements BinaryContentService {
             return List.of();
         }
 
+        log.debug("다중 파일 저장 처리 시작: count={}", requests.size());
         List<BinaryContent> binaryContents = new ArrayList<>();
 
         for (BinaryContentRequest request : requests) {
@@ -63,6 +70,7 @@ public class BasicBinaryContentService implements BinaryContentService {
             }
             binaryContents.add(getBinaryContentOrThrow(binaryContentId));
         }
+        log.info("다중 파일 저장 완료: 저장된 파일 수={}", binaryContents.size());
 
         return binaryContents;
     }
@@ -70,6 +78,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     @Transactional(readOnly = true)
     public BinaryContentDto findBinaryContent(UUID binaryContentId) {
+        log.debug("파일 조회: binaryContentId={}", binaryContentId);
         return binaryContentMapper.toDto(getBinaryContentOrThrow(binaryContentId));
     }
 
@@ -82,6 +91,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     @Transactional(readOnly = true)
     public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
+        log.debug("다중 파일 조회: count={}", binaryContentIds.size());
         return binaryContentRepository.findAllByIdIn(binaryContentIds).stream()
                 .map(binaryContentMapper::toDto)
                 .toList();
@@ -90,6 +100,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     @Transactional(readOnly = true)
     public ResponseEntity<?> downloadBinaryContent(UUID binaryContentId) {
+        log.info("파일 다운로드 처리: binaryContentId={}", binaryContentId);
         BinaryContentDto binaryContentDto = findBinaryContent(binaryContentId);
         return binaryContentStorage.download(binaryContentDto);
     }
@@ -97,22 +108,31 @@ public class BasicBinaryContentService implements BinaryContentService {
     @Override
     @Transactional
     public void deleteBinaryContent(UUID binaryContentId) {
+        log.debug("파일 삭제 처리 시작: binaryContentId={}", binaryContentId);
         BinaryContent binaryContent = getBinaryContentOrThrow(binaryContentId);
         binaryContentRepository.delete(binaryContent);
+        log.info("파일 삭제 완료: binaryContentId={}", binaryContentId);
     }
 
     private void validateStoredId(UUID savedId, UUID storedId) {
         if (!savedId.equals(storedId)) {
-            throw new ApiException(
-                    ErrorCode.INTERNAL_ERROR,
-                    "BinaryContent 저장 키가 일치하지 않습니다. binaryContentId: " + savedId
+            Map<String, Object> details = new java.util.LinkedHashMap<>();
+            details.put("binaryContentId", savedId);
+            if (storedId != null) {
+                details.put("storedId", storedId);
+            }
+            throw new InternalDiscodeitException(
+                    "BinaryContent 저장 키가 일치하지 않습니다. binaryContentId: " + savedId,
+                    details
             );
         }
     }
 
     private BinaryContent getBinaryContentOrThrow(UUID binaryContentId) {
         return binaryContentRepository.findById(binaryContentId)
-                .orElseThrow(() -> new ApiException(ErrorCode.BINARY_CONTENT_NOT_FOUND,
-                        "BinaryContent 찾을 수 없습니다 binaryContentId: " + binaryContentId));
+                .orElseThrow(() -> new BinaryContentNotFoundException(
+                        "BinaryContent 찾을 수 없습니다 binaryContentId: " + binaryContentId,
+                        Map.of("binaryContentId", binaryContentId)
+                ));
     }
 }

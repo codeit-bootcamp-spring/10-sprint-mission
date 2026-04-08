@@ -15,10 +15,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import com.sprint.mission.discodeit.dto.response.PageableRequest;
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
@@ -60,9 +63,10 @@ public class MessageController {
             )
     )
     public ResponseEntity<MessageDto> createMessage(
-            @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
+            @Valid @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
             @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
     ) {
+        log.info("메시지 생성 요청: channelId={}, authorId={}", messageCreateRequest.channelId(), messageCreateRequest.authorId());
         List<BinaryContentRequest> attachmentRequests = new ArrayList<>();
 
         if (attachments != null) {
@@ -72,12 +76,14 @@ public class MessageController {
                 );
             }
         }
+        log.debug("메시지 첨부파일 수: {}", attachmentRequests.size());
 
         MessageDto response = messageService.createMessage(
                 messageCreateRequest.authorId(),
                 messageCreateRequest,
                 attachmentRequests
         );
+        log.info("메시지 생성 완료: messageId={}", response.id());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -98,6 +104,7 @@ public class MessageController {
             )
             @ParameterObject Pageable pageable
     ) {
+        log.debug("메시지 목록 조회 요청: channelId={}, cursor={}", channelId, cursor);
         PageResponse<MessageDto> responses = messageService.findAllMessagesByChannelId(
                 channelId,
                 cursor,
@@ -116,9 +123,11 @@ public class MessageController {
     public ResponseEntity<MessageDto> updateMessage(
             @Parameter(description = "수정할 Message ID", example = "9b0712f3-7dbf-4e9f-9f33-63cdb028b07a")
             @PathVariable UUID messageId,
-            @RequestBody MessageUpdateRequest request
+            @Valid @RequestBody MessageUpdateRequest request
     ) {
+        log.info("메시지 수정 요청: messageId={}", messageId);
         MessageDto response = messageService.updateMessage(messageId, request);
+        log.info("메시지 수정 완료: messageId={}", messageId);
 
         return ResponseEntity.ok(response);
     }
@@ -133,7 +142,9 @@ public class MessageController {
             @Parameter(description = "삭제할 Message ID", example = "9b0712f3-7dbf-4e9f-9f33-63cdb028b07a")
             @PathVariable UUID messageId
     ) {
+        log.info("메시지 삭제 요청: messageId={}", messageId);
         messageService.deleteMessage(messageId);
+        log.info("메시지 삭제 완료: messageId={}", messageId);
 
         return ResponseEntity.noContent().build();
     }
