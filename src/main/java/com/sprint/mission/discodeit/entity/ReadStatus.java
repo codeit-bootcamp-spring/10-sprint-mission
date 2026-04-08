@@ -13,37 +13,37 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+@Entity
+@Table(
+        name = "read_statuses",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"user_id", "channel_id"})
+        }
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity
-@Table(name = "read_statuses",
-    uniqueConstraints = @UniqueConstraint(
-        name = "uk_read_status",
-        columnNames = {"user_id", "channel_id"}
-    )
-)
 public class ReadStatus extends BaseUpdatableEntity {
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", columnDefinition = "uuid")
+    private User user;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "channel_id", nullable = false)
-  private Channel channel;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "channel_id", columnDefinition = "uuid")
+    private Channel channel;
+    
+    @Column(columnDefinition = "timestamp with time zone", nullable = false)
+    private Instant lastReadAt;
 
-  @Column(nullable = false)
-  private Instant lastReadAt;
-
-  public ReadStatus(User user, Channel channel, Instant lastReadAt) {
-    this.user = user;
-    this.channel = channel;
-    this.lastReadAt = lastReadAt;
-  }
-
-  public void update(Instant newLastReadAt) {
-    if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
-      this.lastReadAt = newLastReadAt;
+    public ReadStatus(User user, Channel channel, Instant lastReadAt) {
+        this.user = user;
+        this.channel = channel;
+        this.lastReadAt = lastReadAt;
     }
-  }
+
+    public void update(Instant newLastReadAt) {
+        if (newLastReadAt != null && !newLastReadAt.equals(this.lastReadAt)) {
+            this.lastReadAt = newLastReadAt;
+        }
+    }
 }

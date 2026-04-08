@@ -15,51 +15,44 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
-@Getter
-@Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "messages")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Message extends BaseUpdatableEntity {
 
-  @Column(columnDefinition = "TEXT")
-  private String content;
+    @Column(columnDefinition = "text", nullable = false)
+    private String content;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "channel_id", nullable = false)
-  private Channel channel;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "channel_id", columnDefinition = "uuid")
+    private Channel channel;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "author_id")
-  private User author;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", columnDefinition = "uuid")
+    private User author;
 
-  @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST,
-      CascadeType.REMOVE}, orphanRemoval = true)
-  @JoinTable(
-      name = "message_attachments",
-      joinColumns = @JoinColumn(name = "message_id", nullable = false),
-      inverseJoinColumns = @JoinColumn(name = "attachment_id", nullable = false, unique = true)
-  )
-  private List<BinaryContent> attachments = new ArrayList<>();
+    @BatchSize(size = 100)
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "message_attachments",
+            joinColumns = @JoinColumn(name = "message_id"),
+            inverseJoinColumns = @JoinColumn(name = "attachment_id")
+    )
+    private List<BinaryContent> attachments = new ArrayList<>();
 
-  public Message(String content, Channel channel, User author) {
-    this.content = content;
-    this.channel = channel;
-    this.author = author;
-  }
-
-  public void update(String newContent) {
-    if (newContent != null && !newContent.equals(this.content)) {
-      this.content = newContent;
+    public Message(String content, Channel channel, User author, List<BinaryContent> attachments) {
+        this.channel = channel;
+        this.content = content;
+        this.author = author;
+        this.attachments = attachments;
     }
-  }
 
-  public void addAttachments(List<BinaryContent> attachments) {
-    if (attachments == null || attachments.isEmpty()) {
-      return;
+    public void update(String newContent) {
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+        }
     }
-    this.attachments.addAll(attachments);
-  }
 }

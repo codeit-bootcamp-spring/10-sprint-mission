@@ -3,38 +3,37 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.auth.LoginRequest;
 import com.sprint.mission.discodeit.dto.response.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.BusinessException;
-import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.user.InvalidCredentialsException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Transactional(readOnly = true)
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class BasicAuthService implements AuthService {
 
-  private final UserRepository userRepository;
-  private final UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-  @Override
-  public UserDto login(LoginRequest loginRequest) {
-    String username = loginRequest.username();
-    String password = loginRequest.password();
+    @Transactional(readOnly = true)
+    @Override
+    public UserDto login(LoginRequest loginRequest) {
+        String username = loginRequest.username();
+        String password = loginRequest.password();
 
-    // 유저 검색
-    User user = userRepository.findByUsername(username)
-        .orElseThrow(
-            () -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new InvalidCredentialsException(username));
 
-    // 비밀번호 확인
-    if (!user.getPassword().equals(password)) {
-      throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+        if (!user.getPassword().equals(password)) {
+            throw new InvalidCredentialsException(username);
+        }
+
+        log.info("[LOGIN] 로그인 처리 완료: userId={}, username={}", user.getId(), username);
+        return userMapper.toDto(user);
     }
-
-    return userMapper.toDto(user);
-  }
 }

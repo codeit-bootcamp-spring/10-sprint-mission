@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -11,71 +12,52 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "users")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)  // JPA를 위한 기본 생성자
 public class User extends BaseUpdatableEntity {
 
-  @Column(length = 50, nullable = false, unique = true)
-  private String username;
+    @Column(length = 50, nullable = false, unique = true)
+    private String username;
 
-  @Column(length = 100, nullable = false, unique = true)
-  private String email;
+    @Column(length = 100, nullable = false, unique = true)
+    private String email;
 
-  @Column(length = 60, nullable = false)
-  private String password;
+    @Column(length = 60, nullable = false)
+    private String password;
 
-  @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST,
-      CascadeType.REMOVE}, orphanRemoval = true)
-  @JoinColumn(name = "profile_id", unique = true)
-  private BinaryContent profile;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id", columnDefinition = "uuid")
+    private BinaryContent profile;
 
-  @OneToOne(mappedBy = "user", cascade = {CascadeType.PERSIST,
-      CascadeType.REMOVE}, orphanRemoval = true)
-  private UserStatus userStatus;
+    @JsonManagedReference
+    @Setter(AccessLevel.PROTECTED)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private UserStatus status;
 
-  public User(String username, String email, String password, BinaryContent profile) {
-    this.username = username;
-    this.email = email;
-    this.password = password;
-    this.profile = profile;
-  }
-
-  public void update(String newUsername, String newEmail, String newPassword,
-      BinaryContent newProfile) {
-    if (newUsername != null && !newUsername.equals(this.username)) {
-      this.username = newUsername;
-    }
-    if (newEmail != null && !newEmail.equals(this.email)) {
-      this.email = newEmail;
-    }
-    if (newPassword != null && !newPassword.equals(this.password)) {
-      this.password = newPassword;
-    }
-    if (newProfile != null && newProfile != this.profile) {
-      this.profile = newProfile;
-    }
-  }
-
-  public void setUserStatus(UserStatus userStatus) {
-    if (this.userStatus == userStatus) {
-      return;
+    public User(String username, String email, String password, BinaryContent profile) {
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.profile = profile;
     }
 
-    if (this.userStatus != null) {
-      this.userStatus.assignUser(null);
+    public void update(String newUsername, String newEmail, String newPassword,
+            BinaryContent newProfile) {
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+        }
+        if (newProfile != null) {
+            this.profile = newProfile;
+        }
     }
-
-    this.userStatus = userStatus;
-
-    if (userStatus != null && userStatus.getUser() != this) {
-      userStatus.assignUser(this);
-    }
-  }
-
-  public void removeUserStatus() {
-    setUserStatus(null);
-  }
 }

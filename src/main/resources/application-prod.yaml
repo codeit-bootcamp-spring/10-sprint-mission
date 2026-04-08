@@ -1,0 +1,20 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  boot:
+    admin:
+      client:
+        url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+  datasource:
+    driver-class-name: ${PROD_DB_DRIVER:org.postgresql.Driver}
+    url: ${PROD_DB_URL}
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_PASSWORD}
+
+server:
+  port: ${SERVER_PORT:8081}
+
+logging:
+  level:
+    com.sprint.mission.discodeit: info

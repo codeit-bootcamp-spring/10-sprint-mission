@@ -4,23 +4,19 @@ import com.sprint.mission.discodeit.entity.User;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
-  @EntityGraph(attributePaths = {"profile", "userStatus"})
-  Optional<User> findDetailById(UUID userId);
+    Optional<User> findByUsername(String username);
 
-  @EntityGraph(attributePaths = {"profile", "userStatus"})
-  Optional<User> findByUsername(String username);
+    boolean existsByEmail(String email);
 
-  boolean existsByEmail(String email);
+    boolean existsByUsername(String username);
 
-  boolean existsByUsername(String username);
-
-  @EntityGraph(attributePaths = {"profile", "userStatus"})
-  @Query("SELECT u FROM User u")
-  List<User> findAllWithProfileAndUserStatus();
+    @Query("SELECT u FROM User u "
+            + "LEFT JOIN FETCH u.profile "
+            + "JOIN FETCH u.status")
+    List<User> findAllWithProfileAndStatus();
 }

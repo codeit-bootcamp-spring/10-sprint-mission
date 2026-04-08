@@ -45,3 +45,4 @@ bin/
 
 /data/
 /storage/
+.logs/
