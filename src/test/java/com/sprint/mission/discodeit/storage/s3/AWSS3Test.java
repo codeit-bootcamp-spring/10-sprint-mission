@@ -62,8 +62,7 @@ class AWSS3Test {
         ))
         .build();
   }
-
-  // 업로드
+  
   @Test
   @DisplayName("S3 버킷에 파일 업로드를 성공해야 한다.")
   void should_upload_in_s3_bucket() {

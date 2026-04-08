@@ -52,4 +52,4 @@ COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.j
 # 애플리케이션이 사용하는 포트 노출
 EXPOSE 80
 # 컨테이너 시작 시 JAR 실행
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java ${JVM_OPTS} -jar app.jar"]
