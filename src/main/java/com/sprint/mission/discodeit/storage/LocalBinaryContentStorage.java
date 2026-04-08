@@ -22,7 +22,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   private final Path root;
 
-  public LocalBinaryContentStorage(@Value("${storage.local.root}") String rootPath) {
+  public LocalBinaryContentStorage(@Value("${storage.local.root-path}") String rootPath) {
     this.root = Path.of(rootPath);
   }
 

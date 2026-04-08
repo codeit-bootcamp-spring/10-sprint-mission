@@ -4,6 +4,10 @@ import com.sprint.mission.discodeit.dto.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.MessageUpdateRequest;
 import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageAuthorNotInChannelException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
@@ -14,6 +18,7 @@ import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -26,6 +31,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -42,16 +48,24 @@ public class BasicMessageService implements MessageService {
   @Override
   @Transactional
   public MessageDto createMessage(MessageCreateRequest request, List<MultipartFile> files) {
+    log.debug("Message creation requested: channel={}, author={}", request.getChannelId(), request.getAuthorId());
     Channel channel = channelRepository.findById(request.getChannelId())
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 채널입니다."));
+        .orElseThrow(() -> {
+          log.warn("Message creation failed - Channel not found: id={}", request.getChannelId());
+          return new ChannelNotFoundException(request.getChannelId());
+        });
     User user = userRepository.findById(request.getAuthorId())
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        .orElseThrow(() -> {
+          log.warn("Message creation failed - User not found: id={}", request.getAuthorId());
+          return new UserNotFoundException(request.getAuthorId());
+        });
 
     if (readStatusRepository.findByUser_IdAndChannel_Id(user.getId(), channel.getId()).isEmpty()) {
       if (ChannelType.PUBLIC.equals(channel.getType())) {
         readStatusRepository.save(new ReadStatus(user, channel));
       } else {
-        throw new IllegalArgumentException("채널에 먼저 입장해야 메시지를 남길 수 있습니다.");
+        log.warn("Message creation failed - User not in channel: userId={}, channelId={}", user.getId(), channel.getId());
+        throw new MessageAuthorNotInChannelException(user.getId(), channel.getId());
       }
     }
 
@@ -61,19 +75,25 @@ public class BasicMessageService implements MessageService {
     attachments.forEach(message::addAttachment);
 
     messageRepository.save(message);
+    log.info("Message created successfully: id={}, channelId={}, authorId={}", message.getId(), channel.getId(), user.getId());
 
     return messageMapper.toDto(message);
   }
 
   @Override
   public MessageDto getMessage(UUID id) {
+    log.debug("Fetching message details: id={}", id);
     Message message = messageRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
+        .orElseThrow(() -> {
+          log.warn("Message not found: id={}", id);
+          return new MessageNotFoundException(id);
+        });
     return messageMapper.toDto(message);
   }
 
   @Override
   public List<MessageDto> getAllMessages() {
+    log.debug("Fetching all messages");
     return messageRepository.findAll().stream()
         .map(messageMapper::toDto)
         .collect(Collectors.toList());
@@ -81,6 +101,7 @@ public class BasicMessageService implements MessageService {
 
   @Override
   public Slice<MessageDto> findAllByChannelId(UUID channelId, Instant cursor, int size) {
+    log.debug("Fetching messages for channel: channelId={}, cursor={}, size={}", channelId, cursor, size);
     Pageable pageable = PageRequest.of(0, size, Sort.by("createdAt").descending());
     if (cursor != null) {
       return messageRepository.findByChannel_IdAndCreatedAtBefore(channelId, cursor, pageable)
@@ -93,13 +114,18 @@ public class BasicMessageService implements MessageService {
   @Override
   @Transactional
   public MessageDto updateMessage(UUID messageId, MessageUpdateRequest request) {
+    log.debug("Message update requested: id={}", messageId);
     Message message = messageRepository.findById(messageId)
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
+        .orElseThrow(() -> {
+          log.warn("Update failed - Message not found: id={}", messageId);
+          return new MessageNotFoundException(messageId);
+        });
 
     if (request.getNewContent() != null && !request.getNewContent().isBlank()) {
       message.updateContent(request.getNewContent());
     }
 
+    log.info("Message updated successfully: id={}", messageId);
     return messageMapper.toDto(message);
   }
 
@@ -117,7 +143,9 @@ public class BasicMessageService implements MessageService {
             );
             binaryContentStorage.put(binaryContent.getId(), file.getBytes());
             attachments.add(binaryContent);
+            log.debug("Attachment saved: id={}, filename={}", binaryContent.getId(), file.getOriginalFilename());
           } catch (IOException e) {
+            log.error("Failed to save attachment", e);
             throw new RuntimeException("파일 저장 중 오류가 발생했습니다.", e);
           }
         }
@@ -129,14 +157,19 @@ public class BasicMessageService implements MessageService {
   @Override
   @Transactional
   public void deleteMessage(UUID id) {
+    log.debug("Message deletion requested: id={}", id);
     Message message = messageRepository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메시지입니다."));
+        .orElseThrow(() -> {
+          log.warn("Deletion failed - Message not found: id={}", id);
+          return new MessageNotFoundException(id);
+        });
 
     for (BinaryContent attachment : new ArrayList<>(message.getAttachments())) {
       binaryContentRepository.delete(attachment);
     }
 
     messageRepository.delete(message);
+    log.info("Message deleted successfully: id={}", id);
   }
 
   @Override

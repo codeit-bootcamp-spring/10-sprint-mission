@@ -1,0 +1,12 @@
+package com.sprint.mission.discodeit.exception.channel;
+
+import com.sprint.mission.discodeit.exception.ErrorCode;
+
+import java.util.Map;
+import java.util.UUID;
+
+public class PrivateChannelNotUpdatableException extends ChannelException {
+    public PrivateChannelNotUpdatableException(UUID channelId) {
+        super(ErrorCode.PRIVATE_CHANNEL_NOT_UPDATABLE, Map.of("channelId", channelId));
+    }
+}

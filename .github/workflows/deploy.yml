@@ -1,0 +1,88 @@
+name: 자바 CD (Gradle & ECS)
+
+on:
+  push:
+    branches: [ "release" ]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: 서비스 빌드 및 ECS 배포
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 소스 코드 체크아웃
+      uses: actions/checkout@v4
+
+    - name: JDK 17 설정
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Gradle 설정 및 캐싱
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Gradle 실행 권한 부여
+      run: chmod +x gradlew
+
+    - name: 애플리케이션 빌드 (JAR)
+      run: ./gradlew build -x test
+
+    - name: AWS 자격 증명 설정
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+        aws-region: ${{ vars.AWS_REGION }}
+
+    - name: Amazon ECR 로그인
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Docker 이미지 빌드 및 ECR 푸시
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY_URI: ${{ vars.ECR_REPOSITORY_URI }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # ECR_REPOSITORY_URI에서 레포지토리 이름만 추출 (예: 123.dkr.ecr.../repo -> repo)
+        REPO_NAME=$(echo $ECR_REPOSITORY_URI | cut -d'/' -f2)
+        
+        # SHA 태그와 latest 태그로 각각 빌드 및 푸시
+        docker build -t $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG -t $ECR_REGISTRY/$REPO_NAME:latest .
+        docker push $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$REPO_NAME:latest
+        
+        echo "image=$ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    - name: ECS 태스크 정의 다운로드
+      run: |
+        aws ecs describe-task-definition --task-definition ${{ vars.ECS_TASK_DEFINITION }} --query taskDefinition > task-definition.json
+
+    - name: 새 이미지 주소로 태스크 정의 렌더링
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: discodeit-app
+        image: ${{ steps.build-image.outputs.image }}
+
+    - name: 기존 ECS 서비스 중지 (프리티어 리소스 보호)
+      run: |
+        aws ecs update-service --cluster ${{ vars.ECS_CLUSTER }} --service ${{ vars.ECS_SERVICE }} --desired-count 0
+
+    - name: 새 태스크 정의 배포
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ vars.ECS_SERVICE }}
+        cluster: ${{ vars.ECS_CLUSTER }}
+        wait-for-service-stability: true
+
+    - name: ECS 서비스 재시작
+      run: |
+        aws ecs update-service --cluster ${{ vars.ECS_CLUSTER }} --service ${{ vars.ECS_SERVICE }} --desired-count 1
