@@ -1,0 +1,17 @@
+# Git 관련
+.git
+.gitignore
+
+# IDE 관련
+.idea/
+*.iml
+.vscode/
+
+# 빌드 결과물
+build/
+out/
+.gradle/
+
+# 환경 변수 및 시크릿 파일
+.env
+.discodeit/

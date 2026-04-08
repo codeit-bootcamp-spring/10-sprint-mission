@@ -48,3 +48,6 @@ out/
 # Logs
 .logs/
 *.log
+
+# env files
+.env
