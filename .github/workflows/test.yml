@@ -17,5 +17,11 @@ jobs:               # 실행할 작업(job)들을 정의
           java-version: '17'          # 설치할 Java 버전 (여기서는 JDK 17)
           distribution: 'temurin'
 
+      - name: gradlew 실행 권한 부여
+        run: chmod +x gradlew
+
+      - name: 빌드 및 테스트
+        run: ./gradlew clean build
+
       - name: 빌드 및 테스트
         run: ./gradlew clean build    # Gradle 빌드 및 테스트 실행 (clean 후 build)
