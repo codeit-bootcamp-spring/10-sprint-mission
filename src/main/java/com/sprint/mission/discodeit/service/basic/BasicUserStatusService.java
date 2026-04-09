@@ -44,8 +44,8 @@ public class BasicUserStatusService implements UserStatusService {
             throw DuplicateUserStatusException.withUserId(userId);
         });
 
-    Instant lastActiveAt = request.lastActiveAt();
-    UserStatus userStatus = new UserStatus(user, lastActiveAt);
+    Instant now = Instant.now();
+    UserStatus userStatus = new UserStatus(user, now);
     userStatusRepository.save(userStatus);
     
     log.info("사용자 상태 생성 완료: id={}, userId={}", userStatus.getId(), userId);
