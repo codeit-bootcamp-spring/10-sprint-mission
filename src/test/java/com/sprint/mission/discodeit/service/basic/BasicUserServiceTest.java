@@ -245,7 +245,6 @@ class BasicUserServiceTest {
 
             // service의 update 메서드에서 findById가 한번 호출됨. 스터빙 필요
             when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
-            when(userStatusRepository.findByUserId(userId)).thenReturn(Optional.empty());
             // 수정하려는 필드들의 값이 중복이 아니면서 자기 자신의 아이디와 검증
             when(userRepository.existsByEmailAndIdNot(newEmail, userId)).thenReturn(false);
             when(userRepository.existsByUsernameAndIdNot(newName, userId)).thenReturn(false);
@@ -302,14 +301,9 @@ class BasicUserServiceTest {
                 "Image/png", bytes);
 
             when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
-            when(userStatusRepository.findByUserId(userId)).thenReturn(Optional.empty());
             when(binaryContentRepository.save(any(BinaryContent.class))).thenReturn(binaryContent);
-
             when(userRepository.save(any(User.class))).thenAnswer(
                 invocation -> invocation.getArgument(0));
-
-            when(userMapper.toDto(existingUser)).thenReturn(new UserDto(existingUser.getId(),
-                existingUser.getUsername(), existingUser.getEmail(), profile, false));
 
             // when
             basicUserService.update(userId, req, profile);
