@@ -2,7 +2,7 @@ name: CD Deploy
 
 on:
   push:
-    branches: [ "sprint8" ]
+    branches: [ "release" ]
 
 jobs:
   deploy:
