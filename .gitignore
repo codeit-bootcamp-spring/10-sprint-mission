@@ -45,3 +45,4 @@ bin/
 .*
 !.gitignore
 .env
+discodeit.env
