@@ -245,6 +245,7 @@ class BasicUserServiceTest {
 
             // service의 update 메서드에서 findById가 한번 호출됨. 스터빙 필요
             when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+            when(userStatusRepository.findByUserId(userId)).thenReturn(Optional.empty());
             // 수정하려는 필드들의 값이 중복이 아니면서 자기 자신의 아이디와 검증
             when(userRepository.existsByEmailAndIdNot(newEmail, userId)).thenReturn(false);
             when(userRepository.existsByUsernameAndIdNot(newName, userId)).thenReturn(false);
@@ -301,6 +302,7 @@ class BasicUserServiceTest {
                 "Image/png", bytes);
 
             when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
+            when(userStatusRepository.findByUserId(userId)).thenReturn(Optional.empty());
             when(binaryContentRepository.save(any(BinaryContent.class))).thenReturn(binaryContent);
 
             when(userRepository.save(any(User.class))).thenAnswer(
@@ -385,7 +387,10 @@ class BasicUserServiceTest {
             // when + then
             assertDoesNotThrow(
                 () -> basicUserService.delete(userId)); // service의 delete 호출 시 아무 예외도 던져지지 않음을 검증
-            verify(userRepository).deleteById(userId);
+            verify(userStatusRepository).findByUserId(userId);
+            verify(userStatusRepository).flush();
+            verify(userRepository).delete(existingUser);
+            verify(userRepository).flush();
             verify(userRepository).findById(userId);
         }
 

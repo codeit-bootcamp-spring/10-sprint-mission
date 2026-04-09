@@ -49,8 +49,8 @@ class AWSS3Test {
     static void setUp() throws IOException {
         Properties env = loadEnvProperties();
         assumeTrue(
-            hasRequiredAwsConfig(env),
-            "AWS S3 integration test requires AWS_S3_ACCESS_KEY, AWS_S3_SECRET_KEY, AWS_S3_REGION, and AWS_S3_BUCKET"
+            isAwsIntegrationEnabled(env) && hasRequiredAwsConfig(env),
+            "AWS S3 integration test requires RUN_AWS_INTEGRATION_TESTS=true plus AWS_S3_ACCESS_KEY, AWS_S3_SECRET_KEY, AWS_S3_REGION, and AWS_S3_BUCKET"
         );
 
         awsProperties = new AwsProperties();
@@ -195,6 +195,10 @@ class AWSS3Test {
             && hasText(properties.getProperty("AWS_S3_SECRET_KEY"))
             && hasText(properties.getProperty("AWS_S3_REGION"))
             && hasText(properties.getProperty("AWS_S3_BUCKET"));
+    }
+
+    private static boolean isAwsIntegrationEnabled(Properties properties) {
+        return "true".equalsIgnoreCase(properties.getProperty("RUN_AWS_INTEGRATION_TESTS"));
     }
 
     private static boolean hasText(String value) {
