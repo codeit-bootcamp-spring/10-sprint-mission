@@ -105,3 +105,36 @@ jobs:
           aws ecs wait services-stable \
             --cluster "${{ vars.ECS_CLUSTER }}" \
             --services "${{ vars.ECS_SERVICE }}"
+
+      - name: Dump ECS service status on failure
+        if: failure()
+        run: |
+          aws ecs describe-services \
+            --cluster "${{ vars.ECS_CLUSTER }}" \
+            --services "${{ vars.ECS_SERVICE }}"
+
+      - name: Dump ECS service events on failure
+        if: failure()
+        run: |
+          aws ecs describe-services \
+            --cluster "${{ vars.ECS_CLUSTER }}" \
+            --services "${{ vars.ECS_SERVICE }}" \
+            --query 'services[0].events[0:10]'
+
+      - name: Dump recent ECS tasks on failure
+        if: failure()
+        run: |
+          TASK_ARNS=$(aws ecs list-tasks \
+            --cluster "${{ vars.ECS_CLUSTER }}" \
+            --service-name "${{ vars.ECS_SERVICE }}" \
+            --desired-status STOPPED \
+            --max-items 10 \
+            --query 'taskArns' \
+            --output text)
+          if [ -n "$TASK_ARNS" ]; then
+            aws ecs describe-tasks \
+              --cluster "${{ vars.ECS_CLUSTER }}" \
+              --tasks $TASK_ARNS
+          else
+            echo "No stopped tasks found."
+          fi
