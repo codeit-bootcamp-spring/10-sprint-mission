@@ -4,6 +4,8 @@ import com.sprint.mission.discodeit.dto.authdto.LoginRequestDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.userstatus.UserStatusNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
@@ -29,20 +31,20 @@ public class BasicAuthService implements AuthService {
     public UserDto login(LoginRequestDTO req) {
         // req에 담긴 username을 조회 및 존재여부 파악.
         if (userRepository.findByUsername(req.username()).isEmpty()) {
-            throw new NoSuchElementException("해당 유저는 존재하지 않음.");
+            throw new UserNotFoundException(req.username());
         }
 
         // username이 존재할 때, password를 검증하고 예외를 던짐
         Optional<User> optUser = userRepository.findByUsernameAndPassword(req.username(),
             req.password());
         if (optUser.isEmpty()) {
-            throw new IllegalStateException("로그인 정보가 옳바르지 않습니다!");
+            throw new UserNotFoundException(req.username());
         }
 
         User user = optUser.get();
 
         UserStatus userStatus = userStatusRepository.findByUserId(user.getId())
-            .orElseThrow(() -> new NoSuchElementException("해당 User Status가 없습니다."));
+            .orElseThrow(() -> new UserStatusNotFoundException(user.getId()));
         userStatus.update(Instant.now());
         return userMapper.toDto(user);
 

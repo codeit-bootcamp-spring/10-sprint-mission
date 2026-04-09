@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.entity;
 
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -26,11 +27,11 @@ public class User extends BaseUpdatableEntity {
     @Column(nullable = false)
     private String password;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
     @JoinColumn(name = "profile_id")
     private BinaryContent profile; // BinaryContent의 id
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "user")
     private UserStatus userStatus;
 
 
@@ -61,7 +62,8 @@ public class User extends BaseUpdatableEntity {
             this.password = newPassword;
             anyValueUpdated = true;
         }
-        if (binaryContent != null && !binaryContent.getId().equals(this.profile.getId())) {
+        if (binaryContent != null && (this.profile == null || !binaryContent.getId()
+            .equals(this.profile.getId()))) {
             this.profile = binaryContent;
             anyValueUpdated = true;
         }

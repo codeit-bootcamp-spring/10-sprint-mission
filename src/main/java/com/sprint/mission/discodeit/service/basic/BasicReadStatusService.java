@@ -6,18 +6,25 @@ import com.sprint.mission.discodeit.dto.readstatusdto.ReadStatusUpdateRequestDTO
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.FieldNotValidException;
+import com.sprint.mission.discodeit.exception.RequestNullException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.readstatus.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ReadStatusService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicReadStatusService implements ReadStatusService {
@@ -30,31 +37,51 @@ public class BasicReadStatusService implements ReadStatusService {
     @Transactional
     @Override
     public ReadStatusDto create(ReadStatusCreateRequestDTO req) {
-        Objects.requireNonNull(req.channelId(), "??ル쪇???? ??? id???낅퉵??");
-        Objects.requireNonNull(req.userId(), "??ル쪇???? ??? id???낅퉵??");
+        if (req == null) {
+            throw new RequestNullException();
+        }
+
+        // ReadStatus 생성 메서드 시작 TRACE 로그
+        log.trace("ReadStatus 생성 메서드 시작: channelId={}, userId={}"
+            , req.channelId(), req.userId()
+        );
 
         Channel channel = channelRepository.findById(req.channelId())
-            .orElseThrow(() -> new NoSuchElementException("?????嶺??х몭???브퀡????? ???용????덈펲!"));
+            .orElseThrow(() -> new ChannelNotFoundException(req.channelId()));
         User user = userRepository.findById(req.userId())
-            .orElseThrow(() -> new NoSuchElementException("?????????띠럾? ?브퀡????? ???용????덈펲!"));
+            .orElseThrow(() -> new UserNotFoundException(req.userId()));
 
-        try {
-            ReadStatus readStatus = new ReadStatus(user, channel);
-            readStatusRepository.save(readStatus);
-            return readStatusMapper.toDto(readStatus);
-        } catch (DataIntegrityViolationException e) {
-            throw new IllegalStateException("ReadStatus ??⑥щ턄??? 繞벿살탮???紐껊퉵??");
-        }
+        log.trace("ReadStatus 생성 및 영속화 시도:  channelId={}, userId={}"
+            , req.channelId(), req.userId());
+
+        ReadStatus readStatus = new ReadStatus(user, channel);
+        readStatusRepository.save(readStatus); // ReadStatus 영속화
+        ReadStatusDto readStatusDto = readStatusMapper.toDto(readStatus);
+
+        // Read Status 영속화 성공 INFO 로그
+        log.info("[ReadStatus] ReadStatus 생성 및 영속화 성공: readStatusId={}"
+            , readStatus.getId());
+
+        return readStatusDto;
+
     }
 
     @Transactional(readOnly = true)
     @Override
     public ReadStatusDto find(UUID rsId) {
-        Objects.requireNonNull(rsId, "??ル쪇???? ??? ReadStatus ID ???낅퉵??");
+        if (rsId == null) {
+            throw new FieldNotValidException("rsId");
+        }
+
+        log.trace("ReadStatus 조회 메서드 시작: id={}", rsId);
+
         ReadStatus readStatus =
             readStatusRepository.findById(rsId)
                 .orElseThrow(
-                    () -> new NoSuchElementException("?????ReadStatus??嶺뚢돦堉??????怨몃쾳."));
+                    () -> new ReadStatusNotFoundException(rsId));
+
+        log.info("ReadStatus 조회 성공: channelName={}, userName={}",
+            readStatus.getChannel().getName(), readStatus.getUser().getUsername());
 
         return readStatusMapper.toDto(readStatus);
     }
@@ -62,9 +89,14 @@ public class BasicReadStatusService implements ReadStatusService {
     @Transactional
     @Override
     public List<ReadStatusDto> findAllByUserId(UUID userId) {
-        Objects.requireNonNull(userId, "??ル쪇???? ??? ??? ID ???낅퉵??");
+        if (userId == null) {
+            throw new FieldNotValidException("userId");
+        }
+
+        log.trace("사용자 ID를 통해 해당 사용자의 ReadStatus들을 조회하는 메서드 시작: userId={}", userId);
+
         if (!userRepository.existsById(userId)) {
-            throw new NoSuchElementException("????띠럾? ?브퀡????? ???곷쾳");
+            throw new UserNotFoundException(userId);
         }
 
         return readStatusRepository
@@ -77,14 +109,21 @@ public class BasicReadStatusService implements ReadStatusService {
     @Transactional
     @Override
     public ReadStatusDto update(UUID id, ReadStatusUpdateRequestDTO req) {
-        Objects.requireNonNull(req, "??ル쪇???? ??? ??븐슙????낅퉵??");
-        Objects.requireNonNull(id, "??ル쪇???? ??? ??紐끒???肉???덈펲!");
+        if (req == null) {
+            throw new RequestNullException();
+        }
+        if (id == null) {
+            throw new FieldNotValidException("id");
+        }
 
-        ReadStatus readStatus = readStatusRepository.findById(id).orElseThrow(
-            () -> new NoSuchElementException("?브퀡????? ???낅츎 ReadStatus ???낅퉵??")
-        );
+        // ReadStatus 업데이트 메서드 시작 TRACE 로그
+        log.trace("[ReadStatus] ReadStatus 업데이트 메서드 시작: id={}, newLastReadAt={}", id,
+            req.newLastReadAt());
 
-        readStatus.update();
+        ReadStatus readStatus = getReadstatus(id);
+
+        readStatus.update(req.newLastReadAt());
+
         ReadStatus saved = readStatusRepository.save(readStatus);
 
         return new ReadStatusDto(
@@ -98,9 +137,24 @@ public class BasicReadStatusService implements ReadStatusService {
     @Transactional
     @Override
     public void delete(UUID id) {
-        Objects.requireNonNull(id, "??ル쪇???? ??? ID???낅퉵??");
+        if (id == null) {
+            throw new FieldNotValidException("id");
+        }
+
+        // ReadStatus 삭제 메서드 시작 TRACE 로그
+        log.trace("[ReadStatus] ReadStatus 삭제 메서드 시작: id={}", id);
+
+        ReadStatus readStatus = getReadstatus(id);
+
+        log.debug("삭제하려는 ReadStatus의 정보: id={}, channelId={}, userId={}",
+            readStatus.getId(), readStatus.getChannel().getId(), readStatus.getUser().getId());
 
         readStatusRepository.deleteById(id);
+        log.info("[ReadStatus] 삭제 성공: id={}", readStatus.getId());
+    }
 
+    public ReadStatus getReadstatus(UUID id) {
+        return readStatusRepository.findById(id)
+            .orElseThrow(() -> new ReadStatusNotFoundException(id));
     }
 }

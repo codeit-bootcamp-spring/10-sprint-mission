@@ -8,7 +8,9 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
+@Slf4j
 
 public class AuthController {
 
@@ -51,7 +54,8 @@ public class AuthController {
     }
 
     )
-    public UserDto userLogin(@RequestBody LoginRequestDTO req) {
+    public UserDto userLogin(@Valid @RequestBody LoginRequestDTO req) {
+        log.trace("[Auth] 컨트롤러에서 인증 요청 받음");
         return authService.login(req); // 일단 Response DTO만 보내는걸로
         // 추후 로그인 기능을 서비스에서 구현?
     }

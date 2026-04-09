@@ -8,6 +8,12 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.FieldNotValidException;
+import com.sprint.mission.discodeit.exception.InternalServiceException;
+import com.sprint.mission.discodeit.exception.RequestNullException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -16,6 +22,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 import java.time.Instant;
@@ -27,6 +34,7 @@ import java.util.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
@@ -39,27 +47,35 @@ public class BasicMessageService implements MessageService {
     private final BinaryContentStorage binaryContentStorage;
     private final PageResponseMapper pageResponseMapper;
 
-    // 硫붿꽭吏 ?앹꽦 硫붿냼??
-    // ?좏깮?곸쑝濡?泥⑤? ?뚯씪(BinaryContent)瑜??щ윭 媛??깅줉?????덈떎.
     @Transactional
     @Override
     public MessageDto create(List<MultipartFile> profiles, MessageCreateRequestDTO req) {
-        Objects.requireNonNull(req, "?좏슚?섏? ?딆? ?붿껌?낅땲??");
-        Objects.requireNonNull(req.channelId(), "?좏슚?섏? ?딆? 梨꾨꼸ID ?낅땲??");
-        Objects.requireNonNull(req.authorId(), "?좏슚?섏? ?딆? ?ъ슜?륤D ?낅땲??");
+        if (req == null) {
+            throw new RequestNullException();
+        }
+
+        // 메시지 생성 로그
+        log.trace("메시지 생성 메서드 시작");
+
+        // 요청에 담긴 채널 ID, 작성자 ID가 존재하는지 검증 시작
+        // 로깅
+        log.trace("메시지 생성 요청에 담긴 필드 검증 시작: channelId={}, authorId={}",
+            req.channelId(), req.authorId());
 
         Channel channel = channelRepository.findById(req.channelId())
-            .orElseThrow(() -> new NoSuchElementException("?대떦 梨꾨꼸??議댁옱?섏? ?딆뒿?덈떎!"));
+            .orElseThrow(() -> new ChannelNotFoundException(req.channelId()));
         User user = userRepository.findById(req.authorId())
-            .orElseThrow(() -> new NoSuchElementException("?대떦 ?좎?媛 議댁옱?섏? ?딆뒿?덈떎!"));
+            .orElseThrow(() -> new UserNotFoundException(req.authorId()));
 
+        // 업로드 파일들을 BinaryContent로 변환하여 담아놓을 profileList를 빈 ArrayList로 초기화.
         List<BinaryContent> profileList = new ArrayList<>();
 
+        // 업로드 파일이 존재하면 BinaryContent로 변환 및 profileList에 add
         if (profiles != null) {
             for (MultipartFile profile : profiles) {
                 BinaryContent saved = binaryContentRepository.save(
                     new BinaryContent(
-                        profile.getName(),
+                        profile.getOriginalFilename(),
                         profile.getSize(),
                         profile.getContentType()
                     )
@@ -69,14 +85,17 @@ public class BasicMessageService implements MessageService {
                 try {
                     binaryContentStorage.put(saved.getId(), profile.getBytes());
                 } catch (IOException e) {
-                    throw new RuntimeException("Byte ????ㅽ뙣");
+                    log.error("IO 예외 발생!: {} ", e.getMessage(), e);
+                    throw new InternalServiceException();
                 }
-
             }
         }
 
         Message message = new Message(req.content(), channel, user, profileList);
+        log.debug("생성된 메시지 객체 정보: messageId={}, channelId={}, userId={}",
+            message.getId(), message.getChannel().getId(), message.getAuthor().getId());
         Message saved = messageRepository.save(message);
+        log.info("메시지 생성 및 영속화 성공: messageId={}", saved.getId());
 
         return messageMapper.toDto(saved);
     }
@@ -84,53 +103,74 @@ public class BasicMessageService implements MessageService {
     @Transactional(readOnly = true)
     @Override
     public MessageDto find(UUID messageId) {
-        Objects.requireNonNull(messageId, "?좏슚?섏? ?딆? 硫붿떆吏ID ?낅땲??");
+        // messageId null 체크
+        if (messageId == null) {
+            throw new FieldNotValidException("messageId");
+        }
 
-        Message message = messageRepository.findById(messageId)
-            .orElseThrow(
-                () -> new IllegalStateException("議댁옱?섏? ?딅뒗 硫붿떆吏?낅땲??")
-            );
+        // 메시지 조회 메서드 시작 로그
+        log.trace("메시지 조회 메서드 시작: messageId={}", messageId);
 
+        // 메시지 레포지토리에서 messageId를 통해 메시지 추출
+        Message message = getMessage(messageId);
+
+        // 조회 성공 INFO 로그
+        log.info("메시지 조회 성공: messageId={}", message.getId());
+
+        // Dto로 변환 후 리턴
         return messageMapper.toDto(message);
-
-
     }
 
     @Transactional
     @Override
     public List<MessageDto> findAllByChannelId(UUID channelId) {
-        Objects.requireNonNull(channelId, "?좏슚?섏? ?딆? 梨꾨꼸id ?낅땲??");
+        // ChannelId로 메시지 리스트를 조회하는 메서드 시작 로그
+        log.trace("채널 ID로 메시지 리스트 조회 메서드 시작: channelId={}", channelId);
 
+        // channelId null 체크
+        if (channelId == null) {
+            throw new FieldNotValidException("channelId");
+        }
+
+        // 메시지 레포지토리에서 채널 ID에 해당하는 메시지들을 리스트로 추출
         List<Message> messages = messageRepository.findByChannelId(channelId);
 
+        log.info("채널 내 메시지 리스트 조회 성공");
+
+        // 리스트를 순회하면서 각 메시지들을 DTO로 변환 및 리스트화하여 리턴
         return messages
             .stream()
             .map(
                 messageMapper::toDto
             ).toList();
-
     }
-
-//    @Override
-//    public PageResponse<MessageDto> findAllByChannelId(UUID channelId, Instant cursor,
-//        Pageable pageable) {
-//        return null;
-//    }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<MessageDto> findAllByChannelId(UUID channelId,
         Optional<Instant> cursor,
         Pageable pageable) {
-        Objects.requireNonNull(channelId, "?좏슚?섏? ?딆? 梨꾨꼸 ?앸퀎??");
-        Objects.requireNonNull(cursor, "?좏슚?섏? ?딆? cursor!");
-        Objects.requireNonNull(pageable, "?좏슚?섏? ?딆? ?섏씠吏??뺣낫!");
 
+        // 채널 ID를 통해 모든 메시지를 조회하는 메서드 시작 로그
+        log.trace("채널 내 모든 메시지 조회 메서드 시작: channelId={}", channelId);
+
+        // 파라미터 null 체크
+        if (channelId == null) {
+            throw new FieldNotValidException("channelId");
+        }
+        if (pageable == null) {
+            throw new FieldNotValidException("pageable");
+        }
+
+        // cursor 값과 pageable 정보를 통해 slice<message> 객체를 추출한다.
         Slice<Message> slice = cursor
             .map(value -> messageRepository.findByChannelIdAndCursor(channelId, value, pageable))
             .orElseGet(() -> messageRepository.findByChannelId(channelId, pageable));
+
+        // slice 안의 메세지를 DTO로 전환
         Slice<MessageDto> dtoSlice = slice.map(messageMapper::toDto);
 
+        log.info("메시지 목록 조회 성공");
         return pageResponseMapper.fromSlice(dtoSlice);
 
     }
@@ -138,29 +178,56 @@ public class BasicMessageService implements MessageService {
     @Transactional
     @Override
     public MessageDto update(UUID messageId, MessageUpdateRequestDto req) {
-        Objects.requireNonNull(req, "?좏슚?섏? ?딆? ?붿껌?낅땲??");
-        Objects.requireNonNull(messageId, "?좏슚?섏? ?딆? 硫붿떆吏 ?앸퀎??");
-
-        Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new NoSuchElementException(
-                "Message with id " + messageId + " not found"));
-
-        if (req.newContent() != null) {
-            message.setContent(req.newContent());
+        // 파라미터 null 체크
+        if (messageId == null) {
+            throw new FieldNotValidException("messageId");
+        }
+        if (req == null) {
+            throw new RequestNullException();
         }
 
+        // 메시지 수정 메서드 시작 로그
+        log.trace("메시지 수정 메서드 시작: messageId={}", messageId);
+
+        // 수정할 메시지를 메시지 레포지토리에서 조회
+        Message message = getMessage(messageId);
+
+        // Target 메시지 정보 디버그 로그
+        log.debug("target 메시지 정보: id={}, content={}",
+            message.getId(), message.getContent());
+
+        // 수정 요청에서 newContent 필드가 존재하면 기존 content를 newContent로 수정.
+        if (req.newContent() != null) {
+            message.setContent(req.newContent()); // dirty-checking
+        }
+        // 메시지 수정 성공 INFO 로그
+        log.info("[Message] 메시지 수정 성공: messageId={}", message.getId());
+
+        // DTO로 변환 후 리턴
         return messageMapper.toDto(message);
     }
 
     @Transactional
     @Override
     public void delete(UUID messageId) {
-        Objects.requireNonNull(messageId, "?좏슚?섏? ?딆? 硫붿떆吏 ?앸퀎??");
 
-        Message message = messageRepository.findById(messageId)
-            .orElseThrow(() -> new NoSuchElementException("?대떦 硫붿떆吏瑜?李얠쓣 ???놁뒿?덈떎!"));
+        if (messageId == null) {
+            throw new FieldNotValidException("messageId");
+        }
+        log.trace("메시지 삭제 메서드 시작: messageId={}", messageId);
 
+        // 메시지 레포지토리에서 메시지 조회
+        Message message = getMessage(messageId);
+        // 디버깅 로그
+        log.debug("삭제할 메시지 정보: id={}", message.getId());
+        // 메시지 삭제
         messageRepository.delete(message);
+        // 메시지 삭제 성공 INFO 로그
+        log.info("메시지 삭제 성공: messageId={}", message.getId());
+    }
+
+    public Message getMessage(UUID id) {
+        return messageRepository.findById(id).orElseThrow(() -> new MessageNotFoundException(id));
     }
 }
 
