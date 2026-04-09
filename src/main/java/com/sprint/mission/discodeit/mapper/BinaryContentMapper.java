@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import org.mapstruct.Mapper;
 
+// 릴리즈
 @Mapper(componentModel = "spring")
 public interface BinaryContentMapper {
 
