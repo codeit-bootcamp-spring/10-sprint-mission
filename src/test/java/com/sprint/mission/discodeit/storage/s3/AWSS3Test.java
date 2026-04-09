@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,6 +48,10 @@ class AWSS3Test {
     @BeforeAll
     static void setUp() throws IOException {
         Properties env = loadEnvProperties();
+        assumeTrue(
+            hasRequiredAwsConfig(env),
+            "AWS S3 integration test requires AWS_S3_ACCESS_KEY, AWS_S3_SECRET_KEY, AWS_S3_REGION, and AWS_S3_BUCKET"
+        );
 
         awsProperties = new AwsProperties();
         awsProperties.setAccessKey(required(env, "AWS_S3_ACCESS_KEY"));
@@ -127,7 +132,7 @@ class AWSS3Test {
     }
 
     @Test
-    @DisplayName("PresignedUrl 생성: 서명된 다운로드 URL을 생성한다")
+    @DisplayName("Presigned URL 생성: 서명된 다운로드 URL을 생성한다")
     void generatePresignedUrl() throws IOException {
         String key = createTestKey("presigned");
         String expected = "presigned-test-" + UUID.randomUUID();
@@ -176,21 +181,30 @@ class AWSS3Test {
 
     private static Properties loadEnvProperties() throws IOException {
         Path envPath = Path.of(ENV_PATH);
-        assertThat(Files.exists(envPath))
-            .as("%s 파일이 필요합니다.", ENV_PATH)
-            .isTrue();
-
         Properties properties = new Properties();
-        try (InputStream inputStream = Files.newInputStream(envPath)) {
-            properties.load(inputStream);
+        if (Files.exists(envPath)) {
+            try (InputStream inputStream = Files.newInputStream(envPath)) {
+                properties.load(inputStream);
+            }
         }
         return properties;
+    }
+
+    private static boolean hasRequiredAwsConfig(Properties properties) {
+        return hasText(properties.getProperty("AWS_S3_ACCESS_KEY"))
+            && hasText(properties.getProperty("AWS_S3_SECRET_KEY"))
+            && hasText(properties.getProperty("AWS_S3_REGION"))
+            && hasText(properties.getProperty("AWS_S3_BUCKET"));
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     private static String required(Properties properties, String key) {
         String value = properties.getProperty(key);
         assertThat(value)
-            .as("%s 값이 .env에 정의되어 있어야 합니다.", key)
+            .as("%s value must be defined", key)
             .isNotBlank();
         return value;
     }

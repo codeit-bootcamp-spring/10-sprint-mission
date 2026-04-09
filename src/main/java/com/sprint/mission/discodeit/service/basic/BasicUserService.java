@@ -205,10 +205,14 @@ public class BasicUserService implements UserService {
         log.trace("사용자 삭제 메서드 시작: userId={}", userId);
 
         // 존재 검증 후 예외 처리 결정
-        getUser(userId);
+        User user = getUser(userId);
+        userStatusRepository.findByUserId(userId)
+            .ifPresent(userStatusRepository::delete);
+        userStatusRepository.flush();
 
         // 해당 유저 ID가 레포지토리 내에 존재하는지 확인하고 없으면 예외 던짐.
-        userRepository.deleteById(userId);
+        userRepository.delete(user);
+        userRepository.flush();
 
         // 삭제 성공 로그
         log.info("[User] 유저 삭제 성공: userId={}", userId);
