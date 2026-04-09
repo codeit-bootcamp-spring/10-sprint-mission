@@ -4,6 +4,8 @@
 .gradle-user
 .idea
 .discodeit
+.env
+*.env
 
 build
 out

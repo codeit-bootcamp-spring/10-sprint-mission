@@ -49,3 +49,8 @@ out/
 
 .env.*
 !.env.example
+
+### Node ###
+node_modules/
+package.json
+package-lock.json
