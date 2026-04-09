@@ -14,6 +14,9 @@ COPY build.gradle* settings.gradle* ./
 # gradlew 실행 권한 부여
 RUN chmod +x gradlew
 
+# Gradle 의존성 캐시
+RUN ./gradlew --no-daemon dependencies || true
+
 # 소스 코드 복사
 COPY src ./src
 
@@ -21,7 +24,7 @@ COPY src ./src
 RUN ./gradlew --no-daemon clean bootJar -x test -x check -Pproduction
 
 # ===== Run stage =====
-FROM amazoncorretto:17
+FROM amazoncorretto:17-alpine
 WORKDIR /app
 
 ENV PROJECT_NAME=discodeit
