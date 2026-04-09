@@ -51,3 +51,6 @@ out/
 
 # env files
 .env
+
+# Generated files
+src/main/generated/
