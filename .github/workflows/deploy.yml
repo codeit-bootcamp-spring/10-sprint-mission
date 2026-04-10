@@ -64,49 +64,40 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      # 6) 태스크 정의 업데이트
-      - name: 태스크 정의 업데이트
+      # 6) 태스크 정의 템플릿 렌더링
+      - name: Render task definition
         run: |
-          TASK_DEF_ARN=$(aws ecs describe-services \
-            --cluster ${{ vars.ECS_CLUSTER }} \
-            --services ${{ vars.ECS_SERVICE }} \
-            --query "services[0].taskDefinition" \
+          sudo apt-get update -y
+          sudo apt-get install -y gettext-base
+
+          export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
+          export AWS_REGION=${{ secrets.AWS_REGION }}
+          export REPO_URI=${{ vars.ECR_REPOSITORY_URI }}
+          export IMAGE_TAG=${GITHUB_SHA::7}
+
+          envsubst < ecs-task-def.json > task-def.rendered.json
+
+          echo "=== Rendered task definition ==="
+          cat task-def.rendered.json
+
+      # 7) 새 태스크 정의 등록
+      - name: Register new task definition
+        run: |
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://task-def.rendered.json \
+            --query 'taskDefinition.taskDefinitionArn' \
             --output text)
 
-          NEW_TASK_DEF=$(aws ecs describe-task-definition \
-            --task-definition "$TASK_DEF_ARN" \
-            --query "taskDefinition" \
-            | jq --arg IMAGE "${{ vars.ECR_REPOSITORY_URI }}:${GITHUB_SHA::7}" \
-                 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)
-                  | .containerDefinitions[0].image = $IMAGE')
+          echo "NEW_TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
+          echo "Registered task definition: $TASK_DEF_ARN"
 
-          NEW_TASK_DEF_ARN=$(echo "$NEW_TASK_DEF" \
-            | aws ecs register-task-definition --cli-input-json file:///dev/stdin \
-            --query "taskDefinition.taskDefinitionArn" \
-            --output text)
-
-          echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
-
-      # 7) 기존 서비스 중단
-      - name: 기존 ECS 서비스 중단
-        run: |
-          aws ecs update-service \
-            --cluster ${{ vars.ECS_CLUSTER }} \
-            --service ${{ vars.ECS_SERVICE }} \
-            --desired-count 0
-
-          aws ecs wait services-stable \
-            --cluster ${{ vars.ECS_CLUSTER }} \
-            --services ${{ vars.ECS_SERVICE }}
-
-      # 8) 새 태스크 정의로 서비스 재기동
-      - name: ECS 서비스 업데이트
+      # 8) 새 태스크 정의로 ECS 서비스 업데이트
+      - name: Update ECS service
         run: |
           aws ecs update-service \
             --cluster ${{ vars.ECS_CLUSTER }} \
             --service ${{ vars.ECS_SERVICE }} \
             --task-definition "$NEW_TASK_DEF_ARN" \
-            --desired-count 1 \
             --force-new-deployment
 
       # 9) 배포 상태 확인 (디플로이먼트 요약 출력)
