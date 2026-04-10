@@ -35,7 +35,7 @@ public class BasicUserService implements UserService {
   private final UserStatusRepository userStatusRepository;
   private final UserMapper userMapper;
   private final BinaryContentRepository binaryContentRepository;
-  private final S3BinaryContentStorage s3BinaryContentStorage;
+  private final BinaryContentStorage binaryContentStorage;
 
   @Transactional
   @Override
@@ -61,7 +61,7 @@ public class BasicUserService implements UserService {
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length, contentType);
           binaryContentRepository.save(binaryContent);
             log.info("프로필 메타데이터 저장 완료: id={}, fileName={}", binaryContent.getId(), fileName);
-          s3BinaryContentStorage.put(binaryContent.getId(), bytes, contentType);
+            binaryContentStorage.put(binaryContent.getId(), bytes, contentType);
             log.info("프로필 S3 업로드 완료: id={}, contentType={}, size={}bytes",
                     binaryContent.getId(), contentType, bytes.length);
           return binaryContent;
@@ -133,7 +133,7 @@ public class BasicUserService implements UserService {
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
               contentType);
           binaryContentRepository.save(binaryContent);
-          s3BinaryContentStorage.put(binaryContent.getId(), bytes, contentType);
+            binaryContentStorage.put(binaryContent.getId(), bytes, contentType);
           return binaryContent;
         })
         .orElse(null);

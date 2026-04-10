@@ -24,7 +24,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentMapper binaryContentMapper;
-  private final S3BinaryContentStorage  s3BinaryContentStorage;
+  private final BinaryContentStorage  binaryContentStorage;
 
   @Transactional
   @Override
@@ -40,7 +40,7 @@ public class BasicBinaryContentService implements BinaryContentService {
         contentType
     );
     binaryContentRepository.save(binaryContent);
-    UUID uploadId = s3BinaryContentStorage.put(binaryContent.getId(), bytes, contentType);
+    UUID uploadId = binaryContentStorage.put(binaryContent.getId(), bytes, contentType);
 
     log.info("바이너리 컨텐츠 생성 완료: id={}", uploadId);
     return binaryContentMapper.toDto(binaryContent);
