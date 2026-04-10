@@ -12,6 +12,10 @@ spring:
       hibernate:
         format_sql: true
 
+  sql:
+    init:
+      mode: never
+
 logging:
   level:
     com.sprint.mission.discodeit: debug
