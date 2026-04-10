@@ -1,4 +1,4 @@
-[![codecov](https://codecov.io/gh/kwaksss/10-sprint-mission/branch/main/graph/badge.svg?token=YOUR_TOKEN)](https://codecov.io/gh/kwaksss/10-sprint-mission)
+[![codecov](https://codecov.io/gh/kwaksss/10-sprint-mission/branch/sprint8/graph/badge.svg?token=YOUR_TOKEN)](https://codecov.io/gh/kwaksss/10-sprint-mission)
 https://codecov.io/gh/kwaksss/10-sprint-mission/branch/main/graph/badge.svg
 
 # 0-spring-mission
