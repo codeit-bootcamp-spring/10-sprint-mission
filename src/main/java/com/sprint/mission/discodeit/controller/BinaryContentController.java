@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BinaryContentController implements BinaryContentApi {
 
   private final BinaryContentService binaryContentService;
-  private final S3BinaryContentStorage s3BinaryContentStorage;
+  private final BinaryContentStorage binaryContentStorage;
 
   @GetMapping(path = "{binaryContentId}")
   public ResponseEntity<BinaryContentDto> find(
@@ -54,7 +54,7 @@ public class BinaryContentController implements BinaryContentApi {
       @PathVariable("binaryContentId") UUID binaryContentId) {
     log.info("바이너리 컨텐츠 다운로드 요청: id={}", binaryContentId);
     BinaryContentDto binaryContentDto = binaryContentService.find(binaryContentId);
-    ResponseEntity<?> response = s3BinaryContentStorage.download(binaryContentDto);
+    ResponseEntity<?> response = binaryContentStorage.download(binaryContentDto);
     log.debug("바이너리 컨텐츠 다운로드 응답: contentType={}, contentLength={}", 
         response.getHeaders().getContentType(), response.getHeaders().getContentLength());
     return response;
