@@ -68,8 +68,8 @@ jobs:
       - name: 태스크 정의 업데이트
         run: |
           TASK_DEF_ARN=$(aws ecs describe-services \
-            --cluster ${{ vars.ECS_CLUSTER_NAME }} \
-            --services ${{ vars.ECS_SERVICE_NAME }} \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --services ${{ vars.ECS_SERVICE }} \
             --query "services[0].taskDefinition" \
             --output text)
 
@@ -91,24 +91,24 @@ jobs:
       - name: 기존 ECS 서비스 중단
         run: |
           aws ecs update-service \
-            --cluster ${{ vars.ECS_CLUSTER_NAME }} \
-            --service ${{ vars.ECS_SERVICE_NAME }} \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
             --desired-count 0
 
           aws ecs wait services-stable \
-            --cluster ${{ vars.ECS_CLUSTER_NAME }} \
-            --services ${{ vars.ECS_SERVICE_NAME }}
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --services ${{ vars.ECS_SERVICE }}
 
       # 8) 새 태스크 정의로 서비스 재기동
       - name: ECS 서비스 업데이트
         run: |
           aws ecs update-service \
-            --cluster ${{ vars.ECS_CLUSTER_NAME }} \
-            --service ${{ vars.ECS_SERVICE_NAME }} \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
             --task-definition "$NEW_TASK_DEF_ARN" \
             --desired-count 1 \
             --force-new-deployment
 
           aws ecs wait services-stable \
-            --cluster ${{ vars.ECS_CLUSTER_NAME }} \
-            --services ${{ vars.ECS_SERVICE_NAME }}
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --services ${{ vars.ECS_SERVICE }}
