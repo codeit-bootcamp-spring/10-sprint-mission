@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.response.FileResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +15,7 @@ import java.net.URI;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
-
+@ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "s3")
 @RestController
 @RequestMapping("/files")
 @RequiredArgsConstructor
