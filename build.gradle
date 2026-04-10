@@ -24,6 +24,8 @@ repositories {
     mavenCentral()
 }
 
+
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
@@ -50,7 +52,12 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+jacoco {
+    toolVersion = "0.8.12"
+}
+
 test {
+    useJUnitPlatform()
     finalizedBy jacocoTestReport
 }
 
@@ -59,5 +66,6 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.required = true
+        csv.required = false
     }
 }
