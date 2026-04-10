@@ -46,6 +46,7 @@ public class BasicReadStatusService implements ReadStatusService {
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(() -> ChannelNotFoundException.withId(channelId));
 
+    //중복이면 예외 던지는 로직이 아니라, 이미 있으면 기존 값을 반환하는 로직
     ReadStatus readStatus = readStatusRepository.findByUserIdAndChannelId(user.getId(), channel.getId())
         .orElseGet(() -> {
           Instant lastReadAt = request.lastReadAt();

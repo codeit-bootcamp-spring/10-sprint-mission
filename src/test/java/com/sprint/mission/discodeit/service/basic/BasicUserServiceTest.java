@@ -11,12 +11,17 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
+
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +36,9 @@ class BasicUserServiceTest {
 
   @Mock
   private UserRepository userRepository;
+
+  @Mock
+  private UserStatusRepository userStatusRepository;
 
   @Mock
   private UserMapper userMapper;
@@ -62,6 +70,7 @@ class BasicUserServiceTest {
   void createUser_Success() {
     // given
     UserCreateRequest request = new UserCreateRequest(username, email, password);
+    User user = new User(username, email, password, null);
     given(userRepository.existsByEmail(eq(email))).willReturn(false);
     given(userRepository.existsByUsername(eq(username))).willReturn(false);
     given(userMapper.toDto(any(User.class))).willReturn(userDto);
@@ -72,6 +81,7 @@ class BasicUserServiceTest {
     // then
     assertThat(result).isEqualTo(userDto);
     verify(userRepository).save(any(User.class));
+    verify(userStatusRepository).save(any(UserStatus.class));
   }
 
   @Test
