@@ -109,6 +109,10 @@ jobs:
             --desired-count 1 \
             --force-new-deployment
 
-          aws ecs wait services-stable \
+      # 9) 배포 상태 확인 (디플로이먼트 요약 출력)
+      - name: ECS 배포 상태 확인
+        run: |
+          aws ecs describe-services \
             --cluster ${{ vars.ECS_CLUSTER }} \
-            --services ${{ vars.ECS_SERVICE }}
+            --services ${{ vars.ECS_SERVICE }} \
+            --query "services[0].deployments"
