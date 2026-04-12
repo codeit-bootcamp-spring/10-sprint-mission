@@ -42,3 +42,4 @@ bin/
 .discodeit
 .env
 .logs
+discodeit.env
