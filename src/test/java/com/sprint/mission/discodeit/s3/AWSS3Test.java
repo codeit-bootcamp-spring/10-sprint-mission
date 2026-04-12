@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.s3;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -24,7 +25,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+@Disabled("CI에선 로컬 자격 증명 없어서 제외")
 public class AWSS3Test {
 
     private S3Client s3Client;

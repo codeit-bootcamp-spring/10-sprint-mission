@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.s3;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorage;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+@Disabled("CI에서는 테스트x")
 class S3BinaryContentStorageTest {
 
     private S3BinaryContentStorage storage;
