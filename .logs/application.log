@@ -1,22 +1,16 @@
-26-04-06 14:31:38.996 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.1.Final
-26-04-06 14:31:39.456 [main] INFO  c.s.m.discodeit.DiscodeitApplication - Starting DiscodeitApplication using Java 17.0.17 with PID 26368 (C:\Users\jongin\codeit\10-sprint-mission\build\classes\java\main started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
-26-04-06 14:31:39.457 [main] INFO  c.s.m.discodeit.DiscodeitApplication - The following 1 profile is active: "dev"
-26-04-06 14:31:41.477 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-26-04-06 14:31:41.572 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 83 ms. Found 6 JPA repository interfaces.
-26-04-06 14:31:42.582 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
-26-04-06 14:31:42.596 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
-26-04-06 14:31:42.598 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
-26-04-06 14:31:42.598 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.33]
-26-04-06 14:31:42.697 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
-26-04-06 14:31:42.697 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 3130 ms
-26-04-06 14:31:42.938 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-26-04-06 14:31:43.239 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@288409f0
-26-04-06 14:31:43.242 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-26-04-06 14:31:43.385 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
-26-04-06 14:31:43.486 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.2.Final
-26-04-06 14:31:43.533 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
-26-04-06 14:31:44.084 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
-26-04-06 14:31:44.293 [main] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+26-04-12 21:43:31.993 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.1.Final
+26-04-12 21:43:32.101 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - Starting DiscodeitApplicationTests using Java 17.0.17 with PID 2504 (started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
+26-04-12 21:43:32.103 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - The following 1 profile is active: "dev"
+26-04-12 21:43:34.702 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-04-12 21:43:34.879 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 159 ms. Found 6 JPA repository interfaces.
+26-04-12 21:43:36.297 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+26-04-12 21:43:36.690 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7acc95a2
+26-04-12 21:43:36.694 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+26-04-12 21:43:36.953 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+26-04-12 21:43:37.193 [Test worker] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.2.Final
+26-04-12 21:43:37.306 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+26-04-12 21:43:37.995 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+26-04-12 21:43:38.192 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
 	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
 	Database driver: undefined/unknown
 	Database version: 18.2
@@ -24,82 +18,50 @@
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-26-04-06 14:31:45.831 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-26-04-06 14:31:45.834 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
-26-04-06 14:31:46.725 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-26-04-06 14:31:47.513 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
-26-04-06 14:31:47.592 [main] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
-26-04-06 14:31:47.610 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
-26-04-06 14:31:47.623 [main] INFO  c.s.m.discodeit.DiscodeitApplication - Started DiscodeitApplication in 10.347 seconds (process running for 11.673)
-26-04-06 14:31:47.637 [main] WARN  o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
-26-04-06 14:31:47.637 [main] WARN  o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
-26-04-06 14:31:47.947 [RMI TCP Connection(2)-172.30.1.4] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
-26-04-06 14:31:47.947 [RMI TCP Connection(2)-172.30.1.4] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
-26-04-06 14:31:47.949 [RMI TCP Connection(2)-172.30.1.4] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
-26-04-06 14:42:49.279 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.1.Final
-26-04-06 14:42:49.333 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - Starting DiscodeitApplicationTests using Java 17.0.17 with PID 7084 (started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
-26-04-06 14:42:49.334 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - The following 1 profile is active: "dev"
-26-04-06 14:42:50.971 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-26-04-06 14:42:51.114 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 128 ms. Found 6 JPA repository interfaces.
-26-04-06 14:42:52.104 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-26-04-06 14:42:52.431 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@4c6fc3e7
-26-04-06 14:42:52.434 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-26-04-06 14:42:52.631 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
-26-04-06 14:42:52.769 [Test worker] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.2.Final
-26-04-06 14:42:52.833 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
-26-04-06 14:42:53.271 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
-26-04-06 14:42:53.404 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-	Database driver: undefined/unknown
-	Database version: 18.2
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-26-04-06 14:42:54.981 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-26-04-06 14:42:54.984 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
-26-04-06 14:42:56.471 [Test worker] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-26-04-06 14:42:57.820 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
-26-04-06 14:42:57.958 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - Started DiscodeitApplicationTests in 9.235 seconds (process running for 11.058)
-26-04-06 14:42:58.026 [Test worker] WARN  o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
-26-04-06 14:42:58.026 [Test worker] WARN  o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
-26-04-06 14:42:58.775 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest]: ChannelRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:42:58.820 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest
-26-04-06 14:42:58.825 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$DeleteTest]: DeleteTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:42:58.841 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$DeleteTest
-26-04-06 14:42:58.895 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - Starting ChannelRepositoryTest using Java 17.0.17 with PID 7084 (started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
-26-04-06 14:42:58.896 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - The following 1 profile is active: "test"
-26-04-06 14:42:59.059 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-26-04-06 14:42:59.122 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 60 ms. Found 6 JPA repository interfaces.
-26-04-06 14:42:59.137 [Test worker] INFO  o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
-26-04-06 14:42:59.160 [Test worker] INFO  o.s.j.d.e.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:a8ce1442-9670-467d-b50b-1e81508ff4a5;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
-26-04-06 14:42:59.556 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
-26-04-06 14:42:59.567 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
-26-04-06 14:42:59.596 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
-26-04-06 14:42:59.620 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory$EmbeddedDataSourceProxy@1d18e5ad']
+26-04-12 21:43:40.206 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+26-04-12 21:43:40.212 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+26-04-12 21:43:41.936 [Test worker] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+26-04-12 21:43:43.527 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
+26-04-12 21:43:43.675 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - Started DiscodeitApplicationTests in 12.697 seconds (process running for 15.868)
+26-04-12 21:43:43.741 [Test worker] WARN  o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+26-04-12 21:43:43.741 [Test worker] WARN  o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+26-04-12 21:43:44.485 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest]: ChannelRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+26-04-12 21:43:44.537 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest
+26-04-12 21:43:44.543 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$DeleteTest]: DeleteTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+26-04-12 21:43:44.563 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$DeleteTest
+26-04-12 21:43:44.631 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - Starting ChannelRepositoryTest using Java 17.0.17 with PID 2504 (started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
+26-04-12 21:43:44.631 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - The following 1 profile is active: "test"
+26-04-12 21:43:44.785 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-04-12 21:43:44.857 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 70 ms. Found 6 JPA repository interfaces.
+26-04-12 21:43:44.879 [Test worker] INFO  o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
+26-04-12 21:43:44.952 [Test worker] INFO  o.s.j.d.e.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:88ee98b4-8d30-46c4-bca8-8c379a9b7853;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
+26-04-12 21:43:45.682 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+26-04-12 21:43:45.702 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+26-04-12 21:43:45.768 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+26-04-12 21:43:45.844 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory$EmbeddedDataSourceProxy@5feede1f']
 	Database driver: undefined/unknown
 	Database version: 2.3.232
 	Autocommit mode: undefined/unknown
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-26-04-06 14:42:59.823 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-26-04-06 14:42:59.854 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.401 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+26-04-12 21:43:46.458 [Test worker] DEBUG org.hibernate.SQL - 
     drop table if exists binary_contents cascade 
-26-04-06 14:42:59.859 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.468 [Test worker] DEBUG org.hibernate.SQL - 
     drop table if exists channels cascade 
-26-04-06 14:42:59.860 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.469 [Test worker] DEBUG org.hibernate.SQL - 
     drop table if exists message_attachments cascade 
-26-04-06 14:42:59.860 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.470 [Test worker] DEBUG org.hibernate.SQL - 
     drop table if exists messages cascade 
-26-04-06 14:42:59.861 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.472 [Test worker] DEBUG org.hibernate.SQL - 
     drop table if exists read_statuses cascade 
-26-04-06 14:42:59.862 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.473 [Test worker] DEBUG org.hibernate.SQL - 
     drop table if exists user_statuses cascade 
-26-04-06 14:42:59.862 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.474 [Test worker] DEBUG org.hibernate.SQL - 
     drop table if exists users cascade 
-26-04-06 14:42:59.870 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.494 [Test worker] DEBUG org.hibernate.SQL - 
     create table binary_contents (
         created_at timestamp(6) with time zone not null,
         size bigint not null,
@@ -108,7 +70,7 @@
         file_name varchar(255) not null,
         primary key (id)
     )
-26-04-06 14:42:59.880 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.521 [Test worker] DEBUG org.hibernate.SQL - 
     create table channels (
         created_at timestamp(6) with time zone not null,
         updated_at timestamp(6) with time zone not null,
@@ -118,12 +80,12 @@
         type enum ('PRIVATE','PUBLIC') not null,
         primary key (id)
     )
-26-04-06 14:42:59.883 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.526 [Test worker] DEBUG org.hibernate.SQL - 
     create table message_attachments (
         attachment_id uuid not null,
         message_id uuid not null
     )
-26-04-06 14:42:59.885 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.529 [Test worker] DEBUG org.hibernate.SQL - 
     create table messages (
         created_at timestamp(6) with time zone not null,
         updated_at timestamp(6) with time zone not null,
@@ -133,7 +95,7 @@
         content varchar(255) not null,
         primary key (id)
     )
-26-04-06 14:42:59.886 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.533 [Test worker] DEBUG org.hibernate.SQL - 
     create table read_statuses (
         created_at timestamp(6) with time zone not null,
         last_read_at timestamp(6) with time zone not null,
@@ -143,7 +105,7 @@
         user_id uuid not null,
         primary key (id)
     )
-26-04-06 14:42:59.889 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.537 [Test worker] DEBUG org.hibernate.SQL - 
     create table user_statuses (
         created_at timestamp(6) with time zone not null,
         last_active_at timestamp(6) with time zone not null,
@@ -152,7 +114,7 @@
         user_id uuid not null unique,
         primary key (id)
     )
-26-04-06 14:42:59.892 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.543 [Test worker] DEBUG org.hibernate.SQL - 
     create table users (
         created_at timestamp(6) with time zone not null,
         updated_at timestamp(6) with time zone not null,
@@ -163,77 +125,77 @@
         email varchar(100) not null,
         primary key (id)
     )
-26-04-06 14:42:59.895 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.549 [Test worker] DEBUG org.hibernate.SQL - 
     alter table if exists message_attachments 
        add constraint FKsd1m8rb8jcpbcnb7rpdue7ctc 
        foreign key (attachment_id) 
        references binary_contents
-26-04-06 14:42:59.922 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.601 [Test worker] DEBUG org.hibernate.SQL - 
     alter table if exists message_attachments 
        add constraint FKj7twd218e2gqw9cmlhwvo1rth 
        foreign key (message_id) 
        references messages
-26-04-06 14:42:59.925 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.606 [Test worker] DEBUG org.hibernate.SQL - 
     alter table if exists messages 
        add constraint FKowtlim26svclkatusptbgi7u1 
        foreign key (author_id) 
        references users
-26-04-06 14:42:59.927 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.610 [Test worker] DEBUG org.hibernate.SQL - 
     alter table if exists messages 
        add constraint FK3u3ckbhwq9se1cmopk2pq05b2 
        foreign key (channel_id) 
        references channels
-26-04-06 14:42:59.930 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.612 [Test worker] DEBUG org.hibernate.SQL - 
     alter table if exists read_statuses 
        add constraint FKa38ri44ml4gfdpklx4ahqr8gd 
        foreign key (channel_id) 
        references channels
-26-04-06 14:42:59.932 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.616 [Test worker] DEBUG org.hibernate.SQL - 
     alter table if exists read_statuses 
        add constraint FKml3k4wr9sj5yxrmj6d0aoib2e 
        foreign key (user_id) 
        references users
-26-04-06 14:42:59.934 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.618 [Test worker] DEBUG org.hibernate.SQL - 
     alter table if exists user_statuses 
        add constraint FK4lfl3ei2ubchgcxrrpo3pw4mm 
        foreign key (user_id) 
        references users
-26-04-06 14:42:59.935 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.621 [Test worker] DEBUG org.hibernate.SQL - 
     alter table if exists users 
        add constraint FKtbudycgrip49xdptogmhfqnso 
        foreign key (profile_id) 
        references binary_contents
-26-04-06 14:42:59.943 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
-26-04-06 14:43:00.048 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - Started ChannelRepositoryTest in 1.203 seconds (process running for 13.149)
-26-04-06 14:43:00.309 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindAllTest]: FindAllTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:43:00.329 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindAllTest
-26-04-06 14:43:00.484 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:46.632 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+26-04-12 21:43:46.777 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - Started ChannelRepositoryTest in 2.209 seconds (process running for 18.972)
+26-04-12 21:43:47.126 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindAllTest]: FindAllTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+26-04-12 21:43:47.147 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindAllTest
+26-04-12 21:43:47.345 [Test worker] DEBUG org.hibernate.SQL - 
     insert 
     into
         channels
         (created_at, description, name, type, updated_at, id) 
     values
         (?, ?, ?, ?, ?, ?)
-26-04-06 14:43:00.490 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.335241800Z]
-26-04-06 14:43:00.497 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [ê¸°ë³¸ ì±„ë„]
-26-04-06 14:43:00.498 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [general]
-26-04-06 14:43:00.498 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PUBLIC]
-26-04-06 14:43:00.498 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.335241800Z]
-26-04-06 14:43:00.499 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [42c94a5f-f100-46e7-ae70-a5a30a94c676]
-26-04-06 14:43:00.513 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.356 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.156709800Z]
+26-04-12 21:43:47.371 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [±âº» Ã¤³Î]
+26-04-12 21:43:47.372 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [general]
+26-04-12 21:43:47.372 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PUBLIC]
+26-04-12 21:43:47.372 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.156709800Z]
+26-04-12 21:43:47.373 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [1666364d-bd0f-4abd-8fed-4586e2f1109f]
+26-04-12 21:43:47.398 [Test worker] DEBUG org.hibernate.SQL - 
     insert 
     into
         channels
         (created_at, description, name, type, updated_at, id) 
     values
         (?, ?, ?, ?, ?, ?)
-26-04-06 14:43:00.514 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.336241100Z]
-26-04-06 14:43:00.514 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- []
-26-04-06 14:43:00.514 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- []
-26-04-06 14:43:00.514 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PRIVATE]
-26-04-06 14:43:00.514 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.336241100Z]
-26-04-06 14:43:00.514 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [9c03d684-ec86-4e74-a9ef-7de8055917eb]
-26-04-06 14:43:00.539 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.398 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.157708500Z]
+26-04-12 21:43:47.399 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- []
+26-04-12 21:43:47.400 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- []
+26-04-12 21:43:47.400 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PRIVATE]
+26-04-12 21:43:47.400 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.157708500Z]
+26-04-12 21:43:47.401 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [70d76a60-cd8e-48e3-84ef-49cbf6c8bede]
+26-04-12 21:43:47.438 [Test worker] DEBUG org.hibernate.SQL - 
     select
         c1_0.id,
         c1_0.created_at,
@@ -243,9 +205,9 @@
         c1_0.updated_at 
     from
         channels c1_0
-26-04-06 14:43:00.608 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindByIdTest]: FindByIdTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:43:00.637 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindByIdTest
-26-04-06 14:43:00.667 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.531 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindByIdTest]: FindByIdTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+26-04-12 21:43:47.559 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindByIdTest
+26-04-12 21:43:47.594 [Test worker] DEBUG org.hibernate.SQL - 
     select
         c1_0.id,
         c1_0.created_at,
@@ -257,79 +219,79 @@
         channels c1_0 
     where
         c1_0.id=?
-26-04-06 14:43:00.667 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [b7d4409d-7f36-40e3-9fe9-9f88241deedf]
-26-04-06 14:43:00.676 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$SaveChannelTest]: SaveChannelTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:43:00.690 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$SaveChannelTest
-26-04-06 14:43:00.703 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.MessageRepositoryTest]: MessageRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:43:00.719 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.MessageRepositoryTest
-26-04-06 14:43:00.723 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.MessageRepositoryTest$FindTopMessageTest]: FindTopMessageTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:43:00.740 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.MessageRepositoryTest$FindTopMessageTest
-26-04-06 14:43:00.834 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.595 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [10e6bd5b-4a75-4e3a-b40c-4e80292b21af]
+26-04-12 21:43:47.606 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$SaveChannelTest]: SaveChannelTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+26-04-12 21:43:47.627 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$SaveChannelTest
+26-04-12 21:43:47.644 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.MessageRepositoryTest]: MessageRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+26-04-12 21:43:47.665 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.MessageRepositoryTest
+26-04-12 21:43:47.669 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.MessageRepositoryTest$FindTopMessageTest]: FindTopMessageTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+26-04-12 21:43:47.692 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.MessageRepositoryTest$FindTopMessageTest
+26-04-12 21:43:47.826 [Test worker] DEBUG org.hibernate.SQL - 
     insert 
     into
         channels
         (created_at, description, name, type, updated_at, id) 
     values
         (?, ?, ?, ?, ?, ?)
-26-04-06 14:43:00.835 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.746926300Z]
-26-04-06 14:43:00.835 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [ê¸°ë³¸ ì±„ë„]
-26-04-06 14:43:00.835 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [ì¼ë°˜]
-26-04-06 14:43:00.835 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PUBLIC]
-26-04-06 14:43:00.836 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.746926300Z]
-26-04-06 14:43:00.836 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [2db28cd7-b3ad-4f2f-bd8d-79f1103278f2]
-26-04-06 14:43:00.838 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.827 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.700588400Z]
+26-04-12 21:43:47.827 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [±âº» Ã¤³Î]
+26-04-12 21:43:47.828 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [ÀÏ¹Ý]
+26-04-12 21:43:47.828 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PUBLIC]
+26-04-12 21:43:47.828 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.700588400Z]
+26-04-12 21:43:47.829 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [414d56f1-535a-486f-9a65-5938c9fc9e11]
+26-04-12 21:43:47.831 [Test worker] DEBUG org.hibernate.SQL - 
     insert 
     into
         users
         (created_at, email, password, profile_id, updated_at, username, id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
-26-04-06 14:43:00.839 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.751924400Z]
-26-04-06 14:43:00.839 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-06 14:43:00.839 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-06 14:43:00.839 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-06 14:43:00.839 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.751924400Z]
-26-04-06 14:43:00.840 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-06 14:43:00.840 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [cfd6bd4f-1c2d-4571-a35a-745e9b223877]
-26-04-06 14:43:00.841 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.832 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.708098100Z]
+26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
+26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
+26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
+26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.708098100Z]
+26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
+26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [46a34434-dfa5-4e81-af60-2d4f4f60706b]
+26-04-12 21:43:47.835 [Test worker] DEBUG org.hibernate.SQL - 
     insert 
     into
         user_statuses
         (created_at, last_active_at, updated_at, user_id, id) 
     values
         (?, ?, ?, ?, ?)
-26-04-06 14:43:00.842 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.756257600Z]
-26-04-06 14:43:00.842 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.751924400Z]
-26-04-06 14:43:00.842 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.756257600Z]
-26-04-06 14:43:00.842 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [cfd6bd4f-1c2d-4571-a35a-745e9b223877]
-26-04-06 14:43:00.842 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:UUID) <- [c704d00d-eb5b-499e-a4d9-e23588728b9b]
-26-04-06 14:43:00.843 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.836 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.715497700Z]
+26-04-12 21:43:47.837 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.708098100Z]
+26-04-12 21:43:47.837 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.715497700Z]
+26-04-12 21:43:47.837 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [46a34434-dfa5-4e81-af60-2d4f4f60706b]
+26-04-12 21:43:47.837 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:UUID) <- [463d99a7-c68c-4bff-b295-497af4c2ffc5]
+26-04-12 21:43:47.838 [Test worker] DEBUG org.hibernate.SQL - 
     insert 
     into
         messages
         (author_id, channel_id, content, created_at, updated_at, id) 
     values
         (?, ?, ?, ?, ?, ?)
-26-04-06 14:43:00.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [cfd6bd4f-1c2d-4571-a35a-745e9b223877]
-26-04-06 14:43:00.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:UUID) <- [2db28cd7-b3ad-4f2f-bd8d-79f1103278f2]
-26-04-06 14:43:00.844 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1]
-26-04-06 14:43:00.844 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.760258700Z]
-26-04-06 14:43:00.844 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.760258700Z]
-26-04-06 14:43:00.844 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [dee68ffc-963e-463c-9a67-7e11505aecfc]
-26-04-06 14:43:00.845 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.839 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [46a34434-dfa5-4e81-af60-2d4f4f60706b]
+26-04-12 21:43:47.839 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:UUID) <- [414d56f1-535a-486f-9a65-5938c9fc9e11]
+26-04-12 21:43:47.839 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1]
+26-04-12 21:43:47.840 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.722794300Z]
+26-04-12 21:43:47.840 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.722794300Z]
+26-04-12 21:43:47.840 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [1f39cbd2-52d8-4d51-bff4-0ee47659d128]
+26-04-12 21:43:47.843 [Test worker] DEBUG org.hibernate.SQL - 
     insert 
     into
         messages
         (author_id, channel_id, content, created_at, updated_at, id) 
     values
         (?, ?, ?, ?, ?, ?)
-26-04-06 14:43:00.846 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [cfd6bd4f-1c2d-4571-a35a-745e9b223877]
-26-04-06 14:43:00.846 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:UUID) <- [2db28cd7-b3ad-4f2f-bd8d-79f1103278f2]
-26-04-06 14:43:00.846 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [2]
-26-04-06 14:43:00.846 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.775440100Z]
-26-04-06 14:43:00.846 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.775440100Z]
-26-04-06 14:43:00.846 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [894a7662-cf3f-4ec0-afd5-0df34e1591eb]
-26-04-06 14:43:00.854 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [46a34434-dfa5-4e81-af60-2d4f4f60706b]
+26-04-12 21:43:47.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:UUID) <- [414d56f1-535a-486f-9a65-5938c9fc9e11]
+26-04-12 21:43:47.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [2]
+26-04-12 21:43:47.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.748313700Z]
+26-04-12 21:43:47.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.748313700Z]
+26-04-12 21:43:47.845 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [66a73b80-8b58-4cdf-a626-0e60117b3bc4]
+26-04-12 21:43:47.854 [Test worker] DEBUG org.hibernate.SQL - 
     select
         m1_0.id,
         m1_0.author_id,
@@ -345,27 +307,27 @@
         m1_0.created_at desc 
     fetch
         first ? rows only
-26-04-06 14:43:00.855 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [2db28cd7-b3ad-4f2f-bd8d-79f1103278f2]
-26-04-06 14:43:00.855 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-06 14:43:00.872 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest]: UserRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:43:00.890 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest
-26-04-06 14:43:00.893 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByUsernameTest]: ExistsByUsernameTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:43:00.910 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByUsernameTest
-26-04-06 14:43:00.921 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.855 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [414d56f1-535a-486f-9a65-5938c9fc9e11]
+26-04-12 21:43:47.856 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
+26-04-12 21:43:47.876 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest]: UserRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+26-04-12 21:43:47.895 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest
+26-04-12 21:43:47.899 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByUsernameTest]: ExistsByUsernameTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+26-04-12 21:43:47.917 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByUsernameTest
+26-04-12 21:43:47.939 [Test worker] DEBUG org.hibernate.SQL - 
     insert 
     into
         users
         (created_at, email, password, profile_id, updated_at, username, id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
-26-04-06 14:43:00.922 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.916212800Z]
-26-04-06 14:43:00.922 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-06 14:43:00.922 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-06 14:43:00.922 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-06 14:43:00.922 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.916212800Z]
-26-04-06 14:43:00.922 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-06 14:43:00.922 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [6784497a-cb89-47b0-bafa-85338e58206f]
-26-04-06 14:43:00.923 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.939 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.927277600Z]
+26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
+26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
+26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
+26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.927277600Z]
+26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
+26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [b03105fe-fafe-41c1-80f7-d38f54192a22]
+26-04-12 21:43:47.945 [Test worker] DEBUG org.hibernate.SQL - 
     select
         u1_0.id 
     from
@@ -374,9 +336,9 @@
         u1_0.username=? 
     fetch
         first ? rows only
-26-04-06 14:43:00.924 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester]
-26-04-06 14:43:00.924 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-06 14:43:00.937 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.945 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester]
+26-04-12 21:43:47.945 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
+26-04-12 21:43:47.959 [Test worker] DEBUG org.hibernate.SQL - 
     select
         u1_0.id 
     from
@@ -385,25 +347,25 @@
         u1_0.username=? 
     fetch
         first ? rows only
-26-04-06 14:43:00.938 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [ghost]
-26-04-06 14:43:00.938 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-06 14:43:00.943 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByEmailTest]: ExistsByEmailTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:43:00.963 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByEmailTest
-26-04-06 14:43:00.972 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:47.961 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [ghost]
+26-04-12 21:43:47.962 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
+26-04-12 21:43:47.970 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByEmailTest]: ExistsByEmailTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+26-04-12 21:43:47.989 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByEmailTest
+26-04-12 21:43:47.999 [Test worker] DEBUG org.hibernate.SQL - 
     insert 
     into
         users
         (created_at, email, password, profile_id, updated_at, username, id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
-26-04-06 14:43:00.973 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.970194Z]
-26-04-06 14:43:00.973 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-06 14:43:00.973 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-06 14:43:00.973 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-06 14:43:00.973 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:43:00.970194Z]
-26-04-06 14:43:00.973 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-06 14:43:00.973 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [c447087d-4fc2-43b0-8cc9-4ec8cb069f4c]
-26-04-06 14:43:00.975 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:48.000 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.996798400Z]
+26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
+26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
+26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
+26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.996798400Z]
+26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
+26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [632919aa-d294-4e91-842d-7f10da4f740b]
+26-04-12 21:43:48.003 [Test worker] DEBUG org.hibernate.SQL - 
     select
         u1_0.id 
     from
@@ -412,9 +374,9 @@
         u1_0.email=? 
     fetch
         first ? rows only
-26-04-06 14:43:00.975 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester@test.com]
-26-04-06 14:43:00.976 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-06 14:43:00.983 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:48.003 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester@test.com]
+26-04-12 21:43:48.005 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
+26-04-12 21:43:48.014 [Test worker] DEBUG org.hibernate.SQL - 
     select
         u1_0.id 
     from
@@ -423,25 +385,25 @@
         u1_0.email=? 
     fetch
         first ? rows only
-26-04-06 14:43:00.985 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [none@test.com]
-26-04-06 14:43:00.985 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-06 14:43:00.990 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$FindByUsernameTest]: FindByUsernameTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:43:01.008 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$FindByUsernameTest
-26-04-06 14:43:01.018 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:48.015 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [none@test.com]
+26-04-12 21:43:48.015 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
+26-04-12 21:43:48.023 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$FindByUsernameTest]: FindByUsernameTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+26-04-12 21:43:48.038 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$FindByUsernameTest
+26-04-12 21:43:48.052 [Test worker] DEBUG org.hibernate.SQL - 
     insert 
     into
         users
         (created_at, email, password, profile_id, updated_at, username, id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
-26-04-06 14:43:01.019 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:43:01.014033500Z]
-26-04-06 14:43:01.019 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-06 14:43:01.019 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-06 14:43:01.019 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-06 14:43:01.019 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:43:01.014033500Z]
-26-04-06 14:43:01.019 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-06 14:43:01.019 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [620d8537-6b5b-4d15-8e58-f04715168de4]
-26-04-06 14:43:01.020 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:48.052 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:48.046205700Z]
+26-04-12 21:43:48.054 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
+26-04-12 21:43:48.054 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
+26-04-12 21:43:48.054 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
+26-04-12 21:43:48.054 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:48.046205700Z]
+26-04-12 21:43:48.055 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
+26-04-12 21:43:48.055 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [20fec30d-5d06-4665-9940-bf7d2aef04b3]
+26-04-12 21:43:48.057 [Test worker] DEBUG org.hibernate.SQL - 
     select
         u1_0.id,
         u1_0.created_at,
@@ -454,22 +416,22 @@
         users u1_0 
     where
         u1_0.username=?
-26-04-06 14:43:01.021 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester]
-26-04-06 14:43:01.031 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:48.057 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester]
+26-04-12 21:43:48.069 [Test worker] DEBUG org.hibernate.SQL - 
     insert 
     into
         users
         (created_at, email, password, profile_id, updated_at, username, id) 
     values
         (?, ?, ?, ?, ?, ?, ?)
-26-04-06 14:43:01.032 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:43:01.029971600Z]
-26-04-06 14:43:01.032 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-06 14:43:01.033 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-06 14:43:01.033 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-06 14:43:01.033 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:43:01.029971600Z]
-26-04-06 14:43:01.033 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-06 14:43:01.033 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [8d2c321d-4ec0-408d-8255-35926f9cb596]
-26-04-06 14:43:01.036 [Test worker] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:48.069 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:48.066256400Z]
+26-04-12 21:43:48.070 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
+26-04-12 21:43:48.070 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
+26-04-12 21:43:48.070 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
+26-04-12 21:43:48.070 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:48.066256400Z]
+26-04-12 21:43:48.071 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
+26-04-12 21:43:48.071 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [cd188b8d-c070-454f-96a1-81c32290f510]
+26-04-12 21:43:48.073 [Test worker] DEBUG org.hibernate.SQL - 
     select
         u1_0.id,
         u1_0.created_at,
@@ -482,556 +444,60 @@
         users u1_0 
     where
         u1_0.username=?
-26-04-06 14:43:01.037 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [jongin]
-26-04-06 14:43:01.821 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ë¹„ê³µê°œ ì±„ë„ ìƒì„± ìš”ì²­ - participantCount=1
-26-04-06 14:43:01.834 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ë¹„ê³µê°œ ì±„ë„ ìƒì„± ì™„ë£Œ - channelId=null, participantCount=1
-26-04-06 14:43:01.888 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ì±„ë„ ì‚­ì œ ìš”ì²­ - channelId=f420b3f6-35af-43c4-83f2-c03d24776798
-26-04-06 14:43:01.891 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ì±„ë„ ì‚­ì œ ì™„ë£Œ - channelId=f420b3f6-35af-43c4-83f2-c03d24776798
-26-04-06 14:43:02.002 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ì±„ë„ ìˆ˜ì • ìš”ì²­ - channelId=3c657ee1-a31f-47eb-baf8-0c72e540ff45
-26-04-06 14:43:02.003 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - ì±„ë„ ìˆ˜ì • ì‹¤íŒ¨ - ë¹„ê³µê°œ ì±„ë„ ìˆ˜ì • ë¶ˆê°€ channelId=3c657ee1-a31f-47eb-baf8-0c72e540ff45
-26-04-06 14:43:02.012 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ê³µê°œ ì±„ë„ ìƒì„± ìš”ì²­ - name=general
-26-04-06 14:43:02.012 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ê³µê°œ ì±„ë„ ìƒì„± ì™„ë£Œ - channelId=null
-26-04-06 14:43:02.018 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ì±„ë„ ì‚­ì œ ìš”ì²­ - channelId=6ac6a5a2-8b30-474c-82be-fbe21794d1ec
-26-04-06 14:43:02.019 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - ì±„ë„ ì‚­ì œ ì‹¤íŒ¨ - ì¡´ìž¬í•˜ì§€ ì•ŠìŒ channelId=6ac6a5a2-8b30-474c-82be-fbe21794d1ec
-26-04-06 14:43:02.028 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ì±„ë„ ìˆ˜ì • ìš”ì²­ - channelId=8fcb1cd5-10c5-4522-b573-da9616bd4188
-26-04-06 14:43:02.029 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - ì±„ë„ ìˆ˜ì • ì‹¤íŒ¨ - ì¡´ìž¬í•˜ì§€ ì•ŠìŒ channelId=8fcb1cd5-10c5-4522-b573-da9616bd4188
-26-04-06 14:43:02.036 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ì±„ë„ ìˆ˜ì • ìš”ì²­ - channelId=488e9c8e-224d-449c-84d9-0a52e22090ba
-26-04-06 14:43:02.037 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ì±„ë„ ìˆ˜ì • ì™„ë£Œ - channelId=488e9c8e-224d-449c-84d9-0a52e22090ba
-26-04-06 14:43:02.046 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ë¹„ê³µê°œ ì±„ë„ ìƒì„± ìš”ì²­ - participantCount=1
-26-04-06 14:43:02.048 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - ë¹„ê³µê°œ ì±„ë„ ìƒì„± ì‹¤íŒ¨ - ì°¸ì—¬ìž ì—†ìŒ userId=ce084b19-3ef9-48e9-820b-c5d33adcd2c4
-26-04-06 14:43:02.144 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ì‚­ì œ ìš”ì²­ - messageId=f9d9c70a-5fc6-4c8c-b0aa-cd20105b3c8e
-26-04-06 14:43:02.145 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ì‚­ì œ ì™„ë£Œ - messageId=f9d9c70a-5fc6-4c8c-b0aa-cd20105b3c8e
-26-04-06 14:43:02.151 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì„¸ì§€ ìƒì„± ìš”ì²­- channelId=fdc1ab9c-a74a-469b-950a-f109750ffeda, authorId=87da56ed-6dce-461a-9f04-c1b2df38a22d
-26-04-06 14:43:02.152 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì„¸ì§€ ìƒì„± ì‹¤íŒ¨ - ì±„ë„ ì—†ìŒ channelId=fdc1ab9c-a74a-469b-950a-f109750ffeda, authorId=87da56ed-6dce-461a-9f04-c1b2df38a22d
-26-04-06 14:43:02.159 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ì‚­ì œ ìš”ì²­ - messageId=1694c900-eaa5-452a-b29a-b034dd27390d
-26-04-06 14:43:02.159 [Test worker] WARN  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ì‚­ì œ ì‹¤íŒ¨ - ì¡´ìž¬í•˜ì§€ ì•ŠìŒ messageId=1694c900-eaa5-452a-b29a-b034dd27390d
-26-04-06 14:43:02.164 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì„¸ì§€ ìƒì„± ìš”ì²­- channelId=31557298-86a0-46a0-bfd8-c9befa51ef4f, authorId=ce677252-9e95-4b24-b881-bd42e5589a30
-26-04-06 14:43:02.175 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ìˆ˜ì • ìš”ì²­ - messageId=f5eb1314-3fa4-4803-8ef2-9d4d7c2d0d33
-26-04-06 14:43:02.176 [Test worker] WARN  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ìˆ˜ì • ì‹¤íŒ¨ - ì¡´ìž¬í•˜ì§€ ì•ŠìŒ messageId=f5eb1314-3fa4-4803-8ef2-9d4d7c2d0d33
-26-04-06 14:43:02.185 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ìˆ˜ì • ìš”ì²­ - messageId=e4e96657-230a-409d-acdc-b02a9738cc91
-26-04-06 14:43:02.186 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ìˆ˜ì • ì™„ë£Œ - messageId=e4e96657-230a-409d-acdc-b02a9738cc91
-26-04-06 14:43:02.279 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì„¸ì§€ ìƒì„± ìš”ì²­- channelId=744ccfb1-3bea-4a9a-9140-be78d4c02477, authorId=b938925f-981a-4e2d-bdcf-eea417b54dca
-26-04-06 14:43:02.376 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìƒì„± ìš”ì²­: username=tester, email=tester@test.com
-26-04-06 14:43:02.377 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìƒì„± ì™„ë£Œ - userId=null
-26-04-06 14:43:02.384 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìƒì„± ìš”ì²­: username=tester, email=tester@test.com
-26-04-06 14:43:02.385 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìƒì„± ì‹¤íŒ¨: ì¤‘ë³µ ì´ë©”ì¼ email=tester@test.com
-26-04-06 14:43:02.390 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ì‚­ì œ ìš”ì²­ - userId=b7b033d2-aa7f-43f9-9193-4c26a8398f71
-26-04-06 14:43:02.392 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ì‚­ì œ ì™„ë£Œ - userId=b7b033d2-aa7f-43f9-9193-4c26a8398f71
-26-04-06 14:43:02.397 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ì‚­ì œ ìš”ì²­ - userId=ec8244c4-1d9b-4e51-8e04-44e60dcd5329
-26-04-06 14:43:02.397 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - ìœ ì € ì‚­ì œ ì‹¤íŒ¨ - ì¡´ìž¬í•˜ì§€ ì•ŠìŒ userId=ec8244c4-1d9b-4e51-8e04-44e60dcd5329
-26-04-06 14:43:02.402 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìˆ˜ì • ìš”ì²­ - userId=d4a9af0f-af6a-4b34-8ae9-b67d77f3ba42
-26-04-06 14:43:02.404 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìˆ˜ì • ì‹¤íŒ¨ - ì¡´ìž¬í•˜ì§€ ì•ŠìŒ userId=d4a9af0f-af6a-4b34-8ae9-b67d77f3ba42
-26-04-06 14:43:02.408 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìˆ˜ì • ìš”ì²­ - userId=6df1ebb1-a521-4dd7-8681-34d9ef7efa09
-26-04-06 14:43:02.410 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìˆ˜ì • ì™„ë£Œ - userId=6df1ebb1-a521-4dd7-8681-34d9ef7efa09
-26-04-06 14:43:02.440 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-26-04-06 14:43:02.443 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-26-04-06 14:43:02.451 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-26-04-06 14:43:02.457 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-26-04-06 14:43:02.458 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:48.074 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [jongin]
+26-04-12 21:43:53.249 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ºñ°ø°³ Ã¤³Î »ý¼º ¿äÃ» - participantCount=1
+26-04-12 21:43:53.277 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ºñ°ø°³ Ã¤³Î »ý¼º ¿Ï·á - channelId=null, participantCount=1
+26-04-12 21:43:53.495 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ¿äÃ» - channelId=e695f9bb-e3c5-4e26-9d54-8d3ee5af7a6b
+26-04-12 21:43:53.497 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ½ÇÆÐ - ºñ°ø°³ Ã¤³Î ¼öÁ¤ ºÒ°¡ channelId=e695f9bb-e3c5-4e26-9d54-8d3ee5af7a6b
+26-04-12 21:43:53.511 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - °ø°³ Ã¤³Î »ý¼º ¿äÃ» - name=general
+26-04-12 21:43:53.512 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - °ø°³ Ã¤³Î »ý¼º ¿Ï·á - channelId=null
+26-04-12 21:43:53.524 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î »èÁ¦ ¿äÃ» - channelId=11e1c263-0cef-44cd-875d-d39d9b37ed68
+26-04-12 21:43:53.528 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î »èÁ¦ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ channelId=11e1c263-0cef-44cd-875d-d39d9b37ed68
+26-04-12 21:43:53.539 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ¿äÃ» - channelId=d6b23682-6517-431f-850d-41b14f8d0404
+26-04-12 21:43:53.540 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ channelId=d6b23682-6517-431f-850d-41b14f8d0404
+26-04-12 21:43:53.549 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ¿äÃ» - channelId=6f444099-f12c-411d-a6c8-916511335b9b
+26-04-12 21:43:53.551 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ¿Ï·á - channelId=6f444099-f12c-411d-a6c8-916511335b9b
+26-04-12 21:43:53.561 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ºñ°ø°³ Ã¤³Î »ý¼º ¿äÃ» - participantCount=1
+26-04-12 21:43:53.563 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - ºñ°ø°³ Ã¤³Î »ý¼º ½ÇÆÐ - Âü¿©ÀÚ ¾øÀ½ userId=df2212d7-5e4c-470a-8ddd-a3db25d68a79
+26-04-12 21:43:53.794 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö »èÁ¦ ¿äÃ» - messageId=ed245cdb-681c-4c11-8e17-dd13347eea95
+26-04-12 21:43:53.796 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö »èÁ¦ ¿Ï·á - messageId=ed245cdb-681c-4c11-8e17-dd13347eea95
+26-04-12 21:43:53.806 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ¼¼Áö »ý¼º ¿äÃ»- channelId=c2387f7d-69e6-4e7d-bbe3-955deae0ecb8, authorId=8f234203-daf6-484c-870b-0cab10882d1a
+26-04-12 21:43:53.808 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ¼¼Áö »ý¼º ½ÇÆÐ - Ã¤³Î ¾øÀ½ channelId=c2387f7d-69e6-4e7d-bbe3-955deae0ecb8, authorId=8f234203-daf6-484c-870b-0cab10882d1a
+26-04-12 21:43:53.818 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö »èÁ¦ ¿äÃ» - messageId=b9bae4a0-5de9-4412-b398-d6b8137cbc25
+26-04-12 21:43:53.820 [Test worker] WARN  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö »èÁ¦ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ messageId=b9bae4a0-5de9-4412-b398-d6b8137cbc25
+26-04-12 21:43:53.830 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ¼¼Áö »ý¼º ¿äÃ»- channelId=98abc625-ad6a-46eb-b218-3d510c015257, authorId=f12e1c81-24f0-4288-a4b7-dbff943e137c
+26-04-12 21:43:53.843 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö ¼öÁ¤ ¿äÃ» - messageId=43761a65-9351-4bea-bac9-014eb3ac6208
+26-04-12 21:43:53.845 [Test worker] WARN  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö ¼öÁ¤ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ messageId=43761a65-9351-4bea-bac9-014eb3ac6208
+26-04-12 21:43:53.857 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö ¼öÁ¤ ¿äÃ» - messageId=1a20f505-14ff-4f7d-ba6e-e25f5000b1ac
+26-04-12 21:43:53.857 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö ¼öÁ¤ ¿Ï·á - messageId=1a20f505-14ff-4f7d-ba6e-e25f5000b1ac
+26-04-12 21:43:54.106 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ¼¼Áö »ý¼º ¿äÃ»- channelId=70c89d25-7184-4a5e-b462-5b72161a64d7, authorId=3f0cf448-7b0a-4008-a906-61686735c388
+26-04-12 21:43:54.311 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »ý¼º ¿äÃ»: username=tester, email=tester@test.com
+26-04-12 21:43:54.313 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »ý¼º ¿Ï·á - userId=null
+26-04-12 21:43:54.323 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »ý¼º ¿äÃ»: username=tester, email=tester@test.com
+26-04-12 21:43:54.324 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - À¯Àú »ý¼º ½ÇÆÐ: Áßº¹ ÀÌ¸ÞÀÏ email=tester@test.com
+26-04-12 21:43:54.331 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »èÁ¦ ¿äÃ» - userId=7e54d974-41e5-4b05-8b51-ecaa483fe5ee
+26-04-12 21:43:54.332 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »èÁ¦ ¿Ï·á - userId=7e54d974-41e5-4b05-8b51-ecaa483fe5ee
+26-04-12 21:43:54.337 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »èÁ¦ ¿äÃ» - userId=36bbe08c-06f7-492e-81a9-1b34414f11e7
+26-04-12 21:43:54.338 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - À¯Àú »èÁ¦ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ userId=36bbe08c-06f7-492e-81a9-1b34414f11e7
+26-04-12 21:43:54.343 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú ¼öÁ¤ ¿äÃ» - userId=68321d59-0b1a-4f44-b9ec-ff0dd9c27f5b
+26-04-12 21:43:54.345 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - À¯Àú ¼öÁ¤ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ userId=68321d59-0b1a-4f44-b9ec-ff0dd9c27f5b
+26-04-12 21:43:54.351 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú ¼öÁ¤ ¿äÃ» - userId=2ae1a411-4fe3-4577-be6b-b079bb68b4d6
+26-04-12 21:43:54.353 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú ¼öÁ¤ ¿Ï·á - userId=2ae1a411-4fe3-4577-be6b-b079bb68b4d6
+26-04-12 21:43:54.400 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+26-04-12 21:43:54.406 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+26-04-12 21:43:55.474 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+26-04-12 21:43:55.480 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+26-04-12 21:43:55.484 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
     drop table if exists binary_contents cascade 
-26-04-06 14:43:02.463 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:55.493 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
     drop table if exists channels cascade 
-26-04-06 14:43:02.464 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:55.497 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
     drop table if exists message_attachments cascade 
-26-04-06 14:43:02.466 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:55.500 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
     drop table if exists messages cascade 
-26-04-06 14:43:02.469 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:55.501 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
     drop table if exists read_statuses cascade 
-26-04-06 14:43:02.470 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:55.504 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
     drop table if exists user_statuses cascade 
-26-04-06 14:43:02.471 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
+26-04-12 21:43:55.506 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
     drop table if exists users cascade 
-26-04-06 14:43:53.397 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.1.Final
-26-04-06 14:43:53.442 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - Starting DiscodeitApplicationTests using Java 17.0.17 with PID 40852 (started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
-26-04-06 14:43:53.444 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - The following 1 profile is active: "dev"
-26-04-06 14:43:54.986 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-26-04-06 14:43:55.099 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 97 ms. Found 6 JPA repository interfaces.
-26-04-06 14:43:55.945 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-26-04-06 14:43:56.217 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@4d24ab25
-26-04-06 14:43:56.220 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-26-04-06 14:43:56.422 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
-26-04-06 14:43:56.574 [Test worker] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.2.Final
-26-04-06 14:43:56.650 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
-26-04-06 14:43:56.875 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
-26-04-06 14:43:56.999 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
-	Database driver: undefined/unknown
-	Database version: 18.2
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-26-04-06 14:43:58.116 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-26-04-06 14:43:58.119 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
-26-04-06 14:43:59.534 [Test worker] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-26-04-06 14:44:00.754 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
-26-04-06 14:44:00.870 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - Started DiscodeitApplicationTests in 7.974 seconds (process running for 11.641)
-26-04-06 14:44:00.913 [Test worker] WARN  o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
-26-04-06 14:44:00.913 [Test worker] WARN  o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
-26-04-06 14:44:00.963 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest]: ChannelRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:44:01.014 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest
-26-04-06 14:44:01.020 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$DeleteTest]: DeleteTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:44:01.035 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$DeleteTest
-26-04-06 14:44:01.089 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - Starting ChannelRepositoryTest using Java 17.0.17 with PID 40852 (started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
-26-04-06 14:44:01.090 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - The following 1 profile is active: "test"
-26-04-06 14:44:01.231 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-26-04-06 14:44:01.289 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 56 ms. Found 6 JPA repository interfaces.
-26-04-06 14:44:01.305 [Test worker] INFO  o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
-26-04-06 14:44:01.331 [Test worker] INFO  o.s.j.d.e.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:3701dca2-a6c9-46d3-bbf6-5fb771446e9e;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
-26-04-06 14:44:01.688 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
-26-04-06 14:44:01.698 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
-26-04-06 14:44:01.724 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
-26-04-06 14:44:01.749 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory$EmbeddedDataSourceProxy@20c7028e']
-	Database driver: undefined/unknown
-	Database version: 2.3.232
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-26-04-06 14:44:01.970 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-26-04-06 14:44:02.008 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists binary_contents cascade 
-26-04-06 14:44:02.013 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists channels cascade 
-26-04-06 14:44:02.014 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists message_attachments cascade 
-26-04-06 14:44:02.015 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists messages cascade 
-26-04-06 14:44:02.015 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists read_statuses cascade 
-26-04-06 14:44:02.016 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists user_statuses cascade 
-26-04-06 14:44:02.016 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists users cascade 
-26-04-06 14:44:02.026 [Test worker] DEBUG org.hibernate.SQL - 
-    create table binary_contents (
-        created_at timestamp(6) with time zone not null,
-        size bigint not null,
-        id uuid not null,
-        content_type varchar(100) not null,
-        file_name varchar(255) not null,
-        primary key (id)
-    )
-26-04-06 14:44:02.040 [Test worker] DEBUG org.hibernate.SQL - 
-    create table channels (
-        created_at timestamp(6) with time zone not null,
-        updated_at timestamp(6) with time zone not null,
-        id uuid not null,
-        description varchar(500) not null,
-        name varchar(255) not null,
-        type enum ('PRIVATE','PUBLIC') not null,
-        primary key (id)
-    )
-26-04-06 14:44:02.043 [Test worker] DEBUG org.hibernate.SQL - 
-    create table message_attachments (
-        attachment_id uuid not null,
-        message_id uuid not null
-    )
-26-04-06 14:44:02.045 [Test worker] DEBUG org.hibernate.SQL - 
-    create table messages (
-        created_at timestamp(6) with time zone not null,
-        updated_at timestamp(6) with time zone not null,
-        author_id uuid,
-        channel_id uuid not null,
-        id uuid not null,
-        content varchar(255) not null,
-        primary key (id)
-    )
-26-04-06 14:44:02.047 [Test worker] DEBUG org.hibernate.SQL - 
-    create table read_statuses (
-        created_at timestamp(6) with time zone not null,
-        last_read_at timestamp(6) with time zone not null,
-        updated_at timestamp(6) with time zone not null,
-        channel_id uuid not null,
-        id uuid not null,
-        user_id uuid not null,
-        primary key (id)
-    )
-26-04-06 14:44:02.051 [Test worker] DEBUG org.hibernate.SQL - 
-    create table user_statuses (
-        created_at timestamp(6) with time zone not null,
-        last_active_at timestamp(6) with time zone not null,
-        updated_at timestamp(6) with time zone not null,
-        id uuid not null,
-        user_id uuid not null unique,
-        primary key (id)
-    )
-26-04-06 14:44:02.055 [Test worker] DEBUG org.hibernate.SQL - 
-    create table users (
-        created_at timestamp(6) with time zone not null,
-        updated_at timestamp(6) with time zone not null,
-        id uuid not null,
-        profile_id uuid unique,
-        username varchar(50) not null,
-        password varchar(60) not null,
-        email varchar(100) not null,
-        primary key (id)
-    )
-26-04-06 14:44:02.057 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists message_attachments 
-       add constraint FKsd1m8rb8jcpbcnb7rpdue7ctc 
-       foreign key (attachment_id) 
-       references binary_contents
-26-04-06 14:44:02.083 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists message_attachments 
-       add constraint FKj7twd218e2gqw9cmlhwvo1rth 
-       foreign key (message_id) 
-       references messages
-26-04-06 14:44:02.085 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists messages 
-       add constraint FKowtlim26svclkatusptbgi7u1 
-       foreign key (author_id) 
-       references users
-26-04-06 14:44:02.086 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists messages 
-       add constraint FK3u3ckbhwq9se1cmopk2pq05b2 
-       foreign key (channel_id) 
-       references channels
-26-04-06 14:44:02.088 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists read_statuses 
-       add constraint FKa38ri44ml4gfdpklx4ahqr8gd 
-       foreign key (channel_id) 
-       references channels
-26-04-06 14:44:02.090 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists read_statuses 
-       add constraint FKml3k4wr9sj5yxrmj6d0aoib2e 
-       foreign key (user_id) 
-       references users
-26-04-06 14:44:02.093 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists user_statuses 
-       add constraint FK4lfl3ei2ubchgcxrrpo3pw4mm 
-       foreign key (user_id) 
-       references users
-26-04-06 14:44:02.094 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists users 
-       add constraint FKtbudycgrip49xdptogmhfqnso 
-       foreign key (profile_id) 
-       references binary_contents
-26-04-06 14:44:02.100 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
-26-04-06 14:44:02.205 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - Started ChannelRepositoryTest in 1.163 seconds (process running for 12.977)
-26-04-06 14:44:02.435 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindAllTest]: FindAllTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:44:02.453 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindAllTest
-26-04-06 14:44:02.607 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        channels
-        (created_at, description, name, type, updated_at, id) 
-    values
-        (?, ?, ?, ?, ?, ?)
-26-04-06 14:44:02.613 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.459948400Z]
-26-04-06 14:44:02.620 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [ê¸°ë³¸ ì±„ë„]
-26-04-06 14:44:02.621 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [general]
-26-04-06 14:44:02.621 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PUBLIC]
-26-04-06 14:44:02.621 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.459948400Z]
-26-04-06 14:44:02.621 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [7d11d3a7-8857-42ed-8b1d-65f09dfa6eb0]
-26-04-06 14:44:02.637 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        channels
-        (created_at, description, name, type, updated_at, id) 
-    values
-        (?, ?, ?, ?, ?, ?)
-26-04-06 14:44:02.638 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.460948500Z]
-26-04-06 14:44:02.638 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- []
-26-04-06 14:44:02.638 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- []
-26-04-06 14:44:02.638 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PRIVATE]
-26-04-06 14:44:02.638 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.460948500Z]
-26-04-06 14:44:02.639 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [d7b8017e-53b1-485b-8058-2baf8b8d9baf]
-26-04-06 14:44:02.663 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        c1_0.id,
-        c1_0.created_at,
-        c1_0.description,
-        c1_0.name,
-        c1_0.type,
-        c1_0.updated_at 
-    from
-        channels c1_0
-26-04-06 14:44:02.719 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindByIdTest]: FindByIdTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:44:02.735 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindByIdTest
-26-04-06 14:44:02.759 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        c1_0.id,
-        c1_0.created_at,
-        c1_0.description,
-        c1_0.name,
-        c1_0.type,
-        c1_0.updated_at 
-    from
-        channels c1_0 
-    where
-        c1_0.id=?
-26-04-06 14:44:02.760 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [85ac0aea-e64b-4043-a03b-d8f123ee52bc]
-26-04-06 14:44:02.766 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$SaveChannelTest]: SaveChannelTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:44:02.783 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$SaveChannelTest
-26-04-06 14:44:02.794 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.MessageRepositoryTest]: MessageRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:44:02.815 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.MessageRepositoryTest
-26-04-06 14:44:02.820 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.MessageRepositoryTest$FindTopMessageTest]: FindTopMessageTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:44:02.834 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.MessageRepositoryTest$FindTopMessageTest
-26-04-06 14:44:02.907 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        channels
-        (created_at, description, name, type, updated_at, id) 
-    values
-        (?, ?, ?, ?, ?, ?)
-26-04-06 14:44:02.907 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.841136900Z]
-26-04-06 14:44:02.908 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [ê¸°ë³¸ ì±„ë„]
-26-04-06 14:44:02.908 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [ì¼ë°˜]
-26-04-06 14:44:02.908 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PUBLIC]
-26-04-06 14:44:02.908 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.841136900Z]
-26-04-06 14:44:02.908 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [7e0de199-fcae-4fb9-a0b8-8ec3873beedb]
-26-04-06 14:44:02.910 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        users
-        (created_at, email, password, profile_id, updated_at, username, id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-26-04-06 14:44:02.910 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.846771100Z]
-26-04-06 14:44:02.910 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-06 14:44:02.911 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-06 14:44:02.911 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-06 14:44:02.911 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.846771100Z]
-26-04-06 14:44:02.911 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-06 14:44:02.911 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [22abce09-c3ce-425a-b68a-70b29026054b]
-26-04-06 14:44:02.912 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        user_statuses
-        (created_at, last_active_at, updated_at, user_id, id) 
-    values
-        (?, ?, ?, ?, ?)
-26-04-06 14:44:02.912 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.851298700Z]
-26-04-06 14:44:02.912 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.846771100Z]
-26-04-06 14:44:02.912 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.851298700Z]
-26-04-06 14:44:02.912 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [22abce09-c3ce-425a-b68a-70b29026054b]
-26-04-06 14:44:02.912 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:UUID) <- [3768e60f-7346-424d-bd7c-7c44213e886a]
-26-04-06 14:44:02.914 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        messages
-        (author_id, channel_id, content, created_at, updated_at, id) 
-    values
-        (?, ?, ?, ?, ?, ?)
-26-04-06 14:44:02.914 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [22abce09-c3ce-425a-b68a-70b29026054b]
-26-04-06 14:44:02.914 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:UUID) <- [7e0de199-fcae-4fb9-a0b8-8ec3873beedb]
-26-04-06 14:44:02.915 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1]
-26-04-06 14:44:02.915 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.855297Z]
-26-04-06 14:44:02.915 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.855297Z]
-26-04-06 14:44:02.915 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [e8653077-7977-4feb-b24d-63b3b734f386]
-26-04-06 14:44:02.917 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        messages
-        (author_id, channel_id, content, created_at, updated_at, id) 
-    values
-        (?, ?, ?, ?, ?, ?)
-26-04-06 14:44:02.918 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [22abce09-c3ce-425a-b68a-70b29026054b]
-26-04-06 14:44:02.918 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:UUID) <- [7e0de199-fcae-4fb9-a0b8-8ec3873beedb]
-26-04-06 14:44:02.918 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [2]
-26-04-06 14:44:02.918 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.867489800Z]
-26-04-06 14:44:02.918 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.867489800Z]
-26-04-06 14:44:02.918 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [5b93deb4-f140-4c85-a7f0-fe250675b27c]
-26-04-06 14:44:02.926 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        m1_0.id,
-        m1_0.author_id,
-        m1_0.channel_id,
-        m1_0.content,
-        m1_0.created_at,
-        m1_0.updated_at 
-    from
-        messages m1_0 
-    where
-        m1_0.channel_id=? 
-    order by
-        m1_0.created_at desc 
-    fetch
-        first ? rows only
-26-04-06 14:44:02.926 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [7e0de199-fcae-4fb9-a0b8-8ec3873beedb]
-26-04-06 14:44:02.928 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-06 14:44:02.942 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest]: UserRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:44:02.960 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest
-26-04-06 14:44:02.963 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByUsernameTest]: ExistsByUsernameTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:44:02.975 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByUsernameTest
-26-04-06 14:44:02.986 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        users
-        (created_at, email, password, profile_id, updated_at, username, id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-26-04-06 14:44:02.986 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.981954Z]
-26-04-06 14:44:02.986 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-06 14:44:02.986 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-06 14:44:02.986 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-06 14:44:02.986 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:44:02.981954Z]
-26-04-06 14:44:02.986 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-06 14:44:02.986 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [db7dcc41-444e-4694-9dfb-b7bf891306d1]
-26-04-06 14:44:02.988 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id 
-    from
-        users u1_0 
-    where
-        u1_0.username=? 
-    fetch
-        first ? rows only
-26-04-06 14:44:02.988 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester]
-26-04-06 14:44:02.988 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-06 14:44:02.998 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id 
-    from
-        users u1_0 
-    where
-        u1_0.username=? 
-    fetch
-        first ? rows only
-26-04-06 14:44:02.999 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [ghost]
-26-04-06 14:44:02.999 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-06 14:44:03.004 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByEmailTest]: ExistsByEmailTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:44:03.020 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByEmailTest
-26-04-06 14:44:03.026 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        users
-        (created_at, email, password, profile_id, updated_at, username, id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-26-04-06 14:44:03.028 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:44:03.025049100Z]
-26-04-06 14:44:03.028 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-06 14:44:03.028 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-06 14:44:03.028 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-06 14:44:03.028 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:44:03.025049100Z]
-26-04-06 14:44:03.028 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-06 14:44:03.029 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [43e48475-1974-4147-9b84-94d800042d52]
-26-04-06 14:44:03.030 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id 
-    from
-        users u1_0 
-    where
-        u1_0.email=? 
-    fetch
-        first ? rows only
-26-04-06 14:44:03.030 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester@test.com]
-26-04-06 14:44:03.031 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-06 14:44:03.038 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id 
-    from
-        users u1_0 
-    where
-        u1_0.email=? 
-    fetch
-        first ? rows only
-26-04-06 14:44:03.038 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [none@test.com]
-26-04-06 14:44:03.038 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-06 14:44:03.045 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$FindByUsernameTest]: FindByUsernameTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-06 14:44:03.065 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$FindByUsernameTest
-26-04-06 14:44:03.076 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        users
-        (created_at, email, password, profile_id, updated_at, username, id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-26-04-06 14:44:03.077 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:44:03.071957600Z]
-26-04-06 14:44:03.077 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-06 14:44:03.077 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-06 14:44:03.077 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-06 14:44:03.077 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:44:03.071957600Z]
-26-04-06 14:44:03.077 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-06 14:44:03.077 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [baa9dff8-273f-4687-8b44-302691ea2155]
-26-04-06 14:44:03.078 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id,
-        u1_0.created_at,
-        u1_0.email,
-        u1_0.password,
-        u1_0.profile_id,
-        u1_0.updated_at,
-        u1_0.username 
-    from
-        users u1_0 
-    where
-        u1_0.username=?
-26-04-06 14:44:03.079 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester]
-26-04-06 14:44:03.092 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        users
-        (created_at, email, password, profile_id, updated_at, username, id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-26-04-06 14:44:03.092 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-06T05:44:03.088770700Z]
-26-04-06 14:44:03.092 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-06 14:44:03.092 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-06 14:44:03.092 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-06 14:44:03.092 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-06T05:44:03.088770700Z]
-26-04-06 14:44:03.092 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-06 14:44:03.093 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [7fa2cdcf-91b4-4e2e-8967-08ff3508f4ec]
-26-04-06 14:44:03.094 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id,
-        u1_0.created_at,
-        u1_0.email,
-        u1_0.password,
-        u1_0.profile_id,
-        u1_0.updated_at,
-        u1_0.username 
-    from
-        users u1_0 
-    where
-        u1_0.username=?
-26-04-06 14:44:03.095 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [jongin]
-26-04-06 14:44:03.194 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ì‚­ì œ ìš”ì²­ - messageId=67dde90f-c568-44b9-b9d5-0b6e9cb0acba
-26-04-06 14:44:03.195 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ì‚­ì œ ì™„ë£Œ - messageId=67dde90f-c568-44b9-b9d5-0b6e9cb0acba
-26-04-06 14:44:03.198 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì„¸ì§€ ìƒì„± ìš”ì²­- channelId=e60aa152-91b3-4aa3-922b-0f803ceb9a4d, authorId=9bf119be-bfa7-4953-ac46-f93cc43f677d
-26-04-06 14:44:03.199 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì„¸ì§€ ìƒì„± ì‹¤íŒ¨ - ì±„ë„ ì—†ìŒ channelId=e60aa152-91b3-4aa3-922b-0f803ceb9a4d, authorId=9bf119be-bfa7-4953-ac46-f93cc43f677d
-26-04-06 14:44:03.205 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ì‚­ì œ ìš”ì²­ - messageId=40f91609-44e1-4e91-81fd-048c6edce0e1
-26-04-06 14:44:03.205 [Test worker] WARN  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ì‚­ì œ ì‹¤íŒ¨ - ì¡´ìž¬í•˜ì§€ ì•ŠìŒ messageId=40f91609-44e1-4e91-81fd-048c6edce0e1
-26-04-06 14:44:03.208 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì„¸ì§€ ìƒì„± ìš”ì²­- channelId=d7661555-d036-42e6-93c7-ecb1485916e3, authorId=c491ecb8-1b2d-497a-86c2-bc0a363e45a3
-26-04-06 14:44:03.214 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ìˆ˜ì • ìš”ì²­ - messageId=66de6e4c-6356-43c8-bdc8-b93ee66f88be
-26-04-06 14:44:03.215 [Test worker] WARN  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ìˆ˜ì • ì‹¤íŒ¨ - ì¡´ìž¬í•˜ì§€ ì•ŠìŒ messageId=66de6e4c-6356-43c8-bdc8-b93ee66f88be
-26-04-06 14:44:03.221 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ìˆ˜ì • ìš”ì²­ - messageId=a84caeca-2156-42c3-8a2d-9a6eb8db1eca
-26-04-06 14:44:03.222 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì‹œì§€ ìˆ˜ì • ì™„ë£Œ - messageId=a84caeca-2156-42c3-8a2d-9a6eb8db1eca
-26-04-06 14:44:03.306 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ë©”ì„¸ì§€ ìƒì„± ìš”ì²­- channelId=082fc7c1-1654-41c5-8947-0cf1a7b2c5ae, authorId=e9cc5d67-7a29-4b1a-a3eb-be39b1b6148b
-26-04-06 14:44:03.366 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìƒì„± ìš”ì²­: username=tester, email=tester@test.com
-26-04-06 14:44:03.367 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìƒì„± ì™„ë£Œ - userId=null
-26-04-06 14:44:03.371 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìƒì„± ìš”ì²­: username=tester, email=tester@test.com
-26-04-06 14:44:03.372 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìƒì„± ì‹¤íŒ¨: ì¤‘ë³µ ì´ë©”ì¼ email=tester@test.com
-26-04-06 14:44:03.375 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ì‚­ì œ ìš”ì²­ - userId=cdbc1027-6fb0-4c1b-9a6e-2bdfec3d30e1
-26-04-06 14:44:03.376 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ì‚­ì œ ì™„ë£Œ - userId=cdbc1027-6fb0-4c1b-9a6e-2bdfec3d30e1
-26-04-06 14:44:03.379 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ì‚­ì œ ìš”ì²­ - userId=d83c88d6-d280-4bed-a25e-fac3ba473beb
-26-04-06 14:44:03.379 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - ìœ ì € ì‚­ì œ ì‹¤íŒ¨ - ì¡´ìž¬í•˜ì§€ ì•ŠìŒ userId=d83c88d6-d280-4bed-a25e-fac3ba473beb
-26-04-06 14:44:03.381 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìˆ˜ì • ìš”ì²­ - userId=b5765f35-b70a-4afe-a831-e550b1f7afd6
-26-04-06 14:44:03.381 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìˆ˜ì • ì‹¤íŒ¨ - ì¡´ìž¬í•˜ì§€ ì•ŠìŒ userId=b5765f35-b70a-4afe-a831-e550b1f7afd6
-26-04-06 14:44:03.383 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìˆ˜ì • ìš”ì²­ - userId=edda5423-ac6d-4a91-96d8-822f2c4225fc
-26-04-06 14:44:03.384 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - ìœ ì € ìˆ˜ì • ì™„ë£Œ - userId=edda5423-ac6d-4a91-96d8-822f2c4225fc
-26-04-06 14:44:03.400 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-26-04-06 14:44:03.402 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-26-04-06 14:44:03.408 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-26-04-06 14:44:03.412 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-26-04-06 14:44:03.413 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists binary_contents cascade 
-26-04-06 14:44:03.415 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists channels cascade 
-26-04-06 14:44:03.416 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists message_attachments cascade 
-26-04-06 14:44:03.416 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists messages cascade 
-26-04-06 14:44:03.417 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists read_statuses cascade 
-26-04-06 14:44:03.418 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists user_statuses cascade 
-26-04-06 14:44:03.419 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists users cascade 
-26-04-06 14:47:05.810 [SpringApplicationShutdownHook] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
-26-04-06 14:47:06.399 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
-26-04-06 14:47:06.414 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-26-04-06 14:47:06.422 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-26-04-06 14:47:06.432 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
