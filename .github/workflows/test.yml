@@ -35,3 +35,11 @@ jobs:
         with:
           name: test-report
           path: build/reports/tests/test
+
+      # 6) Codecov 업로드
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./build/reports/jacoco/test/jacocoTestReport.xml
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
