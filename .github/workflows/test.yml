@@ -1,7 +1,7 @@
 name: CI test
 on:
-  pull_request: :
-    braches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
   test:
