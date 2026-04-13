@@ -2,12 +2,8 @@ name: CI - 빌드 및 테스트 커버리지 검사
 
 # 언제 작업을 수행할 것인지 (Trigger)
 on:
-  push:
-    branches: [ "sprint8" ] # sprint8 브랜치에 푸시될 때마다 실행
-
-#on: # 심화 요구사항, 추후 제출 시 수정 예정
-#  pull_request:
-#    branches: [ "main" ] # main 브랜치로 PR이 올라올 때만 실행
+  pull_request:
+    branches: [ "main" ] # main 브랜치로 PR이 올라올 때만 실행
 
 # 어떤 환경에서 작업할 것인지 (Job Setup)
 jobs:

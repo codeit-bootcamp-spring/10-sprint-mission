@@ -1,0 +1,80 @@
+name: CD - 배포 자동화
+
+# release 브랜치에 코드가 푸시되면 실행
+on:
+  push:
+    branches: [ "release" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 저장소 코드 가져오기
+        uses: actions/checkout@v4
+
+      # 1. AWS 자격 증명 설정
+      - name: AWS 자격 증명 설정
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # 2. Private ECR 로그인
+      - name: Amazon ECR 로그인
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 3. Docker 이미지 빌드 및 푸시
+      - name: Docker 이미지 빌드 및 푸시
+        env:
+          REGISTRY_URI: ${{ vars.ECR_REPOSITORY_URI }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY_URI:latest -t $REGISTRY_URI:$IMAGE_TAG .
+          docker push $REGISTRY_URI:latest
+          docker push $REGISTRY_URI:$IMAGE_TAG
+          echo "IMAGE_URI=$REGISTRY_URI:$IMAGE_TAG" >> $GITHUB_ENV
+
+      # 4. 기존 태스크 정의 가져오기
+      - name: 기존 ECS 태스크 정의 다운로드
+        run: |
+          aws ecs describe-task-definition \
+            --task-definition ${{ vars.ECS_TASK_DEFINITION }} \
+            --query taskDefinition > task-definition.json
+
+      # 5. 태스크 정의 파일의 image 부분을 새로 빌드한 이미지 주소로 교체
+      - name: 새 이미지로 태스크 정의 렌더링
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: discodeit-app
+          image: ${{ env.IMAGE_URI }}
+
+      # 6. 프리티어 자원을 고려하여 기존 구동 중인 서비스 중단
+      - name: 기존 서비스 강제 중단 (메모리 확보)
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
+            --desired-count 0
+          
+          # 기존 컨테이너가 죽고 방(메모리)을 뺄 때까지 15초 대기
+          sleep 15
+
+      # 7. 새 태스크 정의를 등록하고, desired-count를 1로 원복하며 배포
+      - name: 새 태스크 등록 및 ECS 서비스 재시작
+        run: |
+          # AWS에 새 버전의 태스크 정의 등록 후 리비전 번호 추출
+          NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json file://${{ steps.render-task-def.outputs.task-definition }})
+          NEW_TASK_REVISION=$(echo $NEW_TASK_INFO | jq -r '.taskDefinition.revision')
+          
+          # 서비스를 업데이트하여 새 리비전으로 구동 & 갯수 1개로 복구
+          aws ecs update-service \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
+            --task-definition ${{ vars.ECS_TASK_DEFINITION }}:$NEW_TASK_REVISION \
+            --desired-count 1 \
+            --force-new-deployment
