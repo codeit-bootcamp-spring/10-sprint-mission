@@ -9,9 +9,9 @@ import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -95,9 +96,9 @@ public class UserController implements UserApi {
 
   @PatchMapping(path = "{userId}/userStatus")
   @Override
-  public ResponseEntity<UserStatusDto> updateUserStatusByUserId(
-          @PathVariable("userId") UUID userId,
-          @Valid @RequestBody UserStatusUpdateRequest request) {
+  public ResponseEntity<UserStatusDto> updateUserStatusByUserId(@PathVariable("userId") UUID userId,
+      @RequestBody @Valid UserStatusUpdateRequest request) {
+    log.info("clientTime={}, serverNow={}, isAfter={}", request.newLastActiveAt(), Instant.now(), request.newLastActiveAt().isAfter(Instant.now()));
     UserStatusDto updatedUserStatus = userStatusService.updateByUserId(userId, request);
     return ResponseEntity
         .status(HttpStatus.OK)
