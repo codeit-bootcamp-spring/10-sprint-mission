@@ -136,14 +136,7 @@ jobs:
             --task-definition "$TASK_DEF_ARN" \
             --desired-count 1
 
-      # 7) 배포 완료 대기
-      - name: Wait for ECS service stable
-        run: |
-          aws ecs wait services-stable \
-            --cluster ${{ vars.ECS_CLUSTER }} \
-            --services ${{ vars.ECS_SERVICE }}
-
-      # 8) 배포 상태 확인
+      # 7) 배포 상태 확인
       - name: Check ECS deployment status
         run: |
           aws ecs describe-services \
