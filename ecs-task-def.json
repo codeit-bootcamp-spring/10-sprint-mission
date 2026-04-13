@@ -14,8 +14,8 @@
       "image": "${REPO_URI}:${IMAGE_TAG}",
 
       "cpu": 256,
-      "memory": 256,
-      "memoryReservation": 128,
+      "memory": 384,
+      "memoryReservation": 256,
 
       "essential": true,
 
