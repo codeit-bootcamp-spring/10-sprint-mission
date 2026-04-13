@@ -14,7 +14,7 @@ spring:
   application:
     name: discodeit
   profiles:
-    active: dev # 기본적으로 dev 환경 활성화
+    active: prod # 기본적으로 dev 환경 활성화
 
   servlet:
     multipart:
