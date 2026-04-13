@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentDownloadException;
+import com.sprint.mission.discodeit.exception.binarycontent.BinaryContentUploadException;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
 import java.io.ByteArrayInputStream;
@@ -13,7 +15,6 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -23,7 +24,6 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -75,7 +75,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
       return id;
     } catch (Exception e) {
-      throw new RuntimeException("S3 업로드 실패", e);
+      throw new BinaryContentUploadException();
     }
   }
 
@@ -88,10 +88,9 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
           .key(key)
           .build();
 
-      // 생성한 요청 객체를 바탕으로 S3에 파일을 요청
       return s3Client.getObject(getObjectRequest);
     } catch (S3Exception e) {
-      throw new RuntimeException("S3 파일 조회 실패", e);
+      throw new BinaryContentDownloadException();
     }
   }
 
