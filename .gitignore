@@ -51,6 +51,7 @@ out/
 
 # env files
 .env
+discodeit.env
 
 # Generated files
 src/main/generated/
