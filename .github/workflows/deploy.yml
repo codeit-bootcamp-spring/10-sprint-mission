@@ -7,6 +7,10 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
 
+    outputs:
+      image_uri: ${{ steps.prep.outputs.image_uri }}
+      image_tag: ${{ steps.prep.outputs.image_tag }}
+
     permissions:
       contents: read
 
