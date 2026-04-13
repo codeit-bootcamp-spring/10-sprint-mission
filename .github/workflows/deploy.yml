@@ -2,7 +2,7 @@ name: Deploy ECR, ECS
 
 on:
   push:
-    branches: ["release"]
+    branches: ["release", "sprint8"]
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
