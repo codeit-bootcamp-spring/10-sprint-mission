@@ -89,8 +89,8 @@ public class BasicUserStatusService implements UserStatusService {
 
   @Transactional
   @Override
-  public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
-    Instant newLastActiveAt = request.newLastActiveAt();
+  public UserStatusDto updateByUserId(UUID userId) {
+    Instant newLastActiveAt = Instant.now();
     log.debug("사용자 ID로 상태 수정 시작: userId={}, newLastActiveAt={}", userId, newLastActiveAt);
     
     UserStatus userStatus = userStatusRepository.findByUserId(userId)

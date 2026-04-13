@@ -309,7 +309,7 @@ class UserControllerTest {
     UserStatusUpdateRequest updateRequest = new UserStatusUpdateRequest(lastActiveAt);
     UserStatusDto updatedStatus = new UserStatusDto(statusId, userId, lastActiveAt);
 
-    given(userStatusService.updateByUserId(eq(userId), any(UserStatusUpdateRequest.class)))
+    given(userStatusService.updateByUserId(eq(userId)))
         .willReturn(updatedStatus);
 
     // When & Then
@@ -331,7 +331,7 @@ class UserControllerTest {
 
     UserStatusUpdateRequest updateRequest = new UserStatusUpdateRequest(lastActiveAt);
 
-    given(userStatusService.updateByUserId(eq(userId), any(UserStatusUpdateRequest.class)))
+    given(userStatusService.updateByUserId(eq(userId)))
         .willThrow(UserNotFoundException.withId(userId));
 
     // When & Then

@@ -103,7 +103,5 @@ public interface UserApi {
       )
   })
   ResponseEntity<UserStatusDto> updateUserStatusByUserId(
-      @Parameter(description = "상태를 변경할 User ID") UUID userId,
-      @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusUpdateRequest request
-  );
+      @Parameter(description = "상태를 변경할 User ID") UUID userId);
 }
