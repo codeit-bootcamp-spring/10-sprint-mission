@@ -12,6 +12,7 @@
   </appender>
 
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${LOG_DIR}/app.log</file>
     <encoder>
       <pattern>${LOG_PATTERN}</pattern>
     </encoder>

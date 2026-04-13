@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler
   public ResponseEntity<ErrorResponse> handleBusinessLogicException(DiscodeitException e) {
     log.warn("비즈니스 예외 발생 - code: {}, message: {}, details: {}",
-        e.getErrorCode().name(), e.getMessage(), e.getDetails(), e);
+        e.getErrorCode().name(), e.getMessage(), e.getDetails());
     return ResponseEntity
         .status(e.getErrorCode().getStatusCode())
         .body(ErrorResponse.of(

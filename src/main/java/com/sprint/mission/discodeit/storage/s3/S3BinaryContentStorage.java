@@ -3,8 +3,12 @@ package com.sprint.mission.discodeit.storage.s3;
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import jakarta.annotation.PostConstruct;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.UUID;
@@ -19,11 +23,13 @@ import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
@@ -55,10 +61,16 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   @Override
   public UUID put(UUID id, byte[] bytes) {
     try {
+      String contentType = URLConnection.guessContentTypeFromStream(
+          new ByteArrayInputStream(bytes));
+      if (contentType == null) {
+        contentType = "application/octet-stream"; // 알 수 없을 때 기본값
+      }
       String key = id.toString();
       PutObjectRequest putObjectRequest = PutObjectRequest.builder()
           .bucket(bucket)
           .key(key)
+          .contentType(contentType)
           .build();
       s3Client.putObject(putObjectRequest, RequestBody.fromBytes(bytes));
       return id;
@@ -69,7 +81,18 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
   @Override
   public InputStream get(UUID id) {
-    throw new UnsupportedOperationException("S3 스토리지에서는 InputStream 조회를 지원하지 않습니다.");
+    try {
+      String key = id.toString();
+      GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+          .bucket(bucket)
+          .key(key)
+          .build();
+
+      // 생성한 요청 객체를 바탕으로 S3에 파일을 요청
+      return s3Client.getObject(getObjectRequest);
+    } catch (S3Exception e) {
+      throw new RuntimeException("S3 파일 조회 실패", e);
+    }
   }
 
   @Override
@@ -119,11 +142,15 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         ? fileName
         : Paths.get(key).getFileName().toString();
 
+    String encodedFileName = URLEncoder.encode(name, StandardCharsets.UTF_8).replace("+", "%20");
+    String contentDisposition =
+        "attachment; filename=\"" + encodedFileName + "\"; filename*=UTF-8''" + encodedFileName;
+
     GetObjectRequest getObjectRequest = GetObjectRequest.builder()
         .bucket(bucket)
         .key(key)
         .responseContentType(contentType)
-        .responseContentDisposition("attachment; filename=\"" + name + "\"")
+        .responseContentDisposition(contentDisposition)
         .build();
 
     GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
