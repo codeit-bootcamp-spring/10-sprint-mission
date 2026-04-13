@@ -91,8 +91,7 @@ public class BasicUserStatusService implements UserStatusService {
   @Override
   public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
-    log.debug("사용자 ID로 상태 수정 시작: userId={}, newLastActiveAt={}", 
-        userId, newLastActiveAt);
+    log.debug("사용자 ID로 상태 수정 시작: userId={}, newLastActiveAt={}", userId, newLastActiveAt);
     
     UserStatus userStatus = userStatusRepository.findByUserId(userId)
         .orElseThrow(() -> UserStatusNotFoundException.withUserId(userId));
