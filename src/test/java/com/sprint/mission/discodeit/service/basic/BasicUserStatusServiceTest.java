@@ -197,7 +197,7 @@ class BasicUserStatusServiceTest {
     given(userStatusMapper.toDto(any(UserStatus.class))).willReturn(userStatusDto);
 
     // when
-    UserStatusDto result = userStatusService.updateByUserId(userId);
+    UserStatusDto result = userStatusService.updateByUserId(userId, request);
 
     // then
     assertThat(result).isEqualTo(userStatusDto);
@@ -213,7 +213,7 @@ class BasicUserStatusServiceTest {
     given(userStatusRepository.findByUserId(eq(userId))).willReturn(Optional.empty());
 
     // when & then
-    assertThatThrownBy(() -> userStatusService.updateByUserId(userId))
+    assertThatThrownBy(() -> userStatusService.updateByUserId(userId, request))
         .isInstanceOf(UserStatusNotFoundException.class);
   }
 

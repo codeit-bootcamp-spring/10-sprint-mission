@@ -7,7 +7,7 @@ import java.time.Instant;
 //사용안함.
 public record UserStatusUpdateRequest(
     @NotNull(message = "마지막 활동 시간은 필수입니다")
-    @PastOrPresent(message = "마지막 활동 시간은 현재 또는 과거 시간이어야 합니다")
+//    @PastOrPresent(message = "마지막 활동 시간은 현재 또는 과거 시간이어야 합니다")
     Instant newLastActiveAt
 ) {
 

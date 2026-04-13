@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "User", description = "User API")
@@ -103,5 +105,7 @@ public interface UserApi {
       )
   })
   ResponseEntity<UserStatusDto> updateUserStatusByUserId(
-      @Parameter(description = "상태를 변경할 User ID") UUID userId);
+      @Parameter(description = "상태를 변경할 User ID") UUID userId,
+      @Parameter(description = "변경할 User 온라인 상태 정보") UserStatusUpdateRequest request
+  );
 }
