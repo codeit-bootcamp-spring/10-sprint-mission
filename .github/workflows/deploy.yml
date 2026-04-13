@@ -2,7 +2,7 @@ name: Deploy ECR, ECS
 
 on:
   push:
-    branches: ["release", "sprint8"]
+    branches: ["release"]
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -126,7 +126,14 @@ jobs:
             --task-definition "$TASK_DEF_ARN" \
             --desired-count 1
 
-      # 6) 배포 상태 확인
+      # 6) 배포 완료 대기 (서비스가 안정 상태가 될 때까지)
+      - name: ECS 배포 완료 대기
+        run: |
+          aws ecs wait services-stable \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --services ${{ vars.ECS_SERVICE }}
+
+      # 7) 배포 상태 확인
       - name: Check ECS deployment status
         run: |
           aws ecs describe-services \
