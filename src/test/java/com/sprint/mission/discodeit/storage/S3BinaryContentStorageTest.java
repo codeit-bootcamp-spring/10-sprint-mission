@@ -14,9 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 @SpringBootTest(properties = "discodeit.storage.type=s3")
+@ActiveProfiles("test")
 @EnabledIfEnvironmentVariable(named = "AWS_S3_ACCESS_KEY", matches = ".*")
 class S3BinaryContentStorageTest {
 
