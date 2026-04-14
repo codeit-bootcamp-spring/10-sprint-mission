@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # 데이터베이스 서비스
+  db:
+    image: postgres:17
+    container_name: discodeit-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      # 애플리케이션 볼륨을 구성하여 데이터베이스 데이터 유지
+      - postgres_data:/var/lib/postgresql/data
+      # schema.sql 자동 실행
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+
+  # 애플리케이션 서비스
+  app:
+    # 로컬 Dockerfile에서 빌드
+    build: .
+    container_name: discodeit-app
+    depends_on: # 의존성 설정
+      - db # db 서비스가 먼저 시작되어야 에러가 안 뜸
+    ports:
+      - "8081:80" # 포트 매핑
+    environment:
+      # 프로필 및 스토리지 타입 설정
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      STORAGE_TYPE: s3
+
+      # AWS S3 환경 변수 주입
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+
+      # DB 설정
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+      # 애플리케이션 정보 주입
+      PROJECT_NAME: ${PROJECT_NAME}
+      PROJECT_VERSION: ${PROJECT_VERSION}
+    volumes:
+      # BinaryContentStorage 데이터 유지
+      - app_storage:/app/.discodeit/storage
+
+volumes:
+  postgres_data:
+  app_storage:

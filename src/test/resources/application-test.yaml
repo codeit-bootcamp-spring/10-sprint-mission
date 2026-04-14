@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    # H2 인메모리 DB를 PostgreSQL 호환 모드로 실행
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop # 테스트 시작 시 스키마 생성, 종료 시 삭제
+    show-sql: true # 쿼리문 출력
+    properties:
+      hibernate:
+        format_sql: true # 쿼리문을 보기 좋게 정렬
+        highlight_sql: true # 쿼리문에 색상 추가
+
+  sql:
+    init:
+      mode: never # 테스트에서는 스키마와 데이터를 SQL 파일로 초기화하지 않음
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG # SQL 쿼리 로깅
+    org.hibernate.orm.jdbc.bind: TRACE # 쿼리에 바인딩되는 파라미터 확인용

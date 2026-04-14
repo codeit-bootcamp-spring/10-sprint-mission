@@ -1,0 +1,78 @@
+package com.sprint.mission.discodeit.service.basic;
+
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.user.*;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.service.UserStatusService;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class BasicUserStatusService implements UserStatusService {
+
+  private final UserStatusRepository userStatusRepository;
+  private final UserRepository userRepository;
+
+  @Override
+  @Transactional
+  public UserStatus create(UUID userId) {
+    // 관련 유저가 존재하는지 확인
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new UserNotFoundException(Map.of("requestedUserId", userId)));
+
+    // 해당 유저의 UserStatus가 존재하는지 확인
+    if (userStatusRepository.existsByUserId(userId)) {
+      throw new UserStatusAlreadyExistsException(Map.of("userId", userId));
+    }
+
+    UserStatus userStatus = new UserStatus(user, Instant.now());
+    return userStatusRepository.save(userStatus);
+  }
+
+  @Override
+  public UserStatus findById(UUID id) {
+    return getOrThrowUserStatus(id);
+  }
+
+  @Override
+  public List<UserStatus> findAll() {
+    return userStatusRepository.findAll();
+  }
+
+  @Override
+  @Transactional
+  public UserStatus updateByUserId(UUID userId, Instant newLastActiveAt) {
+    UserStatus userStatus = userStatusRepository.findByUserId(userId)
+        .orElseThrow(() -> new UserStatusNotFoundException(Map.of("requestedUserId", userId)));
+
+    if (newLastActiveAt != null) {
+      userStatus.updateLastActiveAt(newLastActiveAt);
+    }
+
+    return userStatus;
+  }
+
+  @Override
+  @Transactional
+  public void deleteById(UUID id) {
+    UserStatus userStatus = getOrThrowUserStatus(id);
+    userStatusRepository.delete(userStatus);
+  }
+
+  // --- Helper Methods ---
+
+  private UserStatus getOrThrowUserStatus(UUID id) {
+    return userStatusRepository.findById(id)
+        .orElseThrow(() -> new UserStatusNotFoundException(Map.of("requestedUserStatusId", id)));
+  }
+}
