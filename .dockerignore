@@ -1,0 +1,11 @@
+.git
+build
+.gradle
+*.log
+.github
+.discodeit
+.idea
+.vscode
+.DS_Store
+.env
+discodeit.env

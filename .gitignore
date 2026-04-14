@@ -37,4 +37,6 @@ out/
 .vscode/
 
 ### Env ###
+discodeit.env
 .env
+.logs/

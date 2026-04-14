@@ -228,30 +228,30 @@ class BasicChannelServiceTest {
     then(channelRepository).should().saveChannel(any(Channel.class));
   }
 
-  @Test
-  @DisplayName("존재하지 않는 채널 수정 시 예외가 발생해야 합니다.")
-  void update_fail_not_found() {
-    // given
-    UUID channelId = UUID.randomUUID();
-
-    // when, then
-  }
-
-  @Test
-  @DisplayName("채널은 정상적으로 삭제되어야 합니다.")
-  void delete_success() {
-    // given
-
-    // when
-
-    // then
-  }
-
-  @Test
-  @DisplayName("존재하지 않는 채널 삭제 시 예외가 발생해야 합니다.")
-  void delete_fail_not_found() {
-    // given
-
-    // when, then
-  }
+//  @Test
+//  @DisplayName("존재하지 않는 채널 수정 시 예외가 발생해야 합니다.")
+//  void update_fail_not_found() {
+//    // given
+//    UUID channelId = UUID.randomUUID();
+//
+//    // when, then
+//  }
+//
+//  @Test
+//  @DisplayName("채널은 정상적으로 삭제되어야 합니다.")
+//  void delete_success() {
+//    // given
+//
+//    // when
+//
+//    // then
+//  }
+//
+//  @Test
+//  @DisplayName("존재하지 않는 채널 삭제 시 예외가 발생해야 합니다.")
+//  void delete_fail_not_found() {
+//    // given
+//
+//    // when, then
+//  }
 }
