@@ -96,17 +96,8 @@ public class BasicMessageService implements MessageService {
 //        .map(messageMapper::toDto).toList();
     Slice<Message> slice = messageRepository.findAllByChannelIdFetchUserInfo(channelId, pageable,
         cursor);
-    List<UUID> messageIds = slice.stream().map(Message::getId).toList();
-    Map<UUID, List<BinaryContent>> attachmentMap = new HashMap<>();//바이너리 컨텐츠 한번에 가져오기
-    if (!messageIds.isEmpty()) {
-      messageRepository.findAllByIdInFetchAttachments(messageIds)
-          .forEach((m) -> {
-            List<BinaryContent> binaryList = new ArrayList<>(m.getAttachments());
-            attachmentMap.put(m.getId(), binaryList);
-          });
-    }
     Slice<MessageDto> sliceDto = slice.map(
-        s -> messageMapper.toDto(s, attachmentMap.get(s.getId())));
+        s -> messageMapper.toDto(s, s.getAttachments()));
     Instant nextCursor = null;
     if (slice.hasNext() && slice.hasContent()) {
       nextCursor = slice.getContent().get(slice.getContent().size() - 1).getCreatedAt();
@@ -139,7 +130,7 @@ public class BasicMessageService implements MessageService {
 //          .forEach(b -> binaryContentRepository.deleteById(b.getId()));//첨부파일 있는경우만 지우기
 //    }
     messageRepository.deleteById(messageId);
-    log.info("메세지 삭제 성공: messageId={}", message.getId());
+    log.info("메세지 삭제 성공: messageId={}", messageId);
   }
 
   private void checkValidate(MessageCreateRequest dto,
@@ -161,9 +152,7 @@ public class BasicMessageService implements MessageService {
 
   private Message get(UUID messageId) {
     return messageRepository.findById(messageId)
-        .orElseThrow(() -> {
-          return new MessageNotFoundException().addDetail("messageId", messageId);
-        });
+        .orElseThrow(() -> new MessageNotFoundException().addDetail("messageId", messageId));
   }
 
   private void checkAuthor(UUID authorId, UUID userId) {

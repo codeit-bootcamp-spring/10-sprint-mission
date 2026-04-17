@@ -1,0 +1,37 @@
+# 빌드 산출물
+target/
+build/
+*.jar
+*.war
+
+# IDE 및 로컬 설정 파일
+.idea/
+.settings/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+
+# Git 관련
+.git/
+.gitignore
+.github/
+
+# 문서 및 기타 불필요 파일
+README.md
+docs/
+*.txt
+.dockerignore
+Dockerfile
+
+# 운영 환경 파일 (환경 변수 파일 등)
+.env
+.discodeit
+out/
+.logs
+*.env
+
+### 맥북설정 파일
+.DS_Store

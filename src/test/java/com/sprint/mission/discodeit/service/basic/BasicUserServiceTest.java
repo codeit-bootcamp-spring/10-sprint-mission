@@ -123,6 +123,43 @@ class BasicUserServiceTest {
   }
 
   @Test
+  @DisplayName("성공: 프로필 이미지가 없는 사용자 생성 성공")
+  void CreateUserSuccessWithoutProfileImage() {
+
+    //given
+    UserCreateRequest dto = new UserCreateRequest("user", "email@test.com", "password");
+    User user = User.create(dto.username(), dto.email(), dto.password(), null);
+    UserDto userDto = new UserDto(UUID.randomUUID(), user.getUsername(), user.getEmail(),
+        null, true, Instant.now(), Instant.now());
+    List<Channel> channels = List.of(new Channel[]{mock(Channel.class), mock(Channel.class)});
+
+    given(userRepository.existsByEmail(dto.email())).willReturn(false);
+    given(userRepository.existsByUsername(dto.username())).willReturn(false);
+    given(userMapper.toEntity(dto, null)).willReturn(user);
+    given(channelRepository.findAllPublic()).willReturn(channels);
+    given(userMapper.toDto(any(User.class))).willReturn(userDto);
+
+    //when
+    UserDto result = userService.create(dto, Optional.empty());
+
+    //then
+    assertNotNull(result);
+    assertEquals(result.username(), dto.username());
+
+    // 유저 저장 검증
+    ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+    then(userRepository).should().save(userCaptor.capture());
+    User capturedUser = userCaptor.getValue();
+    assertEquals(capturedUser.getUsername(), dto.username());
+    assertEquals(capturedUser.getEmail(), dto.email());
+
+    // 읽기 상태 저장 검증
+    ArgumentCaptor<List<ReadStatus>> listCaptor = ArgumentCaptor.forClass(List.class);
+    then(readStatusRepository).should().saveAll(listCaptor.capture());
+    assertEquals(channels.size(), listCaptor.getValue().size());
+  }
+
+  @Test
   @DisplayName("성공: 사용자 정보(이름, 이메일, 비밀번호, 프로필) 수정 성공")
   void updateUserSuccess() {
     //given
@@ -152,6 +189,30 @@ class BasicUserServiceTest {
 
     then(binaryContentRepository).should().save(profile);
     then(binaryContentStorage).should().put(any(), eq(binaryContentCreateDto.bytes()));
+  }
+
+  @Test
+  @DisplayName("성공: 사용자 정보(이름, 이메일, 비밀번호, 프로필) 수정 성공")
+  void updateUserPasswordSuccess() {
+    //given
+    UUID userId = UUID.randomUUID();
+    User existingUser = User.create("oldName", "old@test.com", "oldPass", null);
+    UserUpdateRequest updateDto = new UserUpdateRequest(null, null, "newPass");
+    UserDto userDto = new UserDto(userId, null, null, null, true, Instant.now(),
+        Instant.now());
+
+    given(userRepository.findByIdFetchUserInfo(userId)).willReturn(Optional.of(existingUser));
+    given(userMapper.toDto(existingUser)).willReturn(userDto);
+
+    //when
+    UserDto result = userService.update(userId, updateDto, Optional.empty());
+
+    //then
+    assertNotNull(result);
+    assertEquals("oldName", existingUser.getUsername());
+    assertEquals("old@test.com", existingUser.getEmail());
+    assertEquals(updateDto.password(), existingUser.getPassword());
+
   }
 
   @Test

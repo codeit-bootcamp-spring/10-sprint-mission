@@ -6,7 +6,8 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '0.0.1-SNAPSHOT'
+//version = '0.0.1-SNAPSHOT'
+version = '1.2-M8'
 description = 'Demo project for Spring Boot'
 
 java {
@@ -41,15 +42,13 @@ dependencies {
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'de.codecentric:spring-boot-admin-starter-client:3.4.5'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
-    systemProperty 'spring.profiles.active', 'test'
+    //implementation 'de.codecentric:spring-boot-admin-starter-client:3.4.5'
+    implementation 'software.amazon.awssdk:s3:2.31.7'
 }
 
 test {
+    useJUnitPlatform()
+    systemProperty 'spring.profiles.active', 'test'
     finalizedBy jacocoTestReport
 }
 
@@ -64,7 +63,7 @@ jacocoTestReport {
 jacocoTestCoverageVerification {
     violationRules {
         rule {
-            element = 'PACKAGE'//'BUNDLE' //'CLASS'
+            element = 'PACKAGE' // 그 외 범위: 'BUNDLE', 'CLASS' 등
             // 경로
             includes = ['com.sprint.mission.discodeit.service.basic']
             limit {

@@ -159,8 +159,6 @@ class BasicMessageServiceTest {
     given(
         messageRepository.findAllByChannelIdFetchUserInfo(channelId, pageable, cursor)).willReturn(
         messageSlice);
-    given(messageRepository.findAllByIdInFetchAttachments(
-        List.of(m1.getId(), m2.getId()))).willReturn(List.of(m1));
     given(messageMapper.toDto(eq(m1), any())).willReturn(d1);
     given(messageMapper.toDto(eq(m2), any())).willReturn(d2);
     given(pageResponseMapper.fromSlice(any(Slice.class), any(Instant.class))).willReturn(

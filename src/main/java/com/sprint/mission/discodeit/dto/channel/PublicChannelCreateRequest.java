@@ -16,7 +16,7 @@ public record PublicChannelCreateRequest(
 ) {
 
   public PublicChannelCreateRequest {
-    name = name.trim();
+    name = name == null ? null : name.trim();
     description = description == null ? null : description.trim();
   }
 }

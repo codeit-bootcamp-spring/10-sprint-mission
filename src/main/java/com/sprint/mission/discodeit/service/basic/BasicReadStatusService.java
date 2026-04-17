@@ -79,6 +79,7 @@ public class BasicReadStatusService implements ReadStatusService {
     readStatusRepository.deleteById(readStatusId);
   }
 
+  /* 이후 채널 검증 도입 시 사용
   private void checkValidation(UUID userId, UUID channelId) {
     if (userRepository.findById(userId).isEmpty()) {
       throw new UserNotFoundException().addDetail("userId", userId);
@@ -91,4 +92,5 @@ public class BasicReadStatusService implements ReadStatusService {
           .addDetail("channelId", channelId);
     }
   }
+   */
 }

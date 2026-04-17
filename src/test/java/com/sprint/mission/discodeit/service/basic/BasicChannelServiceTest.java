@@ -152,6 +152,22 @@ class BasicChannelServiceTest {
   }
 
   @Test
+  @DisplayName("실패: 비공개 채널(일부 멤버가 유효하지 않음) 생성 실패")
+  void createPrivateChannelFailureWithSomeInvalidUser() {
+    //given
+    PrivateChannelCreateRequest dto = new PrivateChannelCreateRequest(
+        List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));//요청 멤버 3명
+    Channel channel = Channel.create(ChannelType.PRIVATE, null, null);
+    List<User> users = List.of(mock(User.class), mock(User.class));//유효멤버 2명
+
+    given(channelMapper.toEntity(dto)).willReturn(channel);
+    given(userRepository.findAllByIdFetchUserInfo(dto.memberIds())).willReturn(users);
+
+    //when & then
+    assertThrows(UserNotFoundException.class, () -> channelService.create(dto));
+  }
+
+  @Test
   @DisplayName("성공: 공개 채널의 정보(이름, 설명) 수정 성공")
   void updatePublicChannelSuccess() {
     //given

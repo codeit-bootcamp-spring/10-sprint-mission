@@ -1,0 +1,117 @@
+name: Deploy
+on:
+  push:
+    branches: [ "release" ]
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+
+jobs:
+  # docker 이미지 빌드 & 푸시
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: 소스코드 가져오기
+        uses: actions/checkout@v4
+
+      - name: AWS CLI 설정
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1 # public ECR이기 때문에
+
+      - name: ECR 로그인
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
+      - name: 태그 정의
+        id: tags
+        run: |
+          echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Docker 이미지 빌드 & 푸시
+        env:
+          REPO_URI: ${{ vars.ECR_REPOSITORY_URI }}
+        run: |
+          docker build -t "$REPO_URI:$IMAGE_TAG" -t "$REPO_URI:latest" .
+          docker push "$REPO_URI:$IMAGE_TAG"
+          docker push "$REPO_URI:latest"
+
+  # ECS 서비스 업데이트
+  ecs-update:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: AWS CLI 설정
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Task 정의 업데이트
+        run: |
+          # 작업 정의 이름으로 작업 정의 가져오기
+          TASK_DEFINITION=$(aws ecs describe-task-definition --task-definition ${{ vars.ECS_TASK_DEFINITION }})
+          # jq(json 편집 도구)를 사용하여 이미지 정보 교체
+          # 작업정의 열기 > 새로운 이미지 변수 등록 > 작업정의란에서 이미지 부분을 변경 > 기존 불필요한 정보 제거(정보 불일치 방지)
+          NEW_TASK_DEFINITION=$(echo $TASK_DEFINITION | jq --arg IMAGE "${{ vars.ECR_REPOSITORY_URI }}:latest" \
+                      '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)')
+          # 새로운 이미지로 작업 정의 등록 명령
+          NEW_TASK_DEFINITION_ARN=$(aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEFINITION" --query 'taskDefinition.taskDefinitionArn' --output text)
+          echo "NEW_TASK_DEFINITION_ARN=$NEW_TASK_DEFINITION_ARN" >> $GITHUB_ENV
+
+      - name: 기존 ECS 서비스 중단
+        run: |
+          # 실행 중인 Task
+          TASK_ARNS=$(aws ecs list-tasks --cluster ${{ vars.ECS_CLUSTER }} --service ${{ vars.ECS_SERVICE }} --query "taskArns" --output text)
+          
+          # 기존 Task 전부 종료
+          aws ecs update-service \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
+            --desired-count 0 \
+            --deployment-configuration "minimumHealthyPercent=0"
+          
+          # 실행 중인 task 종료까지 대기
+          if [ -n "$TASK_ARNS" ] && [ "$TASK_ARNS" != "None" ]; then
+            echo "Waiting for tasks to stop: $TASK_ARNS"
+            aws ecs wait tasks-stopped --cluster ${{ vars.ECS_CLUSTER }} --tasks $TASK_ARNS
+          fi
+          
+          echo "✅ 모든 기존 Task가 종료되었습니다!!!!!!!!!!"
+
+
+      - name: ECS 업데이트
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
+            --task-definition $NEW_TASK_DEFINITION_ARN \
+            --desired-count 1 \
+            --deployment-configuration "minimumHealthyPercent=0"
+
+      - name: ECS 배포 완료 대기
+        run: |
+          aws ecs wait services-stable \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --services ${{ vars.ECS_SERVICE }}
+          
+          echo "✅ 새로운 배포가 완료되었습니다!!!!"
+
+      - name: ECS 비율 설정 복구
+        run: |
+          aws ecs update-service \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --service ${{ vars.ECS_SERVICE }} \
+            --deployment-configuration "minimumHealthyPercent=100,maximumPercent=200"
+
+      - name: ECS 배포 상태 확인
+        run: |
+          aws ecs describe-services \
+            --cluster ${{ vars.ECS_CLUSTER }} \
+            --services ${{ vars.ECS_SERVICE }} \
+            --query "services[0].deployments"

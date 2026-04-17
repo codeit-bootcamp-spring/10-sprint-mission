@@ -46,3 +46,4 @@ out/
 out/
 .env
 .logs
+*.env

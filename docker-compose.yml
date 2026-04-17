@@ -1,0 +1,61 @@
+version: '3.9'
+services:
+  # Postgres DB
+  postgres-db:
+    container_name: database-app
+    image: postgres:15
+    ports:
+      - '5432:5432' # 포트 변경 가능
+    networks:
+      - backend
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - .env
+
+  
+  # spring boot application
+  discodeit:
+    container_name: discodeit-app
+    build: .
+    image: discodeit:local-slim # 이미지 이름
+    ports:
+      - '8081:80'
+    networks:
+      - backend
+    volumes:
+      - app-storage:/app/${STORAGE_LOCAL_ROOT_PATH} # local 파일 저장소 경로랑 동일
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE}
+      # 데베 설정
+      DB_URL: jdbc:postgresql://postgres-db:5432/${POSTGRES_DB}
+      DB_USER_NAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      # S3 설정
+      STORAGE_TYPE: ${STORAGE_TYPE}
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
+      # local
+      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH} # 파일 저장소 경로
+    env_file:
+      - .env
+    depends_on:
+      - postgres-db
+
+# 네트워크 설정(기본으로 같은 네트워크에 생성되기 때문에 생략가능)
+networks:
+  backend:
+    driver: bridge # default, 생략 가능
+
+# 볼륨 설정
+volumes:
+  db-data:
+  app-storage:

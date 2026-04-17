@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(value = DiscodeitException.class)
   public ResponseEntity<ErrorResponse> handleBusinessException(DiscodeitException e) {
-    log.warn("[BusinessLogicException] Status: {}, Code: {}, Message: {}, Details: {}",
+    log.warn("[DiscodeitException] Status: {}, Code: {}, Message: {}, Details: {}",
         e.getErrorCode().getStatus(), e.getErrorCode().getCode(), e.getMessage(), e.getDetails());
     return ResponseEntity.status(HttpStatus.valueOf(e.getErrorCode().getStatus()))
         .body(ErrorResponse.of(e));

@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,14 +16,6 @@ public class OpenApiConfig {
         .info(new Info()
             .title("Discodeit API 문서")
             .description("Discodeit 프로젝트의 Swagger API 문서입니다.")
-        )
-        .addServersItem(new Server()
-            .url("http://localhost:8080")
-            .description("로컬 dev 서버")
-        )
-        .addServersItem(new Server()
-            .url("http://localhost:80")
-            .description("로컬 prod 서버")
         );
   }
 }

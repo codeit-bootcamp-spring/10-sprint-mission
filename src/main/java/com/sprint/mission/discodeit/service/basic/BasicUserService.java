@@ -69,8 +69,8 @@ public class BasicUserService implements UserService {
     }
     log.info("사용자 생성 성공: userId={} createdFields=[username={}, email={}, profile={}, password={}]",
         user.getId(),
-        user.getUsername() != null,
-        user.getEmail() != null,
+        user.getUsername(),
+        user.getEmail(),
         user.getProfile() != null,
         user.getPassword() != null
     );
@@ -118,8 +118,8 @@ public class BasicUserService implements UserService {
     }
     log.info("사용자 수정 성공: userId={}, updatedFields=[username={}, email={}, profile={}, password={}]",
         userId,
-        dto.username() != null,
-        dto.email() != null,
+        dto.username(),
+        dto.email(),
         profile != null,
         dto.password() != null
     );
@@ -148,11 +148,6 @@ public class BasicUserService implements UserService {
     if (userRepository.existsByUsername(username)) {
       throw new UserNameAlreadyExistException().addDetail("username", username);
     }
-  }
-
-  private UserStatus findUserStatusByUserId(UUID userId) {
-    return userStatusRepository.findByUserId(userId)
-        .orElseThrow(() -> new UserStatusNotFoundException().addDetail("userId", userId));
   }
 
   private User get(UUID userId) {
