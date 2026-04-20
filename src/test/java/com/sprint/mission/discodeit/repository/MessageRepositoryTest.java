@@ -83,8 +83,8 @@ class MessageRepositoryTest {
   }
 
   @Test
-  @DisplayName("다음 페이지 조회 실패: 커서보다 이전 시간의 데이터가 없으면 빈 리스트를 반환해야 합니다.")
-  void findByChannelAndCursor_fail() {
+  @DisplayName("페이징 조회 성공: 커서보다 이전 시간의 데이터가 없으면 빈 리스트를 반환합니다.")
+  void findByChannelAndCursor_success() {
     // given
     Message oldest = messageRepository.save(new Message(testUser, testChannel, "가장 오래된 메시지", null));
     messageRepository.flush();

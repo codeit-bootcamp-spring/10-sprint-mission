@@ -5,9 +5,13 @@ spring:
 
   datasource:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
     username: sa
     password:
+
+  sql:
+    init:
+      mode: never
 
   jpa:
     hibernate:
@@ -18,6 +22,18 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
         default_batch_fetch_size: 100
+
+  cloud:
+    aws:
+      region:
+        static: ap-northeast-2
+      credentials:
+        access-key: test-access-key
+        secret-key: test-secret-key
+      s3:
+        bucket: test-bucket
+      stack:
+        auto: false
 
 logging:
   level:

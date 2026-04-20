@@ -5,8 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -19,4 +22,10 @@ public abstract class BaseIntegrationTest {
 
   @Autowired
   protected ObjectMapper objectMapper;
+
+  @MockitoBean
+  protected S3Client s3Client;
+
+  @MockitoBean
+  protected S3Presigner s3Presigner;
 }

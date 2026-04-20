@@ -16,9 +16,15 @@ spring:
 
 discodeit:
   storage:
-    type: local
+    type: ${STORAGE_TYPE:local}
     local:
-      root-path: uploads
+      root-path: ${STORAGE_LOCAL_ROOT_PATH:.discodeit/storage}
+    s3:
+      access-key: ${AWS_S3_ACCESS_KEY}
+      secret-key: ${AWS_S3_SECRET_KEY}
+      region: ${AWS_S3_REGION}
+      bucket: ${AWS_S3_BUCKET}
+      presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600}
   repository:
     type: file
     file-directory: .discodeit
@@ -51,7 +57,7 @@ management:
 info:
   app:
     name: Discodeit
-    version: 1.7.0
+    version: 1.2-M8
     java-version: 17
     spring-boot-version: 3.4.0
   major-config:
