@@ -9,13 +9,19 @@
 
 discodeit:
   storage:
-    type: local
+    type: ${STORAGE_TYPE:local}
     local:
       root-path: .discodeit.storage
+    s3:
+      access-key: ${AWS_ACCESS_KEY}
+      secret-key: ${AWS_SECRET_KEY}
+      region: ${AWS_REGION}
+      bucket: ${AWS_BUCKET}
+      presigned-url-expiration: ${AWS_PRESIGNED_URL_EXPIRATION:600}
 
 spring:
   profiles:
-    active: dev
+    active: prod
   servlet:
     multipart:    # binaryContent 활성화
       enabled: true

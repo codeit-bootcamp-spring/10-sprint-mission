@@ -1,29 +1,39 @@
 # ===== Build stage =====
-FROM eclipse-temurin:17-jdk AS build
+FROM amazoncorretto:17 AS build
 WORKDIR /app
 
-# (1) Gradle wrapper & build files 먼저 복사 (캐시 효율)
+ENV PROJECT_NAME=discodeit
+ENV PROJECT_VERSION=1.2-M8
+ENV JVM_OPTS=""
+
+# Gradle Wrapper 및 빌드 설정 파일 복사
 COPY gradlew ./
-COPY gradle gradle
+COPY gradle ./gradle
 COPY build.gradle* settings.gradle* ./
 
-# gradlew 실행권한
+# gradlew 실행 권한 부여
 RUN chmod +x gradlew
 
-# (2) 소스 복사
-COPY src src
+# Gradle 의존성 캐시
+RUN ./gradlew --no-daemon dependencies || true
 
-# (3) 빌드 (테스트/체크 제외 + production 프로퍼티)
+# 소스 코드 복사
+COPY src ./src
+
+# 애플리케이션 빌드
 RUN ./gradlew --no-daemon clean bootJar -x test -x check -Pproduction
 
 # ===== Run stage =====
-FROM eclipse-temurin:17-jre
+FROM amazoncorretto:17-alpine
 WORKDIR /app
 
-COPY --from=build /app/build/libs/*.jar app.jar
+ENV PROJECT_NAME=discodeit
+ENV PROJECT_VERSION=1.2-M8
+ENV JVM_OPTS=""
 
-# Railway는 PORT 환경변수를 줌
-ENV PORT=8080
-EXPOSE 8080
+# build stage에서 생성된 jar 파일 복사
+COPY --from=build /app/build/libs/*.jar ${PROJECT_NAME}-${PROJECT_VERSION}.jar
 
-CMD ["sh", "-c", "java -Dserver.port=${PORT} -jar app.jar"]
+EXPOSE 80
+
+CMD ["sh", "-c", "java ${JVM_OPTS} -Dserver.port=80 -jar ${PROJECT_NAME}-${PROJECT_VERSION}.jar"]

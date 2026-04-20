@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.0'
 	id 'io.spring.dependency-management' version '1.1.4'
+	id 'jacoco'
 }
 
 group = 'com.sprint.mission'
@@ -43,8 +44,24 @@ dependencies {
 
 	// Lombok + MapStruct 조합 보정(권장)
 	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+	// AWS S3 SDK 의존성
+	implementation 'software.amazon.awssdk:s3:2.31.7'
+
+	// discodeit.env 파일 읽는 라이브러리
+	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy tasks.named('jacocoTestReport')
+}
+
+jacocoTestReport {
+	dependsOn tasks.named('test')
+	reports {
+		xml.required = true
+		html.required = true
+		csv.required = false
+	}
 }

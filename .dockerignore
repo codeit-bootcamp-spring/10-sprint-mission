@@ -1,0 +1,13 @@
+.git
+.gitignore
+.gradle
+build
+out
+.idea
+*.iml
+.DS_Store
+discodeit.env
+docker-compose.yml
+
+node_modules
+*.log

@@ -30,8 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BasicUserServiceTest {
@@ -363,8 +362,10 @@ class BasicUserServiceTest {
     void delete_user_with_profile() {
         // given
         UUID userId = UUID.randomUUID();
+        UUID profileId = UUID.randomUUID();
 
-        BinaryContent profile = new BinaryContent("jpg", "test", 100L);
+        BinaryContent profile = mock(BinaryContent.class);
+        given(profile.getId()).willReturn(profileId);
         User user = new User("test", "test@test.com", "1234", profile);
 
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
