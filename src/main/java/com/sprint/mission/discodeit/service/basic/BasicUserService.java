@@ -66,7 +66,6 @@ public class BasicUserService implements UserService {
     }
 
     User user = new User(request.userName(), request.email(), request.password());
-    new UserStatus(user, Instant.now());
 
     if (request.profileImage() != null) {
       ProfileImageCreateRequest imgReq = request.profileImage();
@@ -80,9 +79,11 @@ public class BasicUserService implements UserService {
     }
 
     User savedUser = userRepository.save(user);
-    BinaryContent profileImage = savedUser.getProfileImage();
 
-    return userMapper.toResponse(savedUser, savedUser.getStatus(), profileImage);
+    UserStatus userStatus = new UserStatus(savedUser, Instant.now());
+    userStatusRepository.save(userStatus);
+
+    return userMapper.toResponse(savedUser, userStatus, savedUser.getProfileImage());
   }
 
   @Override
@@ -174,6 +175,7 @@ public class BasicUserService implements UserService {
           imgReq.data().length,
           imgReq.contentType()
       );
+      binaryContentStorage.put(newImage.getId(), imgReq.data());
       user.updateProfileImage(newImage);
     });
 

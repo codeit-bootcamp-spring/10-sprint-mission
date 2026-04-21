@@ -1,9 +1,12 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit_prod
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 2
+      minimum-idle: 0
 
   sql:
     init:
@@ -11,7 +14,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
     open-in-view: false
     properties:
       hibernate:
@@ -20,10 +23,12 @@ spring:
           time_zone: UTC
 
 server:
-  port: 8081
+  port: 80
+  tomcat:
+    threads:
+      max: 10
+      min-spare: 1
 
 logging:
   level:
     root: info
-    org.hibernate.SQL: debug
-    org.hibernate.orm.jdbc.bind: trace

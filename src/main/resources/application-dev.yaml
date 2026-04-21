@@ -12,7 +12,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create
     open-in-view: false
     properties:
       hibernate:
@@ -21,7 +21,7 @@ spring:
           time_zone: UTC
 
 server:
-  port: 8080
+  port: 80
 
 logging:
   level:
