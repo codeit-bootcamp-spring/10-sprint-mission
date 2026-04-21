@@ -1,0 +1,104 @@
+26-04-06 14:17:59.250 [background-preinit] INFO  o.h.validator.internal.util.Version  - HV000001: Hibernate Validator 8.0.1.Final
+26-04-06 14:17:59.367 [main] INFO  c.s.m.discodeit.DiscodeitApplication - Starting DiscodeitApplication using Java 17.0.17 with PID 26916 (C:\codeit\sprint_mission_3_base\build\classes\java\main started by HP in C:\codeit\sprint_mission_3_base)
+26-04-06 14:17:59.369 [main] DEBUG c.s.m.discodeit.DiscodeitApplication - Running with Spring Boot v3.4.0, Spring v6.2.0
+26-04-06 14:17:59.369 [main] INFO  c.s.m.discodeit.DiscodeitApplication - The following 1 profile is active: "dev"
+26-04-06 14:18:02.297 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-04-06 14:18:02.435 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 127 ms. Found 6 JPA repository interfaces.
+26-04-06 14:18:03.487 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer     - Tomcat initialized with port 8080 (http)
+26-04-06 14:18:03.505 [main] INFO  o.a.coyote.http11.Http11NioProtocol  - Initializing ProtocolHandler ["http-nio-8080"]
+26-04-06 14:18:03.507 [main] INFO  o.a.catalina.core.StandardService    - Starting service [Tomcat]
+26-04-06 14:18:03.507 [main] INFO  o.a.catalina.core.StandardEngine     - Starting Servlet engine: [Apache Tomcat/10.1.33]
+26-04-06 14:18:03.608 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/]   - Initializing Spring embedded WebApplicationContext
+26-04-06 14:18:03.608 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 4127 ms
+26-04-06 14:18:04.021 [main] INFO  o.h.jpa.internal.util.LogHelper      - HHH000204: Processing PersistenceUnitInfo [name: default]
+26-04-06 14:18:04.120 [main] INFO  org.hibernate.Version                - HHH000412: Hibernate ORM core version 6.6.2.Final
+26-04-06 14:18:04.180 [main] INFO  o.h.c.i.RegionFactoryInitiator       - HHH000026: Second-level cache disabled
+26-04-06 14:18:04.608 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo  - No LoadTimeWeaver setup: ignoring JPA class transformer
+26-04-06 14:18:04.654 [main] INFO  com.zaxxer.hikari.HikariDataSource   - HikariPool-1 - Starting...
+26-04-06 14:18:05.576 [main] INFO  com.zaxxer.hikari.pool.HikariPool    - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@77d3c3d7
+26-04-06 14:18:05.577 [main] INFO  com.zaxxer.hikari.HikariDataSource   - HikariPool-1 - Start completed.
+26-04-06 14:18:05.660 [main] WARN  org.hibernate.orm.deprecation        - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+26-04-06 14:18:05.685 [main] INFO  o.hibernate.orm.connections.pooling  - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 18.2
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+26-04-06 14:18:07.139 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator   - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+26-04-06 14:18:07.143 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+26-04-06 14:18:07.713 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+26-04-06 14:18:08.724 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+26-04-06 14:18:08.772 [main] WARN  o.s.b.a.s.s.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 4ae48740-615b-4427-a306-24bfad8619d0
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+26-04-06 14:18:08.787 [main] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+26-04-06 14:18:08.916 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+26-04-06 14:18:09.428 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver  - Exposing 4 endpoints beneath base path '/actuator'
+26-04-06 14:18:10.203 [main] INFO  o.a.coyote.http11.Http11NioProtocol  - Starting ProtocolHandler ["http-nio-8080"]
+26-04-06 14:18:10.225 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer     - Tomcat started on port 8080 (http) with context path '/'
+26-04-06 14:18:10.244 [main] INFO  c.s.m.discodeit.DiscodeitApplication - Started DiscodeitApplication in 11.959 seconds (process running for 13.157)
+26-04-06 14:18:10.957 [RMI TCP Connection(3)-172.30.1.47] INFO  o.a.c.c.C.[Tomcat].[localhost].[/]   - Initializing Spring DispatcherServlet 'dispatcherServlet'
+26-04-06 14:18:10.957 [RMI TCP Connection(3)-172.30.1.47] INFO  o.s.web.servlet.DispatcherServlet    - Initializing Servlet 'dispatcherServlet'
+26-04-06 14:18:10.959 [RMI TCP Connection(3)-172.30.1.47] INFO  o.s.web.servlet.DispatcherServlet    - Completed initialization in 2 ms
+26-04-06 14:18:36.168 [SpringApplicationShutdownHook] INFO  o.s.b.w.e.tomcat.GracefulShutdown    - Commencing graceful shutdown. Waiting for active requests to complete
+26-04-06 14:18:36.696 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown    - Graceful shutdown complete
+26-04-06 14:18:36.705 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+26-04-06 14:18:36.707 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource   - HikariPool-1 - Shutdown initiated...
+26-04-06 14:18:36.719 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource   - HikariPool-1 - Shutdown completed.
+26-04-06 14:18:45.393 [background-preinit] INFO  o.h.validator.internal.util.Version  - HV000001: Hibernate Validator 8.0.1.Final
+26-04-06 14:18:45.449 [main] INFO  c.s.m.discodeit.DiscodeitApplication - Starting DiscodeitApplication using Java 17.0.17 with PID 10612 (C:\codeit\sprint_mission_3_base\build\classes\java\main started by HP in C:\codeit\sprint_mission_3_base)
+26-04-06 14:18:45.450 [main] DEBUG c.s.m.discodeit.DiscodeitApplication - Running with Spring Boot v3.4.0, Spring v6.2.0
+26-04-06 14:18:45.450 [main] INFO  c.s.m.discodeit.DiscodeitApplication - The following 1 profile is active: "dev"
+26-04-06 14:18:46.755 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-04-06 14:18:46.878 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 114 ms. Found 6 JPA repository interfaces.
+26-04-06 14:18:47.715 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer     - Tomcat initialized with port 8080 (http)
+26-04-06 14:18:47.728 [main] INFO  o.a.coyote.http11.Http11NioProtocol  - Initializing ProtocolHandler ["http-nio-8080"]
+26-04-06 14:18:47.730 [main] INFO  o.a.catalina.core.StandardService    - Starting service [Tomcat]
+26-04-06 14:18:47.730 [main] INFO  o.a.catalina.core.StandardEngine     - Starting Servlet engine: [Apache Tomcat/10.1.33]
+26-04-06 14:18:47.819 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/]   - Initializing Spring embedded WebApplicationContext
+26-04-06 14:18:47.819 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2315 ms
+26-04-06 14:18:48.149 [main] INFO  o.h.jpa.internal.util.LogHelper      - HHH000204: Processing PersistenceUnitInfo [name: default]
+26-04-06 14:18:48.216 [main] INFO  org.hibernate.Version                - HHH000412: Hibernate ORM core version 6.6.2.Final
+26-04-06 14:18:48.256 [main] INFO  o.h.c.i.RegionFactoryInitiator       - HHH000026: Second-level cache disabled
+26-04-06 14:18:48.584 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo  - No LoadTimeWeaver setup: ignoring JPA class transformer
+26-04-06 14:18:48.621 [main] INFO  com.zaxxer.hikari.HikariDataSource   - HikariPool-1 - Starting...
+26-04-06 14:18:48.828 [main] INFO  com.zaxxer.hikari.pool.HikariPool    - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@72240290
+26-04-06 14:18:48.831 [main] INFO  com.zaxxer.hikari.HikariDataSource   - HikariPool-1 - Start completed.
+26-04-06 14:18:48.868 [main] WARN  org.hibernate.orm.deprecation        - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+26-04-06 14:18:48.887 [main] INFO  o.hibernate.orm.connections.pooling  - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 18.2
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+26-04-06 14:18:50.074 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator   - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+26-04-06 14:18:50.077 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+26-04-06 14:18:50.542 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+26-04-06 14:18:51.396 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+26-04-06 14:18:51.428 [main] WARN  o.s.b.a.s.s.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: 9f634556-9280-4054-922d-d6e38893795c
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+26-04-06 14:18:51.438 [main] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+26-04-06 14:18:51.533 [main] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
+26-04-06 14:18:52.033 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver  - Exposing 4 endpoints beneath base path '/actuator'
+26-04-06 14:18:52.638 [main] INFO  o.a.coyote.http11.Http11NioProtocol  - Starting ProtocolHandler ["http-nio-8080"]
+26-04-06 14:18:52.665 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer     - Tomcat started on port 8080 (http) with context path '/'
+26-04-06 14:18:52.679 [main] INFO  c.s.m.discodeit.DiscodeitApplication - Started DiscodeitApplication in 7.86 seconds (process running for 8.556)
+26-04-06 14:18:53.083 [RMI TCP Connection(5)-172.30.1.47] INFO  o.a.c.c.C.[Tomcat].[localhost].[/]   - Initializing Spring DispatcherServlet 'dispatcherServlet'
+26-04-06 14:18:53.084 [RMI TCP Connection(5)-172.30.1.47] INFO  o.s.web.servlet.DispatcherServlet    - Initializing Servlet 'dispatcherServlet'
+26-04-06 14:18:53.086 [RMI TCP Connection(5)-172.30.1.47] INFO  o.s.web.servlet.DispatcherServlet    - Completed initialization in 2 ms
+26-04-06 14:18:57.569 [SpringApplicationShutdownHook] INFO  o.s.b.w.e.tomcat.GracefulShutdown    - Commencing graceful shutdown. Waiting for active requests to complete
+26-04-06 14:18:58.068 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown    - Graceful shutdown complete
+26-04-06 14:18:58.074 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+26-04-06 14:18:58.077 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource   - HikariPool-1 - Shutdown initiated...
+26-04-06 14:18:58.082 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource   - HikariPool-1 - Shutdown completed.
