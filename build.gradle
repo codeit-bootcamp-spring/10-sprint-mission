@@ -1,42 +1,92 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.4.0' // 3.5.10 -> 3.4.0
-	id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'org.springframework.boot' version '3.4.0'
+    id 'io.spring.dependency-management' version '1.1.6'
+    id 'jacoco'
 }
 
 group = 'com.sprint.mission'
-version = '0.0.1-SNAPSHOT'
-description = 'Demo project - discodeit'
+version = '1.2-M8'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	compileOnly 'org.projectlombok:lombok'
-		// compileOnly -> 컴파일할 때까지만 필요. 실제 프로그램이 실행될 때는 필요 없음.
-	annotationProcessor 'org.projectlombok:lombok'
-		// annotationProcessor -> 어노테이션에의해 정의된 프로세스를 동작하게 하는 역할. 컴파일 타임에 어노테이션을 기반으로 코드를 자동 생성하거나 변형하는 데 필요.
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	// Thymeleaf 추가
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    // Documentation
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.4'
+    // FIXME: 보안 취약점 관련 내용 확인 후 수정 요망 CVE-2025-48924
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // H2 DB (테스트 환경)
+    testImplementation 'com.h2database:h2'
+
+    // JPA 및 트랜잭션 관리를 위한 라이브러리
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Validation - Spring Validation 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // PostgreSQL Driver
+    runtimeOnly 'org.postgresql:postgresql'
+
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
+
+    // Lombok과 MapStruct 연동을 위한 바인딩
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+
+    // AWS SDK v2 BOM
+    implementation platform('software.amazon.awssdk:bom:2.20.70')
+
+    // S3와의 통신을 위한 AWS SDK v2 라이브러리
+    implementation 'software.amazon.awssdk:s3'
+
+    // AWS 인증 처리 모듈
+    implementation 'software.amazon.awssdk:auth'
+
+    // JUnit5
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.0'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+}
+
+test {
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }

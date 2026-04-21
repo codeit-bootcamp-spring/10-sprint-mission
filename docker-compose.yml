@@ -1,0 +1,99 @@
+# docker-compose.yaml: `version` is obsolete
+
+services:
+  discodeit:
+    # build - 이미지를 Docker Hub에서 가져오는 대신 로컬에서 빌드
+    build:
+      # context - Docker 빌드 컨텍스트의 경로
+      #  - 빌드 컨텍스트 내의 모든 파일이 Docker 데몬에 전송되어 빌드에 사용됨
+      context: .
+      # dockerfile - 사용할 Dockerfile의 경로 (context 경로를 기준으로 한 상대 경로)
+      dockerfile: Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILE}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      # AWS
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_PRESIGNED_URL_EXPIRATION: 300
+      # S3
+      STORAGE_TYPE: s3
+      STORAGE_LOCAL_ROOT_PATH: .discodeit/storage
+    ports:
+      - "8081:80"
+    # depends_on - 서비스 간 의존성과 시작 순서를 정의
+    #  - PostgreSQL 서비스의 healthcheck가 healthy 상태가 될 때까지 discodeit 서비스의 시작을 지연
+    #  - 단순 depends_on은 컨테이너 시작만 보장하고 실제 서비스가 준비되었는지는 확인하지 않음
+    #  - service_healthy를 사용하면 Db 연결 실패를 방지할 수 있음
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - binary-content-storage:/app/.discodeit/storage
+    networks:
+      backend:
+
+  postgres:
+    # image - 사용할 Docker 이미지를 지정
+    image: postgres:18-alpine
+    # environment - 컨테이너 내부에서 사용할 환경 변수를 설정
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    # volumnes - 데이터 영속성을 위한 볼륨 마운트를 설정
+    # - postgres-data:/var/lib/postgresql/data
+    #  - volume을 PostgreSQL의 데이터 디렉터리에 마운트
+    #  - /var/lib/postgresql/datasms PostgreSQL이 모든 데이터를 저장하는 기본 디렉터리
+    # - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    #  - 바인드 마운트로, 호스트의 파일을 컨테이너 내부에 직접 연결
+    #  - PostgreSQL 공식 이미지는 최초 실행 시 /docker-entrypoint-initdb.d/ 디렉터리에 있는
+    #    .sql, .sh 파일을 알파벳 순서대로 자동 실행
+    #  - 이를 통해 컨테이너가 처음 생성될 때 schema.sql이 자동으로 실행되어 테이블과 제약 조건이 생성됨
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    # healthcheck - 컨테이너의 상태를 주기적으로 확인하는 헬스체크를 설정
+    #  - 다른 서비스가 depends_on의 condition으로 이 상태를 참조
+    healthcheck:
+      # test - 헬스체크에 사용할 명령어
+      #  - CMD-SHELL : /bin/sh -c를 통해 shell에서 명령어를 실행 (환경 변수 치환을 위함)
+      #  - pg_isready : PostgreSQL이 클라이언트 연결을 수락할 준비가 되었는지 확인
+      #  - -U : 연결을 시도할 사용자를 지정
+      #  - -d : 연결을 시도할 데이터베이스를 지정
+      #  -> 명령어가 exit code 0을 반환하면 healthy, 그 외에는 unhealthy로 판단
+      # interval - 헬스체크 실행 간격
+      # timeout - 각 헬스체크의 응답 대기 시간 (5초 이내에 응답해야 함)
+      # retries - unhealthy로 판정하기까지 연속 실패 횟수
+      # start_period - 컨테이너 시작 후 헬스체크 싪패해도 unhealthy로 판정하지 않는 유예 시간
+      # start_interval - start_period 동안의 헬스체크 간격
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+      start_interval: 5s
+    networks:
+      backend:
+
+volumes:
+  postgres-data:
+  binary-content-storage:
+
+networks:
+  backend:
+
+# [명령어]
+#   docker compose up --build -d     # 이미지 빌드 후 백그라운드 실행
+#   docker compose down              # 서비스 중지 및 컨테이너 제거
+#   docker compose down -v           # 서비스 중지 + 볼륨까지 삭제 (데이터 초기화)
+#   docker compose logs -f           # 실시간 로그 확인
+#   docker compose logs -f discodeit # 특정 서비스 로그만 확인
+
+# docker-compose.yml : 여러 Docker 컨테이너를 한꺼번에 정의하고 관리하는 설정 파일

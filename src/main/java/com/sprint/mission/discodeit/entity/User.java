@@ -1,50 +1,59 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.UUID;
-
+@Entity
+@Table(name = "users")
 @Getter
-  // 자동으로 getter 메서드를 생성해준다. -> Lombok 적용
-public class User extends BaseEntity {
-    private String username;
-    private String email;
-    private String password;
+@NoArgsConstructor(access = AccessLevel.PROTECTED)  // JPA를 위한 기본 생성자
+public class User extends BaseUpdatableEntity {
 
-    // 프로필 이미지 id (User 1..0 BinaryContent)
-    private UUID profileImageId;
+  @Column(length = 50, nullable = false, unique = true)
+  private String username;
+  @Column(length = 100, nullable = false, unique = true)
+  private String email;
+  @Column(length = 60, nullable = false)
+  private String password;
+  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(name = "profile_id", columnDefinition = "uuid")
+  private BinaryContent profile;
+  @JsonManagedReference
+  @Setter(AccessLevel.PROTECTED)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  private UserStatus status;
 
-    // 첨부파일이 있는 경우 (생성자 오버로드)
-    public User(String username, String email, String password, UUID profileImageId) {
-        super();
-        this.username = username;
-        this.email = email;
-        this.password = password;
-        this.profileImageId = profileImageId;
+  public User(String username, String email, String password, BinaryContent profile) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profile = profile;
+  }
+
+  public void update(String newUsername, String newEmail, String newPassword,
+      BinaryContent newProfile) {
+    if (newUsername != null && !newUsername.equals(this.username)) {
+      this.username = newUsername;
     }
-
-    public void update(String newUsername, String newEmail, String newPassword, UUID newProfileImageId) {
-        boolean isAnyValueUpdated = false;
-        if (newUsername != null && !newUsername.equals(this.username)) {
-            this.username = newUsername;
-            isAnyValueUpdated = true;
-        }
-        if (newEmail != null && !newEmail.equals(this.email)) {
-            this.email = newEmail;
-            isAnyValueUpdated = true;
-        }
-        if (newPassword != null && !newPassword.equals(this.password)) {
-            this.password = newPassword;
-            isAnyValueUpdated = true;
-        }
-        if (newProfileImageId != null && !newProfileImageId.equals(this.profileImageId)) {  // 프로픨 이미지 id는 null일 수 있음
-            // TODO: null로 수정하는 것도 추가 -> 기존 등록된 사진 수정 로직 추가 필요 -> 관련 DTO 수정(UserUpdateRequest) + BasicUserService 수정 필요할 것으로 예쌍
-            this.profileImageId = newProfileImageId;
-            isAnyValueUpdated = true;
-        }
-
-        if (isAnyValueUpdated) {
-            updateInstant();
-        }
+    if (newEmail != null && !newEmail.equals(this.email)) {
+      this.email = newEmail;
     }
+    if (newPassword != null && !newPassword.equals(this.password)) {
+      this.password = newPassword;
+    }
+    if (newProfile != null) {
+      this.profile = newProfile;
+    }
+  }
 }

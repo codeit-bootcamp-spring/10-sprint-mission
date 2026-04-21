@@ -1,18 +1,26 @@
 package com.sprint.mission.discodeit.repository;
 
 import com.sprint.mission.discodeit.entity.ReadStatus;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface ReadStatusRepository {
-    ReadStatus save(ReadStatus readStatus);
-    Optional<ReadStatus> findById(UUID id);
-    List<ReadStatus> findAll();
-    void deleteById(UUID id);
+public interface ReadStatusRepository extends JpaRepository<ReadStatus, UUID> {
 
-    boolean existById(UUID id);
-    // Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId);
-    // TODO: 특정 채널의 메시지를 특정 유저가 읽었는지 확인할 때 필요할 수 있음 -> 비즈니스 로직 고려 후 판단
+
+  List<ReadStatus> findAllByUserId(UUID userId);
+
+  @Query("SELECT r FROM ReadStatus r "
+      + "JOIN FETCH r.user u "
+      + "JOIN FETCH u.status "
+      + "LEFT JOIN FETCH u.profile "
+      + "WHERE r.channel.id = :channelId")
+  List<ReadStatus> findAllByChannelIdWithUser(@Param("channelId") UUID channelId);
+
+  Optional<ReadStatus> findByUserIdAndChannelId(UUID userId, UUID channelId);
+
+  void deleteAllByChannelId(UUID channelId);
 }
