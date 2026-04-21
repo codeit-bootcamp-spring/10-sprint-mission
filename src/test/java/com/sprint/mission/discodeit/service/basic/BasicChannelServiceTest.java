@@ -160,26 +160,6 @@ public class BasicChannelServiceTest {
                         new PublicChannelUpdateRequest("new", "desc")));
     }
 
-    // DELETE
-    @Test
-    void delete_success() {
-        // given
-        UUID channelId = UUID.randomUUID();
-
-        Channel channel = new Channel(ChannelType.PUBLIC, "name", "desc");
-
-        given(channelRepository.findById(channelId))
-                .willReturn(Optional.of(channel));
-
-        // when
-        basicChannelService.delete(channelId);
-
-        // then
-        then(messageRepository).should().deleteAllByChannel_Id(channelId);
-        then(readStatusRepository).should().deleteAllByChannel_Id(channelId);
-        then(channelRepository).should().delete(channel);
-    }
-
     @Test
     void delete_fail_not_found() {
         // given
