@@ -1,0 +1,55 @@
+{
+  "family": "discodeit-task",
+  "taskRoleArn": "arn:aws:iam::964228719411:role/discodeit-ecs-task-role",
+  "executionRoleArn": "arn:aws:iam::964228719411:role/discodeit-ecs-execution-role",
+  "networkMode": "bridge",
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "containerDefinitions": [
+    {
+      "name": "discodeit-app",
+      "image": "${ECR_REPOSITORY_URI}:${IMAGE_TAG}",
+      "cpu": 256,
+      "memory": 512,
+      "memoryReservation": 256,
+      "portMappings": [
+        {
+          "name": "discodeit-app-80-tcp",
+          "containerPort": 8080,
+          "hostPort": 80,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "JAVA_TOOL_OPTIONS",
+          "value": "-Xmx256m -Xms128m -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC"
+        }
+      ],
+      "environmentFiles": [
+        {
+          "value": "arn:aws:s3:::discodeit-binary-content-storage-hjk/discodeit.env",
+          "type": "s3"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/discodeit-task",
+          "awslogs-create-group": "true",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+# 빌드 결과물
+build/
+out/
+.gradle/
+bin/
+
+# ide 설정파일
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# 버전 관리
+.git/
+.gitignore
+
+# 로그 관련
+*.log
+logs/
+.DS_Store
+
+# 환경변수(민감한 정보)
+.env
+discodeit.env

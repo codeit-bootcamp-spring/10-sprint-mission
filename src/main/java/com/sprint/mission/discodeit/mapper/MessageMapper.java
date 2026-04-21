@@ -17,6 +17,7 @@ public abstract class MessageMapper {
     protected BinaryContentMapper binaryContentMapper;
 
     @Mapping(target = "channelId", source = "channel.id")
+    @Mapping(target = "author.online", constant = "true")
     public abstract MessageDto toDto(Message message);
 
 }

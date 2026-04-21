@@ -18,7 +18,6 @@ public class Channel extends BaseUpdatableEntity {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "channel_type", nullable = false)
     private ChannelType type;
 
@@ -30,8 +29,17 @@ public class Channel extends BaseUpdatableEntity {
         this.description = description;
     }
 
-    public void updateChannel(String newChannelName, String newDescriptionn) {
+    public Channel(String channelName, String description, ChannelType channelType) {
+        this.name = channelName;
+        this.description = description;
+        this.type = channelType;
+    }
+
+    public void updateChannelName(String newChannelName) {
         this.name = newChannelName;
-        this.description = newDescriptionn;
+    }
+
+    public void updateChannelDescription(String newDescription){
+        this.description = newDescription;
     }
 }

@@ -1,0 +1,98 @@
+name: CD Pipeline (Deploy to ECS)
+
+on:
+  push:
+    branches: ["release"]
+jobs:
+  # [job1]Docker 이미지 빌드 및 ECR 푸시
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials for ECR Public
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
+
+      # Public ECR 로그인
+      - name: Login to Amazon ECR Public
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
+      # Docker 이미지 빌드 및 푸시
+      - name: Build, tag, and push image to Amazon ECR Public
+        env:
+          ECR_REPOSITORY_URI: ${{ secrets.ECR_REPOSITORY_URI }}
+          IMAGE_TAG: ${{ github.sha }} # 커밋 해시 사용
+        run: |
+          docker build -t $ECR_REPOSITORY_URI:latest -t $ECR_REPOSITORY_URI:$IMAGE_TAG .
+          
+          docker push $ECR_REPOSITORY_URI:latest
+          docker push $ECR_REPOSITORY_URI:$IMAGE_TAG
+
+
+  # Job 2: ECS 서비스 업데이트
+  deploy-to-ecs:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials for ECS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 로컬 템플릿(ecs-task-def.json)에 변수 치환
+      - name: Render task definition with envsubst
+        env:
+          # envsubst가 치환할 수 있도록 필요한 변수들을 세팅.
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          IMAGE_TAG: ${{ github.sha }}
+          ECR_REPOSITORY_URI: ${{ secrets.ECR_REPOSITORY_URI }}
+        run: |
+          envsubst < ecs-task-def.json > task-def.rendered.json
+          
+          echo "=== Rendered task def 확인 ==="
+          cat task-def.rendered.json
+
+      # 치환된 파일로 AWS에 새로운 태스크 정의 등록
+      - name: Register new task definition
+        id: register_task_definition
+        run: |
+          # 등록 후 발급된 새로운 ARN(고유주소)을 가져옴
+          NEW_TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://task-def.rendered.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+          
+          # 다음 스텝에서 쓸 수 있게 환경변수($GITHUB_ENV)에 저장
+          echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
+          echo "새로 등록된 ARN: $NEW_TASK_DEF_ARN"
+
+      # 프리티어 전략: 새 태스크가 뜨기 전에 기존 서비스 중단
+      - name: Stop running service to save free-tier resources
+        run: |
+          aws ecs update-service \
+            --cluster ${{ secrets.ECS_CLUSTER }} \
+            --service ${{ secrets.ECS_SERVICE }} \
+            --desired-count 0
+
+      # 서비스 업데이트 및 재가동
+      - name: Update ECS service and Scale up
+        run: |
+          aws ecs update-service \
+            --cluster ${{ secrets.ECS_CLUSTER }} \
+            --service ${{ secrets.ECS_SERVICE }} \
+            --task-definition ${{ env.NEW_TASK_DEF_ARN }} \
+            --desired-count 1 \
+            --force-new-deployment

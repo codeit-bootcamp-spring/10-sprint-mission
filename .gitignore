@@ -42,3 +42,11 @@ out/
 
 ### Mac OS ###
 .DS_Store
+
+### log file ##
+./logs
+./.logs
+./uploads
+
+.env
+discodeit.env

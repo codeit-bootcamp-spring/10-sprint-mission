@@ -7,12 +7,6 @@ DROP TABLE IF EXISTS users CASCADE;
 DROP TABLE IF EXISTS channels CASCADE;
 DROP TABLE IF EXISTS binary_contents CASCADE;
 
--- ENUM 타입 삭제
-DROP TYPE IF EXISTS ChannelType CASCADE;
-
--- 1. Enum 타입 생성
-CREATE TYPE ChannelType AS ENUM ('PRIVATE', 'PUBLIC');
-
 -- 2.  바이너리 파일을 관리하는 테이블
 CREATE TABLE binary_contents
 (
@@ -29,7 +23,7 @@ CREATE TABLE channels
     id           UUID PRIMARY KEY,
     channel_name VARCHAR(100),
     description  VARCHAR(500),
-    channel_type ChannelType NOT NULL,
+    channel_type VARCHAR(20) CHECK (channel_type IN ('PRIVATE', 'PUBLIC')) NOT NULL,
     created_at   TIMESTAMPTZ   NOT NULL,
     updated_at   TIMESTAMPTZ
 );

@@ -5,8 +5,11 @@ import com.sprint.mission.discodeit.dto.readStatus.ReadStatusDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.readStatus.ReadStatusExistException;
+import com.sprint.mission.discodeit.exception.readStatus.ReadStatusNotFoundException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
@@ -50,7 +53,7 @@ public class BasicReadStatusService implements ReadStatusService {
         }
         // 있다면 예외처리
         else {
-            throw new IllegalStateException("이미 존재하는 읽음 상태가 있습니다.");
+            throw new ReadStatusExistException();
         }
     }
 
@@ -89,6 +92,6 @@ public class BasicReadStatusService implements ReadStatusService {
 
     private ReadStatus getReadStatus(UUID id){
         return readStatusRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("해당 읽기 상태는 없습니다."));
+                .orElseThrow(() -> new ReadStatusNotFoundException(id));
     }
 }

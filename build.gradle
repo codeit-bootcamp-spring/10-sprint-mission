@@ -5,24 +5,17 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '0.0.1-SNAPSHOT'
+version = '1.2-M8'
 description = 'Demo project for Spring Boot'
 
-// 레일웨의 jdk를 맞추기 위한 주석처리
-//java {
-//	toolchain {
-//		languageVersion = JavaLanguageVersion.of(17)
-//	}
-//}
-
-//
-jar {
-	enabled = false
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
 }
 
-// 실행 가능한 jar(bootJar)의 이름을 고정.
-bootJar {
-	archiveFileName = 'app.jar'
+jar {
+	enabled = false
 }
 
 configurations {
@@ -41,11 +34,15 @@ dependencies {
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
-	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0' // ⭐️ 롬복 충돌 방지
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'software.amazon.awssdk:s3:2.31.7'
+	annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 	annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.h2database:h2'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'com.h2database:h2'
 	runtimeOnly 'org.postgresql:postgresql'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }

@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: discodeit-db
+    restart: always
+    environment:
+      POSTGRES_DB: discodeit
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d discodeit" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+      # 임시로 5433로 설정
+    ports:
+      - "5433:5432"
+    volumes:
+      # postgres 데이터 유지
+      - postgres_data:/var/lib/postgresql/data
+      # 로컬의 schema.sql 파일을 컨테이너 내부의 경로로 복사
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+
+  # 2. 애플리케이션 서비스 설정
+  app:
+    # [요구사항] 로컬 Dockerfile에서 빌드
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discodeit-app
+    restart: always
+    environment:
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS}
+      # 스프링의 db연결 환경변수
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/discodeit
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      # discodeit IAM 접근 키, 리전, 버킷이름
+      AWS_CREDENTIALS_ACCESS_KEY: ${AWS_ACCESS_KEY_ID}
+      AWS_CREDENTIALS_SECRET_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET: ${AWS_BUCKET_NAME}
+
+      # 저장소 관련 환경 변수
+      STORAGE_TYPE: s3
+      STORAGE_LOCAL_ROOT_PATH: ./uploads
+      AWS_S3_PRESIGNED_URL_EXPIRATION: 600
+
+    ports:
+      - "80:8080"
+    volumes:
+      - ./uploads:/app/uploads
+    # db가 먼저 떠야 app컨테이너가 띄어짐
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  postgres_data:

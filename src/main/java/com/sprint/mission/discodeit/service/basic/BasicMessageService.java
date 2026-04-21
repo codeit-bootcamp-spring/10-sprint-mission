@@ -8,8 +8,10 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.exception.ChannelNotFoundException;
-import com.sprint.mission.discodeit.exception.UserNotFoundException;
+import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
+import com.sprint.mission.discodeit.exception.message.MessageNotFoundException;
+import com.sprint.mission.discodeit.exception.file.FileUploadFailException;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.MessageMapper;
 import com.sprint.mission.discodeit.mapper.PageResponseMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
@@ -19,6 +21,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -32,6 +35,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BasicMessageService implements MessageService {
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
@@ -62,10 +66,10 @@ public class BasicMessageService implements MessageService {
                         bc.getSize(),
                         bc.getOriginalFilename(),
                         bc.getContentType());
-                binaryContentRepository.save(binaryContent);
+                binaryContent = binaryContentRepository.save(binaryContent);
                 binaryContentStorage.put(binaryContent.getId(), bc.getBytes());
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new FileUploadFailException();
             }
             message.addAttachment(binaryContent);
             // 바이너리 컨텐츠는 조인 테이블의 casecade.All로 인해서 저장안해도됨
@@ -73,7 +77,7 @@ public class BasicMessageService implements MessageService {
 
         // 데이터에 정보 저장
         messageRepository.save(message);
-
+        log.info("메시지 생성 성공: 메시지 id = {}, 첨부파일 수 = {}", message.getId(), attachments.size());
         return messageMapper.toDto(message);
     }
 
@@ -81,13 +85,15 @@ public class BasicMessageService implements MessageService {
     @Transactional(readOnly = true)
     public MessageDto findMessage(UUID messageId) {
         Message message = getMessage(messageId);
-
+        log.trace("메시지 조회 성공: 메시지 id = {}", messageId);
         return messageMapper.toDto(message);
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<MessageDto> findAllMessagesByChannelId(UUID channelId, Instant cursor, Pageable pageable) {
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new ChannelNotFoundException(channelId));
 
         // slice는 페이자(offset)이 항상 0이어야함
         Pageable safePageable = PageRequest.of(0, pageable.getPageSize(), pageable.getSort());
@@ -108,16 +114,16 @@ public class BasicMessageService implements MessageService {
             nextCursor = dtoSlice.getContent().get(lastIndex).getCreatedAt();
         }
 
-        // 매퍼에 쏙 넣어줍니다!
         return pageResponseMapper.fromSlice(dtoSlice, nextCursor);
     }
 
     @Override
+    @Transactional
     public MessageDto update(UUID messageId, MessageUpdateRequest dto) {
         Message message = getMessage(messageId);
         message.updateMessage(dto.getNewContent());
-        messageRepository.save(message);
 
+        log.info("메시지 수정 성공: 메시지 id = {}", messageId);
         return messageMapper.toDto(message);
     }
 
@@ -129,12 +135,13 @@ public class BasicMessageService implements MessageService {
         //데이터에서 메시지 삭제 -> 조인 테이블과의 영속성 전이로 인해 관련된 조인 테이블의 데이터도 삭제 -> binaryContent와 조인테이블
         // 과의 연결도 끊김 -> JPA는 조인 테이블과의 연결이 끊긴 데이터를 orphan으로 인식하고 삭제해버림(orphanRemoval)
         messageRepository.delete(message);
+        log.info("메시지 삭제 성공: 메시지 id = {}", messageId);
     }
 
     // 유효성 검사
     private Message getMessage(UUID messageId){
         return messageRepository.findById(messageId)
-                .orElseThrow(() -> new NoSuchElementException("해당 메시자가 없습니다."));
+                .orElseThrow(() -> new MessageNotFoundException(messageId));
     }
 
 }
