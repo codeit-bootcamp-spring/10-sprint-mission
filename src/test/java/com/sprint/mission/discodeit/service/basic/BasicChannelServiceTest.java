@@ -1,12 +1,22 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.ChannelDto;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import com.sprint.mission.discodeit.dto.ChannelDetailResponse;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
-import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
-import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.ReadStatus;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.channel.ChannelErrorCode;
+import com.sprint.mission.discodeit.exception.channel.ChannelException;
 import com.sprint.mission.discodeit.fixture.ChannelFixture;
+import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.ReadStatusMapper;
 import com.sprint.mission.discodeit.mapper.factory.MapperContainer;
@@ -16,17 +26,13 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.ArgumentMatchers;
-import org.mockito.BDDMockito;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,75 +44,82 @@ class BasicChannelServiceTest {
   private ReadStatusRepository readStatusRepository;
   @Mock
   private UserRepository userRepository;
-
-  private final ChannelMapper channelMapper = MapperContainer.get(ChannelMapper.class);
+  @Spy
+  private ReadStatusMapper readStatusMapper = MapperContainer.get(ReadStatusMapper.class);
+  @Spy
+  private BasicDomainTemplate domainTemplate = new BasicDomainTemplate();
+  @Spy
+  private ChannelMapper channelMapper = MapperContainer.get(ChannelMapper.class);
+  @InjectMocks
   private BasicChannelService channelService;
 
-  @BeforeEach
-  void setUp() {
-    ReadStatusMapper readStatusMapper = MapperContainer.get(ReadStatusMapper.class);
-    channelService = new BasicChannelService(userRepository, channelRepository,
-        readStatusRepository, channelMapper, readStatusMapper);
+  @Test
+  @DisplayName("등록된 channel 조회를 위해 ChannelRepository.findChannelDetailById 1번 호출")
+  void success_to_find_channel() {
+    // given
+    ChannelDetailResponse channelDetail = ChannelFixture.createChannelDetail();
+    given(channelRepository.findChannelDetailById(any(UUID.class)))
+        .willReturn(Optional.of(channelDetail));
+
+    // when
+    channelService.find(UUID.randomUUID());
+
+    // then
+    verify(channelRepository, times(1)).findChannelDetailById(any(UUID.class));
   }
 
   @Test
-  @DisplayName("public channel 생성 성공")
+  @DisplayName("잘못된 id로 channel 조회 실패하여 ChannelException(ChannelErrorCode.CHANNELID_NOT_FOUND)를 던진다")
+  void fail_to_find_channel() {
+    // given
+    UUID incorrectId = UUID.randomUUID();
+    given(channelRepository.findChannelDetailById(any(UUID.class)))
+        .willReturn(Optional.empty());
+
+    // when & then
+    Assertions.assertThatThrownBy(() -> channelService.find(incorrectId))
+        .isInstanceOf(ChannelException.class)
+        .extracting("errorCode")
+        .isEqualTo(ChannelErrorCode.CHANNELID_NOT_FOUND);
+  }
+
+  @Test
+  @DisplayName("public channel 생성을 위해 ChannelRepository.save 1번 호출")
   void success_to_create_public_channel() {
+    // given
     PublicChannelCreateRequest request = ChannelFixture.createPublicRequest();
-    Channel channel = channelMapper.toEntityFrom(request);
-    BDDMockito.given(channelRepository.save(ArgumentMatchers.any(Channel.class)))
-        .willReturn(channel);
+    given(channelRepository.save(any(Channel.class))).willReturn(any(Channel.class));
 
-    ChannelDto dto = channelService.createPublic(request);
-    Assertions.assertThat(request)
-        .extracting("name", "description", "type")
-        .contains(dto.name(), dto.description(), dto.type());
+    // when
+    channelService.createPublic(request);
+
+    // then
+    verify(channelRepository, times(1)).save(any(Channel.class));
   }
 
   @Test
-  @DisplayName("private channel 생성 성공")
+  @DisplayName("""
+      private channel 생성을 위해 ChannelRepository.save 1번 호출,
+      UserRepository.findProfileAndStatusByIdIn 1번 호출,
+      ReadStatusRepository.saveAll 1번 호출""")
   void success_to_create_private_channel() {
-    PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(
-        List.of(UUID.randomUUID(), UUID.randomUUID()));
-    Channel channel = channelMapper.toEntityFrom(request);
-    BDDMockito.given(channelRepository.save(ArgumentMatchers.any(Channel.class)))
-        .willReturn(channel);
+    // given
+    PrivateChannelCreateRequest request = ChannelFixture.createPrivateRequest();
+    Channel channel = mock(Channel.class);
+    List<User> participants = UserFixture.createEntities();
+    List<ReadStatus> readStatuses = List.of(mock(ReadStatus.class));
 
-    ChannelDto dto = channelService.createPrivate(request);
-    Assertions.assertThat(dto)
-        .extracting("name", "description", "type")
-        .contains(null, null, ChannelType.PRIVATE);
-  }
+    given(channelRepository.save(any(Channel.class))).willReturn(channel);
+    given(userRepository.findProfileAndStatusByIdIn(request.getParticipantIds()))
+        .willReturn(participants);
+    given(readStatusRepository.saveAll(anyList())).willReturn(readStatuses);
 
-  @ParameterizedTest(name = "public channel 은 name, description 을 수정할 수 있고 null 이면 수정하지 않는다")
-  @MethodSource("provideUpdateRequest")
-  void success_to_update(PublicChannelUpdateRequest request) {
-    Channel channel = Channel.builder()
-        .type(request.getType())
-        .name("xc,vmvb")
-        .description("789456")
-        .build();
-    BDDMockito.given(channelRepository.findById(ArgumentMatchers.any(UUID.class)))
-        .willReturn(Optional.of(channel));
+    // when
+    channelService.createPrivate(request);
 
-    ChannelDto expected = channelService.update(UUID.randomUUID(), request);
-    compareBeforeAndAfter(request.getName(), expected.name(), channel.getName());
-    compareBeforeAndAfter(request.getDescription(), expected.description(),
-        channel.getDescription());
-  }
-
-  private void compareBeforeAndAfter(String source, String updated, String origin) {
-    if (source == null) {
-      Assertions.assertThat(updated).isEqualTo(origin);
-      return;
-    }
-    Assertions.assertThat(updated).isEqualTo(source);
-  }
-
-  private static Stream<PublicChannelUpdateRequest> provideUpdateRequest() {
-    return Stream.of(
-        new PublicChannelUpdateRequest(null, "ha haha"),
-        new PublicChannelUpdateRequest("channel is codeit", null)
-    );
+    // then
+    verify(channelRepository, times(1)).save(any(Channel.class));
+    verify(userRepository, times(1)).findProfileAndStatusByIdIn(anyList());
+    verify(readStatusRepository, times(1)).saveAll(anyList());
   }
 }

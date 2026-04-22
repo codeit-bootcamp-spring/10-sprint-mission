@@ -16,11 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Service
 @Transactional
-public class BasicUserStatusService extends BasicDomainService<UserStatus>
-    implements UserStatusService {
+public class BasicUserStatusService implements UserStatusService {
 
   private final UserStatusRepository userStatusRepository;
   private final UserStatusMapper userStatusMapper;
+  private final BasicDomainTemplate domainTemplate;
 
   @Override
   public UserStatusDto update(UUID userId, UserStatusUpdateRequest request) {
@@ -29,9 +29,8 @@ public class BasicUserStatusService extends BasicDomainService<UserStatus>
     return userStatusMapper.toDto(status);
   }
 
-  @Override
-  protected UserStatus findById(UUID userId) {
-    return getOrThrow(userId, userStatusRepository::findByUserId,
+  private UserStatus findById(UUID userId) {
+    return domainTemplate.getOrThrow(userId, userStatusRepository::findByUserId,
         value -> new UserException(UserErrorCode.USERSTATUS_NOT_FOUND, value));
   }
 }

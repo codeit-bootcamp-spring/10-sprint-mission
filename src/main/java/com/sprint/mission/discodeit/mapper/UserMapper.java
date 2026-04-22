@@ -7,15 +7,17 @@ import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.mapper.config.GlobalMapperConfig;
-import java.util.List;
+import java.util.Optional;
 import org.mapstruct.AfterMapping;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
 @Mapper(config = GlobalMapperConfig.class, uses = BinaryContentMapper.class)
 public interface UserMapper extends BaseMapper<User, UserDto> {
 
-  User toEntityFrom(UserCreateRequest request, UserStatus status, BinaryContent profile);
+  User toEntityFrom(UserCreateRequest request, UserStatus status,
+      @Context Optional<BinaryContent> profile);
 
   @AfterMapping
   default void linkStatus(@MappingTarget User user) {
@@ -25,5 +27,14 @@ public interface UserMapper extends BaseMapper<User, UserDto> {
     }
   }
 
-  User partialUpdate(UserUpdateRequest request, BinaryContent profile, @MappingTarget User user);
+  User partialUpdate(UserUpdateRequest request, @Context Optional<BinaryContent> profile,
+      @MappingTarget User user);
+
+  @AfterMapping
+  default void updateProfile(@MappingTarget User user, @Context Optional<BinaryContent> profile) {
+    if (profile.isEmpty()) {
+      return;
+    }
+    user.setProfile(profile.get());
+  }
 }

@@ -1,7 +1,6 @@
 package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.ReadStatusDto;
-import com.sprint.mission.discodeit.dto.request.ReadStatusCreateRequest;
 import com.sprint.mission.discodeit.dto.request.ReadStatusUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ReadStatus;
@@ -11,12 +10,16 @@ import java.util.List;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(config = GlobalMapperConfig.class)
 public interface ReadStatusMapper extends BaseMapper<ReadStatus, ReadStatusDto> {
 
-  ReadStatus toEntityFrom(ReadStatusCreateRequest request);
+  @Override
+  @Mapping(target = "userId", source = "user.id")
+  @Mapping(target = "channelId", source = "channel.id")
+  ReadStatusDto toDto(ReadStatus entity);
 
   List<ReadStatus> toEntityFrom(@Context Channel channel, List<User> participants);
 

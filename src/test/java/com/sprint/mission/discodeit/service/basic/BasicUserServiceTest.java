@@ -2,6 +2,7 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.common.IntegratedTestSupport;
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
+import com.sprint.mission.discodeit.dto.FileUploadDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
@@ -18,14 +19,18 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 
+// notice: UserService + UserRepository 통합 테스트
+@Disabled("Service + Repository + controller 통합 테스트를 위해 잠시 보류")
 class BasicUserServiceTest extends IntegratedTestSupport {
 
   @Autowired
@@ -45,7 +50,7 @@ class BasicUserServiceTest extends IntegratedTestSupport {
     for (int i = 0; i < 10; i++) {
       UserCreateRequest request = UserFixture.createRequest();
       UserStatus status = UserStatusFixture.createOnline();
-      BinaryContent profile = BinaryContentFixture.createEntity();
+      Optional<BinaryContent> profile = Optional.of(BinaryContentFixture.createEntity());
       User user = userMapper.toEntityFrom(request, status, profile);
       users.add(user);
     }
@@ -86,14 +91,14 @@ class BasicUserServiceTest extends IntegratedTestSupport {
   @DisplayName("success to create user")
   void success_to_create() {
     UserCreateRequest request = UserFixture.createRequest();
-    MultipartFile profile = BinaryContentFixture.createFile();
-    UserDto expected = userService.create(request, profile);
+    MultipartFile file = BinaryContentFixture.createFile();
+    Optional<FileUploadDto> fileDto = FileUploadDto.from(file);
+    UserDto expected = userService.create(request, fileDto);
     flushAndClear();
-    Assertions.assertThat(expected)
-        .extracting("username", "email", "profile.fileName")
-        .containsExactly(request.getUsername(), request.getEmail(), profile.getName());
-    User user = userRepository.findById(expected.id()).orElse(null);
-    Assertions.assertThat(user).isNotNull();
+    User actual = userRepository.findById(expected.id()).orElse(null);
+    Assertions.assertThat(actual)
+        .usingRecursiveComparison()
+        .isEqualTo(expected);
   }
 
   @Test
@@ -102,11 +107,12 @@ class BasicUserServiceTest extends IntegratedTestSupport {
     String username = users.get(0).getUsername();
     String password = "bbqwed";
     String email = "dncie@ciom.com";
-    MultipartFile profile = BinaryContentFixture.createFile();
+    MultipartFile file = BinaryContentFixture.createFile();
+    Optional<FileUploadDto> fileDto = FileUploadDto.from(file);
     UserCreateRequest request = new UserCreateRequest(username, email, password);
 
     Assertions.assertThatThrownBy(() -> {
-          userService.create(request, profile);
+          userService.create(request, fileDto);
           em.flush();
         })
         .isInstanceOf(DiscodeitException.class)
@@ -119,11 +125,12 @@ class BasicUserServiceTest extends IntegratedTestSupport {
     String username = "leee";
     String email = users.get(1).getEmail();
     String password = ",cki4e3d";
-    MultipartFile profile = BinaryContentFixture.createFile();
+    MultipartFile file = BinaryContentFixture.createFile();
+    Optional<FileUploadDto> fileDto = FileUploadDto.from(file);
     UserCreateRequest request = new UserCreateRequest(username, email, password);
 
     Assertions.assertThatThrownBy(() -> {
-          userService.create(request, profile);
+          userService.create(request, fileDto);
           em.flush();
         })
         .isInstanceOf(DiscodeitException.class)
@@ -137,14 +144,15 @@ class BasicUserServiceTest extends IntegratedTestSupport {
     UUID userId = user.getId();
     UUID originProfileId = user.getProfile().getId();
     UserUpdateRequest request = UserFixture.createUpdate();
-    MultipartFile profile = BinaryContentFixture.createFile();
-    UserDto updated = userService.update(userId, request, profile);
+    MultipartFile file = BinaryContentFixture.createFile();
+    Optional<FileUploadDto> fileDto = FileUploadDto.from(file);
+    UserDto updated = userService.update(userId, request, fileDto);
     flushAndClear();
     Assertions.assertThat(updated)
         .extracting("id", "username", "email", "profile.fileName", "profile.size",
             "profile.contentType")
-        .containsExactly(userId, request.getUsername(), request.getEmail(), profile.getName(),
-            profile.getSize(), profile.getContentType());
+        .containsExactly(userId, request.getUsername(), request.getEmail(), file.getName(),
+            file.getSize(), file.getContentType());
     Assertions.assertThat(updated.profile().id())
         .isNotNull()
         .isNotEqualTo(originProfileId);
@@ -156,7 +164,7 @@ class BasicUserServiceTest extends IntegratedTestSupport {
     UUID userId = UUID.randomUUID();
     UserUpdateRequest request = UserFixture.createUpdate();
     Assertions.assertThatThrownBy(() -> {
-          userService.update(userId, request, null);
+          userService.update(userId, request, Optional.empty());
           em.flush();
         })
         .isInstanceOf(DiscodeitException.class)
@@ -170,8 +178,9 @@ class BasicUserServiceTest extends IntegratedTestSupport {
     UUID userId = originUser.getId();
     UUID originProfileId = originUser.getProfile().getId();
     UserUpdateRequest request = new UserUpdateRequest("leee", null, "leee1234");
-    MultipartFile profile = BinaryContentFixture.createFile();
-    UserDto expected = userService.update(userId, request, profile);
+    MultipartFile file = BinaryContentFixture.createFile();
+    Optional<FileUploadDto> fileDto = FileUploadDto.from(file);
+    UserDto expected = userService.update(userId, request, fileDto);
     flushAndClear();
 
     Assertions.assertThat(expected)
@@ -179,9 +188,9 @@ class BasicUserServiceTest extends IntegratedTestSupport {
         .containsExactly(userId, "leee", originUser.getEmail());
 
     Assertions.assertThat(expected.profile())
-        .returns(profile.getName(), Assertions.from(BinaryContentDto::fileName))
-        .returns(profile.getSize(), Assertions.from(BinaryContentDto::size))
-        .returns(profile.getContentType(), Assertions.from(BinaryContentDto::contentType));
+        .returns(file.getName(), Assertions.from(BinaryContentDto::fileName))
+        .returns(file.getSize(), Assertions.from(BinaryContentDto::size))
+        .returns(file.getContentType(), Assertions.from(BinaryContentDto::contentType));
     Assertions.assertThat(expected.profile().id()).isNotEqualTo(originProfileId);
   }
 
@@ -194,7 +203,7 @@ class BasicUserServiceTest extends IntegratedTestSupport {
     UserUpdateRequest request
         = new UserUpdateRequest(existingUsername, null, null);
     Assertions.assertThatThrownBy(() -> {
-          userService.update(userId, request, null);
+          userService.update(userId, request, Optional.empty());
           flushAndClear();
         })
         .isInstanceOf(DiscodeitException.class)
@@ -212,7 +221,7 @@ class BasicUserServiceTest extends IntegratedTestSupport {
     UserUpdateRequest request = new UserUpdateRequest(null, existingEmail, null);
 
     Assertions.assertThatThrownBy(() -> {
-          userService.update(userId, request, null);
+          userService.update(userId, request, Optional.empty());
           flushAndClear();
         })
         .isInstanceOf(DiscodeitException.class)

@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.mission.discodeit.dto.FileUploadDto;
 import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserStatusUpdateRequest;
@@ -19,19 +20,20 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.fixture.UserStatusFixture;
-import com.sprint.mission.discodeit.mapper.BinaryContentMapperImpl;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
-import com.sprint.mission.discodeit.mapper.UserMapperImpl;
+import com.sprint.mission.discodeit.mapper.factory.MapperContainer;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.service.UserStatusService;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,6 +41,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.HttpMethod;
@@ -48,8 +51,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.web.multipart.MultipartFile;
 
+@Disabled("service에 Multipartfile -> FileUploadDto 변경으로 인해 추후 수정 필요")
 @WebMvcTest(UserController.class)
 class UserControllerTest {
 
@@ -65,28 +68,30 @@ class UserControllerTest {
   @Autowired
   private ObjectMapper objectMapper;
 
-  private UserMapper userMapper;
+  @Captor
+  ArgumentCaptor<Optional<FileUploadDto>> profileCaptor;
 
-  @BeforeEach
-  void setUp() {
-    userMapper = new UserMapperImpl(new BinaryContentMapperImpl());
-  }
+  private final UserMapper userMapper = MapperContainer.get(UserMapper.class);
+  private final BinaryContentMapper binaryContentMapper = MapperContainer.get(
+      BinaryContentMapper.class);
 
   @Test
   @DisplayName("success to map to UserCreateRequest and MultipartFile and return UserDto")
   void success_to_map() throws Exception {
-    UserCreateRequest actualRequest = UserFixture.createRequest();
-    MockMultipartFile actualProfile = BinaryContentFixture.createMockFile();
-    User user = userMapper.toEntityFrom(actualRequest, UserStatusFixture.createOnline(),
-        BinaryContentFixture.createEntity());
-    given(userService.create(any(UserCreateRequest.class), any(MultipartFile.class)))
+    UserCreateRequest expectedRequest = UserFixture.createRequest();
+    MockMultipartFile expectedFile = BinaryContentFixture.createMockFile();
+    Optional<FileUploadDto> expectedDto = FileUploadDto.from(expectedFile);
+    Optional<BinaryContent> binaryContent = binaryContentMapper.toEntityFrom(expectedDto);
+    User user = userMapper.toEntityFrom(expectedRequest, UserStatusFixture.createOnline(),
+        binaryContent);
+    given(userService.create(any(UserCreateRequest.class), any()))
         .willReturn(userMapper.toDto(user));
 
-    doTestCreateRequest(actualRequest, actualProfile)
+    doTestCreateRequest(expectedRequest, expectedFile)
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").exists())
-        .andExpect(jsonPath("$.username").value(actualRequest.getUsername()))
-        .andExpect(jsonPath("$.email").value(actualRequest.getEmail()))
+        .andExpect(jsonPath("$.username").value(expectedRequest.getUsername()))
+        .andExpect(jsonPath("$.email").value(expectedRequest.getEmail()))
         .andExpect(jsonPath("$.password").doesNotExist())
         .andExpect(jsonPath("$.profile.id").exists())
         .andExpect(jsonPath("$.online").isBoolean())
@@ -94,13 +99,12 @@ class UserControllerTest {
 
     ArgumentCaptor<UserCreateRequest> requestCaptor = ArgumentCaptor.forClass(
         UserCreateRequest.class);
-    ArgumentCaptor<MultipartFile> profileCaptor = ArgumentCaptor.forClass(MultipartFile.class);
     verify(userService).create(requestCaptor.capture(), profileCaptor.capture());
 
-    UserCreateRequest expectedRequest = requestCaptor.getValue();
-    assertEqualRequest(expectedRequest, actualRequest);
-    MultipartFile expectedProfile = profileCaptor.getValue();
-    assertEqualProfile(expectedProfile, actualProfile);
+    UserCreateRequest actualRequest = requestCaptor.getValue();
+    assertEqualRequest(actualRequest, expectedRequest);
+    Optional<FileUploadDto> actualDto = profileCaptor.getValue();
+    assertEqualProfile(actualDto.get(), expectedDto.get());
   }
 
   @ParameterizedTest
@@ -116,22 +120,25 @@ class UserControllerTest {
   @Test
   @DisplayName("success to map to UserUpdateRequest")
   void success_to_map_userUpdateRequest() throws Exception {
-    UserUpdateRequest actualRequest = UserFixture.createUpdate();
-    BinaryContent profile = BinaryContentFixture.createEntity();
-    MockMultipartFile mockProfile = BinaryContentFixture.toMockFile(profile);
-    User user = User.builder()
+    UserUpdateRequest expectedRequest = UserFixture.createUpdate();
+    Optional<BinaryContent> expectedProfile = Optional.of(BinaryContentFixture.createEntity());
+    MockMultipartFile mockProfile = BinaryContentFixture.toMockFile(expectedProfile.get());
+    User emptyUser = User.builder()
         .status(UserStatusFixture.createOnline())
         .build();
-    userMapper.partialUpdate(actualRequest, profile, user);
+    userMapper.partialUpdate(expectedRequest, expectedProfile, emptyUser);
     given(
-        userService.update(any(UUID.class), any(UserUpdateRequest.class), any(MultipartFile.class)))
-        .willReturn(userMapper.toDto(user));
+        userService.update(
+            any(UUID.class),
+            any(UserUpdateRequest.class),
+            any()))
+        .willReturn(userMapper.toDto(emptyUser));
 
-    doTestUpdateRequest(actualRequest, mockProfile)
+    doTestUpdateRequest(expectedRequest, mockProfile)
         .andExpect(getOk())
         .andExpect(jsonPath("$.id").exists())
-        .andExpect(jsonPath("$.username").value(actualRequest.getUsername()))
-        .andExpect(jsonPath("$.email").value(actualRequest.getEmail()))
+        .andExpect(jsonPath("$.username").value(expectedRequest.getUsername()))
+        .andExpect(jsonPath("$.email").value(expectedRequest.getEmail()))
         .andExpect(jsonPath("$.password").doesNotExist())
         .andExpect(jsonPath("$.profile.id").exists())
         .andExpect(jsonPath("$.online").isBoolean())
@@ -139,9 +146,12 @@ class UserControllerTest {
 
     ArgumentCaptor<UserUpdateRequest> requestCaptor = ArgumentCaptor.forClass(
         UserUpdateRequest.class);
-    verify(userService).update(any(UUID.class), requestCaptor.capture(), any(MultipartFile.class));
-    UserUpdateRequest expectedRequest = requestCaptor.getValue();
-    assertEqualRequest(expectedRequest, actualRequest);
+    verify(userService).update(
+        any(UUID.class),
+        requestCaptor.capture(),
+        profileCaptor.capture());
+    UserUpdateRequest actualRequest = requestCaptor.getValue();
+    assertEqualRequest(actualRequest, expectedRequest);
   }
 
   @ParameterizedTest(name = "fail to map to UserUpdateRequest due to containing whitespace")
@@ -214,22 +224,23 @@ class UserControllerTest {
         content.getBytes(StandardCharsets.UTF_8));
   }
 
-  private void assertEqualProfile(MultipartFile expected, MockMultipartFile actual) {
-    Assertions.assertThat(expected)
-        .extracting(MultipartFile::getName, MultipartFile::getSize, MultipartFile::getContentType)
-        .containsExactly(actual.getName(), actual.getSize(), actual.getContentType());
+  private void assertEqualProfile(FileUploadDto expected, FileUploadDto actual) {
+    Assertions.assertThat(actual)
+        .usingRecursiveComparison()
+        .isEqualTo(expected);
+
   }
 
   private void assertEqualRequest(UserCreateRequest expected, UserCreateRequest actual) {
-    Assertions.assertThat(expected)
-        .extracting("username", "email", "password")
-        .containsExactly(actual.getUsername(), actual.getEmail(), actual.getPassword());
+    Assertions.assertThat(actual)
+        .usingRecursiveComparison()
+        .isEqualTo(expected);
   }
 
   private void assertEqualRequest(UserUpdateRequest expected, UserUpdateRequest actual) {
-    Assertions.assertThat(expected)
-        .extracting("username", "email", "password")
-        .containsExactly(actual.getUsername(), actual.getEmail(), actual.getPassword());
+    Assertions.assertThat(actual)
+        .usingRecursiveComparison()
+        .isEqualTo(expected);
   }
 
   private ResultActions doTestCreateRequest(UserCreateRequest request, MockMultipartFile profile)

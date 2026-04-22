@@ -6,28 +6,32 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '1.0-SNAPSHOT'
+version = '1.2-M8'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
     implementation platform('org.springdoc:springdoc-openapi:2.8.5')
+    implementation platform('software.amazon.awssdk:bom:2.42.31')
 
     compileOnly("org.projectlombok:lombok:1.18.42")
     annotationProcessor("org.projectlombok:lombok:1.18.42")
     compileOnly('org.mapstruct:mapstruct:1.6.3')
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
     annotationProcessor('org.mapstruct:mapstruct-processor:1.6.3')
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
     implementation('org.springframework.boot:spring-boot-starter-web')
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation('org.springframework.boot:spring-boot-starter-validation')
     implementation('org.springdoc:springdoc-openapi-starter-webmvc-ui')
     implementation('org.springframework.boot:spring-boot-starter-data-jpa')
+    implementation('org.springframework.boot:spring-boot-starter-aop')
+    implementation('software.amazon.awssdk:s3')
+    implementation('org.flywaydb:flyway-core')
+    implementation('org.flywaydb:flyway-database-postgresql')
 
     implementation 'io.github.openfeign.querydsl:querydsl-jpa:7.1'
     annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:7.1:jpa'
@@ -36,13 +40,24 @@ dependencies {
 
     developmentOnly('org.springframework.boot:spring-boot-devtools')
     runtimeOnly('org.postgresql:postgresql:42.7.7')
-    runtimeOnly('io.github.cdimascio:dotenv-java:3.2.0')
+    runtimeOnly 'me.paulschwarz:spring-dotenv:4.0.0'
 
     testCompileOnly("org.projectlombok:lombok:1.18.42")
+    testCompileOnly('org.mapstruct:mapstruct:1.6.3')
     testAnnotationProcessor("org.projectlombok:lombok:1.18.42")
+    testAnnotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    testAnnotationProcessor('org.mapstruct:mapstruct-processor:1.6.3')
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation('org.springframework.boot:spring-boot-starter-test')
     testImplementation('com.h2database:h2')
-    testImplementation('net.datafaker:datafaker:2.5.4')
+    testImplementation('org.testcontainers:postgresql')
+    testImplementation('org.testcontainers:junit-jupiter')
+
+    testImplementation platform('org.instancio:instancio-bom:6.0.0-RC2')
+    testImplementation('org.instancio:instancio-core')
+    testImplementation('org.instancio:instancio-junit')
 }
 
 test {

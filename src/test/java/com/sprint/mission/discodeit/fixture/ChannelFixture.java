@@ -1,48 +1,60 @@
 package com.sprint.mission.discodeit.fixture;
 
+import static org.instancio.Select.field;
+
+import com.sprint.mission.discodeit.dto.ChannelDetailResponse;
+import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
 import java.util.List;
-import java.util.stream.IntStream;
-import net.datafaker.Faker;
+import java.util.UUID;
+import org.instancio.Instancio;
 
 public final class ChannelFixture {
 
-  private static final Faker faker = new Faker();
-
-  private ChannelFixture() {
-  }
+  private static final BaseFixture baseFixture = BaseFixture.INSTANT;
 
   public static PublicChannelCreateRequest createPublicRequest() {
-    return new PublicChannelCreateRequest(getName(), getDescription());
+    return Instancio.create(PublicChannelCreateRequest.class);
   }
 
-  private static String getDescription() {
-    return faker.text().text();
-  }
-
-  private static String getName() {
-    return faker.funnyName().name();
+  public static PrivateChannelCreateRequest createPrivateRequest() {
+    return new PrivateChannelCreateRequest(
+        List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));
   }
 
   public static Channel createPublic() {
-    return new Channel(ChannelType.PUBLIC, getName(), getDescription());
+    return baseFixture.baseUpdatableEntity(Channel.class)
+        .set(field(Channel::getType), ChannelType.PUBLIC)
+        .create();
   }
 
   public static Channel createPrivate() {
-    return new Channel(ChannelType.PRIVATE, null, null);
+    return baseFixture.baseUpdatableEntity(Channel.class)
+        .set(field(Channel::getType), ChannelType.PRIVATE)
+        .ignore(field(Channel::getName))
+        .ignore(field(Channel::getDescription))
+        .create();
   }
 
   public static List<Channel> createPublicChannels() {
-    return IntStream.range(0, 3)
-        .mapToObj(i -> createPublic())
-        .toList();
+    return baseFixture.baseUpdatableEntities(Channel.class)
+        .set(field(Channel::getType), ChannelType.PUBLIC)
+        .create();
   }
 
   public static List<Channel> createPrivateChannels() {
-    return IntStream.range(0, 3)
-        .mapToObj(i -> createPrivate())
-        .toList();
+    return baseFixture.baseUpdatableEntities(Channel.class)
+        .set(field(Channel::getType), ChannelType.PRIVATE)
+        .ignore(field(Channel::getName))
+        .ignore(field(Channel::getDescription))
+        .create();
+  }
+
+  public static ChannelDetailResponse createChannelDetail() {
+    return Instancio.of(ChannelDetailResponse.class)
+        .set(field(ChannelDetailResponse::channel), createPublic())
+        .create();
   }
 }

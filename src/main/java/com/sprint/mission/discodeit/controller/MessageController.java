@@ -1,13 +1,19 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.FileUploadDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.service.MessageService;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,14 +40,21 @@ public class MessageController {
   public ResponseEntity<MessageDto> create(
       @RequestPart @Valid MessageCreateRequest messageCreateRequest,
       @RequestPart(required = false) List<MultipartFile> attachments) {
+    attachments = (attachments == null) ? List.of() : attachments;
+    List<FileUploadDto> safeAttachments = attachments.stream()
+        .map(FileUploadDto::from)
+        .flatMap(Optional::stream)
+        .toList();
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(messageService.create(messageCreateRequest, attachments));
+        .body(messageService.create(messageCreateRequest, safeAttachments));
   }
 
   @GetMapping
-  public ResponseEntity<List<MessageDto>> findInChannel(@RequestParam UUID channelId) {
+  public ResponseEntity<PageResponse<MessageDto>> findInChannel(
+      @RequestParam UUID channelId,
+      @PageableDefault(size = 50, sort = "createdAt", direction = Direction.DESC) Pageable pageable) {
     return ResponseEntity.status(HttpStatus.OK)
-        .body(messageService.findAllByChannelId(channelId));
+        .body(messageService.findSliceByChannelId(channelId, pageable));
   }
 
   @PatchMapping(value = "/{messageId}")

@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
@@ -10,13 +10,13 @@ import lombok.ToString;
 @ToString
 public class ReadStatusCreateRequest {
 
-  @NotEmpty
+  @NotNull
   private final UUID userId;
 
-  @NotEmpty
+  @NotNull
   private final UUID channelId;
 
-  @NotEmpty
+  @NotNull
   private final Instant lastReadAt;
 
   public ReadStatusCreateRequest(UUID userId, UUID channelId, Instant lastReadAt) {

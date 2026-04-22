@@ -12,6 +12,7 @@ import com.sprint.mission.discodeit.fixture.BinaryContentFixture;
 import com.sprint.mission.discodeit.fixture.UserFixture;
 import com.sprint.mission.discodeit.fixture.UserStatusFixture;
 import com.sprint.mission.discodeit.mapper.factory.MapperContainer;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ class UserMapperTest {
       + "User toEntityFrom(UserCreateRequest request, BinaryContent profile);")
   void toEntityFrom() {
     UserCreateRequest request = UserFixture.createRequest();
-    BinaryContent profile = BinaryContentFixture.createEntity();
+    Optional<BinaryContent> profile = Optional.of(BinaryContentFixture.createEntity());
     UserStatus status = UserStatusFixture.createOnline();
     User user = userMapper.toEntityFrom(request, status, profile);
     notEqualsTo(user, emptyUser);
@@ -44,8 +45,8 @@ class UserMapperTest {
   @Test
   @DisplayName("User partialUpdate(UserUpdateRequest request, BinaryContent profile, @MappingTarget User user);")
   void partialUpdate() {
-    UserUpdateRequest request = UserFixture.createUpdate();
-    BinaryContent profile = BinaryContentFixture.createEntity();
+    UserUpdateRequest request = UserFixture.createUpdateRequest();
+    Optional<BinaryContent> profile = Optional.of(BinaryContentFixture.createEntity());
     User user = User.builder().build();
     userMapper.partialUpdate(request, profile, user);
     notEqualsTo(user, emptyUser);

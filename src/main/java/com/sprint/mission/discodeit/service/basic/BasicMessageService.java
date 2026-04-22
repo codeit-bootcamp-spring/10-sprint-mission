@@ -1,16 +1,18 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.common.logging.ServiceLogAround;
+import com.sprint.mission.discodeit.dto.FileUploadDto;
 import com.sprint.mission.discodeit.dto.MessageDto;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
+import com.sprint.mission.discodeit.dto.response.PageResponse;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.event.publisher.FileUploadEventPublisher;
 import com.sprint.mission.discodeit.exception.channel.ChannelErrorCode;
 import com.sprint.mission.discodeit.exception.channel.ChannelException;
-import com.sprint.mission.discodeit.exception.common.CommonErrorCode;
-import com.sprint.mission.discodeit.exception.common.CommonException;
 import com.sprint.mission.discodeit.exception.message.MessageErrorCode;
 import com.sprint.mission.discodeit.exception.message.MessageException;
 import com.sprint.mission.discodeit.exception.user.UserErrorCode;
@@ -21,56 +23,56 @@ import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.MessageService;
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.servlet.error.DefaultErrorAttributes;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @Service
 @Transactional
-public class BasicMessageService extends BasicDomainService<Message> implements MessageService {
+public class BasicMessageService implements MessageService {
 
   private final MessageRepository messageRepository;
   private final ChannelRepository channelRepository;
   private final UserRepository userRepository;
   private final MessageMapper messageMapper;
   private final BinaryContentMapper binaryContentMapper;
+  private final BasicDomainTemplate domainTemplate;
+  private final FileUploadEventPublisher fileUploadEventPublisher;
 
   @Override
-  public MessageDto create(MessageCreateRequest request, List<MultipartFile> attachments) {
-    ensure(request.getChannelId(), channelRepository::existsById,
+  @ServiceLogAround
+  public MessageDto create(MessageCreateRequest request, List<FileUploadDto> attachments) {
+    domainTemplate.throwOrNot(request.getChannelId(), channelRepository::existsById,
         id -> new ChannelException(ChannelErrorCode.CHANNELID_NOT_FOUND, id));
-    ensure(request.getAuthorId(), userRepository::existsById,
+    domainTemplate.throwOrNot(request.getAuthorId(), userRepository::existsById,
         id -> new UserException(UserErrorCode.USERID_NOT_FOUND, id));
     User author = userRepository.getReferenceById(request.getAuthorId());
     Channel channel = channelRepository.getReferenceById(request.getChannelId());
-    try {
-      List<BinaryContent> files = binaryContentMapper.toEntityFrom(attachments);
-      Message message = Message.builder()
-          .content(request.getContent())
-          .channel(channel)
-          .author(author)
-          .attachments(files)
-          .build();
-      messageRepository.save(message);
-      return messageMapper.toDto(message);
-    } catch (IOException e) {
-      throw new CommonException(CommonErrorCode.FILE_CANT_READ);
-    }
+    List<BinaryContent> binaryContents = binaryContentMapper.toEntityFrom(attachments);
+    fileUploadEventPublisher.publishAllFileUploadEvent(binaryContents, attachments);
+    Message message = Message.builder()
+        .content(request.getContent())
+        .channel(channel)
+        .author(author)
+        .attachments(binaryContents)
+        .build();
+    messageRepository.save(message);
+    return messageMapper.toDto(message);
   }
 
   @Override
+  @ServiceLogAround
   @Transactional(readOnly = true)
-  public List<MessageDto> findAllByChannelId(UUID channelId) {
-    return messageMapper.toDto(messageRepository.findAllByChannelId(channelId));
+  public PageResponse<MessageDto> findSliceByChannelId(UUID channelId, Pageable pageable) {
+    return messageMapper.fromSlice(messageRepository.findSliceByChannelId(channelId, pageable));
   }
 
   @Override
+  @ServiceLogAround
   public MessageDto update(UUID id, MessageUpdateRequest request) {
     Message message = findById(id);
     messageMapper.partialUpdate(request, message);
@@ -78,15 +80,14 @@ public class BasicMessageService extends BasicDomainService<Message> implements 
   }
 
   @Override
+  @ServiceLogAround
   public void delete(UUID id) {
-    deleteByIdOrThrow(id, messageRepository,
+    domainTemplate.deleteByIdOrThrow(id, messageRepository,
         messageId -> new MessageException(MessageErrorCode.MESSAGEID_NOT_FOUND, messageId));
   }
 
-  @Override
-  protected Message findById(UUID id) {
-    return getOrThrow(id, messageRepository::findById,
+  private Message findById(UUID id) {
+    return domainTemplate.getOrThrow(id, messageRepository::findById,
         messageId -> new MessageException(MessageErrorCode.MESSAGEID_NOT_FOUND, messageId));
   }
-
 }

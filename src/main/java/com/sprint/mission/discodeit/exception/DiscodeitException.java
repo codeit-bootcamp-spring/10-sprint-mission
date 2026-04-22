@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.exception;
 
-import com.sprint.mission.discodeit.exception.common.ErrorCode;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +23,10 @@ public abstract class DiscodeitException extends RuntimeException {
 
   public DiscodeitException(ErrorCode errorCode, UUID id) {
     this(errorCode);
+  }
+
+  public DiscodeitException(ErrorCode errorCode, Exception exception) {
+    this(errorCode, Map.of(exception.getClass().getSimpleName(), exception.getMessage()));
   }
 
   public void addDetail(Map<String, ?> detail) {

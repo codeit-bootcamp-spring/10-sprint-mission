@@ -1,6 +1,5 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -11,7 +10,6 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -48,7 +46,8 @@ public class Message extends BaseUpdatableEntity {
   private Set<BinaryContent> attachments = new LinkedHashSet<>();
 
   @Builder
-  public Message(String content, Channel channel, User author, Collection<BinaryContent> attachments) {
+  public Message(String content, Channel channel, User author,
+      Collection<BinaryContent> attachments) {
     this.content = content;
     this.channel = channel;
     this.author = author;

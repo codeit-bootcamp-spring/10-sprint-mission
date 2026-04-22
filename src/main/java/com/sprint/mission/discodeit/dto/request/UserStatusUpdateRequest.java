@@ -2,13 +2,11 @@ package com.sprint.mission.discodeit.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import lombok.Getter;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @Getter
 public final class UserStatusUpdateRequest implements Serializable {
@@ -16,13 +14,12 @@ public final class UserStatusUpdateRequest implements Serializable {
   @Serial
   private static final long serialVersionUID = 1234L;
 
-  @DateTimeFormat
   @NotNull
-  private final LocalDateTime lastActiveAt;
+  private final Instant lastActiveAt;
 
   @JsonCreator
   public UserStatusUpdateRequest(
-      @JsonProperty("lastActiveAt") LocalDateTime lastActiveAt) {
+      @JsonProperty("newLastActiveAt") Instant lastActiveAt) {
     this.lastActiveAt = lastActiveAt;
   }
 

@@ -1,6 +1,8 @@
 package com.sprint.mission.discodeit.dto.request;
 
-import jakarta.validation.constraints.NotEmpty;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import lombok.Getter;
 import lombok.ToString;
@@ -9,10 +11,11 @@ import lombok.ToString;
 @ToString
 public class ReadStatusUpdateRequest {
 
-  @NotEmpty
+  @NotNull
   private final Instant lastReadAt;
 
-  public ReadStatusUpdateRequest(Instant lastReadAt) {
+  @JsonCreator
+  public ReadStatusUpdateRequest(@JsonProperty("newLastReadAt") Instant lastReadAt) {
     this.lastReadAt = lastReadAt;
   }
 }

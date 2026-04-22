@@ -30,9 +30,9 @@ public final class UserUpdateRequest implements Serializable {
 
   @JsonCreator
   public UserUpdateRequest(
-      @JsonProperty("username") String username,
-      @JsonProperty("email") String email,
-      @JsonProperty("password") String password) {
+      @JsonProperty("newUsername") String username,
+      @JsonProperty("newEmail") String email,
+      @JsonProperty("newPassword") String password) {
     this.username = username;
     this.email = email;
     this.password = password;

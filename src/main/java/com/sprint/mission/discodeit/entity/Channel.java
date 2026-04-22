@@ -6,8 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
-import java.time.Instant;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,9 +28,6 @@ public class Channel extends BaseUpdatableEntity {
 
   @Column
   private String description;
-
-  @Transient
-  private Instant lastMessageAt;
 
   @Builder
   public Channel(ChannelType type, String name, String description) {

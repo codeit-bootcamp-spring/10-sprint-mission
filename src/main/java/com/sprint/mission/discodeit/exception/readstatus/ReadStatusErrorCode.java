@@ -1,6 +1,6 @@
 package com.sprint.mission.discodeit.exception.readstatus;
 
-import com.sprint.mission.discodeit.exception.common.ErrorCode;
+import com.sprint.mission.discodeit.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

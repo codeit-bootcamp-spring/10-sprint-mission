@@ -1,16 +1,12 @@
 spring:
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath:db/schema.sql
   datasource:
-    url: jdbc:h2:mem:demo;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:tc:postgresql:17-alpine:///testdb
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  flyway:
+    enabled: true
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
@@ -18,6 +14,7 @@ spring:
         jdbc.batch_size: 100
         order_inserts: true
         order_updates: true
+        default_batch_fetch_size: 500
     open-in-view: false
 
 logging:
@@ -25,4 +22,4 @@ logging:
     root: info
     com.sprint.mission.discodeit: debug
     org.hibernate.orm.jdbc.bind: warn
-    org.hibernatel.SQL: warn
+    org.hibernate.SQL: warn

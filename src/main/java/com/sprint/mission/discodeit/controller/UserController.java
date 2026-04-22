@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.dto.FileUploadDto;
 import com.sprint.mission.discodeit.dto.UserDto;
 import com.sprint.mission.discodeit.dto.UserStatusDto;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
@@ -48,7 +49,7 @@ public class UserController {
       @RequestPart @Valid UserCreateRequest userCreateRequest,
       @RequestPart(required = false) MultipartFile profile) {
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(userService.create(userCreateRequest, profile));
+        .body(userService.create(userCreateRequest, FileUploadDto.from(profile)));
   }
 
   @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -57,7 +58,7 @@ public class UserController {
       @RequestPart @Valid UserUpdateRequest userUpdateRequest,
       @RequestPart(required = false) MultipartFile profile) {
     return ResponseEntity.status(HttpStatus.OK)
-        .body(userService.update(id, userUpdateRequest, profile));
+        .body(userService.update(id, userUpdateRequest, FileUploadDto.from(profile)));
   }
 
   @DeleteMapping(value = "/{id}")

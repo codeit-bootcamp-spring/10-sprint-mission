@@ -1,15 +1,15 @@
 package com.sprint.mission.discodeit.repository.querydsl;
 
-import com.sprint.mission.discodeit.entity.Channel;
-
+import com.sprint.mission.discodeit.dto.ChannelDetailResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface ChannelQDSLRepository {
-    Optional<Channel> findByIdWithLastMessageAt(UUID id);
 
-    List<Channel> findAllWithLastMessageAt();
+  Optional<ChannelDetailResponse> findChannelDetailById(UUID id);
 
-    List<Channel> findVisibleToWithLastMessageAt(UUID userId);
+  List<ChannelDetailResponse> findAllChannelDetails();
+
+  List<ChannelDetailResponse> findVisibleChannelDetails(UUID userId);
 }

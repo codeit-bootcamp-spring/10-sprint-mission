@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.exception.common;
+package com.sprint.mission.discodeit.exception;
 
 public interface ErrorCode {
   int getStatus();
