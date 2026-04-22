@@ -22,11 +22,15 @@ public interface AuthApi {
           content = @Content(schema = @Schema(implementation = UserDto.class))
       ),
       @ApiResponse(
-          responseCode = "400", description = "로그인 실패",
-          content = @Content(examples = @ExampleObject(value = "사용자명 또는 비밀번호가 올바르지 않습니다."))
+          responseCode = "404", description = "사용자를 찾을 수 없음",
+          content = @Content(examples = @ExampleObject(value = "User with username {username} not found"))
+      ),
+      @ApiResponse(
+          responseCode = "400", description = "비밀번호가 일치하지 않음",
+          content = @Content(examples = @ExampleObject(value = "Wrong password"))
       )
   })
   ResponseEntity<UserDto> login(
       @Parameter(description = "로그인 정보") LoginRequest loginRequest
   );
-}
+} 

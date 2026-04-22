@@ -1,16 +1,14 @@
 package com.sprint.mission.discodeit.exception.channel;
 
+import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
-import com.sprint.mission.discodeit.exception.base.DiscodeitException;
-
-import java.util.Map;
 
 public class ChannelException extends DiscodeitException {
-    protected ChannelException(ErrorCode errorCode) {
+    public ChannelException(ErrorCode errorCode) {
         super(errorCode);
     }
 
-    protected ChannelException(ErrorCode errorCode, Map<String, Object> details) {
-        super(errorCode, details);
+    public ChannelException(ErrorCode errorCode, Throwable cause) {
+        super(errorCode, cause);
     }
-}
+} 
