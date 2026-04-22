@@ -1,0 +1,31 @@
+name: Discodeit Workflow   # 워크플로우 이름 (GitHub Actions 탭에서 표시되는 이름)
+
+on:                 # 워크플로우 실행 조건(트리거 이벤트) 정의
+  push:
+    branches: [ "sprint8" ]
+
+jobs:               # 실행할 작업(job)들을 정의
+  build:            # "build"라는 이름의 job
+    runs-on: ubuntu-latest   # 실행 환경: GitHub이 제공하는 Ubuntu 최신 버전 가상 머신
+
+    steps:          # job 안에서 실행할 단계(step)들
+      - uses: actions/checkout@v3   # 현재 리포지토리의 소스 코드를 체크아웃 (가져오기)
+
+      - name: JDK 17 설정
+        uses: actions/setup-java@v3   # Java 환경을 세팅하는 공식 액션
+        with:
+          java-version: '17'          # 설치할 Java 버전 (여기서는 JDK 17)
+          distribution: 'temurin'
+
+      - name: gradlew 실행 권한 부여
+        run: chmod +x gradlew
+
+      - name: 빌드 및 테스트 + 커버리지 리포트 생성
+        run: ./gradlew clean test jacocoTestReport
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./build/reports/jacoco/test/jacocoTestReport.xml
+

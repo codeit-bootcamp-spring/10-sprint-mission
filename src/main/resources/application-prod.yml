@@ -1,56 +1,25 @@
+server:
+  port: 80
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/discodeit # DB?? ?? ??
-    username: discodeit_user
-    password: discodeit1234
-    driver-class-name: org.postgresql.Driver
-  data:
-    web:
-      pageable:
-        one-indexed-parameters: true #page = 1로 요청 들어오면 실제 pageNumber = 0으로 처리
-  servlet:
-    multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
-  #    url: jdbc:h2:mem:test
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
-    hibernate:
-      ddl-auto: none # ?? ??? update, ??? none ??
-    show-sql: true       # ?? ?? ??
-
-  sql:
-    init:
-      mode: always
-
-  security:
-    user:
-      name: actuator
-      password: actuator
-      roles: ACTUATOR_ADMIN
-
-discodeit:
-  storage:
-    type: local
-    local:
-      root-path: storage
+    properties:
+      hibernate:
+        format_sql: false
 
 logging:
   level:
-    root: WARN
-    com.sprint.mission: INFO
-##  file:
-##    name: logs/myapp.log
-##  logback:
-##    rollingpolicy:
-##      file-name-pattern: logs/myapp.%d{yyyy-MM-dd}.log
-##      max-history: 30                 # 보관 기간: 30일
-##      total-size-cap: 10GB            # 최대 저장 용량: 10GB
-##      clean-history-on-start: true    # 애플리케이션 시작 시 오래된 로그 삭제
-management:   #/actuator/health 출력 설정
+    com.sprint.mission.discodeit: info
+    org.hibernate.SQL: info
+
+management:
   endpoint:
     health:
-      show-details: always
-
-
-server:
-  port: 8080
+      show-details: never
+  info:
+    env:
+      enabled: false

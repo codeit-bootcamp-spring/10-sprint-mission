@@ -1,26 +1,62 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - "9090:9090"
-    environment:
-      TZ: Asia/Seoul
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    volumes:
-      - ./grafana-data:/var/lib/grafana
-    ports:
-      - "3000:3000"
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discodeit-app
     depends_on:
-      - prometheus
+      db:
+        condition: service_healthy    #db 컨테이너가 "헬스체크 통과" 상태일때 app실행
+    ports:
+      - "${APP_PORT}:80"
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin123
-      TZ: Asia/Seoul
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+
+      STORAGE_TYPE: ${STORAGE_TYPE}
+      STORAGE_LOCAL_ROOT_PATH: ${STORAGE_LOCAL_ROOT_PATH}
+
+      AWS_S3_ACCESS_KEY: ${AWS_S3_ACCESS_KEY}
+      AWS_S3_SECRET_KEY: ${AWS_S3_SECRET_KEY}
+      AWS_S3_REGION: ${AWS_S3_REGION}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET}
+      AWS_S3_PRESIGNED_URL_EXPIRATION: ${AWS_S3_PRESIGNED_URL_EXPIRATION}
+
+    volumes:
+      - binary-content-data:${STORAGE_LOCAL_ROOT_PATH}
+    restart: unless-stopped
+    image: discodeit:local
+
+  db:
+    image: postgres:16
+    container_name: discodeit-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    #DB가 container화 되면 DataGrip(외부)에서 접근에 제한되기 때문에 port를 설정해서 접근하도록 함.
+    ports:
+      - "${DB_PORT}:5432"
+
+    #DB 데이터는 /var/lib/postgresql/data에 저장
+    # 실제로는 Docker volume(postgres-data)에 영속화
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+      #DB 최초 실행시 schema.sql 자동 실행
+      #내 pc의 schema.sql파일을 컨테이너 안 /docker-entrypoint-initdb.d/01-schema.sql로 연결해서 PostgreSQL이 실행 할 수 있게 한다.
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  binary-content-data:
+  postgres-data:
