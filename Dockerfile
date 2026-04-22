@@ -28,7 +28,7 @@ COPY --chown=gradle:gradle build.gradle settings.gradle ./
 # gradlew 실행 권한 부여
 RUN chmod +x ./gradlew
 # 의존성만 먼저 다운로드하여 캐시 활용 (코드 변경 없이 재사용 가능)
-RUN ./gradlew --no-daemon --refresh-dependencies dependencies || true
+RUN ./gradlew --no-daemon dependencies || true
 
 # 실제 소스코드 복사 (이 시점 이후 변경 시 빌드 다시 수행됨)
 COPY --chown=gradle:gradle src ./src

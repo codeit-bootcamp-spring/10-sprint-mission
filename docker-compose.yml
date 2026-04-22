@@ -22,7 +22,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: dicodeit:local
+    image: discodeit:local
     container_name: discodeit-app
     ports: [ '8081:80' ]
     environment:
