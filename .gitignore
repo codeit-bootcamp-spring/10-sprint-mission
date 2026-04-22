@@ -38,3 +38,6 @@ out/
 
 ### Data Files ###
 *.ser
+
+.env
+discodeit.env

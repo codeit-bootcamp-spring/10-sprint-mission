@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports: [ '5432:5432' ]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    # 애플리케이션 서비스를 로컬 Dockerfile에서 빌드하도록 구성
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: discodeit:local
+    ports: [ '8081:80' ]
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      AWS_CREDENTIALS_ACCESS_KEY: ${AWS_ACCESS_KEY_ID}
+      AWS_CREDENTIALS_SECRET_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_S3_BUCKET: ${AWS_BUCKET_NAME}
+      JVM_OPTS: ${JVM_OPTS}
+    restart: unless-stopped
+    volumes:
+      - binary_content_storage:/app/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  binary_content_storage:

@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 80
 
 spring:
   application:
@@ -16,6 +16,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+    sql:
+      init:
+        mode: never
     open-in-view: false
 
 logging:

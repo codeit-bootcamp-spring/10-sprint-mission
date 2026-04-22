@@ -12,6 +12,8 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Entity
@@ -22,8 +24,9 @@ public class Channel extends BaseUpdatableEntity {
   @Column
   private String name;
 
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
+  @Column(nullable = false, columnDefinition = "channel_type")
   private IsPrivate type;
 
   @Column

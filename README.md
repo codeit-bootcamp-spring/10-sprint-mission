@@ -1,0 +1,1 @@
+[![codecov](https://codecov.io/github/JeongSooHyeon/10-sprint-mission/graph/badge.svg?token=OSOCLKSEUE)](https://codecov.io/github/JeongSooHyeon/10-sprint-mission)

@@ -18,7 +18,7 @@ jacocoTestReport {
 }
 
 group = 'com.sprint.mission'
-version = '0.0.1-SNAPSHOT'
+version = '1.2-M8'
 description = 'Demo project for Spring Boot'
 
 java {
@@ -52,7 +52,8 @@ dependencies {
     implementation 'org.glassfish:jakarta.el:4.0.2'
     runtimeOnly 'com.h2database:h2'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'de.codecentric:spring-boot-admin-starter-client:3.4.5'
+    implementation 'software.amazon.awssdk:s3:2.31.7'
+
 }
 
 tasks.named('test') {

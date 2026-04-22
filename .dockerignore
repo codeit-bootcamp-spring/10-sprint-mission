@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+*.iml
+*.iws
+*.ipr
+.vscode
+*.eclipse
+.settings
+.classpath
+.project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build 결과물
+build
+out
+.gradle
+
+# 로그
+*.log
+logs
+
+# 테스트 결과
+test-results
+
+# Docker
+Dockerfile
+.dockerignore
+
+# env
+.env
+.env.*
+
+# Docs & misc
+README.md
+*.md
