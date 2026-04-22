@@ -1,0 +1,31 @@
+# Git 관련 파일 제외
+.git
+.github
+.gitignore
+
+# 빌드 결과물 (JAR만 복사할 것이므로 소스 내 빌드 폴더는 제외)
+build/
+!build/libs/*.jar
+bin/
+out/
+
+# 도커 관련 파일 자체 제외
+Dockerfile
+.dockerignore
+
+# IDE 설정 파일
+.idea/
+.vscode/
+*.iml
+
+# 로그 및 임시 파일
+*.log
+tmp/
+
+# 환경 변수 및 비밀 파일
+.env
+*.pem
+
+# 프로젝트 관련
+.discodeit/
+.logs/

@@ -1,0 +1,40 @@
+name: main PR 진행시 테스트 커버리지 실행
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 소스 코드 복사
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # JDK 17 설치
+      - name: JDK 17 SetUp
+        uses: actions/setup-java@v5
+        with:
+          java-version: "17"
+          distribution: "corretto" # JDK를 docker빌드용 JDK에 맞춤
+
+      # Gradle 캐시 (선택)
+      - name: Gradle 캐시 (선택)
+        uses: gradle/actions/setup-gradle@v6
+
+      # gradlew 실행 권한 설정
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      # Test 시작
+      - name: Run Test
+        run: ./gradlew test
+
+      # CodeCov
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: build/reports/jacoco/test/jacocoTestReport.xml

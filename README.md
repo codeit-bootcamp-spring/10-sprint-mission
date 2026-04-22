@@ -1,0 +1,1 @@
+[![codecov](https://codecov.io/github/Amperisk9/10-sprint-mission/branch/sprint8/graph/badge.svg?token=PV4EXEKWPK)](https://codecov.io/github/Amperisk9/10-sprint-mission)

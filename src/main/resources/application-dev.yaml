@@ -1,13 +1,19 @@
-db:
-  port: 5432
-  name: discodeit
+server:
+  port: ${SERVER_PORT:8080}
 
 spring:
   datasource:
-    url: jdbc:postgresql://${db.host}:${db.port}/${db.name}
-    username: discodeit_user
-    password: discodeit1234
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:discodeit}
+    username: ${POSTGRES_USER:discodeit_user}
+    password: ${POSTGRES_PASSWORD:discodeit1234}
     driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    properties:
+      hibernate:
+        format_sql: false
+        show_sql: true
 
 logging:
   level:

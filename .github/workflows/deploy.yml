@@ -1,0 +1,110 @@
+name: release 브랜치에 푸시 진행시 도커이미지 빌드 및 배포
+
+on:
+  push:
+    branches: [ "release" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 소스 코드 복사
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # JDK 17 설치
+      - name: JDK 17 SetUp
+        uses: actions/setup-java@v5
+        with:
+          java-version: "17"
+          distribution: "corretto" # JDK를 docker빌드용 JDK에 맞춤
+
+      # Gradle 캐시
+      - name: Gradle 캐시
+        uses: gradle/actions/setup-gradle@v6
+
+      # gradlew 실행 권한 설정
+      - name: Grant execute permission
+        run: chmod +x gradlew
+
+      # jar build
+      - name: Build Jar
+        run: ./gradlew clean bootJar
+
+      # AWS 자격 증명 설정(CLI 설정)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # ECR 로그인
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
+
+      # Docker Build and Push
+      - name: Docker Build and Push
+        id: push
+        run: |
+          IMAGE_TAG=${GITHUB_SHA::7}
+          REPO_URI=${{ vars.ECR_REPOSITORY_URI }}
+          
+          docker build -t $REPO_URI:$IMAGE_TAG -t $REPO_URI:latest .
+          docker push $REPO_URI:$IMAGE_TAG
+          docker push $REPO_URI:latest
+          echo "IMAGE_URI=$REPO_URI:latest" >> $GITHUB_OUTPUT
+
+    outputs:
+      image_uri: ${{ steps.push.outputs.IMAGE_URI }}
+  
+  
+  service-task-update:
+    runs-on: ubuntu-latest
+    # 빌드 성공 후 진행
+    needs: build-and-push
+
+    steps:
+      # 소스 코드 복사
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      # AWS 자격 증명 설정(CLI 설정)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # 태스크 재정의
+      - name: Task redefinition
+        id: render-app
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition-arn: ${{ secrets.ECS_TASK_DEFINITION_ARN }} # AWS에서 최신 Task 정의서 가져옴
+          image: ${{ needs.build-and-push.outputs.image_uri }}
+          container-name: discodeit-app
+
+      # 기존 서비스 죽이기
+      - name: Existing Service Stop
+        run: |
+          aws ecs update-service \
+          --cluster ${{ vars.ECS_CLUSTER }} \
+          --service ${{ vars.ECS_SERVICE }} \
+          --desired-count 0
+
+      # 서비스 배포
+      - name: Deploy task
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-app.outputs.task-definition }}
+          cluster: ${{ vars.ECS_CLUSTER }}
+          service: ${{ vars.ECS_SERVICE }}
+          desired-count: 1
+          wait-for-service-stability: true
+          wait-for-minutes: 10

@@ -13,7 +13,11 @@ public class DiscodeitException extends RuntimeException {
   private final Map<String, Object> details;
 
   public DiscodeitException(ErrorCode errorCode) {
-    super(errorCode.getMessage());
+    this(errorCode, null);
+  }
+
+  public DiscodeitException(ErrorCode errorCode, Throwable cause) {
+    super(errorCode.getMessage(), cause);
     this.timestamp = Instant.now();
     this.errorCode = errorCode;
     this.details = new HashMap<>();

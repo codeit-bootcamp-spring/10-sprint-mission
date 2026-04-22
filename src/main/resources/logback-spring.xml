@@ -4,7 +4,10 @@
   <property name="LOG_FILE_NAME" value="discodeit"/>
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+      <pattern>
+        <!--CDATA: 포맷팅 방지-->
+        <![CDATA[%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId:-Id} | %X{requestMethod:-Method} | %X{requestURI:-URI}] - %msg%n]]>
+      </pattern>
     </encoder>
   </appender>
 
@@ -16,7 +19,9 @@
     </rollingPolicy>
 
     <encoder>
-      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+      <pattern>
+        <![CDATA[%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId:-Id} | %X{requestMethod:-Method} | %X{requestURI:-URI}] - %msg%n]]>
+      </pattern>
     </encoder>
   </appender>
 

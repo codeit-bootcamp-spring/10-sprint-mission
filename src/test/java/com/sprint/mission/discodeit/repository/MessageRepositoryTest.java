@@ -24,6 +24,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @EnableJpaAuditing
 @DataJpaTest
@@ -137,9 +138,12 @@ class MessageRepositoryTest {
 
       Message msg1 = new Message(channel, user, "first");
       messageRepository.save(msg1);
-      Thread.sleep(100);
+      ReflectionTestUtils.setField(msg1, "createdAt", Instant.now().minusSeconds(10));
+      messageRepository.saveAndFlush(msg1);
+
       Message latest = new Message(channel, user, "latest");
       messageRepository.save(latest);
+      em.clear();
 
       int pageSize = 2;
       Pageable page = PageRequest.of(0, pageSize, Sort.by(Direction.DESC, "createdAt"));
