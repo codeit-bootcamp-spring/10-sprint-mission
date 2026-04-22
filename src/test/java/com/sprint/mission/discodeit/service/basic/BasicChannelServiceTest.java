@@ -145,8 +145,7 @@ class BasicChannelServiceTest {
             List.of(channel));
 
         given(readStatusRepository.findAllByChannelIdIn(anyList())).willReturn(List.of());
-        given(messageRepository.findTopByChannelIdOrderByCreatedAtDesc(any(UUID.class))).willReturn(
-            Optional.empty());
+        given(messageRepository.findLastMessageTimesByChannelIds(anyList())).willReturn(List.of());
         given(channelMapper.toDtoWithContext(any(), any(), any())).willReturn(expectedDto);
 
         // when

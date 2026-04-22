@@ -91,10 +91,10 @@ public class GlobalExceptionHandler {
         log.warn("리소스를 찾을 수 없음: {}", e.getMessage());
 
         ErrorResponse response = ErrorResponse.builder()
-            .code("NOT_FOUND")
+            .code(ErrorCode.RESOURCE_NOT_FOUND.name())
             .message(e.getMessage())
             .exceptionType(e.getClass().getSimpleName())
-            .status(HttpStatus.NOT_FOUND.value()) // 404
+            .status(ErrorCode.RESOURCE_NOT_FOUND.getStatus().value()) // 404
             .build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
@@ -105,10 +105,10 @@ public class GlobalExceptionHandler {
         log.warn("잘못된 인자값 전달: {}", e.getMessage());
 
         ErrorResponse response = ErrorResponse.builder()
-            .code("BAD_REQUEST")
+            .code(ErrorCode.INVALID_INPUT_VALUE.name())
             .message(e.getMessage())
             .exceptionType(e.getClass().getSimpleName())
-            .status(HttpStatus.BAD_REQUEST.value()) // 400
+            .status(ErrorCode.INVALID_INPUT_VALUE.getStatus().value()) // 400
             .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
@@ -120,10 +120,10 @@ public class GlobalExceptionHandler {
         log.warn("요청 경로를 찾을 수 없음: {}", e.getResourcePath());
 
         ErrorResponse response = ErrorResponse.builder()
-            .code("NOT_FOUND")
+            .code(ErrorCode.RESOURCE_NOT_FOUND.name())
             .message("요청하신 URL을 찾을 수 없습니다. 경로를 확인해주세요.")
             .exceptionType(e.getClass().getSimpleName())
-            .status(HttpStatus.NOT_FOUND.value()) // 404
+            .status(ErrorCode.RESOURCE_NOT_FOUND.getStatus().value()) // 404
             .build();
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);

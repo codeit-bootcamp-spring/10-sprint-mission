@@ -118,6 +118,6 @@ class ChannelControllerTest {
         mockMvc.perform(delete("/api/channels/{channelId}", channelId)
                 .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isNotFound()) // HTTP 404 검증
-            .andExpect(jsonPath("$.code").value("NOT_FOUND")); // GlobalExceptionHandler의 404 처리 코드 검증
+            .andExpect(jsonPath("$.code").value("RESOURCE_NOT_FOUND")); // GlobalExceptionHandler의 404 처리 코드 검증
     }
 }

@@ -134,14 +134,16 @@ public class BasicChannelService implements ChannelService {
                 ));
 
         Map<UUID, Instant> lastMessageMap = new HashMap<>();
-        for (UUID cid : channelIds) {
-            messageRepository.findTopByChannelIdOrderByCreatedAtDesc(cid)
-                    .ifPresent(m -> lastMessageMap.put(cid, m.getCreatedAt()));
+        List<MessageRepository.ChannelLastMessageTime> lastMessageTimes =
+            messageRepository.findLastMessageTimesByChannelIds(channelIds);
+
+        for (MessageRepository.ChannelLastMessageTime lt : lastMessageTimes) {
+            lastMessageMap.put(lt.getChannelId(), lt.getLastMessageTime());
         }
 
         return channels.stream()
-                .map(channel -> channelMapper.toDtoWithContext(channel, lastMessageMap, participantsMap))
-                .toList();
+            .map(channel -> channelMapper.toDtoWithContext(channel, lastMessageMap, participantsMap))
+            .toList();
     }
 
 

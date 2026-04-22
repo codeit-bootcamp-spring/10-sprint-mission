@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-  <property name="LOG_PATTERN" value="%d{yy-MM-dd HH:mm:ss.SSS}
-  [%thread] %-5level %logger{36} [%X{requestId:-SYSTEM}
-  | %X{requestMethod:-NONE}
-  | %X{requestUrl:-NONE}] - %msg%n"/>
+  <property name="LOG_PATTERN" value="%d{yy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId:-SYSTEM} | %X{requestMethod:-NONE} | %X{requestUrl:-NONE}] - %msg%n"/>
 
   <property name="LOG_PATH" value="./.logs"/>
 

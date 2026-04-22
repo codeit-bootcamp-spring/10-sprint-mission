@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     // Common Errors
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "잘못된 입력값입니다."),
+    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "요청한 리소스를 찾을 수 없습니다."),
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "지원하지 않는 HTTP 메서드입니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부에서 오류가 발생했습니다."),
 
@@ -25,7 +26,11 @@ public enum ErrorCode {
     INVALID_MESSAGE_CONTENT(HttpStatus.BAD_REQUEST, "내용을 입력하세요."),
 
     // Binary Content Errors
-    BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 파일을 찾을 수 없습니다.");
+    BINARY_CONTENT_NOT_FOUND(HttpStatus.NOT_FOUND,"해당 파일을 찾을 수 없습니다."),
+
+    // Read Status Errors
+    READ_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 읽음 상태를 찾을 수 없습니다."),
+    DUPLICATE_READ_STATUS(HttpStatus.BAD_REQUEST, "해당 유저와 채널에 대한 읽음 상태가 이미 존재합니다.");
 
     private final HttpStatus status;
     private final String message;

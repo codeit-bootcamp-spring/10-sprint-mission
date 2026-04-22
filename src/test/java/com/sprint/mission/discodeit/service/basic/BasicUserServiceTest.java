@@ -8,8 +8,10 @@ import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
 import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
+import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,9 +32,17 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class BasicUserServiceTest {
+    // BasicUserService가 의존하는 레포지토리를 명시적으로 선언
+    @Mock
+    private BinaryContentRepository binaryContentRepository;
+
+    // BasicUserService가 의존하는 레포지토리를 명시적으로 선언
+    @Mock
+    private BinaryContentStorage binaryContentStorage;
 
     @Mock
     private UserRepository userRepository;
+
 
     @Mock
     private UserStatusRepository userStatusRepository;

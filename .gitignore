@@ -7,6 +7,7 @@ build/
 .discodeit/
 .DS_Store
 rootPath/
+uploads/
 
 ### STS ###
 .apt_generated
@@ -42,3 +43,7 @@ out/
 # Logs
 .logs/
 *.log
+
+# Environments
+.env
+discodeit.env

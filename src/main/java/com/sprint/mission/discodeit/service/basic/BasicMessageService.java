@@ -184,6 +184,8 @@ public class BasicMessageService implements MessageService {
         }
         message.getAttachments().clear();
         messageRepository.save(message);
+
+        // 즉시 flush하여 연관관계를 DB에서 먼저 끊어냄 (이후 첨부파일 삭제 시 FK 제약조건 위반 방지)
         messageRepository.flush();
     }
 

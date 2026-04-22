@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+.vscode
+.gradle
+build/
+admin/build/
+.logs/
+*.log
+README.md
+.env
+.discodeit/
+uploads/
+discodeit.env

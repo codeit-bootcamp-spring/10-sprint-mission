@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: discodeit-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      # PostgreSQL 서비스 최초 실행 시 schema.sql이 자동으로 실행되도록 스크립트 마운트
+      - ./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s       # 10초마다 헬스체크 실행
+      timeout: 5s         # 5초 내에 응답이 없으면 실패로 간주
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: discodeit-app
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      # Docker Compose 내부 네트워크에서는 'localhost'가 아닌 서비스명 'db'로 접근
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SERVER_PORT=${APP_PORT}
+      - STORAGE_TYPE=s3
+    ports:
+      - "${HOST_PORT}:${APP_PORT}" # 8080 포트로 접속하면 내부의 80 포트로 매핑
+    volumes:
+      # 컨테이너 재시작 시에도 BinaryContentStorage 데이터가 유지되도록 앱 볼륨 구성
+      - app_uploads:/app/uploads
+    restart: unless-stopped
+
+# 컨테이너 간 공유 및 영구 저장을 위한 관리형 볼륨 선언
+volumes:
+  pg_data:
+  app_uploads:
