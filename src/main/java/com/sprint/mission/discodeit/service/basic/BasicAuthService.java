@@ -1,40 +1,39 @@
 package com.sprint.mission.discodeit.service.basic;
 
-import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.user.LoginRequest;
+import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.exception.DiscodeitException;
+import com.sprint.mission.discodeit.exception.ErrorCode;
+import com.sprint.mission.discodeit.exception.user.PasswordMismatchException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.AuthService;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.NoSuchElementException;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
+@Slf4j
 public class BasicAuthService implements AuthService {
 
-    private final UserRepository userRepository;
-    private final UserStatusRepository userStatusRepository;
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
 
-    @Override
-    public UserDto.Response login(UserDto.Login request) {
-        User user = userRepository.findAll().stream()
-                .filter(u -> u.getUsername().equals(request.username()))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
+  @Override
+  @Transactional(readOnly = true)
+  public UserDto login(LoginRequest request) {
+    User user = userRepository.findByUsername(request.username())
+        .orElseThrow(() -> new DiscodeitException(ErrorCode.USER_NOT_FOUND));
 
-        if (!user.getPassword().equals(request.password())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        }
-
-        UserStatus status = userStatusRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new NoSuchElementException("유저 상태가 존재하지 않습니다."));
-
-        status.updateOnline();
-        userStatusRepository.save(status);
-
-        return UserDto.Response.of(user, status);
+    if (!user.getPassword().equals(request.password())) {
+      throw new PasswordMismatchException(Map.of("username", request.username()));
     }
+    log.info("유저 로그인 완료: username={}, email={}", user.getUsername(), user.getEmail());
+    return userMapper.toDto(user);
+  }
 }
