@@ -1,9 +1,9 @@
 package com.codeit.mission.deokhugam.notification.service;
 
-import com.codeit.mission.deokhugam.notification.dto.response.CursorPageResponseNotificationDto;
-import com.codeit.mission.deokhugam.notification.dto.response.NotificationDto;
 import com.codeit.mission.deokhugam.notification.dto.request.NotificationRequestQuery;
 import com.codeit.mission.deokhugam.notification.dto.request.NotificationUpdateRequest;
+import com.codeit.mission.deokhugam.notification.dto.response.CursorPageResponseNotificationDto;
+import com.codeit.mission.deokhugam.notification.dto.response.NotificationDto;
 import com.codeit.mission.deokhugam.notification.entity.Notification;
 import com.codeit.mission.deokhugam.notification.exception.NotificationNotFoundException;
 import com.codeit.mission.deokhugam.notification.exception.NotificationNotOwnedException;
@@ -16,17 +16,17 @@ import com.codeit.mission.deokhugam.user.entity.User;
 import com.codeit.mission.deokhugam.user.exception.UserNotFoundException;
 import com.codeit.mission.deokhugam.user.repository.UserRepository;
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -41,30 +41,42 @@ public class NotificationService {
   // 이벤트 발행자의 트랜잭션이 종료된 후 호출되므로 새로운 트랜잭션을 만들도록 해야함
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void createByLike(UUID senderId, UUID receiverId, UUID reviewId) {
+    log.trace("[NOTIFICATION] createByLike() called: senderId={}, receiverId={}, reviewId={}",
+      senderId, receiverId, reviewId);
+
     User sender = getUserOrThrow(senderId);
     User receiver = getUserOrThrow(receiverId);
     Review review = getReviewOrThrow(reviewId);
 
-    notificationRepository.save(
-        createNotification(receiver, review,
-            "[" + sender.getNickname() + "]님이 나의 리뷰를 좋아합니다.")
+    Notification notification = notificationRepository.save(
+      createNotification(receiver, review,
+        "[" + sender.getNickname() + "]님이 나의 리뷰를 좋아합니다.")
     );
+
+    log.info("[NOTIFICATION] notification created by like: id={}", notification.getId());
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void createByComment(UUID senderId, UUID receiverId, UUID reviewId) {
+    log.trace("[NOTIFICATION] createByComment() called: senderId={}, receiverId={}, reviewId={}",
+      senderId, receiverId, reviewId);
+
     User sender = getUserOrThrow(senderId);
     User receiver = getUserOrThrow(receiverId);
     Review review = getReviewOrThrow(reviewId);
 
-    notificationRepository.save(
-        createNotification(receiver, review,
-            "[" + sender.getNickname() + "]님이 나의 리뷰에 댓글을 남겼습니다.")
+    Notification notification = notificationRepository.save(
+      createNotification(receiver, review,
+        "[" + sender.getNickname() + "]님이 나의 리뷰에 댓글을 남겼습니다.")
     );
+
+    log.info("[NOTIFICATION] notification created by comment: id={}", notification.getId());
   }
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void createByReviewRanked(List<UUID> reviewIds) {
+    log.trace("[NOTIFICATION] createByReviewRanked() called: reviewIds={}", reviewIds);
+
     List<Review> reviews = reviewRepository.findByIdIn(reviewIds);
     List<Notification> newNotifications = new ArrayList<>();
 
@@ -76,13 +88,19 @@ public class NotificationService {
     );
 
     notificationRepository.saveAll(newNotifications);
+
+    log.info("[NOTIFICATION] notifications created by review ranked: ids={}",
+      newNotifications.stream().map(Notification::getId).toList());
   }
 
   public CursorPageResponseNotificationDto findByUserId(UUID userId,
-      NotificationRequestQuery query) {
+    NotificationRequestQuery query) {
+    log.trace(
+      "[NOTIFICATION] findByUserId() called: userId={}, direction={}, cursor={}, after={}, limit={}",
+      userId, query.direction(), query.cursor(), query.after(), query.limit());
 
     Slice<Notification> slice =
-        notificationRepository.findByUserWithCursor(userId, query);
+      notificationRepository.findByUserWithCursor(userId, query);
 
     long totalCount = notificationRepository.countByUserId(userId);
 
@@ -102,24 +120,26 @@ public class NotificationService {
     }
 
     List<NotificationDto> dtoContent = slice.getContent()
-        .stream()
-        .map(notificationMapper::toDto)
-        .toList();
+      .stream()
+      .map(notificationMapper::toDto)
+      .toList();
 
     return CursorPageResponseNotificationDto.builder()
-        .content(dtoContent)
-        .nextCursor(nextCursor)
-        .nextAfter(nextAfter)
-        .size(content.size())
-        .totalElements(totalCount)
-        .hasNext(slice.hasNext())
-        .build();
+      .content(dtoContent)
+      .nextCursor(nextCursor)
+      .nextAfter(nextAfter)
+      .size(content.size())
+      .totalElements(totalCount)
+      .hasNext(slice.hasNext())
+      .build();
 
   }
 
   @Transactional
   public NotificationDto updateById(UUID notificationId, UUID requestUserId,
-      NotificationUpdateRequest requestDto) {
+    NotificationUpdateRequest requestDto) {
+    log.trace("[NOTIFICATION] updateById() called: notificationId={}, requestUserId={}",
+      notificationId, requestUserId);
 
     Notification notification = getNotificationOrThrow(notificationId);
 
@@ -127,34 +147,34 @@ public class NotificationService {
 
     notification.updateConfirmed(requestDto.confirmed());
 
+    log.info("[NOTIFICATION] updated notification id: id={}", notification.getId());
+
     return notificationMapper.toDto(notification);
   }
 
   @Transactional
   public void updateByUserId(UUID userId) {
-    validateUserExists(userId);
-    notificationRepository.updateAllAsConfirmed(userId);
-  }
+    log.trace("[NOTIFICATION] updateByUserId() called: userId={}", userId);
 
-  // 현 시점을 기준으로 확인한 알림 중 1주일이 경과된 알림 삭제
-  @Transactional
-  public void deleteNotificationsConfirmedBeforeOneWeek() {
-    Instant cutoff = Instant.now().minus(1, ChronoUnit.WEEKS);
-    notificationRepository.deleteByConfirmedTrueAndUpdatedAtBefore(cutoff);
+    validateUserExists(userId);
+    int updatedCount = notificationRepository.updateAllAsConfirmed(userId);
+
+    log.info("[NOTIFICATION] updated notification: userId={}, updatedCount={}", userId,
+      updatedCount);
   }
 
   private Notification createNotification(
-      User receiver,
-      Review review,
-      String message
+    User receiver,
+    Review review,
+    String message
   ) {
     return Notification.builder()
-        .reviewContent(review.getContent())
-        .message(message)
-        .confirmed(false)
-        .user(receiver)
-        .review(review)
-        .build();
+      .reviewContent(review.getContent())
+      .message(message)
+      .confirmed(false)
+      .user(receiver)
+      .review(review)
+      .build();
   }
 
   // 요청자의 id와 알림을 받은 사람의 id를 대조
@@ -173,16 +193,16 @@ public class NotificationService {
 
   private User getUserOrThrow(UUID userId) {
     return userRepository.findById(userId)
-        .orElseThrow(() -> new UserNotFoundException(userId));
+      .orElseThrow(() -> new UserNotFoundException(userId));
   }
 
   private Review getReviewOrThrow(UUID reviewId) {
     return reviewRepository.findById(reviewId)
-        .orElseThrow(() -> new ReviewNotFoundException(reviewId));
+      .orElseThrow(() -> new ReviewNotFoundException(reviewId));
   }
 
   private Notification getNotificationOrThrow(UUID notificationId) {
     return notificationRepository.findById(notificationId)
-        .orElseThrow(() -> new NotificationNotFoundException(notificationId));
+      .orElseThrow(() -> new NotificationNotFoundException(notificationId));
   }
 }

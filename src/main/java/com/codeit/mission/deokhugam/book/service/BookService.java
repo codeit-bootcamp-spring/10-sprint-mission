@@ -33,6 +33,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatusCode;
@@ -47,6 +48,7 @@ import reactor.core.publisher.Mono;
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
+@Slf4j
 public class BookService {
 
   private final BookRepository bookRepository;
@@ -69,6 +71,7 @@ public class BookService {
   //도서 생성 메서드
   @Transactional
   public BookDto createBook(BookCreateRequest request, MultipartFile image) {
+    log.info("도서 생성 시작 - isbn={}", request.isbn());
 
     //ISBN 유효성 검증
     validateIsbn13(request.isbn());
@@ -87,7 +90,10 @@ public class BookService {
         .rating(0.0)
         .build();
 
-    return bookDtoMapper.toDto(bookRepository.save(book));
+    Book saved = bookRepository.save(book);
+
+    log.info("도서 생성 완료 - id={}, isbn={}", saved.getId(), saved.getIsbn());
+    return bookDtoMapper.toDto(saved);
   }
 
   private String upload(MultipartFile image) {
@@ -106,6 +112,7 @@ public class BookService {
 
   //isbn 기반 Naver API 연동 메서드
   public NaverBookDto getBookInfoFromNaverApi(String isbn) {
+    log.info("Naver API 호출 - isbn={}", isbn);
     //isbn 유효성 검증
     validateIsbn13(isbn);
 
@@ -114,16 +121,31 @@ public class BookService {
         .header("X-Naver-Client-Id", naverClientId)
         .header("X-Naver-Client-Secret", naverClientSecret)
         .retrieve()
+
         .onStatus(
             status -> status.is4xxClientError(),
-            res -> Mono.error(new ExternalApiErrorException())
+            res -> res.bodyToMono(String.class)
+                .doOnNext(body -> log.warn("Naver API 4xx 오류 - status={}, body={}", res.statusCode(), body))
+                .then(Mono.error(new ExternalApiErrorException()))
         )
+
         .onStatus(
             status -> status.is5xxServerError(),
-            res -> Mono.error(new ExternalApiErrorException())
+            res -> res.bodyToMono(String.class)
+                .doOnNext(body -> log.error("Naver API 5xx 오류 - status={}, body={}", res.statusCode(), body))
+                .then(Mono.error(new ExternalApiErrorException()))
         )
+
         .bodyToMono(NaverResponseDto.class)
-        .block(Duration.ofSeconds(5));
+
+        .doOnNext(res -> {
+          int count = (res.items() != null) ? res.items().size() : 0;
+          log.info("Naver API 응답 성공 - isbn={}, itemCount={}", isbn, count);
+        })
+
+        .doOnError(e -> log.error("Naver API 호출 실패 - isbn={}", isbn, e))
+
+        .block(Duration.ofSeconds(15));
 
     //응답값이 없으면 예외 처리
     if (response == null || response.items() == null || response.items().isEmpty()) {
@@ -163,8 +185,15 @@ public class BookService {
     }
   }
 
-  //이미지 기반 ISBN 인식 로직
   public String ocrIsbnDetect(MultipartFile image) {
+
+    log.info("OCR 요청 시작 - hasImage={}, size={}",
+        image != null,
+        image != null ? image.getSize() : 0
+    );
+
+    long start = System.currentTimeMillis();
+
     OcrResponse response = webClient.post()
         .uri(ocrUrl)
         .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -172,54 +201,94 @@ public class BookService {
             .with("language", "eng")
             .with("file", image.getResource()))
         .retrieve()
+
         .onStatus(
             HttpStatusCode::is4xxClientError,
-            res -> Mono.error(new ExternalApiErrorException())
+            res -> res.bodyToMono(String.class)
+                .doOnNext(body -> log.warn("OCR API 4xx 오류 - status={}, body={}", res.statusCode(), body))
+                .then(Mono.error(new ExternalApiErrorException()))
         )
+
         .onStatus(
             HttpStatusCode::is5xxServerError,
-            res -> Mono.error(new ExternalApiErrorException())
+            res -> res.bodyToMono(String.class)
+                .doOnNext(body -> log.error("OCR API 5xx 오류 - status={}, body={}", res.statusCode(), body))
+                .then(Mono.error(new ExternalApiErrorException()))
         )
+
         .bodyToMono(OcrResponse.class)
+
+        .doOnNext(res -> {
+          int count = (res.parsedResults() != null) ? res.parsedResults().size() : 0;
+          log.info("OCR 응답 수신 - parsedResultsCount={}", count);
+        })
+
+        .doOnError(e -> log.error("OCR API 호출 실패", e))
+
         .block(Duration.ofSeconds(5));
 
-    if (response == null || response.parsedResults() == null || response.parsedResults()
-        .isEmpty()) {
+    long duration = System.currentTimeMillis() - start;
+    log.info("OCR API 호출 완료 - time={}ms", duration);
+
+    // ===== 응답 검증 =====
+    if (response == null || response.parsedResults() == null || response.parsedResults().isEmpty()) {
+      log.warn("OCR 응답 비정상 - response or parsedResults 없음");
       throw new ExternalApiErrorException();
     }
 
     if (response.parsedResults().get(0) == null) {
+      log.warn("OCR 결과 첫 요소 null");
       throw new OcrFailedException();
     }
 
     String parsedText = response.parsedResults().get(0).parsedText();
 
     if (parsedText == null || parsedText.isBlank()) {
+      log.warn("OCR 텍스트 추출 실패 - 빈 문자열");
       throw new OcrFailedException();
     }
 
-    return extractIsbn(parsedText);
+    log.debug("OCR 추출 텍스트 길이 - length={}", parsedText.length());
+
+    String isbn = extractIsbn(parsedText);
+
+    log.info("OCR ISBN 추출 성공 - isbn={}", isbn);
+
+    return isbn;
   }
 
   private String extractIsbn(String text) {
 
+    log.debug("ISBN 추출 시작 - textLength={}", text != null ? text.length() : 0);
+
     // 1. 라인 분리
     List<String> lines = Arrays.asList(text.split("\n"));
+    log.debug("라인 분리 완료 - lineCount={}", lines.size());
 
     // 2. ISBN 포함 라인 필터링
     List<String> candidateLines = lines.stream()
         .filter(line -> line.toUpperCase().contains("ISBN"))
         .toList();
 
+    log.debug("ISBN 포함 라인 수 - {}", candidateLines.size());
+
     // fallback: 없으면 전체 라인 사용
     if (candidateLines.isEmpty()) {
+      log.debug("ISBN 키워드 없음 - 전체 라인 사용");
       candidateLines = lines;
     }
 
     // 3. 정규식
     Pattern pattern = Pattern.compile("(97[89][- ]?\\d{1,5}[- ]?\\d+[- ]?\\d+[- ]?\\d)");
 
+    int lineIndex = 0;
+
     for (String line : candidateLines) {
+
+      lineIndex++;
+
+      // 너무 긴 로그 방지
+      log.debug("라인 검사 - index={}, length={}", lineIndex, line.length());
 
       // 4. 라인 단위 OCR 보정
       String normalizedLine = line
@@ -232,19 +301,30 @@ public class BookService {
       while (matcher.find()) {
         String raw = matcher.group();
 
+        log.debug("정규식 매칭 발견 - rawLength={}", raw.length());
+
         // 5. 숫자만 남기기
         String isbn = raw.replaceAll("[^0-9X]", "");
+        log.debug("정제된 ISBN 후보 생성");
 
         // 6. 검증
-        if (isbn.length() == 13 && isValidIsbn13(isbn)) {
-          return isbn;
+        if (isbn.length() == 13) {
+          boolean valid = isValidIsbn13(isbn);
+          log.debug("ISBN 검증 - isbn={}, valid={}", isbn, valid);
+
+          if (valid) {
+            log.info("ISBN 추출 성공 - {}", isbn);
+            return isbn;
+          }
+        } else {
+          log.debug("ISBN 길이 불일치 - {}", isbn);
         }
       }
     }
 
+    log.warn("ISBN 추출 실패 - 모든 후보 소진");
     throw new OcrFailedException();
   }
-
   //유효한지 여부 확인하고 예외 던지는 메서드
   private void validateIsbn13(String isbn) {
     if (!isValidIsbn13(isbn)) {
@@ -293,6 +373,8 @@ public class BookService {
   //책 정보 수정 메서드
   @Transactional
   public BookDto updateBook(UUID id, BookUpdateRequest request, MultipartFile image) {
+    log.info("도서 수정 시작 - id={}", id);
+
     Book book = bookRepository.findById(id).orElseThrow(BookNotFoundException::new);
 
     if (isDeleted(book)) {
@@ -306,6 +388,7 @@ public class BookService {
     book.setPublishedDate(request.publishedDate());
 
     if (image != null && !image.isEmpty()) {
+      log.debug("이미지 교체 발생 - id={}", id);
       String newUrl = upload(image); // 먼저 업로드
       bookImageService.deleteFileByUrl(book.getThumbnailUrl()); // 그 다음 삭제
       book.setThumbnailUrl(newUrl);
@@ -319,28 +402,58 @@ public class BookService {
   //책 데이터 논리 삭제 메서드
   @Transactional
   public void deleteBook(UUID id) {
-    Book book = bookRepository.findById(id).orElseThrow(BookNotFoundException::new);
+
+    log.info("도서 논리 삭제 요청 - id={}", id);
+
+    Book book = bookRepository.findById(id)
+        .orElseThrow(() -> {
+          log.warn("도서 논리 삭제 실패 - 존재하지 않음 id={}", id);
+          return new BookNotFoundException();
+        });
+
     if (isDeleted(book)) {
+      log.warn("도서 논리 삭제 실패 - 이미 삭제된 상태 id={}", id);
       throw new BookNotFoundException();
     }
 
+    log.debug("도서 상태 확인 - id={}, status={}", id, book.getBookStatus());
+
     book.delete();
     bookRepository.save(book);
+
+    log.info("도서 논리 삭제 완료 - id={}", id);
   }
 
   //도서 데이터 물리 삭제 메서드
   @Transactional
   public void hardDeleteBook(UUID id) {
-    Book book = bookRepository.findById(id).orElseThrow(BookNotFoundException::new);
+
+    log.info("도서 물리 삭제 요청 - id={}", id);
+
+    Book book = bookRepository.findById(id)
+        .orElseThrow(() -> {
+          log.warn("도서 물리 삭제 실패 - 존재하지 않음 id={}", id);
+          return new BookNotFoundException();
+        });
+
     if (isDeleted(book)) {
+      log.warn("도서 물리 삭제 실패 - 이미 삭제된 상태 id={}", id);
       throw new BookNotFoundException();
     }
 
+    String thumbnailUrl = book.getThumbnailUrl();
+
+    log.debug("삭제 대상 도서 - id={}, thumbnailUrl={}", id, thumbnailUrl);
+
     bookRepository.delete(book);
 
+    log.info("도서 DB 물리 삭제 완료 - id={}", id);
+
     eventPublisher.publishEvent(
-        new BookDeletedEvent(book.getThumbnailUrl())
+        new BookDeletedEvent(thumbnailUrl)
     );
+
+    log.info("도서 삭제 이벤트 발행 완료 - id={}, thumbnailUrl={}", id, thumbnailUrl);
   }
 
   public CursorPageResponseBookDto findAllBooks(
