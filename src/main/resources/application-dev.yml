@@ -45,7 +45,7 @@ spring:
   # redis 호스트 및 포트 설정
   data:
     redis:
-      host: localhost
+      host: 127.0.0.1
       port: 6379
 
   # 캐싱은 redis로 설정
