@@ -29,6 +29,7 @@ public class PopularReviewBatchConfig {
       Step aggregatePopularReviewsStep,
       Step rankPopularReviewsStep,
       Step publishSnapshotStep,
+      Step cleanupOldSnapshotsStep,
       DashboardAggregationJobListener listener
   ) {
     return new JobBuilder("popularReviewAggregationJob", jobRepository)
@@ -37,6 +38,7 @@ public class PopularReviewBatchConfig {
         .next(aggregatePopularReviewsStep)
         .next(rankPopularReviewsStep)
         .next(publishSnapshotStep)
+        .next(cleanupOldSnapshotsStep)
         .build();
   }
 

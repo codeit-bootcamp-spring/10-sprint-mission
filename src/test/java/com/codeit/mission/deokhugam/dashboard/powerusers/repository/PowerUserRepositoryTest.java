@@ -132,6 +132,29 @@ class PowerUserRepositoryTest {
     assertEquals("rank1", result.get(1).nickname());
   }
 
+  @Test
+  @DisplayName("deleteBySnapshotIdIn deletes only matching power user rankings")
+  void deleteBySnapshotIdIn_deletesTargetSnapshotsOnly() {
+    Instant periodStart = Instant.parse("2026-04-14T00:00:00Z");
+    Instant periodEnd = Instant.parse("2026-04-21T00:00:00Z");
+
+    User targetUser1 = persistUser("delete1@test.com", "delete1");
+    User targetUser2 = persistUser("delete2@test.com", "delete2");
+    User remainingUser = persistUser("remain@test.com", "remain");
+
+    persistPowerUser(targetUser1, 1L, 30.0, periodStart, periodEnd, SNAPSHOT_ID);
+    persistPowerUser(targetUser2, 2L, 20.0, periodStart, periodEnd, SNAPSHOT_ID);
+    persistPowerUser(remainingUser, 1L, 10.0, periodStart, periodEnd, OTHER_SNAPSHOT_ID);
+    em.flush();
+
+    powerUserRepository.deleteBySnapshotIdIn(List.of(SNAPSHOT_ID));
+    em.flush();
+    em.clear();
+
+    assertEquals(0L, powerUserRepository.countRankingsBySnapshotId(SNAPSHOT_ID));
+    assertEquals(1L, powerUserRepository.countRankingsBySnapshotId(OTHER_SNAPSHOT_ID));
+  }
+
   // 유저를 생성 및 영속화
   private User persistUser(String email, String nickname) {
     User user = User.builder().email(email).nickname(nickname).password("password").build();

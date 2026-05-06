@@ -4,10 +4,12 @@ import com.codeit.mission.deokhugam.dashboard.PeriodType;
 import com.codeit.mission.deokhugam.dashboard.popularbooks.dto.response.PopularBookDto;
 import com.codeit.mission.deokhugam.dashboard.popularbooks.entity.PopularBook;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -84,5 +86,13 @@ public interface PopularBookRepository extends JpaRepository<PopularBook, UUID> 
       where pb.snapshotId = :snapshotId
       """)
   long countRankingsBySnapshotId(@Param("snapshotId") UUID snapshotId);
+
+  @Modifying
+  @Query("""
+    DELETE FROM PopularBook pb
+    WHERE pb.snapshotId IN :snapshotIds
+    """)
+  void deleteBySnapshotIdIn(@Param("snapshotIds") Collection<UUID> snapshotIds);
+
 
 }

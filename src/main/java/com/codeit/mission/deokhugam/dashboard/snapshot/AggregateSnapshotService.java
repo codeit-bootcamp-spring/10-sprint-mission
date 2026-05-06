@@ -4,9 +4,14 @@ import com.codeit.mission.deokhugam.dashboard.DomainType;
 import com.codeit.mission.deokhugam.dashboard.PeriodType;
 import com.codeit.mission.deokhugam.dashboard.StagingType;
 import com.codeit.mission.deokhugam.dashboard.exceptions.DomainTypeNotEqualException;
+import com.codeit.mission.deokhugam.dashboard.exceptions.InvalidKeepCountException;
 import com.codeit.mission.deokhugam.dashboard.exceptions.SnapshotNotFoundException;
 import com.codeit.mission.deokhugam.dashboard.exceptions.SnapshotNotStagedPublishException;
+import com.codeit.mission.deokhugam.dashboard.popularbooks.repository.PopularBookRepository;
+import com.codeit.mission.deokhugam.dashboard.popularreviews.repository.PopularReviewRepository;
+import com.codeit.mission.deokhugam.dashboard.powerusers.repository.PowerUserRepository;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -23,6 +28,10 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public class AggregateSnapshotService {
 
   private final AggregateSnapshotRepository snapshotRepository;
+  private final PopularReviewRepository popularReviewRepository;
+  private final PopularBookRepository popularBookRepository;
+  private final PowerUserRepository powerUserRepository;
+
 
   private final CacheManager cacheManager; // 캐시 매니저 주입
 
@@ -117,15 +126,75 @@ public class AggregateSnapshotService {
         .ifPresent(AggregateSnapshot::fail);
   }
 
-  @Transactional(readOnly = true)
-  public UUID getPublishedSnapshotId(
-      DomainType domainType,
-      PeriodType periodType
-  ) {
-    return snapshotRepository
-        .findTopByDomainTypeAndPeriodTypeAndStagingTypeOrderByCreatedAtDesc(
-            domainType, periodType, StagingType.PUBLISHED)
-        .map(AggregateSnapshot::getSnapshotId)
-        .orElseThrow(SnapshotNotFoundException::new);
+  // 오래된 스냅샷들을 정리한다.
+  @Transactional
+  public void cleanupOldSnapshots(DomainType domainType, PeriodType periodType, int keepCount) {
+    // keepCount가 2 이하이면 PUBLISHED 스냅샷도 삭제될 수 있기 때문에 검증을 둔다.
+    if (keepCount < 2) {
+      throw new InvalidKeepCountException(keepCount);
+    }
+
+    // PUBLISHED, ARCHIVED 스냅샷만 createdAt 내림차순으로 가져온다.
+    List<AggregateSnapshot> snapshots =
+        snapshotRepository.findByDomainTypeAndPeriodTypeAndStagingTypeInOrderByCreatedAtDesc(
+            domainType,
+            periodType,
+            List.of(StagingType.PUBLISHED, StagingType.ARCHIVED)
+        );
+
+    // keepCount 만큼 남겨두고 그 뒤의 스냅샷들을 삭제 대상으로 삼는다.
+    List<AggregateSnapshot> targets = snapshots.stream().skip(keepCount).toList();
+
+    if (!targets.isEmpty()) {
+      // 삭제 대상 스냅샷들의 id를 추출한다.
+      List<UUID> snapshotIds = targets.stream()
+          .map(AggregateSnapshot::getSnapshotId)
+          .toList();
+
+      // 지정한 스냅샷들의 도메인별 집계 row를 먼저 삭제한다.
+      deleteAggregateRows(domainType, snapshotIds);
+      snapshotRepository.deleteAllInBatch(targets);
+    }
+
+    cleanupFailedSnapshots();
+  }
+
+  // FAILED 스냅샷들을 정리한다.
+  @Transactional
+  public void cleanupFailedSnapshots() {
+    // FAILED 스냅샷들을 모두 가져온다.
+    List<AggregateSnapshot> failedSnapshots = snapshotRepository.findByStagingType(
+        StagingType.FAILED);
+
+    // FAILED 스냅샷이 없으면 리턴
+    if (failedSnapshots.isEmpty()) {
+      return;
+    }
+
+    // 각 도메인 별로 스냅샷의 ID를 리스트화한다.
+    for (DomainType domainType : DomainType.values()) {
+      List<UUID> snapshotIds = failedSnapshots.stream()
+          .filter(snapshot -> snapshot.getDomainType() == domainType)
+          .map(AggregateSnapshot::getSnapshotId)
+          .toList();
+
+      if (!snapshotIds.isEmpty()) {
+        // 레포지토리 내의 도메인별 집계 row 삭제
+        deleteAggregateRows(domainType, snapshotIds);
+      }
+    }
+
+    // aggregate_snapshot 테이블의 FAILED snapshot row 자체를 삭제
+    snapshotRepository.deleteAllInBatch(failedSnapshots);
+  }
+
+  // 각 도메인 별 레포지토리에서 오래된 스냅샷의 엔티티들을 삭제
+  private void deleteAggregateRows(DomainType domainType, List<UUID> snapshotIds) {
+    Runnable action = switch (domainType) {
+      case POPULAR_BOOK -> () -> popularBookRepository.deleteBySnapshotIdIn(snapshotIds);
+      case POPULAR_REVIEW -> () -> popularReviewRepository.deleteBySnapshotIdIn(snapshotIds);
+      case POWER_USER -> () -> powerUserRepository.deleteBySnapshotIdIn(snapshotIds);
+    };
+    action.run();
   }
 }

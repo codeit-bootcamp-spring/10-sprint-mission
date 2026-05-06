@@ -164,6 +164,29 @@ class PopularBookRepositoryTest {
     assertEquals("book-rank1", result.get(1).title());
   }
 
+  @Test
+  @DisplayName("deleteBySnapshotIdIn deletes only matching popular book rankings")
+  void deleteBySnapshotIdIn_deletesTargetSnapshotsOnly() {
+    Instant periodStart = Instant.parse("2026-04-14T00:00:00Z");
+    Instant periodEnd = Instant.parse("2026-04-21T00:00:00Z");
+
+    Book targetBook1 = persistBook("target-book-1", "isbn-delete-1");
+    Book targetBook2 = persistBook("target-book-2", "isbn-delete-2");
+    Book remainingBook = persistBook("remaining-book", "isbn-delete-3");
+
+    persistPopularBook(targetBook1, 1L, 30.0, periodStart, periodEnd, SNAPSHOT_ID);
+    persistPopularBook(targetBook2, 2L, 20.0, periodStart, periodEnd, SNAPSHOT_ID);
+    persistPopularBook(remainingBook, 1L, 10.0, periodStart, periodEnd, OTHER_SNAPSHOT_ID);
+    em.flush();
+
+    popularBookRepository.deleteBySnapshotIdIn(List.of(SNAPSHOT_ID));
+    em.flush();
+    em.clear();
+
+    assertEquals(0L, popularBookRepository.countRankingsBySnapshotId(SNAPSHOT_ID));
+    assertEquals(1L, popularBookRepository.countRankingsBySnapshotId(OTHER_SNAPSHOT_ID));
+  }
+
   private Book persistBook(String title, String isbn) {
     Book book = Book.builder()
         .title(title)

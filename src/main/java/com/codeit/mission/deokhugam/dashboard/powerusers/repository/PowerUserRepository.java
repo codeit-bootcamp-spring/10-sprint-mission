@@ -1,13 +1,14 @@
 package com.codeit.mission.deokhugam.dashboard.powerusers.repository;
 
-import com.codeit.mission.deokhugam.dashboard.PeriodType;
 import com.codeit.mission.deokhugam.dashboard.powerusers.dto.response.PowerUserDto;
 import com.codeit.mission.deokhugam.dashboard.powerusers.entity.PowerUser;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -84,4 +85,12 @@ public interface PowerUserRepository extends JpaRepository<PowerUser, UUID> {
           """)
   List<PowerUser> findBySnapshotIdDescByScore(
       @Param("snapshotId") UUID snapshotId);
+
+  @Modifying
+  @Query(
+      """
+        delete from PowerUser pu
+        where pu.snapshotId in :snapshotIds
+""")
+  void deleteBySnapshotIdIn(@Param("snapshotIds") Collection<UUID> snapshotIds);
 }

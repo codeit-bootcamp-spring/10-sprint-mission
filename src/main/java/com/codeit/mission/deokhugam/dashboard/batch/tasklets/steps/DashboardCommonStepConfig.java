@@ -1,5 +1,6 @@
 package com.codeit.mission.deokhugam.dashboard.batch.tasklets.steps;
 
+import com.codeit.mission.deokhugam.dashboard.batch.tasklets.CleanupOldSnapshotsTasklet;
 import com.codeit.mission.deokhugam.dashboard.batch.tasklets.CreateNewSnapshotTasklet;
 import com.codeit.mission.deokhugam.dashboard.batch.tasklets.PublishSnapshotTasklet;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,13 @@ public class DashboardCommonStepConfig {
   public Step publishSnapshotStep(PublishSnapshotTasklet publishSnapshotTasklet) {
     return new StepBuilder("publishSnapshotStep", jobRepository)
         .tasklet(publishSnapshotTasklet, transactionManager)
+        .build();
+  }
+
+  @Bean
+  public Step cleanupOldSnapshotsStep(CleanupOldSnapshotsTasklet cleanupOldSnapshotsTasklet){
+    return new StepBuilder("cleanupOldSnapshotsStep", jobRepository)
+        .tasklet(cleanupOldSnapshotsTasklet, transactionManager)
         .build();
   }
 
