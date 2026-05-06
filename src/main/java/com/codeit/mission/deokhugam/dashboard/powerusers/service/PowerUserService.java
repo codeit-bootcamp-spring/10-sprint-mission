@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,14 @@ public class PowerUserService {
   private final PowerUserRepository powerUserRepository;
   private final AggregateSnapshotRepository aggregateSnapshotRepository;
 
+  @Cacheable(
+      cacheNames = "powerUsers",
+      key = "'period=' + #periodType"
+          + " + ':direction=' + #direction"
+          + " + ':cursor=' + (#cursor == null ? 'null' : #cursor)"
+          + " + ':after=' + (#after == null ? 'null' : #after)"
+          + " + ':size=' + #size"
+  )
   @Transactional(readOnly = true)
   public CursorPageResponsePowerUserDto getLatestRankings(
       PeriodType periodType, DirectionEnum direction, String cursor, String after, int size) {

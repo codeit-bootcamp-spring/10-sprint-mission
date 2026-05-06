@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,14 @@ public class PopularReviewService {
   private final AggregateSnapshotRepository aggregateSnapshotRepository;
 
   // 인기 리뷰를 조회하는 서비스 메서드
+  @Cacheable(
+      cacheNames = "popularReviews",
+      key = "'period=' + #periodType"
+          + " + ':direction=' + #direction"
+          + " + ':cursor=' + (#cursor == null ? 'null' : #cursor)"
+          + " + ':after=' + (#after == null ? 'null' : #after)"
+          + " + ':size=' + #size"
+  )
   @Transactional(readOnly = true)
   public CursorPageResponsePopularReviewDto getReviews(
       PeriodType periodType, DirectionEnum direction, String cursor, String after, int size) {
