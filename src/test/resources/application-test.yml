@@ -1,3 +1,7 @@
+deokhugam:
+  storage:
+    type: local
+
 spring:
   test:
     database:

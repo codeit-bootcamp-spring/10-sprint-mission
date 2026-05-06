@@ -7,6 +7,6 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface CommentMapper {
-    @Mapping(target = "userNickName", source = "userNickName")
-    CommentDto toDto(Comment comment, String userNickName);
+    @Mapping(target = "userNickname", source = "userNickname")
+    CommentDto toDto(Comment comment, String userNickname);
 }
