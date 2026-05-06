@@ -154,7 +154,8 @@ public class ReviewServiceImplement implements ReviewService {
 
     // 책 제목, 사용자 닉네임, 키워드 중 하나라도 정확하게 일치한다면 완전 일치 (가중치 1) 부여
     boolean isExact = lastItem.getBook().getTitle().equalsIgnoreCase(keyword) ||
-        lastItem.getUser().getNickname().equalsIgnoreCase(keyword) ||
+        (lastItem.getUser() != null && lastItem.getUser().getNickname().equalsIgnoreCase(keyword))
+        ||
         lastItem.getContent().equalsIgnoreCase(keyword);
 
     return (isExact ? "1" : "2") + "_";
@@ -316,10 +317,14 @@ public class ReviewServiceImplement implements ReviewService {
     boolean isLiked = executeToggleWithConcurrencyHandle(targetReview, requestUser);
 
     // 3-1. 좋아요를 추가한 경우 이벤트 발생
-    if (isLiked) {
+    if (isLiked && targetReview.getUser() != null) {
       eventPublisher.publishEvent(
-        new ReviewLikedEvent(requestUser.getId(), targetReview.getUser().getId(),
-          targetReview.getId()));
+          new ReviewLikedEvent(
+              requestUser.getId(),
+              targetReview.getUser().getId(),
+              targetReview.getId()
+          )
+      );
     }
 
     // 4. 응답 DTO 생성 및 반환
