@@ -46,7 +46,6 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
-import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
@@ -328,9 +327,18 @@ class DashboardCacheTest {
     @Bean
     AggregateSnapshotService aggregateSnapshotService(
         AggregateSnapshotRepository snapshotRepository,
+        PopularReviewRepository popularReviewRepository,
+        PopularBookRepository popularBookRepository,
+        PowerUserRepository powerUserRepository,
         CacheManager cacheManager
     ) {
-      return new AggregateSnapshotService(snapshotRepository, cacheManager);
+      return new AggregateSnapshotService(
+          snapshotRepository,
+          popularReviewRepository,
+          popularBookRepository,
+          powerUserRepository,
+          cacheManager
+      );
     }
   }
 
