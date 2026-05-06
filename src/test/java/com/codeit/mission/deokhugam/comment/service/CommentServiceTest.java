@@ -11,6 +11,7 @@ import com.codeit.mission.deokhugam.comment.exception.CommentAuthorException;
 import com.codeit.mission.deokhugam.comment.exception.CommentNotFoundException;
 import com.codeit.mission.deokhugam.comment.mapper.CommentMapper;
 import com.codeit.mission.deokhugam.comment.repository.CommentRepository;
+import com.codeit.mission.deokhugam.notification.event.CommentRegisteredEvent;
 import com.codeit.mission.deokhugam.review.entity.Review;
 import com.codeit.mission.deokhugam.review.entity.ReviewStatus;
 import com.codeit.mission.deokhugam.review.exception.ReviewNotFoundException;
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
@@ -55,6 +57,9 @@ public class CommentServiceTest {
 
   @Mock
   private CommentMapper commentMapper;
+
+  @Mock
+  private ApplicationEventPublisher eventPublisher;
 
   @InjectMocks
   private CommentService commentService;
@@ -106,16 +111,20 @@ public class CommentServiceTest {
     given(review.getId()).willReturn(reviewId);
     given(review.getStatus()).willReturn(ReviewStatus.ACTIVE);
 
+    User reviewUser = mock(User.class);
+    given(reviewUser.getId()).willReturn(UUID.randomUUID());
+    given(review.getUser()).willReturn(reviewUser);
+
     User user = mock(User.class);
     given(user.getStatus()).willReturn(UserStatus.ACTIVE);
     given(user.getNickname()).willReturn(userNickname);
 
     Comment savedComment = Comment.builder()
-        .reviewId(reviewId)
-        .userId(userId)
-        .content("test content")
-        .status(CommentStatus.ACTIVE)
-        .build();
+            .reviewId(reviewId)
+            .userId(userId)
+            .content("test content")
+            .status(CommentStatus.ACTIVE)
+            .build();
 
     CommentDto commentDto = mock(CommentDto.class);
 
@@ -133,6 +142,7 @@ public class CommentServiceTest {
     verify(userRepository).findById(userId);
     verify(commentRepository).saveAndFlush(any(Comment.class));
     verify(reviewRepository).incrementCommentCount(reviewId);
+    verify(eventPublisher).publishEvent(any(CommentRegisteredEvent.class));
     verify(commentMapper).toDto(savedComment, userNickname);
   }
 

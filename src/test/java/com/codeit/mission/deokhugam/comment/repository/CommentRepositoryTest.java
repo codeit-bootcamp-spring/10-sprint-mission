@@ -208,40 +208,48 @@ class CommentRepositoryTest {
         UUID reviewId = createReview();
         Instant sameCreatedAt = Instant.parse("2026-01-01T00:00:00Z");
 
-        Comment c1 = commentRepository.save(
+        commentRepository.save(
                 createCommentWithCreatedAt(reviewId, createUserId(), "댓글1", CommentStatus.ACTIVE, sameCreatedAt)
         );
-        Comment c2 = commentRepository.save(
+        commentRepository.save(
                 createCommentWithCreatedAt(reviewId, createUserId(), "댓글2", CommentStatus.ACTIVE, sameCreatedAt)
         );
-        Comment c3 = commentRepository.save(
+        commentRepository.save(
                 createCommentWithCreatedAt(reviewId, createUserId(), "댓글3", CommentStatus.ACTIVE, sameCreatedAt)
         );
 
         em.flush();
         em.clear();
 
-        List<Comment> sorted = List.of(c1, c2, c3).stream()
-                .sorted((a, b) -> a.getId().compareTo(b.getId()))
-                .toList();
-
-        UUID cursorId = sorted.get(1).getId();
-        UUID expectedId = sorted.get(2).getId();
-
-        CommentFindAllRequest request = new CommentFindAllRequest(
+        CommentFindAllRequest firstPageRequest = new CommentFindAllRequest(
                 reviewId,
                 "ASC",
-                cursorId.toString(),
-                sameCreatedAt,
+                null,
+                null,
+                10
+        );
+
+        List<Comment> firstPage = commentRepository.findAllByCursor(firstPageRequest);
+
+        assertThat(firstPage).hasSize(3);
+
+        Comment cursorComment = firstPage.get(1);
+        Comment expectedComment = firstPage.get(2);
+
+        CommentFindAllRequest cursorRequest = new CommentFindAllRequest(
+                reviewId,
+                "ASC",
+                cursorComment.getId().toString(),
+                cursorComment.getCreatedAt(),
                 10
         );
 
         // when
-        List<Comment> results = commentRepository.findAllByCursor(request);
+        List<Comment> results = commentRepository.findAllByCursor(cursorRequest);
 
         // then
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).getId()).isEqualTo(expectedId);
+        assertThat(results.get(0).getId()).isEqualTo(expectedComment.getId());
     }
 
     @Test
@@ -251,40 +259,48 @@ class CommentRepositoryTest {
         UUID reviewId = createReview();
         Instant sameCreatedAt = Instant.parse("2026-01-01T00:00:00Z");
 
-        Comment c1 = commentRepository.save(
+        commentRepository.save(
                 createCommentWithCreatedAt(reviewId, createUserId(), "댓글1", CommentStatus.ACTIVE, sameCreatedAt)
         );
-        Comment c2 = commentRepository.save(
+        commentRepository.save(
                 createCommentWithCreatedAt(reviewId, createUserId(), "댓글2", CommentStatus.ACTIVE, sameCreatedAt)
         );
-        Comment c3 = commentRepository.save(
+        commentRepository.save(
                 createCommentWithCreatedAt(reviewId, createUserId(), "댓글3", CommentStatus.ACTIVE, sameCreatedAt)
         );
 
         em.flush();
         em.clear();
 
-        List<Comment> sorted = List.of(c1, c2, c3).stream()
-                .sorted((a, b) -> a.getId().compareTo(b.getId()))
-                .toList();
-
-        UUID expectedId = sorted.get(0).getId();
-        UUID cursorId = sorted.get(1).getId();
-
-        CommentFindAllRequest request = new CommentFindAllRequest(
+        CommentFindAllRequest firstPageRequest = new CommentFindAllRequest(
                 reviewId,
                 "DESC",
-                cursorId.toString(),
-                sameCreatedAt,
+                null,
+                null,
+                10
+        );
+
+        List<Comment> firstPage = commentRepository.findAllByCursor(firstPageRequest);
+
+        assertThat(firstPage).hasSize(3);
+
+        Comment cursorComment = firstPage.get(1);
+        Comment expectedComment = firstPage.get(2);
+
+        CommentFindAllRequest cursorRequest = new CommentFindAllRequest(
+                reviewId,
+                "DESC",
+                cursorComment.getId().toString(),
+                cursorComment.getCreatedAt(),
                 10
         );
 
         // when
-        List<Comment> results = commentRepository.findAllByCursor(request);
+        List<Comment> results = commentRepository.findAllByCursor(cursorRequest);
 
         // then
         assertThat(results).hasSize(1);
-        assertThat(results.get(0).getId()).isEqualTo(expectedId);
+        assertThat(results.get(0).getId()).isEqualTo(expectedComment.getId());
     }
 
     @Test
