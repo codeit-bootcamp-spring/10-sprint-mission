@@ -1,6 +1,7 @@
 package com.codeit.mission.deokhugam.dashboard.popularreviews.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.io.Serializable;
 import java.util.List;
 
 @Schema(description = "커서 기반 페이징 응답")
@@ -39,6 +40,6 @@ public record CursorPageResponsePopularReviewDto(
         example = "true"
     )
     boolean hasNext
-) {
+) implements Serializable {
 
 }

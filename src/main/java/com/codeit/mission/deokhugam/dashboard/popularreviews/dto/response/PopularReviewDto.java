@@ -2,6 +2,7 @@ package com.codeit.mission.deokhugam.dashboard.popularreviews.dto.response;
 
 import com.codeit.mission.deokhugam.dashboard.PeriodType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -97,6 +98,6 @@ public record PopularReviewDto(
         example = "1"
     )
     long commentCount
-) {
+) implements Serializable {
 
 }
