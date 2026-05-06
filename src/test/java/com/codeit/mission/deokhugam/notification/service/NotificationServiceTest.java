@@ -105,6 +105,14 @@ public class NotificationServiceTest {
       given(userRepository.findById(receiverId)).willReturn(Optional.of(receiver));
       given(reviewRepository.findById(reviewId)).willReturn(Optional.of(review));
 
+      // 로그 출력을 위해 save 정의 및 id 필드 설정
+      given(notificationRepository.save(any(Notification.class)))
+        .willAnswer(invocation -> {
+          Notification n = invocation.getArgument(0);
+          ReflectionTestUtils.setField(n, "id", UUID.randomUUID());
+          return n;
+        });
+
       // when
       notificationService.createByLike(actorId, receiverId, reviewId);
 
@@ -139,8 +147,15 @@ public class NotificationServiceTest {
       given(userRepository.findById(receiverId)).willReturn(Optional.of(receiver));
       given(reviewRepository.findById(reviewId)).willReturn(Optional.of(review));
 
+      given(notificationRepository.save(any(Notification.class)))
+        .willAnswer(invocation -> {
+          Notification n = invocation.getArgument(0);
+          ReflectionTestUtils.setField(n, "id", UUID.randomUUID());
+          return n;
+        });
+
       // when
-      notificationService.createByComment(actorId, receiverId, reviewId);
+      notificationService.createByComment(actorId, receiverId, reviewId); // here
 
       // then
       ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
@@ -166,7 +181,7 @@ public class NotificationServiceTest {
 
       User receiver = createUser("작성자");
       Review review = createReview(receiver);
-      
+
       given(reviewRepository.findByIdIn(reviewIds)).willReturn(List.of(review));
 
       // when

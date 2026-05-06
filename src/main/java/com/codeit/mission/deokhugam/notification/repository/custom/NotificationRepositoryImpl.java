@@ -24,8 +24,6 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
   @Override
   public Slice<Notification> findByUserWithCursor(UUID userId, NotificationRequestQuery query) {
 
-    int limit = query.getLimitOrDefault();
-
     BooleanBuilder builder = new BooleanBuilder();
     builder.and(notification.user.id.eq(userId));
 
@@ -52,28 +50,28 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
     }
 
     List<Notification> result = queryFactory
-        .selectFrom(notification)
-        .where(builder)
-        .orderBy(getOrderSpecifier(query))
-        .limit(limit + 1)
-        .fetch();
+      .selectFrom(notification)
+      .where(builder)
+      .orderBy(getOrderSpecifier(query))
+      .limit(query.limit() + 1)
+      .fetch();
 
-    boolean hasNext = result.size() > limit;
+    boolean hasNext = result.size() > query.limit();
 
     if (hasNext) {
-      result = result.subList(0, limit);
+      result = result.subList(0, query.limit());
     }
 
-    return new SliceImpl<>(result, PageRequest.of(0, limit), hasNext);
+    return new SliceImpl<>(result, PageRequest.of(0, query.limit()), hasNext);
   }
 
   @Override
   public long countByUserId(UUID userId) {
     Long count = queryFactory
-        .select(notification.count())
-        .from(notification)
-        .where(notification.user.id.eq(userId))
-        .fetchOne();
+      .select(notification.count())
+      .from(notification)
+      .where(notification.user.id.eq(userId))
+      .fetchOne();
 
     return count == null ? 0L : count;
   }
@@ -84,8 +82,8 @@ public class NotificationRepositoryImpl implements NotificationRepositoryCustom 
 
   private OrderSpecifier<?> getOrderSpecifier(NotificationRequestQuery query) {
     return isDesc(query)
-        ? notification.createdAt.desc()
-        : notification.createdAt.asc();
+      ? notification.createdAt.desc()
+      : notification.createdAt.asc();
   }
 
 }

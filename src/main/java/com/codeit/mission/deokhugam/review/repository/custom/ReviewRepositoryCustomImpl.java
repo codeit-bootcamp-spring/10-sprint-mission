@@ -236,7 +236,7 @@ public class ReviewRepositoryCustomImpl implements ReviewRepositoryCustom {
 
     return new CaseBuilder()
         .when(review.book.title.equalsIgnoreCase(keyword)
-            .or(review.user.nickname.equalsIgnoreCase(keyword))
+            .or(review.user.isNotNull().and(review.user.nickname.equalsIgnoreCase(keyword)))
             .or(review.content.equalsIgnoreCase(keyword)))
         .then(1)           // 완전 일치 (1순위)
         .otherwise(2);  // 부분 일치 (2순위)

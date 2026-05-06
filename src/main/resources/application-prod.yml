@@ -6,6 +6,17 @@ spring:
   application:
     name: sb10-deokhugam-team6
 
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:true}
+
+  cache:
+      type: redis
+
   # 데이터베이스 설정
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -61,6 +72,6 @@ logging:
 
 springdoc:
   api-docs:
-    enabled: false
+    enabled: true
   swagger-ui:
-    enabled: false
+    enabled: true

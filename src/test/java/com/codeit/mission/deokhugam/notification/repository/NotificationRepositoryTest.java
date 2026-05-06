@@ -13,9 +13,7 @@ import com.codeit.mission.deokhugam.user.entity.User;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,14 +29,12 @@ import org.springframework.data.domain.Slice;
 @Import({JpaAuditingConfig.class, QuerydslConfig.class})
 public class NotificationRepositoryTest {
 
+  // 고정된 시간을 사용하여 항상 동일한 결과가 보장될 수 있도록 함
+  Instant baseTime = Instant.parse("2026-01-01T12:00:00Z");
   @Autowired
   private NotificationRepository notificationRepository;
-
   @Autowired
   private EntityManager em;
-
-  private LocalDateTime baseTime = LocalDateTime.now();
-
   private User user;
   private Book book;
   private Review review;
@@ -47,10 +43,6 @@ public class NotificationRepositoryTest {
 
   @BeforeEach
   void setUp() {
-    Instant BASE_TIME = LocalDateTime.of(2026, 1, 1, 0, 0, 0)
-      .atZone(ZoneId.of("Asia/Seoul"))
-      .toInstant();
-
     user = User.builder()
       .email("test@test.com")
       .nickname("test")
@@ -95,11 +87,20 @@ public class NotificationRepositoryTest {
 
     em.flush();
 
+    // 알림 createdAt, updatedAt 설정
     for (int i = 0; i < notificationList.size(); i++) {
       em.createNativeQuery("update notifications set created_at = :createdAt where id = :id")
-        .setParameter("createdAt", BASE_TIME.minusSeconds(i))
+        .setParameter("createdAt", baseTime.minus(i, ChronoUnit.DAYS))
         .setParameter("id", notificationList.get(i).getId())
         .executeUpdate();
+
+      if (i % 2 == 0) {
+        em.createNativeQuery("update notifications set updated_at = :updatedAt where id = :id")
+          .setParameter("updatedAt", baseTime.minus(i, ChronoUnit.DAYS))
+          .setParameter("id", notificationList.get(i).getId())
+          .executeUpdate();
+
+      }
     }
 
     em.clear();
@@ -129,20 +130,16 @@ public class NotificationRepositoryTest {
   void findNextPage() {
     // given
     NotificationRequestQuery firstQuery = NotificationRequestQuery.builder()
-      .direction(DirectionEnum.DESC)
-      .limit(20)
       .build();
 
     Slice<Notification> firstPage =
       notificationRepository.findByUserWithCursor(user.getId(), firstQuery);
 
-    Instant cursor = firstPage.getContent().get(19)
+    Instant cursor = firstPage.getContent().get(firstPage.getContent().size() - 1)
       .getCreatedAt();
 
     NotificationRequestQuery secondQuery = NotificationRequestQuery.builder()
-      .direction(DirectionEnum.DESC)
       .after(cursor)
-      .limit(20)
       .build();
 
     // when
@@ -232,7 +229,7 @@ public class NotificationRepositoryTest {
   @DisplayName("읽은지 일주일이 지난 알림 삭제 검증")
   void deleteByConfirmedTrueAndUpdatedAtBefore() {
     // given
-    Instant offset = baseTime.minusDays(7).toInstant(ZoneOffset.UTC);
+    Instant offset = baseTime.minus(7, ChronoUnit.DAYS);
 
     // when
     int deletedNotificationCount = notificationRepository.deleteByConfirmedTrueAndUpdatedAtBefore(
@@ -243,6 +240,6 @@ public class NotificationRepositoryTest {
 
     // then
     // 삭제된 알림 개수 확인
-    assertThat(deletedNotificationCount).isEqualTo(5);
+    assertThat(deletedNotificationCount).isEqualTo(11);
   }
 }

@@ -43,10 +43,10 @@ public class PowerUserController {
       @RequestParam(defaultValue = "ASC") DirectionEnum direction, // 정렬 방향
       @RequestParam(value = "cursor", required = false) String cursor, // 커서는 필수 값이 아님.
       @RequestParam(value = "after", required = false) String after,
-      @RequestParam(defaultValue = "50") int size) { // 페이지의 사이즈는 기본값이 50
+      @RequestParam(defaultValue = "50") int limit) { // 페이지의 사이즈는 기본값이 50
 
     // ResponseEntity는 ok를 보내고 body값으로 slice된 PowerUserDto 들을 반환함.
     return ResponseEntity.ok(
-        powerUserService.getLatestRankings(period, direction, cursor, after, size));
+        powerUserService.getLatestRankings(period, direction, cursor, after, limit));
   }
 }
