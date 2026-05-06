@@ -6,6 +6,10 @@ spring:
     activate:
       on-profile: dev
 
+  docker:
+    compose:
+      enabled: false
+
   # 데이터베이스 설정
   datasource:
     # 개발 환경에서는 테스트 컨텍스트 마다 독립된 테스트 컨텍스트를 사용하기 위해 무작위 uuid를 주입
@@ -37,6 +41,16 @@ spring:
   h2:
     console:
       enabled: true
+
+  # redis 호스트 및 포트 설정
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+
+  # 캐싱은 redis로 설정
+  cache:
+    type: redis
 
 # 로깅 설정
 logging:

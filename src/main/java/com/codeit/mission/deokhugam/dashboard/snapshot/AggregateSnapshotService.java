@@ -11,14 +11,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @RequiredArgsConstructor
 public class AggregateSnapshotService {
 
   private final AggregateSnapshotRepository snapshotRepository;
+
+  private final CacheManager cacheManager; // 캐시 매니저 주입
 
   // 새로운 스냅샷을 생성하는 서비스 -> Batch Job의 CreateNewSnapshot
   @Transactional
@@ -56,20 +62,52 @@ public class AggregateSnapshotService {
           "existingDomainType", domainType));
     }
 
-    // 스냅샷의 상태를 확인
+    // 스냅샷의 상태를 확인 (스테이징 상태여야만 publish 가능)
     if (newSnapshot.getStagingType() != StagingType.STAGING) {
       throw new SnapshotNotStagedPublishException(Map.of(
           "snapshotId", newSnapshot.getSnapshotId(),
           "stagingType", newSnapshot.getStagingType()));
     }
 
+    // 이전에 PUBLISHED 스냅샷을 ARCHIVED(보존) 상태로 바꾼다.
     snapshotRepository
         .findTopByDomainTypeAndPeriodTypeAndStagingTypeOrderByCreatedAtDesc(
             domainType, newSnapshot.getPeriodType(), StagingType.PUBLISHED)
         .filter(oldSnapshot -> !oldSnapshot.getSnapshotId().equals(snapshotId))
         .ifPresent(AggregateSnapshot::archive);
 
+    // 해당 스냅샷을 PUBLISHED로 바꾼다.
     newSnapshot.publish();
+
+    // 트랜잭션 내 캐시 무효화 시 일관성 문제 가능성을 해소하기 위해
+    // TransactionSynchronizationManager를 사용하여
+    // 커밋 후 콜백으로 처리
+    TransactionSynchronizationManager.registerSynchronization(
+        new TransactionSynchronization(){
+          @Override
+          public void afterCommit(){
+            evictDashboardCache(domainType);
+          }
+        }
+    );
+  }
+
+  // 스냅샷을 새로 Publish 하고나서, Redis 캐시에 남아있는 이전의 값들을 정리하는 메서드
+  private void evictDashboardCache(DomainType domainType) {
+    // 도메인 타입에 맞는 캐시를 (캐시 이름을) 대입한다.
+    String cacheName = switch (domainType) {
+      case POPULAR_BOOK -> "popularBooks";
+      case POPULAR_REVIEW -> "popularReviews";
+      case POWER_USER -> "powerUsers";
+    };
+
+    // cacheName에 해당되는 캐시를 구하고,
+    Cache cache = cacheManager.getCache(cacheName);
+
+    // cache 안에 이전 값들이 남아있으면 clear한다.
+    if (cache != null) {
+      cache.clear();
+    }
   }
 
   @Transactional
