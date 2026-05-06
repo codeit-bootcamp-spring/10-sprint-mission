@@ -112,8 +112,8 @@ public class CommentService {
     // 댓글 상태 검증
     validCommentStatus(comment);
 
-    String userNickName = getUserOrThrow(comment.getUserId()).getNickname();
-    return commentMapper.toDto(comment, userNickName);
+    String userNickname = getUserOrThrow(comment.getUserId()).getNickname();
+    return commentMapper.toDto(comment, userNickname);
   }
 
   // 댓글 목록 조회

@@ -28,7 +28,7 @@ public record CommentDto(
         description = "작성자 닉네임",
         example = "string"
     )
-    String userNickName,
+    String userNickname,
 
     @Schema(
         description = "내용",
