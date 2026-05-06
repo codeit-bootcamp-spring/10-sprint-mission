@@ -2,6 +2,7 @@ package com.codeit.mission.deokhugam.dashboard.popularbooks.dto.response;
 
 import com.codeit.mission.deokhugam.dashboard.PeriodType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -67,6 +68,6 @@ public record PopularBookDto(
         example = "2026-04-24T02:49:51.932Z"
     )
     Instant createdAt
-) {
+) implements Serializable {
 
 }

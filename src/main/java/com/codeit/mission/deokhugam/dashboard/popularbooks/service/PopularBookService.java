@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,19 @@ public class PopularBookService {
   private final AggregateSnapshotRepository aggregateSnapshotRepository;
 
   // 인기 도서를 조회하는 서비스 계층 메서드
+  // 조회 캐시 어노테이션을 추가
+  // 메서드 본문을 실행하기 전 캐시를 먼저 확인한다.
+  @Cacheable(
+      cacheNames = "popularBooks", // 사용할 캐시의 이름은 popularBooks (RedisConfig에서 설정함)
+
+      // Redis Cache Key는 해당 형태로 지정함.
+      key = "'period=' + #periodType"
+          + " + ':direction=' + #direction"
+          + " + ':cursor=' + (#cursor == null ? 'null' : #cursor)"
+          + " + ':after=' + (#after == null ? 'null' : #after)"
+          + " + ':size=' + #pageSize"
+  )
+
   @Transactional(readOnly = true)
   public CursorPageResponsePopularBookDto get(
       PeriodType periodType, DirectionEnum direction, String cursor, String after, int pageSize

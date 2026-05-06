@@ -3,6 +3,10 @@ spring:
     name: sb10-deokhugam-team6
   profiles:
     active: dev
+  data:
+    redis:
+      repositories:
+        enabled: false
   # 배치 설정
   batch:
     job:

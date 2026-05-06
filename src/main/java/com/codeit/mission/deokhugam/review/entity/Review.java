@@ -13,6 +13,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 /*
     Review
@@ -39,6 +41,7 @@ public class Review extends BaseEntity {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
+  @NotFound(action = NotFoundAction.IGNORE)                    // 탈퇴한 사용자 null 처리
   private User user;                                           // 리뷰 작성자
 
   @Column(nullable = false, columnDefinition = "TEXT")

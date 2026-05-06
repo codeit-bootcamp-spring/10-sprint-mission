@@ -14,15 +14,14 @@ public enum ErrorCode {
   INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST,
       "Invalid input value"),                             // 입력값 오류
   METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED,
-      "Method not allowed"),                              // HTTP 메서드 오류
+      "Method not allowed"),                        // HTTP 메서드 오류
   MISSING_REQUEST_PARAMETER(HttpStatus.BAD_REQUEST,
-      "Missing request parameter"),                       // 필수 파라미터 누락
+      "Missing request parameter"),                 // 필수 파라미터 누락
   METHOD_ARGUMENT_TYPE_MISMATCH(HttpStatus.BAD_REQUEST,
-      "Method argument type mismatch"),                   // 파라미터 타입 불일치
+      "Method argument type mismatch"),         // 파라미터 타입 불일치
   INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,
-      "Internal server error"),                           // 서버 내부 오류
-  MISSING_REQUEST_HEADER(HttpStatus.BAD_REQUEST,
-      "Missing request header"),                          // 필수 헤더 누락
+      "Internal server error"),               // 서버 내부 오류
+  MISSING_REQUEST_HEADER(HttpStatus.BAD_REQUEST,"Missing request header"), // 필수 헤더 누락
 
   // 유저 (로그인/회원가입)
   LOGIN_INPUT_INVALID(HttpStatus.UNAUTHORIZED, "Invalid email or password"),
@@ -60,6 +59,7 @@ public enum ErrorCode {
   SNAPSHOT_ID_NOT_EQUAL(HttpStatus.CONFLICT, "Snapshot Ids are not equal"),
   SNAPSHOT_NOT_STAGE_BUT_PUBLISH(HttpStatus.BAD_REQUEST, "Only staging snapshot can be published"),
   DOMAIN_NOT_EQUAL(HttpStatus.CONFLICT, "Domain Types are not equal"),
+  KEEP_COUNT_INVALID(HttpStatus.BAD_REQUEST, "Keep Count should be greater than or equal to 2"),
 
   // 도서
   WRONG_FILE_TYPE(HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Wrong file type"),

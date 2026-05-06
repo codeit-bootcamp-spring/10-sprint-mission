@@ -200,6 +200,35 @@ class PopularReviewRepositoryTest {
     assertEquals("rank1", result.get(1).userNickname());
   }
 
+  @Test
+  @DisplayName("deleteBySnapshotIdIn deletes only matching popular review rankings")
+  void deleteBySnapshotIdIn_deletesTargetSnapshotsOnly() {
+    Instant periodStart = Instant.parse("2026-04-14T00:00:00Z");
+    Instant periodEnd = Instant.parse("2026-04-21T00:00:00Z");
+
+    Review targetReview1 =
+        persistReview("delete1@test.com", "delete1", "delete-book-1", "isbn-delete-1",
+            "delete review 1");
+    Review targetReview2 =
+        persistReview("delete2@test.com", "delete2", "delete-book-2", "isbn-delete-2",
+            "delete review 2");
+    Review remainingReview =
+        persistReview("remain@test.com", "remain", "remain-book", "isbn-delete-3",
+            "remaining review");
+
+    persistPopularReview(targetReview1, 1L, 30.0, periodStart, periodEnd, SNAPSHOT_ID);
+    persistPopularReview(targetReview2, 2L, 20.0, periodStart, periodEnd, SNAPSHOT_ID);
+    persistPopularReview(remainingReview, 1L, 10.0, periodStart, periodEnd, OTHER_SNAPSHOT_ID);
+    em.flush();
+
+    popularReviewRepository.deleteBySnapshotIdIn(List.of(SNAPSHOT_ID));
+    em.flush();
+    em.clear();
+
+    assertEquals(0L, popularReviewRepository.countRankingsBySnapshotId(SNAPSHOT_ID));
+    assertEquals(1L, popularReviewRepository.countRankingsBySnapshotId(OTHER_SNAPSHOT_ID));
+  }
+
   // 리뷰 객체를 생성하고 영속화하는 메서드
   private Review persistReview(
       String email,
