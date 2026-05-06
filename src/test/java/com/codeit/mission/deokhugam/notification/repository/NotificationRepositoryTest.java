@@ -135,7 +135,7 @@ public class NotificationRepositoryTest {
     Slice<Notification> firstPage =
       notificationRepository.findByUserWithCursor(user.getId(), firstQuery);
 
-    Instant cursor = firstPage.getContent().get(firstPage.getSize() - 1)
+    Instant cursor = firstPage.getContent().get(firstPage.getContent().size() - 1)
       .getCreatedAt();
 
     NotificationRequestQuery secondQuery = NotificationRequestQuery.builder()
