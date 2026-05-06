@@ -110,7 +110,7 @@ class DashboardControllerTest {
             .param("direction", "DESC")
             .param("cursor", "1")
             .param("after", "2026-04-27T00:00:00Z")
-            .param("size", "15"))
+            .param("limit", "15"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalElements").value(40));
 

@@ -46,6 +46,11 @@ class DashboardBatchSchedulerTest {
     Job powerUserJob = mock(Job.class);
     Job popularReviewJob = mock(Job.class);
     Job popularBookJob = mock(Job.class);
+    JobExecution completed = new JobExecution(1L);
+    completed.setStatus(BatchStatus.COMPLETED);
+    when(jobLauncher.run(eq(popularReviewJob), any(JobParameters.class))).thenReturn(completed);
+    when(jobLauncher.run(eq(popularBookJob), any(JobParameters.class))).thenReturn(completed);
+
     when(jobLauncher.run(eq(powerUserJob), any(JobParameters.class)))
         .thenThrow(new IllegalStateException("job failed"));
     DashboardBatchScheduler scheduler =

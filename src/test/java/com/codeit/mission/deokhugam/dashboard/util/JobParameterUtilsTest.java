@@ -31,6 +31,15 @@ class JobParameterUtilsTest {
   }
 
   @Test
+  @DisplayName("validateRequired throws when parameter value is blank")
+  void validateRequired_rejectsBlankValue() {
+    assertThatThrownBy(
+        () -> JobParameterUtils.validateRequired(
+            JobParameterUtils.parameter("domainType", " ")))
+        .isInstanceOf(InvalidJobParameterException.class);
+  }
+
+  @Test
   @DisplayName("parseUuid parses valid uuid value")
   void parseUuid_valid() {
     UUID uuid = UUID.randomUUID();
