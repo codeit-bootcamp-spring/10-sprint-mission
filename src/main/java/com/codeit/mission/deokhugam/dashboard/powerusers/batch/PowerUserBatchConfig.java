@@ -30,6 +30,7 @@ public class PowerUserBatchConfig {
       Step aggregatePowerUsersStep,
       Step rankPowerUsersStep,
       Step publishSnapshotStep,
+      Step cleanupOldSnapshotsStep,
       DashboardAggregationJobListener dashboardAggregationJobListener){
 
     return new JobBuilder("powerUserAggregationJob", jobRepository)
@@ -38,6 +39,7 @@ public class PowerUserBatchConfig {
         .next(aggregatePowerUsersStep) // 파워 유저를 집계하는 스텝
         .next(rankPowerUsersStep) // 집계가 마무리 된 후 랭크를 부여하는 스텝
         .next(publishSnapshotStep) // 랭크를 부여한 후, 스냅샷을 publish하는 스텝
+        .next(cleanupOldSnapshotsStep)
         .build();
   }
 
