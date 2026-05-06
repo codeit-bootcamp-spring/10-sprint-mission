@@ -317,10 +317,14 @@ public class ReviewServiceImplement implements ReviewService {
     boolean isLiked = executeToggleWithConcurrencyHandle(targetReview, requestUser);
 
     // 3-1. 좋아요를 추가한 경우 이벤트 발생
-    if (isLiked) {
+    if (targetReview.getUser() != null) {
       eventPublisher.publishEvent(
-          new ReviewLikedEvent(requestUser.getId(), targetReview.getUser().getId(),
-              targetReview.getId()));
+          new ReviewLikedEvent(
+              requestUser.getId(),
+              targetReview.getUser().getId(),
+              targetReview.getId()
+          )
+      );
     }
 
     // 4. 응답 DTO 생성 및 반환
