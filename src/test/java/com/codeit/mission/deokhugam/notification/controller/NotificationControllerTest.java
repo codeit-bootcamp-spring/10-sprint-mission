@@ -96,7 +96,7 @@ public class NotificationControllerTest {
 
     @Test
     @DisplayName("userId를 전달하지 않은 경우 400을 반환")
-    void findAllSuccessUserIdNotFound() throws Exception {
+    void findAllFailMissingUserId() throws Exception {
       // when & then
       mockMvc.perform(
           get("/api/notifications")
