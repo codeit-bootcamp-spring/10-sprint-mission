@@ -203,17 +203,10 @@ public class NotificationControllerTest {
     @Test
     @DisplayName("요청 유저 id 헤더가 없는 경우 400을 반환")
     void updateAllFailWithoutHeader() throws Exception {
-      // given
-      UUID notificationId = UUID.randomUUID();
-
-      NotificationUpdateRequest request =
-        new NotificationUpdateRequest(true);
-
       // when & then
       mockMvc.perform(
-          patch("/api/notifications/{notificationId}", notificationId)
+          patch("/api/notifications/read-all")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
         )
         .andExpect(status().isBadRequest());
     }
