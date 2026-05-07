@@ -42,12 +42,14 @@ class ReviewBatchIntegrationTest {
       // reader 초기화
       reviewHardDeleteReader.open(stepExecution.getExecutionContext());
 
-      // 실행 결과 확인
-      UUID result = reviewHardDeleteReader.read();
-      assertNull(result);
-
-      // reader 자원 해제
-      reviewHardDeleteReader.close();
+      try {
+        // 실행 결과 확인
+        UUID result = reviewHardDeleteReader.read();
+        assertNull(result);
+      } finally {
+        // reader 자원 해제
+        reviewHardDeleteReader.close();
+      }
 
       return null;
     });
