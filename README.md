@@ -50,13 +50,14 @@
 
 ## ERD
 
-(erd 이미지)
+<img width="2018" height="1382" alt="image" src="https://github.com/user-attachments/assets/ded9f891-6368-4f61-b1cf-eb924d62983b" />
+
 
 ---
 
-## Architecture
+## 배포 다이어그램
 
-(아키텍쳐 이미지)
+<img width="796" height="534" alt="image (1)" src="https://github.com/user-attachments/assets/52cf0baa-bc29-47da-bab6-3dfce1dd1ea0" />
 
 ---
 
