@@ -11,6 +11,7 @@ import com.codeit.mission.deokhugam.book.entity.SortDirection;
 import com.codeit.mission.deokhugam.book.event.BookDeletedEvent;
 import com.codeit.mission.deokhugam.book.exception.BookNotFoundException;
 import com.codeit.mission.deokhugam.book.exception.CursorOrAfterFormatNotValidException;
+import com.codeit.mission.deokhugam.book.exception.DuplicatedIsbnException;
 import com.codeit.mission.deokhugam.book.exception.IllegalLimitException;
 import com.codeit.mission.deokhugam.book.exception.WrongFileTypeException;
 import com.codeit.mission.deokhugam.book.mapper.BookDtoMapper;
@@ -275,6 +276,26 @@ class BookServiceTest {
     }
 
     @Test
+    @DisplayName("중복 ISBN이면 생성 실패")
+    void createBook_duplicate_isbn() {
+        BookCreateRequest request = new BookCreateRequest(
+            "제목",
+            "저자",
+            "설명",
+            "출판사",
+            LocalDate.now(),
+            "9788996724155"
+        );
+
+        when(bookRepository.existsByIsbn("9788996724155"))
+            .thenReturn(true);
+
+        assertThatThrownBy(() ->
+            bookService.createBook(request, null)
+        ).isInstanceOf(DuplicatedIsbnException.class);
+    }
+
+    @Test
     @DisplayName("이미지를 수정하면 기존 이미지는 삭제되고 새 이미지가 업로드된다")
     void updateBookWithImage() {
         // given
@@ -304,6 +325,47 @@ class BookServiceTest {
         verify(bookImageService).upload(image);
 
         assertThat(book.getThumbnailUrl()).isEqualTo("new-url");
+    }
+
+    @Test
+    @DisplayName("수정 실패 - 도서 없음")
+    void updateBook_notFound() {
+        UUID id = UUID.randomUUID();
+
+        when(bookRepository.findById(id))
+            .thenReturn(Optional.empty());
+
+        BookUpdateRequest request =
+            new BookUpdateRequest(
+                "t", "a", "d", "p", LocalDate.now()
+            );
+
+        assertThatThrownBy(() ->
+            bookService.updateBook(id, request, null)
+        ).isInstanceOf(BookNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("삭제된 도서는 수정 불가")
+    void updateBook_deleted() {
+        UUID id = UUID.randomUUID();
+
+        Book book = mock(Book.class);
+
+        when(bookRepository.findById(id))
+            .thenReturn(Optional.of(book));
+
+        when(book.getBookStatus())
+            .thenReturn(BookStatus.DELETED);
+
+        BookUpdateRequest request =
+            new BookUpdateRequest(
+                "t", "a", "d", "p", LocalDate.now()
+            );
+
+        assertThatThrownBy(() ->
+            bookService.updateBook(id, request, null)
+        ).isInstanceOf(BookNotFoundException.class);
     }
 
     @Test
@@ -589,6 +651,115 @@ class BookServiceTest {
         assertThatThrownBy(() -> bookService.findAllBooks(request))
             .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void parseCursor_rating() {
+        Object result = ReflectionTestUtils.invokeMethod(
+            bookService,
+            "parseCursor",
+            "rating",
+            "4.5"
+        );
+
+        assertThat(result).isEqualTo(4.5);
+    }
+
+    @Test
+    void parseCursor_publishedDate() {
+        Object result = ReflectionTestUtils.invokeMethod(
+            bookService,
+            "parseCursor",
+            "publishedDate",
+            "2025-01-01"
+        );
+
+        assertThat(result)
+            .isEqualTo(LocalDate.parse("2025-01-01"));
+    }
+
+    @Test
+    void parseCursor_title() {
+        Object result = ReflectionTestUtils.invokeMethod(
+            bookService,
+            "parseCursor",
+            "title",
+            "java"
+        );
+
+        assertThat(result).isEqualTo("java");
+    }
+
+    @Test
+    void parseAfter_success() {
+        Instant now = Instant.now();
+
+        Instant result = ReflectionTestUtils.invokeMethod(
+            bookService,
+            "parseAfter",
+            now.toString()
+        );
+
+        assertThat(result).isEqualTo(now);
+    }
+
+    @Test
+    void parseAfter_null() {
+        Instant result = ReflectionTestUtils.invokeMethod(
+            bookService,
+            "parseAfter",
+            (String) null
+        );
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void extractCursor_title() {
+        Book book = createBook("Java");
+
+        String result = ReflectionTestUtils.invokeMethod(
+            bookService,
+            "extractCursor",
+            book,
+            "title"
+        );
+
+        assertThat(result).isEqualTo("Java");
+    }
+
+
+    @Test
+    @DisplayName("도서 상세 조회 성공")
+    void getBookEntity_success() {
+        UUID id = UUID.randomUUID();
+
+        Book book = createBook("title");
+        BookDto dto = mock(BookDto.class);
+
+        when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+        when(bookDtoMapper.toDto(book)).thenReturn(dto);
+
+        BookDto result = bookService.getBookEntityOrThrow(id);
+
+        assertThat(result).isEqualTo(dto);
+    }
+
+    @Test
+    @DisplayName("삭제된 도서는 조회 실패")
+    void getBookEntity_deleted() {
+        UUID id = UUID.randomUUID();
+
+        Book book = mock(Book.class);
+
+        when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+        when(book.getBookStatus()).thenReturn(BookStatus.DELETED);
+
+        assertThatThrownBy(() ->
+            bookService.getBookEntityOrThrow(id)
+        ).isInstanceOf(BookNotFoundException.class);
+    }
+
+
 
     // ------------------------
     // 헬퍼 메서드
