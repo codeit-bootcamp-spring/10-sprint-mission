@@ -135,10 +135,11 @@ class ReviewRepositoryCustomImplTest {
     Review exactMatchReview = Review.builder()
         .book(book)
         .user(user)
-        .rating(5)
+        .rating(3)
         .content("bad")
         .build();
     ReflectionTestUtils.setField(exactMatchReview, "status", ReviewStatus.ACTIVE);
+    ReflectionTestUtils.setField(exactMatchReview, "createdAt", Instant.now().minusSeconds(3600));
     entityManager.persist(exactMatchReview);
 
     // 리뷰 | 도서 제목 부분 일치
@@ -154,14 +155,15 @@ class ReviewRepositoryCustomImplTest {
     ReflectionTestUtils.setField(otherBook, "bookStatus", BookStatus.ACTIVE);
     entityManager.persist(otherBook);
 
-    // 검색 키워드가 리뷰 '내용'에만 포함되는 리뷰 객체 생성
+    // 리뷰 | 내용에 키워드 포함
     Review partialMatchReview = Review.builder()
         .book(otherBook)
         .user(user)
         .rating(3)
-        .content("에로스와 안테로스")
+        .content("그리스 로마 신화의 에로스와 안테로스")
         .build();
     ReflectionTestUtils.setField(partialMatchReview, "status", ReviewStatus.ACTIVE);
+    ReflectionTestUtils.setField(exactMatchReview, "createdAt", Instant.now());
     entityManager.persist(partialMatchReview);
 
     entityManager.flush();
@@ -185,6 +187,7 @@ class ReviewRepositoryCustomImplTest {
     // then:
     assertThat(results).hasSize(2);
     assertThat(results.get(0).getBook().getTitle()).isEqualTo("에로스와 안테로스");
+    assertThat(results.get(1).getBook().getTitle()).isEqualTo("book2");
   }
 
   @Test
