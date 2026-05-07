@@ -93,7 +93,7 @@ public class ReviewBatchConfig {
   @StepScope
   public JpaCursorItemReader<UUID> reviewHardDeleteReader(
       // JobExecutionListener가 수행한 삭제 날짜 기준
-      @Value("#{jobExecutionContext['threshold']}") String thresholdStr) {
+      @Value("#{jobExecutionContext['threshold'] ?: T(java.time.Instant).now().toString()}") String thresholdStr) {
     // 1. 삭제 기준 날짜 설정
     Instant threshold = Instant.parse(thresholdStr);
 
