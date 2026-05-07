@@ -1,5 +1,7 @@
 package com.codeit.mission.deokhugam.review.batch;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -41,7 +43,8 @@ class ReviewBatchIntegrationTest {
       reviewHardDeleteReader.open(stepExecution.getExecutionContext());
 
       // 실행 결과 확인
-      reviewHardDeleteReader.read();
+      UUID result = reviewHardDeleteReader.read();
+      assertNull(result);
 
       // reader 자원 해제
       reviewHardDeleteReader.close();
