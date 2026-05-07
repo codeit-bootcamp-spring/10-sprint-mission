@@ -79,7 +79,7 @@ class CommentControllerTest {
                 .andExpect(jsonPath("$.id").value(commentId.toString()))
                 .andExpect(jsonPath("$.reviewId").value(reviewId.toString()))
                 .andExpect(jsonPath("$.userId").value(userId.toString()))
-                .andExpect(jsonPath("$.userNickName").value("테스트유저"))
+                .andExpect(jsonPath("$.userNickname").value("테스트유저"))
                 .andExpect(jsonPath("$.content").value("댓글 내용"));
 
         verify(commentService).createComment(any(CommentCreateRequest.class));
