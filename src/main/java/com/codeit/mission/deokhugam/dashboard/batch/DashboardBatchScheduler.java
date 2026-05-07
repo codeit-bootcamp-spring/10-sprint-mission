@@ -28,7 +28,7 @@ public class DashboardBatchScheduler {
   private final Job popularBookAggregationJob; // 인기 도서 집계 Job
 
   // 매 00:00 에 배치 작업을 시작함.
-  @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
+  @Scheduled(cron = "0 * * * * *", zone = "Asia/Seoul")
   public void runDashboardAggregation() {
     // 집계 시작 시간은 00:00.00.0
     Instant aggregatedAt = Instant.now();
