@@ -24,9 +24,11 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
+@ActiveProfiles("test") // 테스트 프로파일로 실행할 때에만 적용
 @Import(CommentRepositoryTest.QueryDslTestConfig.class)
 class CommentRepositoryTest {
 
