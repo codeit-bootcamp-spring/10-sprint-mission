@@ -21,9 +21,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -31,9 +33,16 @@ import org.springframework.test.context.TestPropertySource;
     "cloud.aws.credentials.access-key=dummy-access-key",
     "cloud.aws.credentials.secret-key=dummy-secret-key",
     "cloud.aws.region.static=ap-northeast-2",
-    "cloud.aws.s3.bucket=dummy-bucket"
+    "cloud.aws.s3.bucket=dummy-bucket",
+    "deokhugam.storage.type=local"
 })
 public class ReviewConcurrencyTest {
+
+  @MockitoBean
+  private software.amazon.awssdk.services.s3.S3Client s3Client;
+
+  @MockitoBean
+  private software.amazon.awssdk.services.s3.presigner.S3Presigner s3Presigner;
 
   @Autowired
   private ReviewService reviewServiceImplement;
