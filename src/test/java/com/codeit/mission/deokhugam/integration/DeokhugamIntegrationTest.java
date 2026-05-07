@@ -69,9 +69,16 @@ class DeokhugamIntegrationTest {
     @Autowired BookRepository bookRepository;
     @Autowired ReviewRepository reviewRepository;
     @Autowired CommentRepository commentRepository;
+    @Autowired CacheManager cacheManager;
 
     @BeforeEach
     void cleanUp() {
+        cacheManager.getCacheNames().forEach(name -> {
+            var cache = cacheManager.getCache(name);
+            if (cache != null) {
+                cache.clear();
+            }
+        });
         commentRepository.deleteAllInBatch();
         reviewRepository.deleteAllInBatch();
         bookRepository.deleteAllInBatch();
