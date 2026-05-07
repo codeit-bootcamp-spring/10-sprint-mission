@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@Profile("dev") // dev 프로파일로 실행할 때에만 활성화 됨
+//@Profile("dev") // dev 프로파일로 실행할 때에만 활성화 됨
 public class BatchTestController {
   private final DashboardBatchScheduler dashboardBatchScheduler;
 
