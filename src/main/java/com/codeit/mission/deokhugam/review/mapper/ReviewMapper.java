@@ -32,7 +32,7 @@ public interface ReviewMapper {
   @Mapping(target = "bookTitle", source = "review.book.title")
   @Mapping(target = "bookThumbnailUrl", source = "review.book.thumbnailUrl")
   @Mapping(target = "userId", expression = "java(review.getUser() != null ? review.getUser().getId() : null)")
-  @Mapping(target = "userNickName", expression = "java(review.getUser() != null ? review.getUser().getNickname() : \"알 수 없는 사용자\")")
+  @Mapping(target = "userNickname", expression = "java(review.getUser() != null ? review.getUser().getNickname() : \"알 수 없는 사용자\")")
   @Mapping(target = "likedByMe", source = "isLiked")
   ReviewDto toDto(Review review, boolean isLiked);
 
