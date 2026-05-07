@@ -163,7 +163,7 @@ class ReviewRepositoryCustomImplTest {
         .content("그리스 로마 신화의 에로스와 안테로스")
         .build();
     ReflectionTestUtils.setField(partialMatchReview, "status", ReviewStatus.ACTIVE);
-    ReflectionTestUtils.setField(exactMatchReview, "createdAt", Instant.now());
+    ReflectionTestUtils.setField(partialMatchReview, "createdAt", Instant.now());
     entityManager.persist(partialMatchReview);
 
     entityManager.flush();
