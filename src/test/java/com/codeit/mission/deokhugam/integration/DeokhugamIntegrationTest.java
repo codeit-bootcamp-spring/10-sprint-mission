@@ -402,6 +402,7 @@ class DeokhugamIntegrationTest {
 
             // then
             await()
+                    .pollInterval(200, TimeUnit.MILLISECONDS)
                     .atMost(3, TimeUnit.SECONDS)
                     .untilAsserted(() -> {
                         mockMvc.perform(get("/api/notifications")
