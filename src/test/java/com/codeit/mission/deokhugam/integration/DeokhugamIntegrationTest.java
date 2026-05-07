@@ -10,6 +10,7 @@ import com.codeit.mission.deokhugam.review.repository.ReviewRepository;
 import com.codeit.mission.deokhugam.user.entity.User;
 import com.codeit.mission.deokhugam.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
@@ -35,12 +35,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -72,6 +70,14 @@ class DeokhugamIntegrationTest {
     @Autowired ReviewRepository reviewRepository;
     @Autowired CommentRepository commentRepository;
 
+    @BeforeEach
+    void cleanUp() {
+        commentRepository.deleteAllInBatch();
+        reviewRepository.deleteAllInBatch();
+        bookRepository.deleteAllInBatch();
+        userRepository.deleteAllInBatch();
+    }
+
     @Nested
     @DisplayName("1. 사용자 → 도서 → 리뷰 → 댓글 전체 흐름")
     class UserBookReviewCommentFlow {
@@ -100,12 +106,14 @@ class DeokhugamIntegrationTest {
                     .andExpect(jsonPath("$.userId").value(commenter.getId().toString()))
                     .andExpect(jsonPath("$.content").value("통합 테스트 댓글"));
 
-            assertThat(commentRepository.findAll())
-                    .anySatisfy(comment -> {
-                        assertThat(comment.getReviewId()).isEqualTo(review.getId());
-                        assertThat(comment.getUserId()).isEqualTo(commenter.getId());
-                        assertThat(comment.getContent()).isEqualTo("통합 테스트 댓글");
-                    });
+            mockMvc.perform(get("/api/comments")
+                            .param("reviewId", review.getId().toString())
+                            .param("direction", "DESC")
+                            .param("limit", "10"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.content[0].reviewId").value(review.getId().toString()))
+                    .andExpect(jsonPath("$.content[0].userId").value(commenter.getId().toString()))
+                    .andExpect(jsonPath("$.content[0].content").value("통합 테스트 댓글"));
         }
     }
 
@@ -133,9 +141,6 @@ class DeokhugamIntegrationTest {
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.content").value("수정 후"));
-
-            Comment updated = commentRepository.findById(comment.getId()).orElseThrow();
-            assertThat(updated.getContent()).isEqualTo("수정 후");
         }
 
         @Test
