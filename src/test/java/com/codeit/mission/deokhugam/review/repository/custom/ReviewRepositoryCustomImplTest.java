@@ -201,7 +201,7 @@ class ReviewRepositoryCustomImplTest {
         .book(book)
         .user(user)
         .rating(4)
-        .content("좋음")
+        .content("good")
         .build();
     ReflectionTestUtils.setField(review1, "status", ReviewStatus.ACTIVE);
     entityManager.persist(review1);
@@ -228,7 +228,8 @@ class ReviewRepositoryCustomImplTest {
     List<Review> results = reviewRepositoryCustom.searchReviews(condition);
 
     // then
-    assertThat(results).isNotNull();
+    assertThat(results).isNotEmpty();
+    assertThat(results.get(0).getContent()).isEqualTo("good");
   }
 
   @Test
@@ -269,7 +270,8 @@ class ReviewRepositoryCustomImplTest {
     List<Review> results = reviewRepositoryCustom.searchReviews(condition);
 
     // then
-    assertThat(results).isNotNull();
+    assertThat(results).isNotEmpty();
+    assertThat(results.get(0).getContent()).isEqualTo("good");
   }
 
   @Test
