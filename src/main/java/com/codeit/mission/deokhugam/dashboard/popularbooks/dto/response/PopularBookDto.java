@@ -33,6 +33,12 @@ public record PopularBookDto(
     String author,
 
     @Schema(
+        description = "Book thumbnail URL",
+        example = "https://example.com/thumbnail.jpg"
+    )
+    String thumbnailUrl,
+
+    @Schema(
         description = "집계 기간",
         allowableValues = {"DAILY", "WEEKLY", "MONTHLY", "ALL_TIME"},
         example = "DAILY"

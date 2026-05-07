@@ -106,6 +106,7 @@ class DashboardCacheTest {
         UUID.randomUUID(),
         "book",
         "author",
+        "thumbnail",
         PeriodType.WEEKLY,
         1L,
         10.0,

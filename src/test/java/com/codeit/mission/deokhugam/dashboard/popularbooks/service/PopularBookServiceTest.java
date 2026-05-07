@@ -255,6 +255,7 @@ class PopularBookServiceTest {
         UUID.randomUUID(),
         title,
         author,
+        "thumbnail",
         periodType,
         rank,
         score,

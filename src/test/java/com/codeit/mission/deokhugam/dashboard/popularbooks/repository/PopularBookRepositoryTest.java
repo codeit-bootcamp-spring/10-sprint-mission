@@ -123,6 +123,7 @@ class PopularBookRepositoryTest {
 
     assertEquals(2, result.size());
     assertEquals("book-a", result.get(0).title());
+    assertEquals("thumbnail", result.get(0).thumbnailUrl());
     assertEquals("book-b", result.get(1).title());
     assertTrue(result.get(0).createdAt().isBefore(result.get(1).createdAt()));
   }
