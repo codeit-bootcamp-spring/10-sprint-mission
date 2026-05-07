@@ -1,8 +1,8 @@
 -- Dashboard dummy data for local/dev testing.
 -- Run this SQL, then call: POST /api/dashboard/aggregate
 
-DELETE FROM "review_likes"
-WHERE "user_id" IN (
+DELETE FROM review_likes
+WHERE user_id IN (
   '10000000-0000-0000-0000-000000000001',
   '10000000-0000-0000-0000-000000000002',
   '10000000-0000-0000-0000-000000000003',
@@ -13,8 +13,8 @@ WHERE "user_id" IN (
   '10000000-0000-0000-0000-000000000008'
 );
 
-DELETE FROM "comments"
-WHERE "user_id" IN (
+DELETE FROM comments
+WHERE user_id IN (
   '10000000-0000-0000-0000-000000000001',
   '10000000-0000-0000-0000-000000000002',
   '10000000-0000-0000-0000-000000000003',
@@ -25,8 +25,8 @@ WHERE "user_id" IN (
   '10000000-0000-0000-0000-000000000008'
 );
 
-DELETE FROM "notifications"
-WHERE "user_id" IN (
+DELETE FROM notifications
+WHERE user_id IN (
   '10000000-0000-0000-0000-000000000001',
   '10000000-0000-0000-0000-000000000002',
   '10000000-0000-0000-0000-000000000003',
@@ -37,8 +37,8 @@ WHERE "user_id" IN (
   '10000000-0000-0000-0000-000000000008'
 );
 
-DELETE FROM "popular_reviews"
-WHERE "review_id" IN (
+DELETE FROM popular_reviews
+WHERE review_id IN (
   '30000000-0000-0000-0000-000000000001',
   '30000000-0000-0000-0000-000000000002',
   '30000000-0000-0000-0000-000000000003',
@@ -53,8 +53,8 @@ WHERE "review_id" IN (
   '30000000-0000-0000-0000-000000000012'
 );
 
-DELETE FROM "reviews"
-WHERE "id" IN (
+DELETE FROM reviews
+WHERE id IN (
   '30000000-0000-0000-0000-000000000001',
   '30000000-0000-0000-0000-000000000002',
   '30000000-0000-0000-0000-000000000003',
@@ -69,8 +69,8 @@ WHERE "id" IN (
   '30000000-0000-0000-0000-000000000012'
 );
 
-DELETE FROM "popular_books"
-WHERE "book_id" IN (
+DELETE FROM popular_books
+WHERE book_id IN (
   '20000000-0000-0000-0000-000000000001',
   '20000000-0000-0000-0000-000000000002',
   '20000000-0000-0000-0000-000000000003',
@@ -78,8 +78,8 @@ WHERE "book_id" IN (
   '20000000-0000-0000-0000-000000000005'
 );
 
-DELETE FROM "power_users"
-WHERE "user_id" IN (
+DELETE FROM power_users
+WHERE user_id IN (
   '10000000-0000-0000-0000-000000000001',
   '10000000-0000-0000-0000-000000000002',
   '10000000-0000-0000-0000-000000000003',
@@ -90,8 +90,8 @@ WHERE "user_id" IN (
   '10000000-0000-0000-0000-000000000008'
 );
 
-DELETE FROM "books"
-WHERE "id" IN (
+DELETE FROM books
+WHERE id IN (
   '20000000-0000-0000-0000-000000000001',
   '20000000-0000-0000-0000-000000000002',
   '20000000-0000-0000-0000-000000000003',
@@ -99,8 +99,8 @@ WHERE "id" IN (
   '20000000-0000-0000-0000-000000000005'
 );
 
-DELETE FROM "users"
-WHERE "id" IN (
+DELETE FROM users
+WHERE id IN (
   '10000000-0000-0000-0000-000000000001',
   '10000000-0000-0000-0000-000000000002',
   '10000000-0000-0000-0000-000000000003',
@@ -111,7 +111,7 @@ WHERE "id" IN (
   '10000000-0000-0000-0000-000000000008'
 );
 
-INSERT INTO "users" ("id", "email", "password", "nickname", "status")
+INSERT INTO users (id, email, password, nickname, status)
 VALUES
   ('10000000-0000-0000-0000-000000000001', 'seed-user-1@deokhugam.dev', 'password123', 'SeedUser1', 'ACTIVE'),
   ('10000000-0000-0000-0000-000000000002', 'seed-user-2@deokhugam.dev', 'password123', 'SeedUser2', 'ACTIVE'),
@@ -122,7 +122,7 @@ VALUES
   ('10000000-0000-0000-0000-000000000007', 'seed-user-7@deokhugam.dev', 'password123', 'SeedUser7', 'ACTIVE'),
   ('10000000-0000-0000-0000-000000000008', 'seed-user-8@deokhugam.dev', 'password123', 'SeedUser8', 'ACTIVE');
 
-INSERT INTO "books" ("id", "title", "author", "description", "publisher", "published_date", "isbn", "review_count", "rating", "book_status")
+INSERT INTO books (id, title, author, description, publisher, published_date, isbn, review_count, rating, book_status)
 VALUES
   ('20000000-0000-0000-0000-000000000001', 'Seed Book 1', 'Seed Author 1', 'Dashboard seed book 1', 'Seed Publisher', DATE '2026-04-01', 'DEV-SEED-BOOK-1', 4, 4.25, 'ACTIVE'),
   ('20000000-0000-0000-0000-000000000002', 'Seed Book 2', 'Seed Author 2', 'Dashboard seed book 2', 'Seed Publisher', DATE '2026-04-02', 'DEV-SEED-BOOK-2', 3, 4.33, 'ACTIVE'),
@@ -130,7 +130,7 @@ VALUES
   ('20000000-0000-0000-0000-000000000004', 'Seed Book 4', 'Seed Author 4', 'Dashboard seed book 4', 'Seed Publisher', DATE '2026-04-04', 'DEV-SEED-BOOK-4', 1, 2.00, 'ACTIVE'),
   ('20000000-0000-0000-0000-000000000005', 'Seed Book 5', 'Seed Author 5', 'Dashboard seed book 5', 'Seed Publisher', DATE '2026-04-05', 'DEV-SEED-BOOK-5', 1, 5.00, 'ACTIVE');
 
-INSERT INTO "reviews" ("id", "book_id", "user_id", "rating", "content", "like_count", "comment_count", "status")
+INSERT INTO reviews (id, book_id, user_id, rating, content, like_count, comment_count, status)
 VALUES
   ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 5, 'Seed review 1 for dashboard ranking.', 4, 3, 'ACTIVE'),
   ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000002', 4, 'Seed review 2 for dashboard ranking.', 3, 2, 'ACTIVE'),
@@ -145,7 +145,7 @@ VALUES
   ('30000000-0000-0000-0000-000000000011', '20000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000007', 2, 'Seed review 11 for dashboard ranking.', 0, 1, 'ACTIVE'),
   ('30000000-0000-0000-0000-000000000012', '20000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000008', 5, 'Seed review 12 for dashboard ranking.', 0, 0, 'ACTIVE');
 
-INSERT INTO "comments" ("id", "review_id", "user_id", "content", "status")
+INSERT INTO comments (id, review_id, user_id, content, status)
 VALUES
   ('40000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000005', 'Seed comment 1 for dashboard ranking.', 'ACTIVE'),
   ('40000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000006', 'Seed comment 2 for dashboard ranking.', 'ACTIVE'),
@@ -162,7 +162,7 @@ VALUES
   ('40000000-0000-0000-0000-000000000013', '30000000-0000-0000-0000-000000000010', '10000000-0000-0000-0000-000000000002', 'Seed comment 13 for dashboard ranking.', 'ACTIVE'),
   ('40000000-0000-0000-0000-000000000014', '30000000-0000-0000-0000-000000000011', '10000000-0000-0000-0000-000000000003', 'Seed comment 14 for dashboard ranking.', 'ACTIVE');
 
-INSERT INTO "review_likes" ("id", "review_id", "user_id", "liked_at")
+INSERT INTO review_likes (id, review_id, user_id, liked_at)
 VALUES
   ('50000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000002', CURRENT_TIMESTAMP),
   ('50000000-0000-0000-0000-000000000002', '30000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000003', CURRENT_TIMESTAMP),
