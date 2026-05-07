@@ -32,7 +32,7 @@ class ReviewBatchIntegrationTest {
     // StepExecution 생성
     StepExecution stepExecution = MetaDataInstanceFactory.createStepExecution();
 
-    stepExecution.getExecutionContext().putString("threshold", thresholdStr);
+    stepExecution.getJobExecution().getExecutionContext().putString("threshold", thresholdStr);
 
     // when & then
     StepScopeTestUtils.doInStepScope(stepExecution, () -> {
