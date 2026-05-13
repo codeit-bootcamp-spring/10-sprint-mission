@@ -1,109 +1,87 @@
-name: Deploy Workflow
+name: 배포
 
 on:
   push:
-    branches: [ "release" ]
+    branches:
+      - release
 
 jobs:
-  deploy:
+  build-and-push:
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ github.sha }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: JDK 17 설정
-        uses: actions/setup-java@v4
+      - name: AWS CLI 설정
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: gradlew 실행 권한 부여
-        run: chmod +x gradlew
-
-      - name: 빌드
-        run: ./gradlew clean build
-
-      #AWS CLI 자격 정보 설정
-      #Public ECR에 배포해야되므로 region은 us-east-1
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY}}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: us-east-1
 
-      # 1) Public ECR 로그인 (도커에서 ECR로 푸시하는 권한을 가져와야함)
-      - name: ECR Login
-        run: |
-          aws ecr-public get-login-password --region us-east-1 \
-          | docker login --username AWS --password-stdin public.ecr.aws/i2p9g4j7
+      - name: ECR 로그인
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          registry-type: public
 
-      # 2) 이미지 태그 구성 해시7자리 + latest/ 도커 이미지 저장소 주소.
-      - name: Prepare tags
+      - name: Docker 이미지 빌드 및 푸시
         run: |
-          echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
-          echo "REPO_URI=${{ vars.ECR_REPOSITORY_URI }}" >> $GITHUB_ENV
+          docker buildx build \
+            -t ${{ vars.ECR_REPOSITORY_URI }}:${{ github.sha }} \
+            -t ${{ vars.ECR_REPOSITORY_URI }}:latest \
+            --push \
+            .
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
 
-      # 3) Docker 빌드
-      # 같은 imageId를 가진 태그만 다른 image가 2개 생긴다.
-      - name: Docker build
-        run: |
-          docker build -t "$REPO_URI:$IMAGE_TAG" -t "$REPO_URI:latest" .
-
-      # 4) ECR 푸시
-      - name: Docker push
-        run: |
-          docker push "$REPO_URI:$IMAGE_TAG"
-          docker push "$REPO_URI:latest"
-
-      # 5) ECS 서비스 업데이트를 위한 AWS CLI 재설정: AWS_REGION 을 northeast-2로 재설정때문
-      - name: Configure AWS Credentials (ECS 리전)
-        uses: aws-actions/configure-aws-credentials@v2
+    steps:
+      - name: AWS CLI 설정
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      # 6) 태스크 정의 템플릿 렌더링
-      - name: Render task definition
+      - name: ECS 태스크 정의 업데이트
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y gettext-base
+          TASK_DEFINITION=$(
+          aws ecs describe-task-definition \
+           --task-definition ${{ vars.ECS_TASK_DEFINITION }}
+          )
 
-          export AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}
-          export AWS_REGION=${{ secrets.AWS_REGION }}
-          export REPO_URI=${{ vars.ECR_REPOSITORY_URI }}
-          export IMAGE_TAG=${GITHUB_SHA::7}
+          NEW_TASK_DEFINITION=$(
+          echo $TASK_DEFINITION | jq \
+            --arg IMAGE "${{ vars.ECR_REPOSITORY_URI }}:latest" \
+            '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)'
+          )
 
-          envsubst < ecs-task-def.json > task-def.rendered.json
+          # 새로운 태스크 정의 등록
+          NEW_TASK_DEF_ARN=$(
+            aws ecs register-task-definition \
+              --cli-input-json "$NEW_TASK_DEFINITION" | \
+            jq -r '.taskDefinition.taskDefinitionArn'
+          )
+          
+          # 환경 파일에 변수 저장 (다음 단계에서 사용 가능)
+          echo "NEW_TASK_DEF_ARN=$NEW_TASK_DEF_ARN" >> $GITHUB_ENV
 
-          echo "=== Rendered task definition ==="
-          cat task-def.rendered.json
-
-      # 7) 새 태스크 정의 등록
-      - name: Register new task definition
-        run: |
-          TASK_DEF_ARN=$(aws ecs register-task-definition \
-            --cli-input-json file://task-def.rendered.json \
-            --query 'taskDefinition.taskDefinitionArn' \
-            --output text)
-
-          echo "NEW_TASK_DEF_ARN=$TASK_DEF_ARN" >> $GITHUB_ENV
-          echo "Registered task definition: $TASK_DEF_ARN"
-
-      # 8) 새 태스크 정의로 ECS 서비스 업데이트
-      - name: Update ECS service
+      - name: ECS 서비스 중지(프리티어 환경 고려)
         run: |
           aws ecs update-service \
             --cluster ${{ vars.ECS_CLUSTER }} \
             --service ${{ vars.ECS_SERVICE }} \
-            --task-definition "$NEW_TASK_DEF_ARN" \
-            --force-new-deployment
+            --desired-count 0
 
-      # 9) 배포 상태 확인 (디플로이먼트 요약 출력)
-      - name: ECS 배포 상태 확인
+      - name: ECS 서비스 업데이트
         run: |
-          aws ecs describe-services \
+          aws ecs update-service \
             --cluster ${{ vars.ECS_CLUSTER }} \
-            --services ${{ vars.ECS_SERVICE }} \
-            --query "services[0].deployments"
+            --service ${{ vars.ECS_SERVICE }} \
+            --task-definition $NEW_TASK_DEF_ARN \
+            --desired-count 1 \
+            --force-new-deployment
+        

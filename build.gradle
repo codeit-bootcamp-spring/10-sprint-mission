@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.sprint.mission'
-version = '1.2-M8'
+version = '2.0-M9'
 
 java {
     toolchain {
@@ -18,13 +18,14 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    testCompileOnly {
+        extendsFrom testAnnotationProcessor
+    }
 }
 
 repositories {
     mavenCentral()
 }
-
-
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -32,6 +33,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'software.amazon.awssdk:s3:2.31.7'
     runtimeOnly 'org.postgresql:postgresql'
 
     compileOnly 'org.projectlombok:lombok'
@@ -42,22 +44,15 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'com.h2database:h2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    //aws
-    implementation 'software.amazon.awssdk:s3:2.31.7'
-    implementation 'software.amazon.awssdk:auth:2.31.7'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
 
-jacoco {
-    toolVersion = "0.8.12"
-}
-
 test {
-    useJUnitPlatform()
     finalizedBy jacocoTestReport
 }
 
@@ -66,6 +61,5 @@ jacocoTestReport {
     reports {
         xml.required = true
         html.required = true
-        csv.required = false
     }
 }
