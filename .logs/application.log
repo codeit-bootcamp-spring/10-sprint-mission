@@ -1,16 +1,45 @@
-26-04-12 21:43:31.993 [background-preinit] INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 8.0.1.Final
-26-04-12 21:43:32.101 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - Starting DiscodeitApplicationTests using Java 17.0.17 with PID 2504 (started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
-26-04-12 21:43:32.103 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - The following 1 profile is active: "dev"
-26-04-12 21:43:34.702 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-26-04-12 21:43:34.879 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 159 ms. Found 6 JPA repository interfaces.
-26-04-12 21:43:36.297 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
-26-04-12 21:43:36.690 [Test worker] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7acc95a2
-26-04-12 21:43:36.694 [Test worker] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
-26-04-12 21:43:36.953 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
-26-04-12 21:43:37.193 [Test worker] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.2.Final
-26-04-12 21:43:37.306 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
-26-04-12 21:43:37.995 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
-26-04-12 21:43:38.192 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+26-05-14 09:42:44.951 [background-preinit] [32mINFO [0;39m o.h.validator.internal.util.Version  [ |  | ] - HV000001: Hibernate Validator 8.0.1.Final
+26-05-14 09:42:45.051 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Starting DiscodeitApplication using Java 17.0.17 with PID 20724 (C:\Users\jongin\codeit\10-sprint-mission\build\classes\java\main started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
+26-05-14 09:42:45.053 [main] [32mDEBUG[0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Running with Spring Boot v3.4.0, Spring v6.2.0
+26-05-14 09:42:45.054 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - The following 1 profile is active: "dev"
+26-05-14 09:42:46.497 [main] [33mWARN [0;39m o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext [ |  | ] - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.support.BeanDefinitionOverrideException: Invalid bean definition with name 's3BinaryContentStorage' defined in class path resource [com/sprint/mission/discodeit/storage/s3/S3BinaryContentStorageConfig.class]: Cannot register bean definition [Root bean: class=null; scope=; abstract=false; lazyInit=null; autowireMode=3; dependencyCheck=0; autowireCandidate=true; primary=false; fallback=false; factoryBeanName=s3BinaryContentStorageConfig; factoryMethodName=s3BinaryContentStorage; initMethodNames=null; destroyMethodNames=[(inferred)]; defined in class path resource [com/sprint/mission/discodeit/storage/s3/S3BinaryContentStorageConfig.class]] for bean 's3BinaryContentStorage' since there is already [Generic bean: class=com.sprint.mission.discodeit.storage.s3.S3BinaryContentStorage; scope=singleton; abstract=false; lazyInit=null; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; fallback=false; factoryBeanName=null; factoryMethodName=null; initMethodNames=null; destroyMethodNames=null; defined in file [C:\Users\jongin\codeit\10-sprint-mission\build\classes\java\main\com\sprint\mission\discodeit\storage\s3\S3BinaryContentStorage.class]] bound.
+26-05-14 09:42:46.512 [main] [32mINFO [0;39m o.s.b.a.l.ConditionEvaluationReportLogger [ |  | ] - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+26-05-14 09:42:46.549 [main] [31mERROR[0;39m o.s.b.d.LoggingFailureAnalysisReporter [ |  | ] - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+The bean 's3BinaryContentStorage', defined in class path resource [com/sprint/mission/discodeit/storage/s3/S3BinaryContentStorageConfig.class], could not be registered. A bean with that name has already been defined in file [C:\Users\jongin\codeit\10-sprint-mission\build\classes\java\main\com\sprint\mission\discodeit\storage\s3\S3BinaryContentStorage.class] and overriding is disabled.
+
+Action:
+
+Consider renaming one of the beans or enabling overriding by setting spring.main.allow-bean-definition-overriding=true
+
+26-05-14 09:44:31.178 [background-preinit] [32mINFO [0;39m o.h.validator.internal.util.Version  [ |  | ] - HV000001: Hibernate Validator 8.0.1.Final
+26-05-14 09:44:31.260 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Starting DiscodeitApplication using Java 17.0.17 with PID 1888 (C:\Users\jongin\codeit\10-sprint-mission\build\classes\java\main started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
+26-05-14 09:44:31.262 [main] [32mDEBUG[0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Running with Spring Boot v3.4.0, Spring v6.2.0
+26-05-14 09:44:31.263 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - The following 1 profile is active: "dev"
+26-05-14 09:44:33.013 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+26-05-14 09:44:33.160 [main] [32mINFO [0;39m o.s.d.r.c.RepositoryConfigurationDelegate [ |  | ] - Finished Spring Data repository scanning in 133 ms. Found 6 JPA repository interfaces.
+26-05-14 09:44:34.434 [main] [32mINFO [0;39m o.s.b.w.e.tomcat.TomcatWebServer     [ |  | ] - Tomcat initialized with port 8080 (http)
+26-05-14 09:44:34.453 [main] [32mINFO [0;39m o.a.coyote.http11.Http11NioProtocol  [ |  | ] - Initializing ProtocolHandler ["http-nio-8080"]
+26-05-14 09:44:34.455 [main] [32mINFO [0;39m o.a.catalina.core.StandardService    [ |  | ] - Starting service [Tomcat]
+26-05-14 09:44:34.456 [main] [32mINFO [0;39m o.a.catalina.core.StandardEngine     [ |  | ] - Starting Servlet engine: [Apache Tomcat/10.1.33]
+26-05-14 09:44:34.595 [main] [32mINFO [0;39m o.a.c.c.C.[Tomcat].[localhost].[/]   [ |  | ] - Initializing Spring embedded WebApplicationContext
+26-05-14 09:44:34.595 [main] [32mINFO [0;39m o.s.b.w.s.c.ServletWebServerApplicationContext [ |  | ] - Root WebApplicationContext: initialization completed in 3268 ms
+26-05-14 09:44:34.957 [main] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Starting...
+26-05-14 09:44:35.646 [main] [32mINFO [0;39m com.zaxxer.hikari.pool.HikariPool    [ |  | ] - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3c89b864
+26-05-14 09:44:35.649 [main] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Start completed.
+26-05-14 09:44:35.811 [main] [32mINFO [0;39m o.h.jpa.internal.util.LogHelper      [ |  | ] - HHH000204: Processing PersistenceUnitInfo [name: default]
+26-05-14 09:44:35.943 [main] [32mINFO [0;39m org.hibernate.Version                [ |  | ] - HHH000412: Hibernate ORM core version 6.6.2.Final
+26-05-14 09:44:36.011 [main] [32mINFO [0;39m o.h.c.i.RegionFactoryInitiator       [ |  | ] - HHH000026: Second-level cache disabled
+26-05-14 09:44:36.554 [main] [32mINFO [0;39m o.s.o.j.p.SpringPersistenceUnitInfo  [ |  | ] - No LoadTimeWeaver setup: ignoring JPA class transformer
+26-05-14 09:44:36.792 [main] [32mINFO [0;39m o.hibernate.orm.connections.pooling  [ |  | ] - HHH10001005: Database info:
 	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
 	Database driver: undefined/unknown
 	Database version: 18.2
@@ -18,486 +47,512 @@
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-26-04-12 21:43:40.206 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-26-04-12 21:43:40.212 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
-26-04-12 21:43:41.936 [Test worker] INFO  o.s.b.a.w.s.WelcomePageHandlerMapping - Adding welcome page: class path resource [static/index.html]
-26-04-12 21:43:43.527 [Test worker] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 4 endpoints beneath base path '/actuator'
-26-04-12 21:43:43.675 [Test worker] INFO  c.s.m.d.DiscodeitApplicationTests - Started DiscodeitApplicationTests in 12.697 seconds (process running for 15.868)
-26-04-12 21:43:43.741 [Test worker] WARN  o.s.c.events.SpringDocAppInitializer - SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
-26-04-12 21:43:43.741 [Test worker] WARN  o.s.c.events.SpringDocAppInitializer - SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
-26-04-12 21:43:44.485 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest]: ChannelRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-12 21:43:44.537 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest
-26-04-12 21:43:44.543 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$DeleteTest]: DeleteTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-12 21:43:44.563 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$DeleteTest
-26-04-12 21:43:44.631 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - Starting ChannelRepositoryTest using Java 17.0.17 with PID 2504 (started by jongin in C:\Users\jongin\codeit\10-sprint-mission)
-26-04-12 21:43:44.631 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - The following 1 profile is active: "test"
-26-04-12 21:43:44.785 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-26-04-12 21:43:44.857 [Test worker] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 70 ms. Found 6 JPA repository interfaces.
-26-04-12 21:43:44.879 [Test worker] INFO  o.s.b.t.a.j.TestDatabaseAutoConfiguration$EmbeddedDataSourceBeanFactoryPostProcessor - Replacing 'dataSource' DataSource bean with embedded version
-26-04-12 21:43:44.952 [Test worker] INFO  o.s.j.d.e.EmbeddedDatabaseFactory - Starting embedded database: url='jdbc:h2:mem:88ee98b4-8d30-46c4-bca8-8c379a9b7853;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=false', username='sa'
-26-04-12 21:43:45.682 [Test worker] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
-26-04-12 21:43:45.702 [Test worker] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
-26-04-12 21:43:45.768 [Test worker] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
-26-04-12 21:43:45.844 [Test worker] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
-	Database JDBC URL [Connecting through datasource 'org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseFactory$EmbeddedDataSourceProxy@5feede1f']
-	Database driver: undefined/unknown
-	Database version: 2.3.232
-	Autocommit mode: undefined/unknown
-	Isolation level: undefined/unknown
-	Minimum pool size: undefined/unknown
-	Maximum pool size: undefined/unknown
-26-04-12 21:43:46.401 [Test worker] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-26-04-12 21:43:46.458 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists binary_contents cascade 
-26-04-12 21:43:46.468 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists channels cascade 
-26-04-12 21:43:46.469 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists message_attachments cascade 
-26-04-12 21:43:46.470 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists messages cascade 
-26-04-12 21:43:46.472 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists read_statuses cascade 
-26-04-12 21:43:46.473 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists user_statuses cascade 
-26-04-12 21:43:46.474 [Test worker] DEBUG org.hibernate.SQL - 
-    drop table if exists users cascade 
-26-04-12 21:43:46.494 [Test worker] DEBUG org.hibernate.SQL - 
-    create table binary_contents (
-        created_at timestamp(6) with time zone not null,
-        size bigint not null,
-        id uuid not null,
-        content_type varchar(100) not null,
-        file_name varchar(255) not null,
-        primary key (id)
-    )
-26-04-12 21:43:46.521 [Test worker] DEBUG org.hibernate.SQL - 
-    create table channels (
-        created_at timestamp(6) with time zone not null,
-        updated_at timestamp(6) with time zone not null,
-        id uuid not null,
-        description varchar(500) not null,
-        name varchar(255) not null,
-        type enum ('PRIVATE','PUBLIC') not null,
-        primary key (id)
-    )
-26-04-12 21:43:46.526 [Test worker] DEBUG org.hibernate.SQL - 
-    create table message_attachments (
-        attachment_id uuid not null,
-        message_id uuid not null
-    )
-26-04-12 21:43:46.529 [Test worker] DEBUG org.hibernate.SQL - 
-    create table messages (
-        created_at timestamp(6) with time zone not null,
-        updated_at timestamp(6) with time zone not null,
-        author_id uuid,
-        channel_id uuid not null,
-        id uuid not null,
-        content varchar(255) not null,
-        primary key (id)
-    )
-26-04-12 21:43:46.533 [Test worker] DEBUG org.hibernate.SQL - 
-    create table read_statuses (
-        created_at timestamp(6) with time zone not null,
-        last_read_at timestamp(6) with time zone not null,
-        updated_at timestamp(6) with time zone not null,
-        channel_id uuid not null,
-        id uuid not null,
-        user_id uuid not null,
-        primary key (id)
-    )
-26-04-12 21:43:46.537 [Test worker] DEBUG org.hibernate.SQL - 
-    create table user_statuses (
-        created_at timestamp(6) with time zone not null,
-        last_active_at timestamp(6) with time zone not null,
-        updated_at timestamp(6) with time zone not null,
-        id uuid not null,
-        user_id uuid not null unique,
-        primary key (id)
-    )
-26-04-12 21:43:46.543 [Test worker] DEBUG org.hibernate.SQL - 
-    create table users (
-        created_at timestamp(6) with time zone not null,
-        updated_at timestamp(6) with time zone not null,
-        id uuid not null,
-        profile_id uuid unique,
-        username varchar(50) not null,
-        password varchar(60) not null,
-        email varchar(100) not null,
-        primary key (id)
-    )
-26-04-12 21:43:46.549 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists message_attachments 
-       add constraint FKsd1m8rb8jcpbcnb7rpdue7ctc 
-       foreign key (attachment_id) 
-       references binary_contents
-26-04-12 21:43:46.601 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists message_attachments 
-       add constraint FKj7twd218e2gqw9cmlhwvo1rth 
-       foreign key (message_id) 
-       references messages
-26-04-12 21:43:46.606 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists messages 
-       add constraint FKowtlim26svclkatusptbgi7u1 
-       foreign key (author_id) 
-       references users
-26-04-12 21:43:46.610 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists messages 
-       add constraint FK3u3ckbhwq9se1cmopk2pq05b2 
-       foreign key (channel_id) 
-       references channels
-26-04-12 21:43:46.612 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists read_statuses 
-       add constraint FKa38ri44ml4gfdpklx4ahqr8gd 
-       foreign key (channel_id) 
-       references channels
-26-04-12 21:43:46.616 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists read_statuses 
-       add constraint FKml3k4wr9sj5yxrmj6d0aoib2e 
-       foreign key (user_id) 
-       references users
-26-04-12 21:43:46.618 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists user_statuses 
-       add constraint FK4lfl3ei2ubchgcxrrpo3pw4mm 
-       foreign key (user_id) 
-       references users
-26-04-12 21:43:46.621 [Test worker] DEBUG org.hibernate.SQL - 
-    alter table if exists users 
-       add constraint FKtbudycgrip49xdptogmhfqnso 
-       foreign key (profile_id) 
-       references binary_contents
-26-04-12 21:43:46.632 [Test worker] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
-26-04-12 21:43:46.777 [Test worker] INFO  c.s.m.d.r.ChannelRepositoryTest - Started ChannelRepositoryTest in 2.209 seconds (process running for 18.972)
-26-04-12 21:43:47.126 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindAllTest]: FindAllTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-12 21:43:47.147 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindAllTest
-26-04-12 21:43:47.345 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        channels
-        (created_at, description, name, type, updated_at, id) 
-    values
-        (?, ?, ?, ?, ?, ?)
-26-04-12 21:43:47.356 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.156709800Z]
-26-04-12 21:43:47.371 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [±âº» Ã¤³Î]
-26-04-12 21:43:47.372 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [general]
-26-04-12 21:43:47.372 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PUBLIC]
-26-04-12 21:43:47.372 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.156709800Z]
-26-04-12 21:43:47.373 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [1666364d-bd0f-4abd-8fed-4586e2f1109f]
-26-04-12 21:43:47.398 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        channels
-        (created_at, description, name, type, updated_at, id) 
-    values
-        (?, ?, ?, ?, ?, ?)
-26-04-12 21:43:47.398 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.157708500Z]
-26-04-12 21:43:47.399 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- []
-26-04-12 21:43:47.400 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- []
-26-04-12 21:43:47.400 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PRIVATE]
-26-04-12 21:43:47.400 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.157708500Z]
-26-04-12 21:43:47.401 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [70d76a60-cd8e-48e3-84ef-49cbf6c8bede]
-26-04-12 21:43:47.438 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        c1_0.id,
-        c1_0.created_at,
-        c1_0.description,
-        c1_0.name,
-        c1_0.type,
-        c1_0.updated_at 
-    from
-        channels c1_0
-26-04-12 21:43:47.531 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindByIdTest]: FindByIdTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-12 21:43:47.559 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$FindByIdTest
-26-04-12 21:43:47.594 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        c1_0.id,
-        c1_0.created_at,
-        c1_0.description,
-        c1_0.name,
-        c1_0.type,
-        c1_0.updated_at 
-    from
-        channels c1_0 
-    where
-        c1_0.id=?
-26-04-12 21:43:47.595 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [10e6bd5b-4a75-4e3a-b40c-4e80292b21af]
-26-04-12 21:43:47.606 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.ChannelRepositoryTest$SaveChannelTest]: SaveChannelTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-12 21:43:47.627 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.ChannelRepositoryTest$SaveChannelTest
-26-04-12 21:43:47.644 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.MessageRepositoryTest]: MessageRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-12 21:43:47.665 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.MessageRepositoryTest
-26-04-12 21:43:47.669 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.MessageRepositoryTest$FindTopMessageTest]: FindTopMessageTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-12 21:43:47.692 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.MessageRepositoryTest$FindTopMessageTest
-26-04-12 21:43:47.826 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        channels
-        (created_at, description, name, type, updated_at, id) 
-    values
-        (?, ?, ?, ?, ?, ?)
-26-04-12 21:43:47.827 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.700588400Z]
-26-04-12 21:43:47.827 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [±âº» Ã¤³Î]
-26-04-12 21:43:47.828 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [ÀÏ¹Ý]
-26-04-12 21:43:47.828 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:ENUM) <- [PUBLIC]
-26-04-12 21:43:47.828 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.700588400Z]
-26-04-12 21:43:47.829 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [414d56f1-535a-486f-9a65-5938c9fc9e11]
-26-04-12 21:43:47.831 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        users
-        (created_at, email, password, profile_id, updated_at, username, id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-26-04-12 21:43:47.832 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.708098100Z]
-26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.708098100Z]
-26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-12 21:43:47.833 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [46a34434-dfa5-4e81-af60-2d4f4f60706b]
-26-04-12 21:43:47.835 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        user_statuses
-        (created_at, last_active_at, updated_at, user_id, id) 
-    values
-        (?, ?, ?, ?, ?)
-26-04-12 21:43:47.836 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.715497700Z]
-26-04-12 21:43:47.837 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.708098100Z]
-26-04-12 21:43:47.837 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.715497700Z]
-26-04-12 21:43:47.837 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [46a34434-dfa5-4e81-af60-2d4f4f60706b]
-26-04-12 21:43:47.837 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:UUID) <- [463d99a7-c68c-4bff-b295-497af4c2ffc5]
-26-04-12 21:43:47.838 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        messages
-        (author_id, channel_id, content, created_at, updated_at, id) 
-    values
-        (?, ?, ?, ?, ?, ?)
-26-04-12 21:43:47.839 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [46a34434-dfa5-4e81-af60-2d4f4f60706b]
-26-04-12 21:43:47.839 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:UUID) <- [414d56f1-535a-486f-9a65-5938c9fc9e11]
-26-04-12 21:43:47.839 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1]
-26-04-12 21:43:47.840 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.722794300Z]
-26-04-12 21:43:47.840 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.722794300Z]
-26-04-12 21:43:47.840 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [1f39cbd2-52d8-4d51-bff4-0ee47659d128]
-26-04-12 21:43:47.843 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        messages
-        (author_id, channel_id, content, created_at, updated_at, id) 
-    values
-        (?, ?, ?, ?, ?, ?)
-26-04-12 21:43:47.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [46a34434-dfa5-4e81-af60-2d4f4f60706b]
-26-04-12 21:43:47.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:UUID) <- [414d56f1-535a-486f-9a65-5938c9fc9e11]
-26-04-12 21:43:47.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [2]
-26-04-12 21:43:47.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.748313700Z]
-26-04-12 21:43:47.843 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.748313700Z]
-26-04-12 21:43:47.845 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:UUID) <- [66a73b80-8b58-4cdf-a626-0e60117b3bc4]
-26-04-12 21:43:47.854 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        m1_0.id,
-        m1_0.author_id,
-        m1_0.channel_id,
-        m1_0.content,
-        m1_0.created_at,
-        m1_0.updated_at 
-    from
-        messages m1_0 
-    where
-        m1_0.channel_id=? 
-    order by
-        m1_0.created_at desc 
-    fetch
-        first ? rows only
-26-04-12 21:43:47.855 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:UUID) <- [414d56f1-535a-486f-9a65-5938c9fc9e11]
-26-04-12 21:43:47.856 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-12 21:43:47.876 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest]: UserRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-12 21:43:47.895 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest
-26-04-12 21:43:47.899 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByUsernameTest]: ExistsByUsernameTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-12 21:43:47.917 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByUsernameTest
-26-04-12 21:43:47.939 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        users
-        (created_at, email, password, profile_id, updated_at, username, id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-26-04-12 21:43:47.939 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.927277600Z]
-26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.927277600Z]
-26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-12 21:43:47.941 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [b03105fe-fafe-41c1-80f7-d38f54192a22]
-26-04-12 21:43:47.945 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id 
-    from
-        users u1_0 
-    where
-        u1_0.username=? 
-    fetch
-        first ? rows only
-26-04-12 21:43:47.945 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester]
-26-04-12 21:43:47.945 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-12 21:43:47.959 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id 
-    from
-        users u1_0 
-    where
-        u1_0.username=? 
-    fetch
-        first ? rows only
-26-04-12 21:43:47.961 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [ghost]
-26-04-12 21:43:47.962 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-12 21:43:47.970 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByEmailTest]: ExistsByEmailTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-12 21:43:47.989 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$ExistsByEmailTest
-26-04-12 21:43:47.999 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        users
-        (created_at, email, password, profile_id, updated_at, username, id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-26-04-12 21:43:48.000 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.996798400Z]
-26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:47.996798400Z]
-26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-12 21:43:48.001 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [632919aa-d294-4e91-842d-7f10da4f740b]
-26-04-12 21:43:48.003 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id 
-    from
-        users u1_0 
-    where
-        u1_0.email=? 
-    fetch
-        first ? rows only
-26-04-12 21:43:48.003 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester@test.com]
-26-04-12 21:43:48.005 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-12 21:43:48.014 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id 
-    from
-        users u1_0 
-    where
-        u1_0.email=? 
-    fetch
-        first ? rows only
-26-04-12 21:43:48.015 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [none@test.com]
-26-04-12 21:43:48.015 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:INTEGER) <- [1]
-26-04-12 21:43:48.023 [Test worker] INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.sprint.mission.discodeit.repository.UserRepositoryTest$FindByUsernameTest]: FindByUsernameTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-26-04-12 21:43:48.038 [Test worker] INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.sprint.mission.discodeit.DiscodeitApplication for test class com.sprint.mission.discodeit.repository.UserRepositoryTest$FindByUsernameTest
-26-04-12 21:43:48.052 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        users
-        (created_at, email, password, profile_id, updated_at, username, id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-26-04-12 21:43:48.052 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:48.046205700Z]
-26-04-12 21:43:48.054 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-12 21:43:48.054 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-12 21:43:48.054 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-12 21:43:48.054 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:48.046205700Z]
-26-04-12 21:43:48.055 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-12 21:43:48.055 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [20fec30d-5d06-4665-9940-bf7d2aef04b3]
-26-04-12 21:43:48.057 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id,
-        u1_0.created_at,
-        u1_0.email,
-        u1_0.password,
-        u1_0.profile_id,
-        u1_0.updated_at,
-        u1_0.username 
-    from
-        users u1_0 
-    where
-        u1_0.username=?
-26-04-12 21:43:48.057 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [tester]
-26-04-12 21:43:48.069 [Test worker] DEBUG org.hibernate.SQL - 
-    insert 
-    into
-        users
-        (created_at, email, password, profile_id, updated_at, username, id) 
-    values
-        (?, ?, ?, ?, ?, ?, ?)
-26-04-12 21:43:48.069 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:TIMESTAMP_UTC) <- [2026-04-12T12:43:48.066256400Z]
-26-04-12 21:43:48.070 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (2:VARCHAR) <- [tester@test.com]
-26-04-12 21:43:48.070 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (3:VARCHAR) <- [1234]
-26-04-12 21:43:48.070 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (4:UUID) <- [null]
-26-04-12 21:43:48.070 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (5:TIMESTAMP_UTC) <- [2026-04-12T12:43:48.066256400Z]
-26-04-12 21:43:48.071 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (6:VARCHAR) <- [tester]
-26-04-12 21:43:48.071 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (7:UUID) <- [cd188b8d-c070-454f-96a1-81c32290f510]
-26-04-12 21:43:48.073 [Test worker] DEBUG org.hibernate.SQL - 
-    select
-        u1_0.id,
-        u1_0.created_at,
-        u1_0.email,
-        u1_0.password,
-        u1_0.profile_id,
-        u1_0.updated_at,
-        u1_0.username 
-    from
-        users u1_0 
-    where
-        u1_0.username=?
-26-04-12 21:43:48.074 [Test worker] TRACE org.hibernate.orm.jdbc.bind - binding parameter (1:VARCHAR) <- [jongin]
-26-04-12 21:43:53.249 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ºñ°ø°³ Ã¤³Î »ý¼º ¿äÃ» - participantCount=1
-26-04-12 21:43:53.277 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ºñ°ø°³ Ã¤³Î »ý¼º ¿Ï·á - channelId=null, participantCount=1
-26-04-12 21:43:53.495 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ¿äÃ» - channelId=e695f9bb-e3c5-4e26-9d54-8d3ee5af7a6b
-26-04-12 21:43:53.497 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ½ÇÆÐ - ºñ°ø°³ Ã¤³Î ¼öÁ¤ ºÒ°¡ channelId=e695f9bb-e3c5-4e26-9d54-8d3ee5af7a6b
-26-04-12 21:43:53.511 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - °ø°³ Ã¤³Î »ý¼º ¿äÃ» - name=general
-26-04-12 21:43:53.512 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - °ø°³ Ã¤³Î »ý¼º ¿Ï·á - channelId=null
-26-04-12 21:43:53.524 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î »èÁ¦ ¿äÃ» - channelId=11e1c263-0cef-44cd-875d-d39d9b37ed68
-26-04-12 21:43:53.528 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î »èÁ¦ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ channelId=11e1c263-0cef-44cd-875d-d39d9b37ed68
-26-04-12 21:43:53.539 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ¿äÃ» - channelId=d6b23682-6517-431f-850d-41b14f8d0404
-26-04-12 21:43:53.540 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ channelId=d6b23682-6517-431f-850d-41b14f8d0404
-26-04-12 21:43:53.549 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ¿äÃ» - channelId=6f444099-f12c-411d-a6c8-916511335b9b
-26-04-12 21:43:53.551 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - Ã¤³Î ¼öÁ¤ ¿Ï·á - channelId=6f444099-f12c-411d-a6c8-916511335b9b
-26-04-12 21:43:53.561 [Test worker] INFO  c.s.m.d.s.basic.BasicChannelService - ºñ°ø°³ Ã¤³Î »ý¼º ¿äÃ» - participantCount=1
-26-04-12 21:43:53.563 [Test worker] WARN  c.s.m.d.s.basic.BasicChannelService - ºñ°ø°³ Ã¤³Î »ý¼º ½ÇÆÐ - Âü¿©ÀÚ ¾øÀ½ userId=df2212d7-5e4c-470a-8ddd-a3db25d68a79
-26-04-12 21:43:53.794 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö »èÁ¦ ¿äÃ» - messageId=ed245cdb-681c-4c11-8e17-dd13347eea95
-26-04-12 21:43:53.796 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö »èÁ¦ ¿Ï·á - messageId=ed245cdb-681c-4c11-8e17-dd13347eea95
-26-04-12 21:43:53.806 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ¼¼Áö »ý¼º ¿äÃ»- channelId=c2387f7d-69e6-4e7d-bbe3-955deae0ecb8, authorId=8f234203-daf6-484c-870b-0cab10882d1a
-26-04-12 21:43:53.808 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ¼¼Áö »ý¼º ½ÇÆÐ - Ã¤³Î ¾øÀ½ channelId=c2387f7d-69e6-4e7d-bbe3-955deae0ecb8, authorId=8f234203-daf6-484c-870b-0cab10882d1a
-26-04-12 21:43:53.818 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö »èÁ¦ ¿äÃ» - messageId=b9bae4a0-5de9-4412-b398-d6b8137cbc25
-26-04-12 21:43:53.820 [Test worker] WARN  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö »èÁ¦ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ messageId=b9bae4a0-5de9-4412-b398-d6b8137cbc25
-26-04-12 21:43:53.830 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ¼¼Áö »ý¼º ¿äÃ»- channelId=98abc625-ad6a-46eb-b218-3d510c015257, authorId=f12e1c81-24f0-4288-a4b7-dbff943e137c
-26-04-12 21:43:53.843 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö ¼öÁ¤ ¿äÃ» - messageId=43761a65-9351-4bea-bac9-014eb3ac6208
-26-04-12 21:43:53.845 [Test worker] WARN  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö ¼öÁ¤ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ messageId=43761a65-9351-4bea-bac9-014eb3ac6208
-26-04-12 21:43:53.857 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö ¼öÁ¤ ¿äÃ» - messageId=1a20f505-14ff-4f7d-ba6e-e25f5000b1ac
-26-04-12 21:43:53.857 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ½ÃÁö ¼öÁ¤ ¿Ï·á - messageId=1a20f505-14ff-4f7d-ba6e-e25f5000b1ac
-26-04-12 21:43:54.106 [Test worker] INFO  c.s.m.d.s.basic.BasicMessageService - ¸Þ¼¼Áö »ý¼º ¿äÃ»- channelId=70c89d25-7184-4a5e-b462-5b72161a64d7, authorId=3f0cf448-7b0a-4008-a906-61686735c388
-26-04-12 21:43:54.311 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »ý¼º ¿äÃ»: username=tester, email=tester@test.com
-26-04-12 21:43:54.313 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »ý¼º ¿Ï·á - userId=null
-26-04-12 21:43:54.323 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »ý¼º ¿äÃ»: username=tester, email=tester@test.com
-26-04-12 21:43:54.324 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - À¯Àú »ý¼º ½ÇÆÐ: Áßº¹ ÀÌ¸ÞÀÏ email=tester@test.com
-26-04-12 21:43:54.331 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »èÁ¦ ¿äÃ» - userId=7e54d974-41e5-4b05-8b51-ecaa483fe5ee
-26-04-12 21:43:54.332 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »èÁ¦ ¿Ï·á - userId=7e54d974-41e5-4b05-8b51-ecaa483fe5ee
-26-04-12 21:43:54.337 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú »èÁ¦ ¿äÃ» - userId=36bbe08c-06f7-492e-81a9-1b34414f11e7
-26-04-12 21:43:54.338 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - À¯Àú »èÁ¦ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ userId=36bbe08c-06f7-492e-81a9-1b34414f11e7
-26-04-12 21:43:54.343 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú ¼öÁ¤ ¿äÃ» - userId=68321d59-0b1a-4f44-b9ec-ff0dd9c27f5b
-26-04-12 21:43:54.345 [Test worker] WARN  c.s.m.d.s.basic.BasicUserService - À¯Àú ¼öÁ¤ ½ÇÆÐ - Á¸ÀçÇÏÁö ¾ÊÀ½ userId=68321d59-0b1a-4f44-b9ec-ff0dd9c27f5b
-26-04-12 21:43:54.351 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú ¼öÁ¤ ¿äÃ» - userId=2ae1a411-4fe3-4577-be6b-b079bb68b4d6
-26-04-12 21:43:54.353 [Test worker] INFO  c.s.m.d.s.basic.BasicUserService - À¯Àú ¼öÁ¤ ¿Ï·á - userId=2ae1a411-4fe3-4577-be6b-b079bb68b4d6
-26-04-12 21:43:54.400 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-26-04-12 21:43:54.406 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
-26-04-12 21:43:55.474 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
-26-04-12 21:43:55.480 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
-26-04-12 21:43:55.484 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists binary_contents cascade 
-26-04-12 21:43:55.493 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists channels cascade 
-26-04-12 21:43:55.497 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists message_attachments cascade 
-26-04-12 21:43:55.500 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists messages cascade 
-26-04-12 21:43:55.501 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists read_statuses cascade 
-26-04-12 21:43:55.504 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists user_statuses cascade 
-26-04-12 21:43:55.506 [SpringApplicationShutdownHook] DEBUG org.hibernate.SQL - 
-    drop table if exists users cascade 
+26-05-14 09:44:38.546 [main] [32mINFO [0;39m o.h.e.t.j.p.i.JtaPlatformInitiator   [ |  | ] - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+26-05-14 09:44:38.728 [main] [32mINFO [0;39m o.s.o.j.LocalContainerEntityManagerFactoryBean [ |  | ] - Initialized JPA EntityManagerFactory for persistence unit 'default'
+26-05-14 09:44:39.161 [main] [32mINFO [0;39m o.s.d.j.r.query.QueryEnhancerFactory [ |  | ] - Hibernate is in classpath; If applicable, HQL parser will be used.
+26-05-14 09:44:40.349 [main] [33mWARN [0;39m o.s.b.a.s.s.UserDetailsServiceAutoConfiguration [ |  | ] - 
+
+Using generated security password: d1b435b8-5492-442d-b33c-bdb74c66376f
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+26-05-14 09:44:40.376 [main] [32mINFO [0;39m o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer [ |  | ] - Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+26-05-14 09:44:40.602 [main] [32mINFO [0;39m o.s.b.a.w.s.WelcomePageHandlerMapping [ |  | ] - Adding welcome page: class path resource [static/index.html]
+26-05-14 09:44:41.795 [main] [32mINFO [0;39m o.s.b.a.e.web.EndpointLinksResolver  [ |  | ] - Exposing 4 endpoints beneath base path '/actuator'
+26-05-14 09:44:41.945 [main] [32mINFO [0;39m o.a.coyote.http11.Http11NioProtocol  [ |  | ] - Starting ProtocolHandler ["http-nio-8080"]
+26-05-14 09:44:41.977 [main] [32mINFO [0;39m o.s.b.w.e.tomcat.TomcatWebServer     [ |  | ] - Tomcat started on port 8080 (http) with context path '/'
+26-05-14 09:44:42.002 [main] [32mINFO [0;39m c.s.m.discodeit.DiscodeitApplication [ |  | ] - Started DiscodeitApplication in 11.643 seconds (process running for 12.808)
+26-05-14 09:44:42.535 [RMI TCP Connection(5)-172.30.1.95] [32mINFO [0;39m o.a.c.c.C.[Tomcat].[localhost].[/]   [ |  | ] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+26-05-14 09:44:42.535 [RMI TCP Connection(5)-172.30.1.95] [32mINFO [0;39m o.s.web.servlet.DispatcherServlet    [ |  | ] - Initializing Servlet 'dispatcherServlet'
+26-05-14 09:44:42.538 [RMI TCP Connection(5)-172.30.1.95] [32mINFO [0;39m o.s.web.servlet.DispatcherServlet    [ |  | ] - Completed initialization in 3 ms
+26-05-14 09:46:00.805 [http-nio-8080-exec-1] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [2a567b864db14eedaee4298794ae9e9e | GET | /] - Request started
+26-05-14 09:46:00.830 [http-nio-8080-exec-1] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [33f2f80bf00741deb5e4f8edc409858c | GET | /index.html] - Request started
+26-05-14 09:46:00.849 [http-nio-8080-exec-1] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [33f2f80bf00741deb5e4f8edc409858c | GET | /index.html] - Request completed
+26-05-14 09:46:00.852 [http-nio-8080-exec-1] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [ |  | ] - Request completed
+26-05-14 09:46:00.885 [http-nio-8080-exec-2] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [219fac69c99249d89602f3f4e003faca | GET | /assets/index-pvm8va9e.js] - Request started
+26-05-14 09:46:00.886 [http-nio-8080-exec-3] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [a0584312a3de4bd5b3c7ffe86334b09e | GET | /assets/index-kQJbKSsj.css] - Request started
+26-05-14 09:46:00.890 [http-nio-8080-exec-3] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [a0584312a3de4bd5b3c7ffe86334b09e | GET | /assets/index-kQJbKSsj.css] - Request completed
+26-05-14 09:46:00.894 [http-nio-8080-exec-2] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [219fac69c99249d89602f3f4e003faca | GET | /assets/index-pvm8va9e.js] - Request completed
+26-05-14 09:46:00.964 [http-nio-8080-exec-4] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [541545737b9e4fcfbfe87541b2839d97 | GET | /api/auth/csrf-token] - Request started
+26-05-14 09:46:00.964 [http-nio-8080-exec-5] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [47ce5da7c7b84c34a1d2f94e8d1f4c42 | GET | /api/auth/me] - Request started
+26-05-14 09:46:00.977 [http-nio-8080-exec-5] [31mERROR[0;39m c.s.m.d.e.GlobalExceptionHandler     [47ce5da7c7b84c34a1d2f94e8d1f4c42 | GET | /api/auth/me] - ì˜ˆìƒì¹˜ ëª»í•œ ì˜¤ë¥˜ ë°œìƒ: No static resource api/auth/me.
+org.springframework.web.servlet.resource.NoResourceFoundException: No static resource api/auth/me.
+	at org.springframework.web.servlet.resource.ResourceHttpRequestHandler.handleRequest(ResourceHttpRequestHandler.java:585)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:52)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1088)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:978)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:479)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:340)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:82)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:128)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.csrf.CsrfFilter.doFilterInternal(CsrfFilter.java:117)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:323)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:224)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:114)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+26-05-14 09:46:00.977 [http-nio-8080-exec-4] [31mERROR[0;39m c.s.m.d.e.GlobalExceptionHandler     [541545737b9e4fcfbfe87541b2839d97 | GET | /api/auth/csrf-token] - ì˜ˆìƒì¹˜ ëª»í•œ ì˜¤ë¥˜ ë°œìƒ: No static resource api/auth/csrf-token.
+org.springframework.web.servlet.resource.NoResourceFoundException: No static resource api/auth/csrf-token.
+	at org.springframework.web.servlet.resource.ResourceHttpRequestHandler.handleRequest(ResourceHttpRequestHandler.java:585)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:52)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1088)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:978)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:479)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:340)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:82)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:128)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.csrf.CsrfFilter.doFilterInternal(CsrfFilter.java:117)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:323)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:224)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:114)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+26-05-14 09:46:01.018 [http-nio-8080-exec-4] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [541545737b9e4fcfbfe87541b2839d97 | GET | /api/auth/csrf-token] - Request completed
+26-05-14 09:46:01.018 [http-nio-8080-exec-5] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [47ce5da7c7b84c34a1d2f94e8d1f4c42 | GET | /api/auth/me] - Request completed
+26-05-14 09:46:01.502 [http-nio-8080-exec-6] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [05adaeabb4804c3bbad66984936d74f8 | GET | /favicon.ico] - Request started
+26-05-14 09:46:01.511 [http-nio-8080-exec-6] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [05adaeabb4804c3bbad66984936d74f8 | GET | /favicon.ico] - Request completed
+26-05-14 09:46:34.099 [http-nio-8080-exec-7] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [dc48fbc7dc3549c09b48586f4e144187 | POST | /error] - Request started
+26-05-14 09:46:34.116 [http-nio-8080-exec-7] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [dc48fbc7dc3549c09b48586f4e144187 | POST | /error] - Request completed
+26-05-14 09:46:38.372 [http-nio-8080-exec-8] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [5e9930178cfe4429b0811462ad218436 | POST | /error] - Request started
+26-05-14 09:46:38.374 [http-nio-8080-exec-8] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [5e9930178cfe4429b0811462ad218436 | POST | /error] - Request completed
+26-05-14 09:47:02.518 [http-nio-8080-exec-9] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [948bf8dfdc2a4b65b27039d0ce9d5700 | GET | /] - Request started
+26-05-14 09:47:02.522 [http-nio-8080-exec-9] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [ba8667486f9a416196937237eee2488e | GET | /index.html] - Request started
+26-05-14 09:47:02.526 [http-nio-8080-exec-9] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [ba8667486f9a416196937237eee2488e | GET | /index.html] - Request completed
+26-05-14 09:47:02.527 [http-nio-8080-exec-9] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [ |  | ] - Request completed
+26-05-14 09:47:02.553 [http-nio-8080-exec-1] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [65bcb152c3a24e4ea30c921640835b2b | GET | /assets/index-kQJbKSsj.css] - Request started
+26-05-14 09:47:02.553 [http-nio-8080-exec-10] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [74c99969a70d4ab1b4de80aa29c890b3 | GET | /assets/index-pvm8va9e.js] - Request started
+26-05-14 09:47:02.558 [http-nio-8080-exec-1] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [65bcb152c3a24e4ea30c921640835b2b | GET | /assets/index-kQJbKSsj.css] - Request completed
+26-05-14 09:47:02.563 [http-nio-8080-exec-10] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [74c99969a70d4ab1b4de80aa29c890b3 | GET | /assets/index-pvm8va9e.js] - Request completed
+26-05-14 09:47:03.839 [http-nio-8080-exec-2] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [c17af9b159d64ac8bec59d218668ea52 | GET | /api/auth/me] - Request started
+26-05-14 09:47:03.839 [http-nio-8080-exec-3] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [1f92ccbdc050405fa1d56b9ad99d7991 | GET | /api/auth/csrf-token] - Request started
+26-05-14 09:47:03.845 [http-nio-8080-exec-3] [31mERROR[0;39m c.s.m.d.e.GlobalExceptionHandler     [1f92ccbdc050405fa1d56b9ad99d7991 | GET | /api/auth/csrf-token] - ì˜ˆìƒì¹˜ ëª»í•œ ì˜¤ë¥˜ ë°œìƒ: No static resource api/auth/csrf-token.
+org.springframework.web.servlet.resource.NoResourceFoundException: No static resource api/auth/csrf-token.
+	at org.springframework.web.servlet.resource.ResourceHttpRequestHandler.handleRequest(ResourceHttpRequestHandler.java:585)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:52)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1088)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:978)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:479)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:340)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:82)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:128)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.csrf.CsrfFilter.doFilterInternal(CsrfFilter.java:117)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:323)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:224)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:114)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+26-05-14 09:47:03.845 [http-nio-8080-exec-2] [31mERROR[0;39m c.s.m.d.e.GlobalExceptionHandler     [c17af9b159d64ac8bec59d218668ea52 | GET | /api/auth/me] - ì˜ˆìƒì¹˜ ëª»í•œ ì˜¤ë¥˜ ë°œìƒ: No static resource api/auth/me.
+org.springframework.web.servlet.resource.NoResourceFoundException: No static resource api/auth/me.
+	at org.springframework.web.servlet.resource.ResourceHttpRequestHandler.handleRequest(ResourceHttpRequestHandler.java:585)
+	at org.springframework.web.servlet.mvc.HttpRequestHandlerAdapter.handle(HttpRequestHandlerAdapter.java:52)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1088)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:978)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:903)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:564)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:195)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108)
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231)
+	at org.springframework.security.web.ObservationFilterChainDecorator$FilterObservation$SimpleFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:479)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$1(ObservationFilterChainDecorator.java:340)
+	at org.springframework.security.web.ObservationFilterChainDecorator.lambda$wrapSecured$0(ObservationFilterChainDecorator.java:82)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:128)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126)
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107)
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.csrf.CsrfFilter.doFilterInternal(CsrfFilter.java:117)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90)
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82)
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:227)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.wrapFilter(ObservationFilterChainDecorator.java:240)
+	at org.springframework.security.web.ObservationFilterChainDecorator$AroundFilterObservation$SimpleAroundFilterObservation.lambda$wrap$0(ObservationFilterChainDecorator.java:323)
+	at org.springframework.security.web.ObservationFilterChainDecorator$ObservationFilter.doFilter(ObservationFilterChainDecorator.java:224)
+	at org.springframework.security.web.ObservationFilterChainDecorator$VirtualFilterChain.doFilter(ObservationFilterChainDecorator.java:137)
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233)
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:243)
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113)
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74)
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:238)
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:362)
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:278)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:114)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:164)
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:140)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:483)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:344)
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397)
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:905)
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1741)
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1190)
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+26-05-14 09:47:03.859 [http-nio-8080-exec-2] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [c17af9b159d64ac8bec59d218668ea52 | GET | /api/auth/me] - Request completed
+26-05-14 09:47:03.859 [http-nio-8080-exec-3] [32mDEBUG[0;39m c.s.m.d.config.MDCLoggingInterceptor [1f92ccbdc050405fa1d56b9ad99d7991 | GET | /api/auth/csrf-token] - Request completed
+26-05-14 09:49:16.625 [SpringApplicationShutdownHook] [32mINFO [0;39m o.s.b.w.e.tomcat.GracefulShutdown    [ |  | ] - Commencing graceful shutdown. Waiting for active requests to complete
+26-05-14 09:49:17.574 [tomcat-shutdown] [32mINFO [0;39m o.s.b.w.e.tomcat.GracefulShutdown    [ |  | ] - Graceful shutdown complete
+26-05-14 09:49:17.583 [SpringApplicationShutdownHook] [32mINFO [0;39m o.s.o.j.LocalContainerEntityManagerFactoryBean [ |  | ] - Closing JPA EntityManagerFactory for persistence unit 'default'
+26-05-14 09:49:17.586 [SpringApplicationShutdownHook] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Shutdown initiated...
+26-05-14 09:49:17.593 [SpringApplicationShutdownHook] [32mINFO [0;39m com.zaxxer.hikari.HikariDataSource   [ |  | ] - HikariPool-1 - Shutdown completed.
