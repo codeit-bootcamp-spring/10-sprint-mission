@@ -7,7 +7,7 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UserStatusMapper {
-    // user 엔티티에서 id꺼내서 DTO의 userId로 매핑
-    @Mapping(target="userId", source = "user.id")
-    UserStatusDto toDto(UserStatus userStatus);
+
+  @Mapping(target = "userId", source = "user.id")
+  UserStatusDto toDto(UserStatus userStatus);
 }

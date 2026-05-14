@@ -1,44 +1,30 @@
-name: CI test
+name: 테스트
+
 on:
   pull_request:
-    branches: ["main"]
+    branches:
+      - main
+
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-
     steps:
-      # 1) 소스 체크아웃
-      - name: Checkout
-        uses: actions/checkout@v3
-      # 2) JDK 17 설정
-      - name: Set up JDK 17
+      - name: 체크아웃
+        uses: actions/checkout@v4
+
+      - name: JDK 17 설정
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: 17
-      # 3) gradlew 실행 권한 부여
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
+          java-version: '17'
+          distribution: 'corretto'
+          cache: gradle
 
-      # 4) 테스트 실행
-      - name: Run test
+      - name: 테스트 실행
         run: ./gradlew test
 
-      # 5) 테스트 리포트 업로드
-      - name: Upload test report
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Codecov 테스트 커버리지 업로드
+        uses: codecov/codecov-action@v3
         with:
-          name: test-report
-          path: build/reports/tests/test
-
-      # 6) Codecov 업로드
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          files: ./build/reports/jacoco/test/jacocoTestReport.xml
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          files: build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.CODECOV_TOKEN }} # 퍼블릭 저장소라면 생략 가능
