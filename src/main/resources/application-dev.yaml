@@ -40,5 +40,6 @@ logging:
   level:
     root: INFO
     com.sprint.mission.discodeit: DEBUG
+    org.springframework.security: TRACE # Spring Security 모듈 로깅 레벨을 Trace로 설정
     org.hibernate.SQL: OFF
     org.hibernate.orm.jdbc.bind: OFF
