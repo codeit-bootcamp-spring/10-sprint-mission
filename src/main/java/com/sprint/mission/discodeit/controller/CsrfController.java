@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Slf4j
 @Controller
-@RequestMapping("/csrf-token")
+@RequestMapping("/api/auth/csrf-token")
 public class CsrfController {
 
   @GetMapping
@@ -20,4 +20,5 @@ public class CsrfController {
 
     return ResponseEntity.status(HttpStatus.NON_AUTHORITATIVE_INFORMATION).build();
   }
+
 }

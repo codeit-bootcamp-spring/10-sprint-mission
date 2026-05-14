@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,9 +15,20 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http
         .csrf(csrf -> csrf
+            .ignoringRequestMatchers(PathRequest.toH2Console())
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
         )
+        .headers(headers -> headers
+            .frameOptions(frameOptions -> frameOptions.sameOrigin())
+        )
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers(PathRequest.toH2Console()).permitAll()
+            .anyRequest().permitAll()
+        )
+        .formLogin(login -> login
+            .loginProcessingUrl("/api/auth/login"))
+
         .build();
   }
 }
