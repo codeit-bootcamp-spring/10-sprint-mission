@@ -10,9 +10,11 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 @Configuration
 public class SecurityConfig {
 
-  // Securty 필터 체인 등록
+  // Security 필터 체인 등록
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http,
+      LoginSuccessHandler loginSuccessfulHandler,
+      LoginFailureHandler loginFailureHandler) throws Exception {
     return http
         .csrf(csrf -> csrf
             .ignoringRequestMatchers(PathRequest.toH2Console())
@@ -27,7 +29,9 @@ public class SecurityConfig {
             .anyRequest().permitAll()
         )
         .formLogin(login -> login
-            .loginProcessingUrl("/api/auth/login"))
+            .loginProcessingUrl("/api/auth/login")
+            .successHandler(loginSuccessfulHandler)
+            .failureHandler(loginFailureHandler))
 
         .build();
   }
