@@ -1,8 +1,11 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
+import com.sprint.mission.discodeit.dto.data.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
@@ -57,5 +60,14 @@ public class AuthController {
     log.debug("CSRF 토큰 요청: {}", tokenValue);
     //응답 203 Void
     return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+  }
+
+  //@AuthenticationPrincipal: 현재 인증된 사용자의 principal을 주입
+  //현재 요청의 JSESSIONID로 로그인 사용자를 확인하고, 그 사용자의 UserDto를 200 OK로 반환하는 API
+  @GetMapping("/me")
+  public ResponseEntity<UserDto> me(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
+    UserDto userDto = userDetails.getUserDto();
+
+    return ResponseEntity.status(HttpStatus.OK).body(userDto);
   }
 }
