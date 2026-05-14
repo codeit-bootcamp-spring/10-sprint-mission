@@ -1,62 +1,75 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.util.ArrayList;
-import java.util.List;
 
-public class User extends BaseEntity {
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+
+import java.time.Instant;
+
+@Getter
+@Entity
+@Table(name = "users")
+public class User extends BaseUpdatableEntity {
+
+    @Column(nullable = false)
     private String username;
-    private String password;
+
+    @Column(nullable = false)
     private String email;
-    private List<Channel> myChannels = new ArrayList<>();
-    private List<Message> myMessages = new ArrayList<>();
 
-    public String getUsername() {
-        return username;
-    }
+    @Column(nullable = false)
+    private String password;
 
-    public String getPassword() {
-        return password;
-    }
+    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
+    @JoinColumn(name = "profile_id")
+    private BinaryContent profile; // BinaryContent의 id
 
-    public String getEmail() {
-        return email;
-    }
+    @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "user")
+    private UserStatus userStatus;
 
-    public void updateUsername(String newUsername){
-        this.username = newUsername;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
 
-    public void updateEmail(String newEmail){
-        this.email = newEmail;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public void updatePassword(String newPassword){
-        this.password = newPassword;
-        this.setUpdatedAt(System.currentTimeMillis());
-    }
-
-    public List<Message> getMyMessages() {
-        return myMessages;
-    }
-
-    public List<Channel> getMyChannels() {
-        return myChannels;
-    }
-
-    public void addMessage(Message message){
-        this.myMessages.add(message);
-    }
-
-    public User(String username, String password, String email) {
+    public User(String username, String email, String password, BinaryContent profile) {
         this.username = username;
-        this.password = password;
         this.email = email;
+        this.password = password;
+        this.profile = profile;
     }
 
-    @Override
-    public String toString() {
-        return "이름: " + username + ", 이메일: " + email + ", 비밀번호: " + password;
+    public User() {
+
+    }
+
+
+    public void update(String newUsername, String newEmail, String newPassword,
+        BinaryContent binaryContent) {
+        boolean anyValueUpdated = false;
+        if (newUsername != null && !newUsername.equals(this.username)) {
+            this.username = newUsername;
+            anyValueUpdated = true;
+        }
+        if (newEmail != null && !newEmail.equals(this.email)) {
+            this.email = newEmail;
+            anyValueUpdated = true;
+        }
+        if (newPassword != null && !newPassword.equals(this.password)) {
+            this.password = newPassword;
+            anyValueUpdated = true;
+        }
+        if (binaryContent != null && (this.profile == null || !binaryContent.getId()
+            .equals(this.profile.getId()))) {
+            this.profile = binaryContent;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }

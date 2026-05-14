@@ -1,15 +1,28 @@
+HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-.kotlin
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settingsg
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### 로컬 로그 및 첨부 파일 ###
+.discodeit/
+*.logs
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+.idea
 *.iws
 *.iml
 *.ipr
@@ -17,17 +30,6 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
 
 ### NetBeans ###
 /nbproject/private/
@@ -37,7 +39,18 @@ bin/
 /.nb-gradle/
 
 ### VS Code ###
-.vscode/
+.vsc
 
-### Mac OS ###
-.DS_Store
+## 파일들
+.ser
+/file-data-map
+.env
+.env.example
+
+.env.*
+!.env.example
+
+### Node ###
+node_modules/
+package.json
+package-lock.json

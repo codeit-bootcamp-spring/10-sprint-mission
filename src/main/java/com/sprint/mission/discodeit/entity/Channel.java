@@ -1,39 +1,71 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-public class Channel extends BaseEntity{
-    private String channelName;
-    private List<User> participants = new ArrayList<>();
-    private List<Message> channelMessages = new ArrayList<>();
+import java.time.Instant;
 
-    public String getChannelName() {
-        return channelName;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "channels")
+@RequiredArgsConstructor
+public class Channel extends BaseUpdatableEntity {
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChannelType type;
+
+    @Column(nullable = false, unique = true)
+    private String name;
+
+    @Column(nullable = false)
+    private String description;
+
+    @OneToMany(mappedBy = "channel")
+    private List<ReadStatus> readStatuses = new ArrayList<>();
+
+    @OneToMany(mappedBy = "channel")
+    private List<Message> messages = new ArrayList<>();
+
+
+    public Channel(ChannelType type, String name, String description) {
+        this.type = type;
+        this.name = name;
+        this.description = description;
     }
 
-    public void updateChannelInfo(String newChannelName){
-        this.channelName = newChannelName;
-        super.setUpdatedAt(System.currentTimeMillis());
+    public Channel(ChannelType type) {
+        this.type = type;
+        this.name = null;
+        this.description = null;
     }
 
-    public List<User> getParticipants() {
-        return participants;
-    }
 
-    public void addParticipant(User user){
-       this.participants.add(user);
-    }
+    public void update(String newName, String newDescription) {
+        boolean anyValueUpdated = false;
+        if (newName != null && !newName.equals(this.name)) {
+            this.name = newName;
+            anyValueUpdated = true;
+        }
+        if (newDescription != null && !newDescription.equals(this.description)) {
+            this.description = newDescription;
+            anyValueUpdated = true;
+        }
 
-    public List<Message> getChannelMessages() {
-        return channelMessages;
-    }
-
-    public void addMessage(Message message){
-        this.channelMessages.add(message);
-    }
-
-    public Channel(String channelName) {
-        this.channelName = channelName;
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now();
+        }
     }
 }

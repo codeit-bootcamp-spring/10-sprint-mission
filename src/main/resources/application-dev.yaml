@@ -1,0 +1,44 @@
+discodeit:
+  repository:
+    type: file # jcf | file
+    file-directory: .discodeit
+
+  storage:
+    type: local
+    local:
+      root-path: .discodeit
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:discodeit;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  # 개발 환경에서 schema.sql 자동실행 끔.
+  sql:
+    init:
+      mode: never
+
+  # 개발 환경에서는 H2 인메모리 DB 사용
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # 개발 환경에서는 스키마를 CREATE 하고 DROP
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+
+    open-in-view: false
+
+logging:
+  level:
+    root: INFO
+    com.sprint.mission.discodeit: DEBUG
+    org.hibernate.SQL: OFF
+    org.hibernate.orm.jdbc.bind: OFF
