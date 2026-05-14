@@ -57,6 +57,7 @@ public class BasicReadStatusService implements ReadStatusService {
         return readStatusMapper.toDto(readStatus);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ReadStatusDto find(UUID readStatusId) {
         return readStatusRepository.findById(readStatusId)
@@ -64,6 +65,7 @@ public class BasicReadStatusService implements ReadStatusService {
                 .orElseThrow(() -> new ReadStatusNotFoundException(readStatusId));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ReadStatusDto> findAllByUserId(UUID userId) {
         return readStatusRepository.findAllByUserId(userId).stream()
