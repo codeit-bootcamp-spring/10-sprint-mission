@@ -24,3 +24,4 @@ logging:
   level:
     com.sprint.mission.discodeit: debug
     org.hibernate.SQL: debug
+    org.springframework.security: TRACE
