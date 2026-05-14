@@ -16,7 +16,7 @@ discodeit:
 
 spring:
   profiles:
-    active: prod
+    active: dev
 
   jpa:
     hibernate:
