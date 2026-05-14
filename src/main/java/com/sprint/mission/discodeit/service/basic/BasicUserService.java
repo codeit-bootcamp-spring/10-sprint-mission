@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +26,7 @@ public class BasicUserService implements UserService {
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   @Transactional
@@ -61,8 +63,11 @@ public class BasicUserService implements UserService {
       }
     }
 
+    // 평문 비밀번호를 BCrypt 해시로 변환하여 저장
+    String encodedPassword = passwordEncoder.encode(password);
+
     // 유저 생성
-    User user = new User(username, email, password, profile);
+    User user = new User(username, email, encodedPassword, profile);
     UserStatus status = new UserStatus(user, Instant.now());
     user.assignUserStatus(status);
 
@@ -121,7 +126,7 @@ public class BasicUserService implements UserService {
 
     // 비밀번호 수정
     Optional.ofNullable(newPassword)
-        .ifPresent(user::updatePassword);
+        .ifPresent(pw -> user.updatePassword(passwordEncoder.encode(pw))); // 수정된 비밀번호 해시화
 
     // 프로필 사진 수정
     if (profileFile != null && !profileFile.isEmpty()) {
