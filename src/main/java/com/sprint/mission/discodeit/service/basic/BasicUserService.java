@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -147,6 +148,7 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(user);
   }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     @Override
     public UserDto updateRole(UUID userId, Role role) {
