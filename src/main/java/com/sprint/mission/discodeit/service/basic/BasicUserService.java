@@ -130,7 +130,7 @@ public class BasicUserService implements UserService {
         .orElseThrow(() -> new UserNotFoundException(Map.of("userId", request.userId())));
     user.updateRole(request.newRole());
     log.info("유저 역할 수정 완료: userId={}", user.getId());
-    return null;
+    return userMapper.toDto(user);
   }
 
   @Override
