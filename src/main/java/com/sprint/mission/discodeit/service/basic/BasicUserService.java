@@ -152,6 +152,22 @@ public class BasicUserService implements UserService {
         userRepository.deleteById(userId);
     }
 
+    // === DiscodeitUserDetailsService에서 사용할 메서드 ===
+    @Override
+    public User findByUsername(String username) {
+        if (username.isBlank()) {
+            throw new InvalidInputException(
+                    ErrorCode.USERNAME_CAN_NOT_BE_BLANK, Map.of("username", "username is blank")
+            );
+        }
+
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> {
+                    log.warn("[USER_NOT_FOUND] 유저가 존재하지 않음: username={}", username);
+                    return new UserNotFoundException(username);
+                });
+    }
+
     // === 여기부터 내부 메서드 ===
 
     private User findUserOrThrow(UUID userId) {

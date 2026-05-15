@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum ErrorCode {
 
     // Auth
-    LOGIN_FAIL(400, "A400", "로그인에 실패했습니다."),
+    LOGIN_FAIL(401, "A401", "로그인에 실패했습니다."),
 
     // User
     USER_NOT_FOUND(404, "U100", "유저를 찾을 수 없습니다."),
@@ -50,6 +50,7 @@ public enum ErrorCode {
     // Invalid input
     ID_CAN_NOT_BE_NULL(400, "I100", "id값은 null일 수 없습니다."),
     DTO_CAN_NOT_BE_NULL(400, "I101", "dto는 null일 수 없습니다."),
+    USERNAME_CAN_NOT_BE_BLANK(400, "I102", "username은 공백일 수 없습니다."),
     ;
 
     private final int status;
