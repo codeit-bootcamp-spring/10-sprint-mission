@@ -36,6 +36,7 @@ public class GlobalExceptionHandler {
         .body(response);
   }
 
+  //주로 Request DTO 검증에서 예외발생시 처리
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
     log.error("요청 유효성 검사 실패: {}", ex.getMessage());
