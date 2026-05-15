@@ -21,6 +21,7 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,8 @@ public class BasicUserService implements UserService {
     private final UserMapper userMapper;
     private final BinaryContentMapper binaryContentMapper;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public UserDto createUser(CreateUserRequestDTO dto, CreateBinaryContentPayloadDTO profileImage) {
         if (userRepository.existsByUsername(dto.username())) {
@@ -56,8 +59,10 @@ public class BasicUserService implements UserService {
             );
         }
 
+        String encodedPassword = passwordEncoder.encode(dto.password());
+
         // userId를 받아오기 위해 우선 객체 생성
-        User user = new User(dto.username(), dto.email(), dto.password(), null);
+        User user = new User(dto.username(), dto.email(), encodedPassword, null);
 
         if (profileImage != null) {
             BinaryContent profile = binaryContentMapper.toEntity(profileImage);
