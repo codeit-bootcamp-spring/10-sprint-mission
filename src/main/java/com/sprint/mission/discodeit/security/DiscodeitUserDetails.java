@@ -1,0 +1,69 @@
+package com.sprint.mission.discodeit.security;
+
+import com.sprint.mission.discodeit.dto.user.UserDto;
+import java.util.Collection;
+import java.util.List;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+@Getter
+@RequiredArgsConstructor
+public class DiscodeitUserDetails implements UserDetails {
+
+  private final UserDto userDto;
+  private final String password;
+
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    // todo 인가 구현 시 ROLE 추가
+    return List.of();
+  }
+
+  @Override
+  public String getPassword() {
+    return password;
+  }
+
+  @Override
+  public String getUsername() {
+    return userDto.username();
+  }
+
+  @Override
+  public boolean isAccountNonExpired() {
+    return UserDetails.super.isAccountNonExpired();
+  }
+
+  @Override
+  public boolean isAccountNonLocked() {
+    return UserDetails.super.isAccountNonLocked();
+  }
+
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return UserDetails.super.isCredentialsNonExpired();
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return UserDetails.super.isEnabled();
+  }
+
+  @Override
+  public int hashCode() {
+    return this.getUsername().hashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof DiscodeitUserDetails)) {
+      return false;
+    }
+    return this.getUsername().equals(((DiscodeitUserDetails) obj).getUsername());
+  }
+}

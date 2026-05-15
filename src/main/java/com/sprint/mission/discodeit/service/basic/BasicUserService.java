@@ -64,11 +64,11 @@ public class BasicUserService implements UserService {
     }
 
     User user = userMapper.toEntity(request, profile);
+
     String encryptedPassword = passwordEncoder.encode(user.getPassword());
     user.encodePassword(encryptedPassword);
 
     UserStatus userStatus = new UserStatus(user);
-
     user.setStatus(userStatus); // 편의 메서드
     userRepository.save(user); //cascade로 UserStatus도 같이 INSERT
     log.info("유저 생성 완료: userId={}", user.getId());
