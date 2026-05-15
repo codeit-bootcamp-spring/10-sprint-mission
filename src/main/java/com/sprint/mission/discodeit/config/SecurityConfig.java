@@ -5,10 +5,12 @@ import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
@@ -26,14 +28,22 @@ public class SecurityConfig {
                     .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
 
         // Post /api/auth/login 은 UsernamePasswordAuthenticatorFilter 가 처리.
-        .formLogin(login -> login
-            .loginProcessingUrl("/api/auth/login")
+        .formLogin(
+            login ->
+                login
+                    .loginProcessingUrl("/api/auth/login")
 
-            // 로그인 시
-            .successHandler(loginSuccessHandler)
-            .failureHandler(loginFailureHandler)
+                    // 로그인 시
+                    .successHandler(loginSuccessHandler)
+                    .failureHandler(loginFailureHandler))
+        .logout(
+            logout ->
+                logout
+                    .logoutUrl("/api/auth/logout")
+                    // 로그아웃 성공 시 204 No Content
+                    .logoutSuccessHandler(
+                        new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
         )
-
         .build();
   }
 
