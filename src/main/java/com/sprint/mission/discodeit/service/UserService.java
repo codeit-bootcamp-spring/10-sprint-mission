@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service;
 
+import com.sprint.mission.discodeit.dto.user.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
@@ -16,6 +17,8 @@ public interface UserService {
   List<UserDto> findAll();
 
   UserDto update(UUID userId, UserUpdateRequest updateRequest, MultipartFile file);
+
+  UserDto updateRole(RoleUpdateRequest request);
 
   void delete(UUID userId);
 }
