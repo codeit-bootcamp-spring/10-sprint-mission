@@ -2,6 +2,13 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.data.UserDto;
+import com.sprint.mission.discodeit.dto.request.UserRoleUpdateRequest;
+import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
+import com.sprint.mission.discodeit.mapper.UserMapper;
+import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +22,9 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+  private final UserRepository userRepository;
+  private final UserMapper userMapper;
+  private final UserService userService;
 
 //  private final AuthService authService;
 //
@@ -68,6 +78,13 @@ public class AuthController {
   public ResponseEntity<UserDto> me(@AuthenticationPrincipal DiscodeitUserDetails userDetails) {
     UserDto userDto = userDetails.getUserDto();
 
+    return ResponseEntity.status(HttpStatus.OK).body(userDto);
+  }
+
+  //사용자 권한 수정 API
+  @PutMapping("/role")
+  public ResponseEntity<UserDto> roleUpdate(@Valid @RequestBody UserRoleUpdateRequest request) {
+    UserDto userDto = userService.updateRole(request.userId(), request.role());
     return ResponseEntity.status(HttpStatus.OK).body(userDto);
   }
 }

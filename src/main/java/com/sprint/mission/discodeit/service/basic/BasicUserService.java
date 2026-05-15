@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.user.UserAlreadyExistsException;
@@ -145,6 +146,17 @@ public class BasicUserService implements UserService {
     log.info("사용자 수정 완료: id={}", userId);
     return userMapper.toDto(user);
   }
+
+    @Transactional
+    @Override
+    public UserDto updateRole(UUID userId, Role role) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> UserNotFoundException.withId(userId));
+
+        user.updateRole(role);
+
+        return userMapper.toDto(user);
+    }
 
   @Transactional
   @Override
