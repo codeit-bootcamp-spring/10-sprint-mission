@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.security.LoginFailureHandler;
 import com.sprint.mission.discodeit.security.LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +16,8 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 public class SecurityConfig {
   private final LoginSuccessHandler loginSuccessHandler;
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler) throws Exception {
+  public SecurityFilterChain filterChain(HttpSecurity http, LoginSuccessHandler loginSuccessHandler,
+      LoginFailureHandler loginFailureHandler) throws Exception {
     return http.csrf(
             csrf ->
                 // CSRF는 세션이 아닌 쿠키에 저장
@@ -23,12 +25,13 @@ public class SecurityConfig {
                 csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                     .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
 
-        // formLogin 추가
         // Post /api/auth/login 은 UsernamePasswordAuthenticatorFilter 가 처리.
         .formLogin(login -> login
             .loginProcessingUrl("/api/auth/login")
-            // 로그인 성공 시
+
+            // 로그인 시
             .successHandler(loginSuccessHandler)
+            .failureHandler(loginFailureHandler)
         )
 
         .build();
