@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +36,7 @@ public class BasicUserService implements UserService {
   private final UserMapper userMapper;
   private final BinaryContentStorage binaryContentStorage;
   private final BinaryContentRepository binaryContentRepository;
+  private final PasswordEncoder passwordEncoder;
 
   @Override
   public UserDto create(UserCreateRequest request, MultipartFile file) {
@@ -62,6 +64,9 @@ public class BasicUserService implements UserService {
     }
 
     User user = userMapper.toEntity(request, profile);
+    String encryptedPassword = passwordEncoder.encode(user.getPassword());
+    user.encodePassword(encryptedPassword);
+
     UserStatus userStatus = new UserStatus(user);
 
     user.setStatus(userStatus); // 편의 메서드

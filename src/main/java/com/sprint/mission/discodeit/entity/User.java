@@ -48,6 +48,10 @@ public class User extends BaseUpdatableEntity {
     }
   }
 
+  public void encodePassword(String password) {
+    this.password = password;
+  }
+
   public void update(UserUpdateRequest request) {
     updateIfChanged(this.username, request.newUsername(), val -> this.username = val);
     updateIfChanged(this.email, request.newEmail(), val -> this.email = val);
