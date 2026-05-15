@@ -10,7 +10,7 @@ spring:
 
   sql:
     init:
-      mode: always
+      mode: always # always, embedded, never
 
   jpa:
     hibernate:
