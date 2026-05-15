@@ -4,6 +4,7 @@ import com.sprint.mission.discodeit.dto.data.UserDto;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -15,10 +16,24 @@ public class DiscodeitUserDetails implements UserDetails {
     private final UserDto userDto;
     private final String password;
 
-    //사용자의 권한 목록
+    /**
+    GrantedAuthority는 Spring Security에서 말하는 "권한 1개"를 의미한다.
+    enum으로 권한 USER, ADMIN, CHANNEL_MANAGER 가 있으면 Spring Security는 enum 그대로 쓰지않고, GrantedAuthority 객체로 들고있는다.
+
+    GrantedAuthority 내부 getAuthority()는 "이 사용자는 어떤 권한 문자열을 가지고 있나?"를 반환하는 타입
+     new SimpleGrantedAuthority("ROLE_ADMIN") 이렇게 하면 "ROLE_ADMIN"이라는 구너한 문자열을 가진 객체..
+    **/
+
+    //인증된 사용자의 권한
+    //Spring Security에서는 role 권한을 "ROLE_" prefix 붙여서 넣는다.
+    //ROLE_ 붙여서 넣어두면 hasRole("ADMIN")사용 가능: 내부적으로 "ROLE_ADMIN"을 찾는다.
+    //@PreAuthorize("hasRole('ADMIN')")로 서버에서 권한체크 쉽게 할 수 있다.
+    //OR SecurityConfig에서 .requestMatchers("/api/auth/role").hasRole("ADMIN")로 사용 가능.
+
+    //UserDetailsService에서 UserDetails 만들어지고, 인증되면, Security Context에 ROLE_붙여서 저장됨.
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority("ROLE_" + userDto.role().name()));
     }
 
     //Spring Security에서 사용자를 식별하는 이름.
