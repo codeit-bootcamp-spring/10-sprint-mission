@@ -6,6 +6,7 @@ out
 .idea
 *.iml
 .DS_Store
+.env
 discodeit.env
 docker-compose.yml
 

@@ -21,7 +21,7 @@ discodeit:
 
 spring:
   profiles:
-    active: prod
+    active: dev
   servlet:
     multipart:    # binaryContent 활성화
       enabled: true
