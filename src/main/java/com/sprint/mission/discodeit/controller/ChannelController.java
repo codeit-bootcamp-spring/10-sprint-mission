@@ -99,7 +99,11 @@ public class ChannelController {
         )
     })
     public void deleteChannel(@PathVariable UUID channelId) {
-        channelService.delete(channelId);
+        ChannelDto channel = channelService.find(channelId);
+        switch (channel.type()) {
+            case PUBLIC -> channelService.deletePublicChannel(channelId);
+            case PRIVATE -> channelService.deletePrivateChannel(channelId);
+        }
     }
 
     @RequestMapping(value = "/{channelId}", method = RequestMethod.PATCH)
@@ -116,7 +120,12 @@ public class ChannelController {
     public ResponseEntity<ChannelDto> updateChannel(@PathVariable UUID channelId,
         @Valid @RequestBody PublicChannelUpdateRequestDTO req) {
         log.trace("[Channel] 컨트롤러에서 채널 업데이트 요청 받음");
-        return new ResponseEntity<>(channelService.update(channelId, req), HttpStatus.OK);
+        ChannelDto channel = channelService.find(channelId);
+        ChannelDto updated = switch (channel.type()) {
+            case PUBLIC -> channelService.updatePublicChannel(channelId, req);
+            case PRIVATE -> channelService.updatePrivateChannel(channelId, req);
+        };
+        return new ResponseEntity<>(updated, HttpStatus.OK);
     }
 
 

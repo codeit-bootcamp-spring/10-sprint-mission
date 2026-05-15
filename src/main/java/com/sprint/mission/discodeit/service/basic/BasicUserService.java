@@ -7,6 +7,7 @@ import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
+import com.sprint.mission.discodeit.enums.Role;
 import com.sprint.mission.discodeit.exception.FieldNotValidException;
 import com.sprint.mission.discodeit.exception.RequestNullException;
 import com.sprint.mission.discodeit.exception.user.UserEmailDuplicateException;
@@ -20,7 +21,6 @@ import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -38,7 +38,7 @@ public class BasicUserService implements UserService {
   private final UserStatusRepository userStatusRepository;
   private final UserMapper userMapper;
   private final BinaryContentStorage binaryContentStorage;
-  private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+  private final PasswordEncoder passwordEncoder;
 
 
   // 유저 생성 요청 DTO를 받아 유저 도메인 객체를 생성하고, 해당 객체 정보를 바탕으로 UserResponseDTO를 만들어 반환한다.
@@ -83,7 +83,8 @@ public class BasicUserService implements UserService {
         req.username(),
         req.email(),
         passwordEncoder.encode(req.password()),
-        saved
+        saved,
+        Role.USER
     );
 
     // 생성된 사용자 디버깅 로그

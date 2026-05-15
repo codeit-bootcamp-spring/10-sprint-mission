@@ -7,7 +7,8 @@ CREATE TABLE users
     username   VARCHAR(50) UNIQUE  NOT NULL,
     email      VARCHAR(100) UNIQUE NOT NULL,
     password   VARCHAR(60)         NOT NULL,
-    profile_id UUID
+    profile_id UUID,
+    role       varchar(20)         NOT NULL DEFAULT USER
 );
 
 DROP TABLE IF EXISTS channels CASCADE;

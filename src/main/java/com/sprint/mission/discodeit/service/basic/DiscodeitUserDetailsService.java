@@ -26,4 +26,5 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
     UserDto userDto = userMapper.toDto(user);
     return new DiscodeitUserDetails(userDto, user.getPassword());
   }
+
 }
