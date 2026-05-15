@@ -1,3 +1,4 @@
+/// Spring Security로 인한 로그인 로직 주석
 //package com.sprint.mission.discodeit.service.basic;
 //
 //import com.sprint.mission.discodeit.dto.data.UserDto;
