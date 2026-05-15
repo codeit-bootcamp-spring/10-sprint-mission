@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.dto.user;
 
 import com.sprint.mission.discodeit.dto.binarycontent.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.Role;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.entity.UserStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,7 +19,9 @@ public record UserDto(
     @Schema(description = "유저 프로필 사진")
     BinaryContentDto profile,
     @Schema(description = "유저 온라인 상태", example = "true")
-    boolean online
+    boolean online,
+    @Schema(description = "유저 권한", example = "USER")
+    Role role
 ) {
 
 }

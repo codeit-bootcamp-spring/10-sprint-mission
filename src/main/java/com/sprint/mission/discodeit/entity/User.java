@@ -1,10 +1,13 @@
 package com.sprint.mission.discodeit.entity;
 
+import com.sprint.mission.discodeit.dto.user.RoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -34,11 +37,16 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private UserStatus status;
 
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private Role role;
+
   public User(String username, String email, String password, BinaryContent profile) {
     this.username = username;
     this.email = email;
     this.password = password;
     this.profile = profile;
+    this.role = Role.USER;
   }
 
   public void setStatus(UserStatus status) {
@@ -56,6 +64,10 @@ public class User extends BaseUpdatableEntity {
     updateIfChanged(this.username, request.newUsername(), val -> this.username = val);
     updateIfChanged(this.email, request.newEmail(), val -> this.email = val);
     updateIfChanged(this.password, request.newPassword(), val -> this.password = val);
+  }
+
+  public void updateRole(Role role) {
+    updateIfChanged(this.role, role, val -> this.role = val);
   }
 
   public void updateProfile(BinaryContent newProfile) {
