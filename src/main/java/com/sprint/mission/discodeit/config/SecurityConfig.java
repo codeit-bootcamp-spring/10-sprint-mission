@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.config;
 
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetailsService;
 import com.sprint.mission.discodeit.auth.LoginFailureHandler;
 import com.sprint.mission.discodeit.auth.LoginSuccessHandler;
 import com.sprint.mission.discodeit.auth.SpaCsrfTokenRequestHandler;
@@ -17,6 +18,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -34,6 +36,8 @@ public class SecurityConfig {
 
     private final LoginSuccessHandler loginSuccessHandler;
     private final LoginFailureHandler loginFailureHandler;
+
+    private final DiscodeitUserDetailsService discodeitUserDetailsService;
 
     // 애플리케이션의 HTTP 요청에 적용될 Spring Security 필터 묶음.
     // Spring Security는 내부적으로 여러 보안 설정을 HttpSecurity에 쌓아두고,
@@ -66,6 +70,28 @@ public class SecurityConfig {
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler)
                 )
+
+                /**
+                 로그인 요청에서 "remember-me" 파라미터가 true일때 remember-me 기능을 겹니다.
+
+                 (1)사용자가 로그인 화면에서 "로그인 유지" 체크
+                 (2)로그인 요청에 remember-me=true 포함
+                 (3)로그인 성공
+                 (4)서버가 JSESSIONID와 remember-me 쿠키를 내려준다.
+                 (5)사용자가 JSESSIONID 쿠키삭제
+                 (6)새로고침
+                 (7)Spring Security가 remember-me 쿠키 확인
+                 (8)DiscodeitUserDetailsService로 사용자 재조회
+                 (9)새 인증 객체 생성
+                 (10)다시 로그인된 상태로 요청 처리
+                 **/
+                .rememberMe(remember -> remember
+                        .rememberMeParameter("remember-me")//로그인 폼에서 사용하는 파라미터 명
+                        .key("discodeit-remember-me-key")// 쿠키 생성시 사용되는 고정키
+                        .tokenValiditySeconds(7 * 24 * 60 * 60)//쿠키 만료 (7일)
+                        .userDetailsService(discodeitUserDetailsService)//사용자 검증을 위한 서비스
+                )
+
                 /**
                  [로그아웃 요청 흐름]
                  (1) 클라이언트가 POST /api/auth/logout 요청
@@ -81,6 +107,7 @@ public class SecurityConfig {
                  **/
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
+                        .deleteCookies("JSESSIONID", "remember-me")//로그아웃될때 JSESSIONID, remember-me 쿠키 삭제
                         .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
                 )
                 /**
@@ -176,6 +203,7 @@ public class SecurityConfig {
                                 .sessionRegistry(sessionRegistry))
 
                 );
+
         return http.build();
     }
 
