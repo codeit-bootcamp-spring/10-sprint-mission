@@ -3,8 +3,8 @@ package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import com.sprint.mission.discodeit.enums.Role;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -32,9 +32,6 @@ public class User extends BaseUpdatableEntity {
   @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true)
   @JoinColumn(name = "profile_id")
   private BinaryContent profile; // BinaryContent의 id
-
-  @OneToOne(cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "user")
-  private UserStatus userStatus;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)

@@ -58,21 +58,6 @@ ALTER TABLE users
             REFERENCES binary_contents (id)
             ON DELETE SET NULL;
 
-DROP TABLE IF EXISTS user_statuses CASCADE;
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    created_at     timestamptz NOT NULL,
-    updated_at     timestamptz,
-    user_id        UUID        NOT NULL UNIQUE,
-    last_active_at timestamptz NOT NULL,
-    online         BOOLEAN     NOT NULL DEFAULT FALSE,
-    CONSTRAINT fk_user_status_user
-        FOREIGN KEY (user_id)
-            REFERENCES users (id)
-            ON DELETE CASCADE
-);
-
 DROP TABLE IF EXISTS read_statuses CASCADE;
 CREATE TABLE read_statuses
 (

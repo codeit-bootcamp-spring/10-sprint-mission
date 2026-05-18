@@ -4,12 +4,8 @@ import com.sprint.mission.discodeit.dto.binarycontentdto.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.userdto.UserCreateRequestDTO;
 import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
-import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusDto;
-import com.sprint.mission.discodeit.dto.userstatusdto.UserStatusUpdateRequestDTO;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -36,7 +32,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
   private final UserService userService;
-  private final UserStatusService userStatusService;
 
 
   //전체 사용자 조회
@@ -177,34 +172,4 @@ public class UserController {
     return new ResponseEntity<>(userService.update(userId, req, profileDto),
         HttpStatus.OK);
   }
-
-  @RequestMapping(value = "/{userId}/userStatus", method = RequestMethod.PATCH)
-  @ApiResponses({
-      @ApiResponse(
-          responseCode = "404",
-          description = "해당 User의 UserStatus를 찾을 수 없음",
-          content = @Content(
-              mediaType = "application/json",
-              examples = @ExampleObject("UserStatus with userId {userId} not found")
-          )
-      ),
-      @ApiResponse(
-          responseCode = "200",
-          description = "User 온라인 상태가 성공적으로 업데이트됨",
-          content = @Content(
-              mediaType = "application/json",
-              schema = @Schema(implementation = UserStatus.class)
-          )
-      )
-  }
-  )
-  public ResponseEntity<UserStatusDto> updateUserOnline(
-      @PathVariable UUID userId,
-      @Valid @RequestBody UserStatusUpdateRequestDTO req) {
-    log.trace("[User] 컨트롤러에서 유저의 활동 중 상태 수정 요청을 받음");
-    return new ResponseEntity<>(userStatusService.activateUserOnline(userId, req),
-        HttpStatus.OK);
-  }
-
-
 }

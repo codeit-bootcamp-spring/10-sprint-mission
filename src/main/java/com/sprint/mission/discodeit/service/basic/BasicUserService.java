@@ -6,7 +6,6 @@ import com.sprint.mission.discodeit.dto.userdto.UserDto;
 import com.sprint.mission.discodeit.dto.userdto.UserUpdateDTO;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.enums.Role;
 import com.sprint.mission.discodeit.exception.FieldNotValidException;
 import com.sprint.mission.discodeit.exception.RequestNullException;
@@ -16,7 +15,6 @@ import com.sprint.mission.discodeit.exception.user.UserNotFoundException;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +33,6 @@ public class BasicUserService implements UserService {
 
   private final UserRepository userRepository;
   private final BinaryContentRepository binaryContentRepository; // 아직 인터페이스 구현체가 없어서 bean을 못찾음.
-  private final UserStatusRepository userStatusRepository;
   private final UserMapper userMapper;
   private final BinaryContentStorage binaryContentStorage;
   private final PasswordEncoder passwordEncoder;
@@ -91,8 +88,6 @@ public class BasicUserService implements UserService {
     log.debug("생성된 사용자 정보: userId={}", user.getId());
 
     User savedUser = userRepository.save(user); // user 레포지토리의 save로 해당 유저 객체를 영속화한다.
-    userStatusRepository.save(new UserStatus(savedUser));
-
     // 메서드 종료 trace 로그
     log.trace("사용자 생성 메서드 종료");
 
@@ -197,7 +192,7 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(savedUser); // Entities -> DTO 후 리
   }
 
-  // 지우고자 하는 유저를 지우면서 관련된 객체(UserStatus)와 정보(채널 가입 여부 및 메시지)도 같이 삭제하는 메소드
+  // 지우고자 하는 유저를 지우면서 관련된 객체와 정보(채널 가입 여부 및 메시지)도 같이 삭제하는 메소드
   @Override
   @Transactional
   public void delete(UUID userId) {
@@ -210,10 +205,6 @@ public class BasicUserService implements UserService {
 
     // 존재 검증 후 예외 처리 결정
     User user = getUser(userId);
-    userStatusRepository.findByUserId(userId)
-        .ifPresent(userStatusRepository::delete);
-    userStatusRepository.flush();
-
     // 해당 유저 ID가 레포지토리 내에 존재하는지 확인하고 없으면 예외 던짐.
     userRepository.delete(user);
     userRepository.flush();

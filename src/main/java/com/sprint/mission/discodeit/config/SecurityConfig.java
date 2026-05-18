@@ -10,11 +10,14 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 @EnableMethodSecurity
 @Configuration
@@ -43,16 +46,30 @@ public class SecurityConfig {
     return new BCryptPasswordEncoder();
   }
 
+  // 세션 레지스트리
+  @Bean
+  public SessionRegistry sessionRegistry() {
+    return new SessionRegistryImpl();
+
+  }
+
+  @Bean
+  public HttpSessionEventPublisher httpSessionEventPublisher() {
+    return new HttpSessionEventPublisher();
+  }
+
   // Security 필터 체인 등록
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http,
       LoginSuccessHandler loginSuccessfulHandler,
-      LoginFailureHandler loginFailureHandler
+      LoginFailureHandler loginFailureHandler,
+      SessionRegistry sessionRegistry
   )
       throws Exception {
     return http
+        // csrf 관련 설정
         .csrf(csrf -> csrf
-            .ignoringRequestMatchers("/h2-console/**")
+            .ignoringRequestMatchers("/h2-console/**") // h2 콘솔로 들어가는 요청은 csrf 무시
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
         )
@@ -108,6 +125,15 @@ public class SecurityConfig {
             .logoutUrl("/api/auth/logout")
             .logoutSuccessHandler(
                 new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))
+        )
+
+        // 동시 세션 제어
+        .sessionManagement(management -> management
+            .sessionConcurrency(concurrency -> concurrency
+                .maximumSessions(1) // 최대 세션은 1
+                .maxSessionsPreventsLogin(true) // 추후에 로그인 하는 다른 세션은 막음.
+                .sessionRegistry(sessionRegistry)
+            )
         )
         .build();
   }

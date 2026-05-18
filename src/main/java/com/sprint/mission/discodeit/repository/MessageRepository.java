@@ -35,7 +35,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     List<Message> findByChannelId(UUID channelId);
 
     @EntityGraph(attributePaths = {
-        "author", "author.userStatus", "author.profile", "attachments"
+        "author", "author.profile", "attachments"
     })
     @Query("""
         SELECT m
@@ -45,7 +45,7 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
     Slice<Message> findByChannelId(UUID channelId, Pageable pageable);
 
     @EntityGraph(attributePaths = {
-        "author", "author.userStatus", "author.profile", "attachments"
+        "author", "author.profile", "attachments"
     })
     @Query("""
         SELECT m
