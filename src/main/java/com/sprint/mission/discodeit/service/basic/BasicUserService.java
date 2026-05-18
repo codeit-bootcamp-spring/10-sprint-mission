@@ -21,10 +21,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -40,7 +41,8 @@ public class BasicUserService implements UserService {
 
   @Transactional
   @Override
-  public UserDto create(UserCreateRequest userCreateRequest,
+  public UserDto create(
+      UserCreateRequest userCreateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     log.debug("사용자 생성 시작: {}", userCreateRequest);
 
@@ -54,24 +56,26 @@ public class BasicUserService implements UserService {
       throw UserAlreadyExistsException.withUsername(username);
     }
 
-    BinaryContent nullableProfile = optionalProfileCreateRequest
-        .map(profileRequest -> {
-          String fileName = profileRequest.fileName();
-          String contentType = profileRequest.contentType();
-          byte[] bytes = profileRequest.bytes();
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType);
-          binaryContentRepository.save(binaryContent);
-          binaryContentStorage.put(binaryContent.getId(), bytes);
-          return binaryContent;
-        })
-        .orElse(null);
+    BinaryContent nullableProfile =
+        optionalProfileCreateRequest
+            .map(
+                profileRequest -> {
+                  String fileName = profileRequest.fileName();
+                  String contentType = profileRequest.contentType();
+                  byte[] bytes = profileRequest.bytes();
+                  BinaryContent binaryContent =
+                      new BinaryContent(fileName, (long) bytes.length, contentType);
+                  binaryContentRepository.save(binaryContent);
+                  binaryContentStorage.put(binaryContent.getId(), bytes);
+                  return binaryContent;
+                })
+            .orElse(null);
 
-      // 사용자가 입력한 비밀번호는 그대로 저장x
-      // BCryptPasswordEncoder를 통해 해시한 값만 DB에 저장.
-      String encodedPassword = passwordEncoder.encode(userCreateRequest.password());
+    // 사용자가 입력한 비밀번호는 그대로 저장x
+    // BCryptPasswordEncoder를 통해 해시한 값만 DB에 저장.
+    String encodedPassword = passwordEncoder.encode(userCreateRequest.password());
 
-      User user = new User(username, email, encodedPassword, nullableProfile);
+    User user = new User(username, email, encodedPassword, nullableProfile);
     Instant now = Instant.now();
     UserStatus userStatus = new UserStatus(user, now);
 
@@ -84,9 +88,11 @@ public class BasicUserService implements UserService {
   @Override
   public UserDto find(UUID userId) {
     log.debug("사용자 조회 시작: id={}", userId);
-    UserDto userDto = userRepository.findById(userId)
-        .map(userMapper::toDto)
-        .orElseThrow(() -> UserNotFoundException.withId(userId));
+    UserDto userDto =
+        userRepository
+            .findById(userId)
+            .map(userMapper::toDto)
+            .orElseThrow(() -> UserNotFoundException.withId(userId));
 
     return userDto;
   }
@@ -95,25 +101,28 @@ public class BasicUserService implements UserService {
   @Override
   public List<UserDto> findAll() {
     log.debug("모든 사용자 조회 시작");
-    List<UserDto> userDtos = userRepository.findAllWithProfileAndStatus()
-        .stream()
-        .map(userMapper::toDto)
-        .toList();
+    List<UserDto> userDtos =
+        userRepository.findAllWithProfileAndStatus().stream().map(userMapper::toDto).toList();
 
     return userDtos;
   }
 
   @Transactional
   @Override
-  public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
+  public UserDto update(
+      UUID userId,
+      UserUpdateRequest userUpdateRequest,
       Optional<BinaryContentCreateRequest> optionalProfileCreateRequest) {
     log.debug("사용자 수정 시작: id={}, request={}", userId, userUpdateRequest);
 
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> {
-          UserNotFoundException exception = UserNotFoundException.withId(userId);
-          return exception;
-        });
+    User user =
+        userRepository
+            .findById(userId)
+            .orElseThrow(
+                () -> {
+                  UserNotFoundException exception = UserNotFoundException.withId(userId);
+                  return exception;
+                });
 
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
@@ -126,19 +135,20 @@ public class BasicUserService implements UserService {
       throw UserAlreadyExistsException.withUsername(newUsername);
     }
 
-    BinaryContent nullableProfile = optionalProfileCreateRequest
-        .map(profileRequest -> {
-
-          String fileName = profileRequest.fileName();
-          String contentType = profileRequest.contentType();
-          byte[] bytes = profileRequest.bytes();
-          BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
-              contentType);
-          binaryContentRepository.save(binaryContent);
-          binaryContentStorage.put(binaryContent.getId(), bytes);
-          return binaryContent;
-        })
-        .orElse(null);
+    BinaryContent nullableProfile =
+        optionalProfileCreateRequest
+            .map(
+                profileRequest -> {
+                  String fileName = profileRequest.fileName();
+                  String contentType = profileRequest.contentType();
+                  byte[] bytes = profileRequest.bytes();
+                  BinaryContent binaryContent =
+                      new BinaryContent(fileName, (long) bytes.length, contentType);
+                  binaryContentRepository.save(binaryContent);
+                  binaryContentStorage.put(binaryContent.getId(), bytes);
+                  return binaryContent;
+                })
+            .orElse(null);
 
     String newPassword = userUpdateRequest.newPassword();
     user.update(newUsername, newEmail, newPassword, nullableProfile);
@@ -160,12 +170,15 @@ public class BasicUserService implements UserService {
 
   @Transactional
   @Override
-    public UserDto updateRole(UserRoleUpdateRequest request) {
-      User user = userRepository.findById(request.userId())
-          .orElseThrow(() -> UserNotFoundException.withId(request.userId()));
+  @PreAuthorize("hasRole('ADMIN')")
+  public UserDto updateRole(UserRoleUpdateRequest request) {
+    User user =
+        userRepository
+            .findById(request.userId())
+            .orElseThrow(() -> UserNotFoundException.withId(request.userId()));
 
-      user.updateRole(request.newRole());
+    user.updateRole(request.newRole());
 
-      return userMapper.toDto(user);
+    return userMapper.toDto(user);
   }
 }
