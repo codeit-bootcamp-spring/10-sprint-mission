@@ -15,6 +15,8 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -37,7 +39,7 @@ public class SecurityConfig {
     // 마지막에 build()를 호출하면 실제 요청을 가로채는 SecurityFilterChain 객체를 만든다.
     // 즉, 요청 처리 전에 실행될 SecurityFilterChain을 등록하는 코드.
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
         http
                 // CsrfTokenRepository는 Spring Security가 CSRF 토큰을 어디에 저장하고, 어디서 다시 꺼내 검증할지를 담당하는 인터페이스
                 // 기본값은 보통 HttpSessionCsrfTokenRepository이다. -> CSRF 토큰을 서버 세션(HttpSession)에 저장
@@ -140,6 +142,38 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                         })
+                )
+                /**
+                 (1) 사용자 로그인 - user1 로그인
+                 (2) Spring Security가 세션 생성 - SESSIONID = ABC123
+                 (3) SessionRegistry에 등록 - user1 -> ABC123
+                 (4) 같은 계정으로 또 로그인 - user1 다시 로그인
+                 (5) 기존 세션 확인 - 이미 ABC123 있음 -> UserDetails의 equals()와 hasCode()로 같은 사용자인지 판단.
+                 (6) 설정에따라 기존 세션 만료 OR 새 로그인 차단
+
+                 **/
+                .sessionManagement(session -> session
+                        .sessionConcurrency(concurrency -> concurrency
+                                /// 하나의 계정당 허용되는 동시 세션 수를 1개로 제한
+                                .maximumSessions(1)
+
+                                /// 이미 로그인된 세션이 있으면, 같은 계정으로 새 로그인을 막는다.
+                                /// 두번째 로그인 시도는 실패
+                                .maxSessionsPreventsLogin(true)
+                                /**
+                                 Spring Security는 로그인 시점의 사용자 정보를 세션에 저장합니다.
+                                 (1)예시
+                                 곽인성이 USER 권한으로 로그인했다면 세션안에는 이런식으로 들어간다.
+                                 principal = DiscodeitUserDetails(USER 권한)
+
+                                 (2)곽인성이 ADMIN으로 바꾸거나 ADMIN -> USER로 낮춰도
+                                 이미 만들어진 세션안의 권한 정보는 자동으로 바뀌지 않는다.
+
+                                 SessionRegistry: 현재 로그인된 사용자와 세션 목록을 추적하는 저장소.
+                                 **/
+                                //세션 동시성 관리를 sessionRegistry()로 사용한다.
+                                .sessionRegistry(sessionRegistry))
+
                 );
         return http.build();
     }
@@ -179,5 +213,30 @@ public class SecurityConfig {
 
         //설정완료된 handler를 Spring Security에 등록.
         return handler;
+    }
+
+
+    /**
+     SessionRegistry: "현재 로그인한 사용자와 그 사용자의 세션 목록"을 기억하는 저장소.
+     Spring Security는 기본적으로
+     - 누가 로그인 했는지
+     - 같은 사용자가 몇개 세션을 가지고 있는지
+     - 어떤 세션이 살아있는지
+     이런 정보를 추적 할 필요가 있고, 그걸 관리하는 객체가 SessionRegistry
+
+     예시)
+     곽인성 -> 세션1, 세션2
+     홍길동 -> 세션3
+     .
+     .
+     .
+     즉, 로그인 세션 목록을 내가 서비스 코드에서도 조회/만료할 수 있게 공유하는 Bean
+     **/
+    @Bean
+    public SessionRegistry sessionRegistry() {
+
+        /// 내부적으로 Map 기반으로 세션관리한다.
+        /// Map<Principal, Set<SessionId>>이런 느낌
+        return new SessionRegistryImpl();
     }
 }

@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.auth.DiscodeitUserDetails;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.UserCreateRequest;
@@ -22,6 +23,8 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +42,7 @@ public class BasicUserService implements UserService {
   private final BinaryContentStorage binaryContentStorage;
 
   private final PasswordEncoder passwordEncoder;
+  private final SessionRegistry sessionRegistry;
 
   @Transactional
   @Override
@@ -157,6 +161,8 @@ public class BasicUserService implements UserService {
 
         user.updateRole(role);
 
+        //권한 변경시 세션 만료
+        expireUserSessions(userId);
         return userMapper.toDto(user);
     }
 
@@ -171,5 +177,23 @@ public class BasicUserService implements UserService {
 
     userRepository.deleteById(userId);
     log.info("사용자 삭제 완료: id={}", userId);
+  }
+
+  private void expireUserSessions(UUID userId) {
+
+      //현재 로그인한 모든 Principal(UserDetails) 조회
+      //Principal은 List<Object>로 되어있다.
+      sessionRegistry.getAllPrincipals().stream()
+              //DiscodeitUserDetatils 타입인것만 남겨
+              .filter(principal -> principal instanceof DiscodeitUserDetails)
+              .map(principal -> (DiscodeitUserDetails) principal)
+              .filter(userDetails -> userDetails.getUserDto().id().equals(userId))
+              /// 이 사용자가 가진 모든 세션 조회, 이미 만료된 세션은 제외
+              /// 곽인성: 세션_A, 세션_B -> [세션_A, 세션_B]
+              .forEach(userDetails ->
+                      sessionRegistry.getAllSessions(userDetails, false)
+                              /// 모든 세션 강제 만료.
+                              .forEach(SessionInformation::expireNow)
+              );
   }
 }

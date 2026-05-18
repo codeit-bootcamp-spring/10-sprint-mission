@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @RequiredArgsConstructor
@@ -75,5 +76,36 @@ public class DiscodeitUserDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+    /**
+     DiscodeitUserDetails 객체끼리 동등성 비교
+     기본 equals는 주소값 비교인데 여기서는 사용자 기준으로 비교.
+
+     (1) 예시
+     UserDetailsService에서는 로그인할때마다 새로운 객체를 만든다.
+     DiscodeitUserDetails A = 로그인1 사용자
+     DiscodeitUserDetails B = 로그인2 사용자
+
+     // userDto.id()가 같으면 같은 사용자
+     A.equals(B) == true
+
+     그래야 sessionConcurrency().maximumSessions(1)이 의도대로 동작한다.
+     **/
+
+    @Override
+    public boolean equals(Object o) {
+        //메모리 주소 자체가 같은지 비교
+        if (this == o) return true;
+
+        //이 객체가 DiscodeitUserDetails 타입인지 확인
+        if (!(o instanceof DiscodeitUserDetails that)) return false;
+
+        //현재 객체 user id == 비교 대상 객체의 user id -> true
+        return Objects.equals(userDto.id(), that.userDto.id());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userDto.id());
     }
 }

@@ -33,6 +33,10 @@ public class DiscodeitUserDetailsService implements UserDetailsService {
 
         UserDto userDto = userMapper.toDto(findUser);
 
+        /**
+         로그인시, 매번 새 객체를 만든다.
+         즉, 같은 계정으로 로그인해도 JVM 객체는 매번 다르다.
+         **/
         return new DiscodeitUserDetails(userDto, findUser.getPassword());
     }
 }
