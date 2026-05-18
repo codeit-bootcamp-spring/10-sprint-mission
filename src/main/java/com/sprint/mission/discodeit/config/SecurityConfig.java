@@ -185,9 +185,18 @@ public class SecurityConfig {
                                 /// 하나의 계정당 허용되는 동시 세션 수를 1개로 제한
                                 .maximumSessions(1)
 
+                                /**
                                 /// 이미 로그인된 세션이 있으면, 같은 계정으로 새 로그인을 막는다.
                                 /// 두번째 로그인 시도는 실패
-                                .maxSessionsPreventsLogin(true)
+                                /// 이미 최대 세션 수에 도달했을때, 새 로그인을 막을지를 정하는 옵션
+                                 (1)곽인성이 PC에서 로그인: 서버에 PC세션 등록
+                                 (2)곽인성이 모바일에서 같은 계정으로 로그인시도
+                                  - 서버: 이미 PC 세션이있음
+                                  - maximumSessions(1)초과
+                                 -> maxSessionsPreventsLogin(true): 모바일 로그인 실패, PC 로그인은 유지
+                                 false로 변경시: 모바일 로그인 성공, PC 로그인 만료
+                                **/
+                                .maxSessionsPreventsLogin(false)
                                 /**
                                  Spring Security는 로그인 시점의 사용자 정보를 세션에 저장합니다.
                                  (1)예시
