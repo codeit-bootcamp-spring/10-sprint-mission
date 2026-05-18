@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.service.basic;
 
+import com.sprint.mission.discodeit.dto.auth.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.binarycontent.CreateBinaryContentPayloadDTO;
 import com.sprint.mission.discodeit.dto.user.CreateUserRequestDTO;
 import com.sprint.mission.discodeit.dto.user.UpdateUserStatusRequestDTO;
@@ -136,6 +137,16 @@ public class BasicUserService implements UserService {
         status.updateLastActiveAt(dto.newLastActiveAt());
 
         log.info("[USER_STATUS_UPDATE_SUCCESS] 유저 상태 수정 성공: userId={}", user.getId());
+        return userMapper.toDto(user);
+    }
+
+    @Override
+    public UserDto updateRole(UserRoleUpdateRequest dto) {
+        User user = findUserOrThrow(dto.userId());
+
+        user.updateRole(dto.newRole());
+
+        log.info("[USER_ROLE_UPDATE_SUCCESS] 유저 역할 수정 성공: userId={}, role={}", user.getId(), user.getRole());
         return userMapper.toDto(user);
     }
 

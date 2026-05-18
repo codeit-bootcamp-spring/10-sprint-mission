@@ -41,7 +41,8 @@ create table users
         unique,
     password   varchar(255)                not null,
     username   varchar(255)                not null
-        unique
+        unique,
+    role       varchar(20) NOT NULL
 );
 
 alter table users

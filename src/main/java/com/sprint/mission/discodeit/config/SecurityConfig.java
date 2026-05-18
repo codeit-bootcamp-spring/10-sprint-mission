@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+@EnableMethodSecurity
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -31,6 +33,24 @@ public class SecurityConfig {
                         .csrfTokenRequestHandler(
                                 new SpaCsrfTokenRequestHandler()
                         )
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/csrf-token").permitAll()
+                        .requestMatchers("/api/users").permitAll()      // 회원가입 경로
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/logout").permitAll()
+
+                        // Swagger
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        // Actuator
+                        .requestMatchers("/actuator/**").permitAll()
+
+                        .anyRequest().authenticated()
                 )
                 .formLogin(login -> login
                         .loginProcessingUrl("/api/auth/login")
