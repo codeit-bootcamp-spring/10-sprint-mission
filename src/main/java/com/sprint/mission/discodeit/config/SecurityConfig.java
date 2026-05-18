@@ -1,6 +1,7 @@
 package com.sprint.mission.discodeit.config;
 
 import com.sprint.mission.discodeit.handler.*;
+import com.sprint.mission.discodeit.service.DiscodeitUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +27,7 @@ public class SecurityConfig {
     private final LoginFailureHandler loginFailureHandler;
     private final DiscodeitAccessDeniedHandler discodeitAccessDeniedHandler;
     private final DiscodeitAuthenticationEntryPoint discodeitAuthenticationEntryPoint;
+    private final DiscodeitUserDetailsService discodeitUserDetailsService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
@@ -39,6 +41,12 @@ public class SecurityConfig {
                         .loginProcessingUrl("/api/auth/login")
                         .successHandler(loginSuccessHandler)
                         .failureHandler(loginFailureHandler))
+                .rememberMe(remember -> remember
+                        .rememberMeParameter("remember-me")
+                        .rememberMeCookieName("my-remember-me")
+                        .tokenValiditySeconds(7 * 24 * 60 * 60)
+                        .key("my-remember-key")
+                        .userDetailsService(discodeitUserDetailsService))
                 // 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
