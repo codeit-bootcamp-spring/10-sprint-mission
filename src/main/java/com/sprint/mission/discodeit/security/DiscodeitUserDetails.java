@@ -3,10 +3,10 @@ package com.sprint.mission.discodeit.security;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import java.util.Collection;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
@@ -17,8 +17,7 @@ public class DiscodeitUserDetails implements UserDetails {
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    // 역할 권환 기능 x -> 빈 목록
-    return List.of();
+    return List.of(new SimpleGrantedAuthority("ROLE_" + userDto.role().name()));
   }
 
   @Override
@@ -29,7 +28,7 @@ public class DiscodeitUserDetails implements UserDetails {
 
   @Override
   public String getUsername() {
-    return "";
+    return userDto.username();
   }
 
   @Override
