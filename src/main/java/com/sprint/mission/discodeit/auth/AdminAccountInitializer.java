@@ -6,7 +6,10 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 /**
  (1)Spring Boot 시작
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Component;
 public class AdminAccountInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${discodeit.admin.username}")
     private String username;
@@ -38,7 +42,7 @@ public class AdminAccountInitializer implements CommandLineRunner {
         User admin = new User(
                 username,
                 email,
-                password,
+                passwordEncoder.encode(password),
                 null
         );
 
