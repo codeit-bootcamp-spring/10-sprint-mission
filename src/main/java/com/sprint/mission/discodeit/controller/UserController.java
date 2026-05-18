@@ -4,10 +4,7 @@ package com.sprint.mission.discodeit.controller;
 import com.sprint.mission.discodeit.dto.user.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.user.UserDto;
 import com.sprint.mission.discodeit.dto.user.UserUpdateRequest;
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusDto;
-import com.sprint.mission.discodeit.dto.userStatus.UserStatusUpdateRequest;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +27,6 @@ import java.util.UUID;
 @Slf4j
 public class UserController {
     private final UserService userService;
-    private final UserStatusService userStatusService;
 
     // 유저 생성
     @ResponseStatus(HttpStatus.CREATED)
@@ -62,13 +58,6 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    // 유저 온라인상태 업데이트
-    @RequestMapping(value = "/{userId}/userStatus" , method = RequestMethod.PATCH)
-    public ResponseEntity<UserStatusDto> updateUserStatusByUserId(@PathVariable("userId") UUID id,
-                                                                  @Valid @RequestBody(required = true) UserStatusUpdateRequest request){
-        UserStatusDto response = userStatusService.update(id,request);
-        return ResponseEntity.ok(response);
-    }
 
     // 유저 삭제
     @ResponseStatus(HttpStatus.NO_CONTENT)
