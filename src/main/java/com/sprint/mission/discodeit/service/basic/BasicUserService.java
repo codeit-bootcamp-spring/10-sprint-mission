@@ -156,6 +156,21 @@ public class BasicUserService implements UserService {
 
   @Override
   @Transactional
+  public User updateUserRole(UUID id, Role newRole) {
+    log.info("Updating role for user ID: {} to {}", id, newRole);
+
+    // 유저 검증
+    User user = getOrThrowUser(id);
+
+    // 권한 수정
+    user.updateRole(newRole);
+
+    log.info("User ID {} role updated successfully to {}", id, newRole);
+    return user;
+  }
+
+  @Override
+  @Transactional
   public void deleteById(UUID id) {
     log.info("Deleting user with ID: {}", id); // 유저 삭제 시작 로그
 
