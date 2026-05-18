@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.dto;
 
+import com.sprint.mission.discodeit.entity.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.UUID;
@@ -9,7 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @Schema(description = "사용자 정보 응답")
@@ -35,4 +36,7 @@ public class UserDto {
 
   @Schema(description = "온라인 접속 상태", example = "true")
   private boolean online;
+
+  @Schema(description = "사용자 권한", example = "USER")
+  private Role role;
 }

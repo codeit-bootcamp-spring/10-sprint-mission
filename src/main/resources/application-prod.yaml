@@ -27,12 +27,12 @@ logging:
     org.hibernate.SQL: error
 
 aws:
-  region: ${AWS_S3_REGION}
+  region: ${AWS_S3_REGION:ap-northeast-2}
   credentials:
-    access-key: ${AWS_S3_ACCESS_KEY}
-    secret-key: ${AWS_S3_SECRET_KEY}
+    access-key: ${AWS_S3_ACCESS_KEY:dummy}
+    secret-key: ${AWS_S3_SECRET_KEY:dummy}
   s3:
-    bucket: ${AWS_S3_BUCKET}
+    bucket: ${AWS_S3_BUCKET:dummy}
 
 discodeit:
   storage:

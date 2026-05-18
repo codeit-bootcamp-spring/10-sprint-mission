@@ -2,11 +2,11 @@ package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.UserCreateRequest;
 import com.sprint.mission.discodeit.dto.UserDto;
+import com.sprint.mission.discodeit.dto.UserRoleUpdateRequest;
 import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.exception.DiscodeitException;
 import com.sprint.mission.discodeit.exception.ErrorCode;
 import com.sprint.mission.discodeit.exception.channel.ChannelNotFoundException;
@@ -18,6 +18,7 @@ import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import com.sprint.mission.discodeit.service.AuthService;
 import com.sprint.mission.discodeit.service.UserService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.IOException;
@@ -25,6 +26,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +44,10 @@ public class BasicUserService implements UserService {
   private final BinaryContentStorage binaryContentStorage;
   private final ReadStatusRepository readStatusRepository;
   private final UserMapper userMapper;
+  private final PasswordEncoder passwordEncoder;
+  // 보안 및 세션 인프라 제어를 위한 서비스 주입
+  // 다른 도메인 서비스와 달리 PasswordEncoder처럼 기술적인 유틸리티 성격으로 활용
+  private final AuthService authService;
 
   @Transactional
   @Override
@@ -51,12 +58,12 @@ public class BasicUserService implements UserService {
     BinaryContent profileImage = processImage(null, profile);
     User newUser = userMapper.toEntity(request);
 
+    String encryptedPassword = passwordEncoder.encode(newUser.getPassword());
+    newUser.updateEncodedPassword(encryptedPassword);
+
     if (profileImage != null) {
       newUser.update(null, null, null, profileImage);
     }
-
-    UserStatus status = new UserStatus(newUser);
-    newUser.setUserStatus(status);
 
     User saved = userRepository.save(newUser);
 
@@ -74,22 +81,37 @@ public class BasicUserService implements UserService {
   @Override
   public List<UserDto> findAllUsers() {
     return userRepository.findAllWithDetails().stream()
-        .map(userMapper::toDto)
+        .map(user -> {
+          UserDto dto = userMapper.toDto(user);
+
+          return dto.toBuilder()
+              .online(authService.isUserOnline(user.getId()))
+              .build();
+        })
         .toList();
   }
 
   @Override
-  public List<User> findAllByChannelId(UUID channelId) {
+  public List<UserDto> findAllByChannelId(UUID channelId) {
     if (!channelRepository.existsById(channelId)) {
       throw new ChannelNotFoundException(channelId);
     }
+
     return readStatusRepository.findAllByChannelId(channelId).stream()
         .map(ReadStatus::getUser)
+        .map(user -> {
+          UserDto dto = userMapper.toDto(user);
+
+          return dto.toBuilder()
+              .online(authService.isUserOnline(user.getId()))
+              .build();
+        })
         .toList();
   }
 
   @Transactional
   @Override
+  @PreAuthorize("#userId == authentication.principal.userDto.id")
   public UserDto update(UUID userId, UserUpdateRequest request,
       MultipartFile profile) {
     User user = findUserEntityById(userId);
@@ -100,10 +122,22 @@ public class BasicUserService implements UserService {
 
     BinaryContent newProfile = processImage(user.getProfile(), profile);
 
+    String finalUsername = (request.getNewUsername() != null && !request.getNewUsername().isBlank())
+        ? request.getNewUsername().trim()
+        : user.getUsername();
+
+    String finalEmail = (request.getNewEmail() != null && !request.getNewEmail().isBlank())
+        ? request.getNewEmail().trim()
+        : user.getEmail();
+
+    String finalPassword = (request.getNewPassword() != null && !request.getNewPassword().isBlank())
+        ? passwordEncoder.encode(request.getNewPassword())
+        : user.getPassword();
+
     user.update(
-        request.getNewUsername(),
-        request.getNewEmail(),
-        request.getNewPassword(),
+        finalUsername,
+        finalEmail,
+        finalPassword,
         newProfile
     );
 
@@ -114,6 +148,23 @@ public class BasicUserService implements UserService {
 
   @Transactional
   @Override
+  @PreAuthorize("hasRole('ADMIN')")
+  public UserDto updateUserRole(UserRoleUpdateRequest request) {
+    User user = findUserEntityById(request.getUserId());
+
+    user.updateRole(request.getNewRole());
+
+    authService.expireUserSessions(user.getId());
+
+    log.info("[SUCCESS] User Role Updated: id={}, newRole={}",
+        user.getId(), user.getRole());
+
+    return userMapper.toDto(user);
+  }
+
+  @Transactional
+  @Override
+  @PreAuthorize("#userId == authentication.principal.userDto.id")
   public void delete(UUID userId) {
 
     User user = findUserEntityById(userId);

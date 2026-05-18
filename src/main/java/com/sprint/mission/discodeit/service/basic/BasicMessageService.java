@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -103,6 +104,7 @@ public class BasicMessageService implements MessageService {
 
   @Transactional
   @Override
+  @PreAuthorize("@messageRepository.findWithAuthorAndAttachmentsById(#messageId).orElse(null)?.author?.id == authentication.principal.userDto.id")
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
     Message message = findMessageEntityById(messageId);
 
@@ -115,6 +117,7 @@ public class BasicMessageService implements MessageService {
 
   @Transactional
   @Override
+  @PreAuthorize("@messageRepository.findWithAuthorAndAttachmentsById(#messageId).orElse(null)?.author?.id == authentication.principal.userDto.id")
   public void delete(UUID messageId) {
     Message message = findMessageEntityById(messageId);
 
