@@ -133,7 +133,9 @@ public class BasicUserService implements UserService {
         })
         .orElse(null);
 
-    user.update(newUsername, newEmail, userUpdateRequest.newPassword(), nullableProfile);
+    //회원정보 수정시 password 암호화
+    String encodedPassword = passwordEncoder.encode(userUpdateRequest.newPassword());
+    user.update(newUsername, newEmail, encodedPassword, nullableProfile);
 
     log.info("User updated: id={}", userId);
     return userMapper.toDto(user, isOnline(userId));
