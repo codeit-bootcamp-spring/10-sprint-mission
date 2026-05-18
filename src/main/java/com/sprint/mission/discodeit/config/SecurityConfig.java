@@ -67,6 +67,9 @@ public class SecurityConfig {
   )
       throws Exception {
     return http
+        // RememberMe 사용 시 세션 무효화되어도 자동으로 로그인
+        .rememberMe()
+        .and()
         // csrf 관련 설정
         .csrf(csrf -> csrf
             .ignoringRequestMatchers("/h2-console/**") // h2 콘솔로 들어가는 요청은 csrf 무시
@@ -131,7 +134,7 @@ public class SecurityConfig {
         .sessionManagement(management -> management
             .sessionConcurrency(concurrency -> concurrency
                 .maximumSessions(1) // 최대 세션은 1
-                .maxSessionsPreventsLogin(true) // 추후에 로그인 하는 다른 세션은 막음.
+                .maxSessionsPreventsLogin(false) // 새로 로그인 시 기존 세션을 만료시킴
                 .sessionRegistry(sessionRegistry)
             )
         )
