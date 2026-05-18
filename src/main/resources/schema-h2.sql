@@ -41,16 +41,6 @@ CREATE TABLE users
     updated_at TIMESTAMP WITH TIME ZONE
 );
 
--- 5. 유저 온라인 상태 확인 테이블
-CREATE TABLE user_statuses
-(
-    id             UUID PRIMARY KEY,
-    user_id        UUID UNIQUE NOT NULL REFERENCES users (id) ON DELETE CASCADE,
-    last_active_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at     TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at     TIMESTAMP WITH TIME ZONE
-);
-
 -- 6. 메시지 관리 테이블
 CREATE TABLE messages
 (

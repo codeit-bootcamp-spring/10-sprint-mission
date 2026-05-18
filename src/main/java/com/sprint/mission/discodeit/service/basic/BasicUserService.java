@@ -144,8 +144,6 @@ public class BasicUserService implements UserService {
         return findUser(userId);
     }
 
-
-
     @Override
     @Transactional
     public void delete(UUID userId) {
@@ -160,11 +158,6 @@ public class BasicUserService implements UserService {
             binaryContentRepository.delete(profileImg);
         }
         log.info("유저 삭제 성공: 유저 id = {}", userId);
-    }
-
-    private boolean isOnline(Instant lastOnlineAt){
-        // 만약 최종접속시간이 현재시간의 5분전 이내라면 참 반환
-        return lastOnlineAt.isAfter(Instant.now().minus(Duration.ofMinutes(5)));
     }
 
     // 유효성 검사
