@@ -60,7 +60,7 @@ discodeit:
   admin:
     username: 관리자
     email: admin@discodeit.com
-    password: admin
+    password: admin1234@
 
 
 logging:
