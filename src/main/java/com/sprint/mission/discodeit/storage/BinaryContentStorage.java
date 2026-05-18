@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 
 public interface BinaryContentStorage {
 
-  UUID put(UUID binaryContentId, byte[] bytes, String contentType);
+  UUID put(UUID binaryContentId, byte[] bytes);
 
   InputStream get(UUID binaryContentId);
 

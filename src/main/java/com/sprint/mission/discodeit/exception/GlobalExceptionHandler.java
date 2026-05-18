@@ -1,12 +1,13 @@
 package com.sprint.mission.discodeit.exception;
 
-import java.nio.file.AccessDeniedException;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -37,6 +38,24 @@ public class GlobalExceptionHandler {
         .body(response);
   }
 
+  @ExceptionHandler({AccessDeniedException.class, AuthorizationDeniedException.class})
+  public ResponseEntity<ErrorResponse> handleAccessDeniedException(Exception ex) {
+    log.warn("Access denied예외 발생: {}", ex.getMessage());
+
+    ErrorResponse response = new ErrorResponse(
+            Instant.now(),
+            "ACCESS_DENIED",
+            "접근 권한이 없습니다.",
+            new HashMap<>(),
+            ex.getClass().getSimpleName(),
+            HttpStatus.FORBIDDEN.value()
+    );
+    return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(response);
+  }
+
+  //주로 Request DTO 검증에서 예외발생시 처리
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
     log.error("요청 유효성 검사 실패: {}", ex.getMessage());
@@ -62,19 +81,6 @@ public class GlobalExceptionHandler {
         .body(response);
   }
 
-  @ExceptionHandler(AccessDeniedException.class)
-  public ResponseEntity<String> handleAccessDeniedException(AccessDeniedException e) {
-    log.warn("Access denied: {}", e.getMessage());
-    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-            .body("접근 권한이 없습니다.");
-  }
-
-  @ExceptionHandler(RuntimeException.class)
-  public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
-    log.error("Runtime error: {}", e.getMessage());
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(e.getMessage() != null ? e.getMessage() : "잘못된 요청입니다.");
-  }
 
   private HttpStatus determineHttpStatus(DiscodeitException exception) {
     ErrorCode errorCode = exception.getErrorCode();

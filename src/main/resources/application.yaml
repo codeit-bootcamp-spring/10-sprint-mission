@@ -14,6 +14,8 @@ spring:
   profiles:
     active:
       - dev
+  config:
+    import: optional:file:.env[.properties]
 
 management:
   endpoints:
@@ -55,7 +57,15 @@ discodeit:
       region: ${AWS_S3_REGION}
       bucket: ${AWS_S3_BUCKET}
       presigned-url-expiration: ${AWS_S3_PRESIGNED_URL_EXPIRATION:600} # (기본값: 10분)
+  admin:
+    username: 관리자
+    email: admin@discodeit.com
+    password: admin1234@
+
 
 logging:
   level:
     root: info
+    org:
+      springframework:
+        security: TRACE

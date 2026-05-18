@@ -24,17 +24,16 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class BasicMessageService implements MessageService {
 
@@ -68,7 +67,7 @@ public class BasicMessageService implements MessageService {
           BinaryContent binaryContent = new BinaryContent(fileName, (long) bytes.length,
               contentType);
           binaryContentRepository.save(binaryContent);
-          binaryContentStorage.put(binaryContent.getId(), bytes, contentType);
+          binaryContentStorage.put(binaryContent.getId(), bytes);
           return binaryContent;
         })
         .toList();
@@ -112,6 +111,7 @@ public class BasicMessageService implements MessageService {
     return pageResponseMapper.fromSlice(slice, nextCursor);
   }
 
+  @PreAuthorize("@messagePermissionEvaluator.isAuthor(#messageId, authentication.principal)")
   @Transactional
   @Override
   public MessageDto update(UUID messageId, MessageUpdateRequest request) {
@@ -124,6 +124,7 @@ public class BasicMessageService implements MessageService {
     return messageMapper.toDto(message);
   }
 
+  @PreAuthorize("@messagePermissionEvaluator.isAuthor(#messageId, authentication.principal)")
   @Transactional
   @Override
   public void delete(UUID messageId) {

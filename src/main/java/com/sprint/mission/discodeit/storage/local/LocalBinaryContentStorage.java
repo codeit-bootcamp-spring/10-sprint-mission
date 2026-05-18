@@ -26,7 +26,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   private final Path root;
 
   public LocalBinaryContentStorage(
-      @Value("${discodeit.storage.local.root-path}") Path root  //app/storage
+      @Value("${discodeit.storage.local.root-path}") Path root
   ) {
     this.root = root;
   }
@@ -43,7 +43,7 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     }
   }
 
-  public UUID put(UUID binaryContentId, byte[] bytes, String contentType) {
+  public UUID put(UUID binaryContentId, byte[] bytes) {
     Path filePath = resolvePath(binaryContentId);
     if (Files.exists(filePath)) {
       throw new IllegalArgumentException("File with key " + binaryContentId + " already exists");
