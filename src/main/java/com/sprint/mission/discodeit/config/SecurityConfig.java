@@ -22,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 //@Configuration: Spring 설정 클래스
 @Configuration
@@ -238,5 +239,27 @@ public class SecurityConfig {
         /// 내부적으로 Map 기반으로 세션관리한다.
         /// Map<Principal, Set<SessionId>>이런 느낌
         return new SessionRegistryImpl();
+    }
+
+    /**
+     HttpSessionEventPulbisher는 서블릿 컨테이너의 세션 생성/소멸 이벤트를 Spring Security에 전달해주는 어댑터
+     HttpSession은 사라졌는데, SessionRegistry가 그사실을 모르면 문제가 생길 수 있다.
+
+     예시)
+     (1)곽인성 PC 로그인
+     (2)SessionRegistry에 세션 등록
+     (3)시간이 지나 HttpSession 만료
+     (4)SessionRegistry가 만료 사실을 모름
+     (5)곽인성이 다시 로그인 시도
+     (6)SessionRegistry는 아직 "이미 로그인 중"이라고 착각
+     (7)maximumSessions(1) 때문에 로그인 실패 가능
+     -> 이를 막기위해 HttpSessionEventPulisher 등록
+     **/
+
+    /// HttpSession이 생성되거나 소멸될때 이벤트가 Spring Security쪽으로 전달.
+    /// 로그아웃, 세션 타임아웃 등으로 실제 HttpSession이 사라졌을때 SessionRegistry안의 세션 정보도 같이 정리해줌.
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new  HttpSessionEventPublisher();
     }
 }

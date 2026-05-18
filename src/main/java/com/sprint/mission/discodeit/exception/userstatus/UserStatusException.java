@@ -1,14 +1,16 @@
-package com.sprint.mission.discodeit.exception.userstatus;
-
-import com.sprint.mission.discodeit.exception.DiscodeitException;
-import com.sprint.mission.discodeit.exception.ErrorCode;
-
-public class UserStatusException extends DiscodeitException {
-    public UserStatusException(ErrorCode errorCode) {
-        super(errorCode);
-    }
-
-    public UserStatusException(ErrorCode errorCode, Throwable cause) {
-        super(errorCode, cause);
-    }
-} 
+// UserStatus는 SessionRegistry 기반 online 판단으로 대체되어 더 이상 사용하지 않습니다.
+// package com.sprint.mission.discodeit.exception.userstatus;
+//
+// import com.sprint.mission.discodeit.exception.DiscodeitException;
+// import com.sprint.mission.discodeit.exception.ErrorCode;
+//
+// public class UserStatusException extends DiscodeitException {
+//
+//   public UserStatusException(ErrorCode errorCode) {
+//     super(errorCode);
+//   }
+//
+//   public UserStatusException(ErrorCode errorCode, Throwable cause) {
+//     super(errorCode, cause);
+//   }
+// }

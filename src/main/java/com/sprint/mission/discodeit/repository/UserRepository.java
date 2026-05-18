@@ -17,9 +17,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
   boolean existsByUsername(String username);
 
   @Query("SELECT u FROM User u "
-      + "LEFT JOIN FETCH u.profile "
-      + "JOIN FETCH u.status")
-  List<User> findAllWithProfileAndStatus();
+      + "LEFT JOIN FETCH u.profile")
+  List<User> findAllWithProfile();
 
     //권한 존재 확인
     boolean existsByRole(Role role);
@@ -36,8 +35,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     select u
     from User u
     left join fetch u.profile
-    left join fetch u.status
     where u.username = :username
     """)
-  Optional<User> findByUsernameWithProfileAndStatus(String username);
+  Optional<User> findByUsernameWithProfile(String username);
 }
