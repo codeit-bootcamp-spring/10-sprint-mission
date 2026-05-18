@@ -88,4 +88,36 @@ public class GlobalExceptionHandler {
             HttpStatus.INTERNAL_SERVER_ERROR.value()
         ));
   }
+
+  @ExceptionHandler
+  public ResponseEntity<ErrorResponse> handleAuthenticationException(
+      org.springframework.security.core.AuthenticationException e) {
+    log.warn("인증 실패", e);
+    return ResponseEntity
+        .status(HttpStatus.UNAUTHORIZED)
+        .body(ErrorResponse.of(
+            Instant.now(),
+            "UNAUTHORIZED",
+            "로그인이 필요한 서비스입니다.",
+            java.util.Collections.emptyMap(),
+            e.getClass().getSimpleName(),
+            HttpStatus.UNAUTHORIZED.value()
+        ));
+  }
+
+  @ExceptionHandler
+  public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+      org.springframework.security.access.AccessDeniedException e) {
+    log.warn("인가 실패", e);
+    return ResponseEntity
+        .status(HttpStatus.FORBIDDEN)
+        .body(ErrorResponse.of(
+            Instant.now(),
+            "FORBIDDEN",
+            "해당 요청에 대한 접근 권한이 없습니다.",
+            java.util.Collections.emptyMap(),
+            e.getClass().getSimpleName(),
+            HttpStatus.FORBIDDEN.value()
+        ));
+  }
 }
