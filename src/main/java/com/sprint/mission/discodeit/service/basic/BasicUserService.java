@@ -99,6 +99,7 @@ public class BasicUserService implements UserService {
     return userDtos;
   }
 
+  @PreAuthorize("#userId == authentication.principal.userDto.id")
   @Transactional
   @Override
   public UserDto update(UUID userId, UserUpdateRequest userUpdateRequest,
@@ -150,6 +151,9 @@ public class BasicUserService implements UserService {
     return userMapper.toDto(user, isOnline(userId));
   }
 
+  /// Controller에서 요청 uri의 userId == 현재 로그인한 사용자 id
+  /// principal = DiscodeitUserDetails
+  @PreAuthorize("#userId == authentication.principal.userDto.id")
   @Transactional
   @Override
   public void delete(UUID userId) {
